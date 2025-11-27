@@ -238,6 +238,20 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
                 onClick={async () => {
                   if (isAccepting) return;
                   try {
+                    // Update booking status to 'rejected'
+                    if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
+                      await databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.bookings,
+                        bookingId,
+                        {
+                          status: 'rejected',
+                          rejectedAt: new Date().toISOString(),
+                          rejectedBy: therapistId
+                        }
+                      );
+                    }
+                    
                     playSound('bookingDeclined');
                     // Broadcast to other available therapists (limit inside function)
                     await broadcastDecline({

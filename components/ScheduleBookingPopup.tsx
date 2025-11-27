@@ -58,6 +58,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
   const [selectedTime, setSelectedTime] = useState<TimeSlot | null>(null);
   const [customerName, setCustomerName] = useState('');
+  const [countryCode, setCountryCode] = useState<string>('+62');
   const [customerWhatsApp, setCustomerWhatsApp] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -236,7 +237,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         startTime: scheduledTime.toISOString(), // Your schema uses startTime
         customerName, // Optional - customer's name
         userName: customerName, // Map to your userName field
-        customerWhatsApp, // Store customer WhatsApp
+        customerWhatsApp: `${countryCode}${customerWhatsApp.trim()}`.replace(/\s/g, ''), // Store customer WhatsApp with country code
         bookingType: isImmediateBooking ? 'immediate' : 'scheduled', // Optional - booking type
         service: 'massage', // Required in your schema
         // Include hotel/villa details if booking from venue
@@ -537,7 +538,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Enter your name"
-                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
+                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
                 />
               </div>
 
@@ -546,13 +547,35 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   <Phone className="inline w-3 h-3 mr-1" />
                   WhatsApp Number
                 </label>
-                <input
-                  type="tel"
-                  value={customerWhatsApp}
-                  onChange={(e) => setCustomerWhatsApp(e.target.value)}
-                  placeholder="+62 xxx xxx xxx"
-                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900 bg-white"
+                    style={{ width: '110px' }}
+                  >
+                    <option value="+62">🇮🇩 +62</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+86">🇨🇳 +86</option>
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+82">🇰🇷 +82</option>
+                    <option value="+65">🇸🇬 +65</option>
+                    <option value="+60">🇲🇾 +60</option>
+                    <option value="+66">🇹🇭 +66</option>
+                    <option value="+84">🇻🇳 +84</option>
+                    <option value="+63">🇵🇭 +63</option>
+                  </select>
+                  <input
+                    type="tel"
+                    value={customerWhatsApp}
+                    onChange={(e) => setCustomerWhatsApp(e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="812 3456 7890"
+                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
+                  />
+                </div>
               </div>
 
               {/* Room Number - Only for hotel/villa bookings */}
@@ -569,7 +592,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     value={roomNumber}
                     onChange={(e) => setRoomNumber(e.target.value)}
                     placeholder="e.g., 101, 205A"
-                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     {hotelVillaName ? `Your room at ${hotelVillaName}` : 'For service delivery location'}

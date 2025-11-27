@@ -56,6 +56,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   
   // User information fields
   const [customerName, setCustomerName] = useState<string>('');
+  const [countryCode, setCountryCode] = useState<string>('+62');
   const [customerWhatsApp, setCustomerWhatsApp] = useState<string>('');
   const [locationType, setLocationType] = useState<'hotel' | 'villa' | 'home'>('hotel');
   const [hotelVillaNameInput, setHotelVillaNameInput] = useState<string>('');
@@ -158,7 +159,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         providerName: therapistName, // Required - maps to therapistName  
         providerType: providerType || 'therapist', // Required - maps to therapistType
         duration: selectedOption.duration, // Required
-        price: selectedOption.price, // Required
+        price: Math.round(selectedOption.price / 1000), // Convert to thousands (IDR to k)
         status: 'pending', // Required
         createdAt: now.toISOString(), // Required
         bookingDate: now.toISOString(), // Required - your schema needs this
@@ -169,18 +170,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         
         // Customer Information
         customerName: customerName.trim(),
-        customerWhatsApp: customerWhatsApp.trim(),
-        locationType,
-        
-        // Location Details
-        ...(locationType === 'home' && { 
-          homeAddress: homeAddress.trim() 
-        }),
-        ...(locationType !== 'home' && {
-          hotelVillaName: hotelVillaNameInput.trim(),
-          roomNumber: roomNumber.trim(),
-          locationType
-        }),
+        customerWhatsApp: `${countryCode}${customerWhatsApp.trim()}`.replace(/\s/g, ''),
         
         ...(hotelVillaId && { hotelVillaId }),
         ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
@@ -249,7 +239,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       // Service Details
       message += `💼 SERVICE DETAILS:\n`;
       message += `Duration: ${selectedDuration} minutes\n`;
-      message += `Price: IDR ${selectedOption.price.toLocaleString()}\n`;
+      message += `Price: IDR ${Math.round(selectedOption.price / 1000)}K\n`;
       if (discountPercentage > 0) {
         message += `🔥 Discount: ${discountPercentage}% OFF Applied!\n`;
       }
@@ -407,7 +397,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
               />
             </div>
 
@@ -416,13 +406,35 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 WhatsApp Number <span className="text-red-500">*</span>
               </label>
-              <input
-                type="tel"
-                value={customerWhatsApp}
-                onChange={(e) => setCustomerWhatsApp(e.target.value)}
-                placeholder="+62 812 3456 7890"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
-              />
+              <div className="flex gap-2">
+                <select
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900 bg-white"
+                  style={{ width: '110px' }}
+                >
+                  <option value="+62">🇮🇩 +62</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+86">🇨🇳 +86</option>
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+81">🇯🇵 +81</option>
+                  <option value="+82">🇰🇷 +82</option>
+                  <option value="+65">🇸🇬 +65</option>
+                  <option value="+60">🇲🇾 +60</option>
+                  <option value="+66">🇹🇭 +66</option>
+                  <option value="+84">🇻🇳 +84</option>
+                  <option value="+63">🇵🇭 +63</option>
+                </select>
+                <input
+                  type="tel"
+                  value={customerWhatsApp}
+                  onChange={(e) => setCustomerWhatsApp(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="812 3456 7890"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
+                />
+              </div>
             </div>
 
             {/* Location Type */}
@@ -479,7 +491,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                     value={hotelVillaNameInput}
                     onChange={(e) => setHotelVillaNameInput(e.target.value)}
                     placeholder={`Enter ${locationType} name`}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                   />
                 </div>
                 <div>
@@ -491,7 +503,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                     value={roomNumber}
                     onChange={(e) => setRoomNumber(e.target.value)}
                     placeholder="e.g., 205"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                   />
                 </div>
               </>
@@ -508,7 +520,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                   onChange={(e) => setHomeAddress(e.target.value)}
                   placeholder="Enter your complete address with landmarks"
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                 />
               </div>
             )}
@@ -538,11 +550,11 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                 <div className="text-right">
                   {discountPercentage > 0 && pricing && (
                     <div className="text-xs text-gray-500 line-through">
-                      IDR {(pricing[option.duration.toString()] * 1000).toLocaleString()}
+                      IDR {pricing[option.duration.toString()]}K
                     </div>
                   )}
                   <div className="text-lg font-bold text-orange-600">
-                    IDR {option.price.toLocaleString()}
+                    IDR {Math.round(option.price / 1000)}K
                   </div>
                 </div>
               </div>

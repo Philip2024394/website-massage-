@@ -68,9 +68,9 @@ const App = () => {
     useEffect(() => {
         // localStorage disabled: skip cleanupLocalStorage()
         
-        // Play welcome music once per session
+        // Play welcome music only once ever (not per session)
         const playWelcomeMusic = () => {
-            const hasPlayedMusic = sessionStorage.getItem('welcomeMusicPlayed');
+            const hasPlayedMusic = localStorage.getItem('welcomeMusicPlayedEver');
             if (!hasPlayedMusic) {
                 const audio = new Audio('/sounds/indastreet.mp3');
                 audio.volume = 0.5; // Set volume to 50%
@@ -81,7 +81,7 @@ const App = () => {
                     playPromise
                         .then(() => {
                             console.log('🎵 Welcome music playing');
-                            sessionStorage.setItem('welcomeMusicPlayed', 'true');
+                            localStorage.setItem('welcomeMusicPlayedEver', 'true');
                         })
                         .catch((error) => {
                             // Autoplay was prevented, will try on first user interaction
@@ -89,7 +89,7 @@ const App = () => {
                             const playOnInteraction = () => {
                                 audio.play().then(() => {
                                     console.log('🎵 Welcome music playing after user interaction');
-                                    sessionStorage.setItem('welcomeMusicPlayed', 'true');
+                                    localStorage.setItem('welcomeMusicPlayedEver', 'true');
                                 }).catch(() => {});
                                 document.removeEventListener('click', playOnInteraction);
                                 document.removeEventListener('touchstart', playOnInteraction);
@@ -309,9 +309,6 @@ const App = () => {
         setIsBookingPopupOpen(true);
     };
 
-    // Make booking popup available globally
-    (window as any).openBookingPopup = handleOpenBookingPopup;
-
     // Global booking status tracker handler
     const handleOpenBookingStatusTracker = (statusInfo: {
         bookingId: string;
@@ -324,9 +321,6 @@ const App = () => {
         setBookingStatusInfo(statusInfo);
         setIsStatusTrackerOpen(true);
     };
-
-    // Make status tracker available globally
-    (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
 
     // Global schedule booking handler
     const handleOpenScheduleBookingPopup = (bookingInfo: {
@@ -344,8 +338,20 @@ const App = () => {
         setIsScheduleBookingOpen(true);
     };
 
-    // Make schedule booking available globally
-    (window as any).openScheduleBookingPopup = handleOpenScheduleBookingPopup;
+    // Register global booking functions in useEffect to ensure they're available
+    useEffect(() => {
+        console.log('📱 Registering global booking functions...');
+        (window as any).openBookingPopup = handleOpenBookingPopup;
+        (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
+        (window as any).openScheduleBookingPopup = handleOpenScheduleBookingPopup;
+        
+        return () => {
+            // Cleanup on unmount
+            delete (window as any).openBookingPopup;
+            delete (window as any).openBookingStatusTracker;
+            delete (window as any).openScheduleBookingPopup;
+        };
+    }, []);
 
     const handleFindNewTherapist = () => {
         setIsStatusTrackerOpen(false);

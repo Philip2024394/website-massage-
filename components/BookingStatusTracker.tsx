@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 import { Clock, CheckCircle, XCircle, AlertTriangle, Search, User, MessageCircle } from 'lucide-react';
 import { showToast } from '../utils/showToastPortal';
+import { databases, client } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 interface BookingStatusTrackerProps {
   isOpen: boolean;
@@ -101,6 +103,61 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
 
     return () => clearInterval(interval);
   }, [isOpen, responseDeadline, status]);
+
+  // Real-time subscription to booking status changes
+  useEffect(() => {
+    if (!isOpen || !bookingId) return;
+
+    const unsubscribe = client.subscribe(
+      `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings}.documents.${bookingId}`,
+      (response: any) => {
+        console.log('📡 Booking status update received:', response);
+        
+        const updatedBooking = response.payload;
+        
+        if (updatedBooking.status === 'confirmed') {
+          // Therapist accepted
+          setStatus('confirmed');
+          stopContinuousNotifications(bookingId);
+          playNotificationSound('success');
+          showToast(`${therapistName} has accepted your booking!`, 'success');
+          
+          // Show browser notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Booking Confirmed!', {
+              body: `${therapistName} has accepted your booking.`,
+              icon: '/logo.png'
+            });
+          }
+        } else if (updatedBooking.status === 'rejected' || updatedBooking.status === 'expired') {
+          // Therapist rejected or booking expired
+          setStatus('searching');
+          playNotificationSound('alert');
+          showToast('Finding another therapist...', 'warning');
+          
+          // Show browser notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Searching for Therapist', {
+              body: 'Looking for another available therapist for you.',
+              icon: '/logo.png'
+            });
+          }
+          
+          // Trigger auto-reassignment (will be handled by backend/service)
+          simulateTherapistAcceptance();
+        }
+      }
+    );
+
+    // Request notification permission if not granted
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    return () => {
+      unsubscribe();
+    };
+  }, [isOpen, bookingId, therapistName]);
 
   // Searching animation effect
   useEffect(() => {
