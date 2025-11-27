@@ -124,7 +124,7 @@ export const useAppState = () => {
   };
 
   const [language, _setLanguage] = useState<Language>(() => {
-    const storedLang = getFromLocalStorage('app_language', 'en');
+    const storedLang = getFromLocalStorage('app_language', 'id'); // Default to Indonesian
     console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
     return storedLang;
   });

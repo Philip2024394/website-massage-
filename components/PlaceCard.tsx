@@ -6,6 +6,7 @@ interface PlaceCardProps {
     onClick: () => void;
     onRate: (place: Place) => void;
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
+    _t?: any; // Translation object for detecting language
 }
 
 const LocationPinIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -21,8 +22,24 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDiscount }) => {
+const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDiscount, _t }) => {
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    
+    // Detect language from translations object
+    const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
+    
+    // Get translated description based on current language
+    const getTranslatedDescription = () => {
+        if (currentLanguage === 'id') {
+            // Try Indonesian translation first, fallback to base description
+            return (place as any).description_id || place.description || '';
+        } else {
+            // Try English translation first, fallback to base description
+            return (place as any).description_en || place.description || '';
+        }
+    };
+    
+    const translatedDescription = getTranslatedDescription();
     
     // Countdown timer for active discount
     useEffect(() => {
@@ -167,7 +184,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                         <span>{place.distance}km</span>
                     </div>
                 </div>
-                <p className="mt-1 text-gray-500 text-sm truncate pl-12">{place.description}</p>
+                <p className="mt-1 text-gray-500 text-sm truncate pl-12">{translatedDescription}</p>
 
                 {/* Languages Spoken */}
                 {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (

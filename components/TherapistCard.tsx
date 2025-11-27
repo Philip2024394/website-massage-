@@ -183,9 +183,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Helper function to calculate dynamic spacing based on description length
     const getDynamicSpacing = (longSpacing: string, mediumSpacing: string, shortSpacing: string) => {
-        const description = therapist.description || 
-            `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`;
-        const descriptionLength = description.length;
+        const descriptionLength = translatedDescription.length;
         
         // If description is short (less than 200 chars), use minimum spacing  
         if (descriptionLength < 200) return shortSpacing;
@@ -197,6 +195,21 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
     // Detect language from translations object
     const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
+
+    // Get translated description based on current language
+    const getTranslatedDescription = () => {
+        const fallbackDesc = `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`;
+        
+        if (currentLanguage === 'id') {
+            // Try Indonesian translation first, fallback to base description, then fallback text
+            return therapist.description_id || therapist.description || fallbackDesc;
+        } else {
+            // Try English translation first, fallback to base description, then fallback text
+            return therapist.description_en || therapist.description || fallbackDesc;
+        }
+    };
+
+    const translatedDescription = getTranslatedDescription();
 
     // Location parsing for display (show city / first segment)
     const locationCity = therapist.location ? String(therapist.location).split(',')[0].trim() : '';
@@ -873,11 +886,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
             
-            {/* Therapist Bio - Use actual therapist description or fallback - Expanded for 350 characters */}
+            {/* Therapist Bio - Use translated description based on language - Expanded for 350 characters */}
             <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
-                    {therapist.description || 
-                     `Certified massage therapist with ${therapist.yearsOfExperience || 5}+ years experience. Specialized in therapeutic and relaxation techniques. Available for home, hotel, and villa services. Professional, licensed, and highly rated by clients for exceptional service quality.`}
+                    {translatedDescription}
                 </p>
             </div>
 

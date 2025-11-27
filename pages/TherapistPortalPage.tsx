@@ -308,6 +308,34 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         coordinates: savedTherapist.coordinates
       });
 
+      // Auto-translate profile data to both languages
+      console.log('🌐 Auto-translating profile data...');
+      try {
+        const { adminTranslationService } = await import('../lib/translationService');
+        
+        // Detect if the user entered data in Indonesian or English
+        const sourceLanguage = description.match(/[a-zA-Z]/) ? 'en' : 'id';
+        
+        const translationResult = await adminTranslationService.translateAndSaveTherapistData(
+          String(therapist.$id || therapist.id),
+          {
+            description: description.trim(),
+            massageTypes: selectedMassageTypes.join(', '),
+            location: addressInput.trim(),
+            name: name.trim()
+          },
+          sourceLanguage
+        );
+        
+        if (translationResult.success) {
+          console.log('✅ Auto-translation completed successfully');
+        } else {
+          console.warn('⚠️ Auto-translation failed:', translationResult.error);
+        }
+      } catch (translationError) {
+        console.error('❌ Translation error (non-blocking):', translationError);
+      }
+
       // Fire refresh event
       console.log('🔔 Dispatching refreshTherapistData event...');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-updated' }));
