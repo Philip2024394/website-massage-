@@ -1196,7 +1196,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     <div 
                                         className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg cursor-pointer hover:border-orange-400 transition-all bg-gray-100 relative"
                                         onClick={() => {
-                                            const input = document.getElementById('profile-picture-upload-input') as HTMLInputElement;
+                                            const input = document.getElementById('profile-picture-upload') as HTMLInputElement;
                                             if (input) input.click();
                                         }}
                                     >
@@ -1245,7 +1245,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 </div>
                                 <button
                                     onClick={() => {
-                                        const input = document.getElementById('profile-picture-upload-input') as HTMLInputElement;
+                                        const input = document.getElementById('profile-picture-upload') as HTMLInputElement;
                                         if (input) input.click();
                                     }}
                                     className="inline-flex items-center gap-2 px-4 py-2 mt-4 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-md"
