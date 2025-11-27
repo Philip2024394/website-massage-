@@ -274,7 +274,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setMassageTypes(typeof massageTypesRaw === 'string' ? JSON.parse(massageTypesRaw) : massageTypesRaw || []);
             
             // Parse languages - handle both JSON string and array
-            const languagesRaw = (placeData as any).languagesspoken || placeData.languages;
+            const languagesRaw = placeData.languages || (placeData as any).languagesspoken;
             setLanguages(typeof languagesRaw === 'string' ? JSON.parse(languagesRaw) : languagesRaw || []);
             
             // Parse additional services - handle both JSON string and array
@@ -522,7 +522,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Services
             massagetypes: JSON.stringify(massageTypes),
-            languagesspoken: JSON.stringify(languages),
+            languages: JSON.stringify(languages),
             additionalservices: JSON.stringify(additionalServices),
             
             // Website information (using lowercase to match Appwrite schema)
@@ -544,7 +544,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📦 Sanitized Data Keys:', Object.keys(saveData));
         console.log('📦 Sanitized mainimage:', (saveData as any).mainimage);
         console.log('📦 Sanitized massagetypes:', (saveData as any).massagetypes);
-        console.log('📦 Sanitized languagesspoken:', (saveData as any).languagesspoken);
+        console.log('📦 Sanitized languages:', (saveData as any).languages);
         console.log('📦 Sanitized additionalservices:', (saveData as any).additionalservices);
 
         onSave(saveData);
