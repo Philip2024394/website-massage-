@@ -278,7 +278,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setLanguages(typeof languagesRaw === 'string' ? JSON.parse(languagesRaw) : languagesRaw || []);
             
             // Parse additional services - handle both JSON string and array
-            const servicesRaw = (placeData as any).additionalservices || placeData.additionalServices;
+            const servicesRaw = placeData.additionalServices || (placeData as any).additionalservices;
             setAdditionalServices(typeof servicesRaw === 'string' ? JSON.parse(servicesRaw) : servicesRaw || []);
         } catch (_e) {
             console.error('Error parsing place data:', _e);
@@ -523,7 +523,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Services
             massagetypes: JSON.stringify(massageTypes),
             languages: JSON.stringify(languages),
-            additionalservices: JSON.stringify(additionalServices),
+            additionalServices: JSON.stringify(additionalServices),
             
             // Website information (using lowercase to match Appwrite schema)
             websiteurl: websiteUrl || '',
@@ -545,7 +545,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📦 Sanitized mainimage:', (saveData as any).mainimage);
         console.log('📦 Sanitized massagetypes:', (saveData as any).massagetypes);
         console.log('📦 Sanitized languages:', (saveData as any).languages);
-        console.log('📦 Sanitized additionalservices:', (saveData as any).additionalservices);
+        console.log('📦 Sanitized additionalServices:', (saveData as any).additionalServices);
 
         onSave(saveData);
 
