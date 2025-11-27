@@ -559,14 +559,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                                 className="flex items-center justify-center gap-2 py-2.5 px-4 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition-colors shadow-lg"
                             >
                                 <Bike className="w-4 h-4" />
-                                <span>Bike Ride</span>
+                                <span>Bike</span>
                             </button>
                             <button
                                 onClick={() => alert('This feature is in development and coming soon.')}
                                 className="flex items-center justify-center gap-2 py-2.5 px-4 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition-colors shadow-lg"
                             >
                                 <Car className="w-4 h-4" />
-                                <span>Car Taxi</span>
+                                <span>Car</span>
                             </button>
                         </div>
                         </div>
