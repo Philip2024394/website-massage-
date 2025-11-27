@@ -133,14 +133,25 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onIm
         <div className={className}>
             <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
             <div
-                className={`w-full ${heightClass} border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-center text-gray-500 cursor-pointer hover:border-brand-green hover:text-brand-green transition-colors bg-gray-50`}
+                className={`relative w-full ${heightClass} border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-center text-gray-500 cursor-pointer hover:border-brand-green hover:text-brand-green transition-colors bg-gray-50 group`}
                 onClick={triggerFileInput}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && triggerFileInput()}
                 role="button"
                 tabIndex={0}
             >
                 {preview && preview.length > 0 ? (
-                    <img src={preview} alt="Preview" className={imageClassName || "w-full h-full object-cover rounded-lg"} />
+                    <>
+                        <img src={preview} alt="Preview" className={imageClassName || "w-full h-full object-cover rounded-lg"} />
+                        {/* Upload button overlay - visible on hover */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                            <div className="bg-white rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
+                                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span className="text-sm font-semibold text-gray-900">Change Image</span>
+                            </div>
+                        </div>
+                    </>
                 ) : (
                     <div className="flex flex-col items-center">
                         <UploadIcon className="w-8 h-8 mb-1" />

@@ -1075,17 +1075,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             currentImage={mainImage}
                             onImageChange={setMainImage}
                         />
-                        {!mainImage && (
-                            <label 
-                                htmlFor="main-image-upload-input"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-pointer shadow-md"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                Upload Main Image
-                            </label>
-                        )}
                         
                         {/* Profile Picture Upload (Circular Logo) */}
                         <div className="mb-6">
@@ -1202,15 +1191,50 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             )}
                             
                             <div className="flex flex-col items-center">
-                                <div className="relative">
-                                    <ImageUpload
-                                        id="profile-picture-upload"
-                                        label=""
-                                        currentImage={profilePicture}
-                                        onImageChange={handleProfilePictureChange}
-                                        heightClass="h-40 w-40 rounded-full mx-auto border-4 border-orange-200 shadow-lg hover:border-orange-300 transition-all overflow-hidden"
-                                        imageClassName="rounded-full object-cover"
-                                    />
+                                <div className="relative group">
+                                    {/* Circular profile picture container */}
+                                    <div 
+                                        className="w-32 h-32 rounded-full overflow-hidden border-4 border-orange-200 shadow-lg cursor-pointer hover:border-orange-400 transition-all bg-gray-100 relative"
+                                        onClick={() => {
+                                            const input = document.getElementById('profile-picture-upload-input') as HTMLInputElement;
+                                            if (input) input.click();
+                                        }}
+                                    >
+                                        {profilePicture ? (
+                                            <>
+                                                <img 
+                                                    src={profilePicture} 
+                                                    alt="Profile" 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                {/* Upload overlay on hover */}
+                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <div className="text-center">
+                                                        <svg className="w-8 h-8 text-white mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                                        </svg>
+                                                        <span className="text-white text-xs font-semibold">Change</span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                                <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                                <span className="text-xs mt-1">Upload</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {/* Hidden ImageUpload component for file handling */}
+                                    <div className="hidden">
+                                        <ImageUpload
+                                            id="profile-picture-upload"
+                                            label=""
+                                            currentImage={profilePicture}
+                                            onImageChange={handleProfilePictureChange}
+                                        />
+                                    </div>
                                     {profilePicture && (
                                         <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
                                             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -1219,17 +1243,18 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         </div>
                                     )}
                                 </div>
-                                {!profilePicture && (
-                                    <label 
-                                        htmlFor="profile-picture-upload-input"
-                                        className="inline-flex items-center gap-2 px-4 py-2 mt-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors cursor-pointer shadow-md"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                        Upload Profile Picture
-                                    </label>
-                                )}
+                                <button
+                                    onClick={() => {
+                                        const input = document.getElementById('profile-picture-upload-input') as HTMLInputElement;
+                                        if (input) input.click();
+                                    }}
+                                    className="inline-flex items-center gap-2 px-4 py-2 mt-4 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-md"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    {profilePicture ? 'Change Profile Picture' : 'Upload Profile Picture'}
+                                </button>
                                 <p className="text-xs text-gray-500 mt-3 text-center max-w-xs">
                                     This will appear as a circular logo overlapping your banner image
                                 </p>
