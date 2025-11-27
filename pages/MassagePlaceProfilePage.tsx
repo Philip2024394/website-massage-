@@ -503,7 +503,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
 
                 {/* Amenities Section */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[250px] max-w-full">
                     {/* Background Image - Full Coverage */}
                     <div className="absolute inset-0">
                         <img
@@ -514,14 +514,14 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                     
                     {/* Content - Text directly on background */}
-                    <div className="relative z-10 p-6 max-w-full overflow-hidden">
-                        <h3 className="text-3xl font-bold text-black mb-2 drop-shadow-2xl text-center">Amenities</h3>
-                        <p className="text-sm text-gray-700 mb-6 text-center drop-shadow-lg">Additional services provided during your massage session</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-full">
+                    <div className="relative z-10 p-4 max-w-full overflow-hidden">
+                        <h3 className="text-2xl font-bold text-black mb-1 drop-shadow-2xl text-center">Amenities</h3>
+                        <p className="text-xs text-gray-700 mb-4 text-center drop-shadow-lg">Additional services provided during your massage session</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-full">
                             {Array.isArray(amenities) && amenities.map((amenity, index) => (
-                                <div key={index} className="flex items-center gap-4 p-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40 hover:border-orange-500/60 transition-all hover:shadow-lg">
-                                    <span className="text-3xl drop-shadow-lg">{getAmenityIcon(amenity)}</span>
-                                    <span className="font-bold text-lg text-orange-600 drop-shadow-lg">{amenity}</span>
+                                <div key={index} className="flex items-center gap-3 p-3 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40 hover:border-orange-500/60 transition-all hover:shadow-lg">
+                                    <span className="text-2xl drop-shadow-lg">{getAmenityIcon(amenity)}</span>
+                                    <span className="font-semibold text-base text-orange-600 drop-shadow-lg">{amenity}</span>
                                 </div>
                             ))}
                         </div>

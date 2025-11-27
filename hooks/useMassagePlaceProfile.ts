@@ -89,11 +89,14 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
 
     // Amenities - use place's additional services if available, otherwise use defaults
     const amenities = useMemo(() => {
-        if (place?.additionalServices) {
+        // Check for additionalServices field (can be string or array)
+        const additionalServicesData = (place as any)?.additionalServices;
+        
+        if (additionalServicesData) {
             // Handle if additionalServices is a string (from Appwrite) - parse it
-            if (typeof place.additionalServices === 'string') {
+            if (typeof additionalServicesData === 'string' && additionalServicesData.trim() !== '' && additionalServicesData !== '[]') {
                 try {
-                    const parsed = JSON.parse(place.additionalServices);
+                    const parsed = JSON.parse(additionalServicesData);
                     if (Array.isArray(parsed) && parsed.length > 0) {
                         return parsed;
                     }
@@ -102,8 +105,8 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
                 }
             }
             // If it's already an array, use it
-            if (Array.isArray(place.additionalServices) && place.additionalServices.length > 0) {
-                return place.additionalServices;
+            if (Array.isArray(additionalServicesData) && additionalServicesData.length > 0) {
+                return additionalServicesData;
             }
         }
         return [
@@ -112,7 +115,7 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
             'Comfortable Environment',
             'Quality Service'
         ];
-    }, [place?.additionalServices]);
+    }, [place]);
 
     // Gallery images - use place's gallery if available, otherwise use defaults
     const galleryImages = useMemo((): GalleryImage[] => {
