@@ -1172,6 +1172,7 @@ export const placeService = {
                     ...p,
                     // Map lowercase Appwrite attributes to camelCase
                     mainImage: (p as any).mainimage || p.mainImage,
+                    profilePicture: (p as any).profilePicture || p.profilePicture,
                     galleryImages: parsedGalleryImages,
                     openingTime: (p as any).openingtime || p.openingTime,
                     closingTime: (p as any).closingtime || p.closingTime,
@@ -1254,6 +1255,7 @@ export const placeService = {
             return {
                 ...response,
                 mainImage: (response as any).mainimage || response.mainImage,
+                profilePicture: (response as any).profilePicture || response.profilePicture,
                 galleryImages: parsedGalleryImages,
                 openingTime: (response as any).openingtime || response.openingTime,
                 closingTime: (response as any).closingtime || response.closingTime,
