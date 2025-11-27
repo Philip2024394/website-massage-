@@ -174,6 +174,15 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                 )}
             </div>
             
+            {/* Circular Profile Picture - Overlapping main image */}
+            <div className="absolute top-32 left-4 w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                <img 
+                    src={place.profilePicture || place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} 
+                    alt={`${place.name} logo`}
+                    className="w-full h-full object-cover"
+                />
+            </div>
+            
             {/* Content Section with padding-top and padding-left to account for overlapping profile image */}
             <div className="p-4 pt-8">
                 {/* Name and Distance - Positioned to the right of profile picture */}
