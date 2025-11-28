@@ -127,6 +127,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     ]);
     const [contactNumber, setContactNumber] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
+    const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
+    const [useSamePricing, setUseSamePricing] = useState(true);
     const [discountPercentage, setDiscountPercentage] = useState<number>(0);
     const [discountDuration, setDiscountDuration] = useState<number>(24); // hours
     const [isDiscountActive, setIsDiscountActive] = useState<boolean>(false);
@@ -169,6 +171,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     // Validation popup state
     const [showValidationPopup, setShowValidationPopup] = useState(false);
     const [validationMissingFields, setValidationMissingFields] = useState<string[]>([]);
+    
+    // Toast notification state
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const locationInputRef = useRef<HTMLInputElement>(null);
 
@@ -1740,7 +1745,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     try {
                                         const endTime = new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString();
                                         
-                                        await placeService.update(placeId, {
+                                        await placeService.update(String(placeId), {
                                             discountpercentage: discountPercentage,
                                             discountduration: discountDuration,
                                             isdiscountactive: true,
@@ -1787,7 +1792,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                             type="button"
                                             onClick={async () => {
                                                 try {
-                                                    await placeService.update(placeId, {
+                                                    await placeService.update(String(placeId), {
                                                         isdiscountactive: false,
                                                         discountendtime: ''
                                                     });

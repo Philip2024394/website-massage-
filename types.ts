@@ -348,6 +348,10 @@ export interface Place {
     profilePicture?: string; // Logo/profile image
     additionalServices?: string[]; // Selected additional services/amenities
     
+    // Contact and business information
+    contactNumber?: string; // Contact phone number
+    yearsEstablished?: number; // Years in business (1-50)
+    
     // Discount system fields
     discountDuration?: number; // Duration in hours for discount period
     discountEndTime?: string; // ISO string for when discount ends
