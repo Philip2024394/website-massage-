@@ -17,21 +17,20 @@ export type NotificationSoundType = 'booking' | 'message' | 'alert' | 'success';
 
 export const soundNotificationService = {
     /**
-     * Get sound notification preference from localStorage
-     * @returns true if sounds are enabled, false otherwise
+     * Get sound notification preference
+     * @returns Always true - sound notifications are mandatory for active members
      */
     getSoundPreference(): boolean {
-        const pref = localStorage.getItem('notification_sound_enabled');
-        return pref === null ? true : pref === 'true'; // Default: enabled
+        return true; // Always enabled for all active members
     },
 
     /**
      * Set sound notification preference
-     * @param enabled true to enable sounds, false to disable
+     * @param enabled Ignored - sounds are always enabled for active members
      */
     setSoundPreference(enabled: boolean): void {
-        localStorage.setItem('notification_sound_enabled', enabled.toString());
-        console.log(`🔊 Sound notifications ${enabled ? 'enabled' : 'disabled'}`);
+        // No-op: Sound notifications cannot be disabled for active members
+        console.log(`🔊 Sound notifications are always enabled for active members`);
     },
 
     /**
