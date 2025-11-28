@@ -86,16 +86,31 @@ const App = () => {
                         .catch((error) => {
                             // Autoplay was prevented, will try on first user interaction
                             console.log('🎵 Welcome music autoplay prevented, will play on user interaction');
-                            const playOnInteraction = () => {
+                            const playOnInteraction = (e: Event) => {
+                                // Only play on non-functional clicks (not buttons, links, inputs, or interactive elements)
+                                const target = e.target as HTMLElement;
+                                if (
+                                    target.closest('button') ||
+                                    target.closest('a') ||
+                                    target.closest('input') ||
+                                    target.closest('select') ||
+                                    target.closest('textarea') ||
+                                    target.closest('[role="button"]') ||
+                                    target.closest('.interactive')
+                                ) {
+                                    // Skip music for functional elements
+                                    return;
+                                }
+                                
                                 audio.play().then(() => {
                                     console.log('🎵 Welcome music playing after user interaction');
                                     localStorage.setItem('welcomeMusicPlayedEver', 'true');
+                                    document.removeEventListener('click', playOnInteraction);
+                                    document.removeEventListener('touchstart', playOnInteraction);
                                 }).catch(() => {});
-                                document.removeEventListener('click', playOnInteraction);
-                                document.removeEventListener('touchstart', playOnInteraction);
                             };
-                            document.addEventListener('click', playOnInteraction, { once: true });
-                            document.addEventListener('touchstart', playOnInteraction, { once: true });
+                            document.addEventListener('click', playOnInteraction);
+                            document.addEventListener('touchstart', playOnInteraction);
                         });
                 }
             }
