@@ -134,6 +134,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [location, setLocation] = useState('');
     const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
+    const [yearsEstablished, setYearsEstablished] = useState<number>(1);
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
@@ -280,6 +281,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Parse additional services - handle both JSON string and array
             const servicesRaw = placeData.additionalServices || (placeData as any).additionalservices;
             setAdditionalServices(typeof servicesRaw === 'string' ? JSON.parse(servicesRaw) : servicesRaw || []);
+            
+            setYearsEstablished((placeData as any).yearsEstablished || placeData.yearsEstablished || 1);
         } catch (_e) {
             console.error('Error parsing place data:', _e);
         }
@@ -524,6 +527,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             massagetypes: JSON.stringify(massageTypes),
             languages: JSON.stringify(languages),
             additionalServices: JSON.stringify(additionalServices),
+            yearsEstablished: Number(yearsEstablished) || 1,
             
             // Website information
             websiteUrl: websiteUrl || '',
@@ -1411,6 +1415,25 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 </div>
                             </div>
                         </div>
+                        
+                        {/* Years Established */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Years Established (1-50)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="50"
+                                value={yearsEstablished}
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 1;
+                                    setYearsEstablished(Math.min(50, Math.max(1, val)));
+                                }}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-gray-900"
+                                placeholder="Enter years (1-50)"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">How many years has your business been operating?</p>
+                        </div>
+                        
                         <div>
                             <label className="block text-sm font-medium text-gray-900">
                                 {t?.massageTypesLabel || 'Massage Types'}
