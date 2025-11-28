@@ -69,55 +69,69 @@ const App = () => {
         // localStorage disabled: skip cleanupLocalStorage()
         
         // Play welcome music only once ever (not per session)
-        const playWelcomeMusic = () => {
-            const hasPlayedMusic = localStorage.getItem('welcomeMusicPlayedEver');
-            if (!hasPlayedMusic) {
-                const audio = new Audio('/sounds/indastreet.mp3');
-                audio.volume = 0.5; // Set volume to 50%
-                
-                // Play with user interaction fallback
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise
-                        .then(() => {
-                            console.log('🎵 Welcome music playing');
+        const hasPlayedMusic = localStorage.getItem('welcomeMusicPlayedEver');
+        if (hasPlayedMusic) {
+            console.log('🎵 Welcome music already played, skipping');
+            return; // Exit early if music was already played
+        }
+
+        const audio = new Audio('/sounds/indastreet.mp3');
+        audio.volume = 0.5; // Set volume to 50%
+        
+        let cleanupListeners: (() => void) | null = null;
+
+        // Play with user interaction fallback
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    console.log('🎵 Welcome music playing');
+                    localStorage.setItem('welcomeMusicPlayedEver', 'true');
+                })
+                .catch((error) => {
+                    // Autoplay was prevented, will try on first user interaction
+                    console.log('🎵 Welcome music autoplay prevented, will play on user interaction');
+                    const playOnInteraction = (e: Event) => {
+                        // Only play on non-functional clicks (not buttons, links, inputs, or interactive elements)
+                        const target = e.target as HTMLElement;
+                        if (
+                            target.closest('button') ||
+                            target.closest('a') ||
+                            target.closest('input') ||
+                            target.closest('select') ||
+                            target.closest('textarea') ||
+                            target.closest('[role="button"]') ||
+                            target.closest('.interactive')
+                        ) {
+                            // Skip music for functional elements
+                            return;
+                        }
+                        
+                        audio.play().then(() => {
+                            console.log('🎵 Welcome music playing after user interaction');
                             localStorage.setItem('welcomeMusicPlayedEver', 'true');
-                        })
-                        .catch((error) => {
-                            // Autoplay was prevented, will try on first user interaction
-                            console.log('🎵 Welcome music autoplay prevented, will play on user interaction');
-                            const playOnInteraction = (e: Event) => {
-                                // Only play on non-functional clicks (not buttons, links, inputs, or interactive elements)
-                                const target = e.target as HTMLElement;
-                                if (
-                                    target.closest('button') ||
-                                    target.closest('a') ||
-                                    target.closest('input') ||
-                                    target.closest('select') ||
-                                    target.closest('textarea') ||
-                                    target.closest('[role="button"]') ||
-                                    target.closest('.interactive')
-                                ) {
-                                    // Skip music for functional elements
-                                    return;
-                                }
-                                
-                                audio.play().then(() => {
-                                    console.log('🎵 Welcome music playing after user interaction');
-                                    localStorage.setItem('welcomeMusicPlayedEver', 'true');
-                                    document.removeEventListener('click', playOnInteraction);
-                                    document.removeEventListener('touchstart', playOnInteraction);
-                                }).catch(() => {});
-                            };
-                            document.addEventListener('click', playOnInteraction);
-                            document.addEventListener('touchstart', playOnInteraction);
-                        });
-                }
+                            document.removeEventListener('click', playOnInteraction);
+                            document.removeEventListener('touchstart', playOnInteraction);
+                        }).catch(() => {});
+                    };
+                    
+                    document.addEventListener('click', playOnInteraction);
+                    document.addEventListener('touchstart', playOnInteraction);
+                    
+                    // Store cleanup function
+                    cleanupListeners = () => {
+                        document.removeEventListener('click', playOnInteraction);
+                        document.removeEventListener('touchstart', playOnInteraction);
+                    };
+                });
+        }
+
+        // Cleanup function to remove event listeners when component unmounts
+        return () => {
+            if (cleanupListeners) {
+                cleanupListeners();
             }
         };
-        
-        // Play welcome music after a short delay to ensure page is ready
-        setTimeout(playWelcomeMusic, 500);
         
         // 🔧 FIX: Initialize Appwrite SDK and make it globally available
         const initializeAppwriteSession = async () => {
