@@ -661,7 +661,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome}
                 onNavigateToTherapistLogin={handleNavigateToTherapistLogin}
                 onNavigateToMassagePlaceLogin={handleNavigateToMassagePlaceLogin}
-                t={t}
+                t={t.joinIndastreet || t}
             />;
 
         case 'therapistProfile':

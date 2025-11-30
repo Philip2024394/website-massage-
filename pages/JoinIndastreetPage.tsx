@@ -118,8 +118,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                 <h4 className="text-2xl font-bold text-gray-900 mb-6">{t.platformFeaturesTitle}</h4>
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/user-male-circle.png" alt="profile" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/user-male-circle.png" alt="profile" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature1Title}</p>
@@ -127,8 +127,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/bell.png" alt="notification" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/bell.png" alt="notification" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature2Title}</p>
@@ -136,8 +136,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/star.png" alt="reviews" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-purple-400 to-purple-600 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/star.png" alt="reviews" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature3Title}</p>
@@ -145,8 +145,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-green-400 to-green-600 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/iphone.png" alt="mobile" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-green-400 to-green-600 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/smartphone-tablet.png" alt="mobile" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature4Title}</p>
@@ -154,8 +154,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-pink-400 to-pink-600 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/hotel-building.png" alt="hotel" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-pink-400 to-pink-600 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/hotel.png" alt="hotel" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature5Title}</p>
@@ -163,8 +163,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 shadow-lg flex items-center justify-center">
-                                            <img src="https://img.icons8.com/3d-fluency/94/money-bag.png" alt="earnings" className="w-8 h-8" />
+                                        <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br from-teal-400 to-teal-600 shadow-lg flex items-center justify-center p-2">
+                                            <img src="https://img.icons8.com/3d-fluency/94/money-bag.png" alt="earnings" className="w-full h-full object-contain" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900">{t.feature6Title}</p>
@@ -259,8 +259,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         />
                                     </div>
                                     <div className="relative z-10 p-6 bg-gradient-to-t from-orange-50/95 via-orange-50/80 to-transparent min-h-[250px] flex flex-col justify-end">
-                                        <div className="text-3xl font-black text-black mb-3">{t.ctaTherapistTitle}</div>
-                                        <div className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 rounded-full text-base transition-colors w-fit">
+                                        <div className="text-xl font-black text-black mb-2">{t.ctaTherapistTitle}</div>
+                                        <div className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-colors w-fit">
                                             {t.ctaTherapistButton}
                                         </div>
                                     </div>
@@ -277,8 +277,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                         />
                                     </div>
                                     <div className="relative z-10 p-6 bg-gradient-to-t from-orange-50/95 via-orange-50/80 to-transparent min-h-[250px] flex flex-col justify-end">
-                                        <div className="text-3xl font-black text-black mb-3">{t.ctaSpaTitle}</div>
-                                        <div className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-5 rounded-full text-base transition-colors w-fit">
+                                        <div className="text-xl font-black text-black mb-2">{t.ctaSpaTitle}</div>
+                                        <div className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-colors w-fit">
                                             {t.ctaSpaButton}
                                         </div>
                                     </div>
