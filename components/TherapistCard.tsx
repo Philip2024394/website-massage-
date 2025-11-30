@@ -141,7 +141,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
     const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
-    // Orders count sourced from persisted analytics JSON (starts at 15 for new members)
+    // Orders count sourced from persisted analytics JSON or actual bookings
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
             if (therapist.analytics) {
@@ -149,18 +149,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 if (parsed && typeof parsed.bookings === 'number') return parsed.bookings;
             }
         } catch {}
-        return 15;
+        return 0;
     });
 
     // Fallback: derive bookings count from bookings collection if analytics not populated
     useEffect(() => {
         const loadBookingsCount = async () => {
-            if (bookingsCount > 0) return; // already have analytics value
             try {
                 const providerId = String((therapist as any).id || (therapist as any).$id || '');
                 if (!providerId) return;
                 const bookingDocs = await bookingService.getByProvider(providerId, 'therapist');
-                if (Array.isArray(bookingDocs) && bookingDocs.length > 0) {
+                if (Array.isArray(bookingDocs)) {
                     setBookingsCount(bookingDocs.length);
                 }
             } catch (e) {
@@ -168,7 +167,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         };
         loadBookingsCount();
-    }, [bookingsCount, therapist]);
+    }, [therapist]);
     const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';

@@ -316,6 +316,21 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                                 </button>
 
                                 <button 
+                                    onClick={() => handleItemClick(undefined, 'joinIndastreet')}
+                                    className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-teal-500 group transform hover:scale-105"
+                                >
+                                    <div className="p-2 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg">
+                                        <Heart className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div className="flex-grow">
+                                        <p className="font-bold text-gray-800 group-hover:text-teal-600 transition-colors">
+                                            🚀 Join Indastreet
+                                        </p>
+                                        <p className="text-xs text-gray-500">Join our massage directory platform</p>
+                                    </div>
+                                </button>
+
+                                <button 
                                     onClick={() => handleItemClick(undefined, 'indastreet-partners')}
                                     className="flex items-center gap-4 w-full text-left p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all border-l-4 border-orange-500 group transform hover:scale-105"
                                 >

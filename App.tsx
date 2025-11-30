@@ -444,7 +444,7 @@ const App = () => {
                     }}
                     handleIncrementAnalytics={() => Promise.resolve()}
                     handleNavigateToHotelLogin={() => {}}
-                    handleNavigateToMassagePlaceLogin={() => {}}
+                    handleNavigateToMassagePlaceLogin={navigation?.handleNavigateToMassagePlaceLogin || (() => {})}
                     handleNavigateToServiceTerms={navigation?.handleNavigateToServiceTerms || (() => {})}
                     handleNavigateToPrivacyPolicy={navigation?.handleNavigateToPrivacyPolicy || (() => {})}
                     handleBackToHome={navigation?.handleBackToHome || (() => {})}

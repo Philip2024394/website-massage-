@@ -78,7 +78,6 @@ const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/Dee
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-const HotelVillaMenuPage = React.lazy(() => import('./pages/HotelVillaMenuPage'));
 const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
 // Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
@@ -328,32 +327,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         };
     }, [page, loggedInProvider]);
     
-    // Capture affiliate code once on router mount
-    React.useEffect(() => {
-        (async () => {
-            try {
-                const { captureFromUrl } = await import('./lib/affiliateAttribution');
-                captureFromUrl();
-            } catch {}
-        })();
-    }, []);
 
-    // Track affiliate click if code present (URL or captured)
-    React.useEffect(() => {
-        (async () => {
-            try {
-                const { getCode } = await import('./lib/affiliateAttribution');
-                const codeFromUrl = new URLSearchParams(globalThis.location?.search || '').get('aff');
-                const code = codeFromUrl || getCode();
-                if (code) {
-                    const { affiliateAnalyticsService } = await import('./lib/affiliateAnalyticsService');
-                    await affiliateAnalyticsService.trackClick(code, globalThis.location?.pathname || '/', document.referrer);
-                }
-            } catch {}
-        })();
-        // Run only on first mount; downstream navigation within SPA won't change search
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     // Restore provider from sessionStorage on mount (since localStorage is disabled)
     React.useEffect(() => {

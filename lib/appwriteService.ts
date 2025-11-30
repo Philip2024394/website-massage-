@@ -2334,13 +2334,6 @@ export const bookingService = {
         hotelRoomNumber?: string;
     }): Promise<any> {
         try {
-            // Capture affiliate code at booking-time (client-side localStorage)
-            let affiliateCode: string | null = null;
-            try {
-                const mod = await import('./affiliateAttribution');
-                affiliateCode = (mod.getCode && mod.getCode()) || null;
-            } catch {}
-
             if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
                 console.warn('⚠️ Bookings collection disabled - simulating booking creation');
                 const mockBooking = {
@@ -2363,22 +2356,6 @@ export const bookingService = {
                     paymentMethod: booking.paymentMethod || 'Unpaid'
                 };
                 console.log('✅ Mock booking created:', mockBooking.$id);
-                // Record attribution if code exists
-                if (affiliateCode) {
-                    try {
-                        const { recordAttribution } = await import('./affiliateService');
-                        await recordAttribution({
-                            bookingId: mockBooking.$id,
-                            providerId: booking.providerId,
-                            providerType: booking.providerType,
-                            providerName: booking.providerName,
-                            affiliateCode,
-                            totalCost: booking.totalCost || 0
-                        });
-                    } catch (e) {
-                        console.warn('Attribution recording failed (mock):', e);
-                    }
-                }
                 return mockBooking;
             }
             
@@ -2413,22 +2390,6 @@ export const bookingService = {
                 }
             );
             console.log('✅ Booking created successfully:', response.$id);
-            // Record attribution if affiliate code present
-            if (affiliateCode) {
-                try {
-                    const { recordAttribution } = await import('./affiliateService');
-                    await recordAttribution({
-                        bookingId: response.$id,
-                        providerId: booking.providerId,
-                        providerType: booking.providerType,
-                        providerName: booking.providerName,
-                        affiliateCode,
-                        totalCost: booking.totalCost || 0
-                    });
-                } catch (e) {
-                    console.warn('Attribution recording failed:', e);
-                }
-            }
             
             // Create notification for provider
             await notificationService.create({
@@ -3494,12 +3455,6 @@ export const hotelVillaBookingService = {
     async createBooking(bookingData: any): Promise<any> {
         try {
             // Capture affiliate code
-            let affiliateCode: string | null = null;
-            try {
-                const mod = await import('./affiliateAttribution');
-                affiliateCode = (mod.getCode && mod.getCode()) || null;
-            } catch {}
-
             const booking = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.hotelBookings,
@@ -3530,27 +3485,6 @@ export const hotelVillaBookingService = {
             );
             
             console.log('✅ Hotel/Villa booking created:', booking.$id);
-            // Record attribution for venue bookings too
-            if (affiliateCode) {
-                try {
-                    const { recordAttribution } = await import('./affiliateService');
-                    await recordAttribution({
-                        bookingId: booking.$id,
-                        providerId: (bookingData.providerId || '').toString(),
-                        providerType: 'therapist',
-                        providerName: bookingData.providerName || '',
-                        affiliateCode,
-                        totalCost: bookingData.price || 0,
-                        venueContext: {
-                            hotelVillaId: bookingData.hotelVillaId || bookingData.hotelId,
-                            hotelVillaName: bookingData.hotelVillaName || bookingData.hotelName,
-                            hotelVillaType: bookingData.hotelVillaType || 'hotel'
-                        }
-                    });
-                } catch (e) {
-                    console.warn('Attribution recording failed (venue):', e);
-                }
-            }
             return booking;
         } catch (error) {
             console.error('Error creating hotel/villa booking:', error);

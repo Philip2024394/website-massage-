@@ -83,7 +83,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
-    // Orders count derived from persisted analytics JSON (starts at 15 for new members)
+    // Orders count derived from persisted analytics JSON or actual bookings
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
             if ((place as any).analytics) {
@@ -91,17 +91,16 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 if (parsed && typeof parsed.bookings === 'number') return parsed.bookings;
             }
         } catch {}
-        return 15;
+        return 0;
     });
 
     useEffect(() => {
         const loadBookingsCount = async () => {
-            if (bookingsCount > 0) return; // analytics already provided
             try {
                 const providerId = String((place as any).id || (place as any).$id || '');
                 if (!providerId) return;
                 const docs = await bookingService.getByProvider(providerId, 'place');
-                if (Array.isArray(docs) && docs.length > 0) {
+                if (Array.isArray(docs)) {
                     setBookingsCount(docs.length);
                 }
             } catch (e) {
@@ -109,7 +108,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             }
         };
         loadBookingsCount();
-    }, [bookingsCount, place]);
+    }, [place]);
     const joinedDateRaw = (place as any).activeMembershipDate || (place as any).membershipStartDate || (place as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';
@@ -428,7 +427,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 <div className="relative w-20 h-20">
                     <img 
                         className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                        src={(place as any).logo || mainImage}
+                        src={(place as any).profilePicture || (place as any).logo || mainImage}
                         alt={place.name}
                         onError={(e) => {
                             e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
