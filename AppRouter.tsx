@@ -84,6 +84,8 @@ import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
 import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
 import QRCodePage from './pages/QRCodePage'; // QR Code sharing page
+const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage')); // Hotel/Villa partner settings
+const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage')); // Join partners landing page
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -434,7 +436,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     
     // Helper for simple pages with just onNavigate
     const renderSimplePage = (Component: React.ComponentType<any>, extraProps: any = {}) => (
-        <Component onNavigate={commonNavigateHandler} {...extraProps} />
+        <Component 
+            onNavigate={commonNavigateHandler} 
+            t={t} 
+            language={activeLanguage}
+            {...portalHandlers}
+            therapists={therapists}
+            places={places}
+            {...extraProps} 
+        />
     );
     
     // Helper for pages with onBack and t props
@@ -661,7 +671,55 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onBack={handleBackToHome}
                 onNavigateToTherapistLogin={handleNavigateToTherapistLogin}
                 onNavigateToMassagePlaceLogin={handleNavigateToMassagePlaceLogin}
-                t={t.joinIndastreet || t}
+                t={t?.joinIndastreet || {
+                    title: "Join Indonesia's Massage Directory",
+                    titleHighlight: "FREE TODAY",
+                    subtitle: "Experience the true potential of online massage booking",
+                    whyJoinTitle: "🌟 Why Join Indastreet?",
+                    whyJoinText: "No matter where you are across Indonesia, Indastreet customers are searching for massage services right now. Don't miss out—register your account for FREE and scale your business to the next level with Indonesia's largest massage booking platform.",
+                    benefit1Title: "Get More Bookings",
+                    benefit1Text: "Reach customers 24/7 with instant online booking",
+                    benefit2Title: "Grow Your Income",
+                    benefit2Text: "Fill your schedule with verified customers",
+                    benefit3Title: "Build Your Brand",
+                    benefit3Text: "Showcase reviews and grow your reputation",
+                    platformFeaturesTitle: "✨ Platform Features",
+                    feature1Title: "Your Own Profile Page",
+                    feature1Text: "Professional profile with photos, services, and pricing",
+                    feature2Title: "Real-Time Notifications",
+                    feature2Text: "Get instant alerts for new booking requests",
+                    feature3Title: "Customer Reviews",
+                    feature3Text: "Build trust with verified customer feedback",
+                    feature4Title: "Mobile Dashboard",
+                    feature4Text: "Manage bookings anywhere, anytime",
+                    feature5Title: "Hotel & Villa Partnerships",
+                    feature5Text: "Get bookings from luxury properties",
+                    feature6Title: "No Commission Fees",
+                    feature6Text: "Keep 100% of your earnings from bookings",
+                    successStoriesTitle: "❤️ Success Stories",
+                    testimonial1Name: "Balinese Massage Therapist",
+                    testimonial1Text: "I doubled my bookings in the first month. Customers love the easy online booking system!",
+                    testimonial1Rating: "⭐⭐⭐⭐⭐ 4.9 rating • 250+ bookings",
+                    testimonial2Name: "Ubud Wellness Spa",
+                    testimonial2Text: "The hotel partnership program connected us with luxury villas. Our revenue increased 3x!",
+                    testimonial2Rating: "⭐⭐⭐⭐⭐ 5.0 rating • 500+ bookings",
+                    howItWorksTitle: "🚀 How It Works",
+                    step1Title: "Create Your Profile",
+                    step1Text: "Add photos, services, pricing, and availability",
+                    step2Title: "Get Verified",
+                    step2Text: "Complete verification to build customer trust",
+                    step3Title: "Receive Bookings",
+                    step3Text: "Accept or reject requests instantly via notifications",
+                    step4Title: "Grow Your Business",
+                    step4Text: "Collect reviews, build reputation, and increase earnings",
+                    ctaTherapistTitle: "JOIN THERAPIST",
+                    ctaTherapistButton: "Create Therapist Account →",
+                    ctaSpaTitle: "JOIN MASSAGE SPA",
+                    ctaSpaButton: "Create Massage Spa Account →",
+                    contactTitle: "Need Help Getting Started?",
+                    contactText: "Our team is ready to assist you with the registration process",
+                    contactButton: "Contact Us on WhatsApp",
+                }}
             />;
 
         case 'therapistProfile':
@@ -1240,6 +1298,78 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onSave={handleSavePlace}
                 t={t}
             />;
+            
+        case 'partner-settings-hotel':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                    <PartnerSettingsPage
+                        partnerId={loggedInProvider?.id?.toString() || '1'}
+                        partnerType="hotel"
+                        onNavigate={(page: Page) => setPage(page)}
+                        onBack={() => setPage('website-management')}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onHotelPortalClick={() => setPage('villaDashboard')}
+                        onVillaPortalClick={() => setPage('villaDashboard')}
+                        onTherapistPortalClick={() => setPage('therapistPortal')}
+                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onAgentPortalClick={() => setPage('villaDashboard')}
+                        onCustomerPortalClick={() => setPage('customerDashboard')}
+                        onAdminPortalClick={() => setPage('adminDashboard')}
+                        onTermsClick={() => setPage('termsOfService')}
+                        onPrivacyClick={() => setPage('privacyPolicy')}
+                        therapists={therapists}
+                        places={places}
+                        t={t}
+                    />
+                </React.Suspense>
+            );
+            
+        case 'partner-settings-villa':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                    <PartnerSettingsPage
+                        partnerId={loggedInProvider?.id?.toString() || '1'}
+                        partnerType="villa"
+                        onNavigate={(page: Page) => setPage(page)}
+                        onBack={() => setPage('website-management')}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onHotelPortalClick={() => setPage('villaDashboard')}
+                        onVillaPortalClick={() => setPage('villaDashboard')}
+                        onTherapistPortalClick={() => setPage('therapistPortal')}
+                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onAgentPortalClick={() => setPage('villaDashboard')}
+                        onCustomerPortalClick={() => setPage('customerDashboard')}
+                        onAdminPortalClick={() => setPage('adminDashboard')}
+                        onTermsClick={() => setPage('termsOfService')}
+                        onPrivacyClick={() => setPage('privacyPolicy')}
+                        therapists={therapists}
+                        places={places}
+                        t={t}
+                    />
+                </React.Suspense>
+            );
+            
+        case 'join-indastreet-partners':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                    <JoinIndastreetPartnersPage
+                        onNavigate={(page: Page) => setPage(page)}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onHotelPortalClick={() => setPage('villaDashboard')}
+                        onVillaPortalClick={() => setPage('villaDashboard')}
+                        onTherapistPortalClick={() => setPage('therapistPortal')}
+                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onAgentPortalClick={() => setPage('villaDashboard')}
+                        onCustomerPortalClick={() => setPage('customerDashboard')}
+                        onAdminPortalClick={() => setPage('adminDashboard')}
+                        onTermsClick={() => setPage('termsOfService')}
+                        onPrivacyClick={() => setPage('privacyPolicy')}
+                        therapists={therapists}
+                        places={places}
+                        t={t}
+                    />
+                </React.Suspense>
+            );
             
         default: 
             console.error('🚨 AppRouter: Unknown page case reached!', {

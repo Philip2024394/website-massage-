@@ -671,13 +671,13 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 event.stopPropagation();
                                 onNavigate('massageTypes');
                             }}
-                            title="Go to Massage Directory"
+                            title={_t?.home?.massageDirectoryTitle || 'Go to Massage Directory'}
                             className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors whitespace-nowrap"
                         >
                             <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
                             </svg>
-                            <span>Massage Directory</span>
+                            <span>{_t?.home?.massageDirectory || 'Massage Directory'}</span>
                         </button>
                     )}
                     <button

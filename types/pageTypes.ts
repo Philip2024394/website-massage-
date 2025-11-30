@@ -102,6 +102,9 @@ export type Page =
     | 'coinSystemTest'
     | 'coin-test' 
     | 'website-management'
+    | 'partner-settings-hotel'
+    | 'partner-settings-villa'
+    | 'join-indastreet-partners';
     | 'todays-discounts'
     | 'accept-booking'
     | 'decline-booking'

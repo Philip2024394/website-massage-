@@ -11,11 +11,14 @@ import {
     Users as UsersIcon,
     Building as BuildingIcon,
     Home as HomeIcon,
-    Heart as HeartIcon
+    Heart as HeartIcon,
+    Calendar as CalendarIcon
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import FlyingButterfly from '../components/FlyingButterfly';
+import AnonymousReviewModal from '../components/AnonymousReviewModal';
+import { initializeUserReferralCode } from '../lib/coinHooks';
 
 interface PartnerWebsite {
     id: string;
@@ -49,6 +52,8 @@ interface IndastreetPartnersPageProps {
     therapists?: any[];
     places?: any[];
     t: any;
+    loggedInPartnerId?: string; // NEW: To show "Manage Settings" button for owner
+    loggedInPartnerType?: 'hotel' | 'villa'; // NEW: Partner type
 }
 
 const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({ 
@@ -65,13 +70,21 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     onPrivacyClick,
     therapists = [],
     places = [],
-    t 
+    t,
+    loggedInPartnerId,
+    loggedInPartnerType
 }) => {
     const [partners, setPartners] = useState<PartnerWebsite[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [userCity, setUserCity] = useState<string>('Your Area');
+    const [viewType, setViewType] = useState<'hotel' | 'villa'>('hotel');
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showReferModal, setShowReferModal] = useState(false);
+    const [selectedPartner, setSelectedPartner] = useState<PartnerWebsite | null>(null);
+    const [userReferralCode, setUserReferralCode] = useState<string>('');
 
     // Enhanced mock data with website previews - Only partners with custom images
     const mockPartners: PartnerWebsite[] = [
@@ -206,7 +219,43 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     ];
 
     useEffect(() => {
+        // Initialize user referral code
+        initializeUserReferralCode().then(code => {
+            if (code) {
+                setUserReferralCode(code);
+            }
+        });
+
+        // Get user's city from localStorage or geolocation
+        const storedCity = localStorage.getItem('userCity');
+        if (storedCity) {
+            setUserCity(storedCity);
+        } else {
+            // Try to get city from geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
+                            );
+                            const data = await response.json();
+                            const city = data.address.city || data.address.town || data.address.village || 'Your Area';
+                            setUserCity(city);
+                            localStorage.setItem('userCity', city);
+                        } catch (error) {
+                            console.error('Error fetching city:', error);
+                        }
+                    },
+                    (error) => {
+                        console.error('Geolocation error:', error);
+                    }
+                );
+            }
+        }
+
         // TODO: Replace with real Appwrite data fetching
+        // Filter partners within 30km radius
         // const fetchPartners = async () => {
         //     try {
         //         const therapists = await therapistService.getAllWithWebsites();
@@ -266,11 +315,13 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     ];
 
     const filteredPartners = partners.filter(partner => {
+        // Filter by viewType (hotel or villa)
+        const matchesViewType = partner.category === viewType;
         const matchesCategory = selectedCategory === 'all' || partner.category === selectedCategory;
         const matchesSearch = partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            partner.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            partner.location?.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
+                            partner.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            partner.description?.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesViewType && matchesCategory && matchesSearch;
     });
 
     const getCategoryColor = (category: string) => {
@@ -365,253 +416,318 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             
             {/* Hero Section with Background Image */}
             <div 
-                className="relative text-white py-12 sm:py-16 lg:py-24 overflow-hidden bg-cover bg-center"
+                className="relative text-white py-8 sm:py-10 lg:py-14 overflow-hidden bg-cover bg-center"
                 style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20service.png?updatedAt=1762567819270)',
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/hotel%20villa.png)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 }}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-                    <h1 className="text-2xl font-bold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
+                    <h1 className="text-2xl font-extrabold sm:text-4xl lg:text-5xl xl:text-6xl drop-shadow-lg">
                         <div>
-                            <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+                            <span className="text-white">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                         </div>
-                        <div className="text-black text-xl sm:text-3xl lg:text-4xl xl:text-5xl">Partners</div>
+                        <div className="text-orange-500 text-xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold">Partners</div>
                     </h1>
                     <p className="mt-3 sm:mt-4 text-sm sm:text-lg lg:text-xl text-white max-w-3xl mx-auto drop-shadow-md px-4">
-                        Discover our trusted network of verified wellness professionals, luxury accommodations, 
-                        and spa destinations. Each partner maintains their own website with detailed services and live previews.
+                        Discover hotels and villas offering 24-hour massage services. You can be assured of the highest quality massage service when staying at the hotels and villas listed on Indastreet. Each has been carefully selected to facilitate the Indastreet brand.
                     </p>
-                    <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-6 text-xs sm:text-sm text-white px-4">
-                        <div className="flex items-center">
-                            <BadgeCheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-1 sm:mr-2" />
-                            <span>Verified Partners</span>
-                        </div>
-                        <div className="flex items-center">
-                            <EyeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 mr-1 sm:mr-2" />
-                            <span>Live Website Previews</span>
-                        </div>
-                        <div className="flex items-center">
-                            <StarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 mr-1 sm:mr-2" />
-                            <span>Quality Assured</span>
-                        </div>
-                    </div>
+                </div>
+            </div>
+
+            {/* Booking Banner */}
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 py-4 sm:py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="text-white text-base sm:text-lg lg:text-xl font-medium">
+                        Book Any Hotel And Villa Listed Below And Enjoy 24 Hour Room Massage Therapist Service
+                    </p>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 pb-20 sm:pb-24">
-                {/* Enhanced Search and Filter Section */}
-                <div className="bg-white rounded-lg sm:rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
-                    <div className="flex flex-col space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
-                        {/* Search Bar */}
-                        <div className="flex-1 lg:max-w-lg">
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Search partners by name, location..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                                <GlobeAltIcon className="absolute left-3 top-2.5 sm:top-3.5 h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                            </div>
-                        </div>
-
-                        {/* Category Statistics */}
-                        <div className="flex items-center justify-center sm:justify-start space-x-3 sm:space-x-4 text-xs sm:text-sm text-gray-600">
-                            <UsersIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span><strong>{partners.length}</strong> Total Partners</span>
-                            <span className="hidden sm:inline">•</span>
-                            <span><strong>{partners.filter(p => p.verified).length}</strong> Verified</span>
-                        </div>
+                {/* Viewing Location Banner */}
+                <div className="mb-6 sm:mb-8">
+                    <div className="bg-white rounded-lg shadow-md p-4 text-center">
+                        <p className="text-lg sm:text-xl font-semibold text-gray-800">
+                            Viewing Now: <span className="text-orange-600">{userCity}</span>
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                            Showing hotels and villas within 30km
+                        </p>
                     </div>
                 </div>
 
-                {/* Enhanced Category Filter Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                    {categories.map((category) => (
+                {/* Hotel/Villa Toggle Button */}
+                <div className="flex justify-center mb-6 sm:mb-8">
+                    <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
                         <button
-                            key={category.value}
-                            onClick={() => setSelectedCategory(category.value)}
-                            className={`p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all duration-300 transform hover:scale-105 ${
-                                selectedCategory === category.value
-                                    ? `${category.color} text-white shadow-xl`
-                                    : 'bg-white text-gray-700 hover:bg-gray-50 shadow-lg'
+                            onClick={() => setViewType('hotel')}
+                            className={`px-6 sm:px-8 py-2 sm:py-3 rounded-md text-sm sm:text-base font-medium transition-all duration-200 ${
+                                viewType === 'hotel'
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                                    : 'text-gray-700 hover:text-orange-600'
                             }`}
                         >
-                            <div className="flex items-center justify-between mb-1 sm:mb-2">
-                                <span className="text-lg sm:text-2xl">{category.icon}</span>
-                                <span className={`text-lg sm:text-2xl font-bold ${
-                                    selectedCategory === category.value ? 'text-white' : 'text-gray-900'
-                                }`}>
-                                    {category.count}
-                                </span>
-                            </div>
-                            <h3 className="font-semibold text-xs sm:text-sm leading-tight">
-                                {category.label}
-                            </h3>
+                            Massage Hotel
                         </button>
-                    ))}
+                        <button
+                            onClick={() => setViewType('villa')}
+                            className={`px-6 sm:px-8 py-2 sm:py-3 rounded-md text-sm sm:text-base font-medium transition-all duration-200 ${
+                                viewType === 'villa'
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                                    : 'text-gray-700 hover:text-orange-600'
+                            }`}
+                        >
+                            Massage Villa
+                        </button>
+                    </div>
                 </div>
 
-                {/* Enhanced Partners Grid with Website Previews */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {/* Partners Grid with MassagePlace-style Cards */}
+                <div className="space-y-16">
                     {filteredPartners.map((partner) => (
-                        <div key={partner.id} className="bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 sm:hover:-translate-y-2">
-                            {/* Website Preview Section */}
-                            <div className="relative h-40 sm:h-48 bg-gradient-to-r from-orange-400 to-amber-500">
-                                {partner.imageUrl && !partner.imageUrl.includes('/api/placeholder') ? (
-                                    <div className="relative h-full">
-                                        <img
-                                            src={partner.imageUrl}
-                                            alt={`${partner.name} image`}
-                                            className="w-full h-full object-cover opacity-90"
-                                            onError={(e) => {
-                                                // Fallback to gradient background
-                                                e.currentTarget.style.display = 'none';
-                                            }}
-                                        />
-                                        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                                            <div className="bg-white bg-opacity-90 rounded-lg px-3 py-2 flex items-center space-x-2">
-                                                <EyeIcon className="w-4 h-4 text-orange-600" />
-                                                <span className="text-xs font-medium text-gray-700">Partner Image</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : partner.websitePreview ? (
-                                    <div className="relative h-full">
-                                        <img
-                                            src={partner.websitePreview}
-                                            alt={`${partner.name} website preview`}
-                                            className="w-full h-full object-cover opacity-90"
-                                            onError={(e) => {
-                                                // Fallback to gradient background
-                                                e.currentTarget.style.display = 'none';
-                                            }}
-                                        />
-                                        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-                                            <div className="bg-white bg-opacity-90 rounded-lg px-3 py-2 flex items-center space-x-2">
-                                                <EyeIcon className="w-4 h-4 text-orange-600" />
-                                                <span className="text-xs font-medium text-gray-700">Live Preview</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center text-white">
-                                        <div className="text-6xl mb-2">
-                                            {getCategoryIcon(partner.category)}
-                                        </div>
-                                        <span className="text-sm opacity-75">Website Preview Loading...</span>
+                        <div key={partner.id} className="relative mb-12">
+                            {/* Join Indastreet Link - Top Left Outside Card */}
+                            <button
+                                onClick={() => onNavigate?.('join-indastreet-partners')}
+                                className="absolute -top-6 left-0 text-xs text-orange-600 hover:text-orange-700 font-semibold underline transition-colors"
+                            >
+                                Join Indastreet
+                            </button>
+                            
+                            {/* Member Since - Top Right Outside Card */}
+                            <p className="absolute -top-6 right-0 text-xs text-gray-500 font-medium">
+                                {t?.partners?.added || 'Member since'} {new Date(partner.addedDate).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'short'
+                                })}
+                            </p>
+                            
+                            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative">
+                            {/* Main Image Banner */}
+                            <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
+                                <img 
+                                    src={partner.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png'} 
+                                    alt={`${partner.name} cover`} 
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png';
+                                    }}
+                                />
+                                
+                                {/* Verified Badge */}
+                                {partner.verified && (
+                                    <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-2 rounded-full text-xs font-medium flex items-center shadow-lg">
+                                        <CheckCircleIcon className="w-3 h-3 mr-1" />
+                                        {t?.partners?.verifiedPartner || 'Verified'}
                                     </div>
                                 )}
                                 
-                                {/* Verification Badge */}
-                                {partner.verified && (
-                                    <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center shadow-lg">
-                                        <CheckCircleIcon className="w-3 h-3 mr-1" />
-                                        Verified
+                                {/* Rating */}
+                                {partner.rating && (
+                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-2 shadow-lg">
+                                        <StarIcon className="w-4 h-4 text-yellow-400"/>
+                                        <span className="font-bold text-white text-sm">{partner.rating.toFixed(1)}</span>
                                     </div>
                                 )}
 
-                                {/* Category Tag with Enhanced Design */}
-                                <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(partner.category)} shadow-lg`}>
-                                    <div className="flex items-center space-x-1">
-                                        {getCategoryIcon(partner.category)}
-                                        <span className="uppercase font-bold">
-                                            {partner.category === 'massage-place' ? 'Massage Place' : partner.category}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Website URL Preview */}
-                                <div className="absolute bottom-3 left-3 right-3 bg-white bg-opacity-95 rounded-lg px-3 py-2">
-                                    <div className="flex items-center space-x-2">
-                                        <GlobeAltIcon className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                                        <span className="text-xs text-gray-700 truncate font-mono">
-                                            {partner.websiteUrl.replace('https://', '').replace('http://', '')}
-                                        </span>
-                                    </div>
+                                {/* Social Share Buttons */}
+                                <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            const text = `Check out ${partner.name} on Indastreet!`;
+                                            const url = partner.websiteUrl;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                                        }}
+                                        className="w-7 h-7 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg"
+                                    >
+                                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(partner.websiteUrl)}`, '_blank');
+                                        }}
+                                        className="w-7 h-7 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg"
+                                    >
+                                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`https://www.instagram.com/`, '_blank');
+                                        }}
+                                        className="w-7 h-7 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 hover:from-purple-700 hover:via-pink-600 hover:to-orange-500 rounded-full flex items-center justify-center shadow-lg"
+                                    >
+                                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                        </svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`https://www.tiktok.com/`, '_blank');
+                                        }}
+                                        className="w-7 h-7 bg-black hover:bg-gray-900 rounded-full flex items-center justify-center shadow-lg"
+                                    >
+                                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
-
-                            {/* Partner Details */}
-                            <div className="p-4 sm:p-6">
-                                <div className="flex items-start justify-between mb-3">
-                                    <h3 className="text-xl font-bold text-gray-900 leading-tight">
-                                        {partner.name}
-                                    </h3>
-                                    {partner.rating && renderStars(partner.rating)}
+                            
+                            {/* Logo/Profile Picture */}
+                            <div className="absolute top-40 left-4 z-10">
+                                <div className="relative w-20 h-20">
+                                    <img 
+                                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png"
+                                        alt={partner.name}
+                                    />
                                 </div>
+                            </div>
+                            
+            {/* Partner Name */}
+            <div className="absolute top-56 left-28 right-4 z-10">
+                <h3 className="text-lg font-bold text-gray-900 truncate">
+                    {partner.name.length > 24 ? partner.name.substring(0, 24) + '...' : partner.name}
+                </h3>
+                {partner.location && (
+                    <div className="flex items-center gap-1 mt-1">
+                        <MapPinIcon className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                        <span className="text-xs text-gray-600">{partner.location}</span>
+                    </div>
+                )}
+            </div>
 
-                                {partner.websiteTitle && (
-                                    <p className="text-sm font-medium text-indigo-600 mb-2">
-                                        {partner.websiteTitle}
-                                    </p>
-                                )}
+            {/* Description */}
+            <div className="absolute top-72 left-4 right-4 z-10">
+                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4">
+                    {partner.description && partner.description.length > 500 
+                        ? partner.description.substring(0, 500) + '...' 
+                        : partner.description}
+                </p>
+            </div>
+            
+            {/* Content */}
+            <div className="p-4 pt-40 flex flex-col gap-4">
+                                {/* Separator Line */}
+                                <div className="border-t border-gray-200 my-2"></div>
 
-                                <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
-                                    {partner.description}
-                                </p>
-
-                                {/* Location and Contact */}
-                                <div className="space-y-2 mb-4">
-                                    {partner.location && (
-                                        <div className="flex items-center text-sm text-gray-500">
-                                            <MapPinIcon className="w-4 h-4 mr-2" />
-                                            {partner.location}
-                                        </div>
-                                    )}
-                                    {partner.phone && (
-                                        <div className="flex items-center text-sm text-gray-500">
-                                            <PhoneIcon className="w-4 h-4 mr-2" />
-                                            {partner.phone}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Specialties */}
+                                {/* Hotel/Villa Amenities */}
                                 {partner.specialties && partner.specialties.length > 0 && (
-                                    <div className="mb-4">
-                                        <div className="flex flex-wrap gap-1">
-                                            {partner.specialties.slice(0, 3).map((specialty, index) => (
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                                                <BuildingIcon className="w-4 h-4 text-orange-600" />
+                                                {viewType === 'hotel' ? 'Hotel Amenities' : 'Villa Amenities'}
+                                            </h4>
+                                            <span className="text-xs font-medium text-gray-600">
+                                                Distance: {partner.distance ? `${partner.distance.toFixed(1)} km` : 'N/A'}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {partner.specialties.slice(0, 5).map((amenity, index) => (
                                                 <span
                                                     key={index}
-                                                    className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                                                    className="px-2 py-1 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 text-orange-800 text-xs font-medium rounded-full"
                                                 >
-                                                    {specialty}
+                                                    {amenity}
                                                 </span>
                                             ))}
-                                            {partner.specialties.length > 3 && (
-                                                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                                    +{partner.specialties.length - 3} more
-                                                </span>
-                                            )}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Visit Website Button */}
-                                <a
-                                    href={partner.websiteUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full bg-gradient-to-r from-orange-600 to-amber-600 text-white py-3 px-4 rounded-lg font-medium text-center inline-flex items-center justify-center hover:from-orange-700 hover:to-amber-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                                {/* Book Reservation Button */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const message = `Hi, I would like to enquire regarding availability at ${partner.name}. Thank you`;
+                                        const phoneNumber = partner.phone?.replace(/[^0-9]/g, '') || '';
+                                        window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-300"
                                 >
-                                    <ExternalLinkIcon className="w-5 h-5 mr-2" />
-                                    Visit Website
-                                </a>
+                                    <CalendarIcon className="w-5 h-5" />
+                                    <span>Book Reservation</span>
+                                </button>
 
-                                {/* Added Date */}
-                                <p className="text-xs text-gray-400 mt-3 text-center">
-                                    Partner since {new Date(partner.addedDate).toLocaleDateString('en-US', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                    })}
-                                </p>
+                                {/* Manage Settings Button - Only shown to owner */}
+                                {loggedInPartnerId === partner.id && loggedInPartnerType && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onNavigate?.(loggedInPartnerType === 'hotel' ? 'partner-settings-hotel' : 'partner-settings-villa');
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 mt-2"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span>Manage Settings</span>
+                                    </button>
+                                )}
+
+                                {/* Action Links - Share, Massage Directory, Review */}
+                                <div className="flex flex-wrap justify-between items-center gap-2 mt-2 px-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedPartner(partner);
+                                            setShowReferModal(true);
+                                        }}
+                                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Share</span>
+                                    </button>
+                                    {onNavigate && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                onNavigate('massageTypes');
+                                            }}
+                                            className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                                        >
+                                            <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
+                                            </svg>
+                                            <span>Massage Directory</span>
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setSelectedPartner(partner);
+                                            setShowReviewModal(true);
+                                        }}
+                                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span>Review</span>
+                                    </button>
+                                </div>
                             </div>
+                        </div>
                         </div>
                     ))}
                 </div>
@@ -663,6 +779,146 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 </div>
             </div>
             
+            {/* Refer a Friend Modal */}
+            {showReferModal && selectedPartner && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowReferModal(false)}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="text-center">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/refer%20a%20friend.png"
+                                    alt="Refer a Friend"
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share Indastreet with friends! 🎁</p>
+                            
+                            <div className="space-y-2 mb-3 sm:mb-4">
+                                <p className="text-xs text-gray-600 text-left">
+                                    📱 Share your referral link:
+                                </p>
+                                <div className="flex gap-1">
+                                    <input 
+                                        type="text" 
+                                        value={userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'Loading...'} 
+                                        readOnly 
+                                        className="flex-1 px-2 py-1.5 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-xs"
+                                        placeholder="Your referral link"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const link = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            navigator.clipboard.writeText(link);
+                                            alert('Link copied to clipboard!');
+                                        }}
+                                        className="px-3 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-xs whitespace-nowrap"
+                                    >
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2 mb-3 sm:mb-4">
+                                <p className="text-xs text-gray-600 mb-2">Share via:</p>
+                                <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out ${selectedPartner.name} on IndaStreet! 💆‍♀️ ${referralLink}`;
+                                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                                        }}
+                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/whats%20app.png?updatedAt=1761845265148" 
+                                            alt="WhatsApp"
+                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                        />
+                                        <span className="text-xs font-medium text-gray-700">WhatsApp</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
+                                        }}
+                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761845339040" 
+                                            alt="Facebook"
+                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                        />
+                                        <span className="text-xs font-medium text-gray-700">Facebook</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out ${selectedPartner.name} on IndaStreet! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
+                                            alert('Instagram message copied! Open Instagram and paste to share.');
+                                        }}
+                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
+                                            alt="Instagram"
+                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                        />
+                                        <span className="text-xs font-medium text-gray-700">Instagram</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
+                                            const message = `Check out ${selectedPartner.name} on IndaStreet! 💆‍♀️ ${referralLink}`;
+                                            navigator.clipboard.writeText(message);
+                                            alert('TikTok message copied! Open TikTok and paste to share.');
+                                        }}
+                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
+                                    >
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
+                                            alt="TikTok"
+                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                        />
+                                        <span className="text-xs font-medium text-gray-700">TikTok</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button
+                                onClick={() => setShowReferModal(false)}
+                                className="w-full px-4 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Anonymous Review Modal */}
+            {showReviewModal && selectedPartner && (
+                <AnonymousReviewModal
+                    providerName={selectedPartner.name}
+                    providerId={selectedPartner.id}
+                    providerType={viewType}
+                    providerImage={selectedPartner.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png'}
+                    onClose={() => {
+                        setShowReviewModal(false);
+                        setSelectedPartner(null);
+                    }}
+                    onSubmit={async (reviewData) => {
+                        console.log('Review submitted for', selectedPartner.name, reviewData);
+                        // TODO: Submit review to Appwrite
+                        alert('Thank you for your review!');
+                        setShowReviewModal(false);
+                        setSelectedPartner(null);
+                    }}
+                />
+            )}
+
             <style>{`
                 @keyframes float {
                     0%, 100% {

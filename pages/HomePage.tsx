@@ -102,99 +102,95 @@ const HomePage: React.FC<HomePageProps> = ({
 }) => {
     console.log('🏠 HomePage: Component is being called!');
     // Enhanced debug logging for translations
-    console.log('🏠 HomePage received translations:', {
-        tExists: !!t,
-        tType: typeof t,
-        tIsFunction: typeof t === 'function',
-        tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
-    });
-    
-    // Create a safe translation function
-    const safeT = typeof t === 'function' ? t : (key: string) => {
-        console.warn(`Translation function not available for key: ${key}`);
-        return key;
-    };
+    // Memoize translation conversion to prevent re-renders
+    // SAFE: Always returns valid object structure, never undefined
+    const translationsObject = React.useMemo(() => {
+        console.log('🏠 HomePage received translations:', {
+            tExists: !!t,
+            tType: typeof t,
+            tIsFunction: typeof t === 'function',
+            tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
+        });
 
-    // Adapter: Convert translation function to object structure for HomePage compatibility
-    if (t && typeof t === 'function') {
-        console.log('🔄 Converting translation function to object structure for HomePage');
-        const homeTranslations = {
-            homeServiceTab: t('home.homeServiceTab'),
-            massagePlacesTab: t('home.massagePlacesTab'),
-            loading: t('home.loading'),
-            loginSignUp: t('home.loginSignUp'), 
-            noMoreTherapists: t('home.noMoreTherapists'),
-            setLocation: t('home.setLocation'),
-            updateLocation: t('home.updateLocation'),
-            massageType: t('home.massageType'),
-            therapistsOnline: t('home.therapistsOnline'),
-            searchPlaceholder: t('home.searchPlaceholder'),
-            noResults: t('home.noResults')
-        };
-        
-        // Create object structure that HomePage expects
-        t = {
-            home: homeTranslations,
+        // SAFE: Provide default fallback translations
+        const defaultTranslations = {
+            home: {
+                homeServiceTab: 'Home Service',
+                massagePlacesTab: 'Massage Places',
+                loading: 'Loading...',
+                loginSignUp: 'Login / Sign Up',
+                noMoreTherapists: 'No more therapists available',
+                setLocation: 'Set Location',
+                updateLocation: 'Update Location',
+                massageType: 'Massage Type',
+                therapistsOnline: 'Therapists Online',
+                searchPlaceholder: 'Search...',
+                noResults: 'No results found',
+                massageDirectory: 'Massage Directory',
+                massageDirectoryTitle: 'Browse All Massage Types',
+                noTherapistsAvailable: 'No therapists available in your area',
+                therapistsTitle: 'Home Massage Therapists',
+                therapistsSubtitle: 'Find the best massage therapists',
+                massagePlacesTitle: 'Featured Massage Spas',
+                massagePlacesSubtitle: 'Find the best massage places',
+                noPlacesAvailable: 'No massage places available in your area'
+            },
             detail: {},
-
             common: {}
         };
-        console.log('✅ Converted function-based translations to object structure for HomePage');
-    }
 
-    // Safety check for translations - use fallback if needed
-    if (!t || !t.home) {
-        console.warn('HomePage: Missing translations object or t.home, using fallback', { 
-            t, 
-            hasT: !!t, 
-            tKeys: t ? Object.keys(t) : [],
-            hasHome: t ? !!t.home : false 
-        });
-        
-        // Use proper translation system - no hardcoded fallbacks
-        const fallbackHome = {
-            homeServiceTab: t('home.homeServiceTab'),
-            massagePlacesTab: t('home.massagePlacesTab'),
-            loading: t('home.loading'),
-            loginSignup: t('home.loginSignUp'),
-            locationLabel: t('home.locationLabel'),
-            selectLocation: t('home.selectLocation'),
-            setLocation: t('home.setLocation'),
-            nearbyTherapists: t('home.nearbyTherapists'),
-            nearbyMassagePlaces: t('home.nearbyMassagePlaces'),
-            noTherapists: t('home.noTherapists'),
-            noMassagePlaces: t('home.noMassagePlaces'),
-            distanceAway: t('home.distanceAway'),
-            bookNow: t('home.bookNow'),
-            viewProfile: t('home.viewProfile'),
-            whatsapp: t('home.whatsapp'),
-            rating: t('home.rating'),
-            priceFrom: t('home.priceFrom'),
-            priceSession: t('home.priceSession'),
-            locationRequired: t('home.locationRequired'),
-            locationRequiredDesc: t('home.locationRequiredDesc'),
-            getAllServices: t('home.getAllServices'),
-            filterByMassageType: t('home.filterByMassageType'),
-            allMassageTypes: t('home.allMassageTypes'),
-            requestLocation: t('home.requestLocation'),
-            therapistsOnline: t('home.therapistsOnline'),
-            footer: {
-                agentLink: t('home.footer.agentLink'),
-                termsLink: t('home.footer.termsLink'), 
-                privacyLink: t('home.footer.privacyLink')
+        // SAFE: Return default if t is missing
+        if (!t) {
+            console.warn('⚠️ HomePage: No translations provided, using defaults');
+            return defaultTranslations;
+        }
+
+        // Adapter: Convert translation function to object structure for HomePage compatibility
+        if (typeof t === 'function') {
+            console.log('🔄 Converting translation function to object structure for HomePage');
+            try {
+                const homeTranslations = {
+                    homeServiceTab: t('home.homeServiceTab') || defaultTranslations.home.homeServiceTab,
+                    massagePlacesTab: t('home.massagePlacesTab') || defaultTranslations.home.massagePlacesTab,
+                    loading: t('home.loading') || defaultTranslations.home.loading,
+                    loginSignUp: t('home.loginSignUp') || defaultTranslations.home.loginSignUp,
+                    noMoreTherapists: t('home.noMoreTherapists') || defaultTranslations.home.noMoreTherapists,
+                    setLocation: t('home.setLocation') || defaultTranslations.home.setLocation,
+                    updateLocation: t('home.updateLocation') || defaultTranslations.home.updateLocation,
+                    massageType: t('home.massageType') || defaultTranslations.home.massageType,
+                    therapistsOnline: t('home.therapistsOnline') || defaultTranslations.home.therapistsOnline,
+                    searchPlaceholder: t('home.searchPlaceholder') || defaultTranslations.home.searchPlaceholder,
+                    noResults: t('home.noResults') || defaultTranslations.home.noResults,
+                    massageDirectory: t('home.massageDirectory') || defaultTranslations.home.massageDirectory,
+                    massageDirectoryTitle: t('home.massageDirectoryTitle') || defaultTranslations.home.massageDirectoryTitle,
+                    noTherapistsAvailable: t('home.noTherapistsAvailable') || defaultTranslations.home.noTherapistsAvailable,
+                    therapistsTitle: t('home.therapistsTitle') || defaultTranslations.home.therapistsTitle,
+                    therapistsSubtitle: t('home.therapistsSubtitle') || defaultTranslations.home.therapistsSubtitle,
+                    massagePlacesTitle: t('home.massagePlacesTitle') || defaultTranslations.home.massagePlacesTitle,
+                    massagePlacesSubtitle: t('home.massagePlacesSubtitle') || defaultTranslations.home.massagePlacesSubtitle,
+                    noPlacesAvailable: t('home.noPlacesAvailable') || defaultTranslations.home.noPlacesAvailable
+                };
+                
+                console.log('✅ Converted function-based translations to object structure for HomePage');
+                return {
+                    home: homeTranslations,
+                    detail: {},
+                    common: {}
+                };
+            } catch (error) {
+                console.error('❌ Error converting translations:', error);
+                return defaultTranslations;
             }
-        };
+        }
         
-        // Create a temporary t object with fallback
-        const fallbackT = { 
-            home: fallbackHome,
-            ...(t || {})
-        };
+        // SAFE: If t is object but missing home property, merge with defaults
+        if (typeof t === 'object' && !t.home) {
+            console.warn('⚠️ HomePage: Translations object missing home property, using defaults');
+            return defaultTranslations;
+        }
         
-        console.log('✅ Using fallback translations for HomePage');
-        // Continue with fallback instead of showing error
-        t = fallbackT;
-    }
+        return t;
+    }, [t]);
 
     // Debug data received
     console.log('🏠 HomePage Data Debug:', {
@@ -736,7 +732,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         console.log('🍔 AppDrawer onClose called');
                         setIsMenuOpen(false);
                     }}
-                    t={safeT}
+                    t={translationsObject}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}
@@ -809,14 +805,14 @@ const HomePage: React.FC<HomePageProps> = ({
                         className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <HomeIcon className="w-4 h-4" />
-                        {t.home.homeServiceTab}
+                        {translationsObject?.home?.homeServiceTab || 'Home Service'}
                     </button>
                     <button 
                         onClick={() => setActiveTab('places')} 
                         className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <Building className="w-4 h-4" />
-                        {t.home.massagePlacesTab}
+                        {translationsObject?.home?.massagePlacesTab || 'Massage Places'}
                     </button>
                 </div>
 
@@ -831,7 +827,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 onChange={e => setSelectedMassageType(e.target.value)}
                                 style={{ backgroundColor: 'white' } as React.CSSProperties}
                             >
-                                <option value="all" style={{ backgroundColor: 'white' } as React.CSSProperties}>{t.home.massageType}</option>
+                                <option value="all" style={{ backgroundColor: 'white' } as React.CSSProperties}>{translationsObject?.home?.massageType || 'Massage Type'}</option>
                                 {MASSAGE_TYPES_CATEGORIZED.map(category => (
                                     <optgroup label={category.category} key={category.category} style={{ backgroundColor: 'white' } as React.CSSProperties}>
                                         {category.types.map((type, index) => (
@@ -884,8 +880,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'home' && (
                     <div>
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Terapis Pijat Rumahan</h3>
-                            <p className="text-gray-600">Temukan terapis pijat terbaik di Bali</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Terapis Pijat Rumahan'}</h3>
+                            <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Temukan terapis pijat terbaik di Bali'}</p>
                         </div>
                         
                         <div className="space-y-4">
@@ -969,6 +965,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 } : null;
                                 
                                 return (
+                                <>
                                 <TherapistCard
                                     key={therapist.$id || `therapist-${therapist.id}-${index}`}
                                     therapist={therapist}
@@ -983,14 +980,27 @@ const HomePage: React.FC<HomePageProps> = ({
                                     loggedInProviderId={loggedInProvider?.id}
                                     onNavigate={onNavigate}
                                     activeDiscount={realDiscount}
-                                    t={t}
+                                    t={translationsObject}
                                 />
+                                {/* Accommodation Massage Service Link */}
+                                <div className="mt-2 mb-4 text-center">
+                                    <button
+                                        onClick={() => onNavigate?.('indastreet-partners')}
+                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                    >
+                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                        </svg>
+                                        <span className="font-medium">Accommodation With Massage Service</span>
+                                    </button>
+                                </div>
+                                </>
                                 );
                             });
                         })()}
                         {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
-                                <p className="text-gray-500">Tidak ada terapis tersedia di area Anda saat ini.</p>
+                                <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'Tidak ada terapis tersedia di area Anda saat ini.'}</p>
                                 {autoDetectedLocation && (
                                     <p className="text-gray-400 text-sm mt-2">
                                         Showing providers within 15km of your location
@@ -1011,14 +1021,14 @@ const HomePage: React.FC<HomePageProps> = ({
                         itemType={selectedRatingItem.type}
                         itemId={selectedRatingItem.item.id || (selectedRatingItem.item as any).$id}
                         t={{
-                            title: t.ratingModal?.title || 'Rate {itemName}',
-                            prompt: t.ratingModal?.prompt || 'How was your experience?',
-                            whatsappLabel: t.ratingModal?.whatsappLabel || 'WhatsApp Number',
-                            whatsappPlaceholder: t.ratingModal?.whatsappPlaceholder || 'Enter your WhatsApp number',
-                            submitButton: t.ratingModal?.submitButton || 'Submit Review',
-                            selectRatingError: t.ratingModal?.selectRatingError || 'Please select a rating',
-                            whatsappRequiredError: t.ratingModal?.whatsappRequiredError || 'WhatsApp number is required',
-                            confirmationV2: t.ratingModal?.confirmationV2 || 'Thank you for your review! It will be visible once approved by admin.'
+                            title: translationsObject.ratingModal?.title || 'Rate {itemName}',
+                            prompt: translationsObject.ratingModal?.prompt || 'How was your experience?',
+                            whatsappLabel: translationsObject.ratingModal?.whatsappLabel || 'WhatsApp Number',
+                            whatsappPlaceholder: translationsObject.ratingModal?.whatsappPlaceholder || 'Enter your WhatsApp number',
+                            submitButton: translationsObject.ratingModal?.submitButton || 'Submit Review',
+                            selectRatingError: translationsObject.ratingModal?.selectRatingError || 'Please select a rating',
+                            whatsappRequiredError: translationsObject.ratingModal?.whatsappRequiredError || 'WhatsApp number is required',
+                            confirmationV2: translationsObject.ratingModal?.confirmationV2 || 'Thank you for your review! It will be visible once approved by admin.'
                         }}
                     />
                 )}
@@ -1026,8 +1036,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'places' && (
                     <div>
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Spa Pijat Unggulan</h3>
-                            <p className="text-gray-600">Temukan tempat pijat terbaik di Bali</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Spa Pijat Unggulan'}</h3>
+                            <p className="text-gray-600">{t?.home?.massagePlacesSubtitle || 'Temukan tempat pijat terbaik di Bali'}</p>
                         </div>
                         
                         {/* Show places from Appwrite */}
@@ -1070,7 +1080,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                             </svg>
                                         </div>
-                                        <p className="text-gray-500 mb-2 text-lg font-semibold">Tidak ada tempat pijat tersedia di area Anda</p>
+                                        <p className="text-gray-500 mb-2 text-lg font-semibold">{t?.home?.noPlacesAvailable || 'Tidak ada tempat pijat tersedia di area Anda'}</p>
                                         <p className="text-sm text-gray-400">Check back soon for featured spas!</p>
                                         {autoDetectedLocation && (
                                             <p className="text-xs text-gray-300 mt-2">
@@ -1090,6 +1100,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                             const placeId = place.id || (place as any).$id;
                                             
                                             return (
+                                                <>
                                                 <MassagePlaceCard
                                                     key={placeId}
                                                     place={place}
@@ -1099,9 +1110,22 @@ const HomePage: React.FC<HomePageProps> = ({
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     onShowRegisterPrompt={onShowRegisterPrompt}
                                                     isCustomerLoggedIn={!!loggedInCustomer}
-                                                    t={t}
+                                                    t={translationsObject}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
+                                                {/* Accommodation Massage Service Link */}
+                                                <div className="mt-2 mb-4 text-center">
+                                                    <button
+                                                        onClick={() => onNavigate?.('indastreet-partners')}
+                                                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
+                                                    >
+                                                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                                        </svg>
+                                                        <span className="font-medium">Accommodation With Massage Service</span>
+                                                    </button>
+                                                </div>
+                                                </>
                                             );
                                         })}
                                 </div>

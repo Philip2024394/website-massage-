@@ -109,11 +109,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-6">
-                    Massage Hub
+                <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-white mb-2">
+                    Indonesia's Massage Hub
                 </p>
                 
-                <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
+                <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4 mt-4">
                     <Button
                         type="button"
                         onClick={handleEnterApp}

@@ -84,6 +84,7 @@ interface MassageJobsPageProps {
     onNavigateToPayment: () => void;
     onCreateTherapistProfile?: () => void;
     onNavigate?: (page: string) => void;
+    t?: any;
 }
 
 const MassageJobsPage: React.FC<MassageJobsPageProps> = ({ 
@@ -91,7 +92,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     onPostJob, 
     onNavigateToPayment, 
     onCreateTherapistProfile,
-    onNavigate
+    onNavigate,
+    t
 }) => {
     console.log('🔥 MassageJobsPage RENDERED - VERSION 2025-01-11-17:00:00');
     console.log('🔥 Props received:', {
@@ -250,7 +252,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     {/* Description Text */}
                     <div className="text-center mb-6">
                         <p className="text-sm sm:text-base text-gray-700 max-w-3xl mx-auto">
-                            Showcase your availability for employment or offer your massage services to be discovered by local and international massage spas
+                            {t?.jobs?.description || 'Showcase your availability for employment or offer your massage services to be discovered by local and international massage spas'}
                         </p>
                     </div>
 
@@ -265,7 +267,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         : 'text-gray-600 hover:text-gray-800'
                                 }`}
                             >
-                                💼 Jobs for Offer
+                                {t?.jobs?.jobsForOffer || '💼 Jobs for Offer'}
                             </button>
                             <button
                                 onClick={() => {
@@ -278,7 +280,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         : 'text-gray-600 hover:text-gray-800'
                                 }`}
                             >
-                                👨‍⚕️ Therapist Seeking Jobs
+                                {t?.jobs?.therapistSeeking || '👨‍⚕️ Therapist Seeking Jobs'}
                             </button>
                         </div>
                     </div>
@@ -297,14 +299,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             }}
                             className="flex items-center gap-2 py-2 px-5 bg-orange-500 text-white shadow-lg rounded-full transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
                         >
-                            <span>{activeTab === 'employers' ? 'Post Job' : 'Create Profile'}</span>
+                            <span>{activeTab === 'employers' ? (t?.jobs?.postJob || 'Post Job') : (t?.jobs?.createProfile || 'Create Profile')}</span>
                         </button>
                     </div>
 
             {/* Job Count */}
             <div className="py-4">
                 <p className="text-gray-600 text-sm sm:text-base">
-                    <span className="font-bold text-orange-600">{filteredPostings.length}</span> job{filteredPostings.length !== 1 ? 's' : ''} found
+                    <span className="font-bold text-orange-600">{filteredPostings.length}</span> {filteredPostings.length !== 1 ? (t?.jobs?.jobsFoundPlural || 'jobs') : (t?.jobs?.jobsFound || 'job')} {t?.jobs?.found || 'found'}
                 </p>
             </div>
 
@@ -313,15 +315,15 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 {isLoading ? (
                     <div className="text-center py-12">
                         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-4 font-medium">Loading job opportunities...</p>
+                        <p className="text-gray-600 mt-4 font-medium">{t?.jobs?.loadingJobs || 'Loading job opportunities...'}</p>
                     </div>
                 ) : filteredPostings.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-lg shadow-md">
                         <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-gray-500 text-lg">No job postings found</p>
-                        <p className="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
+                        <p className="text-gray-500 text-lg">{t?.jobs?.noJobsFound || 'No job postings found'}</p>
+                        <p className="text-gray-400 text-sm mt-2">{t?.jobs?.noJobsDesc || 'Try adjusting your search or filters'}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -467,7 +469,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 )}
                                                 <p className="text-sm font-semibold text-gray-700">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
                                                 <span className="text-gray-400">•</span>
-                                                <p className="text-sm text-gray-600">{posting.numberOfPositions} Position{posting.numberOfPositions > 1 ? 's' : ''} Available</p>
+                                                <p className="text-sm text-gray-600">{posting.numberOfPositions} {posting.numberOfPositions > 1 ? (t?.jobs?.positionsPlural || 'Positions') : (t?.jobs?.positions || 'Position')} {t?.jobs?.available || 'Available'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -478,7 +480,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     {/* Details Grid */}
                                     <div className="grid grid-cols-1 gap-3 mb-4">
                                         <div className="text-sm">
-                                            <p className="text-sm font-bold text-black mb-1">SALARY RANGE</p>
+                                            <p className="text-sm font-bold text-black mb-1">{t?.jobs?.salaryRange || 'SALARY RANGE'}</p>
                                             <span className="text-gray-700 font-medium">
                                                 {formatSalary(posting.salaryRangeMin)} - {formatSalary(posting.salaryRangeMax)}
                                             </span>
@@ -488,7 +490,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 <svg className="w-5 h-5 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                                 </svg>
-                                                <span className="text-orange-700 font-semibold">Accommodation Provided</span>
+                                                <span className="text-orange-700 font-semibold">{t?.jobs?.accommodationProvided || 'Accommodation Provided'}</span>
                                             </div>
                                         )}
                                         {posting.transportationProvided && posting.transportationProvided !== 'none' && (
@@ -497,9 +499,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                                 </svg>
                                                 <span className="text-purple-700 font-semibold">
-                                                    {posting.transportationProvided === 'flight' && 'Flight Paid'}
-                                                    {posting.transportationProvided === 'local-transport' && 'Local Transport Paid'}
-                                                    {posting.transportationProvided === 'both' && 'Flight & Transport Paid'}
+                                                    {posting.transportationProvided === 'flight' && (t?.jobs?.flightPaid || 'Flight Paid')}
+                                                    {posting.transportationProvided === 'local-transport' && (t?.jobs?.localTransportPaid || 'Local Transport Paid')}
+                                                    {posting.transportationProvided === 'both' && (t?.jobs?.flightAndTransportPaid || 'Flight & Transport Paid')}
                                                 </span>
                                             </div>
                                         )}
@@ -508,7 +510,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 <svg className="w-5 h-5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
-                                                <span className="text-blue-700 font-semibold">CV Required</span>
+                                                <span className="text-blue-700 font-semibold">{t?.jobs?.cvRequired || 'CV Required'}</span>
                                             </div>
                                         )}
                                         {posting.flightsPaidByEmployer && (
@@ -516,7 +518,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                 </svg>
-                                                <span className="text-green-700 font-semibold">Flights Paid By Employer</span>
+                                                <span className="text-green-700 font-semibold">{t?.jobs?.flightsPaidByEmployer || 'Flights Paid By Employer'}</span>
                                             </div>
                                         )}
                                         {posting.visaArrangedByEmployer && (
@@ -524,7 +526,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                                 </svg>
-                                                <span className="text-green-700 font-semibold">Visa Arranged By Employer</span>
+                                                <span className="text-green-700 font-semibold">{t?.jobs?.visaArrangedByEmployer || 'Visa Arranged By Employer'}</span>
                                             </div>
                                         )}
                                     </div>
@@ -532,7 +534,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     {/* Massage Types Required - Show up to 4 */}
                                     {posting.massageTypes && posting.massageTypes.length > 0 ? (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-gray-500 mb-2">MASSAGE TYPES REQUIRED:</p>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">{t?.jobs?.massageTypesRequired || 'MASSAGE TYPES REQUIRED:'}</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {posting.massageTypes.slice(0, 4).map((type, idx) => (
                                                     <span key={idx} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
@@ -548,14 +550,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         </div>
                                     ) : (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-orange-500 mb-2">⚠️ No massage types specified for this posting</p>
+                                            <p className="text-xs font-semibold text-orange-500 mb-2">{t?.jobs?.noMassageTypes || '⚠️ No massage types specified for this posting'}</p>
                                         </div>
                                     )}
 
                                     {/* Languages Required - Show up to 3 */}
                                     {posting.requiredLanguages && posting.requiredLanguages.length > 0 ? (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-gray-500 mb-2">LANGUAGES REQUIRED:</p>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">{t?.jobs?.languagesRequired || 'LANGUAGES REQUIRED:'}</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {posting.requiredLanguages.slice(0, 3).map((lang, idx) => (
                                                     <span key={idx} className="px-3 py-1 bg-green-50 text-green-700 text-xs font-medium rounded-full border border-green-200">
@@ -571,14 +573,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         </div>
                                     ) : (
                                         <div className="mb-4">
-                                            <p className="text-xs font-semibold text-orange-500 mb-2">⚠️ No languages specified for this posting</p>
+                                            <p className="text-xs font-semibold text-orange-500 mb-2">{t?.jobs?.noLanguages || '⚠️ No languages specified for this posting'}</p>
                                         </div>
                                     )}
 
                                     {/* Benefits */}
                                     {posting.benefits.length > 0 && (
                                         <div className="mb-4">
-                                            <p className="text-sm font-bold text-black mb-2">BENEFITS:</p>
+                                            <p className="text-sm font-bold text-black mb-2">{t?.jobs?.benefits || 'BENEFITS:'}</p>
                                             <ul className="space-y-1.5">
                                                 {posting.benefits.map((benefit, idx) => (
                                                     <li key={idx} className="flex items-start gap-2 text-sm text-gray-700">
@@ -602,7 +604,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             <path d="M12 2C9.243 2 7 4.243 7 7v3H6c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-8c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v3H9V7zm9 13H6v-8h12v8z"/>
                                             <circle cx="12" cy="16" r="1.5"/>
                                         </svg>
-                                        <span>Upgrade To Unlock Details</span>
+                                        <span>{t?.jobs?.unlockDetails || 'Upgrade To Unlock Details'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -618,8 +620,8 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         <div className="mb-6 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 shadow-lg text-white">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-2xl font-bold mb-2">Are you a Massage Therapist?</h3>
-                                    <p className="text-orange-100">Create your professional profile and connect with employers</p>
+                                    <h3 className="text-2xl font-bold mb-2">{t?.jobs?.ctaTitle || 'Are you a Massage Therapist?'}</h3>
+                                    <p className="text-orange-100">{t?.jobs?.ctaDescription || 'Create your professional profile and connect with employers'}</p>
                                 </div>
                                 <button
                                     onClick={() => {
@@ -632,7 +634,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     }}
                                     className="px-6 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-all transform hover:scale-105 shadow-lg whitespace-nowrap"
                                 >
-                                    Create Your Profile
+                                    {t?.jobs?.ctaButton || 'Create Your Profile'}
                                 </button>
                             </div>
                         </div>
@@ -640,15 +642,15 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                         {isLoading ? (
                             <div className="text-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-                                <p className="mt-4 text-gray-600">Loading therapist profiles...</p>
+                                <p className="mt-4 text-gray-600">{t?.jobs?.loadingProfiles || 'Loading therapist profiles...'}</p>
                             </div>
                         ) : therapistListings.length === 0 ? (
                             <div className="text-center py-12 bg-white rounded-lg shadow-md">
                                 <div className="max-w-md mx-auto px-6">
                                     <div className="text-6xl mb-4">👤</div>
-                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">No Therapist Profiles Yet</h3>
+                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{t?.jobs?.noTherapistsYet || 'No Therapist Profiles Yet'}</h3>
                                     <p className="text-gray-600 mb-4">
-                                        Be the first to create your professional profile and connect with employers!
+                                        {t?.jobs?.noTherapistsDesc || 'Be the first to create your professional profile and connect with employers!'}
                                     </p>
                                     <button
                                         onClick={() => {
@@ -661,7 +663,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                         }}
                                         className="px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
                                     >
-                                        Create Your Profile Now
+                                        {t?.jobs?.createProfileNow || 'Create Your Profile Now'}
                                     </button>
                                 </div>
                             </div>
@@ -680,7 +682,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                 {/* Status Badge */}
                                                 <div className="absolute top-3 right-3">
                                                     <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                                                        🔍 Seeking Jobs
+                                                        {t?.jobs?.seekingJobs || '🔍 Seeking Jobs'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -709,7 +711,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             {/* Personal Info */}
                                             {(listing.gender || listing.age || listing.religion) && (
                                                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                                                    <p className="text-xs font-semibold text-gray-500 mb-2">PERSONAL INFORMATION:</p>
+                                                    <p className="text-xs font-semibold text-gray-500 mb-2">{t?.jobs?.personalInfo || 'PERSONAL INFORMATION:'}</p>
                                                     <div className="grid grid-cols-3 gap-2 text-sm">
                                                         {listing.gender && (
                                                             <div className="flex items-center gap-1">
@@ -736,7 +738,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             {/* Massage Skills */}
                                             {listing.massageTypes && listing.massageTypes.length > 0 && (
                                                 <div className="mb-4">
-                                                    <p className="text-xs font-semibold text-gray-500 mb-2">MY MASSAGE SKILL:</p>
+                                                    <p className="text-xs font-semibold text-gray-500 mb-2">{t?.jobs?.massageSkills || 'MY MASSAGE SKILL:'}</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {listing.massageTypes.slice(0, 3).map((type, idx) => (
                                                             <span key={idx} className="px-2 py-1 bg-orange-50 text-orange-700 text-xs rounded-full border border-orange-200">
@@ -756,17 +758,17 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             <div className="mb-4 flex flex-wrap gap-2">
                                                 {listing.workedAbroadBefore && (
                                                     <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-full border border-purple-200">
-                                                        ✈️ Worked Abroad
+                                                        {t?.jobs?.workedAbroad || '✈️ Worked Abroad'}
                                                     </span>
                                                 )}
                                                 {listing.hasReferences && (
                                                     <span className="px-2 py-1 bg-green-50 text-green-700 text-xs rounded-full border border-green-200">
-                                                        ✓ Has References
+                                                        {t?.jobs?.hasReferences || '✓ Has References'}
                                                     </span>
                                                 )}
                                                 {listing.currentlyWorking && (
                                                     <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-200">
-                                                        💼 Currently Working
+                                                        {t?.jobs?.currentlyWorking || '💼 Currently Working'}
                                                     </span>
                                                 )}
                                             </div>
@@ -775,13 +777,13 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             <div className="mb-4 space-y-2 text-sm">
                                                 {listing.experienceYears !== undefined && (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-gray-500">Experience:</span>
-                                                        <span className="font-semibold text-gray-900">{listing.experienceYears} years</span>
+                                                        <span className="text-gray-500">{t?.jobs?.experience || 'Experience:'}</span>
+                                                        <span className="font-semibold text-gray-900">{listing.experienceYears} {t?.jobs?.years || 'years'}</span>
                                                     </div>
                                                 )}
                                                 {listing.minimumSalary && (
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-gray-500">Expected Salary:</span>
+                                                        <span className="text-gray-500">{t?.jobs?.expectedSalary || 'Expected Salary:'}</span>
                                                         <span className="font-semibold text-gray-900">{listing.minimumSalary}</span>
                                                     </div>
                                                 )}
@@ -790,7 +792,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             {/* Location */}
                                             {listing.preferredLocations && (
                                                 <div className="mb-4">
-                                                    <p className="text-xs font-semibold text-gray-500 mb-1">📍 PREFERRED LOCATIONS:</p>
+                                                    <p className="text-xs font-semibold text-gray-500 mb-1">{t?.jobs?.preferredLocations || '📍 PREFERRED LOCATIONS:'}</p>
                                                     <p className="text-sm text-gray-700">{listing.preferredLocations}</p>
                                                 </div>
                                             )}
@@ -799,10 +801,10 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                             <div className="mb-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="text-lg">✅</span>
-                                                    <p className="text-sm font-bold text-green-700">Available for Hire</p>
+                                                    <p className="text-sm font-bold text-green-700">{t?.jobs?.availableForHire || 'Available for Hire'}</p>
                                                 </div>
                                                 {listing.currentlyWorking && (
-                                                    <p className="text-xs text-green-600 ml-7">Currently working but open to opportunities</p>
+                                                    <p className="text-xs text-green-600 ml-7">{t?.jobs?.openToOpportunities || 'Currently working but open to opportunities'}</p>
                                                 )}
                                             </div>
 
@@ -815,7 +817,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                                                     </svg>
-                                                    <span>Contact to Hire</span>
+                                                    <span>{t?.jobs?.contactToHire || 'Contact to Hire'}</span>
                                                 </button>
                                             )}
                                         </div>

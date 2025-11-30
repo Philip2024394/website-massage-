@@ -82,21 +82,48 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     // Base ratings that will be used for each massage type (cycle through these values)
     const baseRatings = [4.2, 4.5, 4.7, 4.8];
     
+    // Get translated massage content
+    const getTranslatedMassageContent = (name: string) => {
+        const translations = t?.massageTypes?.[name];
+        const details = getMassageTypeDetails(name);
+        
+        if (translations) {
+            return {
+                description: translations.shortDescription,
+                fullDescription: translations.fullDescription,
+                benefits: translations.benefits,
+                duration: translations.duration,
+                intensity: translations.intensity,
+                bestFor: translations.bestFor
+            };
+        }
+        
+        // Fallback to English from constants
+        return {
+            description: details?.shortDescription || getMassageDescription(name),
+            fullDescription: details?.fullDescription || getMassageDescription(name),
+            benefits: details?.benefits || [],
+            duration: details?.duration || '60 minutes',
+            intensity: details?.intensity || 'Moderate',
+            bestFor: details?.bestFor || []
+        };
+    };
+    
     // Initialize massage types with popularity ratings
     const [massageTypes, setMassageTypes] = useState<MassageType[]>(
         allMassageTypes.map((name, index) => {
             const imageUrl = getMassageTypeImage(name);
-            const details = getMassageTypeDetails(name);
+            const content = getTranslatedMassageContent(name);
             // Create a consistent placeholder color based on the massage type name
             const placeholderColor = ['f97316', 'ea580c', 'fb923c', 'fdba74'][name.length % 4];
             return {
                 name,
-                description: details?.shortDescription || getMassageDescription(name),
-                fullDescription: details?.fullDescription || getMassageDescription(name),
-                benefits: details?.benefits || [],
-                duration: details?.duration || '60 minutes',
-                intensity: details?.intensity || 'Moderate',
-                bestFor: details?.bestFor || [],
+                description: content.description,
+                fullDescription: content.fullDescription,
+                benefits: content.benefits,
+                duration: content.duration,
+                intensity: content.intensity,
+                bestFor: content.bestFor,
                 // Use our image URL if available, otherwise use consistent placeholder
                 image: imageUrl || `https://via.placeholder.com/400x200/${placeholderColor}/FFFFFF?text=${encodeURIComponent(name)}`,
                 popularity: baseRatings[index % baseRatings.length], // Assign base rating from array
@@ -104,6 +131,24 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
             };
         })
     );
+
+    // Update massage types when translations change (language switch)
+    useEffect(() => {
+        setMassageTypes(prevTypes => 
+            prevTypes.map(type => {
+                const content = getTranslatedMassageContent(type.name);
+                return {
+                    ...type,
+                    description: content.description,
+                    fullDescription: content.fullDescription,
+                    benefits: content.benefits,
+                    duration: content.duration,
+                    intensity: content.intensity,
+                    bestFor: content.bestFor
+                };
+            })
+        );
+    }, [t]); // Re-run when translations change
 
     // Add slight fluctuations to ratings as user spends time on each card
     useEffect(() => {
@@ -245,7 +290,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         {massage.duration}
                                     </span>
                                     <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                                        {massage.intensity} Pressure
+                                        {massage.intensity} {t?.home?.pressure || 'Pressure'}
                                     </span>
                                 </div>
 
@@ -255,7 +300,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         onClick={() => toggleExpanded(index)}
                                         className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
                                     >
-                                        {massage.expanded ? '− Read Less' : '+ Read More'}
+                                        {massage.expanded ? `− ${t?.home?.readLess || 'Read Less'}` : `+ ${t?.home?.readMore || 'Read More'}`}
                                     </button>
                                 )}
 
@@ -264,7 +309,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                     <div className="mt-3 pt-3 border-t border-gray-200 space-y-4">
                                         {/* Full Description */}
                                         <div>
-                                            <h4 className="text-sm font-bold text-gray-900 mb-2">About {massage.name}</h4>
+                                            <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.aboutMassage || 'About'} {massage.name}</h4>
                                             <p className="text-xs text-gray-600 leading-relaxed">
                                                 {massage.fullDescription}
                                             </p>
@@ -273,7 +318,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         {/* Benefits */}
                                         {massage.benefits && massage.benefits.length > 0 && (
                                             <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">Key Benefits</h4>
+                                                <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.keyBenefits || 'Key Benefits'}</h4>
                                                 <ul className="space-y-1">
                                                     {massage.benefits.map((benefit, idx) => (
                                                         <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
@@ -288,7 +333,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         {/* Best For */}
                                         {massage.bestFor && massage.bestFor.length > 0 && (
                                             <div>
-                                                <h4 className="text-sm font-bold text-gray-900 mb-2">Best For</h4>
+                                                <h4 className="text-sm font-bold text-gray-900 mb-2">{t?.home?.bestFor || 'Best For'}</h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {massage.bestFor.map((item, idx) => (
                                                         <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
@@ -308,7 +353,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         onClick={() => onFindTherapists?.(massage.name)}
                                         className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                                     >
-                                        Find Therapists →
+                                        {t?.home?.findTherapists || 'Find Therapists'} →
                                     </button>
                                     
                                     {/* Spacer */}
@@ -322,7 +367,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                                         <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">
                                             <BuildingIcon className="w-4 h-4" />
                                         </span>
-                                        Find Massage Places →
+                                        {t?.home?.findMassagePlaces || 'Find Massage Places'} →
                                     </button>
                                 </div>
                             </div>

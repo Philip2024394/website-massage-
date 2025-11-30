@@ -17,6 +17,7 @@ interface BlogPost {
 
 interface BlogIndexPageProps {
     onNavigate?: (page: string) => void;
+    t?: any;
     // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
 
@@ -34,6 +35,7 @@ interface BlogIndexPageProps {
 
 const BlogIndexPage: React.FC<BlogIndexPageProps> = ({ 
     onNavigate,
+    t,
     onMassageJobsClick,
 
     onVillaPortalClick,
@@ -51,11 +53,11 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const categories = [
-        { id: 'all', name: 'All Articles', count: 24 },
-        { id: 'industry', name: 'Industry Trends', count: 8 },
-        { id: 'techniques', name: 'Massage Techniques', count: 6 },
-        { id: 'career', name: 'Career Advice', count: 5 },
-        { id: 'wellness', name: 'Wellness Tips', count: 5 },
+        { id: 'all', name: t?.blog?.categoryAll || 'All Articles', count: 24 },
+        { id: 'industry', name: t?.blog?.categoryIndustry || 'Industry Trends', count: 8 },
+        { id: 'techniques', name: t?.blog?.categoryTechniques || 'Massage Techniques', count: 6 },
+        { id: 'career', name: t?.blog?.categoryCareer || 'Career Advice', count: 5 },
+        { id: 'wellness', name: t?.blog?.categoryWellness || 'Wellness Tips', count: 5 },
     ];
 
     const blogPosts: BlogPost[] = [
@@ -212,7 +214,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
     const featuredPosts = blogPosts.filter(post => post.featured);
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
@@ -260,7 +262,6 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 places={places}
             />
 
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
             {/* Hero Section */}
             <div 
                 className="relative h-96 bg-cover bg-center"
@@ -294,7 +295,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 {/* Featured Posts */}
                 {selectedCategory === 'all' && (
                     <div className="mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-8">Featured Articles</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-8">{t?.blog?.featuredArticles || 'Featured Articles'}</h2>
                         <div className="grid md:grid-cols-3 gap-8">
                             {featuredPosts.map((post) => (
                                 <div key={post.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
@@ -311,7 +312,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                                 {categories.find(c => c.id === post.category)?.name}
                                             </span>
                                             <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
-                                                Featured
+                                                {t?.blog?.featured || 'Featured'}
                                             </span>
                                         </div>
                                         <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
@@ -328,7 +329,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                             onClick={() => onNavigate?.(`blog/${post.slug}`)}
                                             className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors"
                                         >
-                                            Read Article
+                                            {t?.blog?.readArticle || 'Read Article'}
                                         </button>
                                     </div>
                                 </div>
@@ -340,7 +341,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 {/* All Posts Grid */}
                 <div>
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
-                        {selectedCategory === 'all' ? 'All Articles' : categories.find(c => c.id === selectedCategory)?.name}
+                        {selectedCategory === 'all' ? (t?.blog?.allArticles || 'All Articles') : categories.find(c => c.id === selectedCategory)?.name}
                     </h2>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredPosts.map((post) => (
@@ -355,7 +356,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                 <div className="p-5">
                                     <div className="mb-2">
                                         <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">
-                                            {categories.find(c => c.id === post.category)?.name}
+                                            {categories.find(c => c.id === selectedCategory)?.name}
                                         </span>
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
@@ -372,7 +373,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                                         onClick={() => onNavigate?.(`blog/${post.slug}`)}
                                         className="w-full py-2 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors text-sm"
                                     >
-                                        Read More
+                                        {t?.blog?.readMore || 'Read More'}
                                     </button>
                                 </div>
                             </div>
@@ -393,18 +394,18 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                         </div>
                         {/* Right side - Content */}
                         <div className="p-8 md:p-12 text-white flex flex-col justify-center">
-                            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">Stay Updated with Wellness Industry Insights</h2>
+                            <h2 className="text-2xl md:text-3xl font-bold mb-3 md:mb-4">{t?.blog?.stayUpdated || 'Stay Updated with Wellness Industry Insights'}</h2>
                             <p className="text-base md:text-xl text-orange-100 mb-6 md:mb-8">
-                                Get weekly articles, industry trends, and professional tips delivered to your inbox
+                                {t?.blog?.newsletterDesc || 'Get weekly articles, industry trends, and professional tips delivered to your inbox'}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <input
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder={t?.blog?.enterEmail || 'Enter your email'}
                                     className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
                                 />
                                 <button className="px-8 py-3 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors whitespace-nowrap">
-                                    Subscribe
+                                    {t?.blog?.subscribe || 'Subscribe'}
                                 </button>
                             </div>
                         </div>
@@ -413,7 +414,7 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
 
                 {/* Popular Topics */}
                 <div className="mt-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Popular Topics</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t?.blog?.popularTopics || 'Popular Topics'}</h2>
                     <div className="grid md:grid-cols-4 gap-4 pb-20">
                         {['Balinese Massage', 'Hotel Spa Management', 'Therapist Certification', 'Wellness Tourism', 'Deep Tissue Techniques', 'Career Growth', 'Client Retention', 'Aromatherapy'].map((topic, i) => (
                             <div key={i} className="bg-white rounded-lg p-4 shadow hover:shadow-lg transition-shadow text-center cursor-pointer">
@@ -421,12 +422,9 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                             </div>
                         ))}
                     </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        </div>
     );
-};
-
-export default BlogIndexPage;
+};export default BlogIndexPage;
 

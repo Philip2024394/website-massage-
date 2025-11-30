@@ -25,6 +25,17 @@ export const homeTranslations = {
         yearsExperience: 'Years Experience',
         genericBio: 'Professional massage therapist with experience in various massage techniques.'
       },
+      // Massage Directory page UI
+      pressure: 'Pressure',
+      readMore: 'Read More',
+      readLess: 'Read Less',
+      aboutMassage: 'About',
+      keyBenefits: 'Key Benefits',
+      bestFor: 'Best For',
+      findTherapists: 'Find Therapists',
+      findMassagePlaces: 'Find Massage Places',
+      massageDirectory: 'Massage Directory',
+      massageDirectoryTitle: 'Explore Massage Types',
       menu: {
         title: 'Menu',
         createProfile: 'Create Profile',
@@ -167,6 +178,17 @@ export const homeTranslations = {
         yearsExperience: 'Tahun Pengalaman',
         genericBio: 'Terapis pijat profesional dengan pengalaman dalam berbagai teknik pijat.'
       },
+      // Massage Directory page UI
+      pressure: 'Tekanan',
+      readMore: 'Baca Selengkapnya',
+      readLess: 'Baca Lebih Sedikit',
+      aboutMassage: 'Tentang',
+      keyBenefits: 'Manfaat Utama',
+      bestFor: 'Terbaik Untuk',
+      findTherapists: 'Cari Terapis',
+      findMassagePlaces: 'Cari Tempat Pijat',
+      massageDirectory: 'Direktori Pijat',
+      massageDirectoryTitle: 'Jelajahi Jenis Pijat',
       menu: {
         title: 'Menu',
         createProfile: 'Buat Profil',

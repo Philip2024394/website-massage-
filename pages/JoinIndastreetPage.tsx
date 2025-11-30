@@ -175,34 +175,47 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                             </div>
 
                         {/* Success Stories */}
-                        <div className="p-8 mb-8 border-2 border-orange-500 rounded-xl">
-                                <h4 className="text-2xl font-bold text-gray-900 mb-6">{t.successStoriesTitle}</h4>
+                        <div 
+                            className="relative p-8 mb-8 border-2 border-orange-500 rounded-xl overflow-hidden"
+                            style={{
+                                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/success%20stories.png)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        >
+                            {/* Semi-transparent overlay for better text readability */}
+                            <div className="absolute inset-0 bg-white/40 backdrop-blur-sm"></div>
+                            
+                            {/* Content */}
+                            <div className="relative z-10">
+                                <h4 className="text-3xl font-extrabold text-gray-900 mb-6 drop-shadow-lg">{t.successStoriesTitle}</h4>
                                 <div className="space-y-6">
-                                    <div className="bg-white rounded-lg p-6">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-lg">
                                         <div className="flex items-start gap-4">
                                             <img 
                                                 src="https://ik.imagekit.io/7grri5v7d/MASSAGE_SPA_PERSON-removebg-preview.png"
                                                 alt="Balinese Massage Therapist"
-                                                className="w-16 h-16 rounded-full object-cover"
+                                                className="w-16 h-16 rounded-full object-cover ring-2 ring-orange-500"
                                             />
                                             <div>
-                                                <p className="font-bold text-gray-900 mb-2">{t.testimonial1Name}</p>
-                                                <p className="text-gray-700 italic mb-2">{t.testimonial1Text}</p>
-                                                <p className="text-sm text-gray-600">{t.testimonial1Rating}</p>
+                                                <p className="font-extrabold text-gray-900 mb-2 text-lg">{t.testimonial1Name}</p>
+                                                <p className="text-gray-800 font-semibold italic mb-2">{t.testimonial1Text}</p>
+                                                <p className="text-sm text-gray-700 font-bold">{t.testimonial1Rating}</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="bg-white rounded-lg p-6">
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-lg p-6 shadow-lg">
                                         <div className="flex items-start gap-4">
                                             <img 
                                                 src="https://ik.imagekit.io/7grri5v7d/MASSAGE_SPA_PERSONs-removebg-preview.png"
                                                 alt="Ubud Wellness Spa"
-                                                className="w-16 h-16 rounded-full object-cover"
+                                                className="w-16 h-16 rounded-full object-cover ring-2 ring-orange-500"
                                             />
                                             <div>
-                                                <p className="font-bold text-gray-900 mb-2">{t.testimonial2Name}</p>
-                                                <p className="text-gray-700 italic mb-2">{t.testimonial2Text}</p>
-                                                <p className="text-sm text-gray-600">{t.testimonial2Rating}</p>
+                                                <p className="font-extrabold text-gray-900 mb-2 text-lg">{t.testimonial2Name}</p>
+                                                <p className="text-gray-800 font-semibold italic mb-2">{t.testimonial2Text}</p>
+                                                <p className="text-sm text-gray-700 font-bold">{t.testimonial2Rating}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -301,6 +314,7 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                     {t.contactButton}
                                 </a>
                             </div>
+                        </div>
             </div>
         </div>
     );
