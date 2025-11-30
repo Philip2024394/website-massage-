@@ -1,10 +1,29 @@
-# IndaStreet - Massage Services Bali
+# Indastreet - Indonesia's #1 Massage Directory
 # https://www.indastreetmassage.com/robots.txt
 
 User-agent: *
 Allow: /
+Allow: /home
+Allow: /therapists
+Allow: /spas
+Allow: /services
+Allow: /massage-types
+Allow: /join-indastreet
+Allow: /join-indastreet-partners
+Allow: /partners
+Allow: /how-it-works
+Allow: /blog
+Allow: /about
+Allow: /contact
+
+# Disallow admin and portal areas
 Disallow: /admin
+Disallow: /therapist-portal
+Disallow: /spa-portal
+Disallow: /hotel-portal
 Disallow: /dashboard
+Disallow: /login
+Disallow: /register
 Disallow: /api/
 
 # Sitemaps
@@ -18,9 +37,22 @@ User-agent: Googlebot
 Allow: /
 Disallow: /admin
 Disallow: /dashboard
+Disallow: /api/
 
 # Bing
 User-agent: Bingbot
 Allow: /
 Disallow: /admin
 Disallow: /dashboard
+Disallow: /api/
+
+# Social Media Crawlers
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
