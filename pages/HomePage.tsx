@@ -677,7 +677,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
+            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px', paddingTop: '16px' }}>
                 <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
