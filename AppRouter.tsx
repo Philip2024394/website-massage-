@@ -45,7 +45,8 @@ const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPosti
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
-const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
+// Eager-load IndastreetPartnersPage to avoid dev dynamic import fetch issues
+import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
