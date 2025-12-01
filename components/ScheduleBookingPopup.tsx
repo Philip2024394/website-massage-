@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Clock, X, User, Phone, Calendar } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { useLanguage } from '../hooks/useLanguage';
+import { translations } from '../translations';
 // New notification + assignment utilities
 import { playSound } from '../lib/notificationSounds';
 import { assignInitialTherapist } from '../lib/bookingAssignment';
@@ -18,6 +20,9 @@ declare global {
       hotelVillaName?: string;
       hotelVillaType?: 'hotel' | 'villa';
       isImmediateBooking?: boolean; // For immediate bookings via green "Pesan" button
+      pricing?: { [key: string]: number }; // Pricing object (e.g., {"60": 250, "90": 350, "120": 450})
+      discountPercentage?: number; // Discount percentage if applicable
+      discountActive?: boolean; // Whether discount is currently active
     }) => void;
   }
 }
@@ -40,6 +45,9 @@ interface ScheduleBookingPopupProps {
   hotelVillaName?: string;
   hotelVillaType?: 'hotel' | 'villa';
   isImmediateBooking?: boolean; // Skip time selection for immediate bookings
+  pricing?: { [key: string]: number }; // Pricing object from therapist/place (e.g., {"60": 250, "90": 350, "120": 450})
+  discountPercentage?: number; // Discount percentage if applicable
+  discountActive?: boolean; // Whether discount is currently active
 }
 
 const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
@@ -52,8 +60,14 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   hotelVillaId,
   hotelVillaName,
   hotelVillaType,
-  isImmediateBooking = false
+  isImmediateBooking = false,
+  pricing,
+  discountPercentage = 0,
+  discountActive = false
 }) => {
+  const { language } = useLanguage();
+  const t = translations[language] || translations['id'];
+  
   const [step, setStep] = useState<'duration' | 'time' | 'details' | 'confirming'>('duration');
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
   const [selectedTime, setSelectedTime] = useState<TimeSlot | null>(null);
@@ -67,10 +81,45 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const [closingTime, setClosingTime] = useState<string>('21:00');
   const [isCreating, setIsCreating] = useState(false);
 
+  // Debug pricing values
+  console.log('📊 ScheduleBookingPopup pricing debug:', {
+    therapistName,
+    receivedPricing: pricing,
+    discountPercentage,
+    pricing60: pricing?.["60"],
+    pricing90: pricing?.["90"],
+    pricing120: pricing?.["120"]
+  });
+
+  // Note: pricing contains full IDR amounts (e.g., 250000), will be divided by 1000 for 'K' display
   const durations = [
-    { minutes: 60, price: 50, label: '60 min' },
-    { minutes: 90, price: 70, label: '90 min' },
-    { minutes: 120, price: 90, label: '120 min' }
+    { 
+      minutes: 60, 
+      price: pricing && pricing["60"] 
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["60"]) * (1 - discountPercentage / 100))
+            : Number(pricing["60"]))
+        : 250000, 
+      label: '60 min' 
+    },
+    { 
+      minutes: 90, 
+      price: pricing && pricing["90"] 
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["90"]) * (1 - discountPercentage / 100))
+            : Number(pricing["90"]))
+        : 350000, 
+      label: '90 min' 
+    },
+    { 
+      minutes: 120, 
+      price: pricing && pricing["120"] 
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["120"]) * (1 - discountPercentage / 100))
+            : Number(pricing["120"]))
+        : 450000, 
+      label: '120 min' 
+    }
   ];
 
   // Generate time slots from 8 AM to last booking time
@@ -310,7 +359,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         message += `💼 Service: ${finalDuration} min Professional Massage\n`;
       }
       
-      message += `💰 Price: $${finalPrice}\n\n`;
+      message += `💰 Price: IDR ${Math.round(finalPrice / 1000)}K\n\n`;
       
       if (hotelVillaId && roomNumber) {
         message += `🏨 ${hotelVillaType === 'hotel' ? 'HOTEL' : 'VILLA'} BOOKING\n`;
@@ -411,7 +460,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           {/* Step 1: Select Duration */}
           {step === 'duration' && (
             <div className="space-y-1.5 sm:space-y-2">
-              <h3 className="text-base font-semibold text-gray-800 mb-2 sm:mb-3">Select Duration</h3>
+              <h3 className="text-base font-semibold text-gray-800 mb-2 sm:mb-3">{language === 'id' ? 'Pilih Durasi' : 'Select Duration'}</h3>
               {durations.map((option) => (
                 <button
                   key={option.minutes}
@@ -440,11 +489,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                       <div>
                         <div className="font-bold text-gray-800 text-sm">{option.label}</div>
                         {therapistType === 'therapist' && (
-                          <div className="text-xs text-gray-500">+ 30 min travel time</div>
+                          <div className="text-xs text-gray-500">{language === 'id' ? '+ 30 menit waktu perjalanan' : '+ 30 min travel time'}</div>
                         )}
                       </div>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-orange-600">${option.price}</div>
+                    <div className="text-lg sm:text-xl font-bold text-orange-600">IDR {Math.round(option.price / 1000)}K</div>
                   </div>
                 </button>
               ))}
@@ -458,20 +507,20 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 onClick={() => setStep('duration')}
                 className="text-orange-600 text-sm font-medium mb-2"
               >
-                ← Back to duration
+                ← {language === 'id' ? 'Kembali ke durasi' : 'Back to duration'}
               </button>
               <h3 className="text-base font-semibold text-gray-800 mb-3 flex items-center gap-2">
                 <Clock className="text-orange-500" size={18} />
-                Select Time ({selectedDuration} min)
+                {language === 'id' ? `Pilih Waktu (${selectedDuration} menit)` : `Select Time (${selectedDuration} min)`}
               </h3>
               
               <div className="bg-orange-50 p-3 rounded-lg mb-3">
                 <p className="text-xs text-orange-800 flex items-center gap-1">
                   <Clock className="inline w-3 h-3" />
                   {therapistType === 'place' ? (
-                    <>Open today: {openingTime}–{closingTime}</>
+                    <>{language === 'id' ? `Buka hari ini: ${openingTime}–${closingTime}` : `Open today: ${openingTime}–${closingTime}`}</>
                   ) : (
-                    <>Last booking today: {lastBookingTime}</>
+                    <>{language === 'id' ? `Booking terakhir hari ini: ${lastBookingTime}` : `Last booking today: ${lastBookingTime}`}</>
                   )}
                 </p>
               </div>

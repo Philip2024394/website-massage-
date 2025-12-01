@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Clock, AlertTriangle, X, User } from 'lucide-react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { useLanguage } from '../hooks/useLanguage';
+import { translations } from '../translations';
 
 // Extend window type for global booking tracker
 declare global {
@@ -34,6 +36,7 @@ interface BookingPopupProps {
   hotelVillaLocation?: string;
   pricing?: { [key: string]: number };
   discountPercentage?: number;
+  discountActive?: boolean;
 }
 
 const BookingPopup: React.FC<BookingPopupProps> = ({
@@ -48,8 +51,10 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   hotelVillaType,
   hotelVillaLocation,
   pricing,
-  discountPercentage = 0
+  discountPercentage = 0,
+  discountActive = false
 }) => {
+  const { language } = useLanguage();
   const [showWarning, setShowWarning] = useState(true);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -67,35 +72,41 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   const isHotelVillaBooking = Boolean(hotelVillaId && hotelVillaName);
 
   // Use pricing from props if available, otherwise use default prices
+  // Note: pricing contains FULL IDR amounts (e.g., 250000). We will format to K only for display.
   const bookingOptions: BookingOption[] = [
     { 
       duration: 60, 
       price: pricing && pricing["60"] 
-        ? (discountPercentage > 0 
-            ? Math.round(Number(pricing["60"]) * 1000 * (1 - discountPercentage / 100))
-            : Number(pricing["60"]) * 1000)
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["60"]) * (1 - discountPercentage / 100))
+            : Number(pricing["60"]))
         : 250000 // Default IDR 250K
     },
     { 
       duration: 90, 
       price: pricing && pricing["90"] 
-        ? (discountPercentage > 0 
-            ? Math.round(Number(pricing["90"]) * 1000 * (1 - discountPercentage / 100))
-            : Number(pricing["90"]) * 1000)
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["90"]) * (1 - discountPercentage / 100))
+            : Number(pricing["90"]))
         : 350000 // Default IDR 350K
     },
     { 
       duration: 120, 
       price: pricing && pricing["120"] 
-        ? (discountPercentage > 0 
-            ? Math.round(Number(pricing["120"]) * 1000 * (1 - discountPercentage / 100))
-            : Number(pricing["120"]) * 1000)
+        ? (discountActive && discountPercentage > 0 
+            ? Math.round(Number(pricing["120"]) * (1 - discountPercentage / 100))
+            : Number(pricing["120"]))
         : 450000 // Default IDR 450K
     }
   ];
 
   const createBookingRecord = async () => {
-    if (!selectedDuration) return;
+    if (!selectedDuration) {
+      console.warn('⚠️ No duration selected');
+      return;
+    }
+
+    console.log('🚀 Starting booking creation process...');
 
     try {
       setIsCreating(true);
@@ -265,6 +276,9 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
 
+      // Show success message before closing
+      console.log('✅ Booking created successfully, opening status tracker');
+
       if (window.openBookingStatusTracker) {
         window.openBookingStatusTracker({
           bookingId: booking.$id,
@@ -275,6 +289,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         });
       }
 
+      // Close the booking popup
       onClose();
 
     } catch (error: any) {
@@ -372,7 +387,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                 </div>
               )}
               <div>
-                <h2 className="text-xl font-bold text-white">Select Duration</h2>
+                <h2 className="text-xl font-bold text-white">{language === 'id' ? 'Pilih Durasi' : 'Select Duration'}</h2>
                 <p className="text-orange-100 text-xs">Indastreet • {therapistName}</p>
               </div>
             </div>
@@ -385,18 +400,18 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         <div className="p-4 space-y-3">
           {/* User Information Section */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-            <h3 className="font-semibold text-gray-800 text-sm mb-3">Your Information</h3>
+            <h3 className="font-semibold text-gray-800 text-sm mb-3">{language === 'id' ? 'Informasi Anda' : 'Your Information'}</h3>
             
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Your Name <span className="text-red-500">*</span>
+                {language === 'id' ? 'Nama Anda' : 'Your Name'} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter your full name"
+                placeholder={language === 'id' ? 'Masukkan nama lengkap' : 'Enter your full name'}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
               />
             </div>
@@ -404,7 +419,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             {/* WhatsApp Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                WhatsApp Number <span className="text-red-500">*</span>
+                {language === 'id' ? 'Nomor WhatsApp' : 'WhatsApp Number'} <span className="text-red-500">*</span>
               </label>
               <div className="flex gap-2">
                 <select
@@ -440,7 +455,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             {/* Location Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location Type <span className="text-red-500">*</span>
+                {language === 'id' ? 'Jenis Lokasi' : 'Location Type'} <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -474,7 +489,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                       : 'bg-white border border-gray-300 text-gray-700 hover:border-orange-300'
                   }`}
                 >
-                  Home
+                  {language === 'id' ? 'Rumah' : 'Home'}
                 </button>
               </div>
             </div>
@@ -484,19 +499,19 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {locationType === 'hotel' ? 'Hotel' : 'Villa'} Name <span className="text-red-500">*</span>
+                    {locationType === 'hotel' ? (language === 'id' ? 'Nama Hotel' : 'Hotel Name') : (language === 'id' ? 'Nama Villa' : 'Villa Name')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={hotelVillaNameInput}
                     onChange={(e) => setHotelVillaNameInput(e.target.value)}
-                    placeholder={`Enter ${locationType} name`}
+                    placeholder={language === 'id' ? `Masukkan nama ${locationType === 'hotel' ? 'hotel' : 'villa'}` : `Enter ${locationType} name`}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Room Number <span className="text-red-500">*</span>
+                    {language === 'id' ? 'Nomor Kamar' : 'Room Number'} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -513,12 +528,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             {locationType === 'home' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Address <span className="text-red-500">*</span>
+                  {language === 'id' ? 'Alamat Lengkap' : 'Full Address'} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={homeAddress}
                   onChange={(e) => setHomeAddress(e.target.value)}
-                  placeholder="Enter your complete address with landmarks"
+                  placeholder={language === 'id' ? 'Masukkan alamat lengkap dengan patokan' : 'Enter your complete address with landmarks'}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                 />
@@ -528,7 +543,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
           {/* Duration Selection */}
           <div className="space-y-1.5">
-            <h3 className="font-semibold text-gray-800 text-sm">Select Duration</h3>
+            <h3 className="font-semibold text-gray-800 text-sm">{language === 'id' ? 'Pilih Durasi' : 'Select Duration'}</h3>
           {bookingOptions.map((option) => (
             <button
               key={option.duration}
@@ -543,14 +558,14 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                 <div className="text-left flex items-center gap-2">
                   <Clock className="text-orange-500" size={18} />
                   <div>
-                    <div className="font-bold text-gray-800 text-sm">{option.duration} minutes</div>
-                    <div className="text-xs text-gray-500">Professional massage</div>
+                    <div className="font-bold text-gray-800 text-sm">{option.duration} {language === 'id' ? 'menit' : 'minutes'}</div>
+                    <div className="text-xs text-gray-500">{language === 'id' ? 'Pijat profesional' : 'Professional massage'}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  {discountPercentage > 0 && pricing && (
+                  {discountActive && discountPercentage > 0 && pricing && (
                     <div className="text-xs text-gray-500 line-through">
-                      IDR {pricing[option.duration.toString()]}K
+                      IDR {Math.round((pricing[option.duration.toString()]) / 1000)}K
                     </div>
                   )}
                   <div className="text-lg font-bold text-orange-600">
@@ -565,7 +580,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
           {/* Remove old Hotel/Villa section since it's now in user info */}
 
           <button
-            onClick={createBookingRecord}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              createBookingRecord();
+            }}
             disabled={
               !selectedDuration || 
               isCreating || 
@@ -585,7 +605,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {isCreating ? 'Creating Booking...' : 'Confirm Booking'}
+            {isCreating ? (language === 'id' ? 'Membuat Booking...' : 'Creating Booking...') : (language === 'id' ? 'Konfirmasi Booking' : 'Confirm Booking')}
           </button>
         </div>
       </div>

@@ -39,6 +39,7 @@ const App = () => {
         hotelVillaLocation?: string;
         pricing?: { [key: string]: number };
         discountPercentage?: number;
+        discountActive?: boolean;
     } | null>(null);
 
     // Booking Status Tracker state
@@ -62,6 +63,9 @@ const App = () => {
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
         hotelVillaLocation?: string;
+        pricing?: { [key: string]: number };
+        discountPercentage?: number;
+        discountActive?: boolean;
     } | null>(null);
 
     // Start booking expiration service on mount
@@ -310,7 +314,8 @@ const App = () => {
         profilePicture?: string,
         hotelVillaLocation?: string,
         pricing?: { [key: string]: number },
-        discountPercentage?: number
+        discountPercentage?: number,
+        discountActive?: boolean
     ) => {
         console.log('📱 Opening booking popup for:', {
             providerName,
@@ -333,7 +338,8 @@ const App = () => {
             hotelVillaType,
             hotelVillaLocation,
             pricing,
-            discountPercentage
+            discountPercentage,
+            discountActive
         });
         setIsBookingPopupOpen(true);
     };
@@ -361,6 +367,9 @@ const App = () => {
         hotelVillaName?: string;
         hotelVillaType?: 'hotel' | 'villa';
         hotelVillaLocation?: string;
+        pricing?: { [key: string]: number }; // Pricing object (e.g., {"60": 250, "90": 350, "120": 450})
+        discountPercentage?: number; // Discount percentage if applicable
+        discountActive?: boolean; // Whether discount is currently active
     }) => {
         console.log('📅 Opening schedule booking popup:', bookingInfo);
         setScheduleBookingInfo(bookingInfo);
@@ -528,6 +537,7 @@ const App = () => {
                 hotelVillaLocation={bookingProviderInfo?.hotelVillaLocation}
                 pricing={bookingProviderInfo?.pricing}
                 discountPercentage={bookingProviderInfo?.discountPercentage}
+                discountActive={bookingProviderInfo?.discountActive}
             />
 
             {/* Global Booking Status Tracker */}
@@ -553,6 +563,9 @@ const App = () => {
                 hotelVillaId={scheduleBookingInfo?.hotelVillaId}
                 hotelVillaName={scheduleBookingInfo?.hotelVillaName}
                 hotelVillaType={scheduleBookingInfo?.hotelVillaType}
+                pricing={scheduleBookingInfo?.pricing}
+                discountPercentage={scheduleBookingInfo?.discountPercentage}
+                discountActive={scheduleBookingInfo?.discountActive}
             />
         </DeviceStylesProvider>
         </LanguageProvider>

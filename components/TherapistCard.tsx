@@ -393,11 +393,27 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             };
         }
         
-        // Fallback to old JSON format
-        return parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+        // Fallback to old JSON format - multiply by 1000 to get full IDR amounts
+        const parsedPricing = parsePricing(therapist.pricing) || { "60": 0, "90": 0, "120": 0 };
+        return {
+            "60": parsedPricing["60"] * 1000,
+            "90": parsedPricing["90"] * 1000,
+            "120": parsedPricing["120"] * 1000
+        };
     };
     
     const pricing = getPricing();
+    
+    // Debug pricing for this specific therapist
+    console.log(`💰 TherapistCard pricing for ${therapist.name}:`, {
+        therapistId: therapist.$id || therapist.id,
+        rawPrice60: therapist.price60,
+        rawPrice90: therapist.price90,
+        rawPrice120: therapist.price120,
+        rawPricingJSON: therapist.pricing,
+        calculatedPricing: pricing,
+        discountPercentage: therapist.discountPercentage
+    });
     
     // Debug logging for pricing issues (only when no pricing data)
     const hasAnyPricing = pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0;
@@ -1094,8 +1110,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 undefined, // hotelVillaType
                                 therapist.profilePicture || therapist.mainImage,
                                 undefined, // hotelVillaLocation
-                                therapist.pricing, // pricing
-                                therapist.discountPercentage // discount
+                                pricing, // use processed full IDR pricing
+                                therapist.discountPercentage, // discount percentage
+                                isDiscountActive(therapist) // discount active flag
                             );
                         } else {
                             console.warn('⚠️ Booking popup not available - falling back to direct WhatsApp');
@@ -1119,7 +1136,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
                                 therapistName: therapist.name,
                                 therapistType: 'therapist',
-                                profilePicture: therapist.profilePicture || therapist.mainImage
+                                profilePicture: therapist.profilePicture || therapist.mainImage,
+                                pricing: pricing,
+                                discountPercentage: therapist.discountPercentage || 0,
+                                discountActive: isDiscountActive(therapist)
                             });
                         } else {
                             console.error('Schedule booking popup not available');

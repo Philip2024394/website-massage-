@@ -186,8 +186,13 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         }
     };
     
-    // Parse pricing
-    const pricing = parsePricing(place.pricing) || { "60": 0, "90": 0, "120": 0 };
+    // Parse pricing - multiply by 1000 to get full IDR amounts for consistent display
+    const parsedPricing = parsePricing(place.pricing) || { "60": 0, "90": 0, "120": 0 };
+    const pricing = {
+        "60": parsedPricing["60"] * 1000,
+        "90": parsedPricing["90"] * 1000,
+        "120": parsedPricing["120"] * 1000
+    };
     
     // Get main image with debug logging
     console.log('🖼️ MassagePlaceCard mainImage debug:', {
