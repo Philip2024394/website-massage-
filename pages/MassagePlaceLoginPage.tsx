@@ -191,14 +191,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         data: { $id: effectivePlaceId, email }
                     });
                     
-                    // Track daily sign-in for coin rewards (only for login, not signup)
-                    if (!isSignUp) {
-                        try {
-                            await trackDailySignIn(response.userId, 1, 'place');
-                        } catch (coinError) {
-                            console.warn('Daily sign-in tracking failed:', coinError);
-                        }
-                    }
+                    // Note: Daily sign-in tracking for coin rewards has been disabled
                     
                     console.log(`✅ Place login successful for ${email} (placeId: ${effectivePlaceId})`);
                     console.log('🔄 Calling onSuccess to navigate to dashboard with placeId:', effectivePlaceId);

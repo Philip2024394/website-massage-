@@ -304,6 +304,7 @@ export interface Therapist {
 
 export interface Place {
     id: number | string; // Support both for Appwrite compatibility ($id is string)
+    $id?: string; // Appwrite document ID
     name: string;
     email: string;
     password?: string;

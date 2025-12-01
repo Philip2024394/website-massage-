@@ -340,15 +340,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
     const style = statusStyles[displayStatus];
     
-    // Load user referral code when modal opens
+    // Note: User referral code initialization has been disabled (coin system removed)
     useEffect(() => {
         if (showReferModal && isCustomerLoggedIn) {
-            const userId = localStorage.getItem('appwrite_user_id');
-            if (userId) {
-                initializeUserReferralCode(userId).then(code => {
-                    setUserReferralCode(code);
-                });
-            }
+            // Referral code functionality removed
         }
     }, [showReferModal, isCustomerLoggedIn]);
 

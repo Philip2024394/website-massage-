@@ -4,7 +4,8 @@
 import React, { createContext, useContext, useCallback, useEffect, useState } from 'react';
 import { useNotificationSounds } from '../hooks/useNotificationSounds';
 import { backgroundNotificationService } from '../lib/backgroundNotificationService';
-import { trackBookingCompletion } from '../lib/coinHooks';
+// Note: Coin system has been disabled and moved to deleted folder
+// import { trackBookingCompletion } from '../lib/coinHooks';
 
 interface NotificationContextType {
     // Booking notifications
@@ -101,14 +102,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
             await sounds.playCoinSound(earnings);
         }
         
-        // Track booking completion for coin rewards
-        if (userId && totalBookings !== undefined) {
-            try {
-                await trackBookingCompletion(userId, bookingId, totalBookings);
-            } catch (coinError) {
-                console.warn('Booking completion reward tracking failed:', coinError);
-            }
-        }
+        // Note: Booking completion coin reward tracking has been disabled (coin system removed)
         
         await backgroundNotificationService.showBookingNotification('completed', {
             bookingId

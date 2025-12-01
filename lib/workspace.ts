@@ -1,4 +1,5 @@
 // Workspace service: centralized multi-tenant (hotel) context operations
+// NOTE: Hotel/Villa features removed - this service is deprecated
 // NOTE: Requires Appwrite collections: hotels (existing), hotelSettings, auditEvents
 // Add these to APPWRITE_CONFIG.collections for full functionality.
 
@@ -103,15 +104,18 @@ const unlockHotelDashboard = async (hotelId: string, actorId: string) => {
   return updated;
 };
 
-// Settings persistence (replaces localStorage)
+// Settings persistence (replaces localStorage) - DEPRECATED: Hotel features removed
 const getHotelSettings = async (hotelId: string): Promise<HotelSettings | null> => {
   try {
-    const resp = await databases.listDocuments(
-      APPWRITE_CONFIG.databaseId,
-      APPWRITE_CONFIG.collections.hotelSettings,
-      [ `hotelId=${hotelId}` ]
-    );
-    return resp.documents[0] || null;
+    // Note: hotelSettings collection not configured in APPWRITE_CONFIG
+    // const resp = await databases.listDocuments(
+    //   APPWRITE_CONFIG.databaseId,
+    //   APPWRITE_CONFIG.collections.hotelSettings,
+    //   [ `hotelId=${hotelId}` ]
+    // );
+    // return resp.documents[0] || null;
+    console.warn('[Workspace] getHotelSettings deprecated - hotel features removed');
+    return null;
   } catch (e) {
     console.warn('[Workspace] getHotelSettings failed', e);
     return null;
@@ -119,25 +123,28 @@ const getHotelSettings = async (hotelId: string): Promise<HotelSettings | null> 
 };
 
 const saveHotelSettings = async (hotelId: string, partial: Partial<HotelSettings>, actorId: string) => {
-  const existing = await getHotelSettings(hotelId);
-  const payload = { ...partial, hotelId, updatedAt: new Date().toISOString() };
-  if (existing) {
-    await databases.updateDocument(
-      APPWRITE_CONFIG.databaseId,
-      APPWRITE_CONFIG.collections.hotelSettings,
-      existing.$id,
-      payload
-    );
-  } else {
-    await databases.createDocument(
-      APPWRITE_CONFIG.databaseId,
-      APPWRITE_CONFIG.collections.hotelSettings,
-      ID.unique(),
-      payload
-    );
-  }
-  await logAuditEvent({ actorId, hotelId, action: 'settings_saved', details: payload });
-  return payload;
+  // Note: hotelSettings collection not configured in APPWRITE_CONFIG
+  console.warn('[Workspace] saveHotelSettings deprecated - hotel features removed');
+  return partial;
+  // const existing = await getHotelSettings(hotelId);
+  // const payload = { ...partial, hotelId, updatedAt: new Date().toISOString() };
+  // if (existing) {
+  //   await databases.updateDocument(
+  //     APPWRITE_CONFIG.databaseId,
+  //     APPWRITE_CONFIG.collections.hotelSettings,
+  //     existing.$id,
+  //     payload
+  //   );
+  // } else {
+  //   await databases.createDocument(
+  //     APPWRITE_CONFIG.databaseId,
+  //     APPWRITE_CONFIG.collections.hotelSettings,
+  //     ID.unique(),
+  //     payload
+  //   );
+  // }
+  // await logAuditEvent({ actorId, hotelId, action: 'settings_saved', details: payload });
+  // return payload;
 };
 
 export const workspace = {

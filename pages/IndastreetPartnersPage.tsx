@@ -220,12 +220,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     ];
 
     useEffect(() => {
-        // Initialize user referral code
-        initializeUserReferralCode().then(code => {
-            if (code) {
-                setUserReferralCode(code);
-            }
-        });
+        // Note: User referral code initialization has been disabled (coin system removed)
 
         // Get user's city from localStorage or geolocation
         const storedCity = localStorage.getItem('userCity');

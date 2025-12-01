@@ -66,12 +66,7 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             const response = await therapistAuth.signIn(email, password);
             
             if (response.success && response.userId) {
-                // Track daily sign-in for coin rewards
-                try {
-                    await trackDailySignIn(response.userId);
-                } catch (coinError) {
-                    console.warn('Daily sign-in tracking failed:', coinError);
-                }
+                // Note: Daily sign-in tracking for coin rewards has been disabled
                 
                 // Clear any cached data
                 sessionStorage.clear();
