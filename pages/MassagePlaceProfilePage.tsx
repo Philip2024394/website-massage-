@@ -468,7 +468,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                             {services.length > 0 ? (
                                 services.map((service, index) => {
                                     const discountPercentage = isDiscountActive(place) ? (place as any).discountPercentage : 0;
-                                    const originalPrice = service.price;
+                                    const originalPrice = typeof service.price === 'number' ? service.price : parseInt(String(service.price).replace(/\D/g, '')) || 0;
                                     const discountedPrice = discountPercentage > 0 
                                         ? Math.round(originalPrice * (1 - discountPercentage / 100))
                                         : originalPrice;
@@ -586,7 +586,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             {showReviewModal && place && (
                 <AnonymousReviewModal
                     providerName={place.name}
-                    providerId={place.$id || place.id}
+                    providerId={((place as any).$id || (place as any).id || '') as string}
                     providerType="place"
                     providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
                     onClose={() => setShowReviewModal(false)}

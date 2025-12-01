@@ -9,7 +9,8 @@ interface GalleryImage {
 interface Service {
     name: string;
     duration: string;
-    price: string;
+    price: string | number;
+    icon?: string; // Optional emoji or icon
 }
 
 interface Place {
