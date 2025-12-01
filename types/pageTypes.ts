@@ -104,8 +104,20 @@ export type Page =
     | 'website-management'
     | 'partner-settings-hotel'
     | 'partner-settings-villa'
-    | 'join-indastreet-partners';
+    | 'join-indastreet-partners'
     | 'todays-discounts'
+    | 'hotel-login'
+    | 'placeLogin'
+    | 'customerAuth'
+    | 'adminLogin'
+    | 'villaDashboard'
+    | 'customerDashboard'
+    | 'adminDashboard'
+    | 'termsOfService'
+    | 'privacyPolicy'
+    | 'agentDashboard'
+    | 'therapistDashboard'
+    | 'agentTerms'
     | 'accept-booking'
     | 'decline-booking'
     | 'verifiedProBadge'
@@ -122,5 +134,5 @@ export type LoggedInProvider = {
 
 export type LoggedInUser = { 
     id: string; 
-    type: 'admin' | 'hotel' | 'villa'
+    type: 'admin' | 'hotel' | 'villa' | 'agent'
 };

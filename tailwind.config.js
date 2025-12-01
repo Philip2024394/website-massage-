@@ -26,6 +26,9 @@ export default {
     'h-8',
     'w-12',
     'h-12',
+    // Ensure small image/button sizing is preserved in production
+    'h-10',
+    'w-auto',
     // Critical spacing
     'p-4',
     'm-4',
