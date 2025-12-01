@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HomeIcon from '../components/icons/HomeIcon';
+import { databases } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 interface JoinIndastreetPageProps {
     onBack: () => void;
@@ -15,6 +17,42 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
     onNavigateToMassagePlaceLogin,
     t
 }) => {
+    const [heroImage, setHeroImage] = useState<string>('https://ik.imagekit.io/7grri5v7d/membrship%20price%20list.png');
+    
+    // Fetch hero image from Appwrite
+    useEffect(() => {
+        const fetchHeroImage = async () => {
+            try {
+                if (APPWRITE_CONFIG.collections.imageAssets && APPWRITE_CONFIG.collections.imageAssets !== '') {
+                    const response = await databases.listDocuments(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.imageAssets,
+                        []
+                    );
+                    
+                    // Find the join page hero image
+                    const joinHeroAsset = response.documents.find((doc: any) => 
+                        doc.page === 'joinIndastreet' || 
+                        doc.assetType === 'heroImage' || 
+                        doc.name?.toLowerCase().includes('membership') ||
+                        doc.name?.toLowerCase().includes('join')
+                    );
+                    
+                    if (joinHeroAsset && joinHeroAsset.imageUrl) {
+                        console.log('✅ Loaded hero image from Appwrite:', joinHeroAsset.imageUrl);
+                        setHeroImage(joinHeroAsset.imageUrl);
+                    } else {
+                        console.log('ℹ️ No join hero image in Appwrite, using default');
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not fetch hero image from Appwrite:', error);
+                // Keep default hardcoded image as fallback
+            }
+        };
+        
+        fetchHeroImage();
+    }, []);
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
             {/* Global Header - Same as HomePage */}
@@ -44,9 +82,14 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                 <div className="text-center mb-12">
                     <div className="max-w-4xl mx-auto mb-8">
                         <img 
-                            src="https://ik.imagekit.io/7grri5v7d/membrship%20price%20list.png"
+                            src={heroImage}
                             alt="Join Indastreet - Indonesia's #1 Massage Directory"
                             className="w-full h-auto rounded-3xl shadow-2xl object-cover"
+                            onError={(e) => {
+                                console.error('❌ Hero image failed to load:', heroImage);
+                                // Fallback to default if image fails
+                                e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/membrship%20price%20list.png';
+                            }}
                         />
                     </div>
                     

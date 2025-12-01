@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, CheckCircle, Building2, User, Hotel, Home } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
+import { databases, ID } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
 interface PartnershipApplicationPageProps {
     onBack: () => void;
@@ -42,22 +44,18 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
     places = []
 }) => {
     const [formData, setFormData] = useState({
+        propertyType: '' as 'hotel' | 'villa' | '',
         businessName: '',
-        businessType: 'massage-place',
-        websiteUrl: '',
-        email: '',
-        phone: '',
+        whatsappNumber: '',
         location: '',
         address: '',
         description: '',
-        specialties: [] as string[],
-        yearsInBusiness: '',
-        certifications: '',
-        socialMediaLinks: {
-            instagram: '',
-            facebook: '',
-            twitter: ''
-        },
+        amenities: [] as string[],
+        mainImage: '',
+        profileImage: '',
+        numberOfRooms: '',
+        checkInTime: '',
+        petsAllowed: false,
         agreeToTerms: false
     });
 
@@ -70,19 +68,94 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [partnershipImages, setPartnershipImages] = useState({
+        headerBg: 'https://ik.imagekit.io/7grri5v7d/indastreet%20villa.png',
+        hotelImage: 'https://ik.imagekit.io/7grri5v7d/hotel%20indonisea.png',
+        villaImage: 'https://ik.imagekit.io/7grri5v7d/villa%20indonisea.png'
+    });
 
-    const businessTypes = [
-        { value: 'massage-place', label: 'Massage Place/Spa', icon: Building2 },
-        { value: 'therapist', label: 'Individual Therapist', icon: User },
-        { value: 'hotel', label: 'Hotel/Resort', icon: Hotel },
-        { value: 'villa', label: 'Villa/Private Retreat', icon: Home }
+    useEffect(() => {
+        const fetchPartnershipImages = async () => {
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.imageAssets,
+                    []
+                );
+                
+                const images = response.documents;
+                const newImages = { ...partnershipImages };
+                
+                images.forEach((doc: any) => {
+                    if (doc.page === 'partnership' || doc.assetType === 'partnership') {
+                        if (doc.name?.includes('header') || doc.name?.includes('background')) {
+                            newImages.headerBg = doc.imageUrl;
+                        } else if (doc.name?.includes('hotel')) {
+                            newImages.hotelImage = doc.imageUrl;
+                        } else if (doc.name?.includes('villa')) {
+                            newImages.villaImage = doc.imageUrl;
+                        }
+                    }
+                });
+                
+                setPartnershipImages(newImages);
+            } catch (error) {
+                console.log('Using fallback partnership images');
+            }
+        };
+        
+        fetchPartnershipImages();
+    }, []);
+
+    const hotelAmenities = [
+        { name: 'WiFi', icon: '📶' },
+        { name: 'Pool', icon: '🏊' },
+        { name: 'Spa', icon: '💆' },
+        { name: 'Restaurant', icon: '🍽️' },
+        { name: 'Bar', icon: '🍸' },
+        { name: 'Gym', icon: '💪' },
+        { name: 'Service', icon: '🛎️' },
+        { name: 'Conference', icon: '👔' },
+        { name: 'Shuttle', icon: '✈️' },
+        { name: 'Parking', icon: '🅿️' },
+        { name: 'AC', icon: '❄️' },
+        { name: 'Laundry', icon: '🧺' },
+        { name: 'Concierge', icon: '🎩' },
+        { name: 'Business', icon: '💼' },
+        { name: 'Reception', icon: '🏨' },
+        { name: 'Pets', icon: '🐕' },
+        { name: 'Rooftop', icon: '🌇' },
+        { name: 'Kids', icon: '🎈' },
+        { name: 'Casino', icon: '🎰' },
+        { name: 'Beach', icon: '🏖️' },
+        { name: 'Movies', icon: '📺' },
+        { name: 'Prayer', icon: '🕌' }
     ];
 
-    const specialtyOptions = [
-        'Swedish Massage', 'Deep Tissue', 'Thai Massage', 'Hot Stone', 'Aromatherapy',
-        'Sports Massage', 'Reflexology', 'Balinese Massage', 'Prenatal Massage',
-        'Couples Massage', 'Spa Treatments', 'Wellness Programs', 'Yoga Classes',
-        'Meditation', 'Acupuncture', 'Facials', 'Body Wraps'
+    const villaAmenities = [
+        { name: 'Pool', icon: '🏊' },
+        { name: 'Kitchen', icon: '🍳' },
+        { name: 'Garden', icon: '🌳' },
+        { name: 'BBQ', icon: '🔥' },
+        { name: 'Dining', icon: '🍽️' },
+        { name: 'WiFi', icon: '📶' },
+        { name: 'AC', icon: '❄️' },
+        { name: 'Beach', icon: '🏖️' },
+        { name: 'Butler', icon: '🤵' },
+        { name: 'Jacuzzi', icon: '🛁' },
+        { name: 'Theater', icon: '📺' },
+        { name: 'Games', icon: '🎮' },
+        { name: 'Gym', icon: '💪' },
+        { name: 'Chef', icon: '👨‍🍳' },
+        { name: 'Housekeeping', icon: '🧹' },
+        { name: 'Mountain', icon: '⛰️' },
+        { name: 'Ocean', icon: '🌊' },
+        { name: 'Security', icon: '🔒' },
+        { name: 'Parking', icon: '🅿️' },
+        { name: 'Balcony', icon: '🏡' },
+        { name: 'Laundry', icon: '🧺' },
+        { name: 'Movies', icon: '📺' },
+        { name: 'Prayer', icon: '🕌' }
     ];
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -115,13 +188,29 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
         }
     };
 
-    const handleSpecialtyToggle = (specialty: string) => {
-        setFormData(prev => ({
-            ...prev,
-            specialties: prev.specialties.includes(specialty)
-                ? prev.specialties.filter(s => s !== specialty)
-                : [...prev.specialties, specialty]
-        }));
+    const handleAmenityToggle = (amenityName: string) => {
+        setFormData(prev => {
+            const isCurrentlySelected = prev.amenities.includes(amenityName);
+            
+            if (isCurrentlySelected) {
+                // Remove if already selected
+                return {
+                    ...prev,
+                    amenities: prev.amenities.filter(a => a !== amenityName)
+                };
+            } else {
+                // Check if already at max 5
+                if (prev.amenities.length >= 5) {
+                    alert('You can select a maximum of 5 amenities');
+                    return prev;
+                }
+                // Add if under limit
+                return {
+                    ...prev,
+                    amenities: [...prev.amenities, amenityName]
+                };
+            }
+        });
     };
 
     const handleFileUpload = (fileType: string, file: File | File[]) => {
@@ -133,21 +222,72 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!formData.propertyType) {
+            alert('Please select a property type (Hotel or Villa)');
+            return;
+        }
+        
+        if (!formData.businessName || !formData.whatsappNumber || !formData.location) {
+            alert('Please fill in all required fields (Name, WhatsApp, Location)');
+            return;
+        }
+        
+        if (!formData.agreeToTerms) {
+            alert('Please agree to the terms and conditions');
+            return;
+        }
+        
         setIsSubmitting(true);
 
-        // Simulate API submission
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Save to hotels collection (villas are saved with type: 'villa')
+            const collectionId = APPWRITE_CONFIG.collections.hotels;
             
-            // Here you would normally send the data to your backend/Appwrite
-            console.log('Partnership application submitted:', {
-                formData,
-                files
-            });
+            const documentData: any = {
+                name: formData.businessName,
+                hotelName: formData.businessName,
+                whatsappNumber: formData.whatsappNumber,
+                contactNumber: formData.whatsappNumber,
+                phone: formData.whatsappNumber,
+                location: formData.location,
+                address: formData.address || formData.location,
+                description: formData.description || '',
+                specialties: JSON.stringify(formData.amenities),
+                type: formData.propertyType,
+                imageUrl: formData.mainImage || '',
+                mainImage: formData.mainImage || '',
+                profileImage: formData.profileImage || '',
+                numberOfRooms: formData.numberOfRooms || '0',
+                checkInTime: formData.checkInTime || '',
+                petsAllowed: formData.petsAllowed || false,
+                status: 'pending',
+                applicationDate: new Date().toISOString(),
+                addedDate: new Date().toISOString(),
+                approved: false,
+                isLive: false,
+                verified: false
+            };
+
+            // Save to Appwrite
+            if (collectionId && collectionId !== '') {
+                const response = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    collectionId,
+                    ID.unique(),
+                    documentData
+                );
+                
+                console.log('✅ Hotel/Villa partnership application saved to Appwrite:', response);
+            } else {
+                console.warn('⚠️ Hotels collection not configured');
+                throw new Error('Collection not available');
+            }
             
             setSubmitted(true);
         } catch (error) {
-            console.error('Submission error:', error);
+            console.error('❌ Submission error:', error);
+            alert(`Failed to submit application. ${error instanceof Error ? error.message : 'Please try again or contact support.'}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -197,45 +337,23 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
             <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={onBack}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5 text-gray-600" />
-                        </button>
                         <h1 className="text-2xl font-bold text-gray-800">
                             <span className="text-black">Inda</span>
                             <span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                         </h1>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
-                        {/* Quick Access Buttons */}
+                        {/* Home Button */}
                         <button 
                             onClick={() => {
                                 if (onNavigate) {
-                                    onNavigate('notifications');
+                                    onNavigate('home');
                                 }
                             }} 
                             className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Notifications"
+                            title="Home"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                        </button>
-                        
-                        <button 
-                            onClick={() => {
-                                if (onNavigate) {
-                                    onNavigate('referral');
-                                }
-                            }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
-                            title="Invite Friends"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
+                            <Home className="w-5 h-5" />
                         </button>
 
                         <button onClick={() => {
@@ -277,326 +395,402 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
 
             {/* Partnership Application Content */}
             <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Partnership Application</h2>
-                    <p className="text-gray-600 text-lg">Join our network of verified wellness professionals</p>
+                {/* Header Section */}
+                <div 
+                    className="rounded-lg shadow-lg p-8 mb-6 text-white relative overflow-hidden"
+                    style={{
+                        backgroundImage: `url(${partnershipImages.headerBg})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }}
+                >
+                    {/* Dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-black/40"></div>
+                    
+                    <div className="relative z-10">
+                        <h1 className="text-4xl font-bold mb-4">
+                            <span className="text-white">Inda</span>
+                            <span className="text-orange-500">street Partnership</span>
+                        </h1>
+                        <p className="text-lg leading-relaxed">
+                            Transform your property into a premium wellness destination! Join the exclusive Indastreet Massage Hub network 
+                            and watch your listing go LIVE in minutes. Attract more guests, boost your revenue, and stand out from the competition. 
+                            All we need is a quick confirmation to place a small, elegant Indastreet display in your rooms—completely FREE, 
+                            with zero costs forever. Let's grow together!
+                        </p>
+                    </div>
                 </div>
+
+                {/* Application Form Section */}
+                <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Application Form</h2>
+                    <p className="text-gray-600">Complete the form below to join our network of accommodation partners</p>
+                </div>
+                
                 <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Business Information */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Business Information</h2>
+                    {/* Property Type Selection - FIRST */}
+                    <div 
+                        className="bg-white rounded-lg shadow-sm p-6"
+                        style={{
+                            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/vill%20sketch%20indonise.png)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        }}
+                    >
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Accommodation Type <span className="text-red-500">*</span></h2>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Business Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="businessName"
-                                    value={formData.businessName}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="Enter your business name"
-                                    required
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, propertyType: 'hotel', amenities: [] }))}
+                                className="relative rounded-xl border-2 transition-all overflow-hidden h-64"
+                                style={{
+                                    borderColor: formData.propertyType === 'hotel' ? '#22c55e' : '#e5e7eb'
+                                }}
+                            >
+                                <img 
+                                    src={partnershipImages.hotelImage}
+                                    alt="Hotel"
+                                    className="w-full h-full object-cover"
                                 />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Business Type <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    name="businessType"
-                                    value={formData.businessType}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    required
-                                >
-                                    {businessTypes.map(type => (
-                                        <option key={type.value} value={type.value}>
-                                            {type.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Website URL
-                                </label>
-                                <div className="relative">
-                                    <Globe className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="url"
-                                        name="websiteUrl"
-                                        value={formData.websiteUrl}
-                                        onChange={handleInputChange}
-                                        className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        placeholder="https://your-website.com"
-                                    />
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                                    <div className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
+                                        formData.propertyType === 'hotel'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                                    }`}>
+                                        Hotel
+                                    </div>
                                 </div>
-                            </div>
+                            </button>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Years in Business <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="yearsInBusiness"
-                                    value={formData.yearsInBusiness}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="5"
-                                    min="0"
-                                    required
+                            <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, propertyType: 'villa', amenities: [] }))}
+                                className="relative rounded-xl border-2 transition-all overflow-hidden h-64"
+                                style={{
+                                    borderColor: formData.propertyType === 'villa' ? '#22c55e' : '#e5e7eb'
+                                }}
+                            >
+                                <img 
+                                    src={partnershipImages.villaImage}
+                                    alt="Villa"
+                                    className="w-full h-full object-cover"
                                 />
-                            </div>
-                        </div>
-
-                        <div className="mt-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Business Description <span className="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleInputChange}
-                                rows={4}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="Describe your business, services, and what makes you unique..."
-                                required
-                            />
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                                    <div className={`px-6 py-2 rounded-full font-bold text-sm transition-all ${
+                                        formData.propertyType === 'villa'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-orange-500 text-white hover:bg-orange-600'
+                                    }`}>
+                                        Villa
+                                    </div>
+                                </div>
+                            </button>
                         </div>
                     </div>
 
-                    {/* Contact Information */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Contact Information</h2>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        placeholder="your@email.com"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Phone Number <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleInputChange}
-                                        className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        placeholder="+1 (555) 000-0000"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Business Address <span className="text-red-500">*</span>
-                                </label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                        className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        placeholder="123 Main St, City, State, Country"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Services & Specialties */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Services & Specialties</h2>
-                        
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Select your specialties <span className="text-red-500">*</span>
-                            </label>
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {specialtyOptions.map(specialty => (
-                                    <label
-                                        key={specialty}
-                                        className={`flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition-colors ${
-                                            formData.specialties.includes(specialty)
-                                                ? 'border-orange-500 bg-orange-50'
-                                                : 'border-gray-300 hover:border-gray-400'
-                                        }`}
-                                    >
+                    {/* Only show rest of form if property type is selected */}
+                    {formData.propertyType && (
+                        <>
+                            {/* Premises Details */}
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                                    🏢 Premises Details
+                                </h2>
+                                
+                                <div className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            {formData.propertyType === 'hotel' ? 'Hotel' : 'Villa'} Name <span className="text-red-500">*</span>
+                                        </label>
                                         <input
-                                            type="checkbox"
-                                            checked={formData.specialties.includes(specialty)}
-                                            onChange={() => handleSpecialtyToggle(specialty)}
-                                            className="text-orange-500 focus:ring-orange-500"
+                                            type="text"
+                                            name="businessName"
+                                            value={formData.businessName}
+                                            onChange={handleInputChange}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder={`Enter your ${formData.propertyType} name`}
+                                            required
                                         />
-                                        <span className="text-sm">{specialty}</span>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Number of Rooms <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="numberOfRooms"
+                                            value={formData.numberOfRooms}
+                                            onChange={handleInputChange}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="e.g., 25"
+                                            min="1"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Check-in Time <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="time"
+                                            name="checkInTime"
+                                            value={formData.checkInTime}
+                                            onChange={handleInputChange}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            required
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">Standard check-in time for guests</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="flex items-center gap-3 cursor-pointer p-4 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                            <input
+                                                type="checkbox"
+                                                name="petsAllowed"
+                                                checked={formData.petsAllowed}
+                                                onChange={handleInputChange}
+                                                className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                            />
+                                            <div>
+                                                <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                                    🐕 Pets Allowed
+                                                </span>
+                                                <p className="text-xs text-gray-500 mt-1">Check if your property accepts pets</p>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            WhatsApp Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <Phone className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                                            <span className="absolute left-12 top-3.5 text-gray-700 font-medium">+62</span>
+                                            <input
+                                                type="tel"
+                                                name="whatsappNumber"
+                                                value={formData.whatsappNumber}
+                                                onChange={(e) => {
+                                                    const value = e.target.value.replace(/[^0-9]/g, '');
+                                                    handleInputChange({
+                                                        ...e,
+                                                        target: { ...e.target, value }
+                                                    });
+                                                }}
+                                                className="w-full border border-gray-300 rounded-lg pl-20 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="812 3456 7890"
+                                                required
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">Guests will contact you via WhatsApp for reservations</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Location (City/Area) <span className="text-red-500">*</span>
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    name="location"
+                                                    value={formData.location}
+                                                    onChange={handleInputChange}
+                                                    className="w-full border border-gray-300 rounded-lg pl-12 pr-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                    placeholder="e.g., Seminyak, Bali"
+                                                    required
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    if (navigator.geolocation) {
+                                                        navigator.geolocation.getCurrentPosition(
+                                                            async (position) => {
+                                                                const { latitude, longitude } = position.coords;
+                                                                try {
+                                                                    // Use reverse geocoding to get location name
+                                                                    const response = await fetch(
+                                                                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                                                                    );
+                                                                    const data = await response.json();
+                                                                    const location = data.address?.city || data.address?.town || data.address?.village || data.address?.state || 'Location detected';
+                                                                    setFormData(prev => ({ ...prev, location }));
+                                                                } catch (error) {
+                                                                    alert('Could not get location name. Please enter manually.');
+                                                                }
+                                                            },
+                                                            (error) => {
+                                                                alert('Please enable location services to use this feature.');
+                                                            }
+                                                        );
+                                                    } else {
+                                                        alert('Geolocation is not supported by your browser.');
+                                                    }
+                                                }}
+                                                className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors whitespace-nowrap flex items-center gap-2"
+                                            >
+                                                <MapPin className="w-4 h-4" />
+                                                Set Location
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">Click "Set Location" to use your current location from phone/device</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Full Address
+                                        </label>
+                                        <textarea
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleInputChange}
+                                            rows={3}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="Enter complete street address with landmarks"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">This will help guests find your property using Google Maps</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Description
+                                        </label>
+                                        <textarea
+                                            name="description"
+                                            value={formData.description}
+                                            onChange={handleInputChange}
+                                            rows={5}
+                                            maxLength={350}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder={`Describe your ${formData.propertyType}, unique features, atmosphere, and what makes it special...`}
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {formData.description.length}/350 characters
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Amenities */}
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                                    {formData.propertyType === 'hotel' ? 'Hotel' : 'Villa'} Amenities
+                                </h2>
+                                <p className="text-sm text-gray-600 mb-2">Select up to 5 amenities available at your property</p>
+                                <p className="text-xs text-orange-600 mb-6">
+                                    {formData.amenities.length}/5 selected
+                                </p>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    {(formData.propertyType === 'hotel' ? hotelAmenities : villaAmenities).map((amenity) => (
+                                        <label
+                                            key={amenity.name}
+                                            className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.amenities.includes(amenity.name)}
+                                                onChange={() => handleAmenityToggle(amenity.name)}
+                                                className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                            />
+                                            <span className="text-lg">{amenity.icon}</span>
+                                            <span className="text-sm text-gray-700">{amenity.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Images */}
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Image</h2>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Main Property Image <span className="text-red-500">*</span>
                                     </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Certifications & Qualifications
-                            </label>
-                            <textarea
-                                name="certifications"
-                                value={formData.certifications}
-                                onChange={handleInputChange}
-                                rows={3}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                placeholder="List your certifications, licenses, and qualifications..."
-                            />
-                        </div>
-                    </div>
-
-                    {/* Social Media */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Social Media (Optional)</h2>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
-                                <input
-                                    type="url"
-                                    name="socialMediaLinks.instagram"
-                                    value={formData.socialMediaLinks.instagram}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="https://instagram.com/yourbusiness"
-                                />
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
-                                <input
-                                    type="url"
-                                    name="socialMediaLinks.facebook"
-                                    value={formData.socialMediaLinks.facebook}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="https://facebook.com/yourbusiness"
-                                />
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Twitter</label>
-                                <input
-                                    type="url"
-                                    name="socialMediaLinks.twitter"
-                                    value={formData.socialMediaLinks.twitter}
-                                    onChange={handleInputChange}
-                                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="https://twitter.com/yourbusiness"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Document Upload */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Documents</h2>
-                        
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Business License/Registration <span className="text-red-500">*</span>
-                                </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-sm text-gray-600">
-                                        Click to upload your business license or registration document
-                                    </p>
                                     <input
                                         type="file"
-                                        accept=".pdf,.jpg,.jpeg,.png"
-                                        onChange={(e) => e.target.files?.[0] && handleFileUpload('businessLicense', e.target.files[0])}
-                                        className="hidden"
+                                        name="mainImage"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                // Store file temporarily - in production, upload to storage
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        mainImage: reader.result as string
+                                                    }));
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                     />
+                                    <p className="text-xs text-gray-500 mt-1">Upload your main property photo (JPG, PNG - recommended: 1200x600px)</p>
+                                    {formData.mainImage && (
+                                        <div className="mt-3">
+                                            <img src={formData.mainImage} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                                        </div>
+                                    )}
+                                    <p className="text-xs text-blue-600 mt-2">ℹ️ Profile image will be set by the Indastreet admin team</p>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Business Photos (up to 5)
-                                </label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-sm text-gray-600">
-                                        Upload photos of your business, facilities, or treatments
-                                    </p>
+                            {/* Terms and Conditions */}
+                            <div className="bg-white rounded-lg shadow-sm p-6">
+                                <label className="flex items-start gap-3 cursor-pointer">
                                     <input
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png"
-                                        multiple
-                                        onChange={(e) => e.target.files && handleFileUpload('businessPhotos', Array.from(e.target.files))}
-                                        className="hidden"
+                                        type="checkbox"
+                                        name="agreeToTerms"
+                                        checked={formData.agreeToTerms}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, agreeToTerms: e.target.checked }))}
+                                        className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500 mt-0.5"
+                                        required
                                     />
-                                </div>
+                                    <span className="text-sm text-gray-700">
+                                        I agree to the terms and conditions and confirm that all information provided is accurate and complete. 
+                                        I understand that my application will be reviewed by the Indastreet team before approval. 
+                                        I acknowledge that any future edits or changes will require team approval and may take up to 
+                                        <span className="font-bold"> 72 hours</span> to process, so I have carefully reviewed all details 
+                                        before submitting to avoid delays.
+                                    </span>
+                                </label>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Terms & Submit */}
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <div className="mb-6">
-                            <label className="flex items-start space-x-3">
-                                <input
-                                    type="checkbox"
-                                    name="agreeToTerms"
-                                    checked={formData.agreeToTerms}
-                                    onChange={handleInputChange}
-                                    className="mt-1 text-orange-500 focus:ring-orange-500"
-                                    required
-                                />
-                                <span className="text-sm text-gray-700">
-                                    I agree to the <a href="#" className="text-orange-500 hover:text-orange-600">Terms of Service</a> and <a href="#" className="text-orange-500 hover:text-orange-600">Privacy Policy</a>. I confirm that all information provided is accurate and I have the authority to represent this business.
-                                </span>
-                            </label>
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={isSubmitting || !formData.agreeToTerms}
-                            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold text-lg transition-colors"
-                        >
-                            {isSubmitting ? (
-                                <div className="flex items-center justify-center">
-                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                                    Submitting Application...
-                                </div>
-                            ) : (
-                                'Submit Partnership Application'
-                            )}
-                        </button>
-                    </div>
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 px-6 rounded-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Submitting Application...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle className="w-5 h-5" />
+                                        Submit Partnership Application
+                                    </>
+                                )}
+                            </button>
+                        </>
+                    )}
                 </form>
             </div>
         </div>
