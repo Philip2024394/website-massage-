@@ -440,7 +440,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Property Type Selection - FIRST */}
                     <div 
-                        className="bg-white rounded-lg shadow-sm p-6"
+                        className="bg-white rounded-lg shadow-sm p-6 border-2 border-orange-400"
                         style={{
                             backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/vill%20sketch%20indonise.png)',
                             backgroundSize: 'cover',
@@ -456,7 +456,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                                 onClick={() => setFormData(prev => ({ ...prev, propertyType: 'hotel', amenities: [] }))}
                                 className="relative rounded-xl border-2 transition-all overflow-hidden h-64"
                                 style={{
-                                    borderColor: formData.propertyType === 'hotel' ? '#22c55e' : '#e5e7eb'
+                                    borderColor: formData.propertyType === 'hotel' ? '#22c55e' : '#fb923c'
                                 }}
                             >
                                 <img 
@@ -480,7 +480,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                                 onClick={() => setFormData(prev => ({ ...prev, propertyType: 'villa', amenities: [] }))}
                                 className="relative rounded-xl border-2 transition-all overflow-hidden h-64"
                                 style={{
-                                    borderColor: formData.propertyType === 'villa' ? '#22c55e' : '#e5e7eb'
+                                    borderColor: formData.propertyType === 'villa' ? '#22c55e' : '#fb923c'
                                 }}
                             >
                                 <img 

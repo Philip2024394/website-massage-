@@ -671,15 +671,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 max-w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
-                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden max-w-full" style={{ paddingBottom: '80px' }}>
+                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997] max-w-full">
+                <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -817,8 +817,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
 
-                <div className="space-y-3 mb-6">
-                    <div className="flex items-center w-full gap-3">
+                <div className="space-y-3 mb-6 max-w-full px-4">
+                    <div className="flex items-center w-full gap-3 max-w-full">
                         <div className="relative flex-1 min-w-0 basis-0">
                             <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                             <select 
@@ -866,7 +866,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
                                 alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-14 w-auto sm:h-20 md:h-[110px] lg:h-[130px]"
+                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-12 md:h-14 lg:h-16"
                                 loading="lazy"
                                 draggable={false}
                             />
@@ -878,13 +878,13 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* Therapists and Places Display */}
                 {activeTab === 'home' && (
-                    <div>
+                    <div className="max-w-full overflow-x-hidden px-4">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Terapis Pijat Rumahan'}</h3>
                             <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Temukan terapis pijat terbaik di Bali'}</p>
                         </div>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-4 max-w-full overflow-hidden">
                         {/* Build list with injected unique mainImage per view */}
                         {(() => {
                             const isOwner = (t: any) => (
@@ -1034,7 +1034,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
 
                 {activeTab === 'places' && (
-                    <div>
+                    <div className="max-w-full overflow-x-hidden px-4">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Spa Pijat Unggulan'}</h3>
                             <p className="text-gray-600">{t?.home?.massagePlacesSubtitle || 'Temukan tempat pijat terbaik di Bali'}</p>
