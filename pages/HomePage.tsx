@@ -750,7 +750,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="px-4 pb-24 w-full max-w-7xl mx-auto overflow-x-hidden">
+            <main className="px-4 pb-24 overflow-x-hidden">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full">
                     {userLocation ? (
