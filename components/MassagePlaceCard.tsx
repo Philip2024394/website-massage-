@@ -194,6 +194,28 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         "120": parsedPricing["120"] * 1000
     };
     
+    // Price formatting function matching TherapistCard format (XXXk)
+    const formatPrice = (price: number | string): string => {
+        const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+        
+        if (!numPrice || numPrice === 0 || isNaN(numPrice)) {
+            return "Contact"; // Show "Contact" instead of "0k" when no price is set
+        }
+        
+        // Convert to thousands and ensure 3-digit format (100-999)
+        let priceInThousands = Math.round(numPrice / 1000);
+        
+        // Ensure 3-digit display (100k-999k range)
+        if (priceInThousands < 100) {
+            priceInThousands = 100; // Minimum 100k
+        } else if (priceInThousands > 999) {
+            priceInThousands = 999; // Maximum 999k for 4-char display
+        }
+        
+        // Always return exactly 4 characters: 3 digits + "k"
+        return `${priceInThousands}k`;
+    };
+    
     // Get main image with debug logging
     console.log('🖼️ MassagePlaceCard mainImage debug:', {
         placeName: place.name,
@@ -587,14 +609,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Number(pricing["120"]))}
                             </p>
                             <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {Number(pricing["120"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["120"]))}</p>
                     )}
                 </div>
                     
@@ -610,14 +632,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Number(pricing["60"]))}
                             </p>
                             <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {Number(pricing["60"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["60"]))}</p>
                     )}
                 </div>
                     
@@ -633,14 +655,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     {isDiscountActive(place) ? (
                         <>
                             <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Number(pricing["90"]))}
                             </p>
                             <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K
+                                IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)))}
                             </p>
                         </>
                     ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {Number(pricing["90"]).toLocaleString('en-US', {minimumIntegerDigits: 3, useGrouping: false})}K</p>
+                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["90"]))}</p>
                     )}
                 </div>
             </div>
