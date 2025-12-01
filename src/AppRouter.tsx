@@ -1,12 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AdminApp from './apps/admin/AdminApp';
+// Note: Admin/Hotel/Villa apps removed - features deprecated
+// import AdminApp from './apps/admin/AdminApp';
 import AgentApp from './apps/agent/AgentApp';
 import ClientApp from './apps/client/ClientApp';
 import TherapistApp from './apps/therapist/TherapistApp';
 import PlaceApp from './apps/place/PlaceApp';
-import HotelApp from './apps/hotel/HotelApp';
-import VillaApp from './apps/villa/VillaApp';
+// import HotelApp from './apps/hotel/HotelApp';
+// import VillaApp from './apps/villa/VillaApp';
 import LandingPage from './shared/components/LandingPage';
 
 const AppRouter: React.FC = () => {
@@ -16,8 +17,8 @@ const AppRouter: React.FC = () => {
         {/* Landing page */}
         <Route path="/" element={<LandingPage />} />
         
-        {/* Admin app */}
-        <Route path="/admin/*" element={<AdminApp />} />
+        {/* Admin app - deprecated */}
+        {/* <Route path="/admin/*" element={<AdminApp />} /> */}
         
         {/* Agent app */}
         <Route path="/agent/*" element={<AgentApp />} />
@@ -31,11 +32,11 @@ const AppRouter: React.FC = () => {
         {/* Place app */}
         <Route path="/place/*" element={<PlaceApp />} />
         
-        {/* Hotel app */}
-        <Route path="/hotel/*" element={<HotelApp />} />
+        {/* Hotel app - deprecated */}
+        {/* <Route path="/hotel/*" element={<HotelApp />} /> */}
         
-        {/* Villa app */}
-        <Route path="/villa/*" element={<VillaApp />} />
+        {/* Villa app - deprecated */}
+        {/* <Route path="/villa/*" element={<VillaApp />} /> */}
         
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />

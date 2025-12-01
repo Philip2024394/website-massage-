@@ -34,6 +34,7 @@ interface PartnerWebsite {
     rating?: number;
     imageUrl?: string;
     specialties?: string[];
+    distance?: number; // Distance in km
     addedDate: string;
     websitePreview?: string; // URL for website screenshot/preview
 }
@@ -921,7 +922,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                 <AnonymousReviewModal
                     providerName={selectedPartner.name}
                     providerId={selectedPartner.id}
-                    providerType={viewType}
+                    providerType={(viewType === 'hotel' || viewType === 'villa') ? 'place' : viewType as 'therapist' | 'place'}
                     providerImage={selectedPartner.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png'}
                     onClose={() => {
                         setShowReviewModal(false);

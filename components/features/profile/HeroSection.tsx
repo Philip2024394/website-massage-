@@ -779,7 +779,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {showReviewModal && (
                 <AnonymousReviewModal
                     providerName={place.name}
-                    providerId={place.$id || place.id}
+                    providerId={(place as any).$id || (place as any).id || ''}
                     providerType="place"
                     providerImage={(place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382'}
                     onClose={() => setShowReviewModal(false)}

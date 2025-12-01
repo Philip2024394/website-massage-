@@ -321,7 +321,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           {
             description: description.trim(),
             massageTypes: selectedMassageTypes.join(', '),
-            location: addressInput.trim(),
+            location: (therapist?.location || '').trim(),
             name: name.trim()
           },
           sourceLanguage

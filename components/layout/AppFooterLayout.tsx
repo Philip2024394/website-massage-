@@ -19,7 +19,7 @@ interface AppFooterLayoutProps {
     showRegisterPrompt: boolean;
     registerPromptContext: 'booking' | 'chat';
     loyaltyEvent: any;
-    getUserRole: () => 'therapist' | 'place' | 'admin' | 'hotel' | 'villa' | 'agent' | 'user' | null;
+    getUserRole: () => 'therapist' | 'place' | 'admin' | 'hotel' | 'agent' | 'user' | null; // Note: villa type removed
     handleRegisterPromptClose: () => void;
     handleRegisterPromptRegister: () => void;
     setPage: (page: Page) => void;

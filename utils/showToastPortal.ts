@@ -1,10 +1,10 @@
 // Lightweight portal-based toast utility used by TherapistPortalPage
-export const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+export const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
   const container = document.getElementById('overlay-root') || document.body;
   if (!container) return;
   const toast = document.createElement('div');
   const base = 'text-white px-4 py-2 rounded shadow-md text-sm font-medium mb-2 transition-opacity duration-300';
-  const color = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-yellow-500';
+  const color = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
   toast.className = `${base} ${color}`;
   toast.textContent = message;
   if (container.id === 'overlay-root') {

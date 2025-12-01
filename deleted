@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { providerRewardsService } from '../lib/providerRewardsService';
+// Note: providerRewardsService moved to deleted folder (coin system removed)
+// import { providerRewardsService } from '../lib/providerRewardsService';
 
 interface CommissionConfirmationProps {
     bookingId: string;
