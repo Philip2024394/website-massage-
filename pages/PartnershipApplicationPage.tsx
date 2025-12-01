@@ -270,6 +270,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
             };
 
             // Save to Appwrite
+            let savedDocumentId = '';
             if (collectionId && collectionId !== '') {
                 const response = await databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
@@ -278,13 +279,21 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                     documentData
                 );
                 
+                savedDocumentId = response.$id;
                 console.log('✅ Hotel/Villa partnership application saved to Appwrite:', response);
             } else {
                 console.warn('⚠️ Hotels collection not configured');
                 throw new Error('Collection not available');
             }
             
-            setSubmitted(true);
+            // Redirect to partners page to see their card once it's live
+            if (onHotelPortalClick && formData.propertyType === 'hotel') {
+                onHotelPortalClick();
+            } else if (onVillaPortalClick && formData.propertyType === 'villa') {
+                onVillaPortalClick();
+            } else {
+                setSubmitted(true);
+            }
         } catch (error) {
             console.error('❌ Submission error:', error);
             alert(`Failed to submit application. ${error instanceof Error ? error.message : 'Please try again or contact support.'}`);
@@ -350,7 +359,7 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                                     onNavigate('home');
                                 }
                             }} 
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors" 
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer" 
                             title="Home"
                         >
                             <Home className="w-5 h-5" />
@@ -497,8 +506,8 @@ const PartnershipApplicationPage: React.FC<PartnershipApplicationPageProps> = ({
                         <>
                             {/* Premises Details */}
                             <div className="bg-white rounded-lg shadow-sm p-6">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                                    🏢 Premises Details
+                                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                                    Premises Details
                                 </h2>
                                 
                                 <div className="space-y-6">

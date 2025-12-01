@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=no" />
     
     <!-- � PWA MANIFEST: Critical for background notifications -->
     <link rel="manifest" href="/manifest.json" />
@@ -17,6 +17,13 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="apple-mobile-web-app-title" content="IndaStreet" />
     <link rel="apple-touch-icon" href="https://ik.imagekit.io/7grri5v7d/Massage%20hub%20indastreet.png" />
+    
+    <!-- Android Chrome specific -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="IndaStreet" />
+    
+    <!-- Prevent page zoom on form inputs for Android -->
+    <meta name="HandheldFriendly" content="true" />
     
     <!-- �🔥 CACHE CONTROL: Prevent stale JavaScript in production -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />

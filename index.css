@@ -26,6 +26,7 @@ footer[class*="fixed"] {
 html, body {
   height: 100%;
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden; /* Prevent horizontal scroll only */
   margin: 0;
   padding: 0;
@@ -39,6 +40,9 @@ html, body {
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  
+  /* Prevent zoom on double-tap for Android */
+  touch-action: manipulation;
 }
 
 #root {
@@ -46,6 +50,7 @@ html, body {
   /* Use dynamic viewport height for mobile browsers */
   height: 100dvh;
   width: 100vw;
+  max-width: 100vw;
   overflow-x: hidden; /* Prevent horizontal scroll in root */
   /* Ensure full coverage on PWA */
   min-height: -webkit-fill-available;
@@ -54,6 +59,12 @@ html, body {
   /* Mobile container optimization */
   position: relative;
   contain: layout style paint;
+}
+
+/* Ensure all containers respect viewport width */
+*, *::before, *::after {
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 /* Satellite Ring Effect for Status Dots */
@@ -111,6 +122,12 @@ html, body {
 
 /* Mobile-Specific Optimizations */
 @media (max-width: 640px) {
+  /* Force all elements to fit within viewport */
+  body, #root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  
   /* Compact modal sizing for mobile */
   .modal-mobile {
     max-width: calc(100vw - 1rem) !important;
@@ -144,6 +161,17 @@ html, body {
     margin: 0.5rem !important;
     padding: 0.75rem !important;
     border-radius: 8px !important;
+  }
+  
+  /* Ensure images and media fit within screen */
+  img, video, iframe {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Fix any absolute/fixed positioning that might overflow */
+  .fixed, .absolute {
+    max-width: 100vw !important;
   }
 }
 
