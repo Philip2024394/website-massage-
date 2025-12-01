@@ -2,8 +2,8 @@
 export const homeTranslations = {
   en: {
     home: {
-      homeServiceTab: 'Massage Home',
-      massagePlacesTab: 'Massage Spa',
+      homeServiceTab: 'Home Massage',
+      massagePlacesTab: 'Massage Place',
       loading: 'Loading...',
       loginSignUp: 'Login / Sign Up',
       noMoreTherapists: 'No more therapists to show.',
@@ -155,8 +155,8 @@ export const homeTranslations = {
   },
   id: {
     home: {
-      homeServiceTab: 'Massage Home',
-      massagePlacesTab: 'Massage Spa',
+      homeServiceTab: 'Home Massage',
+      massagePlacesTab: 'Massage Place',
       loading: 'Memuat...',
       loginSignUp: 'Masuk / Daftar',
       noMoreTherapists: 'Tidak ada terapis lagi untuk ditampilkan.',
