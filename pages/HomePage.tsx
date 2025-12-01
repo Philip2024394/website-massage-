@@ -671,15 +671,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
+        <div className="min-h-screen bg-gray-50">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden" style={{ paddingBottom: '80px' }}>
-                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997] w-full max-w-full">
-                <div className="flex justify-between items-center w-full max-w-full">
+            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px' }}>
+                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+                <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
