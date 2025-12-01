@@ -155,8 +155,8 @@ export const homeTranslations = {
   },
   id: {
     home: {
-      homeServiceTab: 'Pijat Rumah',
-      massagePlacesTab: 'Spa Pijat',
+      homeServiceTab: 'Massage Home',
+      massagePlacesTab: 'Massage Spa',
       loading: 'Memuat...',
       loginSignUp: 'Masuk / Daftar',
       noMoreTherapists: 'Tidak ada terapis lagi untuk ditampilkan.',
