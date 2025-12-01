@@ -9,7 +9,6 @@ import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
-import { initializeUserReferralCode } from '../lib/coinHooks';
 
 interface TherapistCardProps {
     therapist: Therapist;

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { therapistAuth } from '../lib/auth';
-import { trackDailySignIn } from '../lib/coinHooks';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';

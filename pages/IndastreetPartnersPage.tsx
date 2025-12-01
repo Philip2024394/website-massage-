@@ -16,9 +16,8 @@ import {
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
-import FlyingButterfly from '../components/FlyingButterfly';
-import AnonymousReviewModal from '../components/AnonymousReviewModal';
-import { initializeUserReferralCode } from '../lib/coinHooks';
+import FlyingButterfly from "../components/FlyingButterfly";
+import AnonymousReviewModal from "../components/AnonymousReviewModal";
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { Query } from 'appwrite';
 

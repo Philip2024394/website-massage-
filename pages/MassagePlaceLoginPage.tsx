@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { placeAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { trackDailySignIn } from '../lib/coinHooks';
 import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
 import PageNumberBadge from '../components/PageNumberBadge';
 
