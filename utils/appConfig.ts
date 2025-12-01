@@ -36,6 +36,11 @@ export const saveGoogleMapsApiKey = (apiKey: string) => {
 
 export const getStoredGoogleMapsApiKey = (): string | null => {
   try {
+    // Try environment variable first
+    const envKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (envKey) return envKey;
+    
+    // Fallback to localStorage
     return localStorage.getItem('googleMapsApiKey');
   } catch (_error) {
     console.error('Error getting Google Maps API key:', _error);

@@ -671,15 +671,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50 max-w-full overflow-x-hidden">
+        <div className="min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
             {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden max-w-full" style={{ paddingBottom: '80px' }}>
-                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997] max-w-full">
-                <div className="flex justify-between items-center max-w-full">
+            <div className="flex-1 overflow-y-auto w-full max-w-full overflow-x-hidden" style={{ paddingBottom: '80px' }}>
+                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997] w-full max-w-full">
+                <div className="flex justify-between items-center w-full max-w-full">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -750,9 +750,9 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="px-4 pb-24">
+            <main className="px-4 pb-24 w-full max-w-7xl mx-auto overflow-x-hidden">
                 {/* Location Display & Search */}
-                <div className="mb-4">
+                <div className="mb-4 w-full">
                     {userLocation ? (
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center justify-center gap-2">
@@ -828,10 +828,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                 style={{ backgroundColor: 'white' } as React.CSSProperties}
                             >
                                 <option value="all" style={{ backgroundColor: 'white' } as React.CSSProperties}>{translationsObject?.home?.massageType || 'Massage Type'}</option>
-                                {MASSAGE_TYPES_CATEGORIZED.map(category => (
-                                    <optgroup label={category.category} key={category.category} style={{ backgroundColor: 'white' } as React.CSSProperties}>
-                                        {category.types.map((type, index) => (
-                                            <option key={`${category.category}-${type}-${index}`} value={type} style={{ backgroundColor: 'white' } as React.CSSProperties}>{type}</option>
+                                {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
+                                    <optgroup label={category.category} key={`${category.category}-${categoryIndex}`} style={{ backgroundColor: 'white' } as React.CSSProperties}>
+                                        {category.types.map((type, typeIndex) => (
+                                            <option key={`${category.category}-${type}-${categoryIndex}-${typeIndex}`} value={type} style={{ backgroundColor: 'white' } as React.CSSProperties}>{type}</option>
                                         ))}
                                     </optgroup>
                                 ))}
