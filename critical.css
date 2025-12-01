@@ -6,7 +6,7 @@
 /* Base critical styles - New scrolling architecture */
 html, body {
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden; /* Body never scrolls */
   margin: 0;
   padding: 0;
@@ -15,7 +15,7 @@ html, body {
 
 #root {
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
