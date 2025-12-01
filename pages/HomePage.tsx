@@ -752,7 +752,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
             <main className="px-4 pb-24 overflow-x-hidden">
                 {/* Location Display & Search */}
-                <div className="mb-4 w-full">
+                <div className="mb-4 w-full mt-6">
                     {userLocation ? (
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center justify-center gap-2">
