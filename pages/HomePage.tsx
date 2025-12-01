@@ -115,8 +115,8 @@ const HomePage: React.FC<HomePageProps> = ({
         // SAFE: Provide default fallback translations
         const defaultTranslations = {
             home: {
-                homeServiceTab: 'Home Service',
-                massagePlacesTab: 'Massage Places',
+                homeServiceTab: 'Massage Home',
+                massagePlacesTab: 'Massage Spa',
                 loading: 'Loading...',
                 loginSignUp: 'Login / Sign Up',
                 noMoreTherapists: 'No more therapists available',
