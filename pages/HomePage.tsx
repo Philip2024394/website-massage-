@@ -750,7 +750,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4 pb-24">
+            <main className="px-4 pb-24">
                 {/* Location Display & Search */}
                 <div className="mb-4">
                     {userLocation ? (
@@ -817,7 +817,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
 
-                <div className="space-y-3 mb-6 max-w-full px-4">
+                <div className="space-y-3 mb-6 max-w-full">
                     <div className="flex items-center w-full gap-3 max-w-full">
                         <div className="relative flex-1 min-w-0 basis-0">
                             <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
@@ -866,7 +866,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
                                 alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto sm:h-12 md:h-14 lg:h-16"
+                                className="select-none transition-opacity hover:opacity-90 h-10 w-auto"
                                 loading="lazy"
                                 draggable={false}
                             />
@@ -878,7 +878,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* Therapists and Places Display */}
                 {activeTab === 'home' && (
-                    <div className="max-w-full overflow-x-hidden px-4">
+                    <div className="max-w-full overflow-x-hidden">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Terapis Pijat Rumahan'}</h3>
                             <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Temukan terapis pijat terbaik di Bali'}</p>
@@ -1034,7 +1034,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
 
                 {activeTab === 'places' && (
-                    <div className="max-w-full overflow-x-hidden px-4">
+                    <div className="max-w-full overflow-x-hidden">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Spa Pijat Unggulan'}</h3>
                             <p className="text-gray-600">{t?.home?.massagePlacesSubtitle || 'Temukan tempat pijat terbaik di Bali'}</p>
