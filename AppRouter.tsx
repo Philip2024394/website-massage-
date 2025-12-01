@@ -1240,6 +1240,34 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderSimplePage(TherapistInfoPage);
         case 'hotel-info':
             return renderSimplePage(HotelInfoPage);
+        case 'hotel-login':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                    <HotelLoginPage
+                        onNavigate={(page: string, data?: any) => {
+                            if (data?.partnerId && data?.partnerType) {
+                                // Store partner session data
+                                setLoggedInProvider({ id: data.partnerId, type: 'partner' } as any);
+                                // Navigate to partner settings with partner data
+                                if (data.partnerType === 'hotel') {
+                                    setPage('partner-settings-hotel');
+                                } else {
+                                    setPage('partner-settings-villa');
+                                }
+                            } else {
+                                setPage(page as Page);
+                            }
+                        }}
+                        onBack={handleBackToHome}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onTherapistPortalClick={() => setPage('therapistLogin')}
+                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onCustomerPortalClick={() => setPage('customerAuth')}
+                        onAdminPortalClick={() => setPage('adminLogin')}
+                        onTermsClick={() => setPage('serviceTerms')}
+                    />
+                </React.Suspense>
+            );
         case 'employer-info':
             return renderSimplePage(EmployerInfoPage);
             

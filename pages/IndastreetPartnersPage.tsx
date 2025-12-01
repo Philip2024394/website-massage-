@@ -19,6 +19,8 @@ import { AppDrawer } from '../components/AppDrawer';
 import FlyingButterfly from '../components/FlyingButterfly';
 import AnonymousReviewModal from '../components/AnonymousReviewModal';
 import { initializeUserReferralCode } from '../lib/coinHooks';
+import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
+import { Query } from 'appwrite';
 
 interface PartnerWebsite {
     id: string;
@@ -254,26 +256,48 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
             }
         }
 
-        // TODO: Replace with real Appwrite data fetching
-        // Filter partners within 30km radius
-        // const fetchPartners = async () => {
-        //     try {
-        //         const therapists = await therapistService.getAllWithWebsites();
-        //         const places = await placeService.getAllWithWebsites();
-        //         const hotels = await hotelService.getAllWithWebsites();
-        //         const villas = await villaService.getAllWithWebsites();
-        //         setPartners([...therapists, ...places, ...hotels, ...villas]);
-        //     } catch (error) {
-        //         console.error('Error fetching partners:', error);
-        //     }
-        // };
-        // fetchPartners();
+        // Fetch partners from Appwrite database
+        const fetchPartners = async () => {
+            setLoading(true);
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTIONS.PARTNERS,
+                    [
+                        Query.equal('verfied', true), // Only show verified partners (note: typo in collection)
+                        Query.orderDesc('addeddate')
+                    ]
+                );
 
-        // Simulate loading data
-        setTimeout(() => {
-            setPartners(mockPartners);
-            setLoading(false);
-        }, 1000);
+                const fetchedPartners: PartnerWebsite[] = response.documents.map((doc: any) => ({
+                    id: doc.$id,
+                    name: doc.name,
+                    websiteUrl: doc.websiteUrl || '',
+                    websiteTitle: doc.websiteTitle || '',
+                    description: doc.description || '',
+                    category: doc.category,
+                    location: doc.location || '',
+                    phone: doc.phone || doc.whatsapp || '',
+                    verified: doc.verfied || false,
+                    rating: 0,
+                    imageUrl: doc.imageUrl || 'https://ik.imagekit.io/7grri5v7d/hotel%20villa.png',
+                    specialties: doc.amenities ? doc.amenities.split(',') : [],
+                    addedDate: doc.addeddate || doc.$createdAt || new Date().toISOString(),
+                    websitePreview: doc.websitePreview || ''
+                }));
+
+                setPartners(fetchedPartners);
+            } catch (error) {
+                console.error('Error fetching partners:', error);
+                // Fallback to mock data if database fails
+                setPartners(mockPartners);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPartners();
+        fetchPartners();
     }, []);
 
     const categories = [

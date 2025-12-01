@@ -26,6 +26,7 @@ export const COLLECTIONS = {
     ADMINS: '', // Disabled - collection doesn't exist
     HOTELS: 'hotels_collection_id',
     VILLAS: '', // Disabled - collection doesn't exist
+    PARTNERS: 'partners_collection_id', // Hotel & Villa partners
     NOTIFICATIONS: 'notifications_collection_id',
     MASSAGE_TYPES: 'massage_types_collection_id',
     MEMBERSHIP_PRICING: 'membership_pricing_collection_id',
@@ -35,4 +36,9 @@ export const COLLECTIONS = {
     TRANSLATIONS: 'translations_collection_id',
     COMMISSION_RECORDS: 'commission_records',
     ATTRIBUTES: 'ATTRIBUTES'
+};
+
+// Storage bucket IDs
+export const STORAGE_BUCKETS = {
+    PARTNER_IMAGES: 'partner_images_bucket'
 };

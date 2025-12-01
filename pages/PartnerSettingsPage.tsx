@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
+import { databases, storage, DATABASE_ID, COLLECTIONS, STORAGE_BUCKETS, ID } from '../lib/appwrite';
+import { Query } from 'appwrite';
 
 interface PartnerSettingsPageProps {
     partnerId?: string;
@@ -61,12 +63,15 @@ const PartnerSettingsPage: React.FC<PartnerSettingsPageProps> = ({
 
     // Form state
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [websiteTitle, setWebsiteTitle] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
     const [phone, setPhone] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [websitePreview, setWebsitePreview] = useState('');
+    const [password, setPassword] = useState('');
     const [amenities, setAmenities] = useState<string[]>([]);
     const [newAmenity, setNewAmenity] = useState('');
 
@@ -75,17 +80,36 @@ const PartnerSettingsPage: React.FC<PartnerSettingsPageProps> = ({
         ? ['Room Service', 'Spa', 'Pool', 'Gym', 'Restaurant', 'Laundry', 'Airport Transfer', 'WiFi', 'Parking', '24/7 Reception']
         : ['Private Pool', 'Chef Service', 'Spa', 'Garden', 'Concierge', 'Housekeeping', 'BBQ Area', 'WiFi', 'Parking', 'Security'];
 
-    // Load existing data (mock for now)
+    // Load existing data from Appwrite
     useEffect(() => {
-        // TODO: Load from Appwrite database
-        setName(`Sample ${partnerType === 'hotel' ? 'Hotel' : 'Villa'}`);
-        setWebsiteUrl('https://example.com');
-        setWebsiteTitle('Luxury Accommodation in Bali');
-        setDescription('Experience world-class hospitality with our premium massage services available 24/7.');
-        setLocation('Seminyak, Bali');
-        setPhone('+62 812 3456 7890');
-        setImageUrl('https://ik.imagekit.io/7grri5v7d/hotel%20villa.png');
-        setAmenities(['Room Service', 'Spa', 'Pool', 'WiFi', 'Restaurant']);
+        const loadPartnerData = async () => {
+            if (!partnerId) return;
+
+            try {
+                const partner = await databases.getDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.PARTNERS,
+                    partnerId
+                );
+
+                setName(partner.name || '');
+                setEmail(partner.email || '');
+                setWebsiteUrl(partner.websiteUrl || '');
+                setWebsiteTitle(partner.websiteTitle || '');
+                setDescription(partner.description || '');
+                setLocation(partner.location || '');
+                setPhone(partner.phone || '');
+                setImageUrl(partner.imageUrl || '');
+                setWebsitePreview(partner.websitePreview || '');
+                setPassword(partner.password || '');
+                setAmenities(partner.amenities ? partner.amenities.split(',') : []);
+            } catch (error) {
+                console.error('Error loading partner data:', error);
+                // If document doesn't exist yet, keep empty form for new partner
+            }
+        };
+
+        loadPartnerData();
     }, [partnerId, partnerType]);
 
     const handleAddAmenity = (amenity: string) => {
@@ -99,29 +123,66 @@ const PartnerSettingsPage: React.FC<PartnerSettingsPageProps> = ({
         setAmenities(amenities.filter(a => a !== amenity));
     };
 
+    const handleImageUpload = async (file: File) => {
+        try {
+            const uploadedFile = await storage.createFile(
+                STORAGE_BUCKETS.PARTNER_IMAGES,
+                ID.unique(),
+                file
+            );
+
+            const imageUrl = `https://syd.cloud.appwrite.io/v1/storage/buckets/${STORAGE_BUCKETS.PARTNER_IMAGES}/files/${uploadedFile.$id}/view?project=68f23b11000d25eb3664`;
+            setImageUrl(imageUrl);
+            return imageUrl;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw error;
+        }
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         setSaveSuccess(false);
 
         try {
-            // TODO: Save to Appwrite database
             const partnerData = {
                 name,
-                websiteUrl,
-                websiteTitle,
-                description,
+                websiteUrl: websiteUrl || '',
+                websiteTitle: websiteTitle || '',
+                description: description || '',
                 location,
                 phone,
-                imageUrl,
-                amenities,
+                email: email || '',
+                whatsapp: phone || '',
+                imageUrl: imageUrl || '',
+                amenities: amenities.join(','), // Convert array to comma-separated string
                 category: partnerType,
-                updatedAt: new Date().toISOString()
+                verfied: false, // Admin approval required (note: typo in collection)
+                websitePreview: websitePreview || '',
+                password: password || 'changeme123',
+                addeddate: new Date().toISOString(),
+                updateat: new Date().toISOString()
             };
 
             console.log('Saving partner data:', partnerData);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (partnerId) {
+                // Update existing partner
+                await databases.updateDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.PARTNERS,
+                    partnerId,
+                    partnerData
+                );
+            } else {
+                // Create new partner
+                await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.PARTNERS,
+                    ID.unique(),
+                    partnerData
+                );
+            }
 
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
@@ -354,17 +415,45 @@ const PartnerSettingsPage: React.FC<PartnerSettingsPageProps> = ({
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex-1">
-                                    <input
-                                        type="url"
-                                        value={imageUrl}
-                                        onChange={(e) => setImageUrl(e.target.value)}
-                                        placeholder="https://yourhotel.com/image.jpg"
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        Enter image URL or upload to ImageKit/Cloudinary
-                                    </p>
+                                <div className="flex-1 space-y-3">
+                                    {/* File Upload */}
+                                    <div>
+                                        <label className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer">
+                                            <Upload className="w-5 h-5 text-blue-600" />
+                                            <span className="text-sm font-medium text-blue-700">Upload New Image</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        try {
+                                                            const uploadedUrl = await handleImageUpload(file);
+                                                            console.log('Image uploaded:', uploadedUrl);
+                                                        } catch (error) {
+                                                            alert('Failed to upload image. Please try again.');
+                                                        }
+                                                    }
+                                                }}
+                                                className="hidden"
+                                            />
+                                        </label>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            JPG, PNG, or WebP (max 5MB)
+                                        </p>
+                                    </div>
+
+                                    {/* Or URL Input */}
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Or paste image URL</label>
+                                        <input
+                                            type="url"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                            placeholder="https://yourhotel.com/image.jpg"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
