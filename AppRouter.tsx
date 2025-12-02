@@ -79,7 +79,7 @@ const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/Dee
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-const RewardBannersTestPage = React.lazy(() => import('./pages/RewardBannersTestPage'));
+// RewardBannersTestPage removed - coin/reward system deprecated
 // Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
 import WebsiteManagementPage from './pages/WebsiteManagementPage';
 import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
@@ -1281,7 +1281,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <GuestAlertsPage onBack={handleBackToHome} t={t} />;
             
         case 'rewardBannersTest': 
-            return <RewardBannersTestPage onBack={handleBackToHome} t={t} />;
+            // Reward banners removed - coin/reward system deprecated
+            setPage('home');
+            return null;
             
         case 'todaysDiscounts': 
             return <TodaysDiscountsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page)} t={t} />;
