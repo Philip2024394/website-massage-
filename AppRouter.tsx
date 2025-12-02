@@ -63,8 +63,7 @@ const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassage
 const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
 const CareerOpportunitiesPage = React.lazy(() => import('./pages/CareerOpportunitiesPage'));
 const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
-const HotelInfoPage = React.lazy(() => import('./pages/HotelInfoPage'));
-// Note: HotelLoginPage and VillaLoginPage removed - no longer used
+// HotelInfoPage removed - hotel/villa dashboards deprecated
 const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
@@ -1241,7 +1240,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-info':
             return renderSimplePage(TherapistInfoPage);
         case 'hotel-info':
-            return renderSimplePage(HotelInfoPage);
+            // Hotel info page removed - hotel/villa dashboards deprecated
+            setPage('home');
+            return null;
         // Note: hotel-login and villa-login routes removed - no longer used
         case 'employer-info':
             return renderSimplePage(EmployerInfoPage);
