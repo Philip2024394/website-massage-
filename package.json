@@ -30,9 +30,11 @@
     "migrate:flags": "tsx scripts/migrateFlagImages.ts",
     "mobile:android": "cd mobile && npx react-native run-android",
     "mobile:ios": "cd mobile && npx react-native run-ios",
-    "mobile:start": "cd mobile && npx react-native start"
-    ,"schema:export:hotels": "node scripts/exportHotelsSchema.cjs"
-    ,"schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs"
+    "mobile:start": "cd mobile && npx react-native start",
+    "schema:export:hotels": "node scripts/exportHotelsSchema.cjs",
+    "schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs",
+    "analyze": "vite build --mode analyze",
+    "analyze:bundle": "vite-bundle-visualizer"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",

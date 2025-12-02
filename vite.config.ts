@@ -82,54 +82,80 @@ export default defineConfig({
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: (id) => {
-          // Split vendor chunks for better caching
+          // Split vendor chunks for better caching (Facebook/Amazon style)
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor';
+            // Critical: React core (< 150KB)
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              return 'vendor-react';
             }
+            // Routing (< 50KB)
             if (id.includes('react-router')) {
-              return 'router';
+              return 'vendor-router';
             }
+            // UI Libraries (< 200KB)
             if (id.includes('framer-motion') || id.includes('react-icons') || id.includes('lucide-react')) {
-              return 'ui';
+              return 'vendor-ui';
             }
+            // Appwrite SDK (< 100KB)
             if (id.includes('appwrite')) {
-              return 'appwrite';
+              return 'vendor-appwrite';
             }
+            // Form libraries (< 50KB)
+            if (id.includes('react-hook-form') || id.includes('react-hot-toast')) {
+              return 'vendor-forms';
+            }
+            // QR Code (< 30KB)
             if (id.includes('qrcode')) {
-              return 'qrcode';
+              return 'vendor-qr';
             }
-            // Other node_modules go to vendor-misc
+            // Date utilities (< 50KB)
+            if (id.includes('date-fns')) {
+              return 'vendor-dates';
+            }
+            // All other node_modules
             return 'vendor-misc';
           }
           
-          // Split analytics service into separate chunk
-          if (id.includes('services/analyticsService')) {
-            return 'analytics';
+          // Business Logic Services (Industry Standard: < 30KB per chunk)
+          if (id.includes('lib/appwriteService') || id.includes('lib/services')) {
+            return 'services-core';
           }
           
-          // Split commission service into separate chunk
-          if (id.includes('services/commissionPaymentService')) {
-            return 'commission';
+          // Split large pages into separate chunks
+          if (id.includes('pages/PlaceDashboardPage')) {
+            return 'page-place-dashboard';
+          }
+          if (id.includes('pages/EmployerJobPostingPage')) {
+            return 'page-job-posting';
+          }
+          if (id.includes('pages/ConfirmTherapistsPage')) {
+            return 'page-confirm-therapists';
+          }
+          if (id.includes('pages/LiveAdminDashboardEnhanced')) {
+            return 'page-admin-dashboard';
           }
           
-          // Split dashboard pages
-          if (id.includes('pages/HotelDashboardPage') || 
-              id.includes('pages/VillaDashboardPage')) {
-            return 'dashboard-hotel-villa';
+          // Grouping smaller dashboards
+          if (id.includes('pages/') && id.includes('Dashboard')) {
+            return 'pages-dashboards';
           }
           
-          if (id.includes('pages/TherapistDashboardPage') || 
-              id.includes('pages/PlaceDashboardPage')) {
-            return 'dashboard-provider';
+          // Public marketing pages
+          if (id.includes('pages/HomePage') || 
+              id.includes('pages/LandingPage') ||
+              id.includes('pages/AboutUsPage')) {
+            return 'pages-public';
           }
           
-          if (id.includes('pages/AdminDashboardPage') || 
-              id.includes('pages/PlatformAnalyticsPage')) {
-            return 'dashboard-admin';
+          // Job/employment related pages
+          if (id.includes('pages/') && (id.includes('Job') || id.includes('Jobs'))) {
+            return 'pages-jobs';
           }
           
-          // Agent dashboard removed (consolidated into Indastreet Partner dashboard)
+          // Authentication pages
+          if (id.includes('pages/') && (id.includes('Login') || id.includes('Auth') || id.includes('Register'))) {
+            return 'pages-auth';
+          }
         },
       },
     },
