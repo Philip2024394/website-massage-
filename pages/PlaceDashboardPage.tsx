@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home } from 'lucide-react';
+import PageContainer from '../components/layout/PageContainer';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import Button from '../components/Button';
@@ -1854,7 +1855,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Brand Header with Home Icon - Mobile Optimized */}
-            <header className="bg-white shadow-md p-3 sm:p-4 sticky top-0 z-40">
+            <header className="bg-white shadow-md sticky top-0 z-40">
+                <PageContainer className="py-3 sm:py-4">
                 <div className="flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
@@ -1881,11 +1883,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </button>
                     </div>
                 </div>
+                </PageContainer>
             </header>
 
 
             {/* Content Area */}
-            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-40">
+            <main>
+            <PageContainer className="px-2 sm:px-4 py-4 sm:py-6 pb-40">
                 {showNotificationsView ? (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
@@ -1989,6 +1993,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 ) : (
                     renderContent()
                 )}
+            </PageContainer>
             </main>
 
             {/* Validation Popup */}
