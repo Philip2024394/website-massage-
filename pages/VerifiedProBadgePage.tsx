@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Info, Star, Award, Menu } from 'lucide-react';
 import { verificationService } from '../lib/appwriteService';
+import PageContainer from '../components/layout/PageContainer';
 
 interface VerifiedProBadgePageProps {
   onBack: () => void;
@@ -79,13 +80,15 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl sm:text-2xl font-bold"><span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span></h1>
-          <button onClick={() => setDrawerOpen(true)} className="p-2 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors">
-            <Menu className="w-5 h-5 text-orange-600" />
-          </button>
-        </div>
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <PageContainer className="py-3">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl sm:text-2xl font-bold"><span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span></h1>
+            <button onClick={() => setDrawerOpen(true)} className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <Menu className="w-5 h-5 text-orange-600" />
+            </button>
+          </div>
+        </PageContainer>
       </header>
 
       {/* Side Drawer */}
@@ -109,7 +112,8 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
         </div>
       )}
 
-      <main className="p-6 space-y-6 max-w-6xl mx-auto">
+      <main className="space-y-6">
+        <PageContainer className="pt-6 pb-20">
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="w-8 h-8 text-emerald-500" />
@@ -149,12 +153,12 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
             </div>
           )}
 
-          <div className="mt-4 flex gap-3">
-            <button onClick={loadEligibility} disabled={loading} className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium disabled:opacity-50">Refresh</button>
-            <button onClick={applyForBadge} disabled={loading || (!!eligibility && !eligibility.isEligible)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50 flex items-center gap-2">
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button onClick={loadEligibility} disabled={loading} className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium disabled:opacity-50 min-h-[44px]">Refresh</button>
+            <button onClick={applyForBadge} disabled={loading || (!!eligibility && !eligibility.isEligible)} className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold disabled:opacity-50 flex items-center gap-2 min-h-[44px]">
               <CheckCircle2 className="w-4 h-4" /> Apply for Verification
             </button>
-            <button onClick={revokeBadge} disabled={loading} className="px-4 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-medium disabled:opacity-50">Revoke</button>
+            <button onClick={revokeBadge} disabled={loading} className="px-4 py-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 font-medium disabled:opacity-50 min-h-[44px]">Revoke</button>
           </div>
         </div>
 
@@ -170,7 +174,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
           </ul>
         </div>
 
-        <div className="pb-20" />
+        </PageContainer>
       </main>
     </div>
   );
