@@ -676,10 +676,9 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
-            {/* Scrollable Content Container */}
-            <div className="flex-1 overflow-y-auto" style={{ paddingBottom: '80px', paddingTop: '16px' }}>
-                <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center">
+            {/* Header */}
+            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
+                <div className="flex justify-between items-center max-w-6xl mx-auto">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -750,8 +749,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="px-4 pb-24 overflow-x-hidden">
-                <div className="max-w-6xl mx-auto">
+            <main className="max-w-6xl mx-auto px-4 pb-24">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full mt-6">
                     {userLocation ? (
@@ -1136,12 +1134,9 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
-                </div> {/* End max-w-6xl centering container */}
             </main>
             
             {/* Rating modal removed for design mock */}
-            
-            </div> {/* End scrollable content container */}
 
             <style>{`
                 @keyframes float {
