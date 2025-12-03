@@ -332,11 +332,37 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         const posts = (placeData as any).instagramPosts || (placeData as any).instagramposts;
         if (Array.isArray(posts)) {
             setInstagramPostsRaw(posts.join('\n'));
+            // Check if posts are objects with {image, link} format
+            if (posts.length > 0 && typeof posts[0] === 'object' && 'image' in posts[0]) {
+                setInstagramPostsArray(posts);
+            }
         } else if (typeof posts === 'string') {
-            try { const arr = JSON.parse(posts); setInstagramPostsRaw(Array.isArray(arr) ? arr.join('\n') : ''); }
+            try { 
+                const arr = JSON.parse(posts); 
+                if (Array.isArray(arr)) {
+                    setInstagramPostsRaw(Array.isArray(arr) ? arr.join('\n') : '');
+                    // Check if array contains objects with {image, link}
+                    if (arr.length > 0 && typeof arr[0] === 'object' && 'image' in arr[0]) {
+                        setInstagramPostsArray(arr);
+                    }
+                }
+            }
             catch { setInstagramPostsRaw(''); }
         } else {
             setInstagramPostsRaw('');
+        }
+        
+        // Initialize Facebook posts
+        const fbPosts = (placeData as any).facebookPosts || (placeData as any).facebookposts;
+        if (Array.isArray(fbPosts) && fbPosts.length > 0 && typeof fbPosts[0] === 'object') {
+            setFacebookPostsArray(fbPosts);
+        } else if (typeof fbPosts === 'string') {
+            try {
+                const arr = JSON.parse(fbPosts);
+                if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'object') {
+                    setFacebookPostsArray(arr);
+                }
+            } catch { /* ignore */ }
         }
     };
     
