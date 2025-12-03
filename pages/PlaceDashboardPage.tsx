@@ -169,6 +169,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [instagramUrl, setInstagramUrl] = useState('');
     const [facebookPageUrl, setFacebookPageUrl] = useState('');
     const [instagramPostsRaw, setInstagramPostsRaw] = useState(''); // newline or comma separated
+    const [instagramPostsArray, setInstagramPostsArray] = useState<Array<{image: string; link: string}>>([]);
+    const [facebookPostsArray, setFacebookPostsArray] = useState<Array<{image: string; link: string}>>([]);
     
     // Image upload warning modal states
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
@@ -568,13 +570,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Social media
             instagramurl: instagramUrl || '',
             facebookpageurl: facebookPageUrl || '',
-            instagramposts: (() => {
-                const list = (instagramPostsRaw || '')
-                    .split(/\n|,/)
-                    .map(s => s.trim())
-                    .filter(Boolean);
-                return list.length ? JSON.stringify(list) : '';
-            })(),
+            instagramposts: instagramPostsArray.length ? JSON.stringify(instagramPostsArray) : '',
+            facebookposts: facebookPostsArray.length ? JSON.stringify(facebookPostsArray) : '',
             
             // Discounts
             discountpercentage: isDiscountActive ? Number(discountPercentage) : 0,

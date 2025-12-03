@@ -501,14 +501,42 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     const fbFromWebsite = websiteUrl && websiteUrl.includes('facebook.com') ? websiteUrl : undefined;
                     const instagramUrl = (place as any).instagramUrl || (place as any).instagram || igFromWebsite;
                     const facebookPageUrl = (place as any).facebookPageUrl || (place as any).facebook || fbFromWebsite;
-                    const instagramPosts: string[] | undefined = (place as any).instagramPosts;
+                    const instagramPosts = (place as any).instagramPosts;
+                    const facebookPosts = (place as any).facebookPosts;
 
-                    if (instagramUrl || facebookPageUrl) {
+                    // 🎨 MOCK DATA FOR PREVIEW - Replace with real data from dashboard
+                    const mockInstagramUrl = "https://www.instagram.com/dewave_jogja/?hl=en";
+                    const mockFacebookPageUrl = "https://www.facebook.com/dewave.jogja";
+                    const mockInstagramPosts = [
+                        { image: "https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png", link: "https://www.instagram.com/p/DDAnRQ4Scjc/" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135", link: "https://www.instagram.com/p/DDAnP6WyA4s/" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664", link: "https://www.instagram.com/p/DDAnO0gSglB/" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png", link: "https://www.instagram.com/p/DDAnNfPyB-x/" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135", link: "https://www.instagram.com/p/DDAnLt6yWZc/" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664", link: "https://www.instagram.com/p/DDAnKIlSoOY/" }
+                    ];
+                    const mockFacebookPosts = [
+                        { image: "https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png", link: "https://www.facebook.com/dewave.jogja/posts/1" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135", link: "https://www.facebook.com/dewave.jogja/posts/2" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664", link: "https://www.facebook.com/dewave.jogja/posts/3" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png", link: "https://www.facebook.com/dewave.jogja/posts/4" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135", link: "https://www.facebook.com/dewave.jogja/posts/5" },
+                        { image: "https://ik.imagekit.io/7grri5v7d/massage%20spa.png?updatedAt=1762514431664", link: "https://www.facebook.com/dewave.jogja/posts/6" }
+                    ];
+
+                    // Use mock data to preview design (remove this after testing)
+                    const previewInstagram = instagramUrl || mockInstagramUrl;
+                    const previewFacebook = facebookPageUrl || mockFacebookPageUrl;
+                    const previewInstagramPosts = instagramPosts || mockInstagramPosts;
+                    const previewFacebookPosts = facebookPosts || mockFacebookPosts;
+
+                    if (previewInstagram || previewFacebook) {
                         return (
                             <SocialMediaSection
-                                instagramUrl={instagramUrl}
-                                instagramPosts={instagramPosts}
-                                facebookPageUrl={facebookPageUrl}
+                                instagramUrl={previewInstagram}
+                                instagramPosts={previewInstagramPosts}
+                                facebookPageUrl={previewFacebook}
+                                facebookPosts={previewFacebookPosts}
                             />
                         );
                     }

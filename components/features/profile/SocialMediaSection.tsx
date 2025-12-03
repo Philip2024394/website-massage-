@@ -1,33 +1,21 @@
 import React from 'react';
+import { Heart, MessageCircle, Share2 } from 'lucide-react';
 
 interface SocialMediaSectionProps {
   instagramUrl?: string;
-  instagramPosts?: string[]; // Full post URLs like https://www.instagram.com/p/SHORTCODE/
-  facebookPageUrl?: string;  // Facebook Page URL
+  instagramPosts?: Array<{ image: string; link: string }>; // Array of {image, link} objects
+  facebookPageUrl?: string;
+  facebookPosts?: Array<{ image: string; link: string }>; // Array of {image, link} objects
 }
 
-const extractInstagramShortcode = (url: string): string | null => {
-  try {
-    const u = new URL(url);
-    const parts = u.pathname.split('/').filter(Boolean);
-    const idx = parts.findIndex((p) => p === 'p' || p === 'reel');
-    if (idx !== -1 && parts[idx + 1]) return parts[idx + 1];
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ instagramUrl, instagramPosts, facebookPageUrl }) => {
-  const hasInstagram = !!instagramUrl;
-  const hasFacebook = !!facebookPageUrl;
-  const shortcodes = (instagramPosts || [])
-    .map(extractInstagramShortcode)
-    .filter((c): c is string => !!c);
-
-  // Heuristic height for embeds
-  const igHeight = shortcodes.length > 0 ? 480 : 120;
-  const fbHeight = 500;
+export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ 
+  instagramUrl, 
+  instagramPosts, 
+  facebookPageUrl,
+  facebookPosts 
+}) => {
+  const hasInstagram = !!instagramUrl && instagramPosts && instagramPosts.length > 0;
+  const hasFacebook = !!facebookPageUrl && facebookPosts && facebookPosts.length > 0;
 
   if (!hasInstagram && !hasFacebook) return null;
 
@@ -36,9 +24,10 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ instagra
       <div className="p-4 sm:p-6">
         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Social Media</h3>
 
+        {/* Instagram Section */}
         {hasInstagram && (
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <h4 className="text-lg font-semibold text-gray-800">Instagram</h4>
               <a
                 href={instagramUrl}
@@ -50,36 +39,46 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ instagra
               </a>
             </div>
 
-            {shortcodes.length > 0 ? (
-              <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                <div className="flex gap-4 pb-2">
-                  {shortcodes.map((code) => (
-                    <div key={code} className="flex-shrink-0 w-[320px]">
-                      <iframe
-                        src={`https://www.instagram.com/p/${code}/embed/`}
-                        width="320"
-                        height={igHeight}
-                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                        style={{ border: 0, overflow: 'hidden' }}
-                        loading="lazy"
-                      />
+            {/* 3 Cards per Row */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {instagramPosts.slice(0, 9).map((post, index) => (
+                <a
+                  key={index}
+                  href={post.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity"
+                >
+                  <img
+                    src={post.image}
+                    alt={`Instagram post ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png';
+                    }}
+                  />
+                  {/* Hover Overlay with Icons */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                    <div className="flex items-center gap-1 text-white">
+                      <Heart className="w-5 h-5" fill="white" />
                     </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
-                <p className="text-sm text-gray-600">
-                  Live feed requires post URLs. Add latest post links to show a carousel here, or keep it as a profile link.
-                </p>
-              </div>
-            )}
+                    <div className="flex items-center gap-1 text-white">
+                      <MessageCircle className="w-5 h-5" fill="white" />
+                    </div>
+                    <div className="flex items-center gap-1 text-white">
+                      <Share2 className="w-5 h-5" />
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
+        {/* Facebook Section */}
         {hasFacebook && (
           <div className="mb-2">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <h4 className="text-lg font-semibold text-gray-800">Facebook</h4>
               <a
                 href={facebookPageUrl}
@@ -90,16 +89,39 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({ instagra
                 View Page
               </a>
             </div>
-            <div className="w-full">
-              <iframe
-                title="Facebook Page Plugin"
-                src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(facebookPageUrl!)}&tabs=timeline&width=500&height=${fbHeight}&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`}
-                style={{ border: 'none', overflow: 'hidden', width: '100%', height: fbHeight }}
-                scrolling="no"
-                frameBorder={0}
-                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                loading="lazy"
-              />
+
+            {/* 3 Cards per Row */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {facebookPosts.slice(0, 9).map((post, index) => (
+                <a
+                  key={index}
+                  href={post.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity"
+                >
+                  <img
+                    src={post.image}
+                    alt={`Facebook post ${index + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png';
+                    }}
+                  />
+                  {/* Hover Overlay with Icons */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                    <div className="flex items-center gap-1 text-white">
+                      <Heart className="w-5 h-5" fill="white" />
+                    </div>
+                    <div className="flex items-center gap-1 text-white">
+                      <MessageCircle className="w-5 h-5" fill="white" />
+                    </div>
+                    <div className="flex items-center gap-1 text-white">
+                      <Share2 className="w-5 h-5" />
+                    </div>
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         )}
