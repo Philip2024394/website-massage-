@@ -678,7 +678,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center max-w-6xl mx-auto px-2 sm:px-4 py-4">
+                <div className="flex justify-between items-center max-w-6xl mx-auto px-4 py-4">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
