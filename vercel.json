@@ -1,8 +1,8 @@
 {
   "framework": null,
-  "buildCommand": "npm run build:vercel",
+  "buildCommand": "pnpm run build:vercel",
   "outputDirectory": "dist",
-  "installCommand": "npm ci --omit=optional",
+  "installCommand": "pnpm install --frozen-lockfile",
   "env": {
     "ROLLUP_NO_NATIVE": "1"
   }
