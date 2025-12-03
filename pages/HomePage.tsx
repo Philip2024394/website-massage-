@@ -817,8 +817,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
 
 
-                <div className="space-y-3 mb-6 max-w-full">
-                    <div className="flex items-center w-full gap-3 max-w-full">
+                <div className="space-y-3 mb-6 max-w-full overflow-hidden">
+                    <div className="flex items-center w-full gap-2 sm:gap-3 max-w-full">
                         <div className="relative flex-1 min-w-0 basis-0 overflow-visible z-10">
                             <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                             <select 
@@ -858,7 +858,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
-                            className="ml-auto inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[32px]"
+                            className="ml-auto inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[24px] sm:h-[28px] md:h-[32px]"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Join Indastreet"
@@ -866,7 +866,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
                                 alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-[28px] w-auto object-contain"
+                                className="select-none transition-opacity hover:opacity-90 h-[20px] sm:h-[24px] md:h-[28px] w-auto object-contain"
                                 loading="lazy"
                                 draggable={false}
                             />
