@@ -1013,6 +1013,18 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Social links
+                instagramUrl: (response as any).instagramurl || (response as any).instagramUrl || undefined,
+                facebookPageUrl: (response as any).facebookpageurl || (response as any).facebookPageUrl || undefined,
+                instagramPosts: (() => {
+                    const raw = (response as any).instagramposts || (response as any).instagramPosts;
+                    if (!raw) return undefined;
+                    try {
+                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    } catch {
+                        return undefined;
+                    }
+                })(),
                 // Map critical display attributes
                 massageTypes: (response as any).massagetypes || response.massageTypes,
                 languages: (response as any).languagesspoken || response.languages,
@@ -1062,6 +1074,14 @@ export const placeService = {
                     websiteUrl: (doc as any).websiteurl || doc.websiteUrl,
                     websiteTitle: (doc as any).websitetitle || doc.websiteTitle,
                     websiteDescription: (doc as any).websitedescription || doc.websiteDescription,
+                    // Social links
+                    instagramUrl: (doc as any).instagramurl || (doc as any).instagramUrl || undefined,
+                    facebookPageUrl: (doc as any).facebookpageurl || (doc as any).facebookPageUrl || undefined,
+                    instagramPosts: (() => {
+                        const raw = (doc as any).instagramposts || (doc as any).instagramPosts;
+                        if (!raw) return undefined;
+                        try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return undefined; }
+                    })(),
                     // Map critical display attributes
                     massageTypes: (doc as any).massagetypes || doc.massageTypes,
                     languages: (doc as any).languagesspoken || doc.languages,
@@ -1198,6 +1218,14 @@ export const placeService = {
                     websiteUrl: (p as any).websiteurl || p.websiteUrl,
                     websiteTitle: (p as any).websitetitle || p.websiteTitle,
                     websiteDescription: (p as any).websitedescription || p.websiteDescription,
+                    // Social links
+                    instagramUrl: (p as any).instagramurl || (p as any).instagramUrl || undefined,
+                    facebookPageUrl: (p as any).facebookpageurl || (p as any).facebookPageUrl || undefined,
+                    instagramPosts: (() => {
+                        const raw = (p as any).instagramposts || (p as any).instagramPosts;
+                        if (!raw) return undefined;
+                        try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return undefined; }
+                    })(),
                     // Map critical display attributes and parse JSON strings
                     massageTypes: (() => {
                         const raw = (p as any).massagetypes || p.massageTypes;
@@ -1282,6 +1310,14 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Social links
+                instagramUrl: (response as any).instagramurl || (response as any).instagramUrl || undefined,
+                facebookPageUrl: (response as any).facebookpageurl || (response as any).facebookPageUrl || undefined,
+                instagramPosts: (() => {
+                    const raw = (response as any).instagramposts || (response as any).instagramPosts;
+                    if (!raw) return undefined;
+                    try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return undefined; }
+                })(),
                 // Map critical display attributes and parse JSON strings
                 massageTypes: (() => {
                     const raw = (response as any).massagetypes || response.massageTypes;
@@ -1357,6 +1393,14 @@ export const placeService = {
                 websiteUrl: (response as any).websiteurl || response.websiteUrl,
                 websiteTitle: (response as any).websitetitle || response.websiteTitle,
                 websiteDescription: (response as any).websitedescription || response.websiteDescription,
+                // Social links
+                instagramUrl: (response as any).instagramurl || (response as any).instagramUrl || undefined,
+                facebookPageUrl: (response as any).facebookpageurl || (response as any).facebookPageUrl || undefined,
+                instagramPosts: (() => {
+                    const raw = (response as any).instagramposts || (response as any).instagramPosts;
+                    if (!raw) return undefined;
+                    try { return typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { return undefined; }
+                })(),
                 // Map critical display attributes and parse JSON strings
                 massageTypes: (() => {
                     const raw = (response as any).massagetypes || response.massageTypes;

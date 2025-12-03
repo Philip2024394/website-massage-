@@ -165,6 +165,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [websiteTitle, setWebsiteTitle] = useState('');
     const [websiteDescription, setWebsiteDescription] = useState('');
+    // Social media
+    const [instagramUrl, setInstagramUrl] = useState('');
+    const [facebookPageUrl, setFacebookPageUrl] = useState('');
+    const [instagramPostsRaw, setInstagramPostsRaw] = useState(''); // newline or comma separated
     
     // Image upload warning modal states
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
@@ -318,6 +322,20 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setWebsiteUrl((placeData as any).websiteUrl || (placeData as any).websiteurl || '');
         setWebsiteTitle((placeData as any).websiteTitle || (placeData as any).websitetitle || '');
         setWebsiteDescription((placeData as any).websiteDescription || (placeData as any).websitedescription || '');
+        // Initialize social media
+        const ig = (placeData as any).instagramUrl || (placeData as any).instagramurl || '';
+        const fb = (placeData as any).facebookPageUrl || (placeData as any).facebookpageurl || '';
+        setInstagramUrl(ig || '');
+        setFacebookPageUrl(fb || '');
+        const posts = (placeData as any).instagramPosts || (placeData as any).instagramposts;
+        if (Array.isArray(posts)) {
+            setInstagramPostsRaw(posts.join('\n'));
+        } else if (typeof posts === 'string') {
+            try { const arr = JSON.parse(posts); setInstagramPostsRaw(Array.isArray(arr) ? arr.join('\n') : ''); }
+            catch { setInstagramPostsRaw(''); }
+        } else {
+            setInstagramPostsRaw('');
+        }
     };
     
     const initializeWithDefaults = () => {
@@ -546,6 +564,17 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             websiteUrl: websiteUrl || '',
             websiteTitle: websiteTitle || '',
             websiteDescription: websiteDescription || '',
+
+            // Social media
+            instagramurl: instagramUrl || '',
+            facebookpageurl: facebookPageUrl || '',
+            instagramposts: (() => {
+                const list = (instagramPostsRaw || '')
+                    .split(/\n|,/)
+                    .map(s => s.trim())
+                    .filter(Boolean);
+                return list.length ? JSON.stringify(list) : '';
+            })(),
             
             // Discounts
             discountpercentage: isDiscountActive ? Number(discountPercentage) : 0,
@@ -1397,6 +1426,42 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Add your business website to show on your profile card</p>
+                        </div>
+                        {/* Social Media */}
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900">Instagram URL</label>
+                                <input
+                                    type="url"
+                                    value={instagramUrl}
+                                    onChange={(e) => setInstagramUrl(e.target.value)}
+                                    placeholder="https://www.instagram.com/yourprofile/"
+                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Link to your Instagram profile.</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900">Facebook Page URL</label>
+                                <input
+                                    type="url"
+                                    value={facebookPageUrl}
+                                    onChange={(e) => setFacebookPageUrl(e.target.value)}
+                                    placeholder="https://www.facebook.com/yourpage"
+                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Your official Facebook Page. Shown as a timeline.</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-900">Instagram Post URLs (optional)</label>
+                                <textarea
+                                    value={instagramPostsRaw}
+                                    onChange={(e) => setInstagramPostsRaw(e.target.value)}
+                                    placeholder={"Paste Instagram post or reel links, one per line\nhttps://www.instagram.com/p/XXXX/\nhttps://www.instagram.com/reel/YYYY/"}
+                                    rows={4}
+                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">We’ll show a horizontal carousel of these posts.</p>
+                            </div>
                         </div>
                         
                         <div>
