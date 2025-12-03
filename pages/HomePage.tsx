@@ -5,7 +5,7 @@ import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-// import PageContainer from '../components/layout/PageContainer';
+import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawer';
 import { Users, Building, Sparkles } from 'lucide-react';
@@ -679,7 +679,8 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center max-w-6xl mx-auto px-4 py-3 sm:py-4">
+                <PageContainer className="py-3 sm:py-4">
+                <div className="flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -703,7 +704,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     console.error('❌ No language change handler provided');
                                 }
                             }} 
-                            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
                             title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                         >
                             <span className="text-xl sm:text-2xl">
@@ -716,13 +717,15 @@ const HomePage: React.FC<HomePageProps> = ({
                             console.log('🍔 Setting isMenuOpen to true');
                             setIsMenuOpen(true);
                             console.log('🍔 After setting - isMenuOpen should be true');
-                        }} title="Menu" className="p-1.5 sm:p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0">
+                        }} title="Menu" className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
                            <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
                     </div>
                 </div>
+                </PageContainer>
             </header>
-            <main className="max-w-6xl mx-auto px-4 pb-24">
+            <main>
+            <PageContainer className="pb-24">
             
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
@@ -751,8 +754,10 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
+            </PageContainer>
             </main>
-            <main className="max-w-6xl mx-auto px-2 sm:px-4 pb-24">
+            <main>
+            <PageContainer className="px-2 sm:px-4 pb-24">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full mt-6">
                     {userLocation ? (
@@ -1137,6 +1142,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
+            </PageContainer>
             </main>
             
             {/* Rating modal removed for design mock */}
