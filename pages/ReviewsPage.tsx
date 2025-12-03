@@ -189,16 +189,16 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       </header>
 
       {/* Provider Name and Reviews Title */}
-      <div className="bg-white border-b border-gray-200 relative">
+      <div className="bg-white border-b border-gray-200 relative overflow-hidden">
         <PageContainer className="py-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Customer Reviews</h2>
-            <p className="text-gray-600">{providerName}</p>
+          <div className="relative z-10">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1 pr-20 sm:pr-24">Customer Reviews</h2>
+            <p className="text-gray-600 pr-20 sm:pr-24">{providerName}</p>
           </div>
           <img 
             src="https://ik.imagekit.io/7grri5v7d/reviews.png" 
             alt="Reviews" 
-            className="absolute bottom-0 right-0 h-24 w-auto object-contain"
+            className="absolute bottom-0 right-0 h-16 sm:h-20 md:h-24 w-auto object-contain"
           />
         </PageContainer>
       </div>
