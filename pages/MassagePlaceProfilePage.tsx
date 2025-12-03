@@ -105,6 +105,23 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     therapists = [],
     places = []
 }) => {
+    // Guard: Return early if place is null or undefined
+    if (!place) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-gray-600 mb-4">Place not found</p>
+                    <button 
+                        onClick={onBack}
+                        className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                    >
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     // Side menu drawer state
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
@@ -145,7 +162,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     };
     
     React.useEffect(() => {
-        if (userLocation && place.coordinates) {
+        if (userLocation && place && place.coordinates) {
             const coords = typeof place.coordinates === 'string' 
                 ? JSON.parse(place.coordinates) 
                 : place.coordinates;
@@ -164,7 +181,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 setCalculatedDistance(distance);
             }
         }
-    }, [userLocation, place.coordinates]);
+    }, [userLocation, place, place?.coordinates]);
     
     // Use custom hook for all data and logic
     const {
