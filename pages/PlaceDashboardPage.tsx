@@ -136,6 +136,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [location, setLocation] = useState('');
     const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
+    const [therapistGender, setTherapistGender] = useState<string>('Unisex'); // 'Male', 'Female', or 'Unisex'
     const [yearsEstablished, setYearsEstablished] = useState<number>(1);
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
@@ -279,6 +280,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             const massageTypesRaw = (placeData as any).massagetypes || placeData.massageTypes;
             setMassageTypes(typeof massageTypesRaw === 'string' ? JSON.parse(massageTypesRaw) : massageTypesRaw || []);
             
+            // Load therapist gender preference
+            const genderPref = (placeData as any).therapistGender || placeData.therapistGender || 'Unisex';
+            setTherapistGender(genderPref);
+            
             // Parse languages - handle both JSON string and array
             const languagesRaw = placeData.languages || (placeData as any).languagesspoken;
             setLanguages(typeof languagesRaw === 'string' ? JSON.parse(languagesRaw) : languagesRaw || []);
@@ -328,6 +333,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setDiscountEndTime('');
         setCoordinates({ lat: 0, lng: 0 });
         setMassageTypes([]);
+        setTherapistGender('Unisex');
         setLanguages([]);
         setAdditionalServices([]);
         setLocation('');
@@ -530,6 +536,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Services
             massagetypes: JSON.stringify(massageTypes),
+            therapistGender: therapistGender,
             languages: JSON.stringify(languages),
             additionalServices: JSON.stringify(additionalServices),
             yearsEstablished: Number(yearsEstablished) || 1,
@@ -1439,9 +1446,30 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <p className="text-xs text-gray-500 mt-1">How many years has your business been operating?</p>
                         </div>
                         
+                        {/* Bookings - Gender Preference */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">Bookings</label>
+                            <div className="flex gap-3">
+                                {['Male', 'Female', 'Unisex'].map((gender) => (
+                                    <button
+                                        key={gender}
+                                        type="button"
+                                        onClick={() => setTherapistGender(gender)}
+                                        className={`flex-1 px-4 py-3 rounded-lg border-2 font-medium transition-all ${
+                                            therapistGender === gender
+                                                ? 'bg-orange-500 border-orange-500 text-white'
+                                                : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300'
+                                        }`}
+                                    >
+                                        {gender}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-900">
-                                {t?.massageTypesLabel || 'Massage Types'}
+                                {t?.massageTypesLabel || 'Massage Specializations'}
                                 <span className="text-xs text-gray-500 ml-2">
                                     (Select up to 5 specialties - {massageTypes.length}/5 selected)
                                 </span>

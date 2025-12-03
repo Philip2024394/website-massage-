@@ -1117,7 +1117,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <WhatsAppIcon className="w-4 h-4"/>
-                    <span className="text-sm">Whats App</span>
+                    <span className="text-sm">Book Now</span>
                 </button>
                  <button 
                     onClick={() => {

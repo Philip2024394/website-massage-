@@ -924,6 +924,20 @@ export const placeService = {
             place.id = canonicalId;
             place.placeId = canonicalId;
 
+            // Set default profilePicture if not provided (required field)
+            if (!place.profilePicture || place.profilePicture === '') {
+                place.profilePicture = 'https://via.placeholder.com/150';
+            }
+
+            // Set other default values for required fields if not provided
+            if (!place.name) place.name = 'New Massage Place';
+            if (!place.email) place.email = '';
+            if (!place.whatsappNumber) place.whatsappNumber = '';
+            if (!place.location) place.location = '';
+            if (!place.description) place.description = '';
+            if (place.rating === undefined) place.rating = 0;
+            if (place.isLive === undefined) place.isLive = false;
+
             // Seed analytics with initial bookings (32-50) if not provided
             if (!place.analytics) {
                 const seedBookings = 32 + Math.floor(Math.random() * 19);

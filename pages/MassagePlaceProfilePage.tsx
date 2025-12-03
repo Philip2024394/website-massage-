@@ -192,17 +192,50 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         }
     };
 
-    // Handle booking - same as therapist book now
+    // Handle WhatsApp booking - open WhatsApp with place number
     const handleBookNowClick = () => {
-        if (onBook) {
-            onBook();
+        if (place.whatsappNumber) {
+            const message = `Hi, I would like to book a massage at ${place.name}. Can you help me with availability?`;
+            const whatsappUrl = `https://wa.me/${place.whatsappNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        } else {
+            alert('WhatsApp number not available for this massage place');
         }
     };
     
-    // Handle booking calendar
+    // Handle Schedule booking - open schedule popup
     const handleBookingClick = () => {
-        if (onBook) {
-            onBook();
+        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
+        if (openScheduleBookingPopup) {
+            // Parse pricing from place data
+            const parsePricing = (pricingStr: any) => {
+                if (!pricingStr) return { "60": 0, "90": 0, "120": 0 };
+                if (typeof pricingStr === 'object') return pricingStr;
+                try {
+                    return JSON.parse(pricingStr);
+                } catch {
+                    return { "60": 0, "90": 0, "120": 0 };
+                }
+            };
+            
+            const parsedPricing = parsePricing(place.pricing);
+            const pricing = {
+                "60": parsedPricing["60"] * 1000,
+                "90": parsedPricing["90"] * 1000,
+                "120": parsedPricing["120"] * 1000
+            };
+            
+            openScheduleBookingPopup({
+                therapistId: String(place.$id || place.id),
+                therapistName: place.name,
+                therapistType: 'place',
+                profilePicture: place.profilePicture || place.mainImage,
+                pricing: pricing,
+                discountPercentage: (place as any).discountPercentage || 0,
+                discountActive: isDiscountActive(place)
+            });
+        } else {
+            console.error('Schedule booking popup not available');
         }
     };
 

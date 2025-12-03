@@ -530,15 +530,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         onClick={onBookNowClick}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white font-semibold text-sm rounded-lg hover:bg-green-600 transition-colors shadow-lg"
                     >
-                        <Calendar className="w-4 h-4" />
-                        <span>Book Now</span>
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
+                        </svg>
+                        <span>WhatsApp</span>
                     </button>
                     <button
                         onClick={onBookClick}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-orange-500 text-white font-semibold text-sm rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
                     >
                         <Calendar className="w-4 h-4" />
-                        <span>Book Massage</span>
+                        <span>Schedule</span>
                     </button>
                 </div>
 

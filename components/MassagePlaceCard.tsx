@@ -352,6 +352,18 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                 )}
 
+                {/* Opening/Closing Time Badge - Shows when NO discount is active */}
+                {!isDiscountActive(place) && !activeDiscount && place.openingTime && place.closingTime && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/80 backdrop-blur-md rounded-full px-3 py-2 shadow-lg">
+                        <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs text-white font-semibold">
+                            {place.openingTime} - {place.closingTime}
+                        </span>
+                    </div>
+                )}
+
                 {/* Active Discount Badge - External discount prop (fallback) */}
                 {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
                     <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
@@ -484,9 +496,20 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
             {/* Massage Place Bio - dynamic from Appwrite */}
             <div className="absolute top-72 left-4 right-4 z-10 massage-place-bio-section">
-                <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4">
-                    {description}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
+                        {description}
+                    </p>
+                    {/* Opening/Closing Time Text - Shows when discount IS active */}
+                    {(isDiscountActive(place) || activeDiscount) && place.openingTime && place.closingTime && (
+                        <div className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap">
+                            <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="font-medium">{place.openingTime}-{place.closingTime}</span>
+                        </div>
+                    )}
+                </div>
                 {/* Website Link */}
                 {(place as any).websiteUrl && (
                     <a
@@ -515,8 +538,16 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 {/* Massage Specializations - dynamic */}
                 {massageTypesDisplay.length > 0 && (
                     <div className="mt-4">
-                        <div className="mb-2">
-                            <h4 className="text-xs font-semibold text-gray-700">Massage Specializations</h4>
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Massage Specializations</h4>
+                            {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' && (
+                                <span className="text-xs font-medium text-orange-600 flex items-center gap-1 whitespace-nowrap">
+                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                                    </svg>
+                                    Bookings: {(place as any).therapistGender} Only
+                                </span>
+                            )}
                         </div>
                         <div className="flex flex-wrap gap-1">
                             {massageTypesDisplay.map((mt: string) => (
@@ -660,13 +691,29 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <span>View Details & Chat</span>
+                    <span>View Massage Spa</span>
                 </button>
 
-                {/* Refer Friend and Leave Review Links */}
-                <div className="flex justify-between items-center gap-1 mt-3 px-2 w-full overflow-hidden">
+                {/* Refer Friend, Massage Directory and Leave Review Links */}
+                <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1">
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Placeholder for refer friend functionality
+                            alert('Share feature coming soon!');
+                        }}
+                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                    >
+                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                        </svg>
+                        <span>Share</span>
+                    </button>
                     {onNavigate && (
                         <button
                             type="button"
@@ -676,7 +723,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 onNavigate('massageTypes');
                             }}
                             title={_t?.home?.massageDirectoryTitle || 'Go to Massage Directory'}
-                            className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                         >
                             <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
@@ -690,7 +737,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             e.stopPropagation();
                             setShowReviewModal(true);
                         }}
-                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors whitespace-nowrap"
+                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                     >
                         <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />

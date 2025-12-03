@@ -4,7 +4,6 @@ import GlobalHeader from './components/GlobalHeader';
 import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useTranslations } from './lib/useTranslations';
-import { vscodeTranslateService } from './lib/vscodeTranslateService';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
@@ -197,9 +196,6 @@ const App = () => {
             console.log('Push notification initialization:', err.message);
         });
         
-        // Initialize VS Code translation service
-        vscodeTranslateService.init();
-        
         return () => {
             bookingExpirationService.stop();
         };
@@ -242,13 +238,6 @@ const App = () => {
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
-    
-    // Global VS Code translation activation on language change
-    useEffect(() => {
-        if (language) {
-            vscodeTranslateService.activateOnLanguageChange(language);
-        }
-    }, [language]);
     
     // Get translations using the actual language state - provide to AppRouter
     const { t: _t, dict } = useTranslations(language);

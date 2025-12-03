@@ -362,13 +362,14 @@ export const placeAuth = {
                 email,                                         // ✅ Required: Email address
                 password: '',                                  // ✅ Required: Managed by Appwrite auth
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
-                location: '',                                  // ✅ Required: Address
                 status: 'Closed',                             // ✅ Required: Open/Closed status
                 isLive: false,                                // ✅ Required: Admin approval
                 openingTime: '09:00',                         // ✅ Required: Opening time
                 closingTime: '21:00',                         // ✅ Required: Closing time
                 coordinates: [106.8456, -6.2088],             // ✅ Required: Point format [lng, lat] for Jakarta
                 hotelId: '',                                  // ✅ Required: Empty for independent massage places
+                profilePicture: '',                           // ✅ Required: Profile picture (lowercase in DB)
+                therapistGender: 'Unisex',                    // ✅ Required: Booking gender preference
             };
             
             console.log('📊 Place data (required only):', placeData);
@@ -432,13 +433,14 @@ export const placeAuth = {
                         email,
                         password: '',
                         pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                        location: '',
                         status: 'Closed',
                         isLive: false,
                         openingTime: '09:00',
                         closingTime: '21:00',
                         coordinates: [106.8456, -6.2088],
                         hotelId: '',
+                        profilePicture: '',
+                        therapistGender: 'Unisex',
                     };
                     
                     const newPlace = await databases.createDocument(

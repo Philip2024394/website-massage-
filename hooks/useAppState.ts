@@ -124,15 +124,28 @@ export const useAppState = () => {
   };
 
   const [language, _setLanguage] = useState<Language>(() => {
-    const storedLang = getFromLocalStorage('app_language', 'id'); // Default to Indonesian
-    console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
-    return storedLang;
+    // Try to get from actual localStorage (not the disabled wrapper)
+    try {
+      const stored = window.localStorage.getItem('app_language');
+      const storedLang = (stored === 'en' || stored === 'id') ? stored : 'id';
+      console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
+      return storedLang;
+    } catch {
+      console.log('🌐 useAppState: localStorage unavailable, defaulting to Indonesian');
+      return 'id';
+    }
   });
   const setLanguage = (lang: Language) => {
     console.log('🌐 useAppState: setLanguage called with:', lang);
     console.log('🌐 useAppState: Current language before change:', language);
     _setLanguage(lang);
-    setToLocalStorage('app_language', lang);
+    // Save to actual localStorage (not the disabled wrapper)
+    try {
+      window.localStorage.setItem('app_language', lang);
+      console.log('🌐 useAppState: Language saved to localStorage:', lang);
+    } catch (error) {
+      console.error('🌐 useAppState: Failed to save language to localStorage:', error);
+    }
     console.log('🌐 useAppState: Language state updated to:', lang);
   };
 

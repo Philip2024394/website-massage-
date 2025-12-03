@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useContext } from 'react';
 import { LanguageContext } from '../context/LanguageContext';
 import { translationsService } from './appwriteService';
 import { translations as fallbackTranslations } from '../translations/index';
-import { vscodeTranslateService } from './vscodeTranslateService';
 
 const CACHE_KEY = 'indostreet_translations';
 const CACHE_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
@@ -41,7 +40,7 @@ export function useTranslations(language?: 'en' | 'id') {
     // Get stored language preference if no language is provided
     const getStoredLanguage = (): 'en' | 'id' => {
         try {
-            const stored = localStorage.getItem('app_language');
+            const stored = window.localStorage.getItem('app_language');
             return (stored === 'id' || stored === 'en') ? stored : 'en';
         } catch {
             return 'en';
@@ -55,30 +54,33 @@ export function useTranslations(language?: 'en' | 'id') {
 
     const loadTranslations = useCallback(async () => {
         try {
-            // Activate VS Code Google Translate for current language
-            vscodeTranslateService.activateOnLanguageChange(currentLanguage);
+            console.log('🔄 useTranslations: Loading translations for language:', currentLanguage);
             
             // Check cache first
             const cached = getCachedTranslations();
             if (cached && cached[currentLanguage]) {
+                console.log('✅ useTranslations: Using cached translations for', currentLanguage);
                 setTranslations(cached);
                 setLoading(false);
                 return;
             }
 
             // Load from Appwrite
+            console.log('🌐 useTranslations: Fetching translations from Appwrite...');
             const appwriteTranslations = await translationsService.getAll();
             
             if (appwriteTranslations && appwriteTranslations[currentLanguage] && Object.keys(appwriteTranslations[currentLanguage]).length > 0) {
+                console.log('✅ useTranslations: Using Appwrite translations for', currentLanguage);
                 setTranslations(appwriteTranslations);
                 cacheTranslations(appwriteTranslations);
             } else {
                 // Use fallback translations when Appwrite is empty
+                console.log('⚠️ useTranslations: Appwrite empty, using fallback translations for', currentLanguage);
                 setTranslations(fallbackTranslations);
                 cacheTranslations(fallbackTranslations);
             }
         } catch (error) {
-            console.error('Error loading translations, using fallback:', error);
+            console.error('❌ useTranslations: Error loading translations, using fallback:', error);
             // Continue with fallback translations already set
         } finally {
             setLoading(false);
@@ -86,8 +88,9 @@ export function useTranslations(language?: 'en' | 'id') {
     }, [currentLanguage]);
 
     useEffect(() => {
+        console.log('🔄 useTranslations: Language changed, reloading translations for:', currentLanguage);
         loadTranslations();
-    }, [loadTranslations]);
+    }, [currentLanguage, loadTranslations]);
 
     // Fix: Check if translations have actual content, not just if they exist
     const hasTranslationContent = (obj: any) => obj && Object.keys(obj).length > 0;
