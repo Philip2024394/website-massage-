@@ -89,7 +89,7 @@
     "vitest": "^2.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": "22.x"
   },
   "browserslist": {
     "production": [
