@@ -7,7 +7,8 @@
 html, body {
   height: 100vh;
   width: 100%;
-  overflow: hidden; /* Body never scrolls */
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  overflow-y: auto;   /* Allow vertical scroll */
   margin: 0;
   padding: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
@@ -16,9 +17,26 @@ html, body {
 #root {
   height: 100vh;
   width: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+/* Global mobile overflow guardrails */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.flex-wrap-safe {
+  flex-wrap: wrap;
+}
+
+.truncate-hard {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Ensure icons render correctly */
