@@ -105,8 +105,8 @@ const CalendarIcon: React.FC<{className?: string}> = ({ className }) => (
 
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20">
+        <path fill="currentColor" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
     </svg>
 );
 
@@ -654,6 +654,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             console.log('✅ Main image loaded successfully:', displayImage);
                         }}
                     />
+                    
+                    {/* Verified Badge - Top Left Corner */}
+                    <div className="absolute -top-8 left-2 z-30">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
+                            alt="Verified"
+                            className="w-36 h-36 object-contain"
+                        />
+                    </div>
                 </div>
 
                 {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
@@ -752,20 +761,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 </svg>
                             </div>
                         )}
+                        
+                        {/* Star Rating Badge on bottom edge of profile image */}
+                        <div 
+                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 cursor-pointer z-20"
+                            onClick={() => onRate(therapist)}
+                            aria-label={`Rate ${therapist.name}`}
+                            role="button"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
+                        </div>
                     </div>
-                </div>
-
-                
-                {/* Star Rating - Top Left Corner */}
-                <div 
-                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer z-30"
-                    onClick={() => onRate(therapist)}
-                    aria-label={`Rate ${therapist.name}`}
-                    role="button"
-                >
-                    <StarIcon className="w-4 h-4 text-yellow-400"/>
-                    <span className="font-bold text-white text-sm">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
-                    <span className="text-xs text-gray-300">({getDisplayReviewCount(therapist.reviewCount)})</span>
                 </div>
 
 
@@ -1016,6 +1025,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             })()}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
+            {/* Indastreet Verification Standards Link */}
+            <div className="text-center mb-2 mt-2">
+                <button
+                    onClick={() => onNavigate?.('verifiedProBadge')}
+                    className="text-sm font-medium hover:underline"
+                >
+                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
+                </button>
+            </div>
+
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
                 <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>

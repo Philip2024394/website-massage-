@@ -223,32 +223,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     <Clock className="w-4 h-4 text-green-400" />
                     <span className="font-semibold text-sm">{place.operatingHours || 'Daily 9:00 AM - 9:00 PM'}</span>
                 </div>
-                
-                {/* Review Badge - Top Left Corner */}
-                <div 
-                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer z-30"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowReviewModal(true);
-                    }}
-                    role="button"
-                    aria-label={`Rate ${place.name}`}
-                >
-                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                    <span className="font-bold text-white text-sm">{place.rating || 5.0}</span>
-                    <span className="text-xs text-gray-300">({place.reviewCount || 0})</span>
-                </div>
 
-                {/* Distance Badge - Right side, bottom of image */}
-                {place.distance !== undefined && place.distance !== null && (
-                    <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-md text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                        <MapPin className="w-4 h-4 text-orange-400" />
-                        <span className="font-semibold text-sm">{place.distance.toFixed(1)} km</span>
-                    </div>
-                )}
-
-                {/* Circular Profile Image - LEFT side, overlapping banner */}
+                {/* Circular Profile Image - LEFT side, overlapping banner with star rating */}
                 <div className="absolute bottom-0 left-6 md:left-8 transform translate-y-1/2">
                     <div className="relative">
                         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white">
@@ -257,6 +233,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 alt={`${place.name} logo`}
                                 className="w-full h-full object-cover"
                             />
+                        </div>
+                        {/* Star Rating Badge on bottom edge of profile image */}
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-10">
+                            <Star className="w-5 h-5 text-yellow-500" fill="#eab308" />
+                            <span className="font-bold text-gray-900 text-base">{place.rating || 5.0}</span>
                         </div>
                     </div>
                 </div>
@@ -425,6 +406,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     }
                     return null;
                 })()}
+
+                {/* Indastreet Verification Standards Link */}
+                <div className="text-center mb-2 mt-4">
+                    <a
+                        href="#verification-standards"
+                        className="text-sm font-medium hover:underline inline-block"
+                    >
+                        <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
+                    </a>
+                </div>
 
                 {/* Pricing Grid - Same as Therapist Card */}
                 {place.pricing && (() => {
