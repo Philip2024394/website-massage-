@@ -678,13 +678,13 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center max-w-6xl mx-auto px-4 py-4">
-                    <h1 className="text-2xl font-bold text-gray-800">
+                <div className="flex justify-between items-center max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
+                    <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
                         {/* Language Selector - Flag Icon */}
                         <button 
                             onClick={() => {
@@ -702,10 +702,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                     console.error('❌ No language change handler provided');
                                 }
                             }} 
-                            className="flex items-center justify-center w-9 h-9 hover:bg-orange-50 rounded-full transition-colors" 
+                            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
                             title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                         >
-                            <span className="text-2xl">
+                            <span className="text-xl sm:text-2xl">
                                 {language === 'id' ? '🇮🇩' : '🇬🇧'}
                             </span>
                         </button>
@@ -715,8 +715,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             console.log('🍔 Setting isMenuOpen to true');
                             setIsMenuOpen(true);
                             console.log('🍔 After setting - isMenuOpen should be true');
-                        }} title="Menu" className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
-                           <BurgerMenuIcon className="w-6 h-6" />
+                        }} title="Menu" className="p-1.5 sm:p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0">
+                           <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
                     </div>
                 </div>
