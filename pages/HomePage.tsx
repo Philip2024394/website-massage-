@@ -858,7 +858,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }} 
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[42px] min-w-[80px] sm:min-w-[100px]"
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[42px] w-[70px] sm:w-[90px]"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Join Indastreet"
@@ -866,7 +866,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
                                 alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-[36px] w-auto object-contain"
+                                className="select-none transition-opacity hover:opacity-90 h-[30px] sm:h-[34px] w-auto object-contain max-w-full"
                                 loading="lazy"
                                 draggable={false}
                             />
