@@ -5,6 +5,7 @@ import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
 import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+// import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawer';
 import { Users, Building, Sparkles } from 'lucide-react';
@@ -678,7 +679,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
+                <div className="flex justify-between items-center max-w-6xl mx-auto px-4 py-3 sm:py-4">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -721,6 +722,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
                 </div>
             </header>
+            <main className="max-w-6xl mx-auto px-4 pb-24">
             
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
@@ -749,6 +751,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
+            </main>
             <main className="max-w-6xl mx-auto px-2 sm:px-4 pb-24">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full mt-6">

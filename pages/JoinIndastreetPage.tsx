@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import PageContainer from '../components/layout/PageContainer';
 import HomeIcon from '../components/icons/HomeIcon';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
@@ -56,8 +57,9 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
             {/* Global Header - Same as HomePage */}
-            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center">
+            <header className="bg-white shadow-md sticky top-0 z-[9997]">
+                <PageContainer>
+                <div className="flex justify-between items-center py-4">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
@@ -75,9 +77,10 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                         </button>
                     </div>
                 </div>
+                </PageContainer>
             </header>
-
-            <div className="max-w-6xl mx-auto px-4 py-8 pb-24">
+            <PageContainer>
+            <div className="py-8 pb-24">
                 {/* Hero Section */}
                 <div className="text-center mb-12">
                     <div className="max-w-4xl mx-auto mb-8">
@@ -359,6 +362,7 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                             </div>
                         </div>
             </div>
+            </PageContainer>
         </div>
     );
 };
