@@ -237,6 +237,16 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                         </button>
 
                         <button 
+                            onClick={() => handleItemClick(undefined, 'company-profile')}
+                            className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
+                        >
+                            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span className="font-medium">Company Profile</span>
+                        </button>
+
+                        <button 
                             onClick={() => handleItemClick(undefined, 'contact-us')}
                             className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
                         >

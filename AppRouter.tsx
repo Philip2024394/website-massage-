@@ -55,6 +55,7 @@ const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPa
 // Eager-load pages to avoid dynamic import fetch issues during dev
 const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
+const CompanyProfilePage = React.lazy(() => import('./pages/CompanyProfilePage'));
 const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
 const MassageBaliPage = React.lazy(() => import('./pages/MassageBaliPage'));
 const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
@@ -1206,6 +1207,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'about-us' as any:
             return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
+            
+        case 'company-profile' as any:
+            return <CompanyProfilePage onBack={handleBackToHome} />;
             
         case 'contact-us' as any:
             return <ContactUsPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;

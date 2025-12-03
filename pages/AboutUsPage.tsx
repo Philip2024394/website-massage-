@@ -287,6 +287,12 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                             Get Started Today
                         </button>
                         <button 
+                            onClick={() => onNavigate('company-profile')}
+                            className="px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-bold rounded-lg transition-all shadow-lg"
+                        >
+                            View Company Profile
+                        </button>
+                        <button 
                             onClick={() => onNavigate('contact')}
                             className="px-8 py-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold rounded-lg transition-colors"
                         >
