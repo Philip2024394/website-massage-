@@ -163,9 +163,6 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
     } finally {
       setSubmitting(false);
     }
-    
-    // TODO: Save review to Appwrite database
-    console.log('New review submitted:', reviewData);
   };
 
   return (
