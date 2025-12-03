@@ -49,6 +49,7 @@ const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
 import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
+const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
 // Customer auth unified into UnifiedLoginPage; legacy CustomerAuthPage removed
 // Eager-load pages to avoid dynamic import fetch issues during dev
@@ -1377,7 +1378,39 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 </React.Suspense>
             );
             
-        default: 
+        default: {
+            // Reviews page routes
+            if (page.startsWith('reviews-therapist-')) {
+                const therapistId = page.replace('reviews-therapist-', '');
+                const therapist = therapists.find(t => (t.$id || t.id?.toString()) === therapistId);
+                return (
+                    <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-gray-600">Loading...</div></div>}>
+                        <ReviewsPage
+                            providerId={therapistId}
+                            providerName={therapist?.name || 'Therapist'}
+                            providerType="therapist"
+                            initialReviews={[]}
+                            onBack={handleBackToHome}
+                        />
+                    </React.Suspense>
+                );
+            }
+            if (page.startsWith('reviews-place-')) {
+                const placeId = page.replace('reviews-place-', '');
+                const place = places.find(p => (p.$id || p.id?.toString()) === placeId);
+                return (
+                    <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-gray-600">Loading...</div></div>}>
+                        <ReviewsPage
+                            providerId={placeId}
+                            providerName={place?.name || 'Massage Place'}
+                            providerType="place"
+                            initialReviews={[]}
+                            onBack={handleBackToHome}
+                        />
+                    </React.Suspense>
+                );
+            }
+            
             console.error('🚨 AppRouter: Unknown page case reached!', {
                 page,
                 loggedInProvider,
@@ -1385,6 +1418,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 allProps: Object.keys(props)
             });
             return null;
+        }
     }
 };
 
