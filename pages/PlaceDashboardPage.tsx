@@ -280,8 +280,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             const massageTypesRaw = (placeData as any).massagetypes || placeData.massageTypes;
             setMassageTypes(typeof massageTypesRaw === 'string' ? JSON.parse(massageTypesRaw) : massageTypesRaw || []);
             
-            // Load therapist gender preference
-            const genderPref = (placeData as any).therapistGender || placeData.therapistGender || 'Unisex';
+            // Load therapist gender preference - use type assertion since therapistGender exists in DB but not in type
+            const genderPref = (placeData as any).therapistGender || 'Unisex';
             setTherapistGender(genderPref);
             
             // Parse languages - handle both JSON string and array

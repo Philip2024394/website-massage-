@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 // Note: Admin/Hotel/Villa apps removed - features deprecated
 // import AdminApp from './apps/admin/AdminApp';
-import AgentApp from './apps/agent/AgentApp';
+// import AgentApp from './apps/agent/AgentApp'; // Removed - file doesn't exist
 import ClientApp from './apps/client/ClientApp';
 import TherapistApp from './apps/therapist/TherapistApp';
 import PlaceApp from './apps/place/PlaceApp';
@@ -20,8 +20,8 @@ const AppRouter: React.FC = () => {
         {/* Admin app - deprecated */}
         {/* <Route path="/admin/*" element={<AdminApp />} /> */}
         
-        {/* Agent app */}
-        <Route path="/agent/*" element={<AgentApp />} />
+        {/* Agent app - deprecated */}
+        {/* <Route path="/agent/*" element={<AgentApp />} /> */}
         
         {/* Client app */}
         <Route path="/client/*" element={<ClientApp />} />
