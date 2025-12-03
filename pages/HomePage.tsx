@@ -677,8 +677,8 @@ const HomePage: React.FC<HomePageProps> = ({
             <FlyingButterfly />
             
             {/* Header */}
-            <header className="bg-white p-4 shadow-md sticky top-0 z-[9997]">
-                <div className="flex justify-between items-center max-w-6xl mx-auto">
+            <header className="bg-white shadow-md sticky top-0 z-[9997]">
+                <div className="flex justify-between items-center max-w-6xl mx-auto px-2 sm:px-4 py-4">
                     <h1 className="text-2xl font-bold text-gray-800">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -749,7 +749,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="max-w-6xl mx-auto px-4 pb-24">
+            <main className="max-w-6xl mx-auto px-2 sm:px-4 pb-24">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full mt-6">
                     {userLocation ? (
