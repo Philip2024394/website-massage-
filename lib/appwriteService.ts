@@ -2243,6 +2243,8 @@ export const reviewService = {
         rating: number;
         reviewerName: string;
         whatsappNumber: string;
+        comment?: string;
+        avatar?: string;
     }): Promise<any> {
         try {
             const response = await databases.createDocument(
@@ -2254,9 +2256,10 @@ export const reviewService = {
                     providerType: review.providerType,
                     providerName: review.providerName,
                     rating: review.rating,
-                    comment: '', // Anonymous reviews don't have comments
+                    comment: review.comment || '',
                     whatsapp: review.whatsappNumber,
                     reviewerName: review.reviewerName,
+                    avatar: review.avatar || '😊',
                     isAnonymous: true,
                     status: 'approved', // Auto-approve anonymous reviews
                     createdAt: new Date().toISOString()

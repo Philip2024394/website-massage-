@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Star, MessageSquare, User, Phone, Calendar, Clock } from 'lucide-react';
 import { PageContainer } from '../components/layout/PageContainer';
 import { ReviewData } from '../components/ReviewModal';
 import { ReviewCard } from '../components/ReviewCard';
+import { reviewService } from '../lib/appwriteService';
 
 interface ReviewsPageProps {
   providerId: string;
@@ -34,6 +35,8 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 }) => {
   const [reviews, setReviews] = useState<ReviewData[]>(initialReviews);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   
   // Form states
   const [userName, setUserName] = useState('');
@@ -43,6 +46,35 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   const [reviewText, setReviewText] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Load reviews from Appwrite on mount
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        setLoading(true);
+        const appwriteReviews = await reviewService.getByProvider(Number(providerId), providerType);
+        
+        // Convert Appwrite reviews to ReviewData format
+        const formattedReviews: ReviewData[] = appwriteReviews.map((review: any) => ({
+          userName: review.reviewerName || 'Anonymous',
+          whatsappNumber: review.whatsapp || '',
+          rating: review.rating,
+          reviewText: review.comment || '',
+          avatar: review.avatar || '😊',
+          date: new Date(review.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          time: new Date(review.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        }));
+        
+        setReviews(formattedReviews);
+      } catch (error) {
+        console.error('Error loading reviews:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, [providerId, providerType]);
 
   const averageRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -79,35 +111,58 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (!validateForm()) {
       return;
     }
 
-    const now = new Date();
-    const reviewData: ReviewData = {
-      userName: userName.trim(),
-      whatsappNumber: whatsappNumber.trim(),
-      rating,
-      reviewText: reviewText.trim(),
-      avatar: selectedAvatar,
-      date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
-    };
+    try {
+      setSubmitting(true);
+      
+      // Save to Appwrite
+      await reviewService.createAnonymous({
+        providerId: providerId,
+        providerType: providerType,
+        providerName: providerName,
+        rating: rating,
+        reviewerName: userName.trim(),
+        whatsappNumber: whatsappNumber.trim(),
+        comment: reviewText.trim(),
+        avatar: selectedAvatar,
+      });
 
-    setReviews([reviewData, ...reviews]);
-    
-    // Reset form
-    setUserName('');
-    setWhatsappNumber('');
-    setRating(0);
-    setReviewText('');
-    setSelectedAvatar('');
-    setErrors({});
-    setShowForm(false);
+      // Also save comment and avatar separately if needed
+      const now = new Date();
+      const reviewData: ReviewData = {
+        userName: userName.trim(),
+        whatsappNumber: whatsappNumber.trim(),
+        rating,
+        reviewText: reviewText.trim(),
+        avatar: selectedAvatar,
+        date: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      };
 
-    // Scroll to top to see the new review
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Add to local state immediately for instant feedback
+      setReviews([reviewData, ...reviews]);
+      
+      // Reset form
+      setUserName('');
+      setWhatsappNumber('');
+      setRating(0);
+      setReviewText('');
+      setSelectedAvatar('');
+      setErrors({});
+      setShowForm(false);
+
+      // Scroll to top to see the new review
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      setErrors({ submit: 'Failed to submit review. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
     
     // TODO: Save review to Appwrite database
     console.log('New review submitted:', reviewData);
@@ -322,9 +377,10 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                 {/* Submit Button */}
                 <button
                   onClick={handleSubmitReview}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-lg"
+                  disabled={submitting}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit Review
+                  {submitting ? 'Submitting...' : 'Submit Review'}
                 </button>
               </div>
             </div>
@@ -332,7 +388,12 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 
           {/* Reviews List */}
           <div className="space-y-4">
-            {reviews.length === 0 ? (
+            {loading ? (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading reviews...</p>
+              </div>
+            ) : reviews.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                 <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
