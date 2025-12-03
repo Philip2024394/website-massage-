@@ -6,6 +6,7 @@ import { GalleryImageCard } from '../components/features/profile/GalleryImageCar
 import { ServiceItem } from '../components/features/profile/ServiceItem';
 import { ExpandedImageModal } from '../components/features/profile/ExpandedImageModal';
 import { AppDrawer } from '../components/AppDrawer';
+import SocialMediaSection from '../components/features/profile/SocialMediaSection';
 import { Bike, Car } from 'lucide-react';
 import { getUserLocation, createTaxiBookingLink, openTaxiApp } from '../services/taxiBookingService';
 import { getAmenityIcon } from '../constants/amenityIcons';
@@ -493,64 +494,82 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </div>
                 </div>
 
-                {/* Massage Prices Section with Background Image */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
-                    {/* Background Image - Full Coverage */}
-                    <div className="absolute inset-0">
-                        <img
-                            src="https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135"
-                            alt="Massage Oil"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    
-                    {/* Content - Text directly on background */}
-                    <div className="relative z-10 p-6 max-w-full overflow-hidden">
-                        <h3 className="text-3xl font-bold text-black mb-6 drop-shadow-2xl text-center">Massage Prices</h3>
-                        <div className="space-y-4 max-w-full">
-                            {isDiscountActive(place) && (
-                                <div className="text-center mb-6">
-                                    <p className="text-orange-600 font-bold text-lg flex items-center justify-center gap-2 drop-shadow-lg">
-                                        🔥 Discounted Prices Displayed
-                                    </p>
-                                </div>
-                            )}
-                            {services.length > 0 ? (
-                                services.map((service, index) => {
-                                    const discountPercentage = isDiscountActive(place) ? (place as any).discountPercentage : 0;
-                                    const originalPrice = typeof service.price === 'number' ? service.price : parseInt(String(service.price).replace(/\D/g, '')) || 0;
-                                    const discountedPrice = discountPercentage > 0 
-                                        ? Math.round(originalPrice * (1 - discountPercentage / 100))
-                                        : originalPrice;
-                                    
-                                    return (
-                                        <div key={index} className="flex items-center justify-between py-3 px-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-orange-600 text-2xl drop-shadow-lg">{service.icon}</span>
-                                                <div>
-                                                    <h4 className="text-orange-600 font-bold text-lg drop-shadow-lg">{service.name}</h4>
-                                                    <p className="text-orange-700 text-sm drop-shadow-md">{service.duration}</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                {discountPercentage > 0 ? (
-                                                    <>
-                                                        <p className="text-gray-600 line-through text-sm drop-shadow-md">IDR {originalPrice.toLocaleString()}</p>
-                                                        <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {discountedPrice.toLocaleString()}</p>
-                                                    </>
-                                                ) : (
-                                                    <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {originalPrice.toLocaleString()}</p>
-                                                )}
-                                            </div>
+                {/* Social Media Section (replaces Prices when social links present) or fallback to Prices */}
+                {(() => {
+                    const websiteUrl = (place as any).websiteUrl as string | undefined;
+                    const igFromWebsite = websiteUrl && websiteUrl.includes('instagram.com') ? websiteUrl : undefined;
+                    const fbFromWebsite = websiteUrl && websiteUrl.includes('facebook.com') ? websiteUrl : undefined;
+                    const instagramUrl = (place as any).instagramUrl || (place as any).instagram || igFromWebsite;
+                    const facebookPageUrl = (place as any).facebookPageUrl || (place as any).facebook || fbFromWebsite;
+                    const instagramPosts: string[] | undefined = (place as any).instagramPosts;
+
+                    if (instagramUrl || facebookPageUrl) {
+                        return (
+                            <SocialMediaSection
+                                instagramUrl={instagramUrl}
+                                instagramPosts={instagramPosts}
+                                facebookPageUrl={facebookPageUrl}
+                            />
+                        );
+                    }
+
+                    // Fallback to original Massage Prices section if no social configured
+                    return (
+                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
+                            <div className="absolute inset-0">
+                                <img
+                                    src="https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135"
+                                    alt="Massage Oil"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="relative z-10 p-6 max-w-full overflow-hidden">
+                                <h3 className="text-3xl font-bold text-black mb-6 drop-shadow-2xl text-center">Massage Prices</h3>
+                                <div className="space-y-4 max-w-full">
+                                    {isDiscountActive(place) && (
+                                        <div className="text-center mb-6">
+                                            <p className="text-orange-600 font-bold text-lg flex items-center justify-center gap-2 drop-shadow-lg">
+                                                🔥 Discounted Prices Displayed
+                                            </p>
                                         </div>
-                                    );
-                                })
-                            ) : (
-                                <p className="text-orange-600 text-center text-lg drop-shadow-lg">Contact us for pricing details</p>
-                            )}
+                                    )}
+                                    {services.length > 0 ? (
+                                        services.map((service, index) => {
+                                            const discountPercentage = isDiscountActive(place) ? (place as any).discountPercentage : 0;
+                                            const originalPrice = typeof service.price === 'number' ? service.price : parseInt(String(service.price).replace(/\D/g, '')) || 0;
+                                            const discountedPrice = discountPercentage > 0
+                                                ? Math.round(originalPrice * (1 - discountPercentage / 100))
+                                                : originalPrice;
+                                            return (
+                                                <div key={index} className="flex items-center justify-between py-3 px-4 backdrop-blur-sm bg-white/50 rounded-lg border-2 border-orange-500/40">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-orange-600 text-2xl drop-shadow-lg">{service.icon}</span>
+                                                        <div>
+                                                            <h4 className="text-orange-600 font-bold text-lg drop-shadow-lg">{service.name}</h4>
+                                                            <p className="text-orange-700 text-sm drop-shadow-md">{service.duration}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        {discountPercentage > 0 ? (
+                                                            <>
+                                                                <p className="text-gray-600 line-through text-sm drop-shadow-md">IDR {originalPrice.toLocaleString()}</p>
+                                                                <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {discountedPrice.toLocaleString()}</p>
+                                                            </>
+                                                        ) : (
+                                                            <p className="text-black font-bold text-xl drop-shadow-2xl">IDR {originalPrice.toLocaleString()}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-orange-600 text-center text-lg drop-shadow-lg">Contact us for pricing details</p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    );
+                })()}
 
                 {/* Amenities Section */}
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[250px] max-w-full">
