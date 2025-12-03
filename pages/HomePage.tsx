@@ -751,6 +751,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </React19SafeWrapper>
 
             <main className="px-4 pb-24 overflow-x-hidden">
+                <div className="max-w-6xl mx-auto">
                 {/* Location Display & Search */}
                 <div className="mb-4 w-full mt-6">
                     {userLocation ? (
@@ -1135,6 +1136,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 )}
 
                 {/* ...existing code for therapists/places rendering, modals, etc. should follow here... */}
+                </div> {/* End max-w-6xl centering container */}
             </main>
             
             {/* Rating modal removed for design mock */}
