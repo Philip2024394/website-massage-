@@ -672,15 +672,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 w-full max-w-[100vw] overflow-x-hidden">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             
             {/* Header */}
-            <header className="bg-white shadow-md sticky top-0 z-[9997]">
-                <PageContainer className="py-3 sm:py-4">
-                <div className="flex justify-between items-center">
+            <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
+                <PageContainer className="py-3 sm:py-4 max-w-full">
+                <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
@@ -724,8 +724,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
                 </PageContainer>
             </header>
-            <main>
-            <PageContainer className="pb-24">
+            <main className="w-full max-w-full overflow-x-hidden">
+            <PageContainer className="pb-24 max-w-full">
             
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
