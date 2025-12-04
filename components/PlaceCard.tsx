@@ -195,16 +195,16 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             </div>
             
             {/* Content Section with padding-top and padding-left to account for overlapping profile image */}
-            <div className="p-4 pt-16">
-                {/* Name and Distance - Positioned to the right of profile picture */}
-                <div className="flex justify-between items-center">
+            <div className="p-4 pt-14">
+                {/* Name and Distance - Positioned to the right of profile picture with extra top margin */}
+                <div className="flex justify-between items-center mt-2">
                     <h3 className="text-lg font-bold text-gray-900 pl-12">{place.name}</h3>
                     <div className="flex items-center text-sm text-gray-500 gap-1">
                         <LocationPinIcon className="w-4 h-4 text-red-500"/>
                         <span>{place.distance}km</span>
                     </div>
                 </div>
-                <p className="mt-1 text-gray-500 text-sm truncate pl-12">{translatedDescription}</p>
+                <p className="mt-2 text-gray-500 text-sm truncate pl-12">{translatedDescription}</p>
 
                 {/* Languages Spoken */}
                 {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (
