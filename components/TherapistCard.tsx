@@ -1146,6 +1146,37 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
             </div>
 
+            {/* Hotel/Villa Partner Link - Mobile optimized */}
+            {(therapist as any).partneredHotelVilla && (
+                <div className="mt-3 mb-2 px-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (onNavigate) {
+                                onNavigate('indastreet-partners');
+                            }
+                        }}
+                        className="w-full bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200 rounded-lg p-2.5 hover:from-amber-100 hover:to-orange-100 transition-all"
+                    >
+                        <div className="flex items-center gap-2">
+                            <div className="flex-shrink-0">
+                                <svg className="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                                </svg>
+                            </div>
+                            <div className="flex-1 text-left min-w-0">
+                                <p className="text-xs font-bold text-orange-900 truncate">
+                                    Partnered with {(therapist as any).partneredHotelVilla}
+                                </p>
+                                <p className="text-[10px] text-orange-700">
+                                    View partner hotels & villas →
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            )}
+
             {/* Refer Friend and Leave Review Links */}
             <div className="flex flex-wrap justify-between items-center gap-2 mt-2 px-1">
                 <button
