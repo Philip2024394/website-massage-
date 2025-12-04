@@ -184,7 +184,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             </div>
             
             {/* Content Section with padding-top and padding-left to account for overlapping profile image */}
-            <div className="p-4 pt-8">
+            <div className="p-4 pt-12">
                 {/* Name and Distance - Positioned to the right of profile picture */}
                 <div className="flex justify-between items-center">
                     <h3 className="text-lg font-bold text-gray-900 pl-12">{place.name}</h3>

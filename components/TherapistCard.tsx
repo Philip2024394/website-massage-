@@ -705,8 +705,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 )}
                 
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
-                <div className="absolute top-36 left-4 z-20">
-                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square">
+                <div className="absolute top-36 left-4 z-20 overflow-visible">
+                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
                         {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                             <img 
                                 className="w-full h-full rounded-full object-cover aspect-square" 
@@ -767,7 +767,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         
                         {/* Star Rating Badge on bottom edge of profile image */}
                         <div 
-                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 cursor-pointer z-20"
+                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 cursor-pointer z-30"
                             onClick={() => onRate(therapist)}
                             aria-label={`Rate ${therapist.name}`}
                             role="button"
@@ -911,7 +911,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Use translated description based on language - Expanded for 350 characters */}
-            <div className="absolute top-72 left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+            <div className="absolute top-80 left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
@@ -919,7 +919,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             
             {/* Content Section - Layout adjusted for expanded bio section */}
-            <div className="p-4 pt-64 flex flex-col gap-4">
+            <div className="p-4 pt-72 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
