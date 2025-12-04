@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import { useTranslations } from '../lib/useTranslations';
+import { useLanguage } from '../context/LanguageContext';
 
 interface AboutUsPageProps {
     onNavigate: (page: string) => void;
@@ -37,6 +39,8 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
     therapists = [],
     places = []
 }) => {
+    const { language } = useLanguage();
+    const { t } = useTranslations(language);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
@@ -86,7 +90,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                         <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                     </h1>
                     <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers
+                        {t('about.subtitle') || "Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers"}
                     </p>
                 </div>
             </div>
@@ -96,9 +100,10 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                            Our Inda<span className="text-orange-500">Street</span> Mission
+                            {t('about.missionTitle') || 'Our IndaStreet Mission'}
                         </h2>
                         <p className="text-lg text-gray-700 mb-4">
+                            {t('about.missionText') || 'Connecting customers with quality massage therapists while empowering local wellness professionals'}
                             We're igniting the future for Indonesia's youth. IndaStreet is the SuperApp that puts everything at your fingertips: from sizzling food delivery and seamless rides to unforgettable local destinations, exciting motor rentals, and genuine connections through dating.
                         </p>
                         <p className="text-lg text-gray-700">

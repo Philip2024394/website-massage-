@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawer';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { useTranslations } from '../lib/useTranslations';
+import { useLanguage } from '../context/LanguageContext';
 
 interface FAQ {
     question: string;
@@ -40,6 +42,8 @@ const FAQPage: React.FC<FAQPageProps> = ({
     therapists = [],
     places = []
 }) => {
+    const { language } = useLanguage();
+    const { t } = useTranslations(language);
     const [activeCategory, setActiveCategory] = useState<string>('therapist');
     const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -326,9 +330,9 @@ const FAQPage: React.FC<FAQPageProps> = ({
             >
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Frequently Asked Questions</h1>
+                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{t('faq.title') || 'Frequently Asked Questions'}</h1>
                     <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        Everything you need to know about using IndaStreet
+                        {t('faq.subtitle') || 'Everything you need to know about using IndaStreet'}
                     </p>
                 </div>
             </div>
@@ -486,9 +490,9 @@ const FAQPage: React.FC<FAQPageProps> = ({
 
                 {/* Still Have Questions */}
                 <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-12 text-white text-center">
-                    <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
+                    <h2 className="text-3xl font-bold mb-4">{t('faq.stillHaveQuestions') || 'Still Have Questions?'}</h2>
                     <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-                        Our support team is here to help you succeed on IndaStreet
+                        {t('faq.contactSupport') || 'Our support team is here to help you succeed on IndaStreet'}
                     </p>
                     <div className="flex flex-wrap gap-4 pb-20 justify-center">
                         <button className="px-8 py-4 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg">

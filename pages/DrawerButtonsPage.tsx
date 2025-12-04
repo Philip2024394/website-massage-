@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { customLinksService, authService } from '../lib/appwriteService';
 import ImageUpload from '../components/ImageUpload';
+import { useTranslations } from '../lib/useTranslations';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CustomLink {
     $id: string;
@@ -10,6 +12,8 @@ interface CustomLink {
 }
 
 const DrawerButtonsPage: React.FC = () => {
+    const { language } = useLanguage();
+    const { t } = useTranslations(language);
     const [links, setLinks] = useState<CustomLink[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
@@ -77,12 +81,12 @@ const DrawerButtonsPage: React.FC = () => {
         e.preventDefault();
         
         if (!formData.name || !formData.url) {
-            alert('Please fill in all required fields (Name and URL)');
+            alert(t('drawerAdmin.errorRequired') || 'Please fill in all required fields (Name and URL)');
             return;
         }
 
         if (!formData.icon) {
-            alert('Please upload an icon image for your button');
+            alert(t('drawerAdmin.errorIcon') || 'Please upload an icon image for your button');
             return;
         }
 
@@ -91,11 +95,11 @@ const DrawerButtonsPage: React.FC = () => {
                 // Update existing link
                 await customLinksService.update(editingId, formData);
                 setEditingId(null);
-                alert('✅ Button updated successfully!');
+                alert(t('drawerAdmin.successUpdate') || '✅ Button updated successfully!');
             } else {
                 // Create new link
                 await customLinksService.create(formData);
-                alert('✅ Custom button added successfully!');
+                alert(t('drawerAdmin.successAdd') || '✅ Custom button added successfully!');
             }
             
             setFormData({ name: '', url: '', icon: '' });
@@ -126,14 +130,14 @@ const DrawerButtonsPage: React.FC = () => {
     };
 
     const handleDeleteLink = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this link?')) {
+        if (!confirm(t('common.confirm') + '?')) {
             return;
         }
 
         try {
             await customLinksService.delete(id);
             await fetchLinks();
-            alert('Link deleted successfully!');
+            alert(t('drawerAdmin.successDelete') || 'Link deleted successfully!');
         } catch (error: any) {
             console.error('Error deleting link:', error);
             alert('Error deleting link: ' + (error.message || 'Unknown error'));
@@ -183,14 +187,14 @@ const DrawerButtonsPage: React.FC = () => {
             <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-800">Google Maps API Settings</h2>
-                        <p className="text-sm text-gray-600 mt-1">Configure Google Maps API for distance calculations</p>
+                        <h2 className="text-2xl font-bold text-gray-800">{t('drawerAdmin.googleMapsSettings') || 'Google Maps API Settings'}</h2>
+                        <p className="text-sm text-gray-600 mt-1">{t('drawerAdmin.googleMapsDescription') || 'Configure Google Maps API for distance calculations'}</p>
                     </div>
                     <button
                         onClick={() => setIsEditingApiKey(!isEditingApiKey)}
                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                        {isEditingApiKey ? 'Cancel' : 'Edit API Key'}
+                        {isEditingApiKey ? t('common.cancel') : t('drawerAdmin.editApiKey')}
                     </button>
                 </div>
 
@@ -199,13 +203,13 @@ const DrawerButtonsPage: React.FC = () => {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Google Maps API Key *
+                                    {t('drawerAdmin.apiKey') || 'API Key'} *
                                 </label>
                                 <input
                                     type="text"
                                     value={googleMapsApiKey}
                                     onChange={(e) => setGoogleMapsApiKey(e.target.value)}
-                                    placeholder="Enter your Google Maps API Key"
+                                    placeholder={t('drawerAdmin.apiKeyPlaceholder') || 'Enter your Google Maps API Key'}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <p className="text-xs text-gray-500 mt-2">
@@ -218,14 +222,14 @@ const DrawerButtonsPage: React.FC = () => {
                                         if (googleMapsApiKey) {
                                             localStorage.setItem('googleMapsApiKey', googleMapsApiKey);
                                             setIsEditingApiKey(false);
-                                            alert('✅ Google Maps API Key saved successfully!');
+                                            alert(t('drawerAdmin.successApiKey') || '✅ Google Maps API Key saved successfully!');
                                         } else {
-                                            alert('Please enter a valid API key');
+                                            alert(t('drawerAdmin.errorApiKey') || 'Please enter a valid API key');
                                         }
                                     }}
                                     className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
                                 >
-                                    Save API Key
+                                    {t('drawerAdmin.saveApiKey') || 'Save API Key'}
                                 </button>
                                 <a
                                     href="https://console.cloud.google.com/google/maps-apis"
@@ -264,7 +268,7 @@ const DrawerButtonsPage: React.FC = () => {
             {/* Drawer Buttons Section */}
             <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Manage Drawer Buttons</h2>
+                <h2 className="text-2xl font-bold text-gray-800">{t('drawerAdmin.pageTitle') || 'Manage Drawer Buttons'}</h2>
                 <button
                     onClick={() => {
                         if (showAddForm && editingId) {
@@ -275,7 +279,7 @@ const DrawerButtonsPage: React.FC = () => {
                     }}
                     className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
                 >
-                    {showAddForm ? 'Cancel' : '+ Add New Button'}
+                    {showAddForm ? t('drawerAdmin.cancelButton') : t('drawerAdmin.addButton')}
                 </button>
             </div>
 
@@ -288,7 +292,7 @@ const DrawerButtonsPage: React.FC = () => {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Button Name *
+                                {t('drawerAdmin.buttonNameRequired') || 'Button Name *'}
                             </label>
                             <input
                                 type="text"
@@ -302,7 +306,7 @@ const DrawerButtonsPage: React.FC = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                URL *
+                                {t('drawerAdmin.urlRequired') || 'URL *'}
                             </label>
                             <input
                                 type="url"
@@ -316,13 +320,13 @@ const DrawerButtonsPage: React.FC = () => {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Button Icon
+                                {t('drawerAdmin.buttonIcon') || 'Button Icon'}
                             </label>
                             <ImageUpload
                                 id="drawer-button-icon"
                                 currentImage={formData.icon}
                                 onImageChange={(url) => setFormData({ ...formData, icon: url })}
-                                label="Upload Icon Image"
+                                label={t('drawerAdmin.uploadIcon') || 'Upload Icon Image'}
                                 heightClass="h-32"
                             />
                             <p className="text-xs text-gray-500 mt-1">Upload an icon image for your button (recommended: square image, 128x128px)</p>
@@ -355,7 +359,7 @@ const DrawerButtonsPage: React.FC = () => {
                             type="submit"
                             className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium"
                         >
-                            {editingId ? '💾 Update Button' : 'Save Button'}
+                            {editingId ? t('drawerAdmin.updateButton') : t('drawerAdmin.saveButton')}
                         </button>
                         
                         {editingId && (
@@ -364,7 +368,7 @@ const DrawerButtonsPage: React.FC = () => {
                                 onClick={handleCancelEdit}
                                 className="w-full bg-gray-400 text-white py-2 rounded-lg hover:bg-gray-500 transition-colors font-medium"
                             >
-                                Cancel Edit
+                                {t('drawerAdmin.cancelButton') || 'Cancel'}
                             </button>
                         )}
                     </div>
@@ -374,12 +378,12 @@ const DrawerButtonsPage: React.FC = () => {
             <div className="space-y-3">
                 {links.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-lg">
-                        <p className="text-gray-500 text-lg">No custom drawer buttons yet</p>
-                        <p className="text-gray-400 text-sm mt-2">Click "Add New Button" to create your first one</p>
+                        <p className="text-gray-500 text-lg">{t('drawerAdmin.noLinks') || 'No custom drawer buttons yet'}</p>
+                        <p className="text-gray-400 text-sm mt-2">{t('drawerAdmin.addButton')}</p>
                     </div>
                 ) : (
                     <>
-                        <h3 className="text-lg font-semibold text-gray-800 mb-3">Your Drawer Buttons</h3>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-3">{t('drawerAdmin.customLinks') || 'Your Drawer Buttons'}</h3>
                         {links.map((link) => (
                             <div
                                 key={link.$id}
@@ -410,13 +414,13 @@ const DrawerButtonsPage: React.FC = () => {
                                         onClick={() => handleEditLink(link)}
                                         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                                     >
-                                        ✏️ Edit
+                                        {t('common.edit') || 'Edit'}
                                     </button>
                                     <button
                                         onClick={() => handleDeleteLink(link.$id)}
                                         className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
                                     >
-                                        🗑️ Delete
+                                        {t('common.delete') || 'Delete'}
                                     </button>
                                 </div>
                             </div>
