@@ -185,26 +185,35 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                 )}
             </div>
             
-            {/* Circular Profile Picture - Overlapping main image */}
-            <div className="absolute top-32 left-4 w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white aspect-square">
-                <img 
-                    src={place.profilePicture || place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} 
-                    alt={`${place.name} logo`}
-                    className="w-full h-full rounded-full object-cover aspect-square"
-                />
-            </div>
-            
-            {/* Content Section with padding-top and padding-left to account for overlapping profile image */}
-            <div className="p-4 pt-14">
-                {/* Name and Distance - Positioned to the right of profile picture with extra top margin */}
-                <div className="flex justify-between items-center mt-2">
-                    <h3 className="text-lg font-bold text-gray-900 pl-12">{place.name}</h3>
-                    <div className="flex items-center text-sm text-gray-500 gap-1">
+            {/* Profile and Content Section - Flexbox layout */}
+            <div className="px-4 -mt-8 relative z-10">
+                <div className="flex items-end justify-between gap-3">
+                    {/* Profile Picture */}
+                    <div className="flex-shrink-0">
+                        <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white aspect-square">
+                            <img 
+                                src={place.profilePicture || place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} 
+                                alt={`${place.name} logo`}
+                                className="w-full h-full rounded-full object-cover aspect-square"
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Name and Distance */}
+                    <div className="flex-1 min-w-0 pb-1">
+                        <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                    </div>
+                    
+                    <div className="flex items-center text-sm text-gray-500 gap-1 pb-1 flex-shrink-0">
                         <LocationPinIcon className="w-4 h-4 text-red-500"/>
                         <span>{place.distance}km</span>
                     </div>
                 </div>
-                <p className="mt-2 text-gray-500 text-sm truncate pl-12">{translatedDescription}</p>
+            </div>
+            
+            {/* Content Section with natural flow */}
+            <div className="p-4 pt-2">
+                <p className="mt-1 text-gray-500 text-sm truncate">{translatedDescription}</p>
 
                 {/* Languages Spoken */}
                 {place.languages && Array.isArray(place.languages) && place.languages.length > 0 && (

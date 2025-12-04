@@ -447,66 +447,74 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
             
-            {/* Logo/Profile Picture - Positioned below banner, overlapping */}
-            <div className="absolute top-40 left-4 z-10">
-                <div className="relative w-20 h-20 aspect-square">
-                    <img 
-                        className="w-20 h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                        src={(place as any).profilePicture || (place as any).logo || mainImage}
-                        alt={place.name}
-                        onError={(e) => {
-                            e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                        }}
-                    />
-                    {/* Verified Pro Rosette */}
-                    {(place as any).isVerified && (
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
-                            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
-                            </svg>
+            {/* Profile Section - Flexbox layout for stable positioning */}
+            <div className="px-4 -mt-10 relative z-10">
+                <div className="flex items-end justify-between gap-4">
+                    {/* Left side: Profile + Name + Status */}
+                    <div className="flex items-end gap-3 flex-1 min-w-0">
+                        {/* Profile Picture */}
+                        <div className="flex-shrink-0">
+                            <div className="relative w-20 h-20 aspect-square">
+                                <img 
+                                    className="w-20 h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                                    src={(place as any).profilePicture || (place as any).logo || mainImage}
+                                    alt={place.name}
+                                    onError={(e) => {
+                                        e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
+                                    }}
+                                />
+                                {/* Verified Pro Rosette */}
+                                {(place as any).isVerified && (
+                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
+                                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                )}
+                                
+                                {/* Star Rating Badge */}
+                                <button
+                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-30"
+                                    onClick={() => onRate(place)}
+                                    aria-label={`Rate ${place.name}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
+                                </button>
+                            </div>
                         </div>
-                    )}
+                        
+                        {/* Name and Status Column */}
+                        <div className="flex-1 min-w-0 pb-2">
+                            <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
+                                <span className="relative mr-1.5">
+                                    <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
+                                    <span className="w-2 h-2 rounded-full block bg-green-500"></span>
+                                </span>
+                                Open Now
+                            </div>
+                        </div>
+                    </div>
                     
-                    {/* Star Rating Badge on bottom edge of profile image */}
-                    <button
-                        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-30"
-                        onClick={() => onRate(place)}
-                        aria-label={`Rate ${place.name}`}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
-                    </button>
-                </div>
-            </div>
-            
-            {/* Distance - Positioned above place name */}
-            <div className="absolute top-52 right-4 z-10">
-                <DistanceDisplay
-                    userLocation={userLocation}
-                    providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
-                    className="text-sm"
-                    showTravelTime={true}
-                    showIcon={true}
-                    size="sm"
-                />
-            </div>
-            
-            {/* Place Name and Status - Positioned to the right of logo */}
-            <div className="absolute top-56 left-28 right-4 z-10">
-                <h3 className="text-lg font-bold text-gray-900">{place.name}</h3>
-                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
-                    <span className="relative mr-1.5">
-                        <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
-                        <span className="w-2 h-2 rounded-full block bg-green-500"></span>
-                    </span>
-                    Open Now
+                    {/* Right side: Distance */}
+                    <div className="flex-shrink-0 pb-2">
+                        <DistanceDisplay
+                            userLocation={userLocation}
+                            providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
+                            className="text-sm"
+                            showTravelTime={true}
+                            showIcon={true}
+                            size="sm"
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Massage Place Bio - dynamic from Appwrite */}
-            <div className="absolute top-80 left-4 right-4 z-10 massage-place-bio-section">
+            {/* Massage Place Bio - Natural flow with proper margin */}
+            <div className="mt-4 massage-place-bio-section mx-4">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}
@@ -539,7 +547,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Content */}
-            <div className="p-4 pt-48 flex flex-col gap-4 w-full">
+            <div className="p-4 flex flex-col gap-4 w-full">
                 <div className="flex items-start gap-4 w-full">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
