@@ -537,6 +537,13 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const filterByLocation = async () => {
             const locationToUse = autoDetectedLocation || userLocation;
+            // TEMPORARY FIX: Show all therapists regardless of location
+            // This bypasses the 50km radius filter to help diagnose display issues
+            console.log('🌍 Location filtering temporarily disabled - showing all therapists');
+            setNearbyTherapists(therapists);
+            setNearbyPlaces(places);
+            
+            /* ORIGINAL LOCATION FILTERING CODE - Re-enable after adding coordinates to therapists
             if (!locationToUse) {
                 // No location available, show all therapists
                 setNearbyTherapists(therapists);
@@ -579,6 +586,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 setNearbyTherapists(therapists);
                 setNearbyPlaces(places);
             }
+            */
         };
 
         filterByLocation();
