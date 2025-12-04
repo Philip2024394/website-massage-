@@ -309,12 +309,12 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner */}
-                    <div className="absolute -top-8 left-2 z-30">
+                    {/* Verified Badge - Top Left Corner Inside Image */}
+                    <div className="absolute top-2 left-2 z-30">
                         <img 
                             src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
                             alt="Verified"
-                            className="w-36 h-36 object-contain"
+                            className="w-20 sm:w-24 h-auto object-contain"
                         />
                     </div>
 
@@ -449,9 +449,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             
             {/* Logo/Profile Picture - Positioned below banner, overlapping */}
             <div className="absolute top-40 left-4 z-10">
-                <div className="relative w-20 h-20">
+                <div className="relative w-20 h-20 aspect-square">
                     <img 
-                        className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                        className="w-20 h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
                         src={(place as any).profilePicture || (place as any).logo || mainImage}
                         alt={place.name}
                         onError={(e) => {
@@ -469,7 +469,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     
                     {/* Star Rating Badge on bottom edge of profile image */}
                     <button
-                        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-20"
+                        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-30"
                         onClick={() => onRate(place)}
                         aria-label={`Rate ${place.name}`}
                     >
@@ -506,7 +506,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
 
             {/* Massage Place Bio - dynamic from Appwrite */}
-            <div className="absolute top-72 left-4 right-4 z-10 massage-place-bio-section">
+            <div className="absolute top-80 left-4 right-4 z-10 massage-place-bio-section">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}
@@ -539,7 +539,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Content */}
-            <div className="p-4 pt-40 flex flex-col gap-4 w-full">
+            <div className="p-4 pt-48 flex flex-col gap-4 w-full">
                 <div className="flex items-start gap-4 w-full">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
