@@ -9,6 +9,7 @@ import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
+import { useUIConfig } from '../hooks/useUIConfig';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -133,6 +134,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 }) => {
     // Use the translations prop
     const t = _t;
+    
+    // Load UI configuration from Appwrite
+    const { settings: bookNowConfig } = useUIConfig('book_now_behavior');
+    const { settings: scheduleConfig } = useUIConfig('schedule_behavior');
     
     const [showBusyModal, setShowBusyModal] = useState(false);
     const [showReferModal, setShowReferModal] = useState(false);
@@ -473,36 +478,43 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         : (mainImage || getRandomTherapistImage(therapist.id.toString()));
 
     const openWhatsApp = () => {
-        // No login required for WhatsApp booking - direct contact allowed
+        console.log('📱 Book Now Config:', bookNowConfig);
         
-        // Send notification to therapist ONLY if it's not them clicking their own button
-        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-        if (loggedInProviderId !== therapistIdNum) {
-            notificationService.createWhatsAppContactNotification(
-                therapistIdNum,
-                therapist.name
-            ).catch(err => console.log('Notification failed:', err));
-        } else {
-            console.log('🔇 Skipping self-notification (you clicked your own button)');
-        }
+        // Check if config says to skip popup (direct WhatsApp)
+        if (bookNowConfig.skipPopup || bookNowConfig.type === 'whatsapp') {
+            // No login required for WhatsApp booking - direct contact allowed
+            
+            // Send notification to therapist ONLY if it's not them clicking their own button
+            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
+            if (loggedInProviderId !== therapistIdNum) {
+                notificationService.createWhatsAppContactNotification(
+                    therapistIdNum,
+                    therapist.name
+                ).catch(err => console.log('Notification failed:', err));
+            } else {
+                console.log('🔇 Skipping self-notification (you clicked your own button)');
+            }
 
-        // Create prefilled WhatsApp message
-        const message = `Hi ${therapist.name}! 👋\n\nI found your profile on Indastreet and I'm interested in booking a massage service.\n\nCould you please share your availability and confirm the pricing?\n\nThank you! 🙏`;
+            // Use message from config or default
+            const message = bookNowConfig.message || `Hi ${therapist.name}! 👋\n\nI found your profile on Indastreet and I'm interested in booking a massage service.\n\nCould you please share your availability and confirm the pricing?\n\nThank you! 🙏`;
 
-        // If displaying as Busy, show confirmation modal
-        if (displayStatus === AvailabilityStatus.Busy) {
-            // Customer is logged in, show the busy modal
-            setShowBusyModal(true);
-        } else {
-            // Available or Offline (the 20% that show as offline)
+            // Direct WhatsApp - no busy modal
             onIncrementAnalytics('whatsapp_clicks');
             window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
             
-            // After opening WhatsApp, also open the chat window
+            // After opening WhatsApp, also open the chat window if available
             if (onQuickBookWithChat) {
                 setTimeout(() => {
                     onQuickBookWithChat(therapist);
-                }, 500); // Small delay to ensure WhatsApp opens first
+                }, 500);
+            }
+        } else {
+            // Config says to show popup
+            if (displayStatus === AvailabilityStatus.Busy) {
+                setShowBusyModal(true);
+            } else {
+                // Show booking confirmation popup
+                setShowBookingConfirmation(true);
             }
         }
     };
@@ -1194,22 +1206,45 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
                  <button 
                     onClick={() => {
-                        console.log('Schedule button clicked - using scheduled booking system');
+                        console.log('📅 Schedule Config:', scheduleConfig);
                         
-                        // Open scheduled booking popup with time slot selection
-                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
-                        if (openScheduleBookingPopup) {
-                            openScheduleBookingPopup({
-                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                therapistName: therapist.name,
-                                therapistType: 'therapist',
-                                profilePicture: therapist.profilePicture || therapist.mainImage,
-                                pricing: pricing,
-                                discountPercentage: therapist.discountPercentage || 0,
-                                discountActive: isDiscountActive(therapist)
-                            });
+                        // Check if config says to use WhatsApp or popup
+                        if (scheduleConfig.type === 'whatsapp' || scheduleConfig.skipPopup) {
+                            // Direct WhatsApp for scheduling
+                            console.log('Schedule button using WhatsApp (config-driven)');
+                            
+                            // Send notification to therapist
+                            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
+                            if (loggedInProviderId !== therapistIdNum) {
+                                notificationService.createWhatsAppContactNotification(
+                                    therapistIdNum,
+                                    therapist.name
+                                ).catch(err => console.log('Notification failed:', err));
+                            }
+                            
+                            // Use message from config or default
+                            const message = scheduleConfig.message || `Hi ${therapist.name}! 👋\n\nI'd like to schedule a massage appointment.\n\nWhat times do you have available?\n\nThank you! 🙏`;
+                            
+                            onIncrementAnalytics('whatsapp_clicks');
+                            window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
                         } else {
-                            console.error('Schedule booking popup not available');
+                            // Config says to use scheduled booking popup
+                            console.log('Schedule button using popup (config-driven)');
+                            
+                            const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
+                            if (openScheduleBookingPopup) {
+                                openScheduleBookingPopup({
+                                    therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                    therapistName: therapist.name,
+                                    therapistType: 'therapist',
+                                    profilePicture: therapist.profilePicture || therapist.mainImage,
+                                    pricing: pricing,
+                                    discountPercentage: therapist.discountPercentage || 0,
+                                    discountActive: isDiscountActive(therapist)
+                                });
+                            } else {
+                                console.error('Schedule booking popup not available');
+                            }
                         }
                     }} 
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 transition-colors duration-300"
