@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-
+import { useTranslations } from '../lib/useTranslations';
+import { useLanguage } from '../context/LanguageContext';
 import { Page } from '../types/pageTypes';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -59,7 +60,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     onNavigate,
     onFindTherapists, 
     onFindPlaces, 
-    t,
+    t: propT,
     // AppDrawer props
     onMassageJobsClick,
     onHotelPortalClick,
@@ -74,6 +75,9 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     therapists = [],
     places = []
 }) => {
+    const { language } = useLanguage();
+    const { t: hookT } = useTranslations(language);
+    const t = propT || hookT; // Use prop t if provided, otherwise use hook
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     // Flatten all massage types from categories
