@@ -486,6 +486,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.log('🔇 Skipping self-notification (you clicked your own button)');
         }
 
+        // Create prefilled WhatsApp message
+        const message = `Hi ${therapist.name}! 👋\n\nI found your profile on Indastreet and I'm interested in booking a massage service.\n\nCould you please share your availability and confirm the pricing?\n\nThank you! 🙏`;
+
         // If displaying as Busy, show confirmation modal
         if (displayStatus === AvailabilityStatus.Busy) {
             // Customer is logged in, show the busy modal
@@ -493,7 +496,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         } else {
             // Available or Offline (the 20% that show as offline)
             onIncrementAnalytics('whatsapp_clicks');
-            window.open(`https://wa.me/${therapist.whatsappNumber}`, '_blank');
+            window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
             
             // After opening WhatsApp, also open the chat window
             if (onQuickBookWithChat) {
@@ -1107,31 +1110,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
                 <button
                     onClick={() => {
-                        console.log('🟢 Book Now button clicked - opening booking popup with customer details form');
-                        
-                        // Open booking popup to collect customer details (name, WhatsApp, duration preference)
-                        // No login required - popup collects all needed information
-                        const openBookingPopup = (window as any).openBookingPopup;
-                        if (openBookingPopup) {
-                            openBookingPopup(
-                                therapist.name,
-                                therapist.whatsappNumber || '',
-                                typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                'therapist',
-                                undefined, // hotelVillaId
-                                undefined, // hotelVillaName
-                                undefined, // hotelVillaType
-                                therapist.profilePicture || therapist.mainImage,
-                                undefined, // hotelVillaLocation
-                                pricing, // use processed full IDR pricing
-                                therapist.discountPercentage, // discount percentage
-                                isDiscountActive(therapist) // discount active flag
-                            );
-                        } else {
-                            console.warn('⚠️ Booking popup not available - falling back to direct WhatsApp');
-                            // Fallback to original behavior if popup not available
-                            openWhatsApp();
-                        }
+                        console.log('🟢 Book Now button clicked - opening WhatsApp for direct contact');
+                        // Direct WhatsApp contact - no popup needed
+                        openWhatsApp();
                     }}
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
