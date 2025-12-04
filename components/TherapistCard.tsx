@@ -911,7 +911,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Use translated description based on language - Expanded for 350 characters */}
-            <div className="absolute top-[21rem] left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+            <div className="absolute top-[21rem] left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
