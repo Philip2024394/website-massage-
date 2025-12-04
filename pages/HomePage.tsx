@@ -817,17 +817,17 @@ const HomePage: React.FC<HomePageProps> = ({
                 <div className="flex bg-gray-200 rounded-full p-1 mb-4">
                     <button 
                         onClick={() => setActiveTab('home')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
-                        <HomeIcon className="w-4 h-4" />
-                        {translationsObject?.home?.homeServiceTab || 'Home Service'}
+                        <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
                     </button>
                     <button 
                         onClick={() => setActiveTab('places')} 
-                        className={`w-1/2 py-2 px-4 rounded-full flex items-center justify-center gap-2 text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
-                        <Building className="w-4 h-4" />
-                        {translationsObject?.home?.massagePlacesTab || 'Massage Places'}
+                        <Building className="w-4 h-4 flex-shrink-0" />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
                     </button>
                 </div>
 
