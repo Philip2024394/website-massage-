@@ -100,14 +100,19 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
 
       <main>
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20">
-          <PageContainer>
+        <section 
+          className="relative bg-gradient-to-r from-orange-600 to-orange-500 text-white py-20 bg-cover bg-center"
+          style={{
+            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/website%20profile%20page.png)',
+          }}
+        >
+          <div className="absolute inset-0 bg-black/40"></div>
+          <PageContainer className="relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <Building2 className="w-20 h-20 mx-auto mb-6 opacity-90" />
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
                 Company Profile
               </h2>
-              <p className="text-xl md:text-2xl mb-8 text-orange-50">
+              <p className="text-xl md:text-2xl mb-8 text-orange-50 drop-shadow-lg">
                 Indonesia's Premier Massage Directory Platform
               </p>
               <div className="flex flex-wrap justify-center gap-4">
@@ -135,28 +140,58 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
           <PageContainer>
             <div className="max-w-4xl mx-auto">
               <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-                <h3 className="text-3xl font-bold text-gray-900 mb-6">About Indastreet</h3>
+                <h3 className="text-3xl font-bold mb-6">
+                  <span className="text-gray-900">Inda</span>
+                  <span className="text-orange-500">street</span>
+                  <span className="text-gray-900"> Indonesia</span>
+                </h3>
                 
                 <div className="space-y-6 text-gray-700 leading-relaxed">
                   <p className="text-lg">
-                    <span className="font-bold text-orange-600">Indastreet</span> operates under the registered company <span className="font-semibold">PT Hammerex Product Indonesia</span>, established in partnership with European IT specialists residing in Indonesia.
+                    <span className="font-bold text-orange-600">Indastreetmassage.com</span> trading under the registered company <span className="font-semibold">PT Hammerex Product Indonesia</span>, established in partnership with European IT specialists residing in Indonesia 2025.
                   </p>
                   
                   <p>
-                    Founded in <span className="font-semibold">2007</span>, <span className="font-semibold">Hammerex Products</span> brings over <span className="font-semibold">20 years of experience</span> in marketing and software development, with established connections in major tech platforms. Our team combines cutting-edge IT expertise with deep understanding of the massage therapy industry.
+                    <span className="font-semibold">Hammerex Europe</span> Founded in <span className="font-semibold">2007</span>, with <span className="font-semibold">20 years of experience</span> in marketing and software development, with established connections in major tech platforms. The <span className="font-semibold">indastreet team</span> combines cutting-edge IT expertise with deep understanding of the massage industry.
                   </p>
 
                   <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-r-lg">
-                    <p className="font-semibold text-gray-900 mb-2">Our Headquarters:</p>
-                    <div className="space-y-2 text-sm">
-                      <p className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-orange-600 mt-1 flex-shrink-0" />
-                        <span><strong>Indonesia Office:</strong> Pleret, Bantul, Yogyakarta, Indonesia</span>
-                      </p>
-                      <p className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-orange-600 mt-1 flex-shrink-0" />
-                        <span><strong>Europe Office:</strong> Shelbourne Place, Campile, Co Wexford, Ireland</span>
-                      </p>
+                    <p className="font-semibold text-gray-900 mb-4">Our Headquarters:</p>
+                    
+                    {/* Ireland Office */}
+                    <div className="mb-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <img 
+                          src="https://ik.imagekit.io/7grri5v7d/indo_flags-removebg-preview.png" 
+                          alt="Ireland Flag" 
+                          className="w-5 h-5 object-contain flex-shrink-0" 
+                        />
+                        <h4 className="font-bold text-gray-900">Indastreet Ireland</h4>
+                      </div>
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet%20apps.png?updatedAt=1761568212865" 
+                        alt="Ireland Office & Team"
+                        className="w-full h-48 object-cover rounded-lg shadow-md mb-2"
+                      />
+                      <p className="text-sm"><strong>Europe Office:</strong> Shelbourne Place, Campile, Co Wexford, Ireland</p>
+                    </div>
+
+                    {/* Indonesia Office - Placeholder for now */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <img 
+                          src="https://ik.imagekit.io/7grri5v7d/indo_flag-removebg-preview%20(1).png" 
+                          alt="Indonesia Flag" 
+                          className="w-5 h-5 object-contain flex-shrink-0" 
+                        />
+                        <h4 className="font-bold text-gray-900">Indastreet Indonesia</h4>
+                      </div>
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/office%20indoniseas.png" 
+                        alt="Indonesia Office"
+                        className="w-full h-48 object-cover rounded-lg shadow-md mb-2"
+                      />
+                      <p className="text-sm"><strong>Indonesia Office:</strong> Pleret, Bantul, Yogyakarta, Indonesia</p>
                     </div>
                   </div>
                 </div>
@@ -165,16 +200,23 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
           </PageContainer>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-16 bg-gradient-to-r from-orange-600 to-orange-500">
-          <PageContainer>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <div key={index} className="text-center text-white">
-                  <div className="text-4xl md:text-5xl font-bold mb-2">{stat.value}</div>
-                  <div className="text-orange-100 font-medium">{stat.label}</div>
-                </div>
-              ))}
+        {/* Your Marketing Mentor Section */}
+        <section 
+          className="py-16 bg-gradient-to-r from-orange-600 to-orange-500 bg-cover bg-center relative"
+          style={{
+            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/social%20media.png)',
+          }}
+        >
+          <div className="absolute inset-0 bg-black/50"></div>
+          <PageContainer className="relative z-10">
+            <div className="max-w-4xl mx-auto text-center text-white">
+              <h3 className="text-3xl md:text-4xl font-bold mb-6 drop-shadow-lg">We Are Your Marketing Mentor</h3>
+              <p className="text-lg md:text-xl leading-relaxed text-white mb-6 drop-shadow-lg">
+                Smart investment doesn't always mean spending more—it means spending wisely. Rather than pouring substantial budgets into marketing strategies that leave your massage spa undifferentiated from competitors, we invite you to connect with our team first.
+              </p>
+              <p className="text-lg md:text-xl leading-relaxed text-white drop-shadow-lg">
+                From day one, we partner with you to develop strategic, cost-effective growth plans. Our experienced team provides the expertise and guidance to help your massage business flourish sustainably—proving that sometimes, spending less delivers more.
+              </p>
             </div>
           </PageContainer>
         </section>
@@ -183,15 +225,17 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
         <section className="py-16">
           <PageContainer>
             <div className="max-w-6xl mx-auto">
-              <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center">Our Mission & Vision</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center">The Future Marketing Knowledge</h3>
               
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Mission */}
                 <div className="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-500">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-orange-100 rounded-lg">
-                      <Target className="w-8 h-8 text-orange-600" />
-                    </div>
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/our%20mission.png" 
+                      alt="Our Mission"
+                      className="w-12 h-12 object-contain"
+                    />
                     <h4 className="text-2xl font-bold text-gray-900">Our Mission</h4>
                   </div>
                   <p className="text-gray-700 leading-relaxed">
@@ -202,9 +246,11 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                 {/* Vision */}
                 <div className="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-500">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-orange-100 rounded-lg">
-                      <TrendingUp className="w-8 h-8 text-orange-600" />
-                    </div>
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/mission%202030.png" 
+                      alt="Our Vision 2030"
+                      className="w-12 h-12 object-contain"
+                    />
                     <h4 className="text-2xl font-bold text-gray-900">Our Vision (2030)</h4>
                   </div>
                   <p className="text-gray-700 leading-relaxed mb-4">
@@ -356,14 +402,16 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
                 <div className="flex flex-col md:flex-row gap-8 items-start">
                   <div className="md:w-1/3">
-                    <div className="aspect-square bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
-                      <Users className="w-32 h-32 text-white opacity-50" />
-                    </div>
-                    <p className="text-center text-sm text-gray-500 mt-2">Photo coming soon</p>
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/income%20graphs.png" 
+                      alt="Liam Thomas Keefe"
+                      className="w-full aspect-square object-cover rounded-2xl shadow-lg"
+                    />
+                    <p className="text-center text-sm text-gray-500 mt-2">Ireland Office & Team</p>
                   </div>
                   
                   <div className="md:w-2/3">
-                    <h4 className="text-2xl font-bold text-gray-900 mb-2">Philip Francis O'Farrell</h4>
+                    <h4 className="text-2xl font-bold text-gray-900 mb-2">Liam Thomas Keefe</h4>
                     <p className="text-orange-600 font-semibold mb-4">Founder & CEO</p>
                     
                     <div className="space-y-4 text-gray-700">
@@ -372,7 +420,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                       </p>
                       
                       <p className="leading-relaxed">
-                        Philip leads a team of Irish-based full-time IT specialists, partnered with Indonesian representatives and customer service teams to deliver world-class service across continents.
+                        Liam leads a team of Irish-based full-time IT specialists, partnered with Indonesian representatives and customer service teams to deliver world-class service across continents.
                       </p>
 
                       <div className="pt-4 border-t border-gray-200">
@@ -412,19 +460,35 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
                   <div className="text-center">
-                    <Globe className="w-16 h-16 text-orange-600 mx-auto mb-2" />
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/uk%20england.png" 
+                      alt="European Tourism" 
+                      className="w-24 h-24 object-contain mx-auto mb-2" 
+                    />
                     <p className="text-sm font-semibold text-gray-700">European Tourism</p>
                   </div>
                   <div className="text-center">
-                    <Building2 className="w-16 h-16 text-orange-600 mx-auto mb-2" />
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/usa%20flags.png" 
+                      alt="USA Operators" 
+                      className="w-24 h-24 object-contain mx-auto mb-2" 
+                    />
                     <p className="text-sm font-semibold text-gray-700">USA Operators</p>
                   </div>
                   <div className="text-center">
-                    <Users className="w-16 h-16 text-orange-600 mx-auto mb-2" />
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/usa%20flagss.png" 
+                      alt="Travel Agents" 
+                      className="w-24 h-24 object-contain mx-auto mb-2" 
+                    />
                     <p className="text-sm font-semibold text-gray-700">Travel Agents</p>
                   </div>
                   <div className="text-center">
-                    <Award className="w-16 h-16 text-orange-600 mx-auto mb-2" />
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/partners%20indo.png" 
+                      alt="Local Partners" 
+                      className="w-24 h-24 object-contain mx-auto mb-2" 
+                    />
                     <p className="text-sm font-semibold text-gray-700">Local Partners</p>
                   </div>
                 </div>
@@ -437,14 +501,21 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
         <section className="py-16">
           <PageContainer>
             <div className="max-w-4xl mx-auto">
-              <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center">Get in Touch</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">Get in Touch</h3>
+              <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+                We would love to hear from you and discuss your marketing promotional ideas and our team will always provide the best knowledge for your business needs.
+              </p>
               
               <div className="grid md:grid-cols-2 gap-8">
                 {/* Indonesia Office */}
                 <div className="bg-white rounded-xl shadow-lg p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-orange-100 rounded-lg">
-                      <MapPin className="w-6 h-6 text-orange-600" />
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indo_flag-removebg-preview%20(1).png" 
+                        alt="Indonesia Flag" 
+                        className="w-6 h-6 object-contain" 
+                      />
                     </div>
                     <h4 className="text-xl font-bold text-gray-900">Indonesia Office</h4>
                   </div>
@@ -466,7 +537,11 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                 <div className="bg-white rounded-xl shadow-lg p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 bg-orange-100 rounded-lg">
-                      <MapPin className="w-6 h-6 text-orange-600" />
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indo_flags-removebg-preview.png" 
+                        alt="Ireland Flag" 
+                        className="w-6 h-6 object-contain" 
+                      />
                     </div>
                     <h4 className="text-xl font-bold text-gray-900">Europe Office</h4>
                   </div>
@@ -496,13 +571,19 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-500 text-white">
-          <PageContainer>
+        <section 
+          className="py-20 bg-gradient-to-r from-orange-600 to-orange-500 text-white bg-cover bg-center relative"
+          style={{
+            backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/income%20graph.png)',
+          }}
+        >
+          <div className="absolute inset-0 bg-black/50"></div>
+          <PageContainer className="relative z-10">
             <div className="max-w-4xl mx-auto text-center">
-              <h3 className="text-3xl md:text-4xl font-bold mb-6">
+              <h3 className="text-3xl md:text-4xl font-bold mb-6 drop-shadow-lg">
                 Ready to Elevate Your Massage Business?
               </h3>
-              <p className="text-xl text-orange-50 mb-8">
+              <p className="text-xl text-white mb-8 drop-shadow-lg">
                 Join Indonesia's most trusted massage therapy platform today
               </p>
               <div className="flex flex-wrap justify-center gap-4">
@@ -513,33 +594,11 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                   <Phone className="w-6 h-6" />
                   Contact Us on WhatsApp
                 </button>
-                <button
-                  onClick={handleShare}
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-orange-700 text-white font-bold rounded-lg hover:bg-orange-800 transition-all shadow-xl text-lg"
-                >
-                  <Share2 className="w-6 h-6" />
-                  Share This Profile
-                </button>
               </div>
             </div>
           </PageContainer>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-8">
-        <PageContainer>
-          <div className="text-center">
-            <p className="mb-4">
-              <span className="text-white font-bold">Inda</span>
-              <span className="text-orange-500 font-bold">street</span>
-            </p>
-            <p className="text-sm">
-              © {new Date().getFullYear()} PT Hammerex Product Indonesia. All rights reserved.
-            </p>
-          </div>
-        </PageContainer>
-      </footer>
     </div>
   );
 };

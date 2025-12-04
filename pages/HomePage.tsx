@@ -825,11 +825,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
 
                 <div className="space-y-3 mb-6 w-full">
-                    <div className="flex items-center w-full gap-2 sm:gap-3">
+                    <div className="flex flex-wrap items-center w-full gap-2 sm:gap-3">
                         <div className="relative flex-1 min-w-0 z-10">
                             <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                             <select 
-                                className="w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
+                                className="w-full min-w-0 pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
                                 value={selectedMassageType}
                                 onChange={e => setSelectedMassageType(e.target.value)}
                                 style={{ backgroundColor: 'white' } as React.CSSProperties}
@@ -849,23 +849,17 @@ const HomePage: React.FC<HomePageProps> = ({
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                console.log('🚀 Join Indastreet button clicked!');
-                                console.log('onNavigate function exists:', !!onNavigate);
-                                
                                 if (onNavigate) {
-                                    console.log('✅ Calling onNavigate with joinIndastreet');
                                     try {
                                         onNavigate('joinIndastreet');
-                                        console.log('✅ Navigation called successfully');
                                     } catch (error) {
-                                        console.error('❌ Error calling onNavigate:', error);
+                                        alert('Navigation function not available. Please refresh the page.');
                                     }
                                 } else {
-                                    console.error('❌ onNavigate is not available!');
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
-                            }} 
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[42px] w-[70px] sm:w-[90px]"
+                            }}
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-auto w-auto max-w-[90px]"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Join Indastreet"
@@ -1187,6 +1181,27 @@ const HomePage: React.FC<HomePageProps> = ({
                 /* PREVENT HORIZONTAL SCROLL */
                 * {
                     box-sizing: border-box;
+                }
+                
+                /* MOBILE VIEWPORT FIX - PREVENT HORIZONTAL OVERFLOW */
+                html, body {
+                    max-width: 100vw;
+                    overflow-x: hidden;
+                }
+                
+                main, section, div {
+                    max-width: 100%;
+                    overflow-x: hidden;
+                }
+                
+                /* ENSURE IMAGES AND BUTTONS DON'T CAUSE OVERFLOW */
+                img, button, select, input {
+                    max-width: 100%;
+                }
+                
+                /* FIX FLEX CONTAINERS ON MOBILE */
+                .flex {
+                    min-width: 0;
                 }
             `}</style>
         </div>
