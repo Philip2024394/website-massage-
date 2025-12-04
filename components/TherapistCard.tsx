@@ -911,7 +911,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Use translated description based on language - Expanded for 350 characters */}
-            <div className="absolute top-80 left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+            <div className="absolute top-[21rem] left-6 right-6 z-10 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
@@ -919,7 +919,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             
             {/* Content Section - Layout adjusted for expanded bio section */}
-            <div className="p-4 pt-72 flex flex-col gap-4">
+            <div className="p-4 pt-80 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}

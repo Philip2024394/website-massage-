@@ -75,6 +75,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             <div className="h-40 w-full relative">
                 <img className="h-40 w-full object-cover" src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} alt={place.name} />
                 
+                {/* Verified Badge - Inside main image at top-left */}
+                {(place as any).isVerified && (
+                    <div className="absolute top-2 left-2 z-20">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
+                            alt="Verified"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                        />
+                    </div>
+                )}
+                
                 {/* Star Rating - Top Left Corner */}
                 <div 
                     className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
@@ -175,11 +186,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             </div>
             
             {/* Circular Profile Picture - Overlapping main image */}
-            <div className="absolute top-32 left-4 w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+            <div className="absolute top-32 left-4 w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white aspect-square">
                 <img 
                     src={place.profilePicture || place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} 
                     alt={`${place.name} logo`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full rounded-full object-cover aspect-square"
                 />
             </div>
             

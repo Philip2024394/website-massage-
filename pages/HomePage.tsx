@@ -537,9 +537,15 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         const filterByLocation = async () => {
             const locationToUse = autoDetectedLocation || userLocation;
-            // TEMPORARY FIX: Show all therapists regardless of location
-            // This bypasses the 50km radius filter to help diagnose display issues
-            console.log('🌍 Location filtering temporarily disabled - showing all therapists');
+            
+            // Always show all therapists and places (location filtering disabled)
+            console.log('🌍 Location filtering disabled - showing all therapists and places');
+            console.log('📊 Data counts:', {
+                totalTherapists: therapists?.length || 0,
+                totalPlaces: places?.length || 0,
+                liveTherapists: therapists?.filter((t: any) => t.isLive)?.length || 0,
+                livePlaces: places?.filter((p: any) => p.isLive)?.length || 0
+            });
             setNearbyTherapists(therapists);
             setNearbyPlaces(places);
             
@@ -887,7 +893,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {/* Therapists and Places Display */}
                 {activeTab === 'home' && (
-                    <div className="max-w-full overflow-x-hidden">
+                    <div className="max-w-full overflow-x-hidden pb-8">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Terapis Pijat Rumahan'}</h3>
                             <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Temukan terapis pijat terbaik di Bali'}</p>
@@ -992,7 +998,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     t={translationsObject}
                                 />
                                 {/* Accommodation Massage Service Link */}
-                                <div className="mt-2 mb-4 text-center">
+                                <div className="mt-2 mb-8 text-center">
                                     <button
                                         onClick={() => onNavigate?.('indastreet-partners')}
                                         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
