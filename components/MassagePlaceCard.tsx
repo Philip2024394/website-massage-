@@ -513,8 +513,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
 
-            {/* Massage Place Bio - Natural flow with proper margin */}
-            <div className="mt-4 massage-place-bio-section mx-4">
+            {/* Massage Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
+            <div className="mt-8 massage-place-bio-section mx-4">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}
