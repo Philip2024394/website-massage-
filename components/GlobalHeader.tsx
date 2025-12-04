@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import BurgerMenuIcon from './icons/BurgerMenuIcon';
+import { useLanguage } from '../hooks/useLanguage';
 import type { Page } from '../types/pageTypes';
 
 interface GlobalHeaderProps {
@@ -42,6 +43,7 @@ const useHasPageHeader = (deps: any[]) => {
 const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
   const isStandalone = useMemo(detectStandalone, []);
   const hasPageHeader = useHasPageHeader([page]);
+  const { language, setLanguage } = useLanguage();
 
   if (!isStandalone) return null;
   if (hasPageHeader) return null;
@@ -71,8 +73,43 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             <span className="text-orange-500">street</span>
           </span>
         </div>
-        <div className="text-sm text-gray-500">
-          {resolvedTitle}
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {resolvedTitle}
+          </div>
+          {/* Language Switcher */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                const timestamp = new Date().toISOString();
+                console.log(`🔘 GlobalHeader [${timestamp}]: EN button clicked, current language:`, language);
+                setLanguage('en');
+                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("en") called`);
+              }}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                language === 'en' 
+                  ? 'bg-orange-500 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => {
+                const timestamp = new Date().toISOString();
+                console.log(`🔘 GlobalHeader [${timestamp}]: ID button clicked, current language:`, language);
+                setLanguage('id');
+                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("id") called`);
+              }}
+              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                language === 'id' 
+                  ? 'bg-orange-500 text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              ID
+            </button>
+          </div>
         </div>
       </div>
     </header>

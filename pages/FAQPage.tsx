@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawer';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface FAQ {
     question: string;

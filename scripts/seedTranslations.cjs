@@ -69,18 +69,24 @@ function loadInlineTranslations() {
             
             // Home Page
             home: {
+                homeServiceTab: 'Home Service',
+                massagePlacesTab: 'Massage Places',
                 therapistsTitle: 'Home Service Therapists',
                 therapistsSubtitle: 'Find the best therapists in Bali',
                 massagePlacesTitle: 'Featured Massage Spas',
                 massagePlacesSubtitle: 'Find the best massage places in Bali',
                 massageDirectory: 'Massage Directory',
                 massageDirectoryTitle: 'Go to Massage Directory',
+                viewMassageSpa: 'View Massage Spa',
                 noTherapistsAvailable: 'No therapists available in your area at the moment.',
                 noPlacesAvailable: 'No massage places available in your area',
                 readMore: 'Read More',
                 readLess: 'Read Less',
                 findTherapists: 'Find Therapists',
-                findMassagePlaces: 'Find Massage Places'
+                findMassagePlaces: 'Find Massage Places',
+                therapistCard: {
+                    schedule: 'Schedule'
+                }
             },
             
             // Authentication
@@ -456,18 +462,24 @@ function loadInlineTranslations() {
             
             // Home Page - Indonesian
             home: {
+                homeServiceTab: 'Layanan Rumah',
+                massagePlacesTab: 'Tempat Pijat',
                 therapistsTitle: 'Terapis Pijat Rumahan',
                 therapistsSubtitle: 'Temukan terapis terbaik di Bali',
                 massagePlacesTitle: 'Spa Pijat Unggulan',
                 massagePlacesSubtitle: 'Temukan tempat pijat terbaik di Bali',
                 massageDirectory: 'Direktori Pijat',
                 massageDirectoryTitle: 'Pergi ke Direktori Pijat',
+                viewMassageSpa: 'Lihat Spa Pijat',
                 noTherapistsAvailable: 'Tidak ada terapis tersedia di area Anda saat ini.',
                 noPlacesAvailable: 'Tidak ada tempat pijat tersedia di area Anda',
                 readMore: 'Baca Selengkapnya',
                 readLess: 'Baca Lebih Sedikit',
                 findTherapists: 'Cari Terapis',
-                findMassagePlaces: 'Cari Tempat Pijat'
+                findMassagePlaces: 'Cari Tempat Pijat',
+                therapistCard: {
+                    schedule: 'Jadwal'
+                }
             },
             
             // Authentication - Indonesian

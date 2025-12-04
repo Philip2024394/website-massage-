@@ -41,9 +41,9 @@ export function useTranslations(language?: 'en' | 'id') {
     const getStoredLanguage = (): 'en' | 'id' => {
         try {
             const stored = window.localStorage.getItem('app_language');
-            return (stored === 'id' || stored === 'en') ? stored : 'en';
+            return (stored === 'id' || stored === 'en') ? stored : 'id';
         } catch {
-            return 'en';
+            return 'id';
         }
     };
     
@@ -56,7 +56,7 @@ export function useTranslations(language?: 'en' | 'id') {
         try {
             console.log('🔄 useTranslations: Loading translations for language:', currentLanguage);
             
-            // Check cache first
+            // Check for cached translations first
             const cached = getCachedTranslations();
             if (cached && cached[currentLanguage]) {
                 console.log('✅ useTranslations: Using cached translations for', currentLanguage);

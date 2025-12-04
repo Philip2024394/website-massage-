@@ -675,7 +675,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <img 
                             src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
                             alt="Verified"
-                            className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                            className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
                         />
                     </div>
                 </div>
@@ -867,9 +867,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             
             {/* Profile Section - Flexbox layout for stable positioning */}
             <div className="px-4 -mt-12 relative z-10">
-                <div className="flex items-end justify-between gap-4">
+                <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
-                    <div className="flex items-end gap-4 flex-1 min-w-0">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
                             <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
@@ -938,7 +938,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pb-2">
+                        <div className="flex-1 min-w-0 pt-16 pb-2">
                             <h3 className="text-xl font-bold text-gray-900 truncate">{therapist.name}</h3>
                             {locationCity && (
                                 <p className="text-[11px] font-medium text-gray-700 mt-0.5">Therapist – {locationCity}</p>
@@ -1206,51 +1206,33 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
                  <button 
                     onClick={() => {
-                        console.log('📅 Schedule Config:', scheduleConfig);
+                        console.log('📅 Schedule button clicked - opening popup');
                         
-                        // Check if config says to use WhatsApp or popup
-                        if (scheduleConfig.type === 'whatsapp' || scheduleConfig.skipPopup) {
-                            // Direct WhatsApp for scheduling
-                            console.log('Schedule button using WhatsApp (config-driven)');
-                            
-                            // Send notification to therapist
-                            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-                            if (loggedInProviderId !== therapistIdNum) {
-                                notificationService.createWhatsAppContactNotification(
-                                    therapistIdNum,
-                                    therapist.name
-                                ).catch(err => console.log('Notification failed:', err));
-                            }
-                            
-                            // Use message from config or default
-                            const message = scheduleConfig.message || `Hi ${therapist.name}! 👋\n\nI'd like to schedule a massage appointment.\n\nWhat times do you have available?\n\nThank you! 🙏`;
-                            
+                        // Always use scheduled booking popup for better UX and data tracking
+                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
+                        if (openScheduleBookingPopup) {
+                            openScheduleBookingPopup({
+                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                therapistName: therapist.name,
+                                therapistType: 'therapist',
+                                profilePicture: therapist.profilePicture || therapist.mainImage,
+                                pricing: pricing,
+                                discountPercentage: therapist.discountPercentage || 0,
+                                discountActive: isDiscountActive(therapist)
+                            });
+                            onIncrementAnalytics('bookings');
+                        } else {
+                            console.error('Schedule booking popup not available');
+                            // Fallback to WhatsApp if popup not available
+                            const message = `Hi ${therapist.name}! 👋\n\nI'd like to schedule a massage appointment.\n\nWhat times do you have available?\n\nThank you! 🙏`;
                             onIncrementAnalytics('whatsapp_clicks');
                             window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
-                        } else {
-                            // Config says to use scheduled booking popup
-                            console.log('Schedule button using popup (config-driven)');
-                            
-                            const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
-                            if (openScheduleBookingPopup) {
-                                openScheduleBookingPopup({
-                                    therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                    therapistName: therapist.name,
-                                    therapistType: 'therapist',
-                                    profilePicture: therapist.profilePicture || therapist.mainImage,
-                                    pricing: pricing,
-                                    discountPercentage: therapist.discountPercentage || 0,
-                                    discountActive: isDiscountActive(therapist)
-                                });
-                            } else {
-                                console.error('Schedule booking popup not available');
-                            }
                         }
                     }} 
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <CalendarIcon className="w-4 h-4"/>
-                    <span className="text-sm">{_t.home?.therapistCard?.schedule || 'Jadwal'}</span>
+                    <span className="text-sm">{_t.home?.therapistCard?.schedule || 'Schedule'}</span>
                 </button>
             </div>
 

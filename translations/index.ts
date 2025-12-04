@@ -106,6 +106,8 @@ translations.en.joinIndastreet = {
   contactButton: "Contact Us on WhatsApp",
 };
 translations.en.home = {
+  homeServiceTab: 'Home Service',
+  massagePlacesTab: 'Massage Places',
   therapistsTitle: 'Home Service Therapists',
   therapistsSubtitle: 'Find the best therapists in Bali',
   noTherapistsAvailable: 'No therapists available in your area at the moment.',
@@ -114,6 +116,7 @@ translations.en.home = {
   massagePlacesSubtitle: 'Find the best massage places in Bali',
   massageDirectory: 'Massage Directory',
   massageDirectoryTitle: 'Go to Massage Directory',
+  viewMassageSpa: 'View Massage Spa',
   // Massage Types Page
   readMore: 'Read More',
   readLess: 'Read Less',
@@ -585,6 +588,8 @@ translations.id.joinIndastreet = {
   contactButton: "Hubungi Kami di WhatsApp",
 };
 translations.id.home = {
+  homeServiceTab: 'Layanan Rumah',
+  massagePlacesTab: 'Tempat Pijat',
   therapistsTitle: 'Terapis Pijat Rumahan',
   therapistsSubtitle: 'Temukan terapis terbaik di Bali',
   noTherapistsAvailable: 'Tidak ada terapis tersedia di area Anda saat ini.',
@@ -593,6 +598,7 @@ translations.id.home = {
   massagePlacesSubtitle: 'Temukan tempat pijat terbaik di Bali',
   massageDirectory: 'Direktori Pijat',
   massageDirectoryTitle: 'Pergi ke Direktori Pijat',
+  viewMassageSpa: 'Lihat Spa Pijat',
   // Massage Types Page
   readMore: 'Baca Selengkapnya',
   readLess: 'Baca Lebih Sedikit',

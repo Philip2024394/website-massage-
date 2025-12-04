@@ -296,25 +296,74 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         hour12: false
       });
 
-      // Create simple WhatsApp booking message
-      let message = `Hi, can I book massage for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you.`;
+      // Save scheduled booking to Appwrite database
+      const bookingData = {
+        therapistId: therapistId,
+        therapistName: therapistName,
+        customerName: customerName,
+        customerWhatsApp: customerWhatsApp,
+        duration: finalDuration,
+        scheduledTime: scheduledTime.toISOString(),
+        bookingType: 'scheduled',
+        status: 'pending',
+        providerType: therapistType,
+        hotelVillaId: hotelVillaId || null,
+        hotelVillaName: hotelVillaName || null,
+        price: (selectedDuration && pricing?.[selectedDuration]) || 0,
+        discountApplied: discountActive ? discountPercentage : 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-      // Send WhatsApp message directly to therapist/place
-      if (therapistWhatsApp) {
-        const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-      } else {
-        console.warn('⚠️ Therapist WhatsApp number not found');
-        alert('Could not send WhatsApp message - therapist contact not available');
+      try {
+        // Save to Appwrite bookings collection
+        const bookingResponse = await databases.createDocument(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.bookings,
+          'unique()',
+          bookingData
+        );
+        
+        console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
+        
+        // Create simple WhatsApp booking message
+        let message = `Hi, can I book massage for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you. Booking ID: ${bookingResponse.$id}`;
+
+        // Send WhatsApp message directly to therapist/place
+        if (therapistWhatsApp) {
+          const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;
+          window.open(whatsappUrl, '_blank');
+        } else {
+          console.warn('⚠️ Therapist WhatsApp number not found');
+          alert('Could not send WhatsApp message - therapist contact not available');
+        }
+
+        showToast('Scheduled booking saved and WhatsApp message sent!', 'success');
+        
+        // Close popup after showing success message
+        setTimeout(() => {
+          onClose();
+          resetForm();
+        }, 2000);
+      } catch (saveError: any) {
+        console.error('❌ Error saving scheduled booking to Appwrite:', saveError);
+        
+        // Still send WhatsApp message even if save fails
+        let message = `Hi, can I book massage for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you.`;
+        
+        if (therapistWhatsApp) {
+          const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;
+          window.open(whatsappUrl, '_blank');
+          showToast('WhatsApp message sent (booking save failed)', 'warning');
+        } else {
+          showToast('Failed to save booking and send message', 'error');
+        }
+        
+        setTimeout(() => {
+          onClose();
+          resetForm();
+        }, 2000);
       }
-
-      showToast('WhatsApp message sent to therapist', 'success');
-      
-      // Close popup after showing success message
-      setTimeout(() => {
-        onClose();
-        resetForm();
-      }, 2000);
 
     } catch (error: any) {
       console.error('❌ Error creating scheduled booking:', error);

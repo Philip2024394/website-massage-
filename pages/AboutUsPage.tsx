@@ -3,7 +3,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawer';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { useTranslations } from '../lib/useTranslations';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface AboutUsPageProps {
     onNavigate: (page: string) => void;

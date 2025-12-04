@@ -34,12 +34,12 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
 
   const services = [
     {
-      icon: Shield,
+      icon: 'https://ik.imagekit.io/7grri5v7d/partners%20indo.png',
       title: 'Verified Partners',
       description: 'Every therapist and spa is personally inspected and certified by our team',
     },
     {
-      icon: TrendingUp,
+      icon: 'https://ik.imagekit.io/7grri5v7d/partners%20indod.png',
       title: 'Business Analytics',
       description: 'Monitor traffic, reviews, and bookings with actionable insights',
     },
@@ -232,7 +232,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                 <div className="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-500">
                   <div className="flex items-center gap-3 mb-6">
                     <img 
-                      src="https://ik.imagekit.io/7grri5v7d/our%20mission.png" 
+                      src="https://ik.imagekit.io/7grri5v7d/icon_image-removebg-preview.png" 
                       alt="Our Mission"
                       className="w-12 h-12 object-contain"
                     />
@@ -247,7 +247,7 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                 <div className="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-500">
                   <div className="flex items-center gap-3 mb-6">
                     <img 
-                      src="https://ik.imagekit.io/7grri5v7d/mission%202030.png" 
+                      src="https://ik.imagekit.io/7grri5v7d/u_see-removebg-preview.png" 
                       alt="Our Vision 2030"
                       className="w-12 h-12 object-contain"
                     />
@@ -311,7 +311,15 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack }) => {
                   <div key={index} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl transition-all">
                     <div className="flex items-start gap-4">
                       <div className="p-4 bg-orange-100 rounded-xl flex-shrink-0">
-                        <service.icon className="w-8 h-8 text-orange-600" />
+                        {typeof service.icon === 'string' ? (
+                          <img 
+                            src={service.icon} 
+                            alt={service.title}
+                            className="w-8 h-8 object-contain"
+                          />
+                        ) : (
+                          <service.icon className="w-8 h-8 text-orange-600" />
+                        )}
                       </div>
                       <div>
                         <h4 className="text-xl font-bold text-gray-900 mb-2">{service.title}</h4>

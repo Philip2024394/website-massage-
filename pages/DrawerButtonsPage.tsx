@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { customLinksService, authService } from '../lib/appwriteService';
 import ImageUpload from '../components/ImageUpload';
 import { useTranslations } from '../lib/useTranslations';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface CustomLink {
     $id: string;

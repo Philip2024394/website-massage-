@@ -116,8 +116,8 @@ const HomePage: React.FC<HomePageProps> = ({
         // SAFE: Provide default fallback translations
         const defaultTranslations = {
             home: {
-                homeServiceTab: '',
-                massagePlacesTab: '',
+                homeServiceTab: 'Home Service',
+                massagePlacesTab: 'Massage Places',
                 loading: 'Loading...',
                 loginSignUp: 'Login / Sign Up',
                 noMoreTherapists: 'No more therapists available',
@@ -895,8 +895,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'home' && (
                     <div className="max-w-full overflow-x-hidden pb-8">
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Terapis Pijat Rumahan'}</h3>
-                            <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Temukan terapis pijat terbaik di Bali'}</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
+                            <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Find the best therapists in Bali'}</p>
                         </div>
                         
                         <div className="space-y-4 max-w-full overflow-hidden">
@@ -1015,7 +1015,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         })()}
                         {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
-                                <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'Tidak ada terapis tersedia di area Anda saat ini.'}</p>
+                                <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'No therapists available in your area at the moment.'}</p>
                                 {autoDetectedLocation && (
                                     <p className="text-gray-400 text-sm mt-2">
                                         Showing providers within 15km of your location

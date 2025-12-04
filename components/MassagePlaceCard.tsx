@@ -296,9 +296,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     Orders: {bookingsCount}
                 </span>
             </div>
-            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation">
+            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation pb-8">
                 {/* Main Image Banner + Lazy Loading */}
-                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-hidden relative rounded-t-xl">
+                <div className="h-48 w-full bg-gradient-to-r from-orange-400 to-orange-600 overflow-visible relative rounded-t-xl">
                     <img 
                         src={mainImage} 
                         alt={`${place.name} cover`} 
@@ -309,12 +309,12 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner Inside Image */}
+                    {/* Verified Badge - Top Left Corner */}
                     <div className="absolute top-2 left-2 z-30">
                         <img 
                             src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
                             alt="Verified"
-                            className="w-20 sm:w-24 h-auto object-contain"
+                            className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
                         />
                     </div>
 
@@ -448,10 +448,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-10 relative z-10">
-                <div className="flex items-end justify-between gap-4">
+            <div className="px-4 -mt-10 relative z-10 overflow-visible">
+                <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
-                    <div className="flex items-end gap-3 flex-1 min-w-0">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                         {/* Profile Picture */}
                         <div className="flex-shrink-0">
                             <div className="relative w-20 h-20 aspect-square">
@@ -474,7 +474,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 
                                 {/* Star Rating Badge */}
                                 <button
-                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-30"
+                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-50"
                                     onClick={() => onRate(place)}
                                     aria-label={`Rate ${place.name}`}
                                 >
@@ -487,7 +487,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pb-2">
+                        <div className="flex-1 min-w-0 pt-12 pb-2">
                             <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
                                 <span className="relative mr-1.5">
@@ -514,7 +514,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
 
             {/* Massage Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
-            <div className="mt-8 massage-place-bio-section mx-4">
+            <div className="mt-12 massage-place-bio-section mx-4">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}
@@ -723,7 +723,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <span>View Massage Spa</span>
+                    <span>{_t?.home?.viewMassageSpa || 'View Massage Spa'}</span>
                 </button>
 
                 {/* Refer Friend, Massage Directory and Leave Review Links */}

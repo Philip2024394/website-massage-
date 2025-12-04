@@ -2,8 +2,14 @@
 export const homeTranslations = {
   en: {
     home: {
-      homeServiceTab: 'Home Massage',
-      massagePlacesTab: 'Massage Place',
+      homeServiceTab: 'Home Service',
+      massagePlacesTab: 'Massage Places',
+      therapistsTitle: 'Home Service Therapists',
+      therapistsSubtitle: 'Find the best therapists in Bali',
+      massagePlacesTitle: 'Featured Massage Spas',
+      massagePlacesSubtitle: 'Find the best massage places in Bali',
+      noTherapistsAvailable: 'No therapists available in your area at the moment.',
+      noPlacesAvailable: 'No massage places available in your area',
       loading: 'Loading...',
       loginSignUp: 'Login / Sign Up',
       noMoreTherapists: 'No more therapists to show.',
@@ -155,8 +161,14 @@ export const homeTranslations = {
   },
   id: {
     home: {
-      homeServiceTab: 'Pijat ke Rumah',
+      homeServiceTab: 'Layanan Rumah',
       massagePlacesTab: 'Tempat Pijat',
+      therapistsTitle: 'Terapis Pijat Rumahan',
+      therapistsSubtitle: 'Temukan terapis terbaik di Bali',
+      massagePlacesTitle: 'Spa Pijat Unggulan',
+      massagePlacesSubtitle: 'Temukan tempat pijat terbaik di Bali',
+      noTherapistsAvailable: 'Tidak ada terapis tersedia di area Anda saat ini.',
+      noPlacesAvailable: 'Tidak ada tempat pijat tersedia di area Anda',
       loading: 'Memuat...',
       loginSignUp: 'Masuk / Daftar',
       noMoreTherapists: 'Tidak ada terapis lagi untuk ditampilkan.',

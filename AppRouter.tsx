@@ -351,7 +351,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     // Build a translation adapter from the active language dictionary
     const { language: ctxLanguage } = useLanguage();
     const activeLanguage = (language as any) || ctxLanguage;
+    console.log('🌍 AppRouter: Props language:', language);
+    console.log('🌍 AppRouter: Context language:', ctxLanguage); 
+    console.log('🌍 AppRouter: Active language resolved:', activeLanguage);
     const { t: tFn, dict } = useTranslations(activeLanguage as any);
+    console.log('🌍 AppRouter: Dict received from useTranslations:', dict ? Object.keys(dict) : 'null');
+    console.log('🌍 AppRouter: Sample translation home.therapistsTitle:', dict?.[activeLanguage]?.home?.therapistsTitle);
     const t: any = ((key: string) => tFn(key)) as any;
     // Spread all top-level namespaces for object-style access (e.g., t.home, t.common)
     if (dict && typeof dict === 'object') {
@@ -623,13 +628,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ========================
         // 🏠 CORE APPLICATION ROUTES  
         // ========================
-        case 'landing': 
+        case 'landing':
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 
                 onEnterApp={handleEnterApp} 
-            />;
-            
-        case 'home':
+            />;        case 'home':
             console.log('🏠 AppRouter: Rendering HomePage component');
             return <HomePage 
                 user={user} 

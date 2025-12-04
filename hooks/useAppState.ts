@@ -136,17 +136,19 @@ export const useAppState = () => {
     }
   });
   const setLanguage = (lang: Language) => {
-    console.log('🌐 useAppState: setLanguage called with:', lang);
-    console.log('🌐 useAppState: Current language before change:', language);
+    const timestamp = new Date().toISOString();
+    console.log(`🌐 useAppState [${timestamp}]: setLanguage called with:`, lang);
+    console.log(`🌐 useAppState [${timestamp}]: Current language before change:`, language);
+    console.log(`🌐 useAppState [${timestamp}]: Stack trace:`, new Error().stack);
     _setLanguage(lang);
     // Save to actual localStorage (not the disabled wrapper)
     try {
       window.localStorage.setItem('app_language', lang);
-      console.log('🌐 useAppState: Language saved to localStorage:', lang);
+      console.log(`🌐 useAppState [${timestamp}]: Language saved to localStorage:`, lang);
     } catch (error) {
-      console.error('🌐 useAppState: Failed to save language to localStorage:', error);
+      console.error(`🌐 useAppState [${timestamp}]: Failed to save language to localStorage:`, error);
     }
-    console.log('🌐 useAppState: Language state updated to:', lang);
+    console.log(`🌐 useAppState [${timestamp}]: Language state updated to:`, lang);
   };
 
   const [userLocation, _setUserLocation] = useState<UserLocation | null>(() => getFromLocalStorage('app_user_location'));
