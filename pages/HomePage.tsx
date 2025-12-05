@@ -850,7 +850,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             {/* Header */}
             <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
-                <PageContainer className="py-3 sm:py-4 max-w-full">
+                <PageContainer className="py-2 sm:py-3 max-w-full">
                 <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         {/* Simplified brand markup to prevent production clipping of last letter */}
@@ -931,7 +931,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <main>
             <PageContainer className="px-2 sm:px-4 pb-24">
                 {/* Location Display & Search */}
-                <div className="mb-2 w-full mt-2">
+                <div className="mb-2 w-full">
                     {userLocation ? (
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center justify-center gap-2">
