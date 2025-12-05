@@ -353,6 +353,7 @@ export interface Place {
     
     // Contact and business information
     contactNumber?: string; // Contact phone number
+    ownerWhatsApp?: string; // Owner's WhatsApp for review contact
     yearsEstablished?: number; // Years in business (1-50)
     
     // Discount system fields
