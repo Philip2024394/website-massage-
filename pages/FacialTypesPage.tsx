@@ -330,6 +330,13 @@ function getFacialImage(type: string): string {
         'Collagen Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
         'Microdermabrasion': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
         'Chemical Peel': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'LED Light Therapy': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Hydrating Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Brightening Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Acne Treatment Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Deep Cleansing Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Sensitive Skin Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Oxygen Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
     };
     // Return specific image if available, otherwise return placeholder
     if (images[type]) {
