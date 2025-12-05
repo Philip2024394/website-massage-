@@ -1098,6 +1098,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                             setFacialMemberEmail(email);
                             setPage('facialMemberDashboard');
                         }}
+                        t={t}
+                        onMassageJobsClick={portalHandlers.onMassageJobsClick}
+                        onHotelPortalClick={portalHandlers.onHotelPortalClick}
+                        onVillaPortalClick={portalHandlers.onVillaPortalClick}
+                        onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
+                        onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                        onFacialPortalClick={portalHandlers.onFacialPortalClick}
+                        onAgentPortalClick={portalHandlers.onAgentPortalClick}
+                        onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
+                        onAdminPortalClick={portalHandlers.onAdminPortalClick}
+                        onNavigate={commonNavigateHandler}
+                        onTermsClick={handleNavigateToServiceTerms}
+                        onPrivacyClick={handleNavigateToPrivacyPolicy}
                     />
                 </React.Suspense>
             );
