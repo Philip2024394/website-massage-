@@ -86,12 +86,69 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
         }
     }, [userLocation, localSelectedCity]);
 
-    // Filter facial places by selected city
-    const filteredFacialPlaces = localSelectedCity === 'all' 
-        ? facialPlaces
-        : facialPlaces.filter(place => {
-            return place.location === localSelectedCity || place.location?.includes(localSelectedCity);
-        });
+    // Calculate distance between two coordinates using Haversine formula
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // Distance in km
+    };
+
+    // Filter facial places by selected city OR by 15km radius if user location available
+    const filteredFacialPlaces = (() => {
+        // If user has location, filter by 15km radius
+        if (userLocation && userLocation.lat && userLocation.lng && localSelectedCity !== 'all') {
+            return facialPlaces.filter(place => {
+                // Parse coordinates from place
+                let placeCoords = { lat: 0, lng: 0 };
+                if (place.coordinates) {
+                    try {
+                        if (typeof place.coordinates === 'string') {
+                            placeCoords = JSON.parse(place.coordinates);
+                        } else {
+                            placeCoords = place.coordinates;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing place coordinates:', e);
+                        return false;
+                    }
+                }
+                
+                // Skip if no valid coordinates
+                if (!placeCoords.lat || !placeCoords.lng) {
+                    return false;
+                }
+                
+                // Calculate distance
+                const distance = calculateDistance(
+                    userLocation.lat,
+                    userLocation.lng,
+                    placeCoords.lat,
+                    placeCoords.lng
+                );
+                
+                console.log(`📍 ${place.name}: ${distance.toFixed(2)}km away`);
+                
+                // Only show places within 15km
+                return distance <= 15;
+            });
+        }
+        
+        // If city selected but no user location, filter by city name
+        if (localSelectedCity !== 'all') {
+            return facialPlaces.filter(place => {
+                return place.location === localSelectedCity || place.location?.includes(localSelectedCity);
+            });
+        }
+        
+        // Show all if "All Indonesia" selected
+        return facialPlaces;
+    })();
 
     const handleCityChange = (city: string) => {
         setLocalSelectedCity(city);

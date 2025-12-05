@@ -1021,20 +1021,17 @@ const HomePage: React.FC<HomePageProps> = ({
                             />
                         </div>
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
+                            onClick={() => {
                                 console.log('🏨 Facial button clicked - navigating to facialProviders');
                                 onNavigate?.('facialProviders');
                             }}
-                            onTouchEnd={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('🏨 Facial button touched - navigating to facialProviders');
-                                onNavigate?.('facialProviders');
-                            }}
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity touch-manipulation"
-                            style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' } as React.CSSProperties}
+                            className="inline-flex p-2 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 active:opacity-75 transition-opacity touch-manipulation min-w-[44px] min-h-[44px]"
+                            style={{ 
+                                WebkitTapHighlightColor: 'rgba(255, 165, 0, 0.3)',
+                                touchAction: 'manipulation',
+                                userSelect: 'none',
+                                WebkitUserSelect: 'none'
+                            } as React.CSSProperties}
                             title="Facials Indonesia"
                             aria-label="Browse Facial Spas"
                         >
@@ -1044,6 +1041,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 className="select-none transition-opacity hover:opacity-90 h-[168px] w-[168px] object-contain pointer-events-none"
                                 loading="lazy"
                                 draggable={false}
+                                style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
                             />
                         </button>
                     </div>
