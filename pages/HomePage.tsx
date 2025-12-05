@@ -929,7 +929,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </PageContainer>
             </main>
             <main>
-            <PageContainer className="px-3 sm:px-4 py-3 sm:py-4 pb-24">
+            <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-24">
                 {/* Hero Section - Optimized Layout */}
                 <div className="space-y-3 max-w-6xl mx-auto">
                     {/* Location Display */}
