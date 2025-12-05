@@ -48,6 +48,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   
   // Form states
   const [userName, setUserName] = useState('');
@@ -129,20 +130,8 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 
     try {
       setSubmitting(true);
+      setErrors({});
       
-      // Save to Appwrite
-      await reviewService.createAnonymous({
-        providerId: providerId,
-        providerType: providerType,
-        providerName: providerName,
-        rating: rating,
-        reviewerName: userName.trim(),
-        whatsappNumber: whatsappNumber.trim(),
-        comment: reviewText.trim(),
-        avatar: selectedAvatar,
-      });
-
-      // Also save comment and avatar separately if needed
       const now = new Date();
       const reviewData: ReviewData = {
         userName: userName.trim(),
@@ -157,6 +146,20 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       // Add to local state immediately for instant feedback
       setReviews([reviewData, ...reviews]);
       
+      // Save to Appwrite
+      await reviewService.createAnonymous({
+        providerId: providerId,
+        providerType: providerType,
+        providerName: providerName,
+        rating: rating,
+        reviewerName: userName.trim(),
+        whatsappNumber: whatsappNumber.trim(),
+        comment: reviewText.trim(),
+        avatar: selectedAvatar,
+      });
+
+      console.log('✅ Review submitted successfully');
+      
       // Reset form
       setUserName('');
       setWhatsappNumber('');
@@ -165,11 +168,19 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       setSelectedAvatar('');
       setErrors({});
       setShowForm(false);
+      
+      // Show success message
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 5000);
 
       // Scroll to top to see the new review
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
-      console.error('Error submitting review:', error);
+      console.error('❌ Error submitting review:', error);
+      
+      // Remove from local state if save failed
+      setReviews(reviews);
+      
       setErrors({ submit: 'Failed to submit review. Please try again.' });
     } finally {
       setSubmitting(false);
@@ -178,6 +189,21 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Success Message Toast */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+              <p className="font-bold">Thank you for your review!</p>
+              <p className="text-sm text-green-100">Your review has been submitted successfully.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <PageContainer className="py-3">
@@ -441,6 +467,16 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                   </div>
                   {errors.avatar && <p className="text-red-500 text-xs mt-2">{errors.avatar}</p>}
                 </div>
+
+                {/* Error Message */}
+                {errors.submit && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start gap-2">
+                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm">{errors.submit}</p>
+                  </div>
+                )}
 
                 {/* Submit Button */}
                 <button

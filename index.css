@@ -214,3 +214,19 @@ button:has(svg path[d="M4 6h16M4 12h16M4 18h16"]) {
 body.is-home button:has(svg path[d="M4 6h16M4 12h16M4 18h16"]) {
   display: inline-flex !important;
 }
+
+/* Success message animation */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}

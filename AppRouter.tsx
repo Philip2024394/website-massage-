@@ -1756,12 +1756,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     </React.Suspense>
                 );
             }
-                            initialReviews={[]}
-                            onBack={handleBackToHome}
-                        />
-                    </React.Suspense>
-                );
-            }
             
             console.error('🚨 AppRouter: Unknown page case reached!', {
                 page,
