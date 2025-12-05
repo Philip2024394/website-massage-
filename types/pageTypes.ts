@@ -13,6 +13,8 @@ export type Page =
     | 'facialProviders'
     | 'facialPlaceProfile'
     | 'facialPlaceDashboard'
+    | 'facialPortal'
+    | 'facialMemberDashboard'
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 

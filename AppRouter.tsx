@@ -47,6 +47,8 @@ const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLogin
 const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
 const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
 const FacialPlaceDashboardPage = React.lazy(() => import('./pages/FacialPlaceDashboardPage'));
+const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
+const FacialMemberDashboard = React.lazy(() => import('./pages/FacialMemberDashboard'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
@@ -251,6 +253,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const [portalTherapist, setPortalTherapist] = useState<Therapist | null>(null);
     const [portalLoading, setPortalLoading] = useState(false);
     const [portalError, setPortalError] = useState<string | null>(null);
+    
+    // Facial member authentication state
+    const [facialMemberId, setFacialMemberId] = useState<string | null>(null);
+    const [facialMemberEmail, setFacialMemberEmail] = useState<string | null>(null);
 
     // Fetch therapist document after successful login when navigating to portal
     useEffect(() => {
@@ -715,6 +721,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🔥 Navigating to massagePlaceLogin');
             setPage('massagePlaceLogin');
         },
+        onFacialPortalClick: () => {
+            console.log('🔥 Navigating to facialPortal');
+            setPage('facialPortal');
+        },
         onCustomerPortalClick: () => {
             console.log('🔥 Customer portal disabled → redirecting to profile');
             setPage('profile');
@@ -842,6 +852,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onIncrementAnalytics={(id: any, type: any, metric: any) => handleIncrementAnalytics(id, type, metric)}
                 onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
                 onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
+                onFacialPortalClick={portalHandlers.onFacialPortalClick}
                 onAdminPortalClick={portalHandlers.onAdminPortalClick}
                 onBrowseJobsClick={() => setPage('browseJobs')}
                 onEmployerJobPostingClick={() => setPage('employerJobPosting')}
@@ -1013,6 +1024,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onVillaPortalClick={() => setPage('villaDashboard')}
                         onTherapistPortalClick={() => setPage('therapistPortal')}
                         onMassagePlacePortalClick={() => setPage('massagePlacePortal')}
+                        onFacialPortalClick={portalHandlers.onFacialPortalClick}
                         onAgentPortalClick={() => setPage('agentPortal')}
                         onCustomerPortalClick={() => setPage('customerPortal')}
                         onAdminPortalClick={() => setPage('adminDashboard')}
@@ -1072,6 +1084,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                             console.log('Update booking:', bookingId, status);
                         }}
                         t={t}
+                    />
+                </React.Suspense>
+            );
+
+        case 'facialPortal':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                    <FacialPortalPage
+                        onNavigateHome={handleBackToHome}
+                        onLoginSuccess={(userId, email) => {
+                            setFacialMemberId(userId);
+                            setFacialMemberEmail(email);
+                            setPage('facialMemberDashboard');
+                        }}
+                    />
+                </React.Suspense>
+            );
+
+        case 'facialMemberDashboard':
+            if (!facialMemberId || !facialMemberEmail) {
+                setPage('facialPortal');
+                return null;
+            }
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+                    <FacialMemberDashboard
+                        userId={facialMemberId}
+                        userEmail={facialMemberEmail}
+                        onNavigateHome={handleBackToHome}
+                        onLogout={() => {
+                            setFacialMemberId(null);
+                            setFacialMemberEmail(null);
+                            setPage('home');
+                        }}
                     />
                 </React.Suspense>
             );

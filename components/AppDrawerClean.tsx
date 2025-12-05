@@ -12,6 +12,7 @@ interface AppDrawerProps {
   onVillaPortalClick?: () => void;
   onTherapistPortalClick?: () => void;
   onMassagePlacePortalClick?: () => void;
+  onFacialPortalClick?: () => void;
   onAgentPortalClick?: () => void;
   onCustomerPortalClick?: () => void;
   onAdminPortalClick?: () => void;
@@ -33,6 +34,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onVillaPortalClick,
   onTherapistPortalClick,
   onMassagePlacePortalClick,
+  onFacialPortalClick,
   onAgentPortalClick,
   onCustomerPortalClick,
   onAdminPortalClick,
@@ -155,6 +157,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={() => handleItemClick(onMassagePlacePortalClick, 'massagePlaceLogin')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">Massage Spa Portal</span>
+                  </button>
+                  <button onClick={() => handleItemClick(onFacialPortalClick, 'facialPortal')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                    <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-gray-700 font-medium">Facial Spa Portal</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />

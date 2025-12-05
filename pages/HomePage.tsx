@@ -49,6 +49,7 @@ interface HomePageProps {
     onVillaPortalClick?: () => void;
     onTherapistPortalClick: () => void;
     onMassagePlacePortalClick: () => void;
+    onFacialPortalClick?: () => void;
     onAdminPortalClick: () => void;
     onBrowseJobsClick?: () => void;
     onEmployerJobPostingClick?: () => void;
@@ -120,7 +121,8 @@ const HomePage: React.FC<HomePageProps> = ({
     onHotelPortalClick,
     onVillaPortalClick, 
     onTherapistPortalClick, 
-    onMassagePlacePortalClick, 
+    onMassagePlacePortalClick,
+    onFacialPortalClick,
     onAdminPortalClick, 
     onBrowseJobsClick: _onBrowseJobsClick, 
     onEmployerJobPostingClick: _onEmployerJobPostingClick, 
@@ -911,6 +913,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     onVillaPortalClick={onVillaPortalClick}
                     onTherapistPortalClick={onTherapistPortalClick}
                     onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onFacialPortalClick={onFacialPortalClick}
                     onAgentPortalClick={onAgentPortalClick}
                     onCustomerPortalClick={onCustomerPortalClick}
                     onAdminPortalClick={onAdminPortalClick}

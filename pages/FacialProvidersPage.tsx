@@ -28,6 +28,7 @@ interface FacialProvidersPageProps {
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
+    onFacialPortalClick?: () => void;
     onAgentPortalClick?: () => void;
     onCustomerPortalClick?: () => void;
     onAdminPortalClick?: () => void;
@@ -55,6 +56,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
+    onFacialPortalClick,
     onAgentPortalClick,
     onCustomerPortalClick,
     onAdminPortalClick,
@@ -387,6 +389,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}
+                onFacialPortalClick={onFacialPortalClick}
                 onAgentPortalClick={onAgentPortalClick}
                 onCustomerPortalClick={onCustomerPortalClick}
                 onAdminPortalClick={onAdminPortalClick}
