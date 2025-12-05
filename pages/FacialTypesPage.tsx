@@ -329,6 +329,7 @@ function getFacialImage(type: string): string {
         'Anti-Aging Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png',
         'Collagen Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
         'Microdermabrasion': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Chemical Peel': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
     };
     // Return specific image if available, otherwise return placeholder
     if (images[type]) {
