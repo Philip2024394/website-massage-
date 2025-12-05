@@ -931,13 +931,13 @@ const HomePage: React.FC<HomePageProps> = ({
             <main>
             {/* Fixed Hero Section - Always Visible */}
             <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
-                <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-3">
+                <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-4">
                     {/* Hero Section - Optimized Layout */}
-                    <div className="space-y-3 max-w-6xl mx-auto">
+                    <div className="space-y-4 max-w-6xl mx-auto">
                         {/* Location Display */}
                         <div className="w-full">
                             {userLocation ? (
-                                <div className="flex flex-col items-center gap-0.5 py-2">
+                                <div className="flex flex-col items-center gap-0.5 py-1">
                                 <div className="flex items-center justify-center gap-2">
                                     <svg 
                                         className="w-4 h-4 text-gray-600" 
@@ -979,7 +979,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center gap-2 max-w-md mx-auto py-2">
+                            <div className="flex flex-col items-center gap-2 max-w-md mx-auto py-1">
                                 <label className="text-sm font-medium text-gray-700">Search your city or area</label>
                                 <input
                                     ref={locationInputRef}
@@ -994,18 +994,18 @@ const HomePage: React.FC<HomePageProps> = ({
                         )}
                     </div>
 
-                    {/* Toggle Buttons */}
-                    <div className="flex bg-gray-200 rounded-full p-0.5 max-w-md mx-auto">
+                    {/* Toggle Buttons - Standard Height */}
+                    <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
                         <button 
                             onClick={() => setActiveTab('home')} 
-                            className={`w-1/2 py-2 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
                         </button>
                         <button 
                             onClick={() => setActiveTab('places')} 
-                            className={`w-1/2 py-2 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
