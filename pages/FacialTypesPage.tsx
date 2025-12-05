@@ -155,7 +155,11 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                         </button>
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
+                        <button 
+                            onClick={() => setIsMenuOpen(true)} 
+                            title="Menu"
+                            className="hover:bg-orange-50 rounded-full transition-colors text-orange-500"
+                        >
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>
                     </div>
