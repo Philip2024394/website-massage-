@@ -500,7 +500,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2">
+                    <div className="flex-shrink-0 pb-2 mt-12">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}

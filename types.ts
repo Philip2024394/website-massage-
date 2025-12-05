@@ -256,6 +256,7 @@ export interface Therapist {
     isLive: boolean;
     location: string;
     coordinates: CoordinatesString; // JSON string for Appwrite
+    city?: string; // Selected city/tourist destination
     activeMembershipDate: string;
     membershipStartDate?: string; // Date when therapist first became active
     
@@ -320,6 +321,7 @@ export interface Place {
     isLive: boolean;
     location: string;
     coordinates: CoordinatesString; // JSON string for Appwrite
+    city?: string; // Selected city/tourist destination
     openingTime: string;
     closingTime: string;
     activeMembershipDate: string;

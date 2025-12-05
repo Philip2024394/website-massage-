@@ -1212,7 +1212,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
             
         case 'company-profile' as any:
-            return <CompanyProfilePage onBack={handleBackToHome} />;
+            return <CompanyProfilePage onBack={handleBackToHome} t={t} language={activeLanguage} />;
             
         case 'contact-us' as any:
             return <ContactUsPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;

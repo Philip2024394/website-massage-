@@ -3,7 +3,7 @@ import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins 
 import TherapistCard from '../components/TherapistCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import RatingModal from '../components/RatingModal';
-import { MASSAGE_TYPES_CATEGORIZED } from '../constants/rootConstants';
+// Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService } from '../lib/appwriteService';
@@ -13,10 +13,12 @@ import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
+import CityLocationDropdown from '../components/CityLocationDropdown';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
+import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity } from '../constants/indonesianCities';
 
 
 interface HomePageProps {
@@ -28,7 +30,7 @@ interface HomePageProps {
     therapists: any[];
     places: any[];
     userLocation: UserLocation | null;
-    selectedMassageType?: string; // Add optional prop for external control
+    selectedCity?: string; // Add optional prop for external control
     onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
@@ -75,7 +77,7 @@ const HomePage: React.FC<HomePageProps> = ({
     therapists,
     places,
     userLocation,
-    selectedMassageType: propSelectedMassageType, // Get from prop
+    selectedCity: propSelectedCity, // Get from prop
     onSetUserLocation, 
     onSelectPlace,
     onBook,
@@ -123,7 +125,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 noMoreTherapists: 'No more therapists available',
                 setLocation: 'Set Location',
                 updateLocation: 'Update Location',
-                massageType: 'Massage Type',
+                cityLocation: 'City / Location',
                 therapistsOnline: 'Therapists Online',
                 searchPlaceholder: 'Search...',
                 noResults: 'No results found',
@@ -158,7 +160,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     noMoreTherapists: t('home.noMoreTherapists') || defaultTranslations.home.noMoreTherapists,
                     setLocation: t('home.setLocation') || defaultTranslations.home.setLocation,
                     updateLocation: t('home.updateLocation') || defaultTranslations.home.updateLocation,
-                    massageType: t('home.massageType') || defaultTranslations.home.massageType,
+                    cityLocation: t('cityLocation') || defaultTranslations.home.cityLocation,
                     therapistsOnline: t('home.therapistsOnline') || defaultTranslations.home.therapistsOnline,
                     searchPlaceholder: t('home.searchPlaceholder') || defaultTranslations.home.searchPlaceholder,
                     noResults: t('home.noResults') || defaultTranslations.home.noResults,
@@ -208,7 +210,7 @@ const HomePage: React.FC<HomePageProps> = ({
     const [activeTab, setActiveTab] = useState('home');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-    const [selectedMassageType, setSelectedMassageType] = useState(propSelectedMassageType || 'all');
+    const [selectedCity, setSelectedCity] = useState<string>('all');
     const [, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [, setSelectedTherapist] = useState<Therapist | null>(null);
@@ -338,16 +340,7 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [mapsApiLoaded, onSetUserLocation]);
 
-    // Update selectedMassageType when prop changes - React 19 safe
-    useEffect(() => {
-        try {
-            if (propSelectedMassageType) {
-                setSelectedMassageType(propSelectedMassageType);
-            }
-        } catch (error) {
-            console.warn('HomePage effect warning (safe to ignore in React 19):', error);
-        }
-    }, [propSelectedMassageType]);
+    // Note: Replaced massage type filtering with city-based location filtering
 
     const handleOpenRatingModal = (item: any, type: 'therapist' | 'place' = 'therapist') => {
         // Check if customer is logged in before allowing review
@@ -606,9 +599,18 @@ const HomePage: React.FC<HomePageProps> = ({
             );
             return t.isLive === true || isOwner; // Always include own profile preview
         });
-        const filteredTherapists = liveTherapists.filter((t: any) => 
-            selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType))
-        );
+        const filteredTherapists = liveTherapists.filter((t: any) => {
+            if (selectedCity === 'all') return true;
+            
+            // Try to match therapist location to selected city
+            if (t.coordinates) {
+                const therapistLocation = { lat: t.coordinates.lat || 0, lng: t.coordinates.lng || 0 };
+                const matchedCity = matchProviderToCity(therapistLocation, 25);
+                return matchedCity?.name === selectedCity;
+            }
+            
+            return false;
+        });
         
         console.log('🏠 [HomePage RENDER] Therapist Display Debug (Location-Filtered 50km radius):');
         console.log('  📊 Total therapists prop:', therapists.length, therapists.map((t: any) => ({ id: t.$id || t.id, name: t.name, isLive: t.isLive })));
@@ -616,7 +618,7 @@ const HomePage: React.FC<HomePageProps> = ({
         console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
         console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
         console.log('  📍 Auto-detected location:', autoDetectedLocation);
-        console.log('  🎨 Selected massage type:', selectedMassageType);
+        console.log('  🏙️ Selected city:', selectedCity);
         const missingCoords = therapists.filter((t: any)=>!t.coordinates).length;
         console.log('  ⚠️ Therapists missing coordinates:', missingCoords);
         
@@ -627,7 +629,7 @@ const HomePage: React.FC<HomePageProps> = ({
         const missingPlaceCoords = places.filter((p: any)=>!p.coordinates).length;
         console.log('  ⚠️ Places missing coordinates:', missingPlaceCoords);
         console.log('  🔴 Live nearby places:', livePlaces.length);
-    }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedMassageType, autoDetectedLocation]);
+    }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedCity, autoDetectedLocation]);
 
     useEffect(() => {
         // Fetch custom drawer links
@@ -840,24 +842,15 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 <div className="space-y-3 mb-6 w-full max-w-full overflow-hidden">
                     <div className="flex flex-wrap items-center w-full max-w-full gap-2">
-                        <div className="relative flex-1 min-w-0 max-w-full z-10">
-                            <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
-                            <select 
-                                className="w-full min-w-0 max-w-full pl-10 pr-8 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-green-600"
-                                value={selectedMassageType}
-                                onChange={e => setSelectedMassageType(e.target.value)}
-                                style={{ backgroundColor: 'white' } as React.CSSProperties}
-                            >
-                                <option value="all" style={{ backgroundColor: 'white' } as React.CSSProperties}>{translationsObject?.home?.massageType || 'Massage Type'}</option>
-                                {MASSAGE_TYPES_CATEGORIZED.map((category, categoryIndex) => (
-                                    <optgroup label={category.category} key={`${category.category}-${categoryIndex}`} style={{ backgroundColor: 'white' } as React.CSSProperties}>
-                                        {category.types.map((type, typeIndex) => (
-                                            <option key={`${category.category}-${type}-${categoryIndex}-${typeIndex}`} value={type} style={{ backgroundColor: 'white' } as React.CSSProperties}>{type}</option>
-                                        ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"/>
+                        <div className="relative flex-1 min-w-0 max-w-[280px] z-10">
+                            <CityLocationDropdown
+                                selectedCity={selectedCity}
+                                onCityChange={setSelectedCity}
+                                placeholder={translationsObject?.home?.cityLocation || 'City / Location'}
+                                includeAll={true}
+                                showLabel={false}
+                                className="w-full min-w-0 max-w-full"
+                            />
                         </div>
                         <button 
                             onClick={(e) => {
@@ -873,7 +866,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     alert('Navigation function not available. Please refresh the page.');
                                 }
                             }}
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-auto w-[60px] max-w-[60px]"
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[42px] w-[60px] max-w-[60px]"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
                             type="button"
                             title="Join Indastreet"
@@ -911,15 +904,35 @@ const HomePage: React.FC<HomePageProps> = ({
                             // Show all therapists (live) plus include owner even if not live
                             let baseList = therapists
                                 .filter((t: any) => t.isLive === true || isOwner(t))
-                                .filter((t: any) => selectedMassageType === 'all' || (t.massageTypes && t.massageTypes.includes(selectedMassageType)));
+                                .filter((t: any) => {
+                                    if (selectedCity === 'all') return true;
+                                    
+                                    // Try to match therapist location to selected city
+                                    if (t.coordinates) {
+                                        const therapistLocation = { lat: t.coordinates.lat || 0, lng: t.coordinates.lng || 0 };
+                                        const matchedCity = matchProviderToCity(therapistLocation, 25);
+                                        return matchedCity?.name === selectedCity;
+                                    }
+                                    
+                                    return false;
+                                });
 
                             // Ensure owner's profile appears once
                             if (loggedInProvider && loggedInProvider.type === 'therapist') {
                                 const alreadyIncluded = baseList.some((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
                                 if (!alreadyIncluded) {
                                     const ownerDoc = therapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
-                                    if (ownerDoc && (selectedMassageType === 'all' || (ownerDoc.massageTypes && ownerDoc.massageTypes.includes(selectedMassageType)))) {
-                                        baseList = [ownerDoc, ...baseList];
+                                    if (ownerDoc) {
+                                        let includeOwner = selectedCity === 'all';
+                                        if (!includeOwner && ownerDoc.coordinates) {
+                                            const ownerLocation = { lat: ownerDoc.coordinates.lat || 0, lng: ownerDoc.coordinates.lng || 0 };
+                                            const matchedCity = matchProviderToCity(ownerLocation, 25);
+                                            includeOwner = matchedCity?.name === selectedCity;
+                                        }
+                                        
+                                        if (includeOwner) {
+                                            baseList = [ownerDoc, ...baseList];
+                                        }
                                     }
                                 }
                             }
@@ -1063,7 +1076,22 @@ const HomePage: React.FC<HomePageProps> = ({
                                 places: places
                             });
                             
-                            const livePlaces = (places?.filter(place => place.isLive) || []).slice();
+                            const livePlaces = (places?.filter((place: any) => {
+                                // Filter by live status first
+                                if (!place.isLive) return false;
+                                
+                                // Apply city filtering if not 'all'
+                                if (selectedCity === 'all') return true;
+                                
+                                // Try to match place location to selected city
+                                if (place.coordinates) {
+                                    const placeLocation = { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
+                                    const matchedCity = matchProviderToCity(placeLocation, 25);
+                                    return matchedCity?.name === selectedCity;
+                                }
+                                
+                                return false;
+                            }) || []).slice();
 
                             // Determine open/closed now and sort open first
                             const isOpenNow = (p: any) => {

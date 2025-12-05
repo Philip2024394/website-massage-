@@ -5,6 +5,8 @@ import { therapistService, imageUploadService } from '../lib/appwriteService';
 import { showToast } from '../utils/showToastPortal';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
+import CityLocationDropdown from '../components/CityLocationDropdown';
+import { matchProviderToCity } from '../constants/indonesianCities';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -59,6 +61,23 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     return [];
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>(() => {
+    // Try to get city from existing therapist data or auto-detect from coordinates
+    if (therapist?.city) return therapist.city;
+    
+    try {
+      const coords = therapist?.coordinates;
+      if (coords) {
+        const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
+        if (parsed?.lat && parsed?.lng) {
+          const matchedCity = matchProviderToCity({ lat: parsed.lat, lng: parsed.lng }, 25);
+          return matchedCity?.name || 'all';
+        }
+      }
+    } catch {}
+    
+    return 'all';
+  });
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
@@ -241,6 +260,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
       if (!coordinates) missingFields.push('Location (use Set Location button)');
+      if (selectedCity === 'all') missingFields.push('City/Location selection');
       
       if (missingFields.length > 0) {
         showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
@@ -291,6 +311,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         coordinates: JSON.stringify(coordinates),
+        city: selectedCity !== 'all' ? selectedCity : null,
         isLive: true, // Auto-live on save
       };
       
@@ -483,6 +504,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 className="mt-3 w-full h-48 rounded-lg border-2 border-gray-300"
                 style={{ display: coordinates ? 'block' : 'none' }}
               ></div>
+            </div>
+
+            {/* City/Tourist Location */}
+            <div>
+              <CityLocationDropdown
+                selectedCity={selectedCity}
+                onCityChange={setSelectedCity}
+                placeholder="Select Your City/Location"
+                label="🏙️ City / Tourist Location *"
+                showLabel={true}
+                includeAll={false}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Select the city or tourist area where you provide services. This helps customers find you easily.
+              </p>
             </div>
 
             {/* Description */}

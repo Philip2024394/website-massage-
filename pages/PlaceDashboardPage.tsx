@@ -25,6 +25,8 @@ import CustomCheckbox from '../components/CustomCheckbox';
 import ValidationPopup from '../components/ValidationPopup';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 import { notificationService } from '../lib/appwriteService';
+import CityLocationDropdown from '../components/CityLocationDropdown';
+import { matchProviderToCity } from '../constants/indonesianCities';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import { 
@@ -142,6 +144,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    const [selectedCity, setSelectedCity] = useState<string>(() => {
+        // Try to get city from existing place data or auto-detect from coordinates
+        if ((place as any)?.city) return (place as any).city;
+        
+        try {
+            const coords = place?.coordinates;
+            if (coords) {
+                const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
+                if (parsed?.lat && parsed?.lng) {
+                    const matchedCity = matchProviderToCity({ lat: parsed.lat, lng: parsed.lng }, 25);
+                    return matchedCity?.name || 'all';
+                }
+            }
+        } catch {}
+        
+        return 'all';
+    });
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -520,7 +539,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         if (!hasPricing) missingFields.push('• At least one service pricing (30, 60, 90, or 120 minutes)');
         
         // Check massage types
-        if (!massageTypes || massageTypes.length === 0) missingFields.push('• At least one massage type/service offered');
+        if (selectedCity === 'all') missingFields.push('• City/Location selection');
         
         if (missingFields.length > 0) {
             setValidationMissingFields(missingFields);
@@ -538,7 +557,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📸 Main Image Type:', typeof mainImage);
         console.log('📸 Profile Picture:', profilePicture);
         console.log('📸 Gallery Images Count:', filteredGallery.length);
-        console.log('🎯 Massage Types:', massageTypes);
+        console.log('🎯 Selected City:', selectedCity);
         console.log('🌐 Languages:', languages);
         console.log('➕ Additional Services:', additionalServices);
         console.log('==========================================');
@@ -576,6 +595,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Location
             location,
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
+            city: selectedCity !== 'all' ? selectedCity : null,
             
             // Hours
             openingtime: openingTime,
@@ -743,23 +763,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setGalleryImages(newGallery);
     };
 
-    const handleMassageTypeChange = (type: string) => {
-        setMassageTypes(prev => {
-            // Additional safety check
-            const currentTypes = prev || [];
-            if (currentTypes.includes(type)) {
-                // Remove if already selected
-                return currentTypes.filter(t => t !== type);
-            } else {
-                // Add only if less than 5 are selected
-                if (currentTypes.length < 5) {
-                    return [...currentTypes, type];
-                }
-                // Silently ignore if trying to select more than 5
-                return currentTypes;
-            }
-        });
-    };
+    // Removed handleMassageTypeChange - replaced with city selection
 
     const handleLanguageChange = (langCode: string) => {
         setLanguages(prev => {
@@ -1556,31 +1560,20 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             </div>
                         </div>
 
+                        {/* City/Tourist Location - Replaced Massage Types */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-900">
-                                {t?.massageTypesLabel || 'Massage Specializations'}
-                                <span className="text-xs text-gray-500 ml-2">
-                                    (Select up to 5 specialties - {massageTypes.length}/5 selected)
-                                </span>
-                            </label>
-                            <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
-                                {(MASSAGE_TYPES_CATEGORIZED || []).map(category => (
-                                    <div key={category.category}>
-                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
-                                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
-                                            {(category.types || []).map(type => (
-                                                <CustomCheckbox
-                                                    key={type}
-                                                    label={type}
-                                                    checked={massageTypes.includes(type)}
-                                                    onChange={() => handleMassageTypeChange(type)}
-                                                    disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <CityLocationDropdown
+                                selectedCity={selectedCity}
+                                onCityChange={setSelectedCity}
+                                placeholder="Select Your City/Location"
+                                label="🏙️ City / Tourist Location *"
+                                showLabel={true}
+                                includeAll={false}
+                                className="w-full"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Select the city or tourist area where your massage place is located. This helps customers find you easily.
+                            </p>
                         </div>
 
                         {/* Languages Selection */}

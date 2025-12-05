@@ -84,6 +84,8 @@ export interface Therapist extends BaseEntity {
     isVerified: boolean;
     isAvailable: boolean;
     location: Location;
+    coordinates?: { lat: number; lng: number } | string; // GPS coordinates for location matching
+    city?: string; // Selected city/tourist destination
     services: Service[];
     hotelVillaDiscount?: HotelVillaDiscount;
 }
@@ -96,6 +98,8 @@ export interface Place extends BaseEntity {
     description: string;
     address: string;
     location: Location;
+    coordinates?: { lat: number; lng: number } | string; // GPS coordinates for location matching
+    city?: string; // Selected city/tourist destination
     amenities: string[];
     rating: number;
     reviewCount: number;

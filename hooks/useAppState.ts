@@ -61,6 +61,10 @@ export const useAppState = () => {
       }
       
       // Allow specific pages via URL parameter
+      if (pageParam === 'company-profile') {
+        console.log('🎯 URL parameter detected: Opening Company Profile page');
+        return 'company-profile';
+      }
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
         return 'rewardBannersTest';

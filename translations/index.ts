@@ -117,6 +117,7 @@ translations.en.home = {
   massageDirectory: 'Massage Directory',
   massageDirectoryTitle: 'Go to Massage Directory',
   viewMassageSpa: 'View Massage Spa',
+  cityLocation: 'City / Location',
   // Massage Types Page
   readMore: 'Read More',
   readLess: 'Read Less',
@@ -599,6 +600,7 @@ translations.id.home = {
   massageDirectory: 'Direktori Pijat',
   massageDirectoryTitle: 'Pergi ke Direktori Pijat',
   viewMassageSpa: 'Lihat Spa Pijat',
+  cityLocation: 'Kota / Lokasi',
   // Massage Types Page
   readMore: 'Baca Selengkapnya',
   readLess: 'Baca Lebih Sedikit',

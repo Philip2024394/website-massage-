@@ -982,7 +982,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2">
+                    <div className="flex-shrink-0 pb-2 mt-16">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}

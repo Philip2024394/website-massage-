@@ -19,7 +19,7 @@ import { agentShareAnalyticsService } from './lib/appwriteService';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
-// Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSelector';
+// Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering...');

@@ -6,7 +6,7 @@ export interface LanguageContextValue {
 }
 
 const defaultValue: LanguageContextValue = {
-  language: 'en',
+  language: 'id',
   setLanguage: () => {}
 };
 
