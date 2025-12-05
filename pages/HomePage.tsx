@@ -992,23 +992,23 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     )}
                 </div>
-                <div className="flex bg-gray-200 rounded-full p-1 mt-1">
+                <div className="flex bg-gray-200 rounded-full p-0.5">
                     <button 
                         onClick={() => setActiveTab('home')} 
-                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-1 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <HomeIcon className="w-4 h-4 flex-shrink-0" />
                         <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
                     </button>
                     <button 
                         onClick={() => setActiveTab('places')} 
-                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        className={`w-1/2 py-1 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                     >
                         <Building className="w-4 h-4 flex-shrink-0" />
                         <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
                     </button>
                 </div>
-                <div className="space-y-0 w-full max-w-full overflow-visible">>
+                <div className="-mt-1 space-y-0 w-full max-w-full overflow-visible">
                     <div className="flex flex-wrap items-center w-full max-w-full gap-2">
                         <div className="relative flex-1 min-w-0 max-w-[280px] z-20">
                             <CityLocationDropdown

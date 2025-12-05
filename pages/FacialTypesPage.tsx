@@ -89,7 +89,6 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
     // Initialize facial types with popularity ratings
     const [facialTypes, setFacialTypes] = useState<FacialType[]>(
         allFacialTypes.map((name, index) => {
-            const placeholderColor = ['ec4899', 'f472b6', 'fb7185', 'fda4af'][name.length % 4];
             return {
                 name,
                 description: getFacialDescription(name),
@@ -98,7 +97,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                 duration: '60-90 minutes',
                 intensity: 'Gentle',
                 bestFor: getFacialBestFor(name),
-                image: `https://via.placeholder.com/400x200/${placeholderColor}/FFFFFF?text=${encodeURIComponent(name)}`,
+                image: getFacialImage(name),
                 popularity: baseRatings[index % baseRatings.length],
                 expanded: false
             };
@@ -325,6 +324,19 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
 };
 
 // Helper functions
+function getFacialImage(type: string): string {
+    const images: { [key: string]: string } = {
+        'Anti-Aging Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png',
+        'Collagen Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+    };
+    // Return specific image if available, otherwise return placeholder
+    if (images[type]) {
+        return images[type];
+    }
+    const placeholderColor = ['ec4899', 'f472b6', 'fb7185', 'fda4af'][type.length % 4];
+    return `https://via.placeholder.com/400x200/${placeholderColor}/FFFFFF?text=${encodeURIComponent(type)}`;
+}
+
 function getFacialDescription(type: string): string {
     const descriptions: { [key: string]: string } = {
         'Anti-Aging Facial': 'Targets fine lines, wrinkles, and age spots to rejuvenate and firm your skin.',
