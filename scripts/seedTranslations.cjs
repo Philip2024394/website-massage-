@@ -186,6 +186,42 @@ function loadInlineTranslations() {
                 newReview: 'New Review'
             },
             
+            // Reviews
+            reviews: {
+                customerReviews: 'Customer Reviews',
+                leaveReview: 'Leave a Review',
+                writeYourReview: 'Write Your Review',
+                writeReview: 'Write a Review',
+                disclaimer: 'If you feel the service that was offered was not to your satisfaction, we kindly ask you first make contact with the owner as this would be addressed with immediate effect. And send a direct message to the highest authority to make them aware of areas of improvement.',
+                yourName: 'Your Name',
+                yourNamePlaceholder: 'Enter your full name',
+                whatsappNumber: 'WhatsApp Number',
+                whatsappNumberPlaceholder: '+62 812 3456 7890',
+                rating: 'Rating',
+                yourReview: 'Your Review',
+                reviewPlaceholder: 'Tell us about your experience...',
+                chooseAvatar: 'Choose Your Avatar',
+                submitReview: 'Submit Review',
+                submitting: 'Submitting...',
+                stars: 'Stars',
+                star: 'Star',
+                characters: 'characters',
+                nameRequired: 'Please enter your name',
+                whatsappRequired: 'Please enter your WhatsApp number',
+                whatsappInvalid: 'Please enter a valid WhatsApp number (10-15 digits)',
+                ratingRequired: 'Please select a star rating',
+                reviewRequired: 'Please write your review',
+                reviewMinLength: 'Review must be at least 10 characters',
+                avatarRequired: 'Please select an avatar',
+                review: 'review',
+                reviewsCount: 'reviews',
+                averageRating: 'Average Rating',
+                noReviews: 'No reviews yet',
+                beFirstReview: 'Be the first to share your experience with',
+                thankYou: 'Thank you for your review!',
+                reviewSubmitted: 'Your review has been submitted successfully.'
+            },
+            
             // How It Works
             howItWorks: {
                 title: 'How IndaStreet Works',
@@ -577,6 +613,42 @@ function loadInlineTranslations() {
                 bookingCancelled: 'Pesanan Dibatalkan',
                 newMessage: 'Pesan Baru',
                 newReview: 'Ulasan Baru'
+            },
+            
+            // Reviews - Indonesian
+            reviews: {
+                customerReviews: 'Ulasan Pelanggan',
+                leaveReview: 'Tulis Ulasan',
+                writeYourReview: 'Tulis Ulasan Anda',
+                writeReview: 'Tulis Ulasan',
+                disclaimer: 'Jika Anda merasa layanan yang ditawarkan tidak memuaskan, kami mohon Anda terlebih dahulu menghubungi pemilik karena hal ini akan segera ditangani. Dan kirim pesan langsung ke pihak tertinggi untuk memberi tahu mereka tentang area yang perlu diperbaiki.',
+                yourName: 'Nama Anda',
+                yourNamePlaceholder: 'Masukkan nama lengkap Anda',
+                whatsappNumber: 'Nomor WhatsApp',
+                whatsappNumberPlaceholder: '+62 812 3456 7890',
+                rating: 'Penilaian',
+                yourReview: 'Ulasan Anda',
+                reviewPlaceholder: 'Ceritakan pengalaman Anda...',
+                chooseAvatar: 'Pilih Avatar Anda',
+                submitReview: 'Kirim Ulasan',
+                submitting: 'Mengirim...',
+                stars: 'Bintang',
+                star: 'Bintang',
+                characters: 'karakter',
+                nameRequired: 'Silakan masukkan nama Anda',
+                whatsappRequired: 'Silakan masukkan nomor WhatsApp Anda',
+                whatsappInvalid: 'Silakan masukkan nomor WhatsApp yang valid (10-15 digit)',
+                ratingRequired: 'Silakan pilih rating bintang',
+                reviewRequired: 'Silakan tulis ulasan Anda',
+                reviewMinLength: 'Ulasan harus minimal 10 karakter',
+                avatarRequired: 'Silakan pilih avatar',
+                review: 'ulasan',
+                reviewsCount: 'ulasan',
+                averageRating: 'Rating Rata-rata',
+                noReviews: 'Belum ada ulasan',
+                beFirstReview: 'Jadilah yang pertama berbagi pengalaman Anda dengan',
+                thankYou: 'Terima kasih atas ulasan Anda!',
+                reviewSubmitted: 'Ulasan Anda telah berhasil dikirim.'
             },
             
             // How It Works - Indonesian

@@ -129,6 +129,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         { imageUrl: '', caption: '', description: '' }
     ]);
     const [contactNumber, setContactNumber] = useState('');
+    const [ownerWhatsApp, setOwnerWhatsApp] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(true);
@@ -290,6 +291,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         }
         
         setContactNumber(placeData.contactNumber || '');
+        setOwnerWhatsApp(placeData.ownerWhatsApp || '');
         
         // Parse JSON strings from Appwrite
         try {
@@ -392,6 +394,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         setProfilePicture('');
         setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
         setContactNumber('');
+        setOwnerWhatsApp('');
         setPricing({ '60': 0, '90': 0, '120': 0 });
         setDiscountPercentage(0);
         setDiscountDuration(24);
@@ -600,6 +603,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             
             // Contact
             whatsappnumber: contactNumber,
+            ownerWhatsApp: ownerWhatsApp,
             
             // Images
             mainimage: mainImage,
@@ -1451,6 +1455,27 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Enter number without +62 prefix (e.g., 81234567890)</p>
+                        </div>
+                        
+                        {/* Owner's WhatsApp for Reviews */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900">Owner's WhatsApp (For Review Contact)</label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <MessageSquare className="h-5 w-5 text-green-500" />
+                                </div>
+                                <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none">
+                                    <span className="text-gray-600 font-medium">+62</span>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    value={ownerWhatsApp} 
+                                    onChange={e => setOwnerWhatsApp(e.target.value)} 
+                                    placeholder="81234567890" 
+                                    className="mt-1 block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Optional: This number will be shown in reviews for customers to contact you directly about issues</p>
                         </div>
                         
                         <div>

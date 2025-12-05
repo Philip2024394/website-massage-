@@ -169,7 +169,7 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       <main 
         className="flex-1 flex items-start justify-center px-4 py-2 overflow-hidden relative bg-cover bg-center bg-no-repeat min-h-0"
         style={{
-          backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/facial%20spa%20background.png?updatedAt=1733507200000)'
+          backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/facial%20clinic.png?updatedAt=1764957334008)'
         }}
       >
         <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>

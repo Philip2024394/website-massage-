@@ -15,6 +15,7 @@ export type Page =
     | 'facialPlaceDashboard'
     | 'facialPortal'
     | 'facialMemberDashboard'
+    | 'facialTypes'
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 

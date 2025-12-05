@@ -17,6 +17,7 @@ const CustomerProvidersPage = React.lazy(() => import('./pages/CustomerProviders
 const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
 const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
 const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
+const FacialTypesPage = React.lazy(() => import('./pages/FacialTypesPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
@@ -1450,6 +1451,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'massageTypes':
             return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
+        case 'facialTypes':
+            return <FacialTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
+            
         // 'hotelLogin' and 'villaLogin' routes removed
 
         case 'massagePlaceLogin': 
@@ -1728,6 +1732,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                             providerId={therapistId}
                             providerName={therapist?.name || 'Therapist'}
                             providerType="therapist"
+                            providerImage={therapist?.profilePicture || (therapist as any)?.mainImage}
+                            ownerWhatsApp={(therapist as any)?.ownerWhatsApp}
                             initialReviews={[]}
                             onBack={handleBackToHome}
                         />
@@ -1743,6 +1749,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                             providerId={placeId}
                             providerName={place?.name || 'Massage Place'}
                             providerType="place"
+                            ownerWhatsApp={(place as any)?.ownerWhatsApp}
+                            initialReviews={[]}
+                            onBack={handleBackToHome}
+                        />
+                    </React.Suspense>
+                );
+            }
                             initialReviews={[]}
                             onBack={handleBackToHome}
                         />

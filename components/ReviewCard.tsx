@@ -18,8 +18,12 @@ export const ReviewCard: React.FC<ReviewCardProps> = ({ review, showOwnerRespons
         <div className="flex items-start gap-4 sm:w-1/3">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-3xl shadow-lg">
-              {review.avatar}
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg overflow-hidden">
+              <img 
+                src={review.avatar} 
+                alt={review.userName}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
 

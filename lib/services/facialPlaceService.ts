@@ -11,6 +11,7 @@ export interface FacialPlace {
     description?: string;
     address?: string;
     websiteurl?: string;
+    ownerWhatsApp?: string;
     facialservices?: string; // JSON array
     facialtypes?: string; // JSON array
     prices?: string; // JSON object

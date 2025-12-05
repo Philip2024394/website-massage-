@@ -137,6 +137,14 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">Massage in Bali</span>
                 </button>
+                <button onClick={() => handleItemClick(() => onNavigate?.('massageTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 font-medium">Massage Directory</span>
+                </button>
+                <button onClick={() => handleItemClick(() => onNavigate?.('facialTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <BookOpen className="w-5 h-5 text-pink-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 font-medium">Facial Directory</span>
+                </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('balinese-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">Balinese Massage</span>

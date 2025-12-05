@@ -4,6 +4,7 @@ import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
 import { showToast } from '../utils/showToastPortal';
+import { FACIAL_TYPES_CATEGORIZED } from '../constants/rootConstants';
 
 interface Booking {
   $id: string;
@@ -16,6 +17,7 @@ interface Booking {
   status: string;
   address?: string;
   createdAt: string;
+  facialType?: string;
 }
 
 interface FacialMemberDashboardProps {
@@ -34,6 +36,11 @@ const FacialMemberDashboard: React.FC<FacialMemberDashboardProps> = ({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [selectedFacialTypes, setSelectedFacialTypes] = useState<string[]>([]);
+  const [showFacialTypesModal, setShowFacialTypesModal] = useState(false);
+
+  // Get all facial types from categorized data
+  const allFacialTypes = FACIAL_TYPES_CATEGORIZED.flatMap(category => category.types);
 
   useEffect(() => {
     fetchBookings();
@@ -133,11 +140,37 @@ const FacialMemberDashboard: React.FC<FacialMemberDashboardProps> = ({
             <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-400 rounded-full flex items-center justify-center">
               <User className="w-8 h-8 text-white" />
             </div>
-            <div>
+            <div className="flex-1">
               <h2 className="text-xl font-bold text-gray-900">Welcome Back!</h2>
               <p className="text-gray-600">{userEmail}</p>
             </div>
+            <button
+              onClick={() => setShowFacialTypesModal(true)}
+              className="px-4 py-2 bg-gradient-to-r from-orange-400 to-pink-400 text-white rounded-lg font-medium hover:from-orange-500 hover:to-pink-500 transition-all shadow-md flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Facial Preferences
+            </button>
           </div>
+          
+          {/* Selected Facial Types Display */}
+          {selectedFacialTypes.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-2">Your Preferred Facial Types:</p>
+              <div className="flex flex-wrap gap-2">
+                {selectedFacialTypes.map((type) => (
+                  <span
+                    key={type}
+                    className="px-3 py-1 bg-gradient-to-r from-orange-100 to-pink-100 text-orange-700 text-sm font-medium rounded-full border border-orange-200"
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -284,6 +317,91 @@ const FacialMemberDashboard: React.FC<FacialMemberDashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Facial Types Modal */}
+      {showFacialTypesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowFacialTypesModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold text-gray-900">Select Your Preferred Facial Types</h3>
+                <button
+                  onClick={() => setShowFacialTypesModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-gray-600 mt-2">Choose the facial treatments you're interested in</p>
+            </div>
+
+            <div className="p-6">
+              {FACIAL_TYPES_CATEGORIZED.map((category) => (
+                <div key={category.category} className="mb-6 last:mb-0">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <span className="text-2xl">
+                      {category.category.includes('Anti-Aging') ? '✨' : 
+                       category.category.includes('Skin Care') ? '🌸' :
+                       category.category.includes('Specialty') ? '💎' : '🌿'}
+                    </span>
+                    {category.category}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {category.types.map((type) => {
+                      const isSelected = selectedFacialTypes.includes(type);
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => {
+                            setSelectedFacialTypes(prev =>
+                              isSelected
+                                ? prev.filter(t => t !== type)
+                                : [...prev, type]
+                            );
+                          }}
+                          className={`p-4 rounded-xl border-2 transition-all text-left ${
+                            isSelected
+                              ? 'border-orange-400 bg-gradient-to-r from-orange-50 to-pink-50 shadow-md'
+                              : 'border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-gray-900">{type}</span>
+                            {isSelected && (
+                              <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  {selectedFacialTypes.length} {selectedFacialTypes.length === 1 ? 'type' : 'types'} selected
+                </p>
+                <button
+                  onClick={() => {
+                    setShowFacialTypesModal(false);
+                    showToast(`${selectedFacialTypes.length} facial type${selectedFacialTypes.length === 1 ? '' : 's'} saved`, 'success');
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-orange-400 to-pink-400 text-white font-semibold rounded-lg hover:from-orange-500 hover:to-pink-500 transition-all shadow-md"
+                >
+                  Save Preferences
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

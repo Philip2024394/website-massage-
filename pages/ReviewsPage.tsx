@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Star, MessageSquare, User, Phone, Calendar, Clock } from 'lucide-react';
+import { Home, Star, MessageSquare, User, MessageCircle, Calendar, Clock } from 'lucide-react';
 import { PageContainer } from '../components/layout/PageContainer';
 import { ReviewData } from '../components/ReviewModal';
 import { ReviewCard } from '../components/ReviewCard';
@@ -9,27 +9,38 @@ interface ReviewsPageProps {
   providerId: string;
   providerName: string;
   providerType: 'therapist' | 'place';
+  providerImage?: string;
+  ownerWhatsApp?: string;
   initialReviews?: ReviewData[];
   onBack: () => void;
 }
 
 const avatarOptions = [
-  { id: 1, emoji: '👨', label: 'Man' },
-  { id: 2, emoji: '👩', label: 'Woman' },
-  { id: 3, emoji: '👴', label: 'Older Man' },
-  { id: 4, emoji: '👵', label: 'Older Woman' },
-  { id: 5, emoji: '🧔', label: 'Bearded Man' },
-  { id: 6, emoji: '👱‍♀️', label: 'Blonde Woman' },
-  { id: 7, emoji: '👨‍💼', label: 'Professional Man' },
-  { id: 8, emoji: '👩‍💼', label: 'Professional Woman' },
-  { id: 9, emoji: '🧑', label: 'Person' },
-  { id: 10, emoji: '😊', label: 'Happy Face' },
+  { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
+  { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
+  { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
+  { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
+  { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
+  { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
+  { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
+  { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
+  { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
+  { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
+  { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
+  { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
+  { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
+  { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
+  { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' },
+  { id: 16, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2017.png', label: 'Avatar 17' },
+  { id: 17, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2018.png', label: 'Avatar 18' },
 ];
 
 export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   providerId,
   providerName,
   providerType,
+  providerImage,
+  ownerWhatsApp,
   initialReviews = [],
   onBack,
 }) => {
@@ -60,7 +71,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
           whatsappNumber: review.whatsapp || '',
           rating: review.rating,
           reviewText: review.comment || '',
-          avatar: review.avatar || '😊',
+          avatar: review.avatar || 'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
           date: new Date(review.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
           time: new Date(review.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
         }));
@@ -190,7 +201,18 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
         <PageContainer className="py-4">
           <div className="relative z-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-1 pr-20 sm:pr-24">Customer Reviews</h2>
-            <p className="text-gray-600 pr-20 sm:pr-24">{providerName}</p>
+            <div className="flex items-center gap-3 pr-20 sm:pr-24">
+              {providerImage && (
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orange-500 shadow-md flex-shrink-0">
+                  <img 
+                    src={providerImage} 
+                    alt={providerName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <p className="text-gray-600 font-medium">{providerName}</p>
+            </div>
           </div>
           <img 
             src="https://ik.imagekit.io/7grri5v7d/reviews.png" 
@@ -239,18 +261,50 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 
           {/* Review Form */}
           {showForm && (
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-orange-200">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Write Your Review</h2>
-                <button
-                  onClick={() => {
-                    setShowForm(false);
-                    setErrors({});
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  Cancel
-                </button>
+            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-orange-200 relative">
+              {/* Close button in top-right corner */}
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setErrors({});
+                }}
+                className="absolute top-4 right-4 w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg z-10"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="mb-6">
+                <div className="flex items-center gap-4">
+                  {/* Selected Avatar Display */}
+                  {selectedAvatar && (
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg overflow-hidden">
+                      <img 
+                        src={selectedAvatar} 
+                        alt="Selected avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="pr-12">
+                    <h2 className="text-2xl font-bold text-gray-900">Write Your Review</h2>
+                    <p className="text-gray-600 text-xs mt-1 max-w-md leading-relaxed">
+                      If you feel the service that was offered was not to your satisfaction, we kindly ask you first make contact with the owner as this would be addressed with immediate effect. And send a direct message to the highest authority to make them aware of areas of improvement.
+                    </p>
+                    {ownerWhatsApp && (
+                      <a
+                        href={`https://wa.me/${ownerWhatsApp.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-colors shadow-md"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Owner's WhatsApp</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-6">
@@ -275,7 +329,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                 {/* WhatsApp Number Input */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    <Phone className="w-4 h-4 inline mr-2" />
+                    <MessageCircle className="w-4 h-4 inline mr-2" />
                     WhatsApp Number *
                   </label>
                   <input
@@ -295,30 +349,37 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Rating *
                   </label>
-                  <div className="flex items-center gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setRating(star)}
-                        onMouseEnter={() => setHoveredRating(star)}
-                        onMouseLeave={() => setHoveredRating(0)}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star
-                          className={`w-10 h-10 ${
-                            star <= (hoveredRating || rating)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'fill-gray-200 text-gray-300'
-                          }`}
-                        />
-                      </button>
-                    ))}
-                    {rating > 0 && (
-                      <span className="ml-2 text-sm font-medium text-gray-700">
-                        {rating} {rating === 1 ? 'Star' : 'Stars'}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-2 justify-between">
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRating(star)}
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                          className="transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`w-10 h-10 ${
+                              star <= (hoveredRating || rating)
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'fill-gray-200 text-gray-300'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      {rating > 0 && (
+                        <span className="ml-2 text-sm font-medium text-gray-700">
+                          {rating} {rating === 1 ? 'Star' : 'Stars'}
+                        </span>
+                      )}
+                    </div>
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/reviews.png?updatedAt=1764760532097" 
+                      alt="Reviews"
+                      className="w-24 h-24 flex-shrink-0"
+                    />
                   </div>
                   {errors.rating && <p className="text-red-500 text-xs mt-1">{errors.rating}</p>}
                 </div>
@@ -334,6 +395,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                     onChange={(e) => setReviewText(e.target.value)}
                     placeholder="Tell us about your experience..."
                     rows={5}
+                    maxLength={500}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none ${
                       errors.reviewText ? 'border-red-500' : 'border-gray-300'
                     }`}
@@ -342,7 +404,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                     <div>
                       {errors.reviewText && <p className="text-red-500 text-xs">{errors.reviewText}</p>}
                     </div>
-                    <p className="text-xs text-gray-500">{reviewText.length} characters</p>
+                    <p className="text-xs text-gray-500">{reviewText.length}/500 characters</p>
                   </div>
                 </div>
 
@@ -351,19 +413,28 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     Choose Your Avatar *
                   </label>
-                  <div className="grid grid-cols-5 gap-3">
+                  <div className="grid grid-cols-5 gap-4">
                     {avatarOptions.map((avatar) => (
                       <button
                         key={avatar.id}
                         type="button"
-                        onClick={() => setSelectedAvatar(avatar.emoji)}
-                        className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
-                          selectedAvatar === avatar.emoji
-                            ? 'border-orange-500 bg-orange-50 shadow-lg'
-                            : 'border-gray-200 hover:border-orange-300'
-                        }`}
+                        onClick={() => setSelectedAvatar(avatar.imageUrl)}
+                        className="relative transition-all hover:scale-105 focus:outline-none"
                       >
-                        <div className="text-4xl text-center">{avatar.emoji}</div>
+                        <img 
+                          src={avatar.imageUrl} 
+                          alt={avatar.label} 
+                          className={`w-full aspect-square rounded-full object-cover ${
+                            selectedAvatar === avatar.imageUrl
+                              ? 'ring-4 ring-orange-500 ring-offset-2 shadow-lg shadow-orange-500/50'
+                              : 'hover:ring-2 hover:ring-orange-300 hover:ring-offset-2'
+                          }`}
+                        />
+                        {selectedAvatar === avatar.imageUrl && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-pulse shadow-lg">
+                            <div className="absolute inset-0 bg-orange-500 rounded-full animate-ping opacity-75"></div>
+                          </div>
+                        )}
                         <div className="text-xs text-gray-600 text-center mt-1">{avatar.label}</div>
                       </button>
                     ))}

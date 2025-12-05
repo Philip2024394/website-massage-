@@ -2110,7 +2110,7 @@ export const reviewService = {
                     comment: review.comment || '',
                     whatsapp: review.whatsappNumber,
                     reviewerName: review.reviewerName,
-                    avatar: review.avatar || '😊',
+                    avatar: review.avatar || 'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
                     isAnonymous: true,
                     status: 'approved', // Auto-approve anonymous reviews
                     createdAt: new Date().toISOString()

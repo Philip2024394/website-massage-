@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Star, Calendar, Clock, User, MessageSquare, Phone } from 'lucide-react';
+import { X, Star, Calendar, Clock, User, MessageSquare, MessageCircle } from 'lucide-react';
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -7,6 +7,7 @@ interface ReviewModalProps {
   onSubmit: (review: ReviewData) => void;
   providerName: string;
   providerType: 'therapist' | 'place';
+  ownerWhatsApp?: string;
 }
 
 export interface ReviewData {
@@ -20,16 +21,23 @@ export interface ReviewData {
 }
 
 const avatarOptions = [
-  { id: 1, emoji: '👨', label: 'Man' },
-  { id: 2, emoji: '👩', label: 'Woman' },
-  { id: 3, emoji: '👴', label: 'Older Man' },
-  { id: 4, emoji: '👵', label: 'Older Woman' },
-  { id: 5, emoji: '🧔', label: 'Bearded Man' },
-  { id: 6, emoji: '👱‍♀️', label: 'Blonde Woman' },
-  { id: 7, emoji: '👨‍💼', label: 'Professional Man' },
-  { id: 8, emoji: '👩‍💼', label: 'Professional Woman' },
-  { id: 9, emoji: '🧑', label: 'Person' },
-  { id: 10, emoji: '😊', label: 'Happy Face' },
+  { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
+  { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
+  { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
+  { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
+  { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
+  { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
+  { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
+  { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
+  { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
+  { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
+  { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
+  { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
+  { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
+  { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
+  { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' },
+  { id: 16, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2017.png', label: 'Avatar 17' },
+  { id: 17, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2018.png', label: 'Avatar 18' },
 ];
 
 export const ReviewModal: React.FC<ReviewModalProps> = ({
@@ -38,6 +46,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   onSubmit,
   providerName,
   providerType,
+  ownerWhatsApp,
 }) => {
   const [userName, setUserName] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
@@ -113,20 +122,45 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+        {/* Close button in top-right corner */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 w-10 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors shadow-lg z-10"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-t-2xl">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 pr-12">
+            {/* Selected Avatar Display */}
+            {selectedAvatar && (
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg overflow-hidden border-2 border-white/30">
+                <img 
+                  src={selectedAvatar} 
+                  alt="Selected avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <div>
               <h2 className="text-2xl font-bold">Write a Review</h2>
-              <p className="text-orange-100 text-sm mt-1">Share your experience with {providerName}</p>
+              <p className="text-orange-100 text-xs mt-2 max-w-md leading-relaxed">
+                If you feel the service that was offered was not to your satisfaction, we kindly ask you first make contact with the owner as this would be addressed with immediate effect. And send a direct message to the highest authority to make them aware of areas of improvement.
+              </p>
+              {ownerWhatsApp && (
+                <a
+                  href={`https://wa.me/${ownerWhatsApp.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white text-sm font-semibold rounded-lg transition-colors border border-white/30 shadow-md"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Owner's WhatsApp</span>
+                </a>
+              )}
             </div>
-            <button
-              onClick={handleClose}
-              className="p-2 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
           </div>
         </div>
 
@@ -153,7 +187,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           {/* WhatsApp Number Input */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <Phone className="w-4 h-4 inline mr-2" />
+              <MessageCircle className="w-4 h-4 inline mr-2" />
               WhatsApp Number *
             </label>
             <input
@@ -173,30 +207,37 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Rating *
             </label>
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoveredRating(star)}
-                  onMouseLeave={() => setHoveredRating(0)}
-                  className="transition-transform hover:scale-110"
-                >
-                  <Star
-                    className={`w-10 h-10 ${
-                      star <= (hoveredRating || rating)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'fill-gray-200 text-gray-300'
-                    }`}
-                  />
-                </button>
-              ))}
-              {rating > 0 && (
-                <span className="ml-2 text-sm font-medium text-gray-700">
-                  {rating} {rating === 1 ? 'Star' : 'Stars'}
-                </span>
-              )}
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    onMouseEnter={() => setHoveredRating(star)}
+                    onMouseLeave={() => setHoveredRating(0)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`w-10 h-10 ${
+                        star <= (hoveredRating || rating)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'fill-gray-200 text-gray-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+                {rating > 0 && (
+                  <span className="ml-2 text-sm font-medium text-gray-700">
+                    {rating} {rating === 1 ? 'Star' : 'Stars'}
+                  </span>
+                )}
+              </div>
+              <img 
+                src="https://ik.imagekit.io/7grri5v7d/reviews.png?updatedAt=1764760532097" 
+                alt="Reviews"
+                className="w-24 h-24 flex-shrink-0"
+              />
             </div>
             {errors.rating && <p className="text-red-500 text-xs mt-1">{errors.rating}</p>}
           </div>
@@ -212,6 +253,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               onChange={(e) => setReviewText(e.target.value)}
               placeholder="Tell us about your experience..."
               rows={5}
+              maxLength={500}
               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none ${
                 errors.reviewText ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -220,7 +262,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               <div>
                 {errors.reviewText && <p className="text-red-500 text-xs">{errors.reviewText}</p>}
               </div>
-              <p className="text-xs text-gray-500">{reviewText.length} characters</p>
+              <p className="text-xs text-gray-500">{reviewText.length}/500 characters</p>
             </div>
           </div>
 
@@ -229,19 +271,28 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
             <label className="block text-sm font-semibold text-gray-700 mb-3">
               Choose Your Avatar *
             </label>
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-5 gap-4">
               {avatarOptions.map((avatar) => (
                 <button
                   key={avatar.id}
                   type="button"
-                  onClick={() => setSelectedAvatar(avatar.emoji)}
-                  className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
-                    selectedAvatar === avatar.emoji
-                      ? 'border-orange-500 bg-orange-50 shadow-lg'
-                      : 'border-gray-200 hover:border-orange-300'
-                  }`}
+                  onClick={() => setSelectedAvatar(avatar.imageUrl)}
+                  className="relative transition-all hover:scale-105 focus:outline-none"
                 >
-                  <div className="text-4xl text-center">{avatar.emoji}</div>
+                  <img 
+                    src={avatar.imageUrl} 
+                    alt={avatar.label} 
+                    className={`w-full aspect-square rounded-full object-cover ${
+                      selectedAvatar === avatar.imageUrl
+                        ? 'ring-4 ring-orange-500 ring-offset-2 shadow-lg shadow-orange-500/50'
+                        : 'hover:ring-2 hover:ring-orange-300 hover:ring-offset-2'
+                    }`}
+                  />
+                  {selectedAvatar === avatar.imageUrl && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full animate-pulse shadow-lg">
+                      <div className="absolute inset-0 bg-orange-500 rounded-full animate-ping opacity-75"></div>
+                    </div>
+                  )}
                   <div className="text-xs text-gray-600 text-center mt-1">{avatar.label}</div>
                 </button>
               ))}
