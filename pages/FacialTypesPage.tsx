@@ -230,10 +230,10 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
 
                                 {/* Quick Info Pills */}
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                    <span className="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">
+                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
                                         {facial.duration}
                                     </span>
-                                    <span className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full">
                                         {facial.intensity}
                                     </span>
                                 </div>
@@ -242,7 +242,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                                 {facial.fullDescription && (
                                     <button 
                                         onClick={() => toggleExpanded(index)}
-                                        className="text-pink-500 font-semibold text-sm hover:text-pink-600 transition-colors mb-3 flex items-center gap-1"
+                                        className="text-orange-500 font-semibold text-sm hover:text-orange-600 transition-colors mb-3 flex items-center gap-1"
                                     >
                                         {facial.expanded ? '− Read Less' : '+ Read More'}
                                     </button>
@@ -266,7 +266,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                                                 <ul className="space-y-1">
                                                     {facial.benefits.map((benefit, idx) => (
                                                         <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
-                                                            <span className="text-pink-500 mt-0.5">✓</span>
+                                                            <span className="text-orange-500 mt-0.5">✓</span>
                                                             <span>{benefit}</span>
                                                         </li>
                                                     ))}
@@ -295,7 +295,7 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                                     {/* Find Therapists - Left */}
                                     <button 
                                         onClick={() => onFindTherapists?.(facial.name)}
-                                        className="flex items-center gap-2 text-pink-500 font-semibold hover:text-pink-600 transition-colors"
+                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                                     >
                                         Find Therapists →
                                     </button>
@@ -306,9 +306,9 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
                                     {/* Find Facial Spas - Right with circular icon */}
                                     <button 
                                         onClick={() => onFindPlaces?.(facial.name)}
-                                        className="flex items-center gap-2 text-pink-500 font-semibold hover:text-pink-600 transition-colors"
+                                        className="flex items-center gap-2 text-orange-500 font-semibold hover:text-orange-600 transition-colors"
                                     >
-                                        <span className="flex items-center justify-center w-6 h-6 bg-pink-100 rounded-full">
+                                        <span className="flex items-center justify-center w-6 h-6 bg-orange-100 rounded-full">
                                             <BuildingIcon className="w-4 h-4" />
                                         </span>
                                         Find Facial Spas →
