@@ -1008,7 +1008,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
                     </button>
                 </div>
-                <div className="space-y-2 mb-4 w-full max-w-full overflow-visible">
+                <div className="space-y-2 mb-2 w-full max-w-full overflow-visible">
                     <div className="flex flex-wrap items-center w-full max-w-full gap-2">
                         <div className="relative flex-1 min-w-0 max-w-[280px] z-20">
                             <CityLocationDropdown
@@ -1055,8 +1055,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 {/* Therapists and Places Display */}
                 {activeTab === 'home' && (
                     <div className="max-w-full overflow-x-hidden pb-8">
-                        <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
+                        <div className="mb-3 text-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
                                 {selectedCity === 'all' 
                                     ? 'Find the best therapists across Indonesia'
@@ -1065,7 +1065,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             </p>
                         </div>
                         
-                        <div className="space-y-4 max-w-full overflow-hidden">
+                        <div className="space-y-3 max-w-full overflow-hidden">
                         {/* Build list with injected unique mainImage per view */}
                         {(() => {
                             const isOwner = (t: any) => (
@@ -1238,8 +1238,8 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 {activeTab === 'places' && (
                     <div className="max-w-full overflow-x-hidden">
-                        <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
+                        <div className="mb-3 text-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
                             <p className="text-gray-600">
                                 {selectedCity === 'all' 
                                     ? 'Find the best massage places across Indonesia'
