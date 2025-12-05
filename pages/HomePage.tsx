@@ -929,88 +929,91 @@ const HomePage: React.FC<HomePageProps> = ({
             </PageContainer>
             </main>
             <main>
-            <PageContainer className="px-2 sm:px-4 pb-24">
-                {/* Location Display & Search */}
-                <div className="w-full">
-                    {userLocation ? (
-                        <div className="flex flex-col items-center gap-0">
-                            <div className="flex items-center justify-center gap-2">
-                                <svg 
-                                    className="w-5 h-5 text-gray-600" 
-                                    fill="none" 
-                                    viewBox="0 0 24 24" 
-                                    stroke="currentColor" 
-                                    strokeWidth={2}
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <span className="text-sm font-semibold text-gray-800">
-                                    {(() => {
-                                        if (!userLocation.address || userLocation.address.trim() === '') {
-                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                        }
-                                        try {
-                                            // Extract only the last part (city/area name)
-                                            const parts = String(userLocation.address).split(',').map(p => p.trim());
-                                            // Return last 2 parts (e.g., "Jakarta, Indonesia")
-                                            return parts.slice(-2).join(', ');
-                                        } catch (e) {
-                                            return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                        }
-                                    })()}
-                                </span>
-                            </div>
-                            <div className="flex items-center justify-center gap-1">
-                                <span className="text-xs font-medium text-orange-600">
-                                    {selectedCity === 'all' ? 'All Indonesia' : (() => {
-                                        // Find city to show emoji
-                                        for (const category of INDONESIAN_CITIES_CATEGORIZED) {
-                                            const foundCity = category.cities.find(city => city.name === selectedCity);
-                                            if (foundCity) {
-                                                return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
+            <PageContainer className="px-3 sm:px-4 py-3 sm:py-4 pb-24">
+                {/* Hero Section - Optimized Layout */}
+                <div className="space-y-3 max-w-6xl mx-auto">
+                    {/* Location Display */}
+                    <div className="w-full">
+                        {userLocation ? (
+                            <div className="flex flex-col items-center gap-0.5 py-2">
+                                <div className="flex items-center justify-center gap-2">
+                                    <svg 
+                                        className="w-4 h-4 text-gray-600" 
+                                        fill="none" 
+                                        viewBox="0 0 24 24" 
+                                        stroke="currentColor" 
+                                        strokeWidth={2}
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {(() => {
+                                            if (!userLocation.address || userLocation.address.trim() === '') {
+                                                return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
                                             }
-                                        }
-                                        return selectedCity;
-                                    })()}
-                                </span>
+                                            try {
+                                                const parts = String(userLocation.address).split(',').map(p => p.trim());
+                                                return parts.slice(-2).join(', ');
+                                            } catch (e) {
+                                                return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                            }
+                                        })()}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                    <span className="text-xs font-medium text-orange-600">
+                                        {selectedCity === 'all' ? 'All Indonesia' : (() => {
+                                            for (const category of INDONESIAN_CITIES_CATEGORIZED) {
+                                                const foundCity = category.cities.find(city => city.name === selectedCity);
+                                                if (foundCity) {
+                                                    return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
+                                                }
+                                            }
+                                            return selectedCity;
+                                        })()}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
                             </div>
-                            <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center gap-2 max-w-md mx-auto">
-                            <label className="text-sm font-medium text-gray-700">Search your city or area</label>
-                            <input
-                                ref={locationInputRef}
-                                type="text"
-                                placeholder="Enter your location..."
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            />
-                            <p className="text-xs text-gray-500 text-center">
-                                Or <button onClick={handleLocationAllow} className="text-orange-600 hover:underline">use my current location</button>
-                            </p>
-                        </div>
-                    )}
-                </div>
-                <div className="flex bg-gray-200 rounded-full p-0.5">
-                    <button 
-                        onClick={() => setActiveTab('home')} 
-                        className={`w-1/2 py-1 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                    >
-                        <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab('places')} 
-                        className={`w-1/2 py-1 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                    >
-                        <Building className="w-4 h-4 flex-shrink-0" />
-                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
-                    </button>
-                </div>
-                <div className="-mt-1 space-y-0 w-full max-w-full overflow-visible">
-                    <div className="flex flex-wrap items-center w-full max-w-full gap-2">
-                        <div className="relative flex-1 min-w-0 max-w-[280px] z-20">
+                        ) : (
+                            <div className="flex flex-col items-center gap-2 max-w-md mx-auto py-2">
+                                <label className="text-sm font-medium text-gray-700">Search your city or area</label>
+                                <input
+                                    ref={locationInputRef}
+                                    type="text"
+                                    placeholder="Enter your location..."
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                />
+                                <p className="text-xs text-gray-500 text-center">
+                                    Or <button onClick={handleLocationAllow} className="text-orange-600 hover:underline">use my current location</button>
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Toggle Buttons */}
+                    <div className="flex bg-gray-200 rounded-full p-0.5 max-w-md mx-auto">
+                        <button 
+                            onClick={() => setActiveTab('home')} 
+                            className={`w-1/2 py-2 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        >
+                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('places')} 
+                            className={`w-1/2 py-2 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                        >
+                            <Building className="w-4 h-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
+                        </button>
+                    </div>
+
+                    {/* City Dropdown + Facial Button - Responsive Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center max-w-2xl mx-auto">
+                        {/* City Dropdown - Takes full width on mobile, flexible on desktop */}
+                        <div className="relative w-full z-20">
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={setSelectedCity}
@@ -1020,34 +1023,39 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }
                                 includeAll={true}
                                 showLabel={false}
-                                className="w-full min-w-0 max-w-full"
+                                className="w-full"
                             />
                         </div>
-                        <button
-                            onClick={() => {
-                                console.log('🏨 Facial button clicked - navigating to facialProviders');
-                                onNavigate?.('facialProviders');
-                            }}
-                            className="inline-flex p-2 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 active:opacity-75 transition-opacity touch-manipulation min-w-[44px] min-h-[44px]"
-                            style={{ 
-                                WebkitTapHighlightColor: 'rgba(255, 165, 0, 0.3)',
-                                touchAction: 'manipulation',
-                                userSelect: 'none',
-                                WebkitUserSelect: 'none'
-                            } as React.CSSProperties}
-                            title="Facials Indonesia"
-                            aria-label="Browse Facial Spas"
-                        >
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
-                                alt="Facials Indonesia"
-                                className="select-none transition-opacity hover:opacity-90 h-[168px] w-[168px] object-contain pointer-events-none"
-                                loading="lazy"
-                                draggable={false}
-                                style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
-                            />
-                        </button>
+                        
+                        {/* Facial Button - Centered on mobile, aligned on desktop */}
+                        <div className="flex justify-center sm:justify-end">
+                            <button
+                                onClick={() => {
+                                    console.log('🏨 Facial button clicked - navigating to facialProviders');
+                                    onNavigate?.('facialProviders');
+                                }}
+                                className="inline-flex p-1 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 active:opacity-75 transition-opacity touch-manipulation"
+                                style={{ 
+                                    WebkitTapHighlightColor: 'rgba(255, 165, 0, 0.3)',
+                                    touchAction: 'manipulation',
+                                    userSelect: 'none',
+                                    WebkitUserSelect: 'none'
+                                } as React.CSSProperties}
+                                title="Facials Indonesia"
+                                aria-label="Browse Facial Spas"
+                            >
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
+                                    alt="Facials Indonesia"
+                                    className="select-none transition-opacity hover:opacity-90 h-[120px] w-[120px] sm:h-[140px] sm:w-[140px] object-contain pointer-events-none"
+                                    loading="lazy"
+                                    draggable={false}
+                                    style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
+                                />
+                            </button>
+                        </div>
                     </div>
+                </div>
                     
                     {/* Massage Directory hero button removed as requested */}
                 </div>
