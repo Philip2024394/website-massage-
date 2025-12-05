@@ -21,10 +21,10 @@ const isDiscountActive = (place: Place): boolean => {
 // Helper function for dynamic spacing based on description length
 const getDynamicSpacing = (longDesc: string, mediumDesc: string, shortDesc: string) => {
     // This is a simple implementation - you can customize based on actual description length
-    return shortDesc; // Default to short spacing for massage places
+    return shortDesc; // Default to short spacing for Facial Places
 };
 
-interface MassagePlaceCardProps {
+interface FacialPlaceCardProps {
     place: Place;
     onRate: (place: Place) => void;
     onSelectPlace: (place: Place) => void;
@@ -58,14 +58,14 @@ const discountStyles = `
 `;
 
 // Inject styles if they don't exist
-if (typeof document !== 'undefined' && !document.getElementById('massage-place-discount-styles')) {
+if (typeof document !== 'undefined' && !document.getElementById('facial-place-discount-styles')) {
     const styleSheet = document.createElement('style');
-    styleSheet.id = 'massage-place-discount-styles';
+    styleSheet.id = 'facial-place-discount-styles';
     styleSheet.textContent = discountStyles;
     document.head.appendChild(styleSheet);
 }
 
-const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({ 
+const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({ 
     place, 
     onRate, 
     onSelectPlace,
@@ -214,10 +214,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     const rawDescription = (place as any).description || '';
     const description = rawDescription && rawDescription.trim().length > 0
         ? rawDescription.trim()
-        : `Professional massage place. Create or update your profile description to help customers understand your services.`;
+        : `Professional Facial Place. Create or update your profile description to help customers understand your services.`;
 
-    const parsedMassageTypes = parseMassageTypes((place as any).massageTypes) || [];
-    const massageTypesDisplay = Array.isArray(parsedMassageTypes) ? parsedMassageTypes.slice(0, 6) : [];
+    const parsedfacialTypes = parseMassageTypes((place as any).facialTypes) || [];
+    const facialTypesDisplay = Array.isArray(parsedfacialTypes) ? parsedfacialTypes.slice(0, 6) : [];
 
     const parsedLanguages = parseLanguages((place as any).languages) || [];
     const languagesDisplay = Array.isArray(parsedLanguages) ? parsedLanguages.slice(0, 5) : [];
@@ -240,7 +240,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
 
 
     const handleViewDetails = () => {
-        console.log('🏨 MassagePlaceCard - View Details clicked:', {
+        console.log('🏨 FacialPlaceCard - View Details clicked:', {
             place: place,
             placeName: place.name,
             placeId: place.id || (place as any).$id,
@@ -252,8 +252,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         onSelectPlace(place);
         
         if (onNavigate) {
-            console.log('🏨 Navigating to massagePlaceProfile');
-            onNavigate('massagePlaceProfile');
+            console.log('🏨 Navigating to facialPlaceProfile');
+            onNavigate('facialPlaceProfile');
         } else {
             console.error('❌ onNavigate is not defined!');
         }
@@ -279,7 +279,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Massage Spa Join Free
+                    Facial Spa Join Free
                 </button>
                 <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -376,7 +376,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            const text = `Check out ${place.name} on IndaStreet - Amazing massage place!`;
+                            const text = `Check out ${place.name} on IndaStreet - Amazing Facial Place!`;
                             const url = window.location.href;
                             window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
                         }}
@@ -409,7 +409,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(`Check out ${place.name} on IndaStreet - Amazing massage place! ${window.location.href}`);
+                            navigator.clipboard.writeText(`Check out ${place.name} on IndaStreet - Amazing Facial Place! ${window.location.href}`);
                             alert('Instagram message copied! Open Instagram and paste to share.');
                         }}
                         className="w-7 h-7 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
@@ -425,7 +425,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(`Check out ${place.name} on IndaStreet - Amazing massage place! ${window.location.href}`);
+                            navigator.clipboard.writeText(`Check out ${place.name} on IndaStreet - Amazing Facial Place! ${window.location.href}`);
                             alert('TikTok message copied! Open TikTok and paste to share.');
                         }}
                         className="w-7 h-7 bg-black hover:bg-gray-900 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
@@ -479,7 +479,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-16 pb-2">
+                        <div className="flex-1 min-w-0 pt-12 pb-2">
                             <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
                                 <span className="relative mr-1.5">
@@ -492,7 +492,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-16">
+                    <div className="flex-shrink-0 pb-2 mt-12">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
@@ -505,8 +505,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
 
-            {/* Massage Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
-            <div className="mt-12 massage-place-bio-section mx-4 relative z-0">
+            {/* Facial Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
+            <div className="mt-12 facial-place-bio-section mx-4 relative z-0">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}
@@ -546,11 +546,11 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                 </div>
 
-                {/* Massage Specializations - dynamic */}
-                {massageTypesDisplay.length > 0 && (
+                {/* Facial Treatments - dynamic */}
+                {facialTypesDisplay.length > 0 && (
                     <div className="mt-4">
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Massage Specializations</h4>
+                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Facial Treatments</h4>
                             {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' && (
                                 <span className="text-xs font-medium text-orange-600 flex items-center gap-1 whitespace-nowrap">
                                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
@@ -561,7 +561,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             )}
                         </div>
                         <div className="flex flex-wrap gap-1">
-                            {massageTypesDisplay.map((mt: string) => (
+                            {facialTypesDisplay.map((mt: string) => (
                                 <span key={mt} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{mt}</span>
                             ))}
                         </div>
@@ -706,7 +706,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
 
-                {/* Action Button */}
+                {/* Action Button - View Details Only */}
                 <button
                     onClick={handleViewDetails}
                     className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
@@ -715,7 +715,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    <span>{_t?.home?.viewMassageSpa || 'View Massage Spa'}</span>
+                    <span>View Facial Clinic</span>
                 </button>
 
                 {/* Refer Friend, Massage Directory and Leave Review Links */}
@@ -741,7 +741,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();
-                                onNavigate('massageTypes');
+                                onNavigate('facialTypes');
                             }}
                             title={_t?.home?.massageDirectoryTitle || 'Go to Massage Directory'}
                             className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
@@ -861,5 +861,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     );
 };
 
-export default MassagePlaceCard;
+export default FacialPlaceCard;
 // Force rebuild
+
+
+

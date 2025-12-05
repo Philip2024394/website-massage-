@@ -19,6 +19,25 @@ export const MASSAGE_TYPES_CATEGORIZED = [
     }
 ];
 
+export const FACIAL_TYPES_CATEGORIZED = [
+    {
+        category: 'Anti-Aging Treatments',
+        types: ['Anti-Aging Facial', 'Collagen Facial', 'Microdermabrasion', 'Chemical Peel', 'LED Light Therapy']
+    },
+    {
+        category: 'Skin Care Treatments',
+        types: ['Hydrating Facial', 'Brightening Facial', 'Acne Treatment Facial', 'Deep Cleansing Facial', 'Sensitive Skin Facial']
+    },
+    {
+        category: 'Specialty Facials',
+        types: ['Oxygen Facial', 'Gold Facial', 'Vitamin C Facial', 'Organic/Natural Facial', 'Men\'s Facial']
+    },
+    {
+        category: 'Traditional Indonesian Facials',
+        types: ['Lulur Facial', 'Javanese Facial', 'Herbal Facial']
+    }
+];
+
 export const PLACE_SERVICES = [
     'Facials', 'Body Scrubs', 'Body Wraps', 'Hair Salon', 'Beautician', 
     'Acupressure', 'Reflexology', 'Aromatherapy', 'Yoga & Pilates', 

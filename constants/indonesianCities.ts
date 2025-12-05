@@ -22,7 +22,7 @@ export interface CityCategory {
 
 export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
   {
-    category: "🏝️ Bali - Tourist Destinations",
+    category: "🏝️ Bali",
     cities: [
       {
         name: "Denpasar",
@@ -91,7 +91,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     ]
   },
   {
-    category: "🏙️ Java - Major Cities",
+    category: "🌋 Java",
     cities: [
       {
         name: "Jakarta",
@@ -152,7 +152,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     ]
   },
   {
-    category: "🌊 Lombok & Gili Islands",
+    category: "🌊 Lombok & Gili",
     cities: [
       {
         name: "Mataram",
@@ -226,7 +226,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     ]
   },
   {
-    category: "🦀 Sumatra - Main Cities",
+    category: "🦀 Sumatra",
     cities: [
       {
         name: "Medan",
@@ -279,7 +279,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     ]
   },
   {
-    category: "🐨 Kalimantan - Borneo",
+    category: "🐨 Kalimantan",
     cities: [
       {
         name: "Banjarmasin",
@@ -361,7 +361,7 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     ]
   },
   {
-    category: "🏖️ Popular Beach Destinations",
+    category: "🏖️ Beach Destinations",
     cities: [
       {
         name: "Bintan Island",

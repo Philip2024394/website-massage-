@@ -44,6 +44,9 @@ const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
+const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
+const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
+const FacialPlaceDashboardPage = React.lazy(() => import('./pages/FacialPlaceDashboardPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
@@ -983,6 +986,92 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onPrivacyClick={handleNavigateToPrivacyPolicy}
                         therapists={therapists}
                         places={places}
+                    />
+                </React.Suspense>
+            );
+
+        case 'facialProviders':
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading facial spas...</div>}>
+                    <FacialProvidersPage
+                        facialPlaces={places}
+                        userLocation={userLocation}
+                        onSetUserLocation={() => {}}
+                        onSelectPlace={(place) => {
+                            handleSetSelectedPlace(place);
+                            setPage('facialPlaceProfile');
+                        }}
+                        onIncrementAnalytics={handleIncrementAnalytics as any}
+                        onShowRegisterPrompt={handleShowRegisterPromptForChat}
+                        onNavigate={commonNavigateHandler}
+                        onBack={handleBackToHome}
+                        t={t}
+                        language={language as 'en' | 'id'}
+                        onLanguageChange={(lang) => handleLanguageSelect(lang as Language)}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onHotelPortalClick={() => setPage('hotelDashboard')}
+                        onVillaPortalClick={() => setPage('villaDashboard')}
+                        onTherapistPortalClick={() => setPage('therapistPortal')}
+                        onMassagePlacePortalClick={() => setPage('massagePlacePortal')}
+                        onAgentPortalClick={() => setPage('agentPortal')}
+                        onCustomerPortalClick={() => setPage('customerPortal')}
+                        onAdminPortalClick={() => setPage('adminDashboard')}
+                        onTermsClick={() => setPage('serviceTerms')}
+                        onPrivacyClick={() => setPage('privacy')}
+                        therapists={therapists}
+                        places={places}
+                    />
+                </React.Suspense>
+            );
+
+        case 'facialPlaceProfile':
+            if (!selectedPlace) {
+                setPage('home');
+                return null;
+            }
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading facial spa...</div>}>
+                    <FacialPlaceProfilePage
+                        place={selectedPlace}
+                        userLocation={userLocation}
+                        loggedInCustomer={loggedInCustomer}
+                        language={language as 'en' | 'id'}
+                        onLanguageChange={(lang) => handleLanguageSelect(lang as Language)}
+                        onBack={handleBackToHome}
+                        onBook={() => handleNavigateToBooking(selectedPlace, 'place')}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onTherapistJobsClick={() => setPage('therapistJobs')}
+                        onTherapistPortalClick={handleNavigateToTherapistLogin}
+                        onFacialPlacePortalClick={handleNavigateToMassagePlaceLogin}
+                        onNavigate={commonNavigateHandler}
+                        onTermsClick={handleNavigateToServiceTerms}
+                        onPrivacyClick={handleNavigateToPrivacyPolicy}
+                        therapists={therapists}
+                        places={places}
+                    />
+                </React.Suspense>
+            );
+
+        case 'facialPlaceDashboard':
+            if (!loggedInProvider || loggedInProvider.type !== 'place') {
+                setPage('home');
+                return null;
+            }
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+                    <FacialPlaceDashboardPage
+                        placeId={loggedInProvider.id}
+                        onSave={(data: any) => {
+                            console.log('Saving facial place:', data);
+                            // You can add save logic here
+                        }}
+                        onLogout={handleLogout}
+                        onNavigateToNotifications={handleNavigateToNotifications}
+                        onNavigate={commonNavigateHandler}
+                        onUpdateBookingStatus={(bookingId, status) => {
+                            console.log('Update booking:', bookingId, status);
+                        }}
+                        t={t}
                     />
                 </React.Suspense>
             );

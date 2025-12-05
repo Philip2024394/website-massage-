@@ -14,6 +14,7 @@ export const APPWRITE_CONFIG = {
         admins: '', // Disabled - collection doesn't exist
         therapists: 'therapists_collection_id', // Correct collection ID - WORKING
         places: 'places_collection_id', // REVERTED: Back to original ID
+        facial_places: 'facial_places_collection', // Facial salons/spas collection
         agents: 'agents_collection_id', // REVERTED: Back to original ID
         bookings: 'bookings_collection_id', // REVERTED: Back to original ID  
         reviews: 'reviews_collection_id', // REVERTED: Back to original ID
@@ -56,8 +57,9 @@ export const APPWRITE_CONFIG = {
         affiliateAttributions: 'affiliate_attributions',
     },
     
-    // Storage bucket ID
-    bucketId: '68f76bdd002387590584',
+    // Storage bucket IDs
+    bucketId: '68f76bdd002387590584', // Main storage bucket
+    facialPlacesBucketId: '6932f43700113926eb80', // Facial places images bucket
     
     // Google Maps Integration
     googleMaps: {

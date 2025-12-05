@@ -933,7 +933,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center justify-center gap-2">
                                 <svg 
-                                    className="w-5 h-5 text-orange-500" 
+                                    className="w-5 h-5 text-gray-600" 
                                     fill="none" 
                                     viewBox="0 0 24 24" 
                                     stroke="currentColor" 
@@ -959,7 +959,6 @@ const HomePage: React.FC<HomePageProps> = ({
                                 </span>
                             </div>
                             <div className="flex items-center justify-center gap-1">
-                                <span className="text-xs text-gray-500">Viewing:</span>
                                 <span className="text-xs font-medium text-orange-600">
                                     {selectedCity === 'all' ? 'All Indonesia' : (() => {
                                         // Find city to show emoji
@@ -1021,21 +1020,32 @@ const HomePage: React.FC<HomePageProps> = ({
                                 className="w-full min-w-0 max-w-full"
                             />
                         </div>
-                        <a 
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0"
-                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('🏨 Facial button clicked - navigating to facialProviders');
+                                onNavigate?.('facialProviders');
+                            }}
+                            onTouchEnd={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('🏨 Facial button touched - navigating to facialProviders');
+                                onNavigate?.('facialProviders');
+                            }}
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 transition-opacity touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' } as React.CSSProperties}
                             title="Facials Indonesia"
+                            aria-label="Browse Facial Spas"
                         >
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
                                 alt="Facials Indonesia"
-                                className="select-none transition-opacity hover:opacity-90 h-[168px] w-[168px] object-contain"
+                                className="select-none transition-opacity hover:opacity-90 h-[168px] w-[168px] object-contain pointer-events-none"
                                 loading="lazy"
                                 draggable={false}
                             />
-                        </a>
+                        </button>
                     </div>
                     
                     {/* Massage Directory hero button removed as requested */}
@@ -1046,7 +1056,12 @@ const HomePage: React.FC<HomePageProps> = ({
                     <div className="max-w-full overflow-x-hidden pb-8">
                         <div className="mb-6 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
-                            <p className="text-gray-600">{t?.home?.therapistsSubtitle || 'Find the best therapists in Bali'}</p>
+                            <p className="text-gray-600">
+                                {selectedCity === 'all' 
+                                    ? 'Find the best therapists across Indonesia'
+                                    : `Find the best therapists in ${selectedCity}`
+                                }
+                            </p>
                         </div>
                         
                         <div className="space-y-4 max-w-full overflow-hidden">
@@ -1223,8 +1238,13 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'places' && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Spa Pijat Unggulan'}</h3>
-                            <p className="text-gray-600">{t?.home?.massagePlacesSubtitle || 'Temukan tempat pijat terbaik di Bali'}</p>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
+                            <p className="text-gray-600">
+                                {selectedCity === 'all' 
+                                    ? 'Find the best massage places across Indonesia'
+                                    : `Find the best massage places in ${selectedCity}`
+                                }
+                            </p>
                         </div>
                         
                         {/* Show places from Appwrite */}

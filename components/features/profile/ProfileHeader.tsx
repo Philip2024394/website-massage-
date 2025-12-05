@@ -1,35 +1,66 @@
 import React from 'react';
-import { Home } from 'lucide-react';
+import { BurgerMenuIcon } from '../../BurgerMenuIcon';
 
 interface ProfileHeaderProps {
     onHomeClick: () => void;
+    language?: string;
+    onLanguageChange?: (lang: string) => void;
+    onMenuClick?: () => void;
 }
 
 /**
  * Reusable Profile Header component
- * Contains branding on left and home icon on right
+ * Contains branding, language selector, and burger menu
  */
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
-    onHomeClick
+    onHomeClick,
+    language = 'id',
+    onLanguageChange,
+    onMenuClick
 }) => {
     return (
-        <header className="bg-white shadow-md sticky top-0 z-30 w-full max-w-full overflow-hidden">
-            <div className="w-full px-4 py-4">
-                <div className="flex items-center justify-between">
+        <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
+            <div className="w-full px-4 py-3 sm:py-4">
+                <div className="flex justify-between items-center max-w-full">
                     {/* Brand on the left */}
-                    <h1 className="text-xl font-bold text-gray-800">
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
                     
-                    {/* Home icon on the right */}
-                    <button
-                        onClick={onHomeClick}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Go to home"
-                    >
-                        <Home className="w-6 h-6 text-gray-600" />
-                    </button>
+                    {/* Right side: Language selector + Burger menu */}
+                    <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
+                        {/* Language Selector - Flag Icon */}
+                        {onLanguageChange && (
+                            <button 
+                                onClick={() => {
+                                    const currentLang = language || 'id';
+                                    const newLanguage = currentLang === 'id' ? 'en' : 'id';
+                                    console.log('🌐 Language Toggle:');
+                                    console.log('  - Current:', currentLang);
+                                    console.log('  - New:', newLanguage);
+                                    onLanguageChange(newLanguage);
+                                }} 
+                                className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                                title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                            >
+                                <span className="text-xl sm:text-2xl">
+                                    {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                                </span>
+                            </button>
+                        )}
+
+                        {/* Burger Menu Icon */}
+                        {onMenuClick && (
+                            <button 
+                                onClick={onMenuClick}
+                                title="Menu" 
+                                className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                            >
+                                <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </header>

@@ -327,8 +327,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         
         console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
         
-        // Create simple WhatsApp booking message
-        let message = `Hi, can I book massage for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you. Booking ID: ${bookingResponse.$id}`;
+        // Create simple WhatsApp booking message - adapt for facial vs massage
+        const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
+          ? 'facial treatment' 
+          : 'massage';
+        let message = `Hi, can I book ${serviceType} for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you. Booking ID: ${bookingResponse.$id}`;
 
         // Send WhatsApp message directly to therapist/place
         if (therapistWhatsApp) {
@@ -349,8 +352,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       } catch (saveError: any) {
         console.error('❌ Error saving scheduled booking to Appwrite:', saveError);
         
-        // Still send WhatsApp message even if save fails
-        let message = `Hi, can I book massage for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you.`;
+        // Still send WhatsApp message even if save fails - adapt for facial vs massage
+        const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
+          ? 'facial treatment' 
+          : 'massage';
+        let message = `Hi, can I book ${serviceType} for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you.`;
         
         if (therapistWhatsApp) {
           const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;

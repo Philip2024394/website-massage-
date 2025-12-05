@@ -98,67 +98,67 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="space-y-2">
                 <button onClick={() => handleItemClick(undefined, 'indastreet-partners')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.accommodationMassageService')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Partners</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'joinIndastreet')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.joinIndastreet')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Join IndaStreet</span>
                 </button>
                 <button onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Briefcase className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.massageJobs')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Massage Jobs</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'how-it-works')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.howItWorks')}</span>
+                  <span className="text-sm text-gray-700 font-medium">How It Works</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'about-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Info className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.aboutUs')}</span>
+                  <span className="text-sm text-gray-700 font-medium">About Us</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'company-profile')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.companyProfile')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Company Profile</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'contact-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.contact')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Contact</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'blog')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.blog')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Blog</span>
                 </button>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
                 <button onClick={() => handleItemClick(undefined, 'massage-bali')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.massageInBali')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Massage in Bali</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('balinese-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.traditionalBalineseMassage')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Balinese Massage</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('deep-tissue-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.deepTissueMassage')}</span>
+                  <span className="text-sm text-gray-700 font-medium">Deep Tissue Massage</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('faq'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">{translate('home.menu.faq')}</span>
+                  <span className="text-sm text-gray-700 font-medium">FAQ</span>
                 </button>
                 <div className="space-y-2">
                   <button onClick={() => handleItemClick(onTherapistPortalClick, 'therapistLogin')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{translate('home.menu.therapistPortal')}</span>
+                    <span className="text-sm text-gray-700 font-medium">Therapist Portal</span>
                   </button>
                   <button onClick={() => handleItemClick(onMassagePlacePortalClick, 'massagePlaceLogin')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{translate('home.menu.massageSpaPortal')}</span>
+                    <span className="text-sm text-gray-700 font-medium">Massage Spa Portal</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{translate('home.menu.websitePartnersPortal')}</span>
+                    <span className="text-sm text-gray-700 font-medium">Website Partners</span>
                   </button>
                 </div>
               </div>

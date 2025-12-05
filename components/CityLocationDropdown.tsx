@@ -32,6 +32,16 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
   const portalRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
+  // Auto-close dropdown after 5 seconds
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        setIsOpen(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   // Fetch cities from Appwrite on component mount
   useEffect(() => {
     const loadCities = async () => {
@@ -102,15 +112,15 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
       return placeholder;
     }
     
-    // Find the selected city to include its emoji and "Viewing:" prefix
+    // Find the selected city - simple display without emojis
     for (const category of cities) {
       const foundCity = category.cities.find(city => city.name === selectedCity);
       if (foundCity) {
-        return `Viewing: ${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
+        return foundCity.name;
       }
     }
     
-    return `Viewing: ${selectedCity}`;
+    return selectedCity;
   };
 
   const ChevronDownIcon = () => (
@@ -180,7 +190,7 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
               width: `${menuPos.width}px`,
               zIndex: 9999
             }}
-            className="mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            className="mt-1 bg-white border-2 border-orange-500 rounded-xl shadow-lg max-h-60 overflow-y-auto"
           >
             {includeAll && (
               <button
@@ -216,8 +226,6 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
                       `}
                     >
                       {city.name}
-                      {city.isTouristDestination && ' 🏖️'}
-                      {city.isMainCity && !city.isTouristDestination && ' 🏙️'}
                     </button>
                   ))}
                 </div>
