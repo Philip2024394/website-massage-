@@ -929,13 +929,15 @@ const HomePage: React.FC<HomePageProps> = ({
             </PageContainer>
             </main>
             <main>
-            <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-24">
-                {/* Hero Section - Optimized Layout */}
-                <div className="space-y-3 max-w-6xl mx-auto">
-                    {/* Location Display */}
-                    <div className="w-full">
-                        {userLocation ? (
-                            <div className="flex flex-col items-center gap-0.5 py-2">
+            {/* Fixed Hero Section - Always Visible */}
+            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
+                <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-3">
+                    {/* Hero Section - Optimized Layout */}
+                    <div className="space-y-3 max-w-6xl mx-auto">
+                        {/* Location Display */}
+                        <div className="w-full">
+                            {userLocation ? (
+                                <div className="flex flex-col items-center gap-0.5 py-2">
                                 <div className="flex items-center justify-center gap-2">
                                     <svg 
                                         className="w-4 h-4 text-gray-600" 
@@ -1056,11 +1058,12 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     </div>
                 </div>
-                    
-                    {/* Massage Directory hero button removed as requested */}
-                </div>
-
-                {/* Therapists and Places Display */}
+            </PageContainer>
+            </div>
+            
+            {/* Scrollable Content Area */}
+            <PageContainer className="px-3 sm:px-4 pt-4 pb-24">
+                {/* Content changes based on active tab */}
                 {activeTab === 'home' && (
                     <div className="max-w-full overflow-x-hidden pb-8">
                         <div className="mb-3 text-center">
