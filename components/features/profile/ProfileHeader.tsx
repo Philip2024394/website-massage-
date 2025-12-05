@@ -1,5 +1,5 @@
 import React from 'react';
-import { BurgerMenuIcon } from '../../icons/BurgerMenuIcon';
+import BurgerMenuIcon from '../../icons/BurgerMenuIcon';
 
 interface ProfileHeaderProps {
     onHomeClick: () => void;
