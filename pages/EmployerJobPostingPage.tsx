@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Building2, MapPin, DollarSign, Home, Briefcase, Phone, Mail, X, Menu } from 'lucide-react';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 
 interface EmployerJobPostingPageProps {
     onNavigateToPayment?: (jobId: string) => void;

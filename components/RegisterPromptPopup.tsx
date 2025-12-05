@@ -45,7 +45,8 @@ const RegisterPromptPopup: React.FC<RegisterPromptPopupProps> = ({
         }
     };
 
-    const t = translations[language] || translations.en;
+    const lang = language === 'gb' ? 'en' : language;
+    const t = translations[lang] || translations.en;
     const contextData = t[context];
 
     return (

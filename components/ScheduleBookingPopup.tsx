@@ -63,7 +63,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   discountActive = false
 }) => {
   const { language } = useLanguage();
-  const t = translations[language] || translations['id'];
+  const lang = language === 'gb' ? 'en' : language;
+  const t = translations[lang] || translations['id'];
   
   const [step, setStep] = useState<'duration' | 'time' | 'details'>('duration');
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);

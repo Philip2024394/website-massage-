@@ -42,11 +42,6 @@ export {
   // Hotel/Villa
   hotelVillaBookingService,
   
-  // Shop & Coins (deprecated but kept for compatibility)
-  shopItemService,
-  coinService,
-  shopOrderService,
-  
   // Utilities
   customLinksService,
 } from '../appwriteService';

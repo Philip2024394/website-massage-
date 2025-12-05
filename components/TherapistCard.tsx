@@ -534,7 +534,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
         // Play booking confirmation sound
         try {
-            const audio = new Audio('/sounds/success-notification.mp3');
+            const audio = new Audio('/sounds/booking-notification.mp3');
             audio.volume = 0.3;
             audio.play().catch(err => console.log('Sound play failed:', err));
         } catch (error) {

@@ -82,17 +82,17 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             <button
               onClick={() => {
                 const timestamp = new Date().toISOString();
-                console.log(`🔘 GlobalHeader [${timestamp}]: EN button clicked, current language:`, language);
-                setLanguage('en');
-                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("en") called`);
+                console.log(`🔘 GlobalHeader [${timestamp}]: GB button clicked, current language:`, language);
+                setLanguage('gb');
+                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("gb") called`);
               }}
               className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                language === 'en' 
+                language === 'gb' 
                   ? 'bg-orange-500 text-white' 
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              EN
+              GB
             </button>
             <button
               onClick={() => {

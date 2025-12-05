@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Therapist, Place } from '../types';
-import { therapistService, placeService } from '../lib/appwriteService';
+import { therapistService, placeService, hotelService } from '../lib/appwriteService';
 import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 import { robustCollectionQuery } from '../lib/robustApiWrapper';
@@ -16,6 +16,7 @@ export const useDataFetching = () => {
     const fetchPublicData = useCallback(async (): Promise<{
         therapists: Therapist[];
         places: Place[];
+        hotels: any[];
     }> => {
         try {
             setIsLoading(true);
@@ -38,6 +39,15 @@ export const useDataFetching = () => {
             );
             console.log('✅ Places data received:', placesData?.length || 0);
             
+            // Try to fetch hotels for location dropdown filtering
+            console.log('🔄 Attempting to fetch hotels data...');
+            const hotelsData = await robustCollectionQuery(
+                () => hotelService.getHotels(),
+                'hotels',
+                [] as any[]
+            );
+            console.log('✅ Hotels data received:', hotelsData?.length || 0);
+            
             // Initialize review data for new accounts
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 
                 reviewService.initializeProvider(therapist) as Therapist
@@ -47,9 +57,15 @@ export const useDataFetching = () => {
                 reviewService.initializeProvider(place) as Place
             );
             
+            // Initialize review data for hotels (if needed)
+            const hotelsWithReviews = (hotelsData || []).map((hotel: any) => 
+                reviewService.initializeProvider(hotel) as any
+            );
+            
             return {
                 therapists: therapistsWithReviews,
-                places: placesWithReviews
+                places: placesWithReviews,
+                hotels: hotelsWithReviews
             };
         } catch (error) {
             console.error('❌ Error fetching public data from Appwrite:', error);
@@ -72,7 +88,8 @@ export const useDataFetching = () => {
             // Return empty arrays instead of mock data - force real Appwrite connection
             return {
                 therapists: [],
-                places: []
+                places: [],
+                hotels: []
             };
         } finally {
             setIsLoading(false);

@@ -15,7 +15,7 @@ import {
     Calendar as CalendarIcon
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import FlyingButterfly from "../components/FlyingButterfly";
 import AnonymousReviewModal from "../components/AnonymousReviewModal";
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';

@@ -50,15 +50,29 @@ export const storageUtils = {
   }
 };
 
-// Google Maps utility
+// Google Maps utility with improved duplicate prevention
 export const loadGoogleMapsScript = (apiKey: string, onLoad?: () => void, onError?: () => void) => {
+  // Check if script already exists
   if (document.getElementById(APP_CONSTANTS.GOOGLE_MAPS_SCRIPT_ID)) {
+    // If Google Maps is already loaded, call onLoad immediately
+    if ((window as any).google && (window as any).google.maps) {
+      console.log('Google Maps already loaded, calling onLoad');
+      onLoad?.();
+    }
     return;
   }
   
+  // Check if Google Maps API is already available globally
+  if ((window as any).google && (window as any).google.maps) {
+    console.log('Google Maps API already available globally');
+    onLoad?.();
+    return;
+  }
+  
+  console.log('Loading Google Maps API script...');
   const script = document.createElement('script');
   script.id = APP_CONSTANTS.GOOGLE_MAPS_SCRIPT_ID;
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry&loading=async`;
   script.async = true;
   script.defer = true;
   script.onload = () => {

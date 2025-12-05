@@ -5,7 +5,7 @@ import { HeroSection } from '../components/features/profile/HeroSection';
 import { GalleryImageCard } from '../components/features/profile/GalleryImageCard';
 import { ServiceItem } from '../components/features/profile/ServiceItem';
 import { ExpandedImageModal } from '../components/features/profile/ExpandedImageModal';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import SocialMediaSection from '../components/features/profile/SocialMediaSection';
 import { Bike, Car } from 'lucide-react';
 import { getUserLocation, createTaxiBookingLink, openTaxiApp } from '../services/taxiBookingService';

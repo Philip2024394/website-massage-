@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { therapistService, placeService } from '../lib/appwriteService';
 import { parseLanguages } from '../utils/appwriteHelpers';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface MassageBaliPageProps {

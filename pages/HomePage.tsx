@@ -7,7 +7,7 @@ import RatingModal from '../components/RatingModal';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService } from '../lib/appwriteService';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { Users, Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
@@ -18,7 +18,8 @@ import PageNumberBadge from '../components/PageNumberBadge';
 import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
-import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity } from '../constants/indonesianCities';
+import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, findCityByCoordinates } from '../constants/indonesianCities';
+import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
 
 
 interface HomePageProps {
@@ -29,6 +30,7 @@ interface HomePageProps {
     userCoins?: UserCoins | null; // Add user coins
     therapists: any[];
     places: any[];
+    hotels: any[];
     userLocation: UserLocation | null;
     selectedCity?: string; // Add optional prop for external control
     onSetUserLocation: (location: UserLocation) => void;
@@ -63,6 +65,33 @@ interface HomePageProps {
 
 
 
+// Coordinate parsing utility to handle different formats
+const parseCoordinates = (coordinates: any): { lat: number; lng: number } | null => {
+    if (!coordinates) return null;
+    
+    // Handle Point format [lng, lat] - Appwrite GeoJSON standard
+    if (Array.isArray(coordinates) && coordinates.length === 2) {
+        return { lat: coordinates[1], lng: coordinates[0] };
+    }
+    
+    // Handle JSON string format
+    if (typeof coordinates === 'string') {
+        try {
+            const parsed = JSON.parse(coordinates);
+            if (parsed.lat && parsed.lng) {
+                return { lat: parsed.lat, lng: parsed.lng };
+            }
+        } catch {}
+    }
+    
+    // Handle object format
+    if (coordinates.lat && coordinates.lng) {
+        return { lat: coordinates.lat, lng: coordinates.lng };
+    }
+    
+    return null;
+};
+
 // Icon used in massage type filter
 const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -76,6 +105,7 @@ const HomePage: React.FC<HomePageProps> = ({
     loggedInCustomer,
     therapists,
     places,
+    hotels,
     userLocation,
     selectedCity: propSelectedCity, // Get from prop
     onSetUserLocation, 
@@ -220,6 +250,7 @@ const HomePage: React.FC<HomePageProps> = ({
     const [autoDetectedLocation, setAutoDetectedLocation] = useState<{lat: number, lng: number} | null>(null);
     const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
+    const [nearbyHotels, setNearbyHotels] = useState<any[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
@@ -228,6 +259,23 @@ const HomePage: React.FC<HomePageProps> = ({
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const locationInputRef = useRef<HTMLInputElement>(null);
     const autocompleteRef = useRef<any>(null);
+    
+    // Initialize Google Maps for city location functionality
+    useEffect(() => {
+        const initGoogleMaps = async () => {
+            try {
+                console.log('🗺️ Initializing Google Maps for city location system...');
+                await initializeGoogleMaps();
+                setMapsApiLoaded(true);
+                console.log('✅ Google Maps initialized successfully for city filtering');
+            } catch (error) {
+                console.warn('⚠️ Google Maps failed to load, using fallback location matching:', error);
+                // City filtering will work with coordinate-based matching without Google Maps
+            }
+        };
+        
+        initGoogleMaps();
+    }, []);
 
     // Fisher-Yates shuffle to randomize array order
     const shuffleArray = (arr: string[]) => {
@@ -526,21 +574,66 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent, autoDetectedLocation, isLocationDetecting, userLocation, onSetUserLocation]);
 
+    // Auto-detect city from user location and update selectedCity
+    useEffect(() => {
+        if (userLocation && userLocation.lat && userLocation.lng) {
+            // Find the closest Indonesian city to user's location
+            const detectedCity = findCityByCoordinates(userLocation.lat, userLocation.lng);
+            if (detectedCity && detectedCity.name !== selectedCity && selectedCity === 'all') {
+                console.log('🎯 Auto-detected city from user location:', detectedCity.name);
+                setSelectedCity(detectedCity.name);
+            }
+        }
+    }, [userLocation]);
+
     // Filter therapists and places by location automatically
     useEffect(() => {
         const filterByLocation = async () => {
             const locationToUse = autoDetectedLocation || userLocation;
             
-            // Always show all therapists and places (location filtering disabled)
-            console.log('🌍 Location filtering disabled - showing all therapists and places');
+            // Location filtering enabled with city-based matching
+            console.log('🌍 Location filtering enabled - using city-based filtering');
             console.log('📊 Data counts:', {
                 totalTherapists: therapists?.length || 0,
                 totalPlaces: places?.length || 0,
                 liveTherapists: therapists?.filter((t: any) => t.isLive)?.length || 0,
                 livePlaces: places?.filter((p: any) => p.isLive)?.length || 0
             });
-            setNearbyTherapists(therapists);
-            setNearbyPlaces(places);
+            
+            // For now, set default coordinates to Yogyakarta if no location available
+            const defaultYogyaCoords = { lat: -7.7956, lng: 110.3695 };
+            
+            // Add default coordinates to therapists and places if missing
+            const therapistsWithCoords = therapists.map((t: any) => {
+                const parsedCoords = parseCoordinates(t.coordinates);
+                return {
+                    ...t,
+                    coordinates: parsedCoords || defaultYogyaCoords,
+                    location: t.location || 'Yogyakarta'
+                };
+            });
+            
+            const placesWithCoords = places.map((p: any) => {
+                const parsedCoords = parseCoordinates(p.coordinates);
+                return {
+                    ...p,
+                    coordinates: parsedCoords || defaultYogyaCoords,
+                    location: p.location || 'Yogyakarta'
+                };
+            });
+            
+            const hotelsWithCoords = hotels.map((h: any) => {
+                const parsedCoords = parseCoordinates(h.coordinates);
+                return {
+                    ...h,
+                    coordinates: parsedCoords || defaultYogyaCoords,
+                    location: h.location || 'Yogyakarta'
+                };
+            });
+            
+            setNearbyTherapists(therapistsWithCoords);
+            setNearbyPlaces(placesWithCoords);
+            setNearbyHotels(hotelsWithCoords);
             
             /* ORIGINAL LOCATION FILTERING CODE - Re-enable after adding coordinates to therapists
             if (!locationToUse) {
@@ -589,7 +682,7 @@ const HomePage: React.FC<HomePageProps> = ({
         };
 
         filterByLocation();
-    }, [therapists, places, autoDetectedLocation, userLocation]);
+    }, [therapists, places, hotels, autoDetectedLocation, userLocation]);
 
     // Log therapist display info with location filtering
     useEffect(() => {
@@ -602,21 +695,73 @@ const HomePage: React.FC<HomePageProps> = ({
         const filteredTherapists = liveTherapists.filter((t: any) => {
             if (selectedCity === 'all') return true;
             
-            // Try to match therapist location to selected city
+            // Try multiple matching strategies for city filtering
+            
+            // 1. Direct location name match
+            if (t.location && t.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+                return true;
+            }
+            
+            // 2. Coordinate-based matching
             if (t.coordinates) {
-                const therapistLocation = { lat: t.coordinates.lat || 0, lng: t.coordinates.lng || 0 };
-                const matchedCity = matchProviderToCity(therapistLocation, 25);
-                return matchedCity?.name === selectedCity;
+                const parsedCoords = parseCoordinates(t.coordinates);
+                if (parsedCoords) {
+                    const matchedCity = matchProviderToCity(parsedCoords, 25);
+                    if (matchedCity && matchedCity.name === selectedCity) {
+                        return true;
+                    }
+                }
+            }
+            
+            // 3. Check aliases for common name variations (Yogya, Jogja for Yogyakarta)
+            const selectedCityLower = selectedCity.toLowerCase();
+            if (selectedCityLower === 'yogyakarta' && 
+                t.location && (t.location.toLowerCase().includes('yogya') || t.location.toLowerCase().includes('jogja'))) {
+                return true;
             }
             
             return false;
         });
         
-        console.log('🏠 [HomePage RENDER] Therapist Display Debug (Location-Filtered 50km radius):');
+        // Filter hotels by selected city (similar logic to therapists)
+        const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
+        const filteredHotels = liveHotels.filter((h: any) => {
+            if (selectedCity === 'all') return true;
+            
+            // Try multiple matching strategies for city filtering
+            
+            // 1. Direct location name match
+            if (h.location && h.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+                return true;
+            }
+            
+            // 2. Coordinate-based matching
+            if (h.coordinates) {
+                const parsedCoords = parseCoordinates(h.coordinates);
+                if (parsedCoords) {
+                    const matchedCity = matchProviderToCity(parsedCoords, 25);
+                    if (matchedCity && matchedCity.name === selectedCity) {
+                        return true;
+                    }
+                }
+            }
+            
+            // 3. Check aliases for common name variations (Yogya, Jogja for Yogyakarta)
+            const selectedCityLower = selectedCity.toLowerCase();
+            if (selectedCityLower === 'yogyakarta' && 
+                h.location && (h.location.toLowerCase().includes('yogya') || h.location.toLowerCase().includes('jogja'))) {
+                return true;
+            }
+            
+            return false;
+        });
+        
+        console.log('🏠 [HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius):');
         console.log('  📊 Total therapists prop:', therapists.length, therapists.map((t: any) => ({ id: t.$id || t.id, name: t.name, isLive: t.isLive })));
         console.log('  📍 Nearby therapists (location-filtered):', nearbyTherapists.length);
         console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
         console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
+        console.log('  🏨 Final filtered hotels (location):', filteredHotels.length);
         console.log('  📍 Auto-detected location:', autoDetectedLocation);
         console.log('  🏙️ Selected city:', selectedCity);
         const missingCoords = therapists.filter((t: any)=>!t.coordinates).length;
@@ -629,7 +774,15 @@ const HomePage: React.FC<HomePageProps> = ({
         const missingPlaceCoords = places.filter((p: any)=>!p.coordinates).length;
         console.log('  ⚠️ Places missing coordinates:', missingPlaceCoords);
         console.log('  🔴 Live nearby places:', livePlaces.length);
-    }, [therapists, nearbyTherapists, places, nearbyPlaces, selectedCity, autoDetectedLocation]);
+        
+        // Also log hotels 
+        const liveHotelsCount = nearbyHotels.filter((h: any) => h.isLive === true).length;
+        console.log('  🏨 Total hotels prop:', hotels.length);
+        console.log('  📍 Nearby hotels (location-filtered):', nearbyHotels.length);
+        const missingHotelCoords = hotels.filter((h: any)=>!h.coordinates).length;
+        console.log('  ⚠️ Hotels missing coordinates:', missingHotelCoords);
+        console.log('  🔴 Live nearby hotels:', liveHotelsCount);
+    }, [therapists, nearbyTherapists, places, nearbyPlaces, hotels, nearbyHotels, selectedCity, autoDetectedLocation]);
 
     useEffect(() => {
         // Fetch custom drawer links
@@ -775,7 +928,7 @@ const HomePage: React.FC<HomePageProps> = ({
             <main>
             <PageContainer className="px-2 sm:px-4 pb-24">
                 {/* Location Display & Search */}
-                <div className="mb-4 w-full mt-6">
+                <div className="mb-3 w-full mt-4">
                     {userLocation ? (
                         <div className="flex flex-col items-center gap-1">
                             <div className="flex items-center justify-center gap-2">
@@ -805,7 +958,22 @@ const HomePage: React.FC<HomePageProps> = ({
                                     })()}
                                 </span>
                             </div>
-                            <p className="text-xs text-gray-600 font-medium">Indonesia's Massage Therapist Hub</p>
+                            <div className="flex items-center justify-center gap-1">
+                                <span className="text-xs text-gray-500">Viewing:</span>
+                                <span className="text-xs font-medium text-orange-600">
+                                    {selectedCity === 'all' ? 'All Indonesia' : (() => {
+                                        // Find city to show emoji
+                                        for (const category of INDONESIAN_CITIES_CATEGORIZED) {
+                                            const foundCity = category.cities.find(city => city.name === selectedCity);
+                                            if (foundCity) {
+                                                return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
+                                            }
+                                        }
+                                        return selectedCity;
+                                    })()}
+                                </span>
+                            </div>
+                            <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center gap-2 max-w-md mx-auto">
@@ -822,7 +990,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     )}
                 </div>
-                <div className="flex bg-gray-200 rounded-full p-1 mb-4">
+                <div className="flex bg-gray-200 rounded-full p-1 mb-3">
                     <button 
                         onClick={() => setActiveTab('home')} 
                         className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
@@ -838,47 +1006,36 @@ const HomePage: React.FC<HomePageProps> = ({
                         <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
                     </button>
                 </div>
-
-
-                <div className="space-y-3 mb-6 w-full max-w-full overflow-hidden">
+                <div className="space-y-2 mb-4 w-full max-w-full overflow-visible">
                     <div className="flex flex-wrap items-center w-full max-w-full gap-2">
-                        <div className="relative flex-1 min-w-0 max-w-[280px] z-10">
+                        <div className="relative flex-1 min-w-0 max-w-[280px] z-20">
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={setSelectedCity}
-                                placeholder={translationsObject?.home?.cityLocation || 'City / Location'}
+                                placeholder={selectedCity === 'all' ? 
+                                    (translationsObject?.home?.viewingAllIndonesia || '🇮🇩 All Indonesia') : 
+                                    (translationsObject?.home?.selectDifferentCity || '📍 Select Different City')
+                                }
                                 includeAll={true}
                                 showLabel={false}
                                 className="w-full min-w-0 max-w-full"
                             />
                         </div>
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (onNavigate) {
-                                    try {
-                                        onNavigate('joinIndastreet');
-                                    } catch (error) {
-                                        alert('Navigation function not available. Please refresh the page.');
-                                    }
-                                } else {
-                                    alert('Navigation function not available. Please refresh the page.');
-                                }
-                            }}
-                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 h-[42px] w-[60px] max-w-[60px]"
+                        <a 
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0"
                             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
-                            type="button"
-                            title="Join Indastreet"
+                            title="Facials Indonesia"
                         >
                             <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet_button-removebg-preview.png"
-                                alt="Join Indastreet"
-                                className="select-none transition-opacity hover:opacity-90 h-[28px] w-auto object-contain max-w-full"
+                                src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
+                                alt="Facials Indonesia"
+                                className="select-none transition-opacity hover:opacity-90 h-[168px] w-[168px] object-contain"
                                 loading="lazy"
                                 draggable={false}
                             />
-                        </button>
+                        </a>
                     </div>
                     
                     {/* Massage Directory hero button removed as requested */}
@@ -909,9 +1066,11 @@ const HomePage: React.FC<HomePageProps> = ({
                                     
                                     // Try to match therapist location to selected city
                                     if (t.coordinates) {
-                                        const therapistLocation = { lat: t.coordinates.lat || 0, lng: t.coordinates.lng || 0 };
-                                        const matchedCity = matchProviderToCity(therapistLocation, 25);
-                                        return matchedCity?.name === selectedCity;
+                                        const parsedCoords = parseCoordinates(t.coordinates);
+                                        if (parsedCoords) {
+                                            const matchedCity = matchProviderToCity(parsedCoords, 25);
+                                            return matchedCity?.name === selectedCity;
+                                        }
                                     }
                                     
                                     return false;
@@ -1019,7 +1178,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                         </svg>
-                                        <span className="font-medium">Accommodation With Massage Service</span>
+                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
                                     </button>
                                 </div>
                                 </>
@@ -1070,11 +1229,12 @@ const HomePage: React.FC<HomePageProps> = ({
                         
                         {/* Show places from Appwrite */}
                         {(() => {
-                            console.log('🏨 Massage Places Tab:', {
-                                totalPlaces: places?.length,
-                                livePlaces: places?.filter(p => p.isLive).length,
-                                places: places
-                            });
+                            // Dev summary (avoid logging full objects to prevent console slowdowns)
+                            try {
+                                const total = places?.length ?? 0;
+                                const live = places ? places.filter((p: any) => p.isLive).length : 0;
+                                console.log(`🏨 Massage Places Tab → total: ${total}, live: ${live}`);
+                            } catch {}
                             
                             const livePlaces = (places?.filter((place: any) => {
                                 // Filter by live status first
@@ -1085,7 +1245,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                 
                                 // Try to match place location to selected city
                                 if (place.coordinates) {
-                                    const placeLocation = { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
+                                    // Handle both array [lng, lat] and object {lat, lng} formats
+                                    const placeLocation = Array.isArray(place.coordinates)
+                                        ? { lat: place.coordinates[1], lng: place.coordinates[0] }
+                                        : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
                                     const matchedCity = matchProviderToCity(placeLocation, 25);
                                     return matchedCity?.name === selectedCity;
                                 }
@@ -1165,7 +1328,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                                         <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
                                                             <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                                         </svg>
-                                                        <span className="font-medium">Accommodation With Massage Service</span>
+                                                        <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
                                                     </button>
                                                 </div>
                                                 </>

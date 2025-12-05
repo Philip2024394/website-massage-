@@ -4,7 +4,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 import { Page } from '../types/pageTypes';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface MassageTypesPageProps {

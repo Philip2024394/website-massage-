@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 
 interface HotStoneMassagePageProps {
     onBack?: () => void;

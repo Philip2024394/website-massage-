@@ -1,5 +1,7 @@
 // Main image URLs for therapist cards on HOME PAGE (stored in Appwrite)
 import type { MonthlyAgentMetrics } from '../types';
+import { getNonRepeatingMainImage } from './appwrite/image.service';
+export { getRandomLiveMenuImage, getNonRepeatingMainImage } from './appwrite/image.service';
 
 // Email notification function for admin
 async function sendAdminNotification(data: {
@@ -47,101 +49,6 @@ Registration Date: ${new Date(data.registrationDate).toLocaleString()}
         throw error;
     }
 }
-
-const THERAPIST_MAIN_IMAGES = [
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4181001758526d84/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4182001d05a11a19/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4183001a3a6fd0de/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4184001bba3a3a9d/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418500198158d9d3/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe41860014a143394d/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418700130b19a410/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4188000e00025cea/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4189000abe1fd8d6/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418a0008edd3281a/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418b0007ac3e55ba/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418c0001a5b36c2c/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418c0039995990e9/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418d00337f9be339/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418e0034947bfaa6/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe418f0031bcb56ded/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4190002fc09e44fe/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4191002e5db0dfef/view?project=68f23b11000d25eb3664',
-];
-
-// Live menu image URLs for hotel/villa therapist cards (7 images - stored in Appwrite)
-const LIVE_MENU_THERAPIST_IMAGES = [
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4192003445db55a5/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4193002fea8ca8b3/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4194002b1ef92ede/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe419500258663d862/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4196001f02b409df/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe419700157b08b70c/view?project=68f23b11000d25eb3664',
-    'https://syd.cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/68fe4198000f867f6e47/view?project=68f23b11000d25eb3664',
-];
-
-// Helper functions to assign main images without repeats until pool is exhausted
-const IMAGE_POOL_STORAGE_KEY = 'therapist_main_image_pool_v2';
-const IMAGE_POOL_HASH_KEY = 'therapist_main_image_pool_hash_v2';
-
-const hashImageList = (list: string[]): string => {
-    // Simple stable hash
-    const data = list.join('|');
-    let h = 0;
-    for (let i = 0; i < data.length; i++) {
-        h = (h << 5) - h + data.charCodeAt(i);
-        h |= 0;
-    }
-    return String(h);
-};
-
-const shuffle = <T,>(arr: T[]): T[] => {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-};
-
-const getNonRepeatingMainImage = (index: number): string => {
-    // If no window (e.g., server or script), fall back to deterministic cycle
-    if (typeof window === 'undefined') {
-        return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
-    }
-
-    try {
-        const storedHash = localStorage.getItem(IMAGE_POOL_HASH_KEY);
-        const currentHash = hashImageList(THERAPIST_MAIN_IMAGES);
-        let pool: string[] | null = null;
-
-        if (storedHash === currentHash) {
-            const raw = localStorage.getItem(IMAGE_POOL_STORAGE_KEY);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed) && parsed.length === THERAPIST_MAIN_IMAGES.length) {
-                    pool = parsed as string[];
-                }
-            }
-        }
-
-        if (!pool) {
-            pool = shuffle(THERAPIST_MAIN_IMAGES);
-            localStorage.setItem(IMAGE_POOL_STORAGE_KEY, JSON.stringify(pool));
-            localStorage.setItem(IMAGE_POOL_HASH_KEY, currentHash);
-        }
-
-        return pool[index % pool.length];
-    } catch (_e) {
-        // If localStorage blocked, gracefully fallback
-        return THERAPIST_MAIN_IMAGES[index % THERAPIST_MAIN_IMAGES.length];
-    }
-};
-
-// Helper function to get random live menu image
-export const getRandomLiveMenuImage = (): string => {
-    return LIVE_MENU_THERAPIST_IMAGES[Math.floor(Math.random() * LIVE_MENU_THERAPIST_IMAGES.length)];
-};
 
 // --- Image Upload Service ---
 export const imageUploadService = {
@@ -350,24 +257,8 @@ import type { AgentVisit } from '../types';
 
 
 // Initialize Appwrite Client
-const client = new Client()
-    .setEndpoint(APPWRITE_CONFIG.endpoint)
-    .setProject(APPWRITE_CONFIG.projectId);
-
-const databases = new Databases(client);
-const account = new Account(client);
-const storage = new Storage(client);
-
-// Suppress Appwrite localStorage warning (we've disabled localStorage globally)
-if (typeof window !== 'undefined') {
-    const originalWarn = console.warn;
-    console.warn = (...args: any[]) => {
-        if (typeof args[0] === 'string' && args[0].includes('Appwrite is using localStorage')) {
-            return; // Suppress: localStorage disabled globally via disableLocalStorage.ts
-        }
-        originalWarn.apply(console, args);
-    };
-}
+// Import from new modular structure
+import { appwriteClient as client, appwriteDatabases as databases, appwriteAccount as account, appwriteStorage as storage } from './appwrite/client';
 
 export const appwriteClient = client;
 export const appwriteDatabases = databases;
@@ -1478,6 +1369,51 @@ export const placeService = {
 };
 
 // ================================
+// Hotel Service
+// ================================
+export const hotelService = {
+    async getHotels(): Promise<any[]> {
+        try {
+            console.log('🏨 Fetching hotels from collection:', APPWRITE_CONFIG.collections.hotels);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotels,
+                [Query.limit(100)] // Get up to 100 hotels
+            );
+            console.log('✅ Hotels fetched successfully:', response.documents.length);
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Error fetching hotels:', error);
+            // Log specific error details to help with debugging
+            if (error instanceof Error) {
+                console.error('Hotel fetch error details:', {
+                    message: error.message,
+                    name: error.name
+                });
+                
+                if (error.message.includes('Collection with the requested ID could not be found')) {
+                    console.error('💡 Hotels collection not found. Check collection ID in appwrite.config.ts');
+                }
+            }
+            return [];
+        }
+    },
+    async getHotelById(id: string): Promise<any> {
+        try {
+            const response = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.hotels,
+                id
+            );
+            return response;
+        } catch (error) {
+            console.error('Error fetching hotel by ID:', error);
+            throw error;
+        }
+    }
+};
+
+// ================================
 // Agent Shares Analytics Service
 // ================================
 type SharePlatform = 'whatsapp' | 'facebook' | 'twitter' | 'linkedin' | 'telegram' | 'copy';
@@ -1901,103 +1837,8 @@ export const adminAgentOverviewService = {
     }
 };
 
-export const authService = {
-    async getCurrentUser(): Promise<any> {
-        try {
-            return await account.get();
-        } catch (error) {
-            console.error('Error getting current user:', error);
-            return null;
-        }
-    },
-    async login(email: string, password: string): Promise<any> {
-        try {
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before login');
-            } catch {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
-            }
-            
-            await account.createEmailPasswordSession(email, password);
-            return await account.get();
-        } catch (error) {
-            console.error('Error logging in:', error);
-            throw error;
-        }
-    },
-    async register(
-        email: string,
-        password: string,
-        name: string,
-        options?: { autoLogin?: boolean }
-    ): Promise<any> {
-        try {
-            // Delete any existing session first
-            try {
-                await account.deleteSession('current');
-                console.log('🗑️ Existing session cleared before registration');
-            } catch {
-                // No session to delete, continue
-                console.log('ℹ️ No existing session to clear');
-            }
-            
-            const response = await account.create('unique()', email, password, name);
-            // Auto-login after registration unless explicitly disabled
-            const shouldAutoLogin = options?.autoLogin !== false;
-            if (shouldAutoLogin) {
-                await account.createEmailPasswordSession(email, password);
-            }
-            return response;
-        } catch (error) {
-            console.error('Error registering:', error);
-            throw error;
-        }
-    },
-    async logout(): Promise<void> {
-        try {
-            await account.deleteSession('current');
-        } catch (error) {
-            console.error('Error logging out:', error);
-            throw error;
-        }
-    },
-    async createAnonymousSession(): Promise<any> {
-        try {
-            // Check if already logged in with timeout
-            const currentUser = await Promise.race([
-                account.get(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-            ]).catch(() => null);
-            
-            if (currentUser) {
-                console.log('✅ Session already exists, skipping anonymous creation');
-                return currentUser;
-            }
-            
-            // Create anonymous session with timeout and retry logic
-            await Promise.race([
-                account.createAnonymousSession(),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-            ]);
-            
-            return await account.get();
-        } catch (error: any) {
-            if (error.message?.includes('429')) {
-                console.log('⚠️ Anonymous session rate limited - will retry later');
-                return null;
-            } else if (error.message?.includes('already exists')) {
-                console.log('✅ Anonymous session already exists');
-                return await account.get().catch(() => null);
-            } else {
-                console.log('Anonymous session creation deferred:', error.message);
-                return null;
-            }
-        }
-    }
-};
+// --- Auth Service (now in separate file) ---
+export { authService } from './appwrite/auth.service';
 
 // --- Translations Service ---
 export const translationsService = {
@@ -2013,7 +1854,7 @@ export const translationsService = {
             
             // Initialize with all supported languages
             const translations: any = {
-                en: {}, id: {}, zh: {}, ja: {}, ko: {}, es: {}, fr: {}, de: {}, 
+                en: {}, gb: {}, id: {}, zh: {}, ja: {}, ko: {}, es: {}, fr: {}, de: {}, 
                 it: {}, pt: {}, ru: {}, ar: {}, hi: {}, th: {}, vi: {}, nl: {}, 
                 tr: {}, pl: {}, sv: {}, da: {}
             };
@@ -2038,6 +1879,14 @@ export const translationsService = {
                     translations[language][Key] = value;
                 }
             });
+
+            // Ensure GB mirrors EN if missing
+            if (translations.en) {
+                translations.gb = translations.gb || {};
+                for (const k of Object.keys(translations.en)) {
+                    if (translations.gb[k] === undefined) translations.gb[k] = translations.en[k];
+                }
+            }
             
             return translations;
         } catch (error) {
@@ -2084,6 +1933,7 @@ export const translationsService = {
             // Set required language fields - use short summary for large content
             const safeValue = stringValue.length > 900 ? `${stringValue.substring(0, 900)}...` : stringValue;
             languageData.en = language === 'en' ? safeValue : '';
+            // Do not write a 'gb' column (alias of en) to avoid schema issues
             languageData.id = language === 'id' ? safeValue : '';
             
             // Set optional language fields only if they match the current language
@@ -2100,6 +1950,7 @@ export const translationsService = {
                 
                 // Preserve existing language values and only update the current language
                 languageData.en = language === 'en' ? safeValue : (existingDoc.en || '');
+                // Do not write a 'gb' column (alias of en) to avoid schema issues
                 languageData.id = language === 'id' ? safeValue : (existingDoc.id || '');
                 if (language === 'zh') languageData.zh = safeValue;
                 if (language === 'ja') languageData.ja = safeValue;
@@ -4120,471 +3971,8 @@ export const monthlyAgentMetricsService = {
     }
 };
 
-// --- Coin Shop Service ---
-import { ShopItem, ShopCoinTransaction, ShopOrder, UserCoins } from '../types';
 
-const COIN_SHOP_DATABASE_ID = '68f76ee1000e64ca8d05';
 
-// Collection IDs
-// Coin Shop Collections (update with real IDs once created in Appwrite Console)
-// shopItems collection already documented in COIN_SHOP_COLLECTIONS.md with ID 'shopitems'
-const SHOP_ITEMS_COLLECTION_ID = 'shopitems';
-const COIN_TRANSACTIONS_COLLECTION_ID = 'coin_transactions_collection_id';
-const SHOP_ORDERS_COLLECTION_ID = 'shop_orders_collection_id';
-const USER_COINS_COLLECTION_ID = 'user_coins_collection_id';
-
-// Shop Items Service
-export const shopItemService = {
-    async getActiveItems(): Promise<ShopItem[]> {
-        try {
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ITEMS_COLLECTION_ID,
-                [Query.equal('isActive', true)]
-            );
-            return response.documents as unknown as ShopItem[];
-        } catch (error) {
-            console.error('Error getting active items:', error);
-            return [];
-        }
-    },
-
-    async getAllItems(): Promise<ShopItem[]> {
-        try {
-            console.log('Fetching all items from database:', COIN_SHOP_DATABASE_ID);
-            console.log('Collection:', SHOP_ITEMS_COLLECTION_ID);
-            
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ITEMS_COLLECTION_ID
-            );
-            
-            console.log('Items fetched successfully:', response.documents.length, 'items');
-            console.log('Items:', response.documents);
-            
-            return response.documents as unknown as ShopItem[];
-        } catch (error) {
-            console.error('Error getting all items:', error);
-            return [];
-        }
-    },
-
-    async createItem(item: Partial<ShopItem>): Promise<ShopItem> {
-        try {
-            console.log('Creating shop item with data:', item);
-            console.log('Using database ID:', COIN_SHOP_DATABASE_ID);
-            console.log('Using collection ID:', SHOP_ITEMS_COLLECTION_ID);
-            
-            const response = await databases.createDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ITEMS_COLLECTION_ID,
-                ID.unique(),
-                {
-                    name: item.name,
-                    description: item.description,
-                    coinPrice: item.coinPrice,
-                    imageUrl: item.imageUrl,
-                    category: item.category,
-                    stockQuantity: item.stockQuantity,
-                    isActive: item.isActive ?? true,
-                    estimatedDelivery: item.estimatedDelivery || '6-10 days',
-                    disclaimer: item.disclaimer || 'Design may vary slightly from displayed image'
-                }
-            );
-            console.log('Shop item created successfully:', response);
-            return response as unknown as ShopItem;
-        } catch (error: any) {
-            console.error('Error creating item:', error);
-            console.error('Error details:', {
-                message: error instanceof Error ? error.message : 'Unknown error',
-                code: (error as any)?.code || 'Unknown code',
-                type: (error as any)?.type || 'Unknown type',
-                response: (error as any)?.response || 'No response'
-            });
-            throw error;
-        }
-    },
-
-    async updateItem(itemId: string, updates: Partial<ShopItem>): Promise<ShopItem> {
-        try {
-            console.log('Updating shop item:', itemId, 'with data:', updates);
-            console.log('Using database ID:', COIN_SHOP_DATABASE_ID);
-            console.log('Using collection ID:', SHOP_ITEMS_COLLECTION_ID);
-            
-            const response = await databases.updateDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ITEMS_COLLECTION_ID,
-                itemId,
-                updates
-            );
-            console.log('Shop item updated successfully:', response);
-            return response as unknown as ShopItem;
-        } catch (error: any) {
-            console.error('Error updating item:', error);
-            console.error('Error details:', {
-                message: error instanceof Error ? error.message : 'Unknown error',
-                code: (error as any)?.code || 'Unknown code',
-                type: (error as any)?.type || 'Unknown type',
-                response: (error as any)?.response || 'No response'
-            });
-            throw error;
-        }
-    },
-
-    async deleteItem(itemId: string): Promise<void> {
-        try {
-            console.log('Deleting item from Appwrite:', {
-                database: COIN_SHOP_DATABASE_ID,
-                collection: SHOP_ITEMS_COLLECTION_ID,
-                itemId: itemId
-            });
-            
-            await databases.deleteDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ITEMS_COLLECTION_ID,
-                itemId
-            );
-            
-            console.log('Item deleted successfully from Appwrite');
-        } catch (error: any) {
-            console.error('Error deleting item from Appwrite:', error);
-            console.error('Error details:', {
-                code: (error as any)?.code || 'Unknown code',
-                message: error instanceof Error ? error.message : 'Unknown error',
-                response: (error as any)?.response || 'No response'
-            });
-            throw error;
-        }
-    },
-
-    async updateStock(itemId: string, quantity: number): Promise<void> {
-        try {
-            await this.updateItem(itemId, { stockQuantity: quantity });
-        } catch (error) {
-            console.error('Error updating stock:', error);
-            throw error;
-        }
-    }
-};
-
-// Coin Service
-export const coinService = {
-    async getUserCoins(userId: string): Promise<UserCoins | null> {
-        try {
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                USER_COINS_COLLECTION_ID,
-                [Query.equal('userId', userId)]
-            );
-            
-            if (response.documents.length > 0) {
-                return response.documents[0] as unknown as UserCoins;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error getting user coins:', error);
-            return null;
-        }
-    },
-
-    async initializeUserCoins(userId: string, userType: UserCoins['userType'], userName: string): Promise<UserCoins> {
-        try {
-            // Check if already exists
-            const existing = await this.getUserCoins(userId);
-            if (existing) {
-                return existing;
-            }
-
-            const response = await databases.createDocument(
-                COIN_SHOP_DATABASE_ID,
-                USER_COINS_COLLECTION_ID,
-                ID.unique(),
-                {
-                    userId,
-                    userType,
-                    userName,
-                    totalCoins: 0,
-                    lifetimeEarned: 0,
-                    lifetimeSpent: 0
-                }
-            );
-            
-            return response as unknown as UserCoins;
-        } catch (error) {
-            console.error('Error initializing user coins:', error);
-            throw error;
-        }
-    },
-
-    async addCoins(
-        userId: string,
-        userType: UserCoins['userType'],
-        userName: string,
-        amount: number,
-        description: string,
-        relatedId?: string
-    ): Promise<ShopCoinTransaction> {
-        try {
-            // Get or create user coins
-            let userCoin = await this.getUserCoins(userId);
-            if (!userCoin) {
-                userCoin = await this.initializeUserCoins(userId, userType, userName);
-            }
-            
-            const balanceBefore = userCoin.totalCoins;
-            const balanceAfter = balanceBefore + amount;
-            
-            // Create transaction
-            const transaction = await databases.createDocument(
-                COIN_SHOP_DATABASE_ID,
-                COIN_TRANSACTIONS_COLLECTION_ID,
-                ID.unique(),
-                {
-                    userId,
-                    userType,
-                    userName,
-                    transactionType: 'earn',
-                    amount,
-                    description,
-                    relatedId: relatedId || '',
-                    balanceBefore,
-                    balanceAfter
-                }
-            );
-            
-            // Update user coins
-            await databases.updateDocument(
-                COIN_SHOP_DATABASE_ID,
-                USER_COINS_COLLECTION_ID,
-                userCoin.$id!,
-                {
-                    totalCoins: balanceAfter,
-                    lifetimeEarned: userCoin.lifetimeEarned + amount
-                }
-            );
-            
-            return transaction as unknown as ShopCoinTransaction;
-        } catch (error) {
-            console.error('Error adding coins:', error);
-            throw error;
-        }
-    },
-
-    async deductCoins(
-        userId: string,
-        userType: UserCoins['userType'],
-        userName: string,
-        amount: number,
-        description: string,
-        relatedId?: string
-    ): Promise<ShopCoinTransaction> {
-        try {
-            const userCoin = await this.getUserCoins(userId);
-            if (!userCoin) {
-                throw new Error('User coins not found');
-            }
-            
-            if (userCoin.totalCoins < amount) {
-                throw new Error('Insufficient coins');
-            }
-            
-            const balanceBefore = userCoin.totalCoins;
-            const balanceAfter = balanceBefore - amount;
-            
-            // Create transaction
-            const transaction = await databases.createDocument(
-                COIN_SHOP_DATABASE_ID,
-                COIN_TRANSACTIONS_COLLECTION_ID,
-                ID.unique(),
-                {
-                    userId,
-                    userType,
-                    userName,
-                    transactionType: 'spend',
-                    amount: -amount,
-                    description,
-                    relatedId: relatedId || '',
-                    balanceBefore,
-                    balanceAfter
-                }
-            );
-            
-            // Update user coins
-            await databases.updateDocument(
-                COIN_SHOP_DATABASE_ID,
-                USER_COINS_COLLECTION_ID,
-                userCoin.$id!,
-                {
-                    totalCoins: balanceAfter,
-                    lifetimeSpent: userCoin.lifetimeSpent + amount
-                }
-            );
-            
-            return transaction as unknown as ShopCoinTransaction;
-        } catch (error) {
-            console.error('Error deducting coins:', error);
-            throw error;
-        }
-    },
-
-    async getTransactionHistory(userId: string): Promise<ShopCoinTransaction[]> {
-        try {
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                COIN_TRANSACTIONS_COLLECTION_ID,
-                [
-                    Query.equal('userId', userId),
-                    Query.orderDesc('$createdAt')
-                ]
-            );
-            
-            return response.documents as unknown as ShopCoinTransaction[];
-        } catch (error) {
-            console.error('Error getting transaction history:', error);
-            return [];
-        }
-    }
-};
-
-// Shop Order Service
-export const shopOrderService = {
-    async createOrder(order: Partial<ShopOrder>): Promise<ShopOrder> {
-        try {
-            // Get order count to generate order number
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID
-            );
-            
-            const orderNumber = `ORD-${new Date().getFullYear()}-${String(response.total + 1).padStart(4, '0')}`;
-            
-            const newOrder = await databases.createDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID,
-                ID.unique(),
-                {
-                    orderNumber,
-                    userId: order.userId,
-                    userType: order.userType,
-                    userName: order.userName,
-                    userEmail: order.userEmail || '',
-                    userPhone: order.userPhone || '',
-                    shippingAddress: JSON.stringify(order.shippingAddress),
-                    items: JSON.stringify(order.items),
-                    totalCoins: order.totalCoins,
-                    status: 'pending',
-                    estimatedDelivery: order.estimatedDelivery || '6-10 days',
-                    trackingNumber: '',
-                    notes: order.notes || ''
-                }
-            );
-
-            // Send admin notification for the cash out order
-            try {
-                const items = JSON.parse(JSON.stringify(order.items || []));
-                const itemNames = items.map((item: any) => item.itemName).join(', ');
-                
-                await adminMessageService.sendMessage({
-                    senderId: 'system',
-                    senderName: 'Coin Shop System',
-                    senderType: 'admin',
-                    receiverId: 'admin',
-                    message: `🏪 NEW COIN SHOP ORDER
-Order #: ${orderNumber}
-Customer: ${order.userName} (${order.userType})
-Phone: ${order.userPhone}
-Items: ${itemNames}
-Total Coins: ${order.totalCoins} 🪙
-Status: Pending
-                    
-Please process this order for delivery.`
-                });
-                console.log('✅ Admin notification sent for order:', orderNumber);
-            } catch (notificationError) {
-                console.warn('⚠️ Failed to send admin notification for order:', orderNumber, notificationError);
-                // Don't throw error as order was created successfully
-            }
-            
-            return newOrder as unknown as ShopOrder;
-        } catch (error) {
-            console.error('Error creating order:', error);
-            throw error;
-        }
-    },
-
-    async getOrdersByUser(userId: string): Promise<ShopOrder[]> {
-        try {
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID,
-                [
-                    Query.equal('userId', userId),
-                    Query.orderDesc('$createdAt')
-                ]
-            );
-            
-            return response.documents as unknown as ShopOrder[];
-        } catch (error) {
-            console.error('Error getting user orders:', error);
-            return [];
-        }
-    },
-
-    async getAllOrders(): Promise<ShopOrder[]> {
-        try {
-            const response = await databases.listDocuments(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID,
-                [Query.orderDesc('$createdAt')]
-            );
-            
-            return response.documents as unknown as ShopOrder[];
-        } catch (error) {
-            console.error('Error getting all orders:', error);
-            return [];
-        }
-    },
-
-    async updateOrderStatus(orderId: string, status: ShopOrder['status']): Promise<ShopOrder> {
-        try {
-            const updates: any = { status };
-            
-            if (status === 'shipped') {
-                updates.shippedAt = new Date().toISOString();
-            } else if (status === 'delivered') {
-                updates.deliveredAt = new Date().toISOString();
-            }
-            
-            const response = await databases.updateDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID,
-                orderId,
-                updates
-            );
-            
-            return response as unknown as ShopOrder;
-        } catch (error) {
-            console.error('Error updating order status:', error);
-            throw error;
-        }
-    },
-
-    async addTracking(orderId: string, trackingNumber: string): Promise<ShopOrder> {
-        try {
-            const response = await databases.updateDocument(
-                COIN_SHOP_DATABASE_ID,
-                SHOP_ORDERS_COLLECTION_ID,
-                orderId,
-                { trackingNumber }
-            );
-            
-            return response as unknown as ShopOrder;
-        } catch (error) {
-            console.error('Error adding tracking:', error);
-            throw error;
-        }
-    }
-};
 
 
 

@@ -12,7 +12,7 @@ import {
     Home as HomeIcon
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 
 interface JoinIndastreetPartnersPageProps {
     onNavigate?: (page: any) => void;

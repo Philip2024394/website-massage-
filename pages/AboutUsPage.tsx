@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
@@ -289,19 +289,19 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                             }}
                             className="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors shadow-lg"
                         >
-                            Get Started Today
+                            {t('about.cta.getStarted') || 'Get Started Today'}
                         </button>
                         <button 
                             onClick={() => onNavigate('company-profile')}
                             className="px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-bold rounded-lg transition-all shadow-lg"
                         >
-                            View Company Profile
+                            {t('about.cta.viewCompanyProfile') || 'View Company Profile'}
                         </button>
                         <button 
                             onClick={() => onNavigate('contact')}
                             className="px-8 py-4 border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-bold rounded-lg transition-colors"
                         >
-                            Contact Our Team
+                            {t('about.cta.contactTeam') || 'Contact Our Team'}
                         </button>
                     </div>
                 </div>

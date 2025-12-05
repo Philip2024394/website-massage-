@@ -5,8 +5,9 @@ export const validateSupabaseConfig = (config: any): boolean => {
   return !!(config?.url && config?.anonKey);
 };
 
-export const getCurrentTranslations = (language: 'en' | 'id') => {
-  return translations[language] || translations.en;
+export const getCurrentTranslations = (language: 'en' | 'id' | 'gb') => {
+  const normalized = language === 'gb' ? 'en' : language;
+  return (translations as any)[normalized] || translations.en;
 };
 
 export const saveAppContactNumber = (contactNumber: string) => {
@@ -36,7 +37,11 @@ export const saveGoogleMapsApiKey = (apiKey: string) => {
 
 export const getStoredGoogleMapsApiKey = (): string | null => {
   try {
-    // Try environment variable first
+    // Try the configured API key first
+    const configuredKey = 'AIzaSyBzcGi0AcIHpgJTayMdc06ayS_KwMsDqKU';
+    if (configuredKey) return configuredKey;
+    
+    // Try environment variable
     const envKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (envKey) return envKey;
     

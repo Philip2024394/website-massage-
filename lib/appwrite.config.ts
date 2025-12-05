@@ -1,3 +1,6 @@
+// Google Maps API Configuration
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyBzcGi0AcIHpgJTayMdc06ayS_KwMsDqKU';
+
 // Appwrite Configuration
 export const APPWRITE_CONFIG = {
     endpoint: 'https://syd.cloud.appwrite.io/v1',
@@ -20,6 +23,7 @@ export const APPWRITE_CONFIG = {
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',
         hotels: 'hotels_collection_id',
+        cities: 'cities_collection_id', // NEW: Cities for location dropdown
         villas: '', // Disabled - collection doesn't exist
         massageTypes: 'massage_types_collection_id',
         membershipPricing: 'membership_pricing_collection_id',
@@ -53,7 +57,60 @@ export const APPWRITE_CONFIG = {
     },
     
     // Storage bucket ID
-    bucketId: '68f76bdd002387590584'
+    bucketId: '68f76bdd002387590584',
+    
+    // Google Maps Integration
+    googleMaps: {
+        apiKey: GOOGLE_MAPS_API_KEY,
+        libraries: ['places', 'geometry'],
+        region: 'ID', // Indonesia
+        language: 'id' // Indonesian
+    }
+};
+
+// Google Maps utility functions
+export const loadGoogleMapsScript = (callback?: () => void) => {
+    if ((window as any).google) {
+        callback?.();
+        return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&region=ID&language=id`;
+    script.async = true;
+    script.defer = true;
+    script.onload = callback || (() => {});
+    document.head.appendChild(script);
+};
+
+export const isGoogleMapsLoaded = () => {
+    return !!(window as any).google?.maps;
+};
+
+export const getGoogleMapsApiKey = () => {
+    return GOOGLE_MAPS_API_KEY;
+};
+
+// Initialize Google Maps for city location functionality
+export const initializeGoogleMaps = () => {
+    return new Promise<void>((resolve, reject) => {
+        if (isGoogleMapsLoaded()) {
+            resolve();
+            return;
+        }
+        
+        loadGoogleMapsScript(() => {
+            console.log('✅ Google Maps loaded for city location system');
+            resolve();
+        });
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+            if (!isGoogleMapsLoaded()) {
+                reject(new Error('Google Maps failed to load'));
+            }
+        }, 10000);
+    });
 };
 
 export default APPWRITE_CONFIG;

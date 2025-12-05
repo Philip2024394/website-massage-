@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, MapPin, Phone, Mail, Globe, CheckCircle, Building2, User, Hotel, Home } from 'lucide-react';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FlyingButterfly from '../components/FlyingButterfly';

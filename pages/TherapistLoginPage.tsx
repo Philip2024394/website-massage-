@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { therapistAuth } from '../lib/auth';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import PageNumberBadge from '../components/PageNumberBadge';
 

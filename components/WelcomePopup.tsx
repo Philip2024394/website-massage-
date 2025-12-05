@@ -68,7 +68,7 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, 
     setIsOpen(false);
     
     // Play sound
-    const audio = new Audio('/sounds/success-notification.mp3');
+    const audio = new Audio('/sounds/booking-notification.mp3');
     audio.volume = 0.3;
     audio.play().catch(() => {});
   };

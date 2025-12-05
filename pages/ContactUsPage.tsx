@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import { useTranslations } from '../lib/useTranslations';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface ContactUsPageProps {
     onNavigate: (page: string) => void;
@@ -35,6 +37,8 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
     places = []
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { language } = useLanguage();
+    const { t } = useTranslations(language);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -105,9 +109,9 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
             >
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Contact IndaStreet</h1>
+                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{t('contact.title')}</h1>
                     <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        We're here to help. Get in touch with our team for support, partnerships, or inquiries.
+                        {t('contact.subtitle')}
                     </p>
                 </div>
             </div>
@@ -116,82 +120,82 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 {/* Contact Form */}
                 <div className="grid md:grid-cols-2 gap-12 mb-16">
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Let's Connect</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('contact.form.title')}</h2>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">Your Name *</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.nameLabel')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder="Enter your full name"
+                                    placeholder={t('contact.form.namePlaceholder')}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">Email Address *</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.emailLabel')}</label>
                                 <input
                                     type="email"
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder="your.email@example.com"
+                                    placeholder={t('contact.form.emailPlaceholder')}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">Phone Number</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.phoneLabel')}</label>
                                 <input
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder="+62 812 3456 7890"
+                                    placeholder={t('contact.form.phonePlaceholder')}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">I am a... *</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.userTypeLabel')}</label>
                                 <select
                                     required
                                     value={formData.userType}
                                     onChange={(e) => setFormData({...formData, userType: e.target.value})}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
                                 >
-                                    <option value="">Select user type</option>
-                                    <option value="therapist">Massage Therapist</option>
-                                    <option value="hotel">Hotel/Villa Owner</option>
-                                    <option value="employer">Employer/Spa Manager</option>
-                                    <option value="agent">Agent</option>
-                                    <option value="client">Client/Customer</option>
-                                    <option value="other">Other</option>
+                                    <option value="">{t('contact.form.userTypeSelect')}</option>
+                                    <option value="therapist">{t('contact.form.userTypes.therapist')}</option>
+                                    <option value="hotel">{t('contact.form.userTypes.hotel')}</option>
+                                    <option value="employer">{t('contact.form.userTypes.employer')}</option>
+                                    <option value="agent">{t('contact.form.userTypes.agent')}</option>
+                                    <option value="client">{t('contact.form.userTypes.client')}</option>
+                                    <option value="other">{t('contact.form.userTypes.other')}</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">Subject *</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.subjectLabel')}</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.subject}
                                     onChange={(e) => setFormData({...formData, subject: e.target.value})}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder="What is your inquiry about?"
+                                    placeholder={t('contact.form.subjectPlaceholder')}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-bold mb-2">Message *</label>
+                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.messageLabel')}</label>
                                 <textarea
                                     required
                                     value={formData.message}
                                     onChange={(e) => setFormData({...formData, message: e.target.value})}
                                     rows={6}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder="Tell us how we can help you..."
+                                    placeholder={t('contact.form.messagePlaceholder')}
                                 />
                             </div>
 
@@ -199,14 +203,14 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                 type="submit"
                                 className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors shadow-lg"
                             >
-                                Send Message
+                                {t('contact.form.sendButton')}
                             </button>
                         </form>
                     </div>
 
                     {/* Support Info */}
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">Support Resources</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('contact.support.title')}</h2>
                         <div className="space-y-6">
                             <div 
                                 className="bg-white rounded-xl p-6 shadow-lg relative bg-cover bg-center overflow-hidden"
@@ -216,7 +220,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             >
                                 <div className="absolute inset-0 bg-white/85"></div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-teal-600 mb-3">🆘 Quick Support</h3>
+                                    <h3 className="text-xl font-bold text-teal-600 mb-3">🆘 {t('contact.support.quickSupport.title')}</h3>
                                     <p className="text-gray-700 mb-4">
                                         Need immediate help? Check our FAQ section or contact us via WhatsApp for instant support.
                                     </p>
@@ -224,7 +228,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                         onClick={() => onNavigate('quick-support')}
                                         className="text-orange-600 font-bold hover:text-orange-700"
                                     >
-                                        Visit FAQ →
+                                        {t('contact.support.quickSupport.button')}
                                     </button>
                                 </div>
                             </div>
@@ -237,7 +241,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             >
                                 <div className="absolute inset-0 bg-white/85"></div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-purple-600 mb-3">🤝 Partnership Inquiries</h3>
+                                    <h3 className="text-xl font-bold text-purple-600 mb-3">🤝 {t('contact.support.partnerships.title')}</h3>
                                     <p className="text-gray-700 mb-4">
                                         Interested in partnering with IndaStreet? Email us at partnerships@indastreetmassage.com
                                     </p>
@@ -245,7 +249,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                         onClick={() => onNavigate('partnership-inquiries')}
                                         className="text-orange-600 font-bold hover:text-orange-700"
                                     >
-                                        Learn More →
+                                        {t('contact.support.partnerships.button')}
                                     </button>
                                 </div>
                             </div>
@@ -258,7 +262,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             >
                                 <div className="absolute inset-0 bg-white/85"></div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-orange-600 mb-3">📰 Press & Media</h3>
+                                    <h3 className="text-xl font-bold text-orange-600 mb-3">📰 {t('contact.support.pressMedia.title')}</h3>
                                     <p className="text-gray-700 mb-4">
                                         Media inquiries and press kit requests: press@indastreetmassage.com
                                     </p>
@@ -266,7 +270,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                         onClick={() => onNavigate('press-media')}
                                         className="text-orange-600 font-bold hover:text-orange-700"
                                     >
-                                        Press Kit →
+                                        {t('contact.support.pressMedia.button')}
                                     </button>
                                 </div>
                             </div>
@@ -279,7 +283,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                             >
                                 <div className="absolute inset-0 bg-white/85"></div>
                                 <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-green-600 mb-3">💼 Career Opportunities</h3>
+                                    <h3 className="text-xl font-bold text-green-600 mb-3">💼 {t('contact.support.careers.title')}</h3>
                                     <p className="text-gray-700 mb-4">
                                         Join our growing team! View open positions at careers@indastreetmassage.com
                                     </p>
@@ -287,7 +291,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                                         onClick={() => onNavigate('career-opportunities')}
                                         className="text-orange-600 font-bold hover:text-orange-700"
                                     >
-                                        View Jobs →
+                                        {t('contact.support.careers.button')}
                                     </button>
                                 </div>
                             </div>

@@ -203,15 +203,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Get main image with debug logging
-    console.log('🖼️ MassagePlaceCard mainImage debug:', {
-        placeName: place.name,
-        hasMainImage: !!(place as any).mainImage,
-        mainImageValue: (place as any).mainImage,
-        mainImageLength: (place as any).mainImage?.length,
-        rawMainImage: (place as any).mainimage,
-        placeId: (place as any).$id || place.id
-    });
+    // Get main image
     const mainImage = (place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
     
     // Get amenities if available
@@ -448,7 +440,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-10 relative z-10 overflow-visible">
+            <div className="px-4 -mt-10 pb-6 relative z-[2000] overflow-visible">
                 <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -474,7 +466,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 
                                 {/* Star Rating Badge */}
                                 <button
-                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-50"
+                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-[2000]"
                                     onClick={() => onRate(place)}
                                     aria-label={`Rate ${place.name}`}
                                 >
@@ -514,7 +506,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
 
             {/* Massage Place Bio - Natural flow with proper margin (increased for star badge clearance) */}
-            <div className="mt-12 massage-place-bio-section mx-4">
+            <div className="mt-12 massage-place-bio-section mx-4 relative z-0">
                 <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-600 leading-relaxed text-justify line-clamp-4 flex-1">
                         {description}

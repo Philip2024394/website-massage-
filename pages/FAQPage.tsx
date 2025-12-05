@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
@@ -49,13 +49,13 @@ const FAQPage: React.FC<FAQPageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const categories = [
-        { id: 'booking', name: 'Bookings', icon: '📅' },
-        { id: 'therapist', name: 'For Therapists', icon: '🧘' },
-        { id: 'hotel', name: 'For Hotels', icon: '🏨' },
-        { id: 'employer', name: 'For Employers', icon: '👔' },
-        { id: 'agent', name: 'For Agents', icon: '🤝' },
-        { id: 'payment', name: 'Payments', icon: '💳' },
-        { id: 'technical', name: 'Technical', icon: '⚙️' },
+        { id: 'booking', name: t('faq.categories.booking') || 'Bookings', icon: '📅' },
+        { id: 'therapist', name: t('faq.categories.therapist') || 'For Therapists', icon: '🧘' },
+        { id: 'hotel', name: t('faq.categories.hotel') || 'For Hotels', icon: '🏨' },
+        { id: 'employer', name: t('faq.categories.employer') || 'For Employers', icon: '👔' },
+        { id: 'agent', name: t('faq.categories.agent') || 'For Agents', icon: '🤝' },
+        { id: 'payment', name: t('faq.categories.payment') || 'Payments', icon: '💳' },
+        { id: 'technical', name: t('faq.categories.technical') || 'Technical', icon: '⚙️' },
     ];
 
     const faqs: FAQ[] = [

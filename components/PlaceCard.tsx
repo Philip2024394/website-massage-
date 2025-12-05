@@ -75,7 +75,19 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             <div className="h-40 w-full relative">
                 <img className="h-40 w-full object-cover" src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} alt={place.name} />
                 
-                {/* Verified Badge - Inside main image at top-left */}
+                {/* Star Rating - Top Right Corner with higher z-index */}
+                <div 
+                    className="absolute top-2 right-2 z-30 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
+                    onClick={handleRateClick}
+                    aria-label={`Rate ${place.name}`}
+                    role="button"
+                >
+                    <StarIcon className="w-5 h-5 text-yellow-400"/>
+                    <span className="font-bold text-white text-sm">{place.rating.toFixed(1)}</span>
+                    <span className="text-xs text-gray-300">({place.reviewCount})</span>
+                </div>
+                
+                {/* Verified Badge - Top Left Corner */}
                 {(place as any).isVerified && (
                     <div className="absolute top-2 left-2 z-20">
                         <img 
@@ -85,18 +97,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                         />
                     </div>
                 )}
-                
-                {/* Star Rating - Top Left Corner */}
-                <div 
-                    className="absolute top-2 left-2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg cursor-pointer"
-                    onClick={handleRateClick}
-                    aria-label={`Rate ${place.name}`}
-                    role="button"
-                >
-                    <StarIcon className="w-5 h-5 text-yellow-400"/>
-                    <span className="font-bold text-white text-sm">{place.rating.toFixed(1)}</span>
-                    <span className="text-xs text-gray-300">({place.reviewCount})</span>
-                </div>
 
                 {/* Active Discount Badge - Top Right Corner */}
                 {activeDiscount && discountTimeLeft !== 'EXPIRED' && (

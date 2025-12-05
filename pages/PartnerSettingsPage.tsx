@@ -14,7 +14,7 @@ import {
     CheckCircle
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { databases, storage, DATABASE_ID, COLLECTIONS, STORAGE_BUCKETS, ID } from '../lib/appwrite';
 import { Query } from 'appwrite';
 

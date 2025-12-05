@@ -35,7 +35,7 @@ export const PAGE_REGISTRY = {
     143: { name: 'HotelVillaMenuPage', file: 'pages/HotelVillaMenuPage.tsx', locked: false },
     
     // Components (161-200)
-    161: { name: 'AppDrawer', file: 'components/AppDrawer.tsx', locked: true },
+    161: { name: 'AppDrawer', file: 'components/AppDrawerClean.tsx', locked: true },
     162: { name: 'TherapistCard', file: 'components/TherapistCard.tsx', locked: false },
     163: { name: 'MassagePlaceCard', file: 'components/MassagePlaceCard.tsx', locked: false },
     164: { name: 'DashboardComponents', file: 'components/shared/DashboardComponents.tsx', locked: true },

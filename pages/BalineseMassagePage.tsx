@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 

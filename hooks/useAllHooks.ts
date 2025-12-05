@@ -25,14 +25,16 @@ export const useAllHooks = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
-                const { therapists, places } = await dataFetching.fetchPublicData();
+                const { therapists, places, hotels } = await dataFetching.fetchPublicData();
                 state.setTherapists(therapists);
                 state.setPlaces(places);
+                state.setHotels(hotels);
             } catch (error) {
                 console.error('❌ Failed to initialize app data:', error);
                 // Set empty arrays to prevent loading state
                 state.setTherapists([]);
                 state.setPlaces([]);
+                state.setHotels([]);
             }
         };
 
@@ -46,16 +48,18 @@ export const useAllHooks = () => {
             console.log('🔄 [REFRESH EVENT] Data refresh triggered:', customEvent.detail);
             try {
                 console.log('🔄 [REFRESH EVENT] Calling fetchPublicData...');
-                const { therapists, places } = await dataFetching.fetchPublicData();
+                const { therapists, places, hotels } = await dataFetching.fetchPublicData();
                 console.log('🔄 [REFRESH EVENT] Fetched data:', { 
                     therapistCount: therapists.length, 
                     placeCount: places.length,
+                    hotelCount: hotels.length,
                     therapistNames: therapists.map((t: any) => t.name).join(', ')
                 });
                 
-                console.log('🔄 [REFRESH EVENT] Updating state with new therapists...');
+                console.log('🔄 [REFRESH EVENT] Updating state with new data...');
                 state.setTherapists(therapists);
                 state.setPlaces(places);
+                state.setHotels(hotels);
                 console.log('✅ [REFRESH EVENT] HomePage therapists updated successfully!');
             } catch (error) {
                 console.error('❌ [REFRESH EVENT] Failed to refresh data:', error);

@@ -1,23 +1,29 @@
- 
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from './lib/useTranslations';
+import { translationsService } from './lib/appwriteService';
+import { translations } from './translations';
 import { useLanguage } from './hooks/useLanguage';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
 import { BookingStatus } from './types';
 import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
-
-// Page imports
-import LandingPage from './pages/LandingPage';
-// UnifiedLoginPage removed from active routes; kept in deleted folder
-import TherapistLoginPage from './pages/TherapistLoginPage';
-import HomePage from './pages/HomePage';
-import CustomerProvidersPage from './pages/CustomerProvidersPage';
-import CustomerReviewsPage from './pages/CustomerReviewsPage';
-import CustomerSupportPage from './pages/CustomerSupportPage';
-import React, { useState, useEffect } from 'react';
 import { therapistService } from './lib/appwriteService';
 
-// Lazy-load heavy/non-critical pages to shrink initial JS bundle
+// Page imports - Lazy load everything except critical landing pages
+const LandingPage = React.lazy(() => import('./pages/LandingPage'));
+const TherapistLoginPage = React.lazy(() => import('./pages/TherapistLoginPage'));
+const HomePage = React.lazy(() => import('./pages/HomePage'));
+const CustomerProvidersPage = React.lazy(() => import('./pages/CustomerProvidersPage'));
+const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
+const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
+const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
+const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
+const FAQPage = React.lazy(() => import('./pages/FAQPage'));
+const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
+const TodaysDiscountsPage = React.lazy(() => import('./pages/TodaysDiscountsPage'));
+const GuestProfilePage = React.lazy(() => import('./pages/GuestProfilePage'));
+const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
+
 const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
@@ -37,7 +43,6 @@ const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
 const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
-import MassageTypesPage from './pages/MassageTypesPage';
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
@@ -45,8 +50,6 @@ const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPosti
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
-// Eager-load IndastreetPartnersPage to avoid dev dynamic import fetch issues
-import IndastreetPartnersPage from './pages/IndastreetPartnersPage';
 const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipApplicationPage'));
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
@@ -59,7 +62,6 @@ const CompanyProfilePage = React.lazy(() => import('./pages/CompanyProfilePage')
 const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
 const MassageBaliPage = React.lazy(() => import('./pages/MassageBaliPage'));
 const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
-import FAQPage from './pages/FAQPage';
 const BalineseMassagePage = React.lazy(() => import('./pages/BalineseMassagePage'));
 const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassagePage'));
 const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
@@ -81,14 +83,8 @@ const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/Dee
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-// RewardBannersTestPage removed - coin/reward system deprecated
-// Eager-load WebsiteManagementPage to avoid dev dynamic import fetch issue
-import WebsiteManagementPage from './pages/WebsiteManagementPage';
-import TodaysDiscountsPage from './pages/TodaysDiscountsPage';
-import GuestProfilePage from './pages/GuestProfilePage'; // 🎯 NEW: Guest profile for non-registered users
-import QRCodePage from './pages/QRCodePage'; // QR Code sharing page
-const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage')); // Hotel/Villa partner settings
-const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage')); // Join partners landing page
+const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
+const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage'));
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -101,6 +97,7 @@ interface AppRouterProps {
     loggedInCustomer: any;
     therapists: Therapist[];
     places: Place[];
+    hotels: any[];
     userLocation: UserLocation | null;
     selectedMassageType: string | null;
     selectedPlace: Place | null;
@@ -186,6 +183,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         loggedInCustomer,
         therapists,
         places,
+        hotels,
         userLocation,
         selectedMassageType,
         selectedPlace,
@@ -356,6 +354,188 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     console.log('🌍 AppRouter: Active language resolved:', activeLanguage);
     const { t: tFn, dict } = useTranslations(activeLanguage as any);
     console.log('🌍 AppRouter: Dict received from useTranslations:', dict ? Object.keys(dict) : 'null');
+
+    // One-time sync of core translation keys to Appwrite
+    React.useEffect(() => {
+        const KEY = 'coreTranslationsSynced_v2';
+        try {
+            const already = localStorage.getItem(KEY);
+            if (already) return;
+        } catch {}
+
+        (async () => {
+            try {
+                // EN values
+                await translationsService.set('en', 'home.accommodationMassageService', 'Accommodation With Massage Service');
+                await translationsService.set('en', 'home.menu.accommodationMassageService', 'Accommodation With Massage Service');
+                await translationsService.set('en', 'home.menu.traditionalBalineseMassage', 'Traditional Balinese Massage');
+                await translationsService.set('en', 'home.menu.deepTissueMassage', 'Deep Tissue Massage');
+                await translationsService.set('en', 'home.menu.joinIndastreet', 'Join Indastreet');
+                await translationsService.set('en', 'home.menu.massageJobs', 'Massage Jobs');
+                await translationsService.set('en', 'home.menu.howItWorks', 'How It Works');
+                await translationsService.set('en', 'home.menu.companyProfile', 'Company Profile');
+                await translationsService.set('en', 'home.menu.blog', 'Blog');
+                await translationsService.set('en', 'home.menu.sections.locations', 'Locations');
+                await translationsService.set('en', 'home.menu.massageInBali', 'Massage in Bali');
+                await translationsService.set('en', 'home.menu.sections.massageServices', 'Massage Services');
+                await translationsService.set('en', 'home.menu.sections.helpSupport', 'Help & Support');
+                await translationsService.set('en', 'home.menu.faq', 'FAQ');
+                await translationsService.set('en', 'home.menu.therapistPortal', 'Therapist Portal');
+                await translationsService.set('en', 'home.menu.massageSpaPortal', 'Massage Spa Portal');
+                await translationsService.set('en', 'home.menu.websitePartnersPortal', 'Website Partners Portal');
+                await translationsService.set('en', 'home.menu.qrCode', 'QR Code');
+                await translationsService.set('en', 'home.menu.terms', 'Terms');
+                await translationsService.set('en', 'home.menu.privacy', 'Privacy');
+                await translationsService.set('en', 'about.subtitle', "Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers");
+                await translationsService.set('en', 'about.missionTitle', 'Our IndaStreet Mission');
+                await translationsService.set('en', 'about.missionText', 'Connecting customers with quality massage therapists while empowering local wellness professionals');
+                await translationsService.set('en', 'about.cta.getStarted', 'Get Started Today');
+                await translationsService.set('en', 'about.cta.viewCompanyProfile', 'View Company Profile');
+                await translationsService.set('en', 'about.cta.contactTeam', 'Contact Our Team');
+                await translationsService.set('en', 'contact.title', 'Contact IndaStreet');
+                await translationsService.set('en', 'contact.subtitle', "We're here to help. Get in touch with our team for support, partnerships, or inquiries.");
+                await translationsService.set('en', 'contact.form.title', "Let's Connect");
+                await translationsService.set('en', 'contact.form.nameLabel', 'Your Name *');
+                await translationsService.set('en', 'contact.form.namePlaceholder', 'Enter your full name');
+                await translationsService.set('en', 'contact.form.emailLabel', 'Email Address *');
+                await translationsService.set('en', 'contact.form.emailPlaceholder', 'your.email@example.com');
+                await translationsService.set('en', 'contact.form.phoneLabel', 'Phone Number');
+                await translationsService.set('en', 'contact.form.phonePlaceholder', '+62 812 3456 7890');
+                await translationsService.set('en', 'contact.form.userTypeLabel', 'I am a... *');
+                await translationsService.set('en', 'contact.form.userTypeSelect', 'Select user type');
+                await translationsService.set('en', 'contact.form.userTypes.therapist', 'Massage Therapist');
+                await translationsService.set('en', 'contact.form.userTypes.hotel', 'Hotel/Villa Owner');
+                await translationsService.set('en', 'contact.form.userTypes.employer', 'Employer/Spa Manager');
+                await translationsService.set('en', 'contact.form.userTypes.agent', 'Agent');
+                await translationsService.set('en', 'contact.form.userTypes.client', 'Client/Customer');
+                await translationsService.set('en', 'contact.form.userTypes.other', 'Other');
+                await translationsService.set('en', 'contact.form.subjectLabel', 'Subject *');
+                await translationsService.set('en', 'contact.form.subjectPlaceholder', 'What is your inquiry about?');
+                await translationsService.set('en', 'contact.form.messageLabel', 'Message *');
+                await translationsService.set('en', 'contact.form.messagePlaceholder', 'Tell us how we can help you...');
+                await translationsService.set('en', 'contact.form.sendButton', 'Send Message');
+                await translationsService.set('en', 'contact.support.title', 'Support Resources');
+                await translationsService.set('en', 'contact.support.quickSupport.title', 'Quick Support');
+                await translationsService.set('en', 'contact.support.quickSupport.button', 'Visit FAQ →');
+                await translationsService.set('en', 'contact.support.partnerships.title', 'Partnership Inquiries');
+                await translationsService.set('en', 'contact.support.partnerships.button', 'Learn More →');
+                await translationsService.set('en', 'contact.support.pressMedia.title', 'Press & Media');
+                await translationsService.set('en', 'contact.support.pressMedia.button', 'Press Kit →');
+                await translationsService.set('en', 'contact.support.careers.title', 'Career Opportunities');
+                await translationsService.set('en', 'contact.support.careers.button', 'View Jobs →');
+
+                // Blog Popular Topics (EN)
+                await translationsService.set('en', 'blog.topics.balineseMassage', 'Balinese Massage');
+                await translationsService.set('en', 'blog.topics.hotelSpaManagement', 'Hotel Spa Management');
+                await translationsService.set('en', 'blog.topics.therapistCertification', 'Therapist Certification');
+                await translationsService.set('en', 'blog.topics.wellnessTourism', 'Wellness Tourism');
+                await translationsService.set('en', 'blog.topics.deepTissueTechniques', 'Deep Tissue Techniques');
+                await translationsService.set('en', 'blog.topics.careerGrowth', 'Career Growth');
+                await translationsService.set('en', 'blog.topics.clientRetention', 'Client Retention');
+                await translationsService.set('en', 'blog.topics.aromatherapy', 'Aromatherapy');
+
+                // ID values
+                await translationsService.set('id', 'home.accommodationMassageService', 'Akomodasi dengan Layanan Pijat');
+                await translationsService.set('id', 'home.menu.accommodationMassageService', 'Akomodasi dengan Layanan Pijat');
+                await translationsService.set('id', 'home.menu.traditionalBalineseMassage', 'Pijat Bali Tradisional');
+                await translationsService.set('id', 'home.menu.deepTissueMassage', 'Pijat Jaringan Dalam');
+                await translationsService.set('id', 'home.menu.joinIndastreet', 'Bergabung dengan IndaStreet');
+                await translationsService.set('id', 'home.menu.massageJobs', 'Lowongan Pijat');
+                await translationsService.set('id', 'home.menu.howItWorks', 'Cara Kerja');
+                await translationsService.set('id', 'home.menu.companyProfile', 'Profil Perusahaan');
+                await translationsService.set('id', 'home.menu.blog', 'Blog');
+                await translationsService.set('id', 'home.menu.sections.locations', 'Lokasi');
+                await translationsService.set('id', 'home.menu.massageInBali', 'Pijat di Bali');
+                await translationsService.set('id', 'home.menu.sections.massageServices', 'Layanan Pijat');
+                await translationsService.set('id', 'home.menu.sections.helpSupport', 'Bantuan & Dukungan');
+                await translationsService.set('id', 'home.menu.faq', 'FAQ');
+                await translationsService.set('id', 'home.menu.therapistPortal', 'Portal Terapis');
+                await translationsService.set('id', 'home.menu.massageSpaPortal', 'Portal Spa Pijat');
+                await translationsService.set('id', 'home.menu.websitePartnersPortal', 'Portal Mitra Website');
+                await translationsService.set('id', 'home.menu.qrCode', 'Kode QR');
+                await translationsService.set('id', 'home.menu.terms', 'Syarat');
+                await translationsService.set('id', 'home.menu.privacy', 'Privasi');
+                await translationsService.set('id', 'about.subtitle', 'Marketplace Kesehatan Terlengkap Pertama di Indonesia yang Menghubungkan Terapis, Hotel, dan Pemberi Kerja');
+                await translationsService.set('id', 'about.missionTitle', 'Misi IndaStreet Kami');
+                await translationsService.set('id', 'about.missionText', 'Menghubungkan pelanggan dengan terapis pijat berkualitas sambil memberdayakan profesional kesehatan lokal');
+                await translationsService.set('id', 'about.cta.getStarted', 'Mulai Hari Ini');
+                await translationsService.set('id', 'about.cta.viewCompanyProfile', 'Lihat Profil Perusahaan');
+                await translationsService.set('id', 'about.cta.contactTeam', 'Hubungi Tim Kami');
+                await translationsService.set('id', 'contact.title', 'Hubungi IndaStreet');
+                await translationsService.set('id', 'contact.subtitle', 'Kami siap membantu. Hubungi tim kami untuk dukungan, kemitraan, atau pertanyaan.');
+                await translationsService.set('id', 'contact.form.title', 'Mari Terhubung');
+                await translationsService.set('id', 'contact.form.nameLabel', 'Nama Anda *');
+                await translationsService.set('id', 'contact.form.namePlaceholder', 'Masukkan nama lengkap Anda');
+                await translationsService.set('id', 'contact.form.emailLabel', 'Alamat Email *');
+                await translationsService.set('id', 'contact.form.emailPlaceholder', 'email.anda@contoh.com');
+                await translationsService.set('id', 'contact.form.phoneLabel', 'Nomor Telepon');
+                await translationsService.set('id', 'contact.form.phonePlaceholder', '+62 812 3456 7890');
+                await translationsService.set('id', 'contact.form.userTypeLabel', 'Saya adalah... *');
+                await translationsService.set('id', 'contact.form.userTypeSelect', 'Pilih jenis pengguna');
+                await translationsService.set('id', 'contact.form.userTypes.therapist', 'Terapis Pijat');
+                await translationsService.set('id', 'contact.form.userTypes.hotel', 'Pemilik Hotel/Vila');
+                await translationsService.set('id', 'contact.form.userTypes.employer', 'Pemberi Kerja/Manajer Spa');
+                await translationsService.set('id', 'contact.form.userTypes.agent', 'Agen');
+                await translationsService.set('id', 'contact.form.userTypes.client', 'Klien/Pelanggan');
+                await translationsService.set('id', 'contact.form.userTypes.other', 'Lainnya');
+                await translationsService.set('id', 'contact.form.subjectLabel', 'Subjek *');
+                await translationsService.set('id', 'contact.form.subjectPlaceholder', 'Tentang apa pertanyaan Anda?');
+                await translationsService.set('id', 'contact.form.messageLabel', 'Pesan *');
+                await translationsService.set('id', 'contact.form.messagePlaceholder', 'Beritahu kami bagaimana kami dapat membantu Anda...');
+                await translationsService.set('id', 'contact.form.sendButton', 'Kirim Pesan');
+                await translationsService.set('id', 'contact.support.title', 'Sumber Dukungan');
+                await translationsService.set('id', 'contact.support.quickSupport.title', 'Dukungan Cepat');
+                await translationsService.set('id', 'contact.support.quickSupport.button', 'Kunjungi FAQ →');
+                await translationsService.set('id', 'contact.support.partnerships.title', 'Permintaan Kemitraan');
+                await translationsService.set('id', 'contact.support.partnerships.button', 'Pelajari Lebih Lanjut →');
+                await translationsService.set('id', 'contact.support.pressMedia.title', 'Pers & Media');
+                await translationsService.set('id', 'contact.support.pressMedia.button', 'Kit Pers →');
+                await translationsService.set('id', 'contact.support.careers.title', 'Lowongan Kerja');
+                await translationsService.set('id', 'contact.support.careers.button', 'Lihat Pekerjaan →');
+
+                // Generic: seed ALL translation keys from local dictionaries (EN/ID)
+                const flatten = (obj: any, prefix = ''): Record<string, string> => {
+                    const out: Record<string, string> = {};
+                    if (!obj || typeof obj !== 'object') return out;
+                    for (const key of Object.keys(obj)) {
+                        const val = (obj as any)[key];
+                        const path = prefix ? `${prefix}.${key}` : key;
+                        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+                            out[path] = String(val);
+                        } else if (val && typeof val === 'object' && !Array.isArray(val)) {
+                            Object.assign(out, flatten(val, path));
+                        }
+                    }
+                    return out;
+                };
+
+                const enFlat = flatten((translations as any).en);
+                const idFlat = flatten((translations as any).id);
+
+                for (const [k, v] of Object.entries(enFlat)) {
+                    try { await translationsService.set('en', k, v); } catch {}
+                }
+                for (const [k, v] of Object.entries(idFlat)) {
+                    try { await translationsService.set('id', k, v); } catch {}
+                }
+
+                // Blog Popular Topics (ID)
+                await translationsService.set('id', 'blog.topics.balineseMassage', 'Pijat Bali');
+                await translationsService.set('id', 'blog.topics.hotelSpaManagement', 'Manajemen Spa Hotel');
+                await translationsService.set('id', 'blog.topics.therapistCertification', 'Sertifikasi Terapis');
+                await translationsService.set('id', 'blog.topics.wellnessTourism', 'Pariwisata Kesehatan');
+                await translationsService.set('id', 'blog.topics.deepTissueTechniques', 'Teknik Deep Tissue');
+                await translationsService.set('id', 'blog.topics.careerGrowth', 'Pengembangan Karier');
+                await translationsService.set('id', 'blog.topics.clientRetention', 'Retensi Klien');
+                await translationsService.set('id', 'blog.topics.aromatherapy', 'Aromaterapi');
+
+                try { localStorage.setItem(KEY, '1'); } catch {}
+                console.log('✅ Core translations synced to Appwrite');
+            } catch (e) {
+                console.warn('⚠️ Core translations sync skipped/failed:', e);
+            }
+        })();
+    }, []);
     console.log('🌍 AppRouter: Sample translation home.therapistsTitle:', dict?.[activeLanguage]?.home?.therapistsTitle);
     const t: any = ((key: string) => tFn(key)) as any;
     // Spread all top-level namespaces for object-style access (e.g., t.home, t.common)
@@ -645,8 +825,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 loggedInCustomer={loggedInCustomer}
                 therapists={therapists}
                 places={places}
+                hotels={hotels}
                 userLocation={userLocation}
-                selectedMassageType={selectedMassageType ?? undefined}
                 onSetUserLocation={handleSetUserLocation}
                 onSelectPlace={handleSetSelectedPlace}
                 onLogout={handleLogout}
@@ -786,22 +966,26 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 setPage('home');
                 return null;
             }
-            return <MassagePlaceProfilePage 
-                place={selectedPlace}
-                userLocation={userLocation}
-                loggedInCustomer={loggedInCustomer}
-                onBack={handleBackToHome}
-                onBook={() => handleNavigateToBooking(selectedPlace, 'place')}
-                onMassageJobsClick={() => setPage('massageJobs')}
-                onTherapistJobsClick={() => setPage('therapistJobs')}
-                onTherapistPortalClick={handleNavigateToTherapistLogin}
-                onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                onNavigate={commonNavigateHandler}
-                onTermsClick={handleNavigateToServiceTerms}
-                onPrivacyClick={handleNavigateToPrivacyPolicy}
-                therapists={therapists}
-                places={places}
-            />;
+            return (
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading massage place...</div>}>
+                    <MassagePlaceProfilePage 
+                        place={selectedPlace}
+                        userLocation={userLocation}
+                        loggedInCustomer={loggedInCustomer}
+                        onBack={handleBackToHome}
+                        onBook={() => handleNavigateToBooking(selectedPlace, 'place')}
+                        onMassageJobsClick={() => setPage('massageJobs')}
+                        onTherapistJobsClick={() => setPage('therapistJobs')}
+                        onTherapistPortalClick={handleNavigateToTherapistLogin}
+                        onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
+                        onNavigate={commonNavigateHandler}
+                        onTermsClick={handleNavigateToServiceTerms}
+                        onPrivacyClick={handleNavigateToPrivacyPolicy}
+                        therapists={therapists}
+                        places={places}
+                    />
+                </React.Suspense>
+            );
 
         case 'therapistLogin': 
             return <TherapistLoginPage 

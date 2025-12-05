@@ -63,7 +63,7 @@ export const useAppState = () => {
       // Allow specific pages via URL parameter
       if (pageParam === 'company-profile') {
         console.log('🎯 URL parameter detected: Opening Company Profile page');
-        return 'company-profile';
+        return 'company-profile' as Page;
       }
       if (pageParam === 'rewardBannersTest' || pageParam === 'reward-banners-test') {
         console.log('🎯 URL parameter detected: Opening reward banners test page');
@@ -131,7 +131,7 @@ export const useAppState = () => {
     // Try to get from actual localStorage (not the disabled wrapper)
     try {
       const stored = window.localStorage.getItem('app_language');
-      const storedLang = (stored === 'en' || stored === 'id') ? stored : 'id';
+      const storedLang = (stored === 'en' || stored === 'id' || stored === 'gb') ? (stored as Language) : 'id';
       console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
       return storedLang;
     } catch {
@@ -199,6 +199,7 @@ export const useAppState = () => {
   // Data state
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [allAdminTherapists, setAllAdminTherapists] = useState<Therapist[]>([]);
@@ -308,6 +309,7 @@ export const useAppState = () => {
     // Data
     therapists, setTherapists,
     places, setPlaces,
+    hotels, setHotels,
     bookings, setBookings,
     notifications, setNotifications,
     allAdminTherapists, setAllAdminTherapists,

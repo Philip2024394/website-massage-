@@ -125,7 +125,7 @@ export type Page =
     | 'customerReviews'
     | 'customerSupport';
 
-export type Language = 'en' | 'id';
+export type Language = 'en' | 'id' | 'gb';
 
 export type LoggedInProvider = { 
     id: number | string; 

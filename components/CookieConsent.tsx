@@ -26,7 +26,7 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
     setShowBanner(false);
     
     // Play success sound
-    const audio = new Audio('/sounds/success-notification.mp3');
+    const audio = new Audio('/sounds/booking-notification.mp3');
     audio.volume = 0.2;
     audio.play().catch(() => {});
   };
@@ -56,7 +56,8 @@ const CookieConsent: React.FC<CookieConsentProps> = ({ language, hasLocation, on
     }
   };
 
-  const t = translations[language] || translations.en;
+  const lang = language === 'gb' ? 'en' : language;
+  const t = translations[lang] || translations.en;
 
   return (
     <div 

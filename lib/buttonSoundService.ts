@@ -50,49 +50,49 @@ class ButtonSoundService {
         // Try to use existing MP3 files, fallback to generated sounds
         this.sounds.set('click', {
             type: 'click',
-            file: '/sounds/message-notification.mp3', // Use existing subtle sound
+            file: '/sounds/booking-notification.mp3', // Use existing subtle sound
             volume: 0.2, // Very subtle
             duration: 150
         });
 
         this.sounds.set('hover', {
             type: 'hover',
-            file: '/sounds/message-notification.mp3', // Use existing subtle sound
+            file: '/sounds/booking-notification.mp3', // Use existing subtle sound
             volume: 0.1, // Even more subtle
             duration: 100
         });
 
         this.sounds.set('success', {
             type: 'success',
-            file: '/sounds/success-notification.mp3', // Use existing
+            file: '/sounds/booking-notification.mp3', // Use existing
             volume: 0.3,
             duration: 200
         });
 
         this.sounds.set('error', {
             type: 'error',
-            file: '/sounds/alert-notification.mp3', // Use existing
+            file: '/sounds/booking-notification.mp3', // Use existing
             volume: 0.3,
             duration: 200
         });
 
         this.sounds.set('navigation', {
             type: 'navigation',
-            file: '/sounds/message-notification.mp3', // Use existing subtle sound
+            file: '/sounds/booking-notification.mp3', // Use existing subtle sound
             volume: 0.15,
             duration: 120
         });
 
         this.sounds.set('toggle', {
             type: 'toggle',
-            file: '/sounds/message-notification.mp3', // Use existing subtle sound
+            file: '/sounds/booking-notification.mp3', // Use existing subtle sound
             volume: 0.2,
             duration: 150
         });
 
         this.sounds.set('delete', {
             type: 'delete',
-            file: '/sounds/alert-notification.mp3', // Use existing
+            file: '/sounds/booking-notification.mp3', // Use existing
             volume: 0.25,
             duration: 180
         });

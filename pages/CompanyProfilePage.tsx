@@ -561,9 +561,14 @@ const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack, t, lang
         <section className="py-16">
           <PageContainer>
             <div className="max-w-4xl mx-auto">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">Get in Touch</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+                {t?.companyProfile?.contact?.title || (language === 'en' ? 'Get in Touch' : 'Hubungi Kami')}
+              </h3>
               <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                We would love to hear from you and discuss your marketing promotional ideas and our team will always provide the best knowledge for your business needs.
+                {t?.companyProfile?.contact?.description || (language === 'en' ? 
+                  'We would love to hear from you and discuss your marketing promotional ideas and our team will always provide the best knowledge for your business needs.' : 
+                  'Kami ingin mendengar dari Anda dan mendiskusikan ide-ide promosi pemasaran Anda. Tim kami akan selalu memberikan pengetahuan terbaik untuk kebutuhan bisnis Anda.'
+                )}
               </p>
               
               <div className="grid md:grid-cols-2 gap-8">

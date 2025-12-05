@@ -2,6 +2,8 @@
 export const homeTranslations = {
   en: {
     home: {
+      // Quick link label used in HomePage
+      accommodationMassageService: 'Accommodation With Massage Service',
       homeServiceTab: 'Home Service',
       massagePlacesTab: 'Massage Places',
       therapistsTitle: 'Home Service Therapists',
@@ -55,8 +57,12 @@ export const homeTranslations = {
           jobPosting: 'Job Posting',
           loginCreateAccount: 'Login / Create Account',
           company: 'Company',
+          locations: 'Locations',
+          massageServices: 'Massage Services',
+          helpSupport: 'Help & Support',
         },
         // Job posting
+        joinIndastreet: 'Join Indastreet',
         massageJobs: 'Massage Jobs',
         massageJobsDesc: 'Find opportunities',
         // Login portals
@@ -68,6 +74,9 @@ export const homeTranslations = {
         therapistsDesc: 'Therapist portal',
         massageSpa: 'Massage Spa',
         massageSpaDesc: 'Spa partner portal',
+        therapistPortal: 'Therapist Portal',
+        massageSpaPortal: 'Massage Spa Portal',
+        websitePartnersPortal: 'Website Partners Portal',
         agent: 'Agent',
         agentDesc: 'Agent portal',
         customer: 'Guest',
@@ -75,16 +84,28 @@ export const homeTranslations = {
         // Company section
         aboutUs: 'About Us',
         aboutUsDesc: 'Learn about us',
+        companyProfile: 'Company Profile',
         howItWorks: 'How It Works',
         howItWorksDesc: 'Getting started',
         blog: 'Blog',
         blogDesc: 'Read our articles',
-        contact: 'Contact',
+        contact: 'Contact Us',
         contactDesc: 'Get in touch',
         termsOfService: 'Terms of Service',
         termsDesc: 'Legal terms',
         privacyPolicy: 'Privacy Policy',
         privacyDesc: 'Privacy information',
+        // Partners quick link
+        accommodationMassageService: 'Accommodation With Massage Service',
+        // Massage services submenu
+        traditionalBalineseMassage: 'Traditional Balinese Massage',
+        deepTissueMassage: 'Deep Tissue Massage',
+        // Extra entries used by drawer footer and location link
+        qrCode: 'QR Code',
+        terms: 'Terms',
+        privacy: 'Privacy',
+        massageInBali: 'Massage in Bali',
+        faq: 'FAQ',
       },
     },
     dashboard: {
@@ -161,6 +182,8 @@ export const homeTranslations = {
   },
   id: {
     home: {
+      // Quick link label used in HomePage
+      accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
       homeServiceTab: 'Layanan Rumah',
       massagePlacesTab: 'Tempat Pijat',
       therapistsTitle: 'Terapis Pijat Rumahan',
@@ -214,8 +237,12 @@ export const homeTranslations = {
           jobPosting: 'Lowongan Kerja',
           loginCreateAccount: 'Masuk / Buat Akun',
           company: 'Perusahaan',
+          locations: 'Lokasi',
+          massageServices: 'Layanan Pijat',
+          helpSupport: 'Bantuan & Dukungan',
         },
         // Job posting
+        joinIndastreet: 'Bergabung dengan IndaStreet',
         massageJobs: 'Lowongan Pijat',
         massageJobsDesc: 'Temukan peluang',
         // Login portals
@@ -227,6 +254,9 @@ export const homeTranslations = {
         therapistsDesc: 'Portal terapis',
         massageSpa: 'Spa Pijat',
         massageSpaDesc: 'Portal mitra spa',
+        therapistPortal: 'Portal Terapis',
+        massageSpaPortal: 'Portal Spa Pijat',
+        websitePartnersPortal: 'Portal Mitra Website',
         agent: 'Agen',
         agentDesc: 'Portal agen',
         customer: 'Tamu',
@@ -234,16 +264,28 @@ export const homeTranslations = {
         // Company section
         aboutUs: 'Tentang Kami',
         aboutUsDesc: 'Pelajari tentang kami',
+        companyProfile: 'Profil Perusahaan',
         howItWorks: 'Cara Kerja',
         howItWorksDesc: 'Memulai',
         blog: 'Blog',
         blogDesc: 'Baca artikel kami',
-        contact: 'Kontak',
+        contact: 'Hubungi Kami',
         contactDesc: 'Hubungi kami',
         termsOfService: 'Syarat Layanan',
         termsDesc: 'Ketentuan hukum',
         privacyPolicy: 'Kebijakan Privasi',
         privacyDesc: 'Informasi privasi',
+        // Tautan mitra cepat
+        accommodationMassageService: 'Akomodasi dengan Layanan Pijat',
+        // Submenu layanan pijat
+        traditionalBalineseMassage: 'Pijat Bali Tradisional',
+        deepTissueMassage: 'Pijat Jaringan Dalam',
+        // Entri tambahan untuk footer drawer dan tautan lokasi
+        qrCode: 'Kode QR',
+        terms: 'Syarat',
+        privacy: 'Privasi',
+        massageInBali: 'Pijat di Bali',
+        faq: 'FAQ',
       },
     },
     dashboard: {

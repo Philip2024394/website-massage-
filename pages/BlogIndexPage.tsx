@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawer';
+import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 
 interface BlogPost {
@@ -416,9 +416,18 @@ const BlogIndexPage: React.FC<BlogIndexPageProps> = ({
                 <div className="mt-16">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">{t?.blog?.popularTopics || 'Popular Topics'}</h2>
                     <div className="grid md:grid-cols-4 gap-4 pb-20">
-                        {['Balinese Massage', 'Hotel Spa Management', 'Therapist Certification', 'Wellness Tourism', 'Deep Tissue Techniques', 'Career Growth', 'Client Retention', 'Aromatherapy'].map((topic, i) => (
+                        {([
+                          { key: 'balineseMassage', fallback: 'Balinese Massage' },
+                          { key: 'hotelSpaManagement', fallback: 'Hotel Spa Management' },
+                          { key: 'therapistCertification', fallback: 'Therapist Certification' },
+                          { key: 'wellnessTourism', fallback: 'Wellness Tourism' },
+                          { key: 'deepTissueTechniques', fallback: 'Deep Tissue Techniques' },
+                          { key: 'careerGrowth', fallback: 'Career Growth' },
+                          { key: 'clientRetention', fallback: 'Client Retention' },
+                          { key: 'aromatherapy', fallback: 'Aromatherapy' },
+                        ] as const).map((topic, i) => (
                             <div key={i} className="bg-white rounded-lg p-4 shadow hover:shadow-lg transition-shadow text-center cursor-pointer">
-                                <span className="text-gray-700 font-semibold">{topic}</span>
+                                <span className="text-gray-700 font-semibold">{t?.blog?.topics?.[topic.key] || topic.fallback}</span>
                             </div>
                         ))}
                     </div>

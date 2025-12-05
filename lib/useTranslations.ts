@@ -34,20 +34,22 @@ const cacheTranslations = (data: any) => {
     }
 };
 
-export function useTranslations(language?: 'en' | 'id') {
+export function useTranslations(language?: 'en' | 'id' | 'gb') {
     // Allow implicit language from context when param not provided
     const ctx = useContext(LanguageContext);
     // Get stored language preference if no language is provided
-    const getStoredLanguage = (): 'en' | 'id' => {
+    const getStoredLanguage = (): 'en' | 'id' | 'gb' => {
         try {
             const stored = window.localStorage.getItem('app_language');
-            return (stored === 'id' || stored === 'en') ? stored : 'id';
+            return (stored === 'id' || stored === 'en' || stored === 'gb') ? (stored as any) : 'id';
         } catch {
             return 'id';
         }
     };
     
     const currentLanguage = language || ctx.language || getStoredLanguage();
+    // Normalize 'gb' to 'en' for dictionary selection while preserving requested language
+    const normalizedLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
     
     const [translations, setTranslations] = useState(fallbackTranslations);
     const [loading, setLoading] = useState(false);
@@ -58,8 +60,8 @@ export function useTranslations(language?: 'en' | 'id') {
             
             // Check for cached translations first
             const cached = getCachedTranslations();
-            if (cached && cached[currentLanguage]) {
-                console.log('✅ useTranslations: Using cached translations for', currentLanguage);
+            if (cached && cached[normalizedLang]) {
+                console.log('✅ useTranslations: Using cached translations for', normalizedLang);
                 setTranslations(cached);
                 setLoading(false);
                 return;
@@ -69,13 +71,13 @@ export function useTranslations(language?: 'en' | 'id') {
             console.log('🌐 useTranslations: Fetching translations from Appwrite...');
             const appwriteTranslations = await translationsService.getAll();
             
-            if (appwriteTranslations && appwriteTranslations[currentLanguage] && Object.keys(appwriteTranslations[currentLanguage]).length > 0) {
-                console.log('✅ useTranslations: Using Appwrite translations for', currentLanguage);
+            if (appwriteTranslations && appwriteTranslations[normalizedLang] && Object.keys(appwriteTranslations[normalizedLang]).length > 0) {
+                console.log('✅ useTranslations: Using Appwrite translations for', normalizedLang);
                 setTranslations(appwriteTranslations);
                 cacheTranslations(appwriteTranslations);
             } else {
                 // Use fallback translations when Appwrite is empty
-                console.log('⚠️ useTranslations: Appwrite empty, using fallback translations for', currentLanguage);
+                console.log('⚠️ useTranslations: Appwrite empty, using fallback translations for', normalizedLang);
                 setTranslations(fallbackTranslations);
                 cacheTranslations(fallbackTranslations);
             }
@@ -85,36 +87,37 @@ export function useTranslations(language?: 'en' | 'id') {
         } finally {
             setLoading(false);
         }
-    }, [currentLanguage]);
+    }, [normalizedLang]);
 
     useEffect(() => {
         console.log('🔄 useTranslations: Language changed, reloading translations for:', currentLanguage);
         loadTranslations();
-    }, [currentLanguage, loadTranslations]);
+    }, [normalizedLang, loadTranslations]);
 
     // Fix: Check if translations have actual content, not just if they exist
     const hasTranslationContent = (obj: any) => obj && Object.keys(obj).length > 0;
     
     // Select appropriate translations based on current language
     let finalTranslations = 
-        (hasTranslationContent(translations[currentLanguage]) ? translations[currentLanguage] : null) ||
-        (hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? (fallbackTranslations as any)[currentLanguage] : null) ||
+        (hasTranslationContent(translations[normalizedLang]) ? translations[normalizedLang] : null) ||
+        (hasTranslationContent((fallbackTranslations as any)[normalizedLang]) ? (fallbackTranslations as any)[normalizedLang] : null) ||
         (hasTranslationContent(translations.en) ? translations.en : null) ||
         fallbackTranslations.en ||
         fallbackTranslations;
     
-    console.log(`🧭 useTranslations Debug for ${currentLanguage}:`);
-    console.log(`  📦 translations[${currentLanguage}] exists:`, !!translations[currentLanguage]);
-    console.log(`  📦 translations[${currentLanguage}] keys:`, translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : 'none');
-    console.log(`  📦 translations[${currentLanguage}] has content:`, hasTranslationContent(translations[currentLanguage]));
-    console.log(`  🏠 translations[${currentLanguage}].home exists:`, !!(translations[currentLanguage] && translations[currentLanguage].home));
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] exists:`, !!((fallbackTranslations as any)[currentLanguage]));
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] keys:`, (fallbackTranslations as any)[currentLanguage] ? Object.keys((fallbackTranslations as any)[currentLanguage]) : 'none');
-    console.log(`  📦 fallbackTranslations[${currentLanguage}] has content:`, hasTranslationContent((fallbackTranslations as any)[currentLanguage]));
-    console.log(`  🏠 fallbackTranslations[${currentLanguage}].home exists:`, !!((fallbackTranslations as any)[currentLanguage] && (fallbackTranslations as any)[currentLanguage].home));
+    console.log(`🧭 useTranslations Debug for requested=${currentLanguage}, normalized=${normalizedLang}:`);
+    console.log(`  📦 translations[${normalizedLang}] exists:`, !!translations[normalizedLang]);
+    console.log(`  📦 translations[${normalizedLang}] keys:`, translations[normalizedLang] ? Object.keys(translations[normalizedLang]) : 'none');
+    console.log(`  📦 translations[${normalizedLang}] has content:`, hasTranslationContent(translations[normalizedLang]));
+    console.log(`  🏠 translations[${normalizedLang}].home exists:`, !!(translations[normalizedLang] && translations[normalizedLang].home));
+    console.log(`  📦 fallbackTranslations[${normalizedLang}] exists:`, !!((fallbackTranslations as any)[normalizedLang]));
+    console.log(`  📦 fallbackTranslations[${normalizedLang}] keys:`, (fallbackTranslations as any)[normalizedLang] ? Object.keys((fallbackTranslations as any)[normalizedLang]) : 'none');
+    console.log(`  📦 fallbackTranslations[${normalizedLang}] has content:`, hasTranslationContent((fallbackTranslations as any)[normalizedLang]));
+    console.log(`  🏠 fallbackTranslations[${normalizedLang}].home exists:`, !!((fallbackTranslations as any)[normalizedLang] && (fallbackTranslations as any)[normalizedLang].home));
     console.log(`  ✅ Final translation keys:`, Object.keys(finalTranslations || {}));
     console.log(`  🏠 Final translation has home:`, !!(finalTranslations && finalTranslations.home));
-    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[currentLanguage]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[currentLanguage]) ? 'Fallback' : 'Default'}`);
+    const srcLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
+    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[srcLang]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[srcLang]) ? 'Fallback' : 'Default'}`);
 
     // Helper function to get nested translation values
     const getNestedValue = (obj: any, path: string): string => {
@@ -147,15 +150,16 @@ export function useTranslations(language?: 'en' | 'id') {
         dict: finalTranslations,
         loading,
         refresh: loadTranslations,
-        hasLanguage: !!(translations[currentLanguage] && Object.keys(translations[currentLanguage]).length > 0),
+        hasLanguage: !!(translations[normalizedLang] && Object.keys(translations[normalizedLang]).length > 0),
         // Add debug info
         debug: {
             requestedLanguage: currentLanguage,
+            normalizedLanguage: normalizedLang,
             availableLanguages: Object.keys(translations),
-            hasRequestedLang: !!(translations[currentLanguage]),
-            fallbackUsed: !translations[currentLanguage],
-            translationKeys: translations[currentLanguage] ? Object.keys(translations[currentLanguage]) : [],
-            hasHomeKey: !!(translations[currentLanguage] && translations[currentLanguage].home)
+            hasRequestedLang: !!(translations[normalizedLang]),
+            fallbackUsed: !translations[normalizedLang],
+            translationKeys: translations[normalizedLang] ? Object.keys(translations[normalizedLang]) : [],
+            hasHomeKey: !!(translations[normalizedLang] && translations[normalizedLang].home)
         }
     };
 }

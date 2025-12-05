@@ -6,6 +6,7 @@ import { dashboardTranslations } from './dashboard';
 import { massageTypesTranslations } from './massageTypes';
 import { jobsTranslations } from './jobs';
 import { partnersTranslations } from './partners';
+import { companyProfileTranslations } from './companyProfile';
 
 type LangDict = Record<string, any>;
 type Translations = { en: LangDict; id: LangDict };
@@ -45,7 +46,8 @@ const translations: Translations = mergeTranslations(
   dashboardTranslations,
   massageTypesTranslations,
   jobsTranslations,
-  partnersTranslations
+  partnersTranslations,
+  companyProfileTranslations
 );
 
 // Add remaining translations that weren't split yet
@@ -128,6 +130,127 @@ translations.en.home = {
   findMassagePlaces: 'Find Massage Places',
   pressure: 'Pressure',
 };
+
+// About Us page
+translations.en.about = {
+  subtitle: "Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers",
+  missionTitle: 'Our IndaStreet Mission',
+  missionText: 'Connecting customers with quality massage therapists while empowering local wellness professionals',
+  cta: {
+    getStarted: 'Get Started Today',
+    viewCompanyProfile: 'View Company Profile',
+    contactTeam: 'Contact Our Team',
+  },
+};
+translations.id.about = {
+  subtitle: 'Marketplace Kesehatan Terlengkap Pertama di Indonesia yang Menghubungkan Terapis, Hotel, dan Pemberi Kerja',
+  missionTitle: 'Misi IndaStreet Kami',
+  missionText: 'Menghubungkan pelanggan dengan terapis pijat berkualitas sambil memberdayakan profesional kesehatan lokal',
+  cta: {
+    getStarted: 'Mulai Hari Ini',
+    viewCompanyProfile: 'Lihat Profil Perusahaan',
+    contactTeam: 'Hubungi Tim Kami',
+  },
+};
+
+// Contact Us page (hero)
+translations.en.contact = {
+  title: 'Contact IndaStreet',
+  subtitle: "We're here to help. Get in touch with our team for support, partnerships, or inquiries.",
+  form: {
+    title: "Let's Connect",
+    nameLabel: 'Your Name *',
+    namePlaceholder: 'Enter your full name',
+    emailLabel: 'Email Address *',
+    emailPlaceholder: 'your.email@example.com',
+    phoneLabel: 'Phone Number',
+    phonePlaceholder: '+62 812 3456 7890',
+    userTypeLabel: 'I am a... *',
+    userTypeSelect: 'Select user type',
+    userTypes: {
+      therapist: 'Massage Therapist',
+      hotel: 'Hotel/Villa Owner',
+      employer: 'Employer/Spa Manager',
+      agent: 'Agent',
+      client: 'Client/Customer',
+      other: 'Other',
+    },
+    subjectLabel: 'Subject *',
+    subjectPlaceholder: 'What is your inquiry about?',
+    messageLabel: 'Message *',
+    messagePlaceholder: 'Tell us how we can help you...',
+    sendButton: 'Send Message',
+  },
+  support: {
+    title: 'Support Resources',
+    quickSupport: { title: 'Quick Support', button: 'Visit FAQ →' },
+    partnerships: { title: 'Partnership Inquiries', button: 'Learn More →' },
+    pressMedia: { title: 'Press & Media', button: 'Press Kit →' },
+    careers: { title: 'Career Opportunities', button: 'View Jobs →' },
+  },
+};
+translations.id.contact = {
+  title: 'Hubungi IndaStreet',
+  subtitle: 'Kami siap membantu. Hubungi tim kami untuk dukungan, kemitraan, atau pertanyaan.',
+  form: {
+    title: 'Mari Terhubung',
+    nameLabel: 'Nama Anda *',
+    namePlaceholder: 'Masukkan nama lengkap Anda',
+    emailLabel: 'Alamat Email *',
+    emailPlaceholder: 'email.anda@contoh.com',
+    phoneLabel: 'Nomor Telepon',
+    phonePlaceholder: '+62 812 3456 7890',
+    userTypeLabel: 'Saya adalah... *',
+    userTypeSelect: 'Pilih jenis pengguna',
+    userTypes: {
+      therapist: 'Terapis Pijat',
+      hotel: 'Pemilik Hotel/Vila',
+      employer: 'Pemberi Kerja/Manajer Spa',
+      agent: 'Agen',
+      client: 'Klien/Pelanggan',
+      other: 'Lainnya',
+    },
+    subjectLabel: 'Subjek *',
+    subjectPlaceholder: 'Tentang apa pertanyaan Anda?',
+    messageLabel: 'Pesan *',
+    messagePlaceholder: 'Beritahu kami bagaimana kami dapat membantu Anda...',
+    sendButton: 'Kirim Pesan',
+  },
+  support: {
+    title: 'Sumber Dukungan',
+    quickSupport: { title: 'Dukungan Cepat', button: 'Kunjungi FAQ →' },
+    partnerships: { title: 'Permintaan Kemitraan', button: 'Pelajari Lebih Lanjut →' },
+    pressMedia: { title: 'Pers & Media', button: 'Kit Pers →' },
+    careers: { title: 'Lowongan Kerja', button: 'Lihat Pekerjaan →' },
+  },
+};
+// FAQ page (hero + categories)
+translations.en.faq = {
+  title: 'Frequently Asked Questions',
+  subtitle: 'Everything you need to know about using IndaStreet',
+  categories: {
+    booking: 'Bookings',
+    therapist: 'For Therapists',
+    hotel: 'For Hotels',
+    employer: 'For Employers',
+    agent: 'For Agents',
+    payment: 'Payments',
+    technical: 'Technical',
+  },
+};
+translations.id.faq = {
+  title: 'Pertanyaan yang Sering Diajukan',
+  subtitle: 'Semua yang perlu Anda ketahui tentang menggunakan IndaStreet',
+  categories: {
+    booking: 'Pemesanan',
+    therapist: 'Untuk Terapis',
+    hotel: 'Untuk Hotel',
+    employer: 'Untuk Pemberi Kerja',
+    agent: 'Untuk Agen',
+    payment: 'Pembayaran',
+    technical: 'Teknis',
+  },
+};
 translations.en.blog = {
   pageTitle: 'IndaStreet Blog',
   featuredArticles: 'Featured Articles',
@@ -139,6 +262,16 @@ translations.en.blog = {
   enterEmail: 'Enter your email',
   subscribe: 'Subscribe',
   popularTopics: 'Popular Topics',
+  topics: {
+    balineseMassage: 'Balinese Massage',
+    hotelSpaManagement: 'Hotel Spa Management',
+    therapistCertification: 'Therapist Certification',
+    wellnessTourism: 'Wellness Tourism',
+    deepTissueTechniques: 'Deep Tissue Techniques',
+    careerGrowth: 'Career Growth',
+    clientRetention: 'Client Retention',
+    aromatherapy: 'Aromatherapy',
+  },
   categoryAll: 'All Articles',
   categoryIndustry: 'Industry Trends',
   categoryTechniques: 'Massage Techniques',
@@ -622,6 +755,16 @@ translations.id.blog = {
   enterEmail: 'Masukkan email Anda',
   subscribe: 'Berlangganan',
   popularTopics: 'Topik Populer',
+  topics: {
+    balineseMassage: 'Pijat Bali',
+    hotelSpaManagement: 'Manajemen Spa Hotel',
+    therapistCertification: 'Sertifikasi Terapis',
+    wellnessTourism: 'Pariwisata Kesehatan',
+    deepTissueTechniques: 'Teknik Deep Tissue',
+    careerGrowth: 'Pengembangan Karier',
+    clientRetention: 'Retensi Klien',
+    aromatherapy: 'Aromaterapi',
+  },
   categoryAll: 'Semua Artikel',
   categoryIndustry: 'Tren Industri',
   categoryTechniques: 'Teknik Pijat',

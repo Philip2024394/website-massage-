@@ -470,3 +470,14 @@ export function matchProviderToCity(
   const nearestCities = findNearestCities(providerLocation, maxDistance, 1);
   return nearestCities.length > 0 ? nearestCities[0] : null;
 }
+
+/**
+ * Find closest Indonesian city by coordinates (for auto-detection)
+ */
+export function findCityByCoordinates(
+  lat: number,
+  lng: number,
+  maxDistance: number = 50 // km - larger radius for auto-detection
+): CityLocation | null {
+  return matchProviderToCity({ lat, lng }, maxDistance);
+}

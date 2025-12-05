@@ -78,7 +78,7 @@ const App = () => {
             return; // Exit early if music was already played
         }
 
-        const audio = new Audio('/sounds/indastreet.mp3');
+        const audio = new Audio('/sounds/booking-notification.mp3');
         audio.volume = 0.5; // Set volume to 50%
         
         let cleanupListeners: (() => void) | null = null;
@@ -285,9 +285,10 @@ const App = () => {
     }, [state.therapists, state.places]);
 
     // Use the actual language handler from hooks
-    const handleLanguageSelect = async (lang: 'en' | 'id') => {
+    const handleLanguageSelect = async (lang: 'en' | 'id' | 'gb') => {
         console.log('🌍 App.tsx: handleLanguageSelect called with:', lang);
-        setLanguage(lang);
+        const normalized = lang === 'gb' ? 'en' : lang;
+        setLanguage(normalized);
         return Promise.resolve();
     };
 
@@ -387,7 +388,7 @@ const App = () => {
     };
 
     return (
-        <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: handleLanguageSelect }}>
+        <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: (l: 'en' | 'id' | 'gb') => { void handleLanguageSelect(l); } }}>
         <DeviceStylesProvider>
             <AppLayout
                 isFullScreen={state.page === 'landing' || state.isFullScreen}
@@ -409,6 +410,7 @@ const App = () => {
                     isVillaLoggedIn={state.isVillaLoggedIn}
                     therapists={state.therapists}
                     places={state.places}
+                    hotels={state.hotels}
                     notifications={state.notifications}
                     bookings={state.bookings}
                     // Pass the global loggedInUser (role-aware) to satisfy dashboard guards

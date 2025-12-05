@@ -41,6 +41,7 @@
     "build", 
     "mobile",
     "deleted/**/*",
+    "components/AppDrawer.tsx",
     "vite.config.ts",
     "*-backup.*",
     "*-new.*",

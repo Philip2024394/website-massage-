@@ -18,10 +18,10 @@ export const cleanupLocalStorage = () => {
       if (value) {
         // Try to parse - if it fails, the data is corrupted
         if (key === 'app_language') {
-          // app_language should be a simple string 'en' or 'id'
-          if (value !== 'en' && value !== 'id') {
-            console.log(`🔧 Fixing corrupted ${key}: ${value} -> 'en'`);
-            localStorage.setItem(key, 'en');
+          // app_language should be a simple string 'id' (default), 'en', or 'gb'
+          if (value !== 'en' && value !== 'id' && value !== 'gb') {
+            console.log(`🔧 Fixing corrupted ${key}: ${value} -> 'id'`);
+            localStorage.setItem(key, 'id');
           }
         } else {
           // Other keys should be valid JSON
