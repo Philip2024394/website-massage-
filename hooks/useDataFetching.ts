@@ -42,12 +42,21 @@ export const useDataFetching = () => {
             
             // Try to fetch facial places
             console.log('🔄 Attempting to fetch facial places data...');
+            console.log('📋 facialPlaceService exists:', !!facialPlaceService);
+            console.log('📋 facialPlaceService.getAll exists:', !!facialPlaceService?.getAll);
+            
             const facialPlacesData = await robustCollectionQuery(
-                () => facialPlaceService.getAll(),
+                () => {
+                    console.log('🎯 Inside robustCollectionQuery callback for facial places');
+                    return facialPlaceService.getAll();
+                },
                 'facial_places',
                 [] as Place[]
             );
             console.log('✅ Facial places data received:', facialPlacesData?.length || 0);
+            if (facialPlacesData && facialPlacesData.length > 0) {
+                console.log('📸 First facial place:', facialPlacesData[0]);
+            }
             
             // Try to fetch hotels for location dropdown filtering
             console.log('🔄 Attempting to fetch hotels data...');

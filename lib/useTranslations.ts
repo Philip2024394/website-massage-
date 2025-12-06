@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext } from 'react';
+import { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { LanguageContext } from '../context/LanguageContext';
 import { translationsService } from './appwriteService';
 import { translations as fallbackTranslations } from '../translations/index';
@@ -89,10 +89,24 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
         }
     }, [normalizedLang]);
 
+    // Track last fetch time to prevent rate limiting (429 errors)
+    const lastFetchRef = useRef<{ [key: string]: number }>({});
+    const RATE_LIMIT_MS = 3000; // Minimum 3 seconds between fetches
+
     useEffect(() => {
+        const now = Date.now();
+        const lastFetch = lastFetchRef.current[normalizedLang] || 0;
+        const timeSinceLastFetch = now - lastFetch;
+        
+        if (timeSinceLastFetch < RATE_LIMIT_MS) {
+            console.log(`⏱️ useTranslations: Rate limit - skipping fetch for ${normalizedLang} (${timeSinceLastFetch}ms < ${RATE_LIMIT_MS}ms)`);
+            return;
+        }
+        
         console.log('🔄 useTranslations: Language changed, reloading translations for:', currentLanguage);
+        lastFetchRef.current[normalizedLang] = now;
         loadTranslations();
-    }, [normalizedLang, loadTranslations]);
+    }, [normalizedLang, loadTranslations, currentLanguage]);
 
     // Fix: Check if translations have actual content, not just if they exist
     const hasTranslationContent = (obj: any) => obj && Object.keys(obj).length > 0;

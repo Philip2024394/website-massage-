@@ -72,16 +72,36 @@ export const APPWRITE_CONFIG = {
 
 // Google Maps utility functions
 export const loadGoogleMapsScript = (callback?: () => void) => {
-    if ((window as any).google) {
+    // If already loaded, call callback immediately
+    if ((window as any).google?.maps) {
+        console.log('✅ Google Maps already loaded, skipping script injection');
         callback?.();
         return;
     }
-    
+
+    // Check if script already exists in DOM
+    const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
+    if (existingScript) {
+        console.log('⏳ Google Maps script already in DOM, waiting for load...');
+        if (callback) {
+            existingScript.addEventListener('load', callback);
+        }
+        return;
+    }
+
+    console.log('Loading Google Maps API script...');
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&region=ID&language=id`;
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&region=ID&language=id&loading=async`;
     script.async = true;
     script.defer = true;
-    script.onload = callback || (() => {});
+    script.onload = () => {
+        console.log('Google Maps script loaded successfully.');
+        if (callback) callback();
+    };
+    script.onerror = () => {
+        console.error('❌ Failed to load Google Maps script');
+    };
     document.head.appendChild(script);
 };
 

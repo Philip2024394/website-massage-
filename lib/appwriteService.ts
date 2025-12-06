@@ -1374,19 +1374,44 @@ export const placeService = {
 export const facialPlaceService = {
     async getAll(): Promise<any[]> {
         try {
-            // Check if facial_places collection exists
-            if (!APPWRITE_CONFIG.collections.facial_places || APPWRITE_CONFIG.collections.facial_places === '') {
-                console.log('⚠️ Facial places collection disabled - returning empty array');
+            const collectionId = APPWRITE_CONFIG.collections.facial_places;
+            
+            console.log('🔍 Facial Places - Collection ID:', collectionId);
+            console.log('🔍 Database ID:', APPWRITE_CONFIG.databaseId);
+            
+            if (!collectionId || collectionId === '') {
+                console.error('❌ Facial places collection ID is EMPTY!');
                 return [];
             }
             
-            console.log('📋 Fetching all FACIAL PLACES from collection:', APPWRITE_CONFIG.collections.facial_places);
+            console.log('📋 Attempting to fetch FACIAL PLACES...');
             
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.facial_places
+                collectionId
             );
-            console.log('✅ Fetched FACIAL PLACES:', response.documents.length);
+            
+            console.log('✅ Successfully fetched FACIAL PLACES:', response.documents.length);
+            
+            if (response.documents.length > 0) {
+                const firstDoc = response.documents[0];
+                console.log('🔬 DIAGNOSTIC - First document raw data:');
+                console.log('  Document ID:', firstDoc.$id);
+                console.log('  All attributes:', Object.keys(firstDoc));
+                console.log('  Full document:', firstDoc);
+                
+                // Check for common field variations
+                console.log('🔍 Field check:');
+                console.log('  - name:', firstDoc.name);
+                console.log('  - mainImage:', firstDoc.mainImage);
+                console.log('  - mainimage:', firstDoc.mainimage);
+                console.log('  - address:', firstDoc.address);
+                console.log('  - category:', firstDoc.category);
+                console.log('  - icon:', firstDoc.icon); // This would be from massage_types!
+                console.log('  - description:', firstDoc.description);
+            } else {
+                console.warn('⚠️ Collection exists but has NO documents!');
+            }
             
             // Map Appwrite attributes to camelCase for frontend compatibility
             const mappedFacialPlaces = response.documents.map((fp: any) => {
