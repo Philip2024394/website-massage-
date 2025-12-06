@@ -14,12 +14,16 @@ import { useFooterNavigation } from './useFooterNavigation';
 import { useDerivedState } from './useDerivedState';
 import { useHomeHandlers } from './useHomeHandlers';
 import { useSessionRestore } from './useSessionRestore';
+import { useURLRouting } from './useURLRouting';
 import { useEffect } from 'react';
 
 export const useAllHooks = () => {
     // ALWAYS call hooks in the same order - never conditionally
     const state = useAppState();
     const dataFetching = useDataFetching();
+    
+    // URL routing - sync page state with browser URL
+    useURLRouting(state.page, state.setPage);
     
     // Fetch therapists and places on app initialization
     useEffect(() => {
