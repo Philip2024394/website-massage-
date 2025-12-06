@@ -118,7 +118,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
             contactNumber: '+62 812 3456 7890',
             verified: true,
             featured: true,
-            images: ['https://ik.imagekit.io/7grri5v7d/antic%20aging.png'],
+            images: ['https://ik.imagekit.io/7grri5v7d/antic%20aging.png', 'https://ik.imagekit.io/7grri5v7d/Collagen%20Facial.png', 'https://ik.imagekit.io/7grri5v7d/caref.png'],
             amenities: ['Air Conditioning', 'Private Rooms', 'Parking', 'WiFi', 'Professional Staff'],
             bookingUrl: '#',
             instagramHandle: '@baliglowspa',

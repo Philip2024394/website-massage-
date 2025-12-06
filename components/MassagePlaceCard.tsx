@@ -440,15 +440,15 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-12 pb-6 relative z-10 overflow-visible">
+            <div className="px-4 -mt-8 sm:-mt-12 pb-6 relative z-10 overflow-visible">
                 <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
                     <div className="flex items-start gap-3 flex-1 min-w-0">
                         {/* Profile Picture */}
                         <div className="flex-shrink-0">
-                            <div className="relative w-20 h-20 aspect-square">
+                            <div className="relative w-16 sm:w-20 h-16 sm:h-20 aspect-square">
                                 <img 
-                                    className="w-20 h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                                    className="w-16 sm:w-20 h-16 sm:h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
                                     src={(place as any).profilePicture || (place as any).logo || mainImage}
                                     alt={place.name}
                                     onError={(e) => {
@@ -466,21 +466,21 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 
                                 {/* Star Rating Badge */}
                                 <button
-                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-[2000]"
+                                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 bg-white/95 backdrop-blur-md rounded-full px-2 sm:px-3 py-1 sm:py-1.5 shadow-lg flex items-center gap-1 sm:gap-1.5 z-[2000]"
                                     onClick={() => onRate(place)}
                                     aria-label={`Rate ${place.name}`}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 sm:w-5 h-4 sm:h-5" viewBox="0 0 20 20" fill="#eab308">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
-                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
+                                    <span className="font-bold text-gray-900 text-sm sm:text-base">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
                                 </button>
                             </div>
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-14 pb-2">
-                            <h3 className="text-xl font-bold text-gray-900 truncate">{place.name}</h3>
+                        <div className="flex-1 min-w-0 pt-10 sm:pt-14 pb-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{place.name}</h3>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
                                 <span className="relative mr-1.5">
                                     <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
@@ -492,7 +492,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-14">
+                    <div className="flex-shrink-0 pb-2 mt-10 sm:mt-14">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
