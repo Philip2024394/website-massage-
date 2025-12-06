@@ -984,7 +984,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
                             className="text-gray-700"
-                            showTravelTime={true}
+                            showTravelTime={false}
                             showIcon={true}
                             size="sm"
                         />
