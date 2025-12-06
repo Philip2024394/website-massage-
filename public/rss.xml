@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+  <title>Indastreet - Indonesia's #1 Massage & Facial Directory</title>
+  <link>https://www.indastreetmassage.com</link>
+  <description>Latest updates on massage therapy, facial treatments, wellness spas, and beauty services across Indonesia. Expert tips, therapist profiles, and service updates.</description>
+  <language>id</language>
+  <lastBuildDate>Fri, 06 Dec 2025 00:00:00 GMT</lastBuildDate>
+  <atom:link href="https://www.indastreetmassage.com/rss.xml" rel="self" type="application/rss+xml" />
+  <image>
+    <url>https://ik.imagekit.io/7grri5v7d/Massage%20hub%20indastreet.png</url>
+    <title>Indastreet</title>
+    <link>https://www.indastreetmassage.com</link>
+  </image>
+
+  <!-- New Facial Services Launch -->
+  <item>
+    <title>Introducing Facial Services Directory - Find Premium Facial Spas Across Indonesia</title>
+    <link>https://www.indastreetmassage.com/facials</link>
+    <description>Discover Indonesia's finest facial treatment centers. From microdermabrasion to anti-aging treatments, find verified facial spas and clinics near you. Browse treatments, compare prices, and book instantly.</description>
+    <pubDate>Fri, 06 Dec 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/facials</guid>
+    <category>Facial Services</category>
+    <category>Beauty</category>
+    <category>Skincare</category>
+  </item>
+
+  <!-- Facial Types Guide -->
+  <item>
+    <title>Complete Guide to Facial Types in Indonesia - Microdermabrasion, Anti-Aging & More</title>
+    <link>https://www.indastreetmassage.com/facial-types</link>
+    <description>Explore different facial treatment types available in Indonesia. Learn about microdermabrasion, deep cleansing facials, anti-aging treatments, hydrating facials, and acne treatments. Expert recommendations and pricing guides.</description>
+    <pubDate>Fri, 06 Dec 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/facial-types</guid>
+    <category>Facial Treatments</category>
+    <category>Skincare Guide</category>
+  </item>
+
+  <!-- Massage Types -->
+  <item>
+    <title>Complete Guide to Massage Types in Indonesia</title>
+    <link>https://www.indastreetmassage.com/massage-types</link>
+    <description>Comprehensive guide to massage therapy options in Indonesia. Learn about Balinese massage, deep tissue, Swedish massage, Thai massage, aromatherapy, reflexology, sports massage, and more.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/massage-types</guid>
+    <category>Massage</category>
+    <category>Wellness</category>
+  </item>
+
+  <!-- Therapist Jobs -->
+  <item>
+    <title>Massage Jobs Indonesia - Join 2000+ Professional Therapists</title>
+    <link>https://www.indastreetmassage.com/massage-jobs</link>
+    <description>Find professional massage therapy jobs across Indonesia. Connect with hotels, spas, and private clients. Flexible schedules, competitive rates, instant payment. Join Indonesia's largest massage therapist network.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/massage-jobs</guid>
+    <category>Jobs</category>
+    <category>Career</category>
+  </item>
+
+  <!-- Partner Program -->
+  <item>
+    <title>Indastreet Partners - Hotel & Villa Wellness Integration Program</title>
+    <link>https://www.indastreetmassage.com/partners</link>
+    <description>Partner your hotel, villa, or resort with Indonesia's #1 massage directory. Provide guests with 24/7 on-demand wellness services. Seamless booking integration, verified therapists, and revenue sharing program.</description>
+    <pubDate>Mon, 01 Dec 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/partners</guid>
+    <category>Partnership</category>
+    <category>Hotels</category>
+    <category>Hospitality</category>
+  </item>
+
+  <!-- Blog Posts -->
+  <item>
+    <title>Traditional Balinese Massage: Ancient Healing Techniques</title>
+    <link>https://www.indastreetmassage.com/blog/balinese-massage</link>
+    <description>Discover the ancient art of Balinese massage. Learn about traditional techniques, health benefits, and where to find authentic Balinese massage therapists in Bali and across Indonesia.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/balinese-massage</guid>
+    <category>Blog</category>
+    <category>Traditional Massage</category>
+  </item>
+
+  <item>
+    <title>Deep Tissue vs Swedish Massage: Which is Right for You?</title>
+    <link>https://www.indastreetmassage.com/blog/deep-tissue</link>
+    <description>Compare deep tissue and Swedish massage techniques. Understand the differences, benefits, and which massage type suits your wellness goals. Expert advice from professional therapists.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/deep-tissue</guid>
+    <category>Blog</category>
+    <category>Massage Comparison</category>
+  </item>
+
+  <item>
+    <title>Aromatherapy Massage: Essential Oils and Their Benefits</title>
+    <link>https://www.indastreetmassage.com/blog/aromatherapy</link>
+    <description>Explore the healing power of aromatherapy massage. Learn about essential oils, their therapeutic properties, and how aromatherapy enhances relaxation and wellness.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/aromatherapy</guid>
+    <category>Blog</category>
+    <category>Aromatherapy</category>
+  </item>
+
+  <item>
+    <title>Thai Massage in Indonesia: Stretching and Healing Techniques</title>
+    <link>https://www.indastreetmassage.com/blog/thai-massage</link>
+    <description>Discover Thai massage therapy in Indonesia. Learn about stretching techniques, acupressure points, and the unique benefits of traditional Thai massage for flexibility and pain relief.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/thai-massage</guid>
+    <category>Blog</category>
+    <category>Thai Massage</category>
+  </item>
+
+  <item>
+    <title>Reflexology: Healing Through Foot Massage Pressure Points</title>
+    <link>https://www.indastreetmassage.com/blog/reflexology</link>
+    <description>Understand reflexology and its healing benefits. Learn how foot massage pressure points correspond to body organs and promote overall wellness. Find certified reflexologists in Indonesia.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/reflexology</guid>
+    <category>Blog</category>
+    <category>Reflexology</category>
+  </item>
+
+  <item>
+    <title>Sports Massage: Recovery and Performance Enhancement</title>
+    <link>https://www.indastreetmassage.com/blog/sports-massage</link>
+    <description>Sports massage techniques for athletes and active individuals. Learn about injury prevention, muscle recovery, and performance optimization through professional sports massage therapy.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/sports-massage</guid>
+    <category>Blog</category>
+    <category>Sports Massage</category>
+  </item>
+
+  <item>
+    <title>Hot Stone Massage: Ancient Thermal Therapy for Deep Relaxation</title>
+    <link>https://www.indastreetmassage.com/blog/hot-stone</link>
+    <description>Experience the soothing effects of hot stone massage. Learn about thermal therapy benefits, volcanic stone treatments, and where to find authentic hot stone massage in Bali and Indonesia.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/hot-stone</guid>
+    <category>Blog</category>
+    <category>Hot Stone Massage</category>
+  </item>
+
+  <item>
+    <title>Prenatal Massage: Safe and Comfortable Pregnancy Massage</title>
+    <link>https://www.indastreetmassage.com/blog/prenatal-massage</link>
+    <description>Prenatal massage safety and benefits for expectant mothers. Learn about pregnancy-safe massage techniques, certified therapists, and how massage supports maternal wellness.</description>
+    <pubDate>Thu, 14 Nov 2025 00:00:00 GMT</pubDate>
+    <guid>https://www.indastreetmassage.com/blog/prenatal-massage</guid>
+    <category>Blog</category>
+    <category>Prenatal Care</category>
+  </item>
+
+</channel>
+</rss>

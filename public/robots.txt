@@ -8,6 +8,8 @@ Allow: /therapists
 Allow: /spas
 Allow: /services
 Allow: /massage-types
+Allow: /facials
+Allow: /facial-types
 Allow: /join-indastreet
 Allow: /join-indastreet-partners
 Allow: /partners
