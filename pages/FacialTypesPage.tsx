@@ -332,7 +332,7 @@ function getFacialImage(type: string): string {
     const images: { [key: string]: string } = {
         'Anti-Aging Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png',
         'Collagen Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
-        'Microdermabrasion': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
+        'Microdermabrasion': 'https://ik.imagekit.io/7grri5v7d/Microdermabrasion.png',
         'Chemical Peel': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
         'LED Light Therapy': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
         'Hydrating Facial': 'https://ik.imagekit.io/7grri5v7d/antic%20age%20indonisea.png',
