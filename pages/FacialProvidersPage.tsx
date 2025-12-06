@@ -102,35 +102,6 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
 
     // Filter facial places by selected city OR by 15km radius if user location available
     const filteredFacialPlaces = (() => {
-        // Mock facial place for design purposes
-        const mockFacialPlace: any = {
-            $id: 'mock-facial-001',
-            id: 'mock-facial-001',
-            name: 'Bali Glow Facial Spa',
-            location: 'Seminyak, Bali',
-            coordinates: JSON.stringify({ lat: -8.6908, lng: 115.1725 }),
-            description: 'Premium facial spa specializing in organic treatments, anti-aging therapies, and traditional Balinese facial techniques. Experience luxury skincare with natural ingredients.',
-            rating: 4.9,
-            reviewCount: 156,
-            facialTypes: ['Anti-Aging Facial', 'Collagen Facial', 'Hydrating Facial', 'Brightening Facial', 'Acne Treatment Facial', 'LED Light Therapy'],
-            priceRange: 'Rp 350,000 - Rp 850,000',
-            openingHours: '09:00 - 21:00',
-            contactNumber: '+62 812 3456 7890',
-            verified: true,
-            featured: true,
-            mainImage: 'https://ik.imagekit.io/7grri5v7d/antic%20aging.png',
-            images: ['https://ik.imagekit.io/7grri5v7d/antic%20aging.png', 'https://ik.imagekit.io/7grri5v7d/Collagen%20Facial.png', 'https://ik.imagekit.io/7grri5v7d/caref.png'],
-            amenities: ['Air Conditioning', 'Private Rooms', 'Parking', 'WiFi', 'Professional Staff'],
-            bookingUrl: '#',
-            instagramHandle: '@baliglowspa',
-            analytics: JSON.stringify({
-                views: 2845,
-                bookings: 89,
-                shares: 45,
-                calls: 123
-            })
-        };
-
         // If user has location, filter by 15km radius
         if (userLocation && userLocation.lat && userLocation.lng && localSelectedCity !== 'all') {
             const filtered = facialPlaces.filter(place => {
@@ -162,7 +133,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                 console.log(`📍 ${place.name}: ${distance.toFixed(2)}km away`);
                 return distance <= 15;
             });
-            return [mockFacialPlace as any, ...filtered];
+            return filtered;
         }
         
         // If city selected but no user location, filter by city name
@@ -170,11 +141,11 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
             const filtered = facialPlaces.filter(place => {
                 return place.location === localSelectedCity || place.location?.includes(localSelectedCity);
             });
-            return [mockFacialPlace as any, ...filtered];
+            return filtered;
         }
         
         // Show all if "All Indonesia" selected
-        return [mockFacialPlace as any, ...facialPlaces];
+        return facialPlaces;
     })();
 
     const handleCityChange = (city: string) => {
