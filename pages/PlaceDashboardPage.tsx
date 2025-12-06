@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home } from 'lucide-react';
-import PageContainer from '../components/layout/PageContainer';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import Button from '../components/Button';
@@ -14,6 +13,7 @@ import HotelVillaOptIn from '../components/HotelVillaOptIn';
 import { placeService } from '../lib/appwriteService';
 import { sanitizePlacePayload } from '../schemas/placeSchema';
 import TherapistTermsPage from './TherapistTermsPage';
+import LoadingSpinner from '../components/LoadingSpinner';
 import UserSolidIcon from '../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
@@ -25,8 +25,6 @@ import CustomCheckbox from '../components/CustomCheckbox';
 import ValidationPopup from '../components/ValidationPopup';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 import { notificationService } from '../lib/appwriteService';
-import CityLocationDropdown from '../components/CityLocationDropdown';
-import { matchProviderToCity } from '../constants/indonesianCities';
 import { soundNotificationService } from '../utils/soundNotificationService';
 import PushNotificationSettings from '../components/PushNotificationSettings';
 import { 
@@ -129,7 +127,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         { imageUrl: '', caption: '', description: '' }
     ]);
     const [contactNumber, setContactNumber] = useState('');
-    const [ownerWhatsApp, setOwnerWhatsApp] = useState('');
     const [pricing, setPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [hotelVillaPricing, setHotelVillaPricing] = useState<Pricing>({ 60: 0, 90: 0, 120: 0 });
     const [useSamePricing, setUseSamePricing] = useState(true);
@@ -140,28 +137,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [location, setLocation] = useState('');
     const [isLocationManuallyEdited, setIsLocationManuallyEdited] = useState(false);
     const [massageTypes, setMassageTypes] = useState<string[]>([]);
-    const [therapistGender, setTherapistGender] = useState<string>('Unisex'); // 'Male', 'Female', or 'Unisex'
     const [yearsEstablished, setYearsEstablished] = useState<number>(1);
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
-    const [selectedCity, setSelectedCity] = useState<string>(() => {
-        // Try to get city from existing place data or auto-detect from coordinates
-        if ((place as any)?.city) return (place as any).city;
-        
-        try {
-            const coords = place?.coordinates;
-            if (coords) {
-                const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
-                if (parsed?.lat && parsed?.lng) {
-                    const matchedCity = matchProviderToCity({ lat: parsed.lat, lng: parsed.lng }, 25);
-                    return matchedCity?.name || 'all';
-                }
-            }
-        } catch {}
-        
-        return 'all';
-    });
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -185,12 +164,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [websiteUrl, setWebsiteUrl] = useState('');
     const [websiteTitle, setWebsiteTitle] = useState('');
     const [websiteDescription, setWebsiteDescription] = useState('');
-    // Social media
-    const [instagramUrl, setInstagramUrl] = useState('');
-    const [facebookPageUrl, setFacebookPageUrl] = useState('');
-    const [instagramPostsRaw, setInstagramPostsRaw] = useState(''); // newline or comma separated
-    const [instagramPostsArray, setInstagramPostsArray] = useState<Array<{image: string; link: string}>>([]);
-    const [facebookPostsArray, setFacebookPostsArray] = useState<Array<{image: string; link: string}>>([]);
     
     // Image upload warning modal states
     const [showImageRequirementModal, setShowImageRequirementModal] = useState(false);
@@ -291,7 +264,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         }
         
         setContactNumber(placeData.contactNumber || '');
-        setOwnerWhatsApp(placeData.ownerWhatsApp || '');
         
         // Parse JSON strings from Appwrite
         try {
@@ -307,10 +279,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Parse massage types - handle both JSON string and array
             const massageTypesRaw = (placeData as any).massagetypes || placeData.massageTypes;
             setMassageTypes(typeof massageTypesRaw === 'string' ? JSON.parse(massageTypesRaw) : massageTypesRaw || []);
-            
-            // Load therapist gender preference - use type assertion since therapistGender exists in DB but not in type
-            const genderPref = (placeData as any).therapistGender || 'Unisex';
-            setTherapistGender(genderPref);
             
             // Parse languages - handle both JSON string and array
             const languagesRaw = placeData.languages || (placeData as any).languagesspoken;
@@ -345,46 +313,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setWebsiteUrl((placeData as any).websiteUrl || (placeData as any).websiteurl || '');
         setWebsiteTitle((placeData as any).websiteTitle || (placeData as any).websitetitle || '');
         setWebsiteDescription((placeData as any).websiteDescription || (placeData as any).websitedescription || '');
-        // Initialize social media
-        const ig = (placeData as any).instagramUrl || (placeData as any).instagramurl || '';
-        const fb = (placeData as any).facebookPageUrl || (placeData as any).facebookpageurl || '';
-        setInstagramUrl(ig || '');
-        setFacebookPageUrl(fb || '');
-        const posts = (placeData as any).instagramPosts || (placeData as any).instagramposts;
-        if (Array.isArray(posts)) {
-            setInstagramPostsRaw(posts.join('\n'));
-            // Check if posts are objects with {image, link} format
-            if (posts.length > 0 && typeof posts[0] === 'object' && 'image' in posts[0]) {
-                setInstagramPostsArray(posts);
-            }
-        } else if (typeof posts === 'string') {
-            try { 
-                const arr = JSON.parse(posts); 
-                if (Array.isArray(arr)) {
-                    setInstagramPostsRaw(Array.isArray(arr) ? arr.join('\n') : '');
-                    // Check if array contains objects with {image, link}
-                    if (arr.length > 0 && typeof arr[0] === 'object' && 'image' in arr[0]) {
-                        setInstagramPostsArray(arr);
-                    }
-                }
-            }
-            catch { setInstagramPostsRaw(''); }
-        } else {
-            setInstagramPostsRaw('');
-        }
-        
-        // Initialize Facebook posts
-        const fbPosts = (placeData as any).facebookPosts || (placeData as any).facebookposts;
-        if (Array.isArray(fbPosts) && fbPosts.length > 0 && typeof fbPosts[0] === 'object') {
-            setFacebookPostsArray(fbPosts);
-        } else if (typeof fbPosts === 'string') {
-            try {
-                const arr = JSON.parse(fbPosts);
-                if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'object') {
-                    setFacebookPostsArray(arr);
-                }
-            } catch { /* ignore */ }
-        }
     };
     
     const initializeWithDefaults = () => {
@@ -394,7 +322,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setProfilePicture('');
         setGalleryImages(Array(6).fill({ imageUrl: '', caption: '', description: '' }));
         setContactNumber('');
-        setOwnerWhatsApp('');
         setPricing({ '60': 0, '90': 0, '120': 0 });
         setDiscountPercentage(0);
         setDiscountDuration(24);
@@ -402,7 +329,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setDiscountEndTime('');
         setCoordinates({ lat: 0, lng: 0 });
         setMassageTypes([]);
-        setTherapistGender('Unisex');
         setLanguages([]);
         setAdditionalServices([]);
         setLocation('');
@@ -542,7 +468,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         if (!hasPricing) missingFields.push('• At least one service pricing (30, 60, 90, or 120 minutes)');
         
         // Check massage types
-        if (selectedCity === 'all') missingFields.push('• City/Location selection');
+        if (!massageTypes || massageTypes.length === 0) missingFields.push('• At least one massage type/service offered');
         
         if (missingFields.length > 0) {
             setValidationMissingFields(missingFields);
@@ -560,7 +486,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📸 Main Image Type:', typeof mainImage);
         console.log('📸 Profile Picture:', profilePicture);
         console.log('📸 Gallery Images Count:', filteredGallery.length);
-        console.log('🎯 Selected City:', selectedCity);
+        console.log('🎯 Massage Types:', massageTypes);
         console.log('🌐 Languages:', languages);
         console.log('➕ Additional Services:', additionalServices);
         console.log('==========================================');
@@ -586,7 +512,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Contact
             whatsappnumber: contactNumber,
-            ownerWhatsApp: ownerWhatsApp,
             
             // Images
             mainimage: mainImage,
@@ -599,7 +524,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Location
             location,
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
-            city: selectedCity !== 'all' ? selectedCity : null,
             
             // Hours
             openingtime: openingTime,
@@ -607,7 +531,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             
             // Services
             massagetypes: JSON.stringify(massageTypes),
-            therapistGender: therapistGender,
             languages: JSON.stringify(languages),
             additionalServices: JSON.stringify(additionalServices),
             yearsEstablished: Number(yearsEstablished) || 1,
@@ -616,12 +539,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             websiteUrl: websiteUrl || '',
             websiteTitle: websiteTitle || '',
             websiteDescription: websiteDescription || '',
-
-            // Social media
-            instagramurl: instagramUrl || '',
-            facebookpageurl: facebookPageUrl || '',
-            instagramposts: instagramPostsArray.length ? JSON.stringify(instagramPostsArray) : '',
-            facebookposts: facebookPostsArray.length ? JSON.stringify(facebookPostsArray) : '',
             
             // Discounts
             discountpercentage: isDiscountActive ? Number(discountPercentage) : 0,
@@ -767,7 +684,23 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         setGalleryImages(newGallery);
     };
 
-    // Removed handleMassageTypeChange - replaced with city selection
+    const handleMassageTypeChange = (type: string) => {
+        setMassageTypes(prev => {
+            // Additional safety check
+            const currentTypes = prev || [];
+            if (currentTypes.includes(type)) {
+                // Remove if already selected
+                return currentTypes.filter(t => t !== type);
+            } else {
+                // Add only if less than 5 are selected
+                if (currentTypes.length < 5) {
+                    return [...currentTypes, type];
+                }
+                // Silently ignore if trying to select more than 5
+                return currentTypes;
+            }
+        });
+    };
 
     const handleLanguageChange = (langCode: string) => {
         setLanguages(prev => {
@@ -918,7 +851,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const pastBookings = (bookings || []).filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     if (isLoading) {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
+        return <LoadingSpinner message="Loading dashboard..." />;
     }
 
     if (!place && !_placeId) {
@@ -1440,27 +1373,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <p className="text-xs text-gray-500 mt-1">Enter number without +62 prefix (e.g., 81234567890)</p>
                         </div>
                         
-                        {/* Owner's WhatsApp for Reviews */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900">Owner's WhatsApp (For Review Contact)</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <MessageSquare className="h-5 w-5 text-green-500" />
-                                </div>
-                                <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none">
-                                    <span className="text-gray-600 font-medium">+62</span>
-                                </div>
-                                <input 
-                                    type="text" 
-                                    value={ownerWhatsApp} 
-                                    onChange={e => setOwnerWhatsApp(e.target.value)} 
-                                    placeholder="81234567890" 
-                                    className="mt-1 block w-full pl-20 pr-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900" 
-                                />
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">Optional: This number will be shown in reviews for customers to contact you directly about issues</p>
-                        </div>
-                        
                         <div>
                             <label className="block text-sm font-medium text-gray-900">Website URL (Optional)</label>
                             <div className="relative">
@@ -1478,42 +1390,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 />
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Add your business website to show on your profile card</p>
-                        </div>
-                        {/* Social Media */}
-                        <div className="grid grid-cols-1 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900">Instagram URL</label>
-                                <input
-                                    type="url"
-                                    value={instagramUrl}
-                                    onChange={(e) => setInstagramUrl(e.target.value)}
-                                    placeholder="https://www.instagram.com/yourprofile/"
-                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Link to your Instagram profile.</p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900">Facebook Page URL</label>
-                                <input
-                                    type="url"
-                                    value={facebookPageUrl}
-                                    onChange={(e) => setFacebookPageUrl(e.target.value)}
-                                    placeholder="https://www.facebook.com/yourpage"
-                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Your official Facebook Page. Shown as a timeline.</p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-900">Instagram Post URLs (optional)</label>
-                                <textarea
-                                    value={instagramPostsRaw}
-                                    onChange={(e) => setInstagramPostsRaw(e.target.value)}
-                                    placeholder={"Paste Instagram post or reel links, one per line\nhttps://www.instagram.com/p/XXXX/\nhttps://www.instagram.com/reel/YYYY/"}
-                                    rows={4}
-                                    className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-green focus:border-brand-green text-gray-900"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">We’ll show a horizontal carousel of these posts.</p>
-                            </div>
                         </div>
                         
                         <div>
@@ -1564,41 +1440,31 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <p className="text-xs text-gray-500 mt-1">How many years has your business been operating?</p>
                         </div>
                         
-                        {/* Bookings - Gender Preference */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-2">Bookings</label>
-                            <div className="flex gap-3">
-                                {['Male', 'Female', 'Unisex'].map((gender) => (
-                                    <button
-                                        key={gender}
-                                        type="button"
-                                        onClick={() => setTherapistGender(gender)}
-                                        className={`flex-1 px-4 py-3 rounded-lg border-2 font-medium transition-all ${
-                                            therapistGender === gender
-                                                ? 'bg-orange-500 border-orange-500 text-white'
-                                                : 'bg-white border-gray-200 text-gray-700 hover:border-orange-300'
-                                        }`}
-                                    >
-                                        {gender}
-                                    </button>
+                            <label className="block text-sm font-medium text-gray-900">
+                                {t?.massageTypesLabel || 'Massage Types'}
+                                <span className="text-xs text-gray-500 ml-2">
+                                    (Select up to 5 specialties - {massageTypes.length}/5 selected)
+                                </span>
+                            </label>
+                            <div className="mt-2 p-3 bg-white border border-gray-200 rounded-lg space-y-4">
+                                {(MASSAGE_TYPES_CATEGORIZED || []).map(category => (
+                                    <div key={category.category}>
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{category.category}</h4>
+                                        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2">
+                                            {(category.types || []).map(type => (
+                                                <CustomCheckbox
+                                                    key={type}
+                                                    label={type}
+                                                    checked={massageTypes.includes(type)}
+                                                    onChange={() => handleMassageTypeChange(type)}
+                                                    disabled={!massageTypes.includes(type) && massageTypes.length >= 5}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
-                        </div>
-
-                        {/* City/Tourist Location - Replaced Massage Types */}
-                        <div>
-                            <CityLocationDropdown
-                                selectedCity={selectedCity}
-                                onCityChange={setSelectedCity}
-                                placeholder="Select Your City/Location"
-                                label="🏙️ City / Tourist Location *"
-                                showLabel={true}
-                                includeAll={false}
-                                className="w-full"
-                            />
-                            <p className="text-xs text-gray-500 mt-1">
-                                Select the city or tourist area where your massage place is located. This helps customers find you easily.
-                            </p>
                         </div>
 
                         {/* Languages Selection */}
@@ -1961,8 +1827,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Brand Header with Home Icon - Mobile Optimized */}
-            <header className="bg-white shadow-md sticky top-0 z-40">
-                <PageContainer className="py-3 sm:py-4">
+            <header className="bg-white shadow-md p-3 sm:p-4 sticky top-0 z-40">
                 <div className="flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
@@ -1989,13 +1854,11 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         </button>
                     </div>
                 </div>
-                </PageContainer>
             </header>
 
 
             {/* Content Area */}
-            <main>
-            <PageContainer className="px-2 sm:px-4 py-4 sm:py-6 pb-40">
+            <main className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 pb-40">
                 {showNotificationsView ? (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
@@ -2099,7 +1962,6 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 ) : (
                     renderContent()
                 )}
-            </PageContainer>
             </main>
 
             {/* Validation Popup */}

@@ -8,6 +8,7 @@ import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent
 import { BookingStatus } from './types';
 import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
 import { therapistService } from './lib/appwriteService';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Page imports - Lazy load everything except critical landing pages
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
@@ -764,7 +765,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     };
 
     if (isLoading && page !== 'landing') {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-brand-green"></div></div>;
+        return <LoadingSpinner message="Loading IndaStreet..." />;
     }
 
     // 🛡️ SECURITY: Validate authentication states and prevent dashboard cross-contamination
@@ -994,7 +995,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return null;
             }
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading massage place...</div>}>
+                <React.Suspense fallback={<LoadingSpinner message="Loading massage place..." />}>
                     <MassagePlaceProfilePage 
                         place={selectedPlace}
                         userLocation={userLocation}
@@ -1016,7 +1017,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'facialProviders':
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading facial spas...</div>}>
+                <React.Suspense fallback={<LoadingSpinner message="Loading facial spas..." />}>
                     <FacialProvidersPage
                         facialPlaces={places}
                         userLocation={userLocation}
@@ -1055,7 +1056,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return null;
             }
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading facial spa...</div>}>
+                <React.Suspense fallback={<LoadingSpinner message="Loading facial spa..." />}>
                     <FacialPlaceProfilePage
                         place={selectedPlace}
                         userLocation={userLocation}
@@ -1083,7 +1084,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return null;
             }
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+                <React.Suspense fallback={<LoadingSpinner message="Loading dashboard..." />}>
                     <FacialPlaceDashboardPage
                         placeId={loggedInProvider.id}
                         onSave={(data: any) => {
@@ -1103,7 +1104,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'facialPortal':
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                <React.Suspense fallback={<LoadingSpinner />}>
                     <FacialPortalPage
                         onNavigateHome={handleBackToHome}
                         onLoginSuccess={(userId, email) => {
@@ -1134,7 +1135,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return null;
             }
             return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading dashboard...</div>}>
+                <React.Suspense fallback={<LoadingSpinner message="Loading dashboard..." />}>
                     <FacialMemberDashboard
                         userId={facialMemberId}
                         userEmail={facialMemberEmail}

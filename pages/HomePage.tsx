@@ -1008,9 +1008,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
 
                     {/* City Dropdown + Facial Button - Responsive Grid */}
-                    <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center max-w-2xl mx-auto">
-                        {/* City Dropdown - Flexible width */}
-                        <div className="relative flex-1 min-w-0 z-20">
+                    <div className="flex flex-row gap-2 items-center max-w-2xl mx-auto">
+                        {/* City Dropdown - Flexible width, constrained on mobile */}
+                        <div className="relative flex-1 min-w-0 max-w-[200px] sm:max-w-none z-20">
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={setSelectedCity}
@@ -1025,7 +1025,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                         
                         {/* Facial Button - Standard Orange Button */}
-                        <div className="flex justify-center sm:justify-end flex-shrink-0">
+                        <div className="flex justify-end flex-shrink-0">
                             <button
                                 onClick={() => {
                                     console.log('🏨 Facial button clicked - switching to facials tab');

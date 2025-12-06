@@ -440,7 +440,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-10 pb-6 relative z-[2000] overflow-visible">
+            <div className="px-4 -mt-12 pb-6 relative z-10 overflow-visible">
                 <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
                     <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -479,8 +479,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-16 pb-2">
-                            <h3 className="text-lg font-bold text-gray-900 truncate">{place.name}</h3>
+                        <div className="flex-1 min-w-0 pt-14 pb-2">
+                            <h3 className="text-xl font-bold text-gray-900 truncate">{place.name}</h3>
                             <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 mt-1">
                                 <span className="relative mr-1.5">
                                     <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-white opacity-60"></span>
@@ -492,7 +492,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-16">
+                    <div className="flex-shrink-0 pb-2 mt-14">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
