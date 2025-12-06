@@ -25,10 +25,18 @@ export const useAllHooks = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
+                console.log('🚀 [useAllHooks] Starting data fetch...');
                 const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
+                console.log('📊 [useAllHooks] Received data:', {
+                    therapists: therapists?.length || 0,
+                    places: places?.length || 0,
+                    facialPlaces: facialPlaces?.length || 0,
+                    hotels: hotels?.length || 0
+                });
                 state.setTherapists(therapists);
                 state.setPlaces(places);
                 state.setFacialPlaces(facialPlaces);
+                console.log('✅ [useAllHooks] Facial places set in state:', facialPlaces?.length || 0);
                 state.setHotels(hotels);
             } catch (error) {
                 console.error('❌ Failed to initialize app data:', error);
