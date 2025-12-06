@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Status Buttons for Existing Profiles</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status-button {
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            border-radius: 12px;
+        }
+        .available { background: linear-gradient(45deg, #4CAF50, #45a049); }
+        .busy { background: linear-gradient(45deg, #ff9800, #f57c00); }
+        .offline { background: linear-gradient(45deg, #757575, #424242); }
+        .logs {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .warning { color: #ff9800; }
+        h1, h2 { text-align: center; }
+        .therapist-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/umd/sdk.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Status Button Test for Existing Profiles</h1>
+        <p>Test if your existing saved profile can change status (Available/Busy/Offline) without creating a new account.</p>
+        
+        <div class="test-section">
+            <h2>Step 1: Check Your Profile Status</h2>
+            <button onclick="checkProfile()">📋 Check My Profile</button>
+            <div id="profileInfo" class="therapist-info" style="display:none;">
+                <!-- Profile info will be displayed here -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 2: Test Status Buttons</h2>
+            <p>Click these buttons to test if status updates work:</p>
+            
+            <button class="status-button available" onclick="testStatusUpdate('Available')" id="availableBtn">
+                🟢 Available
+            </button>
+            
+            <button class="status-button busy" onclick="testStatusUpdate('Busy')" id="busyBtn">
+                🟡 Busy  
+            </button>
+            
+            <button class="status-button offline" onclick="testStatusUpdate('Offline')" id="offlineBtn">
+                🔴 Offline
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 3: Quick Fix (If Needed)</h2>
+            <p>If status updates fail, click this to activate your profile:</p>
+            <button onclick="activateMyProfile()" style="background: linear-gradient(45deg, #ff5722, #d84315);">
+                🚀 Activate My Profile
+            </button>
+        </div>
+
+        <div id="logs" class="logs">
+            <div class="info">📋 Ready to test status buttons for existing profiles.</div>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            endpoint: 'https://appwrite.indostreet.com/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id'
+            }
+        };
+
+        // Initialize Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint(config.endpoint)
+            .setProject(config.projectId);
+
+        const databases = new Appwrite.Databases(client);
+        let currentTherapist = null;
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // Check current profile
+        async function checkProfile() {
+            try {
+                log('🔍 Checking your profile...', 'info');
+                
+                // Get logged in user from localStorage (if available)
+                const userData = localStorage.getItem('user_session') || localStorage.getItem('loggedInProvider');
+                if (!userData) {
+                    log('❌ No user session found. Please login first.', 'error');
+                    log('💡 Go to http://localhost:3000 and login as a therapist', 'info');
+                    return;
+                }
+
+                const user = JSON.parse(userData);
+                const therapistId = user.id || user.$id;
+                
+                log(`🔍 Looking for therapist ID: ${therapistId}`, 'info');
+
+                // Fetch therapist from database
+                const therapist = await databases.getDocument(
+                    config.databaseId,
+                    config.collections.therapists,
+                    therapistId
+                );
+
+                currentTherapist = therapist;
+                
+                // Display profile info
+                const profileDiv = document.getElementById('profileInfo');
+                profileDiv.style.display = 'block';
+                profileDiv.innerHTML = `
+                    <h3>📋 Your Profile:</h3>
+                    <p><strong>Name:</strong> ${therapist.name || 'Not set'}</p>
+                    <p><strong>Status:</strong> ${therapist.status || 'Not set'}</p>
+                    <p><strong>isLive:</strong> ${therapist.isLive ? '✅ Active' : '❌ Inactive'}</p>
+                    <p><strong>Location:</strong> ${therapist.location || 'Not set'}</p>
+                `;
+
+                if (therapist.isLive) {
+                    log('✅ Profile is active! Status buttons should work.', 'success');
+                } else {
+                    log('⚠️ Profile is inactive. Status buttons may not work until activated.', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Failed to check profile: ${error.message}`, 'error');
+                if (error.message.includes('Document not found')) {
+                    log('💡 Try creating a new account or check your login status', 'info');
+                }
+            }
+        }
+
+        // Test status update
+        async function testStatusUpdate(newStatus) {
+            if (!currentTherapist) {
+                log('❌ Please check your profile first', 'error');
+                return;
+            }
+
+            const btnId = newStatus.toLowerCase() + 'Btn';
+            const btn = document.getElementById(btnId);
+            btn.disabled = true;
+            btn.textContent = '🔄 Updating...';
+
+            try {
+                log(`🚀 Testing status update to: ${newStatus}`, 'info');
+                
+                const updateData = {
+                    status: newStatus,
+                    availability: newStatus,
+                    isOnline: newStatus !== 'Offline'
+                };
+
+                await databases.updateDocument(
+                    config.databaseId,
+                    config.collections.therapists,
+                    currentTherapist.$id,
+                    updateData
+                );
+
+                log(`✅ SUCCESS! Status updated to ${newStatus}`, 'success');
+                log('🎉 Your existing profile works with status buttons!', 'success');
+                
+                // Update current therapist object
+                currentTherapist.status = newStatus;
+                
+                // Update profile display
+                document.getElementById('profileInfo').innerHTML = `
+                    <h3>📋 Your Profile:</h3>
+                    <p><strong>Name:</strong> ${currentTherapist.name || 'Not set'}</p>
+                    <p><strong>Status:</strong> <span style="color: #4CAF50;">${newStatus} ✅</span></p>
+                    <p><strong>isLive:</strong> ${currentTherapist.isLive ? '✅ Active' : '❌ Inactive'}</p>
+                    <p><strong>Location:</strong> ${currentTherapist.location || 'Not set'}</p>
+                `;
+
+            } catch (error) {
+                log(`❌ Status update failed: ${error.message}`, 'error');
+                
+                if (error.message.includes('permission')) {
+                    log('💡 Try activating your profile first', 'warning');
+                } else if (error.message.includes('isLive')) {
+                    log('💡 Profile needs to be activated for status updates', 'warning');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = getButtonText(newStatus);
+            }
+        }
+
+        // Activate current profile
+        async function activateMyProfile() {
+            if (!currentTherapist) {
+                log('❌ Please check your profile first', 'error');
+                return;
+            }
+
+            try {
+                log('🚀 Activating your profile...', 'info');
+                
+                await databases.updateDocument(
+                    config.databaseId,
+                    config.collections.therapists,
+                    currentTherapist.$id,
+                    {
+                        isLive: true,
+                        status: currentTherapist.status || 'Available'
+                    }
+                );
+
+                log('✅ Profile activated successfully!', 'success');
+                log('🎯 Now try the status buttons again', 'info');
+                
+                // Update current therapist
+                currentTherapist.isLive = true;
+                
+                // Refresh profile display
+                checkProfile();
+
+            } catch (error) {
+                log(`❌ Activation failed: ${error.message}`, 'error');
+            }
+        }
+
+        function getButtonText(status) {
+            const texts = {
+                'Available': '🟢 Available',
+                'Busy': '🟡 Busy',
+                'Offline': '🔴 Offline'
+            };
+            return texts[status];
+        }
+
+        // Auto-check profile on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🔍 Auto-checking profile on page load...', 'info');
+                checkProfile();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

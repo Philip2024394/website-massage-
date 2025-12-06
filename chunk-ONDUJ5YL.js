@@ -1,0 +1,1 @@
+var e=null,t={get(){return e?Date.now()-e.timestamp>5e3?(e=null,null):e:null},set(n,s){e={hasSession:n,timestamp:Date.now(),user:s}},clear(){e=null},setNoSession(){e={hasSession:!1,timestamp:Date.now()}}};export{t as a};

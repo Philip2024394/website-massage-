@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Email Profile Mismatch</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .debug-section { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .result { background: #e7f3ff; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .error { background: #ffe6e6; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #dc3545; }
+        .success { background: #e6ffe6; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #28a745; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Email Profile Mismatch</h1>
+        <p><strong>Issue:</strong> Email <code>phil4@gmail.com</code> shows "Tata" on cards but "phil4" in dashboard</p>
+        
+        <div class="debug-section">
+            <h3>Email to Debug:</h3>
+            <input type="email" id="emailInput" value="phil4@gmail.com" style="padding: 8px; width: 300px; border: 1px solid #ddd; border-radius: 4px;">
+            <button onclick="debugEmailProfiles()">🔍 Debug This Email</button>
+        </div>
+
+        <div class="debug-section">
+            <button onclick="checkAllTherapists()">📋 Show All Therapists</button>
+            <button onclick="checkAuthentication()">🔐 Check Current Auth</button>
+            <button onclick="clearResults()">🧹 Clear Results</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { therapistService } from './lib/appwriteService.js';
+        
+        // Make functions global for button onclick
+        window.debugEmailProfiles = async () => {
+            const email = document.getElementById('emailInput').value;
+            log(`🔍 Debugging profiles for email: ${email}`, 'info');
+            
+            try {
+                // Get current authenticated user
+                log('1. Getting current authenticated user...', 'info');
+                const currentUser = await therapistService.getCurrentUser();
+                log(`Current user: ${JSON.stringify(currentUser, null, 2)}`, 'result');
+                
+                // Search by email
+                log(`2. Searching therapist profiles by email: ${email}`, 'info');
+                const profiles = await therapistService.getByEmail(email);
+                log(`Found ${profiles.length} profile(s):`, 'result');
+                
+                profiles.forEach((profile, index) => {
+                    log(`Profile ${index + 1}:
+📝 Name: ${profile.name}
+📧 Email: ${profile.email}  
+🆔 ID: ${profile.$id || profile.id}
+🎯 Status: ${profile.status}
+📍 Location: ${profile.location}
+📱 WhatsApp: ${profile.whatsappNumber}
+🏷️ Profile Picture: ${profile.profilePicture || 'None'}
+📅 Created: ${profile.$createdAt}
+📅 Updated: ${profile.$updatedAt}`, 'result');
+                });
+                
+                // Get all therapists to see if there are duplicates
+                log('3. Getting ALL therapists to check for duplicates...', 'info');
+                const allTherapists = await therapistService.getAll();
+                const matchingProfiles = allTherapists.filter(t => 
+                    t.email === email || 
+                    t.name === 'phil4' || 
+                    t.name === 'Tata'
+                );
+                
+                log(`Found ${matchingProfiles.length} potentially related profiles:`, 'result');
+                matchingProfiles.forEach((profile, index) => {
+                    log(`Related Profile ${index + 1}:
+📝 Name: ${profile.name}
+📧 Email: ${profile.email}
+🆔 ID: ${profile.$id || profile.id}
+🎯 Status: ${profile.status}
+🔍 Match Reason: ${profile.email === email ? 'Email Match' : 
+                 profile.name === 'phil4' ? 'Name Phil4' : 
+                 profile.name === 'Tata' ? 'Name Tata' : 'Unknown'}`, 'result');
+                });
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        };
+
+        window.checkAllTherapists = async () => {
+            log('📋 Getting all therapists...', 'info');
+            try {
+                const therapists = await therapistService.getAll();
+                log(`Found ${therapists.length} total therapists:`, 'result');
+                
+                // Show first 10 for overview
+                therapists.slice(0, 10).forEach((therapist, index) => {
+                    log(`${index + 1}. ${therapist.name} (${therapist.email}) - ID: ${therapist.$id}`, 'result');
+                });
+                
+                if (therapists.length > 10) {
+                    log(`... and ${therapists.length - 10} more`, 'result');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        };
+
+        window.checkAuthentication = async () => {
+            log('🔐 Checking authentication status...', 'info');
+            try {
+                const user = await therapistService.getCurrentUser();
+                log(`Authenticated user: ${JSON.stringify(user, null, 2)}`, 'result');
+            } catch (error) {
+                log(`❌ Authentication error: ${error.message}`, 'error');
+            }
+        };
+
+        window.clearResults = () => {
+            document.getElementById('results').innerHTML = '';
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<pre>${message}</pre>`;
+            results.appendChild(div);
+        }
+        
+        window.log = log;
+        
+        // Auto-run on page load
+        setTimeout(() => {
+            log('🚀 Debug tool loaded. Click buttons above to investigate the email/profile mismatch.', 'success');
+        }, 500);
+    </script>
+</body>
+</html>

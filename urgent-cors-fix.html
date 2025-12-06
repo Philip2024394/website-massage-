@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 URGENT: CORS Fix Required</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .urgent-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .fix-step {
+            background: white;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .error-display {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .solution {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .domain-list {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+        
+        .action-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        
+        .action-btn:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .step-number {
+            background: #e74c3c;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="urgent-header">
+        <h1>🚨 URGENT: CORS Error Blocking Live Site</h1>
+        <h2>Therapist Cards Not Displaying - Immediate Fix Required</h2>
+        <p><strong>Error:</strong> CORS policy blocking http://indastreetmassage.com</p>
+    </div>
+
+    <div class="error-display">
+<strong>Current Error:</strong>
+Access to fetch at 'https://syd.cloud.appwrite.io/v1/account' from origin 'http://indastreetmassage.com' 
+has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header has a value 'http://localhost' 
+that is not equal to the supplied origin.
+
+<strong>Result:</strong> 
+🔴 Live nearby places: 0
+⚠️ Could not create session for book
+❌ Therapist cards not visible on live site
+    </div>
+
+    <div class="solution">
+        <h2>✅ EXACT SOLUTION</h2>
+        <p><strong>The problem:</strong> Your Appwrite project only allows <span class="highlight">http://localhost</span> but needs to allow <span class="highlight">http://indastreetmassage.com</span></p>
+    </div>
+
+    <div class="fix-step">
+        <h3><span class="step-number">1</span>Open Appwrite Console</h3>
+        <p>Go to: <a href="https://cloud.appwrite.io/console" target="_blank" style="font-weight: bold; color: #e74c3c;">https://cloud.appwrite.io/console</a></p>
+        <p>Login and select project: <span class="highlight">68f23b11000d25eb3664</span></p>
+        
+        <button class="action-btn" onclick="window.open('https://cloud.appwrite.io/console', '_blank')">
+            🚀 Open Appwrite Console
+        </button>
+    </div>
+
+    <div class="fix-step">
+        <h3><span class="step-number">2</span>Navigate to Platform Settings</h3>
+        <p>In your project dashboard:</p>
+        <ol>
+            <li>Click <strong>"Settings"</strong> in the left sidebar</li>
+            <li>Click <strong>"Platforms"</strong></li>
+            <li>You'll see your current web platform (localhost only)</li>
+        </ol>
+    </div>
+
+    <div class="fix-step">
+        <h3><span class="step-number">3</span>Add Live Domain Platform</h3>
+        <p>Click <strong>"Add Platform"</strong> and add a Web platform with these settings:</p>
+        
+        <div class="domain-list">
+            <strong>Platform Type:</strong> Web<br>
+            <strong>Name:</strong> Live Website<br>
+            <strong>Hostname:</strong> indastreetmassage.com
+        </div>
+        
+        <p><strong>IMPORTANT:</strong> Add these additional domains for complete coverage:</p>
+        <div class="domain-list">
+            • http://indastreetmassage.com<br>
+            • https://indastreetmassage.com<br>
+            • http://www.indastreetmassage.com<br>
+            • https://www.indastreetmassage.com
+        </div>
+        
+        <p style="color: #666;">Keep your existing localhost platform for development!</p>
+    </div>
+
+    <div class="fix-step">
+        <h3><span class="step-number">4</span>Verify & Test</h3>
+        <p>After adding the domains:</p>
+        <ol>
+            <li>Wait <strong>2-3 minutes</strong> for changes to propagate</li>
+            <li>Clear browser cache (Ctrl+F5)</li>
+            <li>Refresh <a href="http://indastreetmassage.com" target="_blank">http://indastreetmassage.com</a></li>
+            <li>Therapist cards should now appear!</li>
+        </ol>
+        
+        <button class="action-btn" onclick="testLiveSite()">
+            🧪 Test Live Site After Fix
+        </button>
+        
+        <div id="test-result"></div>
+    </div>
+
+    <div class="fix-step">
+        <h3>🚀 Expected Result After Fix</h3>
+        <div class="solution">
+            <p><strong>Before Fix:</strong> 🔴 Live nearby places: 0</p>
+            <p><strong>After Fix:</strong> ✅ Live nearby places: [actual count] therapist cards visible</p>
+            <p><strong>Console:</strong> No CORS errors in browser developer tools</p>
+        </div>
+    </div>
+
+    <div class="fix-step">
+        <h3>📞 Need Help?</h3>
+        <p>If you're still seeing issues after the CORS fix:</p>
+        <ul>
+            <li>Use the <a href="/therapist-cards-diagnostic.html">diagnostic tool</a> to check database</li>
+            <li>Verify therapists have <code>isLive: true</code> using the <a href="/fix-therapist-islive.html">isLive fix tool</a></li>
+            <li>Check browser network tab for additional errors</li>
+        </ul>
+    </div>
+
+    <script>
+        async function testLiveSite() {
+            const resultDiv = document.getElementById('test-result');
+            resultDiv.innerHTML = '<div style="padding: 15px; background: #e3f2fd; border-radius: 6px; margin: 15px 0; border-left: 4px solid #2196f3;">🔄 Testing CORS and API connectivity...</div>';
+            
+            try {
+                // Test basic Appwrite connectivity
+                const response = await fetch('https://syd.cloud.appwrite.io/v1/health', {
+                    method: 'GET',
+                    headers: {
+                        'X-Appwrite-Project': '68f23b11000d25eb3664'
+                    }
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 15px; background: #e8f5e8; border-radius: 6px; margin: 15px 0; border-left: 4px solid #4caf50;">
+                            ✅ <strong>CORS FIXED!</strong> Appwrite is now accessible from this domain.
+                            <br><br>
+                            <strong>Next steps:</strong>
+                            <br>• Refresh your main site
+                            <br>• Therapist cards should now be visible
+                            <br>• If still not showing, check the diagnostic tools above
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 15px; background: #fff3e0; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                            ⚠️ <strong>Partial Success</strong> - Response status: ${response.status}
+                            <br>CORS may be working but there might be other API issues.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                if (error.message.includes('CORS') || error.message.includes('blocked')) {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 15px; background: #ffebee; border-radius: 6px; margin: 15px 0; border-left: 4px solid #f44336;">
+                            ❌ <strong>CORS Still Blocked</strong>
+                            <br><br>
+                            Please double-check that you've added the domain correctly in Appwrite:
+                            <br>• Platform Type: Web
+                            <br>• Hostname: indastreetmassage.com
+                            <br><br>
+                            Wait 2-3 minutes after adding the domain, then test again.
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 15px; background: #fff3e0; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                            ⚠️ <strong>Network Error:</strong> ${error.message}
+                            <br>This might be a different issue than CORS.
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // Auto-test on page load after 2 seconds
+        setTimeout(() => {
+            document.getElementById('test-result').innerHTML = '<div style="padding: 10px; background: #e3f2fd; border-radius: 4px; margin: 10px 0; font-style: italic;">Click "Test Live Site After Fix" button above to verify the CORS fix.</div>';
+        }, 2000);
+    </script>
+</body>
+</html>

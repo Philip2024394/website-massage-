@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔧 AppRouter Page Navigation Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .error { background: #f8d7da; border: 2px solid #dc3545; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 2px solid #28a745; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #d1ecf1; border: 2px solid #17a2b8; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .warning { background: #fff3cd; border: 2px solid #ffc107; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; font-size: 11px; }
+        .navigation-log { max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f8f9fa; font-family: monospace; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AppRouter "Unknown page case" Debug</h1>
+        
+        <div class="error">
+            <h3>🚨 Current Issue</h3>
+            <p><strong>Error:</strong> "AppRouter: Unknown page case reached!"</p>
+            <p><strong>Trigger:</strong> When selecting discount buttons on therapist dashboard</p>
+            <p><strong>Expected Cases:</strong> therapistDashboard, therapistLogin, home, landing</p>
+        </div>
+
+        <div class="info">
+            <h3>🔍 What We Need to Find</h3>
+            <ol>
+                <li><strong>Current page value:</strong> What page string is being passed?</li>
+                <li><strong>Navigation trigger:</strong> What causes the page change?</li>
+                <li><strong>Router state:</strong> Is the user logged in as therapist?</li>
+                <li><strong>URL changes:</strong> Does the URL fragment change when clicking buttons?</li>
+            </ol>
+        </div>
+
+        <div id="debug-results">
+            <h3>📊 Live Debugging</h3>
+            <button onclick="startNavMonitoring()">📡 Start Navigation Monitoring</button>
+            <button onclick="checkCurrentState()">🔍 Check Current Router State</button>
+            <button onclick="testPageValues()">🧪 Test Page Values</button>
+            <button onclick="simulateTherapistAccess()">👨‍⚕️ Simulate Therapist Access</button>
+            
+            <div class="navigation-log" id="nav-log">Navigation monitoring not active...</div>
+        </div>
+
+        <div id="analysis-results"></div>
+
+        <div class="info">
+            <h3>💡 Potential Solutions</h3>
+            <ol>
+                <li><strong>URL Fragment Issue:</strong> Check if URL hash routing conflicts with expected page values</li>
+                <li><strong>Page State Management:</strong> Ensure page state updates correctly during discount interactions</li>
+                <li><strong>Case Sensitivity:</strong> Verify page string matches exact case in switch statement</li>
+                <li><strong>Default Route Fallback:</strong> Add proper fallback for unrecognized page values</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let navigationLog = [];
+        let isMonitoring = false;
+        
+        // Intercept console.error to catch AppRouter errors
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('AppRouter: Unknown page case')) {
+                logNavigation('ERROR', 'AppRouter unknown page case detected', args);
+                analyzeAppRouterError(args);
+            }
+            return originalConsoleError.apply(console, args);
+        };
+        
+        // Monitor URL changes
+        function startNavMonitoring() {
+            if (isMonitoring) return;
+            isMonitoring = true;
+            
+            logNavigation('INFO', 'Navigation monitoring started', {});
+            
+            // Monitor hash changes
+            window.addEventListener('hashchange', (event) => {
+                logNavigation('HASH_CHANGE', 'URL hash changed', {
+                    from: event.oldURL,
+                    to: event.newURL,
+                    currentHash: window.location.hash
+                });
+            });
+            
+            // Monitor history API
+            const originalPushState = history.pushState;
+            const originalReplaceState = history.replaceState;
+            
+            history.pushState = function(...args) {
+                logNavigation('PUSH_STATE', 'History pushState', args);
+                return originalPushState.apply(this, args);
+            };
+            
+            history.replaceState = function(...args) {
+                logNavigation('REPLACE_STATE', 'History replaceState', args);
+                return originalReplaceState.apply(this, args);
+            };
+            
+            // Monitor React state updates (if accessible)
+            if (window.React && window.React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED) {
+                logNavigation('INFO', 'React internals detected - monitoring state updates', {});
+            }
+        }
+        
+        function logNavigation(type, message, data) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = {
+                timestamp,
+                type,
+                message,
+                data,
+                url: window.location.href,
+                hash: window.location.hash
+            };
+            
+            navigationLog.push(entry);
+            updateNavigationLog();
+        }
+        
+        function updateNavigationLog() {
+            const logDiv = document.getElementById('nav-log');
+            const recent = navigationLog.slice(-20);
+            
+            const logHtml = recent.map(entry => {
+                const color = entry.type === 'ERROR' ? '#dc3545' : 
+                            entry.type.includes('CHANGE') ? '#856404' : '#17a2b8';
+                
+                return `<div style="color: ${color}">
+                    [${entry.timestamp}] ${entry.type}: ${entry.message}
+                    ${entry.data && Object.keys(entry.data).length > 0 ? 
+                        '<br>Data: ' + JSON.stringify(entry.data, null, 2) : ''}
+                </div>`;
+            }).join('');
+            
+            logDiv.innerHTML = logHtml || 'No navigation events yet...';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function checkCurrentState() {
+            const resultsDiv = document.getElementById('analysis-results');
+            
+            let html = '<div class="info"><h3>🔍 Current State Analysis</h3>';
+            
+            // Current URL analysis
+            html += '<h4>📍 URL Information:</h4>';
+            html += `<strong>Full URL:</strong> <code>${window.location.href}</code><br>`;
+            html += `<strong>Hash:</strong> <code>${window.location.hash || 'none'}</code><br>`;
+            html += `<strong>Pathname:</strong> <code>${window.location.pathname}</code><br>`;
+            html += `<strong>Search:</strong> <code>${window.location.search || 'none'}</code><br>`;
+            
+            // Try to detect React app state
+            html += '<h4>⚛️ React App Detection:</h4>';
+            try {
+                // Look for common React app indicators
+                const reactRoot = document.getElementById('root');
+                const hasReact = !!window.React;
+                
+                html += `<strong>React Root Element:</strong> ${reactRoot ? '✅ Found' : '❌ Not found'}<br>`;
+                html += `<strong>React Global:</strong> ${hasReact ? '✅ Available' : '❌ Not available'}<br>`;
+                
+                // Check for router-related elements
+                const routerElements = document.querySelectorAll('[class*="router"], [class*="Router"]');
+                html += `<strong>Router Elements:</strong> ${routerElements.length} found<br>`;
+                
+            } catch (e) {
+                html += `<strong>React Detection Error:</strong> ${e.message}<br>`;
+            }
+            
+            // LocalStorage inspection
+            html += '<h4>💾 LocalStorage Inspection:</h4>';
+            try {
+                const therapistData = localStorage.getItem('therapist_login_debug');
+                const userData = localStorage.getItem('user_data');
+                
+                html += `<strong>Therapist Debug Data:</strong> ${therapistData ? '✅ Present' : '❌ Missing'}<br>`;
+                html += `<strong>User Data:</strong> ${userData ? '✅ Present' : '❌ Missing'}<br>`;
+                
+                if (therapistData) {
+                    try {
+                        const parsed = JSON.parse(therapistData);
+                        html += `<strong>Therapist ID:</strong> <code>${parsed.therapistId || 'N/A'}</code><br>`;
+                    } catch (e) {
+                        html += `<strong>Therapist Data Parse Error:</strong> ${e.message}<br>`;
+                    }
+                }
+            } catch (e) {
+                html += `<strong>LocalStorage Error:</strong> ${e.message}<br>`;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function testPageValues() {
+            const resultsDiv = document.getElementById('analysis-results');
+            
+            let html = '<div class="warning"><h3>🧪 Testing Potential Page Values</h3>';
+            
+            const testValues = [
+                'therapistDashboard',
+                'therapist-dashboard', 
+                'therapist_dashboard',
+                'TherapistDashboard',
+                'dashboard',
+                'home',
+                'landing',
+                '',
+                null,
+                undefined
+            ];
+            
+            html += '<h4>🎯 Page Value Tests:</h4>';
+            html += '<p>Testing which values would trigger "Unknown page case" error:</p>';
+            
+            const validCases = ['therapistDashboard', 'therapistLogin', 'home', 'landing'];
+            
+            testValues.forEach(value => {
+                const isValid = validCases.includes(value);
+                const status = isValid ? '✅ Valid' : '❌ Would cause error';
+                const color = isValid ? '#28a745' : '#dc3545';
+                
+                html += `<div style="color: ${color}"><strong>${JSON.stringify(value)}:</strong> ${status}</div>`;
+            });
+            
+            html += '<h4>💡 Analysis:</h4>';
+            html += '<p>If the page value is anything other than the 4 valid cases above, it will trigger the "Unknown page case" error.</p>';
+            html += '<p><strong>Most likely culprits:</strong></p>';
+            html += '<ul>';
+            html += '<li><code>"therapist-dashboard"</code> (with hyphen instead of camelCase)</li>';
+            html += '<li><code>""</code> (empty string)</li>';
+            html += '<li><code>null</code> or <code>undefined</code></li>';
+            html += '<li>URL hash fragments like <code>"#therapist-dashboard"</code></li>';
+            html += '</ul>';
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function simulateTherapistAccess() {
+            const resultsDiv = document.getElementById('analysis-results');
+            
+            let html = '<div class="info"><h3>👨‍⚕️ Simulating Therapist Access Patterns</h3>';
+            
+            // Test different ways to access therapist dashboard
+            const accessPatterns = [
+                { method: 'Direct URL', url: 'http://localhost:3007/#therapist-dashboard' },
+                { method: 'Hash Navigation', url: 'http://localhost:3007/#therapistDashboard' },
+                { method: 'Login Redirect', description: 'After successful login' },
+                { method: 'Discount Button Click', description: 'From within dashboard' }
+            ];
+            
+            html += '<h4>🎯 Common Access Patterns:</h4>';
+            accessPatterns.forEach((pattern, index) => {
+                html += `<div>`;
+                html += `<strong>${index + 1}. ${pattern.method}:</strong><br>`;
+                if (pattern.url) {
+                    html += `URL: <code>${pattern.url}</code><br>`;
+                } else {
+                    html += `Description: ${pattern.description}<br>`;
+                }
+                html += `</div><br>`;
+            });
+            
+            html += '<h4>🔧 Recommended Testing Steps:</h4>';
+            html += '<ol>';
+            html += '<li><strong>Open DevTools:</strong> Press F12 and go to Console tab</li>';
+            html += '<li><strong>Navigate to app:</strong> <a href="http://localhost:3007/" target="_blank">Open Main App</a></li>';
+            html += '<li><strong>Watch console:</strong> Look for the exact page value when error occurs</li>';
+            html += '<li><strong>Try discount buttons:</strong> Click discount percentage/duration buttons</li>';
+            html += '<li><strong>Check URL changes:</strong> Watch address bar for any changes</li>';
+            html += '</ol>';
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function analyzeAppRouterError(args) {
+            const errorData = args.find(arg => typeof arg === 'object');
+            if (!errorData) return;
+            
+            logNavigation('ANALYSIS', 'AppRouter error analysis', {
+                page: errorData.page,
+                expectedCases: errorData.expectedCases,
+                hasLoggedInProvider: !!errorData.loggedInProvider,
+                providerType: errorData.loggedInProvider?.type
+            });
+            
+            // Show immediate analysis
+            const resultsDiv = document.getElementById('analysis-results');
+            let html = '<div class="error"><h3>🚨 AppRouter Error Analysis</h3>';
+            html += `<strong>Problematic Page Value:</strong> <code>${JSON.stringify(errorData.page)}</code><br>`;
+            html += `<strong>Expected Values:</strong> ${errorData.expectedCases.join(', ')}<br>`;
+            html += `<strong>User Type:</strong> ${errorData.loggedInProvider?.type || 'Not logged in'}<br>`;
+            
+            if (errorData.page === 'therapist-dashboard') {
+                html += '<div class="warning">🎯 <strong>Found the issue!</strong> Page value is "therapist-dashboard" (with hyphen) but AppRouter expects "therapistDashboard" (camelCase)</div>';
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Auto-start monitoring
+        setTimeout(startNavMonitoring, 1000);
+        
+        console.log('🔧 AppRouter debug tool loaded - monitoring navigation events');
+    </script>
+</body>
+</html>

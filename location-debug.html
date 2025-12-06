@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location System Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover { background-color: #0056b3; }
+        .log {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Location System Debug Test</h1>
+    <p>This page tests the location functionality for the massage place dashboard.</p>
+
+    <div id="localStorage-test" class="test-section">
+        <h3>📱 LocalStorage API Key Test</h3>
+        <button onclick="testLocalStorage()">Check Google Maps API Key</button>
+        <button onclick="setTestApiKey()">Set Test API Key</button>
+        <div id="localStorage-log" class="log"></div>
+    </div>
+
+    <div id="geolocation-test" class="test-section">
+        <h3>📍 Geolocation Test</h3>
+        <button onclick="testGeolocation()">Test Device Location</button>
+        <div id="geolocation-log" class="log"></div>
+    </div>
+
+    <div id="googlemaps-test" class="test-section">
+        <h3>🗺️ Google Maps API Test</h3>
+        <button onclick="testGoogleMapsLoad()">Load Google Maps</button>
+        <button onclick="testGeocoding()">Test Geocoding</button>
+        <div id="googlemaps-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        function testLocalStorage() {
+            const logId = 'localStorage-log';
+            document.getElementById(logId).innerHTML = '';
+            
+            try {
+                const apiKey = localStorage.getItem('googleMapsApiKey');
+                if (apiKey) {
+                    log(logId, '✅ API Key found: ' + apiKey.substring(0, 10) + '...');
+                    document.getElementById('localStorage-test').className = 'test-section success';
+                } else {
+                    log(logId, '⚠️ No Google Maps API Key configured');
+                    document.getElementById('localStorage-test').className = 'test-section warning';
+                }
+            } catch (error) {
+                log(logId, '❌ Error accessing localStorage: ' + error.message);
+                document.getElementById('localStorage-test').className = 'test-section error';
+            }
+        }
+
+        function setTestApiKey() {
+            const apiKey = prompt('Enter Google Maps API Key for testing:');
+            if (apiKey) {
+                localStorage.setItem('googleMapsApiKey', apiKey);
+                log('localStorage-log', '✅ Test API Key saved');
+                testLocalStorage();
+            }
+        }
+
+        function testGeolocation() {
+            const logId = 'geolocation-log';
+            document.getElementById(logId).innerHTML = '';
+            
+            if (!navigator.geolocation) {
+                log(logId, '❌ Geolocation not supported by this browser');
+                document.getElementById('geolocation-test').className = 'test-section error';
+                return;
+            }
+
+            log(logId, '🔍 Getting device location...');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    log(logId, '✅ Location obtained:');
+                    log(logId, '  Latitude: ' + position.coords.latitude);
+                    log(logId, '  Longitude: ' + position.coords.longitude);
+                    log(logId, '  Accuracy: ' + position.coords.accuracy + 'm');
+                    document.getElementById('geolocation-test').className = 'test-section success';
+                },
+                (error) => {
+                    let errorMsg = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location access denied by user';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location information unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out';
+                            break;
+                        default:
+                            errorMsg = 'Unknown error occurred';
+                            break;
+                    }
+                    log(logId, '❌ Geolocation error: ' + errorMsg);
+                    document.getElementById('geolocation-test').className = 'test-section error';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function testGoogleMapsLoad() {
+            const logId = 'googlemaps-log';
+            document.getElementById(logId).innerHTML = '';
+            
+            const apiKey = localStorage.getItem('googleMapsApiKey');
+            if (!apiKey) {
+                log(logId, '❌ No API key configured. Set one first.');
+                return;
+            }
+
+            if (window.google && window.google.maps) {
+                log(logId, '✅ Google Maps already loaded');
+                document.getElementById('googlemaps-test').className = 'test-section success';
+                return;
+            }
+
+            log(logId, '🔄 Loading Google Maps API...');
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+            script.onload = () => {
+                log(logId, '✅ Google Maps API loaded successfully');
+                document.getElementById('googlemaps-test').className = 'test-section success';
+            };
+            script.onerror = () => {
+                log(logId, '❌ Failed to load Google Maps API - check your API key');
+                document.getElementById('googlemaps-test').className = 'test-section error';
+            };
+            document.head.appendChild(script);
+        }
+
+        function testGeocoding() {
+            const logId = 'googlemaps-log';
+            
+            if (!window.google || !window.google.maps) {
+                log(logId, '❌ Google Maps not loaded. Load it first.');
+                return;
+            }
+
+            const geocoder = new google.maps.Geocoder();
+            const testLat = -8.4095;
+            const testLng = 115.1889;
+            
+            log(logId, '🔄 Testing geocoding with Bali coordinates...');
+            geocoder.geocode(
+                { location: { lat: testLat, lng: testLng } },
+                (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        log(logId, '✅ Geocoding successful:');
+                        log(logId, '  Address: ' + results[0].formatted_address);
+                        document.getElementById('googlemaps-test').className = 'test-section success';
+                    } else {
+                        log(logId, '❌ Geocoding failed: ' + status);
+                        document.getElementById('googlemaps-test').className = 'test-section error';
+                    }
+                }
+            );
+        }
+
+        // Run initial tests
+        window.onload = function() {
+            testLocalStorage();
+        };
+    </script>
+</body>
+</html>

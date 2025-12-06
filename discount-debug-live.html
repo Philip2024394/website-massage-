@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Discount System Debug - Real Time</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #ff6b35;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .debug-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .debug-section h3 {
+            color: #dc3545;
+            margin-top: 0;
+        }
+        .status-check {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196F3;
+        }
+        .error-log {
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #f44336;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .warning {
+            background: #fff3e0;
+            color: #ef6c00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .button {
+            display: inline-block;
+            background: #ff6b35;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .field-check {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+        .live-log {
+            background: #263238;
+            color: #00e676;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Discount System Debug</h1>
+            <p>Live troubleshooting for discount functionality</p>
+        </div>
+
+        <div class="debug-section">
+            <h3>🚨 Issue Report: Discount System Not Working</h3>
+            <p>Let's run comprehensive checks to identify the problem...</p>
+        </div>
+
+        <div class="status-check">
+            <h4>📋 Initial Diagnostics</h4>
+            <div id="diagnostics">
+                <div class="warning">Starting diagnostics...</div>
+            </div>
+            <button class="button" onclick="runFullDiagnostics()">🔍 Run Full Diagnostics</button>
+        </div>
+
+        <div class="debug-section">
+            <h3>🎯 Specific Issues to Check</h3>
+            <div id="specificChecks">
+                <p><strong>Tell me exactly what's happening:</strong></p>
+                <ul>
+                    <li>Are the discount percentage buttons not staying selected?</li>
+                    <li>Are the duration buttons not staying selected?</li>
+                    <li>Does the "Activate Discount" button not appear?</li>
+                    <li>Does clicking activate give an error?</li>
+                    <li>Are there console errors in browser (F12)?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🔍 Database Field Verification</h3>
+            <div id="fieldCheck">
+                <p>Checking if Appwrite fields were added correctly...</p>
+            </div>
+            <button class="button" onclick="checkAppwriteFields()">🗄️ Verify Database Fields</button>
+        </div>
+
+        <div class="live-log" id="liveLog">
+            <div>🔧 Debug Console Ready - Click buttons above to start diagnostics</div>
+        </div>
+
+        <div class="debug-section">
+            <h3>🆘 Quick Fixes to Try</h3>
+            <div class="test-results">
+                <button class="button" onclick="clearCache()">🧹 Clear Browser Cache</button>
+                <button class="button" onclick="checkConsoleErrors()">🐛 Check Console Errors</button>
+                <button class="button" onclick="testAppwriteConnection()">📡 Test Appwrite Connection</button>
+                <button class="button" onclick="verifyFieldNames()">📝 Verify Field Names</button>
+            </div>
+        </div>
+
+        <div class="error-log" id="errorLog">
+            <strong>Error Log:</strong><br>
+            Waiting for diagnostics...
+        </div>
+    </div>
+
+    <script>
+        let logCount = 0;
+
+        function log(message, type = 'info') {
+            const liveLog = document.getElementById('liveLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                error: '#ff6b6b',
+                success: '#51cf66',
+                warning: '#ffd43b',
+                info: '#74c0fc'
+            };
+            
+            logCount++;
+            const logEntry = `<div style="color: ${colors[type]}; margin: 2px 0;">[${timestamp}] ${message}</div>`;
+            liveLog.innerHTML += logEntry;
+            liveLog.scrollTop = liveLog.scrollHeight;
+        }
+
+        function runFullDiagnostics() {
+            log('🔍 Starting comprehensive diagnostics...', 'info');
+            log('📊 Checking browser environment...', 'info');
+            
+            // Check if we're on the right page
+            const currentURL = window.location.href;
+            log(`Current URL: ${currentURL}`, 'info');
+            
+            // Check for React dev tools
+            if (window.React) {
+                log('✅ React detected', 'success');
+            } else {
+                log('❌ React not detected - may not be on app page', 'error');
+            }
+
+            // Check localStorage for session data
+            const userSession = localStorage.getItem('userSession');
+            if (userSession) {
+                log('✅ User session found', 'success');
+                try {
+                    const session = JSON.parse(userSession);
+                    log(`Session email: ${session.email}`, 'info');
+                } catch (e) {
+                    log('⚠️ Invalid session data format', 'warning');
+                }
+            } else {
+                log('❌ No user session found - user may not be logged in', 'error');
+            }
+
+            // Check for Appwrite SDK
+            if (window.Appwrite) {
+                log('✅ Appwrite SDK detected', 'success');
+            } else {
+                log('❌ Appwrite SDK not detected', 'error');
+            }
+
+            setTimeout(() => {
+                log('📋 Diagnostics complete. Check results above.', 'info');
+            }, 1000);
+        }
+
+        function checkAppwriteFields() {
+            log('🗄️ Checking Appwrite database fields...', 'info');
+            log('⚠️ This requires manual verification in Appwrite Console', 'warning');
+            log('Required fields in therapists collection:', 'info');
+            log('  - discountPercentage (Integer)', 'info');
+            log('  - discountDuration (Integer)', 'info');  
+            log('  - discountEndTime (String)', 'info');
+            log('  - isDiscountActive (Boolean)', 'info');
+            
+            const checkInstructions = `
+            🔍 Manual Check Instructions:
+            1. Go to: https://syd.cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05
+            2. Find your therapists collection
+            3. Click "Attributes" tab
+            4. Verify all 4 fields exist with exact names
+            5. Check field types match specifications
+            `;
+            log(checkInstructions, 'warning');
+        }
+
+        function clearCache() {
+            log('🧹 Clearing browser cache and storage...', 'info');
+            
+            // Clear localStorage except important session data
+            const keysToKeep = ['userSession'];
+            const keysToRemove = [];
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!keysToKeep.includes(key)) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // Clear sessionStorage
+            sessionStorage.clear();
+            
+            log(`✅ Cleared ${keysToRemove.length} localStorage items`, 'success');
+            log('✅ Cleared sessionStorage', 'success');
+            log('⚠️ Please refresh the page after clearing cache', 'warning');
+        }
+
+        function checkConsoleErrors() {
+            log('🐛 Checking for console errors...', 'info');
+            log('⚠️ Open browser console (F12) and look for:', 'warning');
+            log('  - Red error messages', 'error');
+            log('  - Failed network requests', 'error');
+            log('  - Appwrite authentication errors', 'error');
+            log('  - React component errors', 'error');
+            
+            // Intercept console errors
+            const originalError = console.error;
+            console.error = function(...args) {
+                log(`Console Error: ${args.join(' ')}`, 'error');
+                originalError.apply(console, args);
+            };
+            
+            log('✅ Console error monitoring enabled', 'success');
+        }
+
+        function testAppwriteConnection() {
+            log('📡 Testing Appwrite connection...', 'info');
+            
+            if (!window.location.href.includes('localhost:3005')) {
+                log('❌ Not on development server - please test on http://localhost:3005/', 'error');
+                return;
+            }
+            
+            log('⚠️ Testing requires being logged into therapist account', 'warning');
+            log('📋 Connection test steps:', 'info');
+            log('  1. Ensure you are logged into therapist account', 'info');
+            log('  2. Go to therapist dashboard', 'info');
+            log('  3. Open browser console (F12)', 'info');
+            log('  4. Look for any Appwrite errors', 'info');
+        }
+
+        function verifyFieldNames() {
+            log('📝 Verifying field names and types...', 'info');
+            
+            const requiredFields = [
+                { name: 'discountPercentage', type: 'Integer', range: '0-100' },
+                { name: 'discountDuration', type: 'Integer', range: '0-168' },
+                { name: 'discountEndTime', type: 'String', size: '50 chars' },
+                { name: 'isDiscountActive', type: 'Boolean', default: 'false' }
+            ];
+            
+            log('✅ Required field specifications:', 'success');
+            requiredFields.forEach(field => {
+                log(`  ${field.name} (${field.type}) ${field.range || field.size || field.default}`, 'info');
+            });
+            
+            log('⚠️ Field names are CASE-SENSITIVE', 'warning');
+            log('⚠️ Must match exactly: discountPercentage (not DiscountPercentage)', 'warning');
+        }
+
+        // Auto-start basic checks
+        setTimeout(() => {
+            log('🚀 Debug console initialized', 'success');
+            log('Click the buttons above to run specific diagnostics', 'info');
+        }, 500);
+    </script>
+</body>
+</html>

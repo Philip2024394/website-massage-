@@ -1,0 +1,1 @@
+import{a}from"./chunk-QV2EYLXC.js";import{c as e}from"./chunk-E6PAVYKE.js";var o=e(a(),1),n=({children:t,className:r})=>(0,o.jsx)("div",{className:`w-full max-w-6xl mx-auto px-4 overflow-x-hidden ${r||""}`,children:t}),i=n;export{n as a,i as b};

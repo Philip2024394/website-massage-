@@ -1,0 +1,1 @@
+import{a as d,b as e,c as f,d as g,e as h,f as i,g as j}from"./chunk-ZZN33A7C.js";import{o as a,p as b,q as c}from"./chunk-FAHWMXD2.js";import"./chunk-E6PAVYKE.js";export{i as COLLECTIONS,h as DATABASE_ID,c as ID,a as Permission,b as Role,j as STORAGE_BUCKETS,f as account,d as client,e as databases,g as storage};

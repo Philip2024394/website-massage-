@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Therapist Discount System Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .issue-critical { border-left: 6px solid #dc3545; background-color: #f8d7da; }
+        .issue-warning { border-left: 6px solid #ffc107; background-color: #fff3cd; }
+        .issue-info { border-left: 6px solid #17a2b8; background-color: #d1ecf1; }
+        .issue-success { border-left: 6px solid #28a745; background-color: #d4edda; }
+        
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+        button:hover { background-color: #0056b3; }
+        button.danger { background-color: #dc3545; }
+        button.danger:hover { background-color: #c82333; }
+        button.success { background-color: #28a745; }
+        button.success:hover { background-color: #218838; }
+        button.warning { background-color: #ffc107; color: #212529; }
+        button.warning:hover { background-color: #e0a800; }
+        
+        .log {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .test-card {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-active { background-color: #28a745; }
+        .status-inactive { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .status-unknown { background-color: #6c757d; }
+        
+        h1 { color: #343a40; text-align: center; margin-bottom: 30px; }
+        h2 { color: #495057; border-bottom: 2px solid #dee2e6; padding-bottom: 10px; }
+        h3 { color: #6c757d; margin-top: 0; }
+        
+        code {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .mockup-button {
+            padding: 8px 16px;
+            margin: 4px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 12px;
+        }
+        .mockup-selected { 
+            background-color: #ffeaa7; 
+            border-color: #fdcb6e; 
+            color: #2d3436;
+            font-weight: bold;
+        }
+        .mockup-unselected { 
+            background-color: white; 
+            color: #636e72; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Therapist Discount System Debug Tool</h1>
+    <p style="text-align: center; color: #6c757d;">Comprehensive debugging for discount badge display, button states, and activation issues</p>
+
+    <div class="debug-section issue-critical">
+        <h2>🚨 Critical Issues Identified</h2>
+        <div id="critical-issues">
+            <h3>Issue 1: Button State Management</h3>
+            <div class="highlight">
+                <strong>Problem:</strong> Discount percentage and duration buttons not staying selected<br>
+                <strong>Likely Cause:</strong> State reset on re-renders or missing dependency arrays<br>
+                <strong>Location:</strong> <code>TherapistDashboardPage.tsx</code> lines 920-965
+            </div>
+            
+            <h3>Issue 2: Activation Button Not Appearing</h3>
+            <div class="highlight">
+                <strong>Problem:</strong> Activation button doesn't show even when both values selected<br>
+                <strong>Likely Cause:</strong> Condition check failure in conditional rendering<br>
+                <strong>Location:</strong> <code>selectedDiscountPercentage > 0 && selectedDiscountDuration > 0</code>
+            </div>
+            
+            <h3>Issue 3: Badge Display Logic</h3>
+            <div class="highlight">
+                <strong>Problem:</strong> Discount badges not showing on therapist cards<br>
+                <strong>Likely Cause:</strong> <code>isDiscountActive</code> function or data sync issues<br>
+                <strong>Location:</strong> <code>TherapistCard.tsx</code> and <code>isDiscountActive</code> function
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section issue-warning">
+        <h2>🔍 State Management Analysis</h2>
+        <button onclick="analyzeButtonStates()" class="warning">Test Button State Logic</button>
+        <button onclick="simulateUserFlow()" class="warning">Simulate User Selection Flow</button>
+        <div id="state-analysis" class="log"></div>
+    </div>
+
+    <div class="debug-section issue-info">
+        <h2>🎯 Activation Process Testing</h2>
+        <button onclick="testActivationConditions()">Test Activation Conditions</button>
+        <button onclick="simulateActivation()">Simulate Activation Process</button>
+        <div id="activation-tests" class="log"></div>
+    </div>
+
+    <div class="debug-section issue-success">
+        <h2>📊 Visual Button State Mockup</h2>
+        <p>This shows how the discount selection should behave:</p>
+        <div id="button-mockup">
+            <div style="margin-bottom: 15px;">
+                <strong>Percentage Selection (should highlight when clicked):</strong><br>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectPercent(5)">5% OFF</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectPercent(10)">10% OFF</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectPercent(15)">15% OFF</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectPercent(20)">20% OFF</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Duration Selection (should highlight when clicked):</strong><br>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectDuration(4)">4 Hours</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectDuration(8)">8 Hours</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectDuration(12)">12 Hours</span>
+                <span class="mockup-button mockup-unselected" onclick="mockSelectDuration(24)">24 Hours</span>
+            </div>
+            <div id="mock-activation-area" style="padding: 10px; border: 2px dashed #ccc; text-align: center; color: #999;">
+                Select both percentage and duration to see activation button
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🛠️ Fix Recommendations</h2>
+        <div class="test-grid">
+            <div class="test-card">
+                <h3>Fix 1: Button State Persistence</h3>
+                <p><strong>Issue:</strong> Selected buttons losing highlight</p>
+                <p><strong>Solution:</strong> Ensure state updates are working correctly</p>
+                <code>
+// Add debug logging to button clicks:<br>
+onClick={() => {<br>
+&nbsp;&nbsp;console.log('Before:', selectedDiscountPercentage);<br>
+&nbsp;&nbsp;setSelectedDiscountPercentage(percent);<br>
+&nbsp;&nbsp;console.log('After:', percent);<br>
+}}
+                </code>
+            </div>
+            
+            <div class="test-card">
+                <h3>Fix 2: Activation Button Visibility</h3>
+                <p><strong>Issue:</strong> Activation button not appearing</p>
+                <p><strong>Solution:</strong> Add debug logging to condition check</p>
+                <code>
+// Add before the condition:<br>
+console.log('Percentage:', selectedDiscountPercentage);<br>
+console.log('Duration:', selectedDiscountDuration);<br>
+{selectedDiscountPercentage > 0 && selectedDiscountDuration > 0 && (
+                </code>
+            </div>
+            
+            <div class="test-card">
+                <h3>Fix 3: Badge Display</h3>
+                <p><strong>Issue:</strong> Badges not showing on therapist cards</p>
+                <p><strong>Solution:</strong> Verify data flow and discount validation</p>
+                <code>
+// In TherapistCard.tsx:<br>
+console.log('Discount check:', {<br>
+&nbsp;&nbsp;percentage: therapist.discountPercentage,<br>
+&nbsp;&nbsp;endTime: therapist.discountEndTime,<br>
+&nbsp;&nbsp;isActive: isDiscountActive(therapist)<br>
+});
+                </code>
+            </div>
+            
+            <div class="test-card">
+                <h3>Fix 4: Data Persistence</h3>
+                <p><strong>Issue:</strong> Discount settings not saving correctly</p>
+                <p><strong>Solution:</strong> Verify handleSave function includes discount fields</p>
+                <code>
+// Ensure save includes:<br>
+discountPercentage,<br>
+discountEndTime: discountEndTime?.toISOString(),<br>
+// And verify database update logs
+                </code>
+            </div>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🔄 Real-Time Testing</h2>
+        <button onclick="generateDebugCode()">Generate Debug Code Snippets</button>
+        <button onclick="testDiscountLogic()">Test isDiscountActive Logic</button>
+        <button onclick="checkCurrentIssues()">Check All Current Issues</button>
+        <div id="realtime-tests" class="log"></div>
+    </div>
+
+    <script>
+        let mockSelectedPercent = 0;
+        let mockSelectedDuration = 0;
+
+        function log(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        function mockSelectPercent(percent) {
+            // Reset all percentage buttons
+            document.querySelectorAll('.mockup-button').forEach(btn => {
+                if (btn.textContent.includes('%')) {
+                    btn.className = 'mockup-button mockup-unselected';
+                }
+            });
+            
+            // Highlight selected button
+            event.target.className = 'mockup-button mockup-selected';
+            mockSelectedPercent = percent;
+            updateMockActivation();
+        }
+
+        function mockSelectDuration(hours) {
+            // Reset all duration buttons
+            document.querySelectorAll('.mockup-button').forEach(btn => {
+                if (btn.textContent.includes('Hours')) {
+                    btn.className = 'mockup-button mockup-unselected';
+                }
+            });
+            
+            // Highlight selected button
+            event.target.className = 'mockup-button mockup-selected';
+            mockSelectedDuration = hours;
+            updateMockActivation();
+        }
+
+        function updateMockActivation() {
+            const activationArea = document.getElementById('mock-activation-area');
+            
+            if (mockSelectedPercent > 0 && mockSelectedDuration > 0) {
+                activationArea.innerHTML = `
+                    <div style="background: linear-gradient(45deg, #ff6b6b, #ffa726); color: white; padding: 12px; border-radius: 8px; font-weight: bold;">
+                        🚀 Activate ${mockSelectedPercent}% OFF for ${mockSelectedDuration} Hours
+                    </div>
+                    <p style="margin: 8px 0; color: #28a745; font-weight: bold;">✅ Both values selected - Activation button should appear!</p>
+                `;
+            } else {
+                activationArea.innerHTML = `
+                    <p style="color: #999;">Select both percentage and duration to see activation button</p>
+                    <p style="font-size: 12px;">Selected: ${mockSelectedPercent}% OFF, ${mockSelectedDuration} Hours</p>
+                `;
+            }
+        }
+
+        function analyzeButtonStates() {
+            const logId = 'state-analysis';
+            clearLog(logId);
+            
+            log(logId, '🔍 ANALYZING BUTTON STATE MANAGEMENT ISSUES:');
+            log(logId, '');
+            log(logId, '1. POTENTIAL PROBLEM: React State Updates');
+            log(logId, '   • State might not be updating immediately');
+            log(logId, '   • Component re-renders could reset selections');
+            log(logId, '   • onClick handlers might have closure issues');
+            log(logId, '');
+            log(logId, '2. DEBUGGING STEPS:');
+            log(logId, '   a) Add console.log before setSelectedDiscountPercentage()');
+            log(logId, '   b) Add console.log after state update');
+            log(logId, '   c) Check if useEffect is interfering with state');
+            log(logId, '');
+            log(logId, '3. EXPECTED BEHAVIOR:');
+            log(logId, '   • Click 10% → Button should highlight orange/amber');
+            log(logId, '   • Click 8 Hours → Button should highlight amber');
+            log(logId, '   • Both selected → Activation preview should appear');
+            log(logId, '');
+            log(logId, '4. COMMON CAUSES:');
+            log(logId, '   • State reset in useEffect without proper dependencies');
+            log(logId, '   • Parent component re-render resetting child state');
+            log(logId, '   • Conditional rendering causing component unmount/remount');
+        }
+
+        function simulateUserFlow() {
+            const logId = 'state-analysis';
+            log(logId, '');
+            log(logId, '🎯 SIMULATING USER SELECTION FLOW:');
+            log(logId, '');
+            log(logId, 'Step 1: User clicks "10%" button');
+            log(logId, '  → setSelectedDiscountPercentage(10) should be called');
+            log(logId, '  → Button should change to orange background');
+            log(logId, '  → selectedDiscountPercentage state should be 10');
+            log(logId, '');
+            log(logId, 'Step 2: User clicks "8 Hours" button');
+            log(logId, '  → setSelectedDiscountDuration(8) should be called');
+            log(logId, '  → Button should change to amber background');
+            log(logId, '  → selectedDiscountDuration state should be 8');
+            log(logId, '');
+            log(logId, 'Step 3: Activation preview should appear');
+            log(logId, '  → Condition: selectedDiscountPercentage > 0 && selectedDiscountDuration > 0');
+            log(logId, '  → Should show: "10% OFF for 8 hours" preview');
+            log(logId, '  → Should show: Orange activation button');
+            log(logId, '');
+            log(logId, 'IF THIS DOESN\'T HAPPEN:');
+            log(logId, '  ❌ State is not persisting between renders');
+            log(logId, '  ❌ Conditional rendering logic has issues');
+            log(logId, '  ❌ Event handlers are not working properly');
+        }
+
+        function testActivationConditions() {
+            const logId = 'activation-tests';
+            clearLog(logId);
+            
+            log(logId, '🧪 TESTING ACTIVATION CONDITIONS:');
+            log(logId, '');
+            log(logId, 'Test Case 1: No selections');
+            log(logId, '  selectedDiscountPercentage = 0');
+            log(logId, '  selectedDiscountDuration = 0');
+            log(logId, '  Condition result: ' + (0 > 0 && 0 > 0));
+            log(logId, '  Expected: false (no button shown) ✓');
+            log(logId, '');
+            log(logId, 'Test Case 2: Only percentage selected');
+            log(logId, '  selectedDiscountPercentage = 10');
+            log(logId, '  selectedDiscountDuration = 0');
+            log(logId, '  Condition result: ' + (10 > 0 && 0 > 0));
+            log(logId, '  Expected: false (no button shown) ✓');
+            log(logId, '');
+            log(logId, 'Test Case 3: Only duration selected');
+            log(logId, '  selectedDiscountPercentage = 0');
+            log(logId, '  selectedDiscountDuration = 8');
+            log(logId, '  Condition result: ' + (0 > 0 && 8 > 0));
+            log(logId, '  Expected: false (no button shown) ✓');
+            log(logId, '');
+            log(logId, 'Test Case 4: Both selected');
+            log(logId, '  selectedDiscountPercentage = 10');
+            log(logId, '  selectedDiscountDuration = 8');
+            log(logId, '  Condition result: ' + (10 > 0 && 8 > 0));
+            log(logId, '  Expected: true (button shown) ✓');
+            log(logId, '');
+            log(logId, 'IF YOUR BUTTON ISN\'T APPEARING IN CASE 4:');
+            log(logId, '  🔍 Check that both state variables are actually set');
+            log(logId, '  🔍 Add: console.log({selectedDiscountPercentage, selectedDiscountDuration})');
+            log(logId, '  🔍 Verify the conditional rendering JSX is correct');
+        }
+
+        function simulateActivation() {
+            const logId = 'activation-tests';
+            log(logId, '');
+            log(logId, '🚀 SIMULATING ACTIVATION PROCESS:');
+            log(logId, '');
+            log(logId, 'When user clicks activation button:');
+            log(logId, '');
+            log(logId, '1. Calculate end time:');
+            log(logId, '   const endTime = new Date();');
+            log(logId, '   endTime.setHours(endTime.getHours() + selectedDiscountDuration);');
+            log(logId, '   → Should add selected hours to current time');
+            log(logId, '');
+            log(logId, '2. Set active states:');
+            log(logId, '   setDiscountPercentage(selectedDiscountPercentage);');
+            log(logId, '   setDiscountDuration(selectedDiscountDuration);');
+            log(logId, '   setDiscountEndTime(endTime);');
+            log(logId, '   setIsDiscountActive(true);');
+            log(logId, '');
+            log(logId, '3. Save to database:');
+            log(logId, '   await handleSave(); → Must include discount fields');
+            log(logId, '');
+            log(logId, '4. Show success message');
+            log(logId, '');
+            log(logId, '5. Start countdown timer for auto-expiry');
+            log(logId, '');
+            log(logId, 'CRITICAL: The discount must be saved with these fields:');
+            log(logId, '  • discountPercentage: number (5, 10, 15, or 20)');
+            log(logId, '  • discountEndTime: ISO string (endTime.toISOString())');
+            log(logId, '');
+            log(logId, 'THEN: TherapistCard should detect active discount via:');
+            log(logId, '  • therapist.discountPercentage > 0');
+            log(logId, '  • therapist.discountEndTime exists and > current time');
+        }
+
+        function testDiscountLogic() {
+            const logId = 'realtime-tests';
+            clearLog(logId);
+            
+            log(logId, '🔬 TESTING isDiscountActive FUNCTION:');
+            log(logId, '');
+            
+            const testCases = [
+                {
+                    name: 'No discount set',
+                    therapist: { discountPercentage: 0, discountEndTime: null },
+                    expected: false
+                },
+                {
+                    name: 'Percentage set but no end time',
+                    therapist: { discountPercentage: 10, discountEndTime: null },
+                    expected: false
+                },
+                {
+                    name: 'End time set but no percentage',
+                    therapist: { discountPercentage: 0, discountEndTime: new Date(Date.now() + 3600000).toISOString() },
+                    expected: false
+                },
+                {
+                    name: 'Expired discount',
+                    therapist: { discountPercentage: 10, discountEndTime: new Date(Date.now() - 3600000).toISOString() },
+                    expected: false
+                },
+                {
+                    name: 'Active discount',
+                    therapist: { discountPercentage: 15, discountEndTime: new Date(Date.now() + 3600000).toISOString() },
+                    expected: true
+                }
+            ];
+            
+            testCases.forEach(test => {
+                const result = isDiscountActiveTest(test.therapist);
+                const status = result === test.expected ? '✅ PASS' : '❌ FAIL';
+                
+                log(logId, `${status} ${test.name}:`);
+                log(logId, `  Percentage: ${test.therapist.discountPercentage}`);
+                log(logId, `  End Time: ${test.therapist.discountEndTime}`);
+                log(logId, `  Expected: ${test.expected}, Got: ${result}`);
+                log(logId, '');
+            });
+        }
+        
+        function isDiscountActiveTest(therapist) {
+            return !!(
+                therapist.discountPercentage && 
+                therapist.discountPercentage > 0 && 
+                therapist.discountEndTime &&
+                (() => {
+                    const now = new Date();
+                    const endTime = new Date(therapist.discountEndTime);
+                    return !isNaN(endTime.getTime()) && endTime > now;
+                })()
+            );
+        }
+
+        function generateDebugCode() {
+            const logId = 'realtime-tests';
+            log(logId, '');
+            log(logId, '📋 DEBUG CODE TO ADD TO TherapistDashboardPage.tsx:');
+            log(logId, '');
+            log(logId, '// Add this to percentage button onClick:');
+            log(logId, 'console.log("🎯 Percentage clicked:", percent);');
+            log(logId, 'console.log("Before update:", selectedDiscountPercentage);');
+            log(logId, 'setSelectedDiscountPercentage(percent);');
+            log(logId, 'console.log("After update (may be delayed):", percent);');
+            log(logId, '');
+            log(logId, '// Add this to duration button onClick:');
+            log(logId, 'console.log("⏰ Duration clicked:", option.hours);');
+            log(logId, 'console.log("Before update:", selectedDiscountDuration);');
+            log(logId, 'setSelectedDiscountDuration(option.hours);');
+            log(logId, 'console.log("After update (may be delayed):", option.hours);');
+            log(logId, '');
+            log(logId, '// Add this before the activation preview condition:');
+            log(logId, 'console.log("🔍 Activation check:", {');
+            log(logId, '  selectedDiscountPercentage,');
+            log(logId, '  selectedDiscountDuration,');
+            log(logId, '  condition: selectedDiscountPercentage > 0 && selectedDiscountDuration > 0');
+            log(logId, '});');
+            log(logId, '');
+            log(logId, '// Add this to the handleSave function:');
+            log(logId, 'console.log("💾 Saving discount data:", {');
+            log(logId, '  discountPercentage,');
+            log(logId, '  discountEndTime: discountEndTime?.toISOString()');
+            log(logId, '});');
+        }
+
+        function checkCurrentIssues() {
+            const logId = 'realtime-tests';
+            log(logId, '');
+            log(logId, '🔍 CURRENT ISSUE CHECKLIST:');
+            log(logId, '');
+            log(logId, '□ Issue 1: Selected discount buttons lose highlighting');
+            log(logId, '  → Check: Are onClick handlers working?');
+            log(logId, '  → Check: Is state persisting between renders?');
+            log(logId, '  → Fix: Add console.log to button clicks');
+            log(logId, '');
+            log(logId, '□ Issue 2: Activate button never appears');
+            log(logId, '  → Check: Are both states (percentage & duration) > 0?');
+            log(logId, '  → Check: Is conditional rendering working?');
+            log(logId, '  → Fix: Add debug logging before condition');
+            log(logId, '');
+            log(logId, '□ Issue 3: Badge not showing on therapist cards');
+            log(logId, '  → Check: Is discount data saved to database?');
+            log(logId, '  → Check: Is isDiscountActive() returning true?');
+            log(logId, '  → Fix: Verify handleSave includes discount fields');
+            log(logId, '');
+            log(logId, '🎯 IMMEDIATE ACTION ITEMS:');
+            log(logId, '1. Add console.log statements to button clicks');
+            log(logId, '2. Verify selectedDiscountPercentage state updates');
+            log(logId, '3. Check if activation preview appears in console');
+            log(logId, '4. Confirm discount fields are saved to database');
+            log(logId, '5. Test isDiscountActive with real therapist data');
+        }
+
+        // Initialize
+        window.onload = function() {
+            updateMockActivation();
+        };
+    </script>
+</body>
+</html>

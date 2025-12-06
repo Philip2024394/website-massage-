@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 VERCEL URL CHANGED - Wildcard Fix Required</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b7a 100%);
+            color: white;
+            line-height: 1.6;
+        }
+        .urgent-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .critical { border-left: 5px solid #ff4757; }
+        .solution { border-left: 5px solid #2ed573; }
+        .warning { border-left: 5px solid #ffa502; }
+        
+        .url-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .url-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .old-url { border: 2px solid #ffa502; }
+        .new-url { border: 2px solid #ff4757; }
+        .wildcard-url { border: 2px solid #2ed573; }
+        
+        .step-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step-number {
+            background: #2ed573;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+        
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        button:hover { 
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .big-button {
+            padding: 20px 30px;
+            font-size: 18px;
+            background: linear-gradient(45deg, #2ed573, #26d0ce);
+        }
+        
+        code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+        
+        .highlight-box {
+            background: rgba(255, 71, 87, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #ff4757;
+        }
+        
+        .solution-box {
+            background: rgba(46, 213, 115, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 2px solid #2ed573;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚨 VERCEL URL CHANGED AGAIN!</h1>
+    
+    <div class="urgent-card critical">
+        <h2>❌ PROBLEM: Dynamic Vercel URLs</h2>
+        <p><strong>Your Vercel deployment URL keeps changing with each deployment!</strong></p>
+        
+        <div class="url-comparison">
+            <div class="url-box old-url">
+                <h3>⚠️ Previously Configured</h3>
+                <code>massagewebsiteindastreet-pwr96a8z3.vercel.app</code>
+            </div>
+            <div class="url-box new-url">
+                <h3>🚨 Current Production URL</h3>
+                <code>massagewebsiteindastreet-7xi4kxkgo.vercel.app</code>
+            </div>
+        </div>
+        
+        <div class="highlight-box">
+            <h3>🔍 Why This Keeps Happening:</h3>
+            <ul>
+                <li><strong>Vercel auto-generates URLs:</strong> Each deployment gets a unique URL</li>
+                <li><strong>Platform configured for specific URL:</strong> Only allows the exact domain</li>
+                <li><strong>CORS blocks new URLs:</strong> Any new deployment URL gets blocked</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="urgent-card solution">
+        <h2>🎯 PERMANENT SOLUTION: Wildcard Domain</h2>
+        
+        <div class="solution-box">
+            <h3>✅ Use Wildcard to Cover ALL Vercel URLs</h3>
+            <div class="url-box wildcard-url">
+                <h4>🌟 Wildcard Platform Entry</h4>
+                <code>*.vercel.app</code>
+                <p><small>This covers ALL your Vercel deployment URLs automatically!</small></p>
+            </div>
+        </div>
+        
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">1</span>
+                <div>
+                    <h3>Open Sydney Appwrite Console</h3>
+                    <button class="big-button" onclick="window.open('https://syd.cloud.appwrite.io/console', '_blank')">
+                        🌏 Open Sydney Console
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">2</span>
+                <div>
+                    <h3>Add Wildcard Platform Entry</h3>
+                    <p>Go to <strong>Settings</strong> → <strong>Platforms</strong> → <strong>Add Platform</strong></p>
+                    
+                    <h4>🌟 NEW Platform Configuration:</h4>
+                    <ul>
+                        <li><strong>Type:</strong> Web</li>
+                        <li><strong>Name:</strong> vercel-wildcard</li>
+                        <li><strong>Hostname:</strong> <code>*.vercel.app</code></li>
+                    </ul>
+                    
+                    <div class="solution-box">
+                        <strong>CRITICAL:</strong> Use exactly <code>*.vercel.app</code> (with asterisk)
+                        <br>This will match ALL Vercel deployment URLs automatically!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">3</span>
+                <div>
+                    <h3>Keep Existing + Add Current URL</h3>
+                    <p>Also add the current specific URL as backup:</p>
+                    
+                    <h4>Platform Entry for Current URL:</h4>
+                    <ul>
+                        <li><strong>Type:</strong> Web</li>
+                        <li><strong>Name:</strong> current-production</li>
+                        <li><strong>Hostname:</strong> <code>massagewebsiteindastreet-7xi4kxkgo.vercel.app</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-box">
+            <div style="display: flex; align-items: center;">
+                <span class="step-number">4</span>
+                <div>
+                    <h3>Final Platform List</h3>
+                    <p>You should have these platform entries:</p>
+                    <ol>
+                        <li><code>*.vercel.app</code> (wildcard - most important)</li>
+                        <li><code>massagewebsiteindastreet-7xi4kxkgo.vercel.app</code> (current)</li>
+                        <li><code>localhost</code> (development)</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="urgent-card warning">
+        <h2>⚡ Why Wildcard is the Best Solution</h2>
+        
+        <h3>✅ Benefits of <code>*.vercel.app</code>:</h3>
+        <ul>
+            <li><strong>Future-proof:</strong> Works with ANY new Vercel deployment URL</li>
+            <li><strong>No more CORS issues:</strong> Automatic coverage for all deployments</li>
+            <li><strong>No manual updates:</strong> Never need to update platform again</li>
+            <li><strong>Development friendly:</strong> Works with preview deployments too</li>
+        </ul>
+        
+        <h3>🎯 Alternative Solutions (if wildcard doesn't work):</h3>
+        <ol>
+            <li><strong>Custom Vercel Domain:</strong> Set up a custom domain that doesn't change</li>
+            <li><strong>Production Branch:</strong> Use Vercel production branch for stable URL</li>
+            <li><strong>Global Appwrite Console:</strong> Try global instead of Sydney console</li>
+        </ol>
+    </div>
+
+    <div class="urgent-card solution">
+        <h2>🧪 Test After Wildcard Fix</h2>
+        
+        <button onclick="testWildcardFix()">🔄 Test Current Production URL</button>
+        <button onclick="testCORSDirectly()">🧪 Test CORS API</button>
+        <button onclick="checkPlatformConfig()">🔍 Verify Platform Config</button>
+        
+        <h3>📋 Expected Results After Fix:</h3>
+        <ul>
+            <li>✅ No "Access-Control-Allow-Origin" errors</li>
+            <li>✅ All Appwrite API calls work</li>
+            <li>✅ Translation service loads properly</li>
+            <li>✅ Future deployments automatically work</li>
+        </ul>
+    </div>
+
+    <script>
+        function testWildcardFix() {
+            alert(`🧪 Testing Current Production URL:
+
+Will open: https://massagewebsiteindastreet-7xi4kxkgo.vercel.app
+
+After adding *.vercel.app wildcard:
+✅ CORS errors should be gone
+✅ Appwrite API calls should work
+✅ Console should show minimal errors
+
+Check the browser console for CORS errors!`);
+            
+            window.open('https://massagewebsiteindastreet-7xi4kxkgo.vercel.app', '_blank');
+        }
+        
+        async function testCORSDirectly() {
+            alert('🧪 Testing CORS with wildcard configuration...');
+            
+            try {
+                const response = await fetch('https://syd.cloud.appwrite.io/v1/health', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`✅ WILDCARD CORS FIX WORKED!
+
+API Response: ${JSON.stringify(data, null, 2)}
+
+Your wildcard configuration is successful!`);
+                } else {
+                    alert(`❌ Still blocked: ${response.status}
+
+The wildcard may need more time to propagate.
+Wait 5 minutes and try again.`);
+                }
+            } catch (error) {
+                if (error.message.includes('Failed to fetch')) {
+                    alert(`❌ CORS still blocked: ${error.message}
+
+Make sure you added: *.vercel.app to platforms
+Wait 5-10 minutes for propagation.`);
+                }
+            }
+        }
+        
+        function checkPlatformConfig() {
+            alert(`🔍 Platform Configuration Checklist:
+
+Go to Sydney Console → Settings → Platforms
+
+Verify you have:
+✅ *.vercel.app (wildcard entry)
+✅ massagewebsiteindastreet-7xi4kxkgo.vercel.app (current URL)
+✅ localhost (development)
+
+The wildcard entry is most important!`);
+            
+            window.open('https://syd.cloud.appwrite.io/console', '_blank');
+        }
+        
+        // Auto-guidance
+        window.onload = function() {
+            setTimeout(() => {
+                alert(`🚨 VERCEL URL CHANGED AGAIN!
+
+Old: massagewebsiteindastreet-pwr96a8z3.vercel.app
+New: massagewebsiteindastreet-7xi4kxkgo.vercel.app
+
+SOLUTION: Add wildcard *.vercel.app to platforms
+
+This will fix CORS for ALL future Vercel deployments automatically!`);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

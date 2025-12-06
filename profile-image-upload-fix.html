@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Image Upload Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .fix-section {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            background: #f9f9f9;
+        }
+        .issue-description {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .solution {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .code-diff {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+        .old-code { color: #d73a49; }
+        .new-code { color: #28a745; }
+        .test-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 5px;
+        }
+        .test-link:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Profile Image Upload Fix</h1>
+        <p>Fixed the "URL is too long" error when uploading profile images.</p>
+
+        <div class="issue-description">
+            <h3>❌ Issue Description</h3>
+            <p><strong>Problem:</strong> When trying to save profile images, users got "URL is too long" error</p>
+            <p><strong>Root Cause:</strong> The TherapistDashboardPage was storing base64 data URLs directly in the database instead of uploading to Appwrite Storage first</p>
+            <p><strong>Impact:</strong> Profile images couldn't be saved properly</p>
+        </div>
+
+        <div class="solution">
+            <h3>✅ Solution Applied</h3>
+            <p><strong>Fix:</strong> Modified the image upload handler to:</p>
+            <ul>
+                <li>Upload image to Appwrite Storage first using <code>imageUploadService.uploadProfileImage()</code></li>
+                <li>Store only the resulting Appwrite URL (not base64 data) in the database</li>
+                <li>Add proper loading states and error handling</li>
+                <li>Show upload progress feedback to users</li>
+            </ul>
+        </div>
+
+        <div class="fix-section">
+            <h3>🔄 Code Changes Made</h3>
+            <p><strong>File:</strong> <code>pages/TherapistDashboardPage.tsx</code></p>
+            
+            <div class="code-diff">
+<span class="old-code">// OLD CODE - Stored base64 directly (too long for database)
+reader.onload = (e) => {
+    setProfilePicture(e.target?.result as string); // Base64 data URL
+};</span>
+
+<span class="new-code">// NEW CODE - Upload to Appwrite Storage first
+reader.onload = async (e) => {
+    try {
+        const base64Image = e.target?.result as string;
+        console.log('📤 Uploading profile image...');
+        
+        // Upload to Appwrite Storage and get URL
+        const { imageUploadService } = await import('../lib/appwriteService');
+        const imageUrl = await imageUploadService.uploadProfileImage(base64Image);
+        
+        console.log('✅ Image uploaded successfully:', imageUrl);
+        setProfilePicture(imageUrl); // Store Appwrite URL instead
+        
+        setToast({ message: '✅ Profile picture uploaded successfully!', type: 'success' });
+    } catch (error) {
+        console.error('❌ Error uploading image:', error);
+        setToast({ message: `❌ Error uploading image: ${error.message}`, type: 'error' });
+    }
+};</span>
+            </div>
+
+            <p><strong>Benefits:</strong></p>
+            <ul>
+                <li>✅ No more "URL too long" errors</li>
+                <li>✅ Images properly stored in Appwrite Storage</li>
+                <li>✅ Consistent with ImageUpload component behavior</li>
+                <li>✅ Better user feedback during upload</li>
+                <li>✅ Proper error handling</li>
+            </ul>
+        </div>
+
+        <div class="fix-section">
+            <h3>📋 Testing Instructions</h3>
+            <ol>
+                <li>Open the Therapist Dashboard</li>
+                <li>Try uploading a profile picture using the "Upload Photo" button</li>
+                <li>You should see "⏳ Uploading..." during the process</li>
+                <li>After successful upload, you should see "✅ Profile picture uploaded successfully!"</li>
+                <li>The image should appear in the preview</li>
+                <li>Click "Save Profile" to save all changes</li>
+                <li>Verify the image appears on the home page therapist card</li>
+            </ol>
+        </div>
+
+        <div class="fix-section">
+            <h3>🌐 Test Links</h3>
+            <a href="http://localhost:3001" class="test-link" target="_blank">🏠 Home Page</a>
+            <a href="http://localhost:3001/?authpage=therapist" class="test-link" target="_blank">👨‍⚕️ Therapist Dashboard</a>
+            <a href="http://localhost:3001/test-image-stability.html" class="test-link" target="_blank">🧪 Image Stability Test</a>
+        </div>
+
+        <div class="fix-section">
+            <h3>🔍 Technical Details</h3>
+            <p><strong>Image Upload Flow:</strong></p>
+            <ol>
+                <li>User selects image file</li>
+                <li>FileReader converts to base64</li>
+                <li><code>imageUploadService.uploadProfileImage()</code> uploads to Appwrite Storage</li>
+                <li>Returns Appwrite URL: <code>https://cloud.appwrite.io/v1/storage/buckets/68f76bdd002387590584/files/FILE_ID/view?project=67160f1a0000776afce9</code></li>
+                <li>URL is stored in database (much shorter than base64)</li>
+                <li>Image displays properly on frontend</li>
+            </ol>
+
+            <p><strong>URL Length Comparison:</strong></p>
+            <ul>
+                <li>❌ Base64 data URL: ~50,000+ characters (too long)</li>
+                <li>✅ Appwrite storage URL: ~150 characters (perfect)</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

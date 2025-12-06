@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Updated Config Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>✅ Updated Appwrite Configuration Test</h1>
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+    <script>
+        const { Client, Databases, Account } = Appwrite;
+
+        // Updated configuration matching the new lib/appwrite.ts
+        const client = new Client();
+        client
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        const DATABASE_ID = '672b0d7b00249d81e129'; // Updated
+        const COLLECTIONS = {
+            THERAPISTS: 'therapists_collection_id',
+            PLACES: 'places', // Updated - now just 'places'
+        };
+
+        async function testUpdatedConfig() {
+            const results = document.getElementById('results');
+            
+            try {
+                results.innerHTML += '<div class="info">🔍 Testing updated configuration...</div>';
+                
+                // Test therapists collection
+                try {
+                    const therapists = await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS, []);
+                    results.innerHTML += `<div class="success">✅ Therapists: Found ${therapists.documents.length} therapists</div>`;
+                    
+                    if (therapists.documents.length > 0) {
+                        const sample = therapists.documents[0];
+                        results.innerHTML += `<div class="info">📋 Sample therapist: ${sample.name || 'No name'} (ID: ${sample.$id})</div>`;
+                    }
+                } catch (error) {
+                    results.innerHTML += `<div class="error">❌ Therapists error: ${error.message}</div>`;
+                }
+
+                // Test places collection
+                try {
+                    const places = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES, []);
+                    results.innerHTML += `<div class="success">✅ Places: Found ${places.documents.length} places</div>`;
+                    
+                    if (places.documents.length > 0) {
+                        const sample = places.documents[0];
+                        results.innerHTML += `<div class="info">📋 Sample place: ${sample.name || 'No name'} (ID: ${sample.$id})</div>`;
+                    }
+                } catch (error) {
+                    results.innerHTML += `<div class="error">❌ Places error: ${error.message}</div>`;
+                }
+
+                results.innerHTML += '<div class="success">🎉 Configuration test completed!</div>';
+                results.innerHTML += '<div class="info">💡 If you see data above, the therapist cards should now work on the homepage!</div>';
+
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ General error: ${error.message}</div>`;
+            }
+        }
+
+        // Run the test
+        testUpdatedConfig();
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Therapist Data Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Therapist Data Debug Tool</h1>
+    <p>This tool helps debug the connection between live cards and therapist dashboard data.</p>
+    
+    <div class="section">
+        <h3>📧 Test by Email</h3>
+        <input type="email" id="emailInput" placeholder="Enter therapist email (e.g., phil4@gmail.com)" value="phil4@gmail.com">
+        <button onclick="testByEmail()">Test Email Lookup</button>
+        <div id="emailResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>🔐 Authentication Status</h3>
+        <button onclick="checkAuth()">Check Current User</button>
+        <div id="authResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>📋 All Therapists Data</h3>
+        <button onclick="getAllTherapists()">Fetch All Therapists</button>
+        <div id="allTherapistsResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>🎯 Live Card vs Dashboard Comparison</h3>
+        <button onclick="compareData()">Compare Live Card vs Dashboard Data</button>
+        <div id="comparisonResult"></div>
+    </div>
+
+    <script type="module">
+        // Import Appwrite services
+        import { therapistService } from './lib/appwriteService.js';
+        
+        // Make functions global for button clicks
+        window.therapistService = therapistService;
+        
+        window.testByEmail = async function() {
+            const email = document.getElementById('emailInput').value;
+            const resultDiv = document.getElementById('emailResult');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div class="error">Please enter an email address</div>';
+                return;
+            }
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">🔍 Searching for therapist with email: ' + email + '</div>';
+                
+                const therapists = await therapistService.getByEmail(email);
+                
+                if (therapists && therapists.length > 0) {
+                    const therapist = therapists[0];
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Found Therapist Profile</h4>
+                            <pre>${JSON.stringify({
+                                id: therapist.$id || therapist.id,
+                                name: therapist.name,
+                                email: therapist.email,
+                                description: therapist.description?.substring(0, 100) + '...',
+                                whatsappNumber: therapist.whatsappNumber,
+                                location: therapist.location,
+                                profilePicture: therapist.profilePicture?.substring(0, 50) + '...',
+                                isLive: therapist.isLive,
+                                status: therapist.status
+                            }, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ No therapist found with email: ' + email + '</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error fetching therapist</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        };
+        
+        window.checkAuth = async function() {
+            const resultDiv = document.getElementById('authResult');
+            
+            try {
+                const user = await therapistService.getCurrentUser();
+                
+                if (user) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ User Authenticated</h4>
+                            <pre>${JSON.stringify({
+                                userId: user.$id,
+                                email: user.email,
+                                name: user.name,
+                                registration: user.registration
+                            }, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ No authenticated user found</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Authentication Error</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        };
+        
+        window.getAllTherapists = async function() {
+            const resultDiv = document.getElementById('allTherapistsResult');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">🔍 Fetching all therapists...</div>';
+                
+                const therapists = await therapistService.getAll();
+                
+                if (therapists && therapists.length > 0) {
+                    const summary = therapists.map(t => ({
+                        id: t.$id || t.id,
+                        name: t.name,
+                        email: t.email,
+                        isLive: t.isLive,
+                        hasProfilePic: !!t.profilePicture,
+                        hasDescription: !!t.description
+                    }));
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Found ${therapists.length} Therapists</h4>
+                            <pre>${JSON.stringify(summary, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ No therapists found in database</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error fetching therapists</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        };
+        
+        window.compareData = async function() {
+            const resultDiv = document.getElementById('comparisonResult');
+            
+            try {
+                resultDiv.innerHTML = '<div class="info">🔍 Comparing live card data vs dashboard data...</div>';
+                
+                // Get current authenticated user
+                const currentUser = await therapistService.getCurrentUser();
+                if (!currentUser) {
+                    resultDiv.innerHTML = '<div class="error">❌ No authenticated user - please login first</div>';
+                    return;
+                }
+                
+                // Get therapist profile by email (dashboard method)
+                const dashboardTherapists = await therapistService.getByEmail(currentUser.email);
+                
+                // Get all therapists (homepage method)
+                const allTherapists = await therapistService.getAll();
+                const homepageTherapist = allTherapists.find(t => t.email === currentUser.email);
+                
+                const comparison = {
+                    authenticatedUser: {
+                        userId: currentUser.$id,
+                        email: currentUser.email,
+                        name: currentUser.name
+                    },
+                    dashboardData: dashboardTherapists.length > 0 ? {
+                        found: true,
+                        id: dashboardTherapists[0].$id,
+                        name: dashboardTherapists[0].name,
+                        hasProfile: !!dashboardTherapists[0].profilePicture,
+                        hasDescription: !!dashboardTherapists[0].description
+                    } : { found: false },
+                    homepageData: homepageTherapist ? {
+                        found: true,
+                        id: homepageTherapist.$id || homepageTherapist.id,
+                        name: homepageTherapist.name,
+                        hasProfile: !!homepageTherapist.profilePicture,
+                        hasDescription: !!homepageTherapist.description
+                    } : { found: false },
+                    dataConsistency: {
+                        sameId: dashboardTherapists[0]?.$id === (homepageTherapist?.$id || homepageTherapist?.id),
+                        sameName: dashboardTherapists[0]?.name === homepageTherapist?.name,
+                        sameProfileStatus: !!dashboardTherapists[0]?.profilePicture === !!homepageTherapist?.profilePicture
+                    }
+                };
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>🎯 Data Comparison Results</h4>
+                        <pre>${JSON.stringify(comparison, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Error comparing data</h4>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Vercel + Appwrite Cloud CORS Fix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            line-height: 1.6;
+        }
+        .fix-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .critical { 
+            border-left: 5px solid #ff4757;
+            background: rgba(255, 71, 87, 0.2);
+        }
+        .success { 
+            border-left: 5px solid #2ed573;
+            background: rgba(46, 213, 115, 0.2);
+        }
+        .warning { 
+            border-left: 5px solid #ffa502;
+            background: rgba(255, 165, 2, 0.2);
+        }
+        .info { 
+            border-left: 5px solid #3742fa;
+            background: rgba(55, 66, 250, 0.2);
+        }
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover { 
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .step-number {
+            background: #2ed573;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .url-link {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #fff;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        .url-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+        h1, h2, h3 { margin-top: 0; }
+        ul, ol { margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Vercel Production Site - CORS Setup</h1>
+    
+    <div class="fix-card critical">
+        <h2>🚨 Current Issue</h2>
+        <p><strong>Problem:</strong> Your Vercel production site shows "broken app view" with CORS errors</p>
+        <p><strong>Root Cause:</strong> Platforms configured in wrong Appwrite console</p>
+        <p><strong>Your Config:</strong> App uses Sydney region <code>syd.cloud.appwrite.io</code></p>
+    </div>
+
+    <div class="fix-card info">
+        <h2>✅ Your Current Configuration (Correct)</h2>
+        <ul>
+            <li><strong>Appwrite Endpoint:</strong> <code>https://syd.cloud.appwrite.io/v1</code> ✅</li>
+            <li><strong>Project ID:</strong> <code>68f23b11000d25eb3664</code> ✅</li>
+            <li><strong>Production URL:</strong> <code>massagewebsiteindastreet.vercel.app</code> ✅</li>
+        </ul>
+        <p><strong>No changes needed to your code!</strong> The issue is CORS platform setup.</p>
+    </div>
+
+    <div class="fix-card warning">
+        <h2>🎯 The Fix - 3 Simple Steps</h2>
+        
+        <div style="display: flex; align-items: center; margin: 20px 0;">
+            <span class="step-number">1</span>
+            <div>
+                <h3>Open Sydney Appwrite Console</h3>
+                <p>Go to the <strong>correct</strong> Appwrite console for Sydney region:</p>
+                <a href="https://syd.cloud.appwrite.io/console" target="_blank" class="url-link">
+                    🌏 Open Sydney Console
+                </a>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; margin: 20px 0;">
+            <span class="step-number">2</span>
+            <div>
+                <h3>Navigate to Your Project</h3>
+                <p>Find and open your project:</p>
+                <ul>
+                    <li><strong>Project Name:</strong> "indastreetmassage"</li>
+                    <li><strong>Project ID:</strong> <code>68f23b11000d25eb3664</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; margin: 20px 0;">
+            <span class="step-number">3</span>
+            <div>
+                <h3>Add Platform Configuration</h3>
+                <p>In your project, go to <strong>Platforms</strong> and add:</p>
+                <ul>
+                    <li><strong>Platform Type:</strong> Web</li>
+                    <li><strong>Name:</strong> production-app</li>
+                    <li><strong>Hostname:</strong> <code>massagewebsiteindastreet.vercel.app</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="fix-card success">
+        <h2>🧪 Test After Configuration</h2>
+        <button onclick="testProduction()">🚀 Test Production Site</button>
+        <button onclick="showConsoleGuide()">📋 Console Check Guide</button>
+        
+        <h3>Expected Results After Fix:</h3>
+        <ul>
+            <li>✅ Landing page loads with language selection</li>
+            <li>✅ No blue "UNLOCKED" badges</li>
+            <li>✅ No CORS errors in browser console (F12)</li>
+            <li>✅ App features work (navigation, API calls)</li>
+        </ul>
+    </div>
+
+    <div class="fix-card info">
+        <h2>📚 Why This Happened</h2>
+        <p><strong>The Vercel guide you found</strong> is for self-hosted Appwrite, not Appwrite Cloud.</p>
+        <p><strong>Key Differences:</strong></p>
+        <ul>
+            <li><strong>Self-hosted:</strong> You control the server, configure CORS in server settings</li>
+            <li><strong>Appwrite Cloud:</strong> Managed service, configure CORS via console platforms</li>
+        </ul>
+        <p><strong>Your setup uses Appwrite Cloud Sydney region</strong>, so platforms must be configured in the Sydney console.</p>
+    </div>
+
+    <div class="fix-card warning">
+        <h2>⚡ Quick Reference</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: rgba(255,255,255,0.1);">
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><strong>Console URL</strong></td>
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><code>https://syd.cloud.appwrite.io/console</code></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><strong>Project ID</strong></td>
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><code>68f23b11000d25eb3664</code></td>
+            </tr>
+            <tr style="background: rgba(255,255,255,0.1);">
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><strong>Domain to Add</strong></td>
+                <td style="padding: 10px; border: 1px solid rgba(255,255,255,0.2);"><code>massagewebsiteindastreet.vercel.app</code></td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        function testProduction() {
+            window.open('https://massagewebsiteindastreet.vercel.app', '_blank');
+            
+            setTimeout(() => {
+                const working = confirm('After configuring platforms in Sydney console:\n\n✅ Click OK if the app loads properly\n❌ Click Cancel if still showing errors');
+                
+                if (working) {
+                    alert('🎉 Excellent! Your CORS configuration is working!\n\nYour production app should now be fully functional with:\n• Landing page first\n• No blue badges\n• Working API calls');
+                } else {
+                    alert('🔧 Still having issues?\n\n1. Make sure you used the Sydney console\n2. Wait 2-3 minutes for propagation\n3. Hard refresh (Ctrl+F5)\n4. Check console for specific errors');
+                }
+            }, 3000);
+        }
+        
+        function showConsoleGuide() {
+            alert('🔍 Browser Console Check:\n\n1. Open production site\n2. Press F12 (Developer Tools)\n3. Click "Console" tab\n4. Look for red error messages\n\n✅ Success: No red CORS errors\n❌ Issue: "blocked by CORS policy" messages\n\nIf you still see CORS errors, double-check the Sydney console platform configuration.');
+        }
+
+        // Auto-guide on load
+        window.onload = function() {
+            setTimeout(() => {
+                alert('🎯 Ready to Fix CORS!\n\n1. Click "Open Sydney Console" button\n2. Find your project (68f23b11000d25eb3664)\n3. Add platform: massagewebsiteindastreet.vercel.app\n4. Test your production site\n\nThis will fix the "broken app view" issue!');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

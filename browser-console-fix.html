@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Browser Console Language Fix - Instructions</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+        }
+        .step { 
+            border: 1px solid #e1e5e9; 
+            border-radius: 6px; 
+            padding: 15px; 
+            margin: 15px 0; 
+            background: #f8f9fa; 
+        }
+        .code-block { 
+            background: #2d3748; 
+            color: #e2e8f0; 
+            padding: 15px; 
+            border-radius: 6px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 14px; 
+            overflow-x: auto; 
+            margin: 10px 0; 
+        }
+        .warning { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+        }
+        .success { 
+            background: #d4edda; 
+            border: 1px solid #c3e6cb; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin: 10px 0; 
+        }
+        .copy-btn { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 5px 10px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            float: right; 
+            margin-bottom: 10px; 
+        }
+        .copy-btn:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Fix Therapist Languages - Browser Console Method</h1>
+            <p>Use this method to fix all therapist language fields using your browser's console</p>
+        </div>
+
+        <div class="step">
+            <h3>📋 Step 1: Open Your Main App</h3>
+            <p>Go to <strong>localhost:3000</strong> and make sure you're logged in as a therapist or admin</p>
+        </div>
+
+        <div class="step">
+            <h3>🛠️ Step 2: Open Browser Console</h3>
+            <p>Press <strong>F12</strong> or right-click → "Inspect" → go to "Console" tab</p>
+        </div>
+
+        <div class="step">
+            <h3>🔍 Step 3: Analyze Current Data</h3>
+            <p>First, let's see which therapists need fixing. Copy and paste this code:</p>
+            <button class="copy-btn" onclick="copyCode('analyze')">Copy</button>
+            <div class="code-block" id="analyze">
+// 🔍 ANALYZE THERAPIST LANGUAGE DATA
+(async function analyzeTherapistLanguages() {
+    console.log('🔍 Starting therapist language analysis...');
+    
+    try {
+        // Get the Appwrite client from your app's global scope
+        const { Client, Databases } = window.Appwrite || {};
+        
+        if (!Client || !Databases) {
+            console.error('❌ Appwrite not found. Make sure you\'re on the main app page.');
+            return;
+        }
+        
+        // Use your app's existing configuration
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        
+        // Fetch all therapists
+        const response = await databases.listDocuments(
+            '68f76ee1000e64ca8d05', // database ID
+            '68f76ee1001b06e7ba5d'  // therapists collection ID
+        );
+        
+        const therapists = response.documents;
+        console.log(`📊 Found ${therapists.length} total therapists`);
+        
+        let needsFix = 0;
+        let alreadyGood = 0;
+        
+        therapists.forEach((therapist, index) => {
+            const languages = therapist.languages;
+            const isEmptyOrInvalid = !languages || languages === '' || languages === '[]' || languages === 'null';
+            
+            if (isEmptyOrInvalid) {
+                needsFix++;
+                console.log(`❌ ${therapist.name || therapist.$id}: languages = "${languages || 'empty'}" - NEEDS FIX`);
+            } else {
+                alreadyGood++;
+                console.log(`✅ ${therapist.name || therapist.$id}: languages = "${languages}" - GOOD`);
+            }
+        });
+        
+        console.log(`\n📊 SUMMARY:`);
+        console.log(`✅ Good: ${alreadyGood} therapists`);
+        console.log(`❌ Need Fix: ${needsFix} therapists`);
+        console.log(`📊 Total: ${therapists.length} therapists`);
+        
+        if (needsFix > 0) {
+            console.log(`\n🛠️ Ready to fix ${needsFix} therapists. Run the FIX script next.`);
+        } else {
+            console.log(`\n🎉 All therapists already have proper language data!`);
+        }
+        
+        // Store for use in fix function
+        window.therapistsToAnalyze = therapists;
+        
+    } catch (error) {
+        console.error('❌ Error analyzing therapists:', error);
+        if (error.message.includes('missing scope')) {
+            console.log('💡 TIP: Make sure you\'re logged in as an admin or therapist with proper permissions');
+        }
+    }
+})();
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🛠️ Step 4: Fix All Empty Language Fields</h3>
+            <p>If the analysis found therapists that need fixing, run this code:</p>
+            <button class="copy-btn" onclick="copyCode('fix')">Copy</button>
+            <div class="code-block" id="fix">
+// 🛠️ FIX ALL THERAPIST LANGUAGE DATA
+(async function fixAllTherapistLanguages() {
+    console.log('🛠️ Starting bulk language fix...');
+    
+    if (!window.therapistsToAnalyze) {
+        console.error('❌ Please run the ANALYZE script first!');
+        return;
+    }
+    
+    try {
+        const { Client, Databases } = window.Appwrite;
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        
+        const therapistsToFix = window.therapistsToAnalyze.filter(t => {
+            const languages = t.languages;
+            return !languages || languages === '' || languages === '[]' || languages === 'null';
+        });
+        
+        console.log(`🎯 Fixing ${therapistsToFix.length} therapists...`);
+        
+        let fixedCount = 0;
+        
+        for (let i = 0; i < therapistsToFix.length; i++) {
+            const therapist = therapistsToFix[i];
+            
+            try {
+                // Set default language to English
+                const fixedLanguages = '["en"]';
+                
+                await databases.updateDocument(
+                    '68f76ee1000e64ca8d05', // database ID
+                    '68f76ee1001b06e7ba5d', // collection ID
+                    therapist.$id,
+                    { languages: fixedLanguages }
+                );
+                
+                fixedCount++;
+                console.log(`✅ Fixed ${therapist.name || therapist.$id}: languages = ${fixedLanguages}`);
+                
+                // Small delay to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+            } catch (error) {
+                console.error(`❌ Failed to fix ${therapist.name || therapist.$id}:`, error);
+            }
+        }
+        
+        console.log(`\n🎉 COMPLETED! Fixed ${fixedCount}/${therapistsToFix.length} therapists`);
+        console.log(`💡 Refresh your homepage to see the changes!`);
+        
+    } catch (error) {
+        console.error('❌ Error during fix process:', error);
+    }
+})();
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🔄 Step 5: Verify the Fix</h3>
+            <p>After running the fix, refresh your homepage and check the console logs. You should now see all therapist cards displaying languages properly!</p>
+            <div class="success">
+                <strong>Expected Result:</strong> All console logs should show therapists with proper language arrays like <code>["en","id"]</code> instead of empty strings.
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Important Notes:</strong>
+            <ul>
+                <li>Make sure you're logged in with proper permissions</li>
+                <li>Run the ANALYZE script first to see what needs fixing</li>
+                <li>The fix script sets empty languages to <code>["en"]</code> by default</li>
+                <li>You can modify the default language if needed</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const button = element.previousElementSibling;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#28a745';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

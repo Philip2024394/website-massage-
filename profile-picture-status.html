@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ Profile Picture Flow Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/umd/sdk.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto;
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 30px; 
+            font-size: 2.2rem;
+            text-align: center;
+        }
+        .success { 
+            background: #e8f5e8; 
+            border: 2px solid #4caf50; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #2e7d32;
+        }
+        .error { 
+            background: #ffebee; 
+            border: 2px solid #f44336; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #c62828;
+        }
+        .info { 
+            background: #e3f2fd; 
+            border: 2px solid #2196f3; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            color: #1565c0;
+        }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .therapist-preview {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #4CAF50;
+            margin-right: 20px;
+        }
+        .therapist-row {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .image-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-success { background: #e8f5e8; color: #2e7d32; }
+        .status-error { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Profile Picture Flow Status</h1>
+        
+        <div class="info">
+            <strong>🎯 Testing Complete Flow:</strong><br>
+            1. Check current therapist profile pictures in database<br>
+            2. Verify images are accessible from Appwrite Storage<br>
+            3. Test home page card display compatibility<br>
+            4. Confirm dashboard ↔ home page synchronization
+        </div>
+
+        <button onclick="runCompleteCheck()">🔍 Check Current Status</button>
+        <button onclick="window.open('http://localhost:3000', '_blank')">🏠 View Live Home Page</button>
+
+        <div id="results"></div>
+        <div id="therapist-display"></div>
+    </div>
+
+    <script>
+        // Wait for Appwrite SDK to load properly
+        let client, databases, storage;
+        
+        function initializeAppwrite() {
+            try {
+                const { Client, Databases, Storage } = Appwrite;
+                client = new Client();
+                client
+                    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+                    .setProject('68f23b11000d25eb3664');
+
+                databases = new Databases(client);
+                storage = new Storage(client);
+                
+                console.log('✅ Appwrite initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Failed to initialize Appwrite:', error);
+                return false;
+            }
+        }
+
+        function showResult(message, type = 'info') {
+            document.getElementById('results').innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        async function runCompleteCheck() {
+            try {
+                console.log('🔍 Starting complete profile picture flow check...');
+                
+                // Initialize Appwrite if not already done
+                if (!databases || !storage) {
+                    if (!initializeAppwrite()) {
+                        showResult('❌ Failed to initialize Appwrite SDK. Please refresh the page and try again.', 'error');
+                        return;
+                    }
+                }
+                
+                // Get all therapists from database
+                const response = await databases.listDocuments(
+                    '68f23b11001c632c9c77',
+                    'therapists_collection_id',
+                    []
+                );
+
+                console.log(`📋 Found ${response.documents.length} therapists`);
+
+                if (response.documents.length === 0) {
+                    showResult('⚠️ No therapists found in database. Create a therapist profile first to test image functionality.', 'warning');
+                    return;
+                }
+
+                let statusHtml = `
+                    <strong>📊 Profile Picture Status Report:</strong><br><br>
+                    <strong>Total Therapists:</strong> ${response.documents.length}<br><br>
+                `;
+
+                let therapistDisplayHtml = '';
+                let workingImages = 0;
+                let totalImages = 0;
+
+                for (let i = 0; i < response.documents.length; i++) {
+                    const therapist = response.documents[i];
+                    const hasProfilePicture = therapist.profilePicture && therapist.profilePicture.trim().length > 0;
+                    const isAppwriteUrl = hasProfilePicture && therapist.profilePicture.includes('appwrite.io');
+                    
+                    if (hasProfilePicture) totalImages++;
+                    if (isAppwriteUrl) workingImages++;
+
+                    const status = isAppwriteUrl ? '✅ Working' : hasProfilePicture ? '⚠️ External URL' : '❌ No Image';
+                    const statusClass = isAppwriteUrl ? 'status-success' : 'status-error';
+
+                    therapistDisplayHtml += `
+                        <div class="therapist-preview">
+                            <div class="therapist-row">
+                                ${hasProfilePicture ? 
+                                    `<img src="${therapist.profilePicture}" class="profile-img" alt="${therapist.name}" 
+                                         onload="console.log('✅ Image loaded:', '${therapist.profilePicture?.substring(0, 50)}...')"
+                                         onerror="console.log('❌ Image failed:', '${therapist.profilePicture?.substring(0, 50)}...'); this.style.border='4px solid #f44336';">` :
+                                    `<div class="profile-img" style="background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 2rem;">👤</div>`
+                                }
+                                <div style="flex: 1;">
+                                    <strong>${therapist.name || 'Unnamed Therapist'}</strong><br>
+                                    <small>ID: ${therapist.$id}</small><br>
+                                    <span class="image-status ${statusClass}">${status}</span>
+                                    ${therapist.yearsOfExperience ? `<br><small>${therapist.yearsOfExperience} years experience</small>` : ''}
+                                </div>
+                            </div>
+                            ${hasProfilePicture ? `
+                                <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                    <small><strong>Image URL:</strong> ${therapist.profilePicture}</small><br>
+                                    <small><strong>Storage:</strong> ${isAppwriteUrl ? '✅ Appwrite Bucket' : '⚠️ External/Invalid'}</small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }
+
+                statusHtml += `
+                    <strong>🖼️ Images with Appwrite URLs:</strong> ${workingImages}<br>
+                    <strong>📷 Images with Other URLs:</strong> ${totalImages - workingImages}<br>
+                    <strong>❌ No Images:</strong> ${response.documents.length - totalImages}<br><br>
+                `;
+
+                if (workingImages === response.documents.length) {
+                    statusHtml += `<strong>🎉 Perfect! All therapists have proper Appwrite profile images.</strong><br>
+                                   ✅ Images should display correctly on both dashboard and home page cards.`;
+                    showResult(statusHtml, 'success');
+                } else if (workingImages > 0) {
+                    statusHtml += `<strong>⚠️ Partial Success:</strong> ${workingImages} out of ${response.documents.length} therapists have proper profile images.<br>
+                                   🔧 Missing images will show placeholder icons on home page cards.`;
+                    showResult(statusHtml, 'info');
+                } else {
+                    statusHtml += `<strong>❌ Issue Found:</strong> No therapists have proper Appwrite profile images.<br>
+                                   🔧 All home page cards will show placeholder icons instead of profile pictures.<br><br>
+                                   <strong>Next Steps:</strong><br>
+                                   1. Go to therapist dashboard<br>
+                                   2. Upload profile pictures<br>
+                                   3. Verify they save to Appwrite Storage<br>
+                                   4. Check home page display`;
+                    showResult(statusHtml, 'error');
+                }
+
+                document.getElementById('therapist-display').innerHTML = therapistDisplayHtml;
+
+                // Additional test: Verify one image loads correctly
+                if (workingImages > 0) {
+                    const therapistWithImage = response.documents.find(t => t.profilePicture && t.profilePicture.includes('appwrite.io'));
+                    if (therapistWithImage) {
+                        console.log('🧪 Testing image load for:', therapistWithImage.name);
+                        const testImg = new Image();
+                        testImg.onload = () => {
+                            console.log('✅ Image accessibility test passed');
+                        };
+                        testImg.onerror = () => {
+                            console.error('❌ Image accessibility test failed');
+                        };
+                        testImg.src = therapistWithImage.profilePicture;
+                    }
+                }
+
+            } catch (error) {
+                console.error('❌ Check failed:', error);
+                showResult(`❌ Failed to check profile picture status: ${error.message}<br><br>
+                    <strong>Possible causes:</strong><br>
+                    • Database connection issues<br>
+                    • Incorrect collection ID<br>
+                    • Permission problems`, 'error');
+            }
+        }
+
+        // Auto-run check on load with proper initialization
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (initializeAppwrite()) {
+                    setTimeout(runCompleteCheck, 500);
+                } else {
+                    showResult('❌ Appwrite SDK failed to load. Please refresh the page.', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

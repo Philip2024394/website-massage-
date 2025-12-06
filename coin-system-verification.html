@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin System Flow Verification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 700;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .card-content {
+            padding: 25px;
+        }
+        .flow-step {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .flow-step h4 {
+            margin: 0 0 15px;
+            color: #495057;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-ok { 
+            background: #d4edda; 
+            color: #155724; 
+            border-left: 5px solid #28a745;
+        }
+        .status-check { 
+            background: #fff3cd; 
+            color: #856404; 
+            border-left: 5px solid #ffc107;
+        }
+        .status-missing { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-left: 5px solid #dc3545;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+        }
+        .implementation-list {
+            margin: 15px 0;
+            padding-left: 0;
+        }
+        .implementation-list li {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            list-style: none;
+        }
+        .coin-flow-diagram {
+            background: linear-gradient(135deg, #fff9e6, #fff3cd);
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .flow-arrow {
+            text-align: center;
+            font-size: 2rem;
+            margin: 15px 0;
+            color: #ffc107;
+        }
+        .emoji {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+        .navigation-links {
+            background: #343a40;
+            padding: 25px;
+            text-align: center;
+        }
+        .nav-link {
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            margin: 0 15px;
+            display: inline-block;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(111, 66, 193, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">🪙</span>Coin System Flow Verification</h1>
+            <p>Complete therapist coin rewards & cash out system check</p>
+        </div>
+
+        <div class="status-grid">
+            <!-- Implementation Status -->
+            <div class="status-card">
+                <div class="card-header">
+                    <span class="emoji">✅</span>
+                    Implementation Status
+                </div>
+                <div class="card-content">
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">📱</span>Therapist Dashboard - ADDED</h4>
+                        <ul class="implementation-list">
+                            <li>✅ Coin History button in Analytics section</li>
+                            <li>✅ Coin Shop button in Analytics section</li>
+                            <li>✅ Coin History in side drawer menu</li>
+                            <li>✅ Coin Shop in side drawer menu</li>
+                            <li>✅ Navigation via onNavigate prop</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">📊</span>CoinHistoryPage.tsx - EXISTS</h4>
+                        <ul class="implementation-list">
+                            <li>✅ Transaction history display</li>
+                            <li>✅ Filter by earn/spend/expire</li>
+                            <li>✅ Expiration warnings</li>
+                            <li>✅ FIFO coin management</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">🛍️</span>CoinShopPage.tsx - EXISTS</h4>
+                        <ul class="implementation-list">
+                            <li>✅ Redemption marketplace</li>
+                            <li>✅ Cash out functionality</li>
+                            <li>✅ Discount rewards</li>
+                            <li>✅ Balance management</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coin Flow Diagram -->
+            <div class="status-card">
+                <div class="card-header">
+                    <span class="emoji">🔄</span>
+                    Complete Coin Flow
+                </div>
+                <div class="card-content">
+                    <div class="coin-flow-diagram">
+                        <div style="text-align: center;">
+                            <h4><span class="emoji">👨‍⚕️</span>THERAPIST EARNS COINS</h4>
+                            <p>• Completing bookings (+5 coins)<br>• Daily sign-in bonus (+2 coins)<br>• Referral rewards (+100 coins)</p>
+                        </div>
+                        
+                        <div class="flow-arrow">⬇️</div>
+                        
+                        <div style="text-align: center;">
+                            <h4><span class="emoji">📊</span>VIEW COIN HISTORY</h4>
+                            <p>• Dashboard → Analytics → Coin History<br>• Side Menu → Coin History<br>• Track all transactions & expiration</p>
+                        </div>
+                        
+                        <div class="flow-arrow">⬇️</div>
+                        
+                        <div style="text-align: center;">
+                            <h4><span class="emoji">🛍️</span>REDEEM IN COIN SHOP</h4>
+                            <p>• Dashboard → Analytics → Coin Shop<br>• Side Menu → Coin Shop<br>• Cash out or get discounts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Instructions -->
+            <div class="status-card">
+                <div class="card-header">
+                    <span class="emoji">🧪</span>
+                    Testing Instructions
+                </div>
+                <div class="card-content">
+                    <div class="flow-step">
+                        <h4><span class="emoji">1️⃣</span>Login as Therapist</h4>
+                        <p>Go to <code>http://localhost:3004/</code> and login to therapist dashboard</p>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4><span class="emoji">2️⃣</span>Check Analytics Section</h4>
+                        <p>Navigate to <strong>Analytics</strong> tab and verify:</p>
+                        <ul>
+                            <li>📊 Coin History button is visible</li>
+                            <li>🪙 Coin Shop button is visible</li>
+                            <li>Both buttons navigate correctly</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4><span class="emoji">3️⃣</span>Check Side Menu</h4>
+                        <p>Open side drawer menu and verify:</p>
+                        <ul>
+                            <li>📊 Coin History menu item</li>
+                            <li>🪙 Coin Shop menu item</li>
+                            <li>Proper navigation from menu</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4><span class="emoji">4️⃣</span>Test Navigation</h4>
+                        <p>Click each coin button and verify pages load:</p>
+                        <ul>
+                            <li>Coin History → Shows transaction list</li>
+                            <li>Coin Shop → Shows redemption options</li>
+                            <li>Back navigation works properly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Components -->
+            <div class="status-card">
+                <div class="card-header">
+                    <span class="emoji">⚙️</span>
+                    System Components
+                </div>
+                <div class="card-content">
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">🔧</span>Backend Services</h4>
+                        <ul class="implementation-list">
+                            <li>✅ coinService.ts - Full Appwrite integration</li>
+                            <li>✅ coinHooks.ts - Easy integration hooks</li>
+                            <li>✅ Award coins for bookings/referrals</li>
+                            <li>✅ FIFO expiration management (12 months)</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">🎯</span>Frontend Components</h4>
+                        <ul class="implementation-list">
+                            <li>✅ CoinHistoryPage.tsx - Transaction history</li>
+                            <li>✅ CoinShopPage.tsx - Redemption marketplace</li>
+                            <li>✅ ReferralPage.tsx - Invite friends system</li>
+                            <li>✅ AppRouter.tsx - Navigation routing</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step status-ok">
+                        <h4><span class="emoji">🔗</span>Dashboard Integration</h4>
+                        <ul class="implementation-list">
+                            <li>✅ TherapistDashboardPage - Coin buttons added</li>
+                            <li>✅ CustomerDashboardPage - Has coin features</li>
+                            <li>✅ PlaceDashboardPage - Has coin features</li>
+                            <li>✅ All dashboards connected to coin system</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expected Results -->
+            <div class="status-card">
+                <div class="card-header">
+                    <span class="emoji">🎯</span>
+                    Expected Results
+                </div>
+                <div class="card-content">
+                    <div class="flow-step">
+                        <h4><span class="emoji">✅</span>Coin History Page Should Show:</h4>
+                        <ul>
+                            <li>📊 Complete transaction history</li>
+                            <li>🎯 Filter options (earn/spend/expire)</li>
+                            <li>⚠️ Expiration warnings</li>
+                            <li>💰 Current coin balance</li>
+                            <li>📈 Earning statistics</li>
+                        </ul>
+                    </div>
+
+                    <div class="flow-step">
+                        <h4><span class="emoji">✅</span>Coin Shop Page Should Show:</h4>
+                        <ul>
+                            <li>🛍️ Available redemption options</li>
+                            <li>💸 Cash out functionality</li>
+                            <li>🎫 Discount vouchers</li>
+                            <li>💳 Payment processing</li>
+                            <li>📋 Redemption history</li>
+                        </ul>
+                    </div>
+
+                    <button class="test-button" onclick="openTherapistDashboard()">
+                        🚀 Test Therapist Dashboard Coin Features
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-links">
+            <a href="http://localhost:3004/" class="nav-link" target="_blank">
+                👨‍⚕️ Therapist Dashboard
+            </a>
+            <a href="http://localhost:3004/" class="nav-link" target="_blank">
+                📊 Test Coin History
+            </a>
+            <a href="http://localhost:3004/" class="nav-link" target="_blank">
+                🛍️ Test Coin Shop
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function openTherapistDashboard() {
+            window.open('http://localhost:3004/', '_blank');
+        }
+
+        // Auto-log system status
+        console.log('🪙 Coin System Verification Tool');
+        console.log('✅ Status: Therapist Dashboard coin buttons ADDED');
+        console.log('📊 Coin History: Available in Analytics & Side Menu');
+        console.log('🛍️ Coin Shop: Available in Analytics & Side Menu');
+        console.log('🔄 Flow: Earn → View History → Redeem in Shop');
+        console.log('🎯 Ready for testing at http://localhost:3004/');
+    </script>
+</body>
+</html>
