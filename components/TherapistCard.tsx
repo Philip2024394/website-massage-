@@ -939,11 +939,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 min-w-0 pt-14 sm:pt-16 pb-4">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{therapist.name}</h3>
-                            {locationCity && (
-                                <p className="text-[11px] font-medium text-gray-700 mt-0.5">Therapist – {locationCity}</p>
-                            )}
-                            <div className="mt-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
+                            <div>
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
