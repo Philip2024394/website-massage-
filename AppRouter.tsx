@@ -714,6 +714,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🔥 Navigating to massageJobs');
             setPage('massageJobs');
         },
+        onHotelPortalClick: () => {
+            console.log('🔥 Navigating to hotelDashboard');
+            setPage('hotelDashboard');
+        },
+        onVillaPortalClick: () => {
+            console.log('🔥 Navigating to villaDashboard');
+            setPage('villaDashboard');
+        },
         onTherapistPortalClick: () => {
             console.log('🔥 Navigating to therapistLogin');
             setPage('therapistLogin');
@@ -726,13 +734,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🔥 Navigating to facialPortal');
             setPage('facialPortal');
         },
+        onAgentPortalClick: () => {
+            console.log('🔥 Navigating to agentPortal');
+            setPage('agentPortal');
+        },
         onCustomerPortalClick: () => {
             console.log('🔥 Customer portal disabled → redirecting to profile');
-            setPage('profile');
+            setPage('customerPortal');
         },
         onAdminPortalClick: () => {
             console.log('🔥 Admin portal removed → redirecting to home');
-            setPage('home');
+            setPage('adminDashboard');
         },
         onTermsClick: () => {
             console.log('🔥 Navigating to serviceTerms');

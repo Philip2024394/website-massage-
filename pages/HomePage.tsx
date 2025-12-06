@@ -895,9 +895,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 </div>
                 </PageContainer>
             </header>
-            <main className="w-full max-w-full overflow-x-hidden">
-            <PageContainer className="pb-24 max-w-full">
-            
+
             {/* Global App Drawer - Chrome Safe Rendering */}
             <React19SafeWrapper condition={isMenuOpen}>
                 <AppDrawer
@@ -926,18 +924,15 @@ const HomePage: React.FC<HomePageProps> = ({
                 />
             </React19SafeWrapper>
 
-            </PageContainer>
-            </main>
-            <main>
             {/* Fixed Hero Section - Always Visible */}
             <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
-                <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-4">
+                <PageContainer className="px-3 sm:px-4 pt-3 pb-3">
                     {/* Hero Section - Optimized Layout */}
-                    <div className="space-y-4 max-w-6xl mx-auto">
+                    <div className="space-y-3 max-w-6xl mx-auto">
                         {/* Location Display */}
                         <div className="w-full">
                             {userLocation ? (
-                                <div className="flex flex-col items-center gap-0.5 py-1">
+                                <div className="flex flex-col items-center gap-0.5">
                                 <div className="flex items-center justify-center gap-2">
                                     <svg 
                                         className="w-4 h-4 text-gray-600" 
@@ -1013,9 +1008,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     </div>
 
                     {/* City Dropdown + Facial Button - Responsive Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center max-w-2xl mx-auto">
-                        {/* City Dropdown - Takes full width on mobile, flexible on desktop */}
-                        <div className="relative w-full z-20">
+                    <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center max-w-2xl mx-auto">
+                        {/* City Dropdown - Flexible width */}
+                        <div className="relative flex-1 min-w-0 z-20">
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={setSelectedCity}
@@ -1029,31 +1024,21 @@ const HomePage: React.FC<HomePageProps> = ({
                             />
                         </div>
                         
-                        {/* Facial Button - Centered on mobile, aligned on desktop */}
-                        <div className="flex justify-center sm:justify-end">
+                        {/* Facial Button - Standard Orange Button */}
+                        <div className="flex justify-center sm:justify-end flex-shrink-0">
                             <button
                                 onClick={() => {
-                                    console.log('🏨 Facial button clicked - navigating to facialProviders');
-                                    onNavigate?.('facialProviders');
+                                    console.log('🏨 Facial button clicked - switching to facials tab');
+                                    setActiveTab('facials');
                                 }}
-                                className="inline-flex p-1 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 cursor-pointer items-center justify-center flex-shrink-0 hover:opacity-90 active:opacity-75 transition-opacity touch-manipulation"
-                                style={{ 
-                                    WebkitTapHighlightColor: 'rgba(255, 165, 0, 0.3)',
-                                    touchAction: 'manipulation',
-                                    userSelect: 'none',
-                                    WebkitUserSelect: 'none'
-                                } as React.CSSProperties}
+                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
                                 title="Facials Indonesia"
                                 aria-label="Browse Facial Spas"
                             >
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
-                                    alt="Facials Indonesia"
-                                    className="select-none transition-opacity hover:opacity-90 h-[120px] w-[120px] sm:h-[140px] sm:w-[140px] object-contain pointer-events-none"
-                                    loading="lazy"
-                                    draggable={false}
-                                    style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
-                                />
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{language === 'id' ? 'Facial' : 'Facials'}</span>
                             </button>
                         </div>
                     </div>
@@ -1062,6 +1047,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
             
             {/* Scrollable Content Area */}
+            <main className="w-full max-w-full overflow-x-hidden">
             <PageContainer className="px-3 sm:px-4 pt-4 pb-24">
                 {/* Content changes based on active tab */}
                 {activeTab === 'home' && (
@@ -1369,6 +1355,38 @@ const HomePage: React.FC<HomePageProps> = ({
                                 </div>
                             );
                         })()}
+                    </div>
+                )}
+
+                {/* Facials Tab - Show facial places */}
+                {activeTab === 'facials' && (
+                    <div className="max-w-full overflow-x-hidden">
+                        <div className="mb-3 text-center">
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{language === 'id' ? 'Klinik Facial' : 'Facial Clinics'}</h3>
+                            <p className="text-gray-600">
+                                {selectedCity === 'all' 
+                                    ? (language === 'id' ? 'Temukan klinik facial terbaik di seluruh Indonesia' : 'Find the best facial clinics across Indonesia')
+                                    : (language === 'id' ? `Perawatan facial premium di ${selectedCity}` : `Premium facial treatments in ${selectedCity}`)
+                                }
+                            </p>
+                        </div>
+                        
+                        <div className="text-center py-12">
+                            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                {language === 'id' ? 'Segera Hadir' : 'Coming Soon'}
+                            </h4>
+                            <p className="text-gray-600 mb-4">
+                                {language === 'id' 
+                                    ? 'Klinik facial premium akan segera tersedia di area Anda. Pantau terus!'
+                                    : 'Premium facial clinics will be available in your area soon. Stay tuned!'
+                                }
+                            </p>
+                        </div>
                     </div>
                 )}
 

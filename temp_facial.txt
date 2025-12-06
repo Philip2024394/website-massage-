@@ -67,7 +67,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
 }) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [localSelectedCity, setLocalSelectedCity] = useState<string>(selectedCity || 'all');
-    const [activeTab, setActiveTab] = useState('facials');
+    const [activeTab, setActiveTab] = useState('home'); // Track active tab like HomePage
     
     // Update local city when prop changes
     useEffect(() => {
@@ -76,9 +76,10 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
         }
     }, [selectedCity]);
 
-    // Auto-detect city from user location
+    // Auto-detect city from user location (same as HomePage)
     useEffect(() => {
         if (userLocation && userLocation.lat && userLocation.lng) {
+            // Find the closest Indonesian city to user's location
             const detectedCity = findCityByCoordinates(userLocation.lat, userLocation.lng);
             if (detectedCity && detectedCity.name !== localSelectedCity && localSelectedCity === 'all') {
                 console.log('🎯 FacialProvidersPage: Auto-detected city from user location:', detectedCity.name);
@@ -103,7 +104,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
     // Filter facial places by selected city OR by 15km radius if user location available
     const filteredFacialPlaces = (() => {
         // Mock facial place for design purposes
-        const mockFacialPlace: any = {
+        const mockFacialPlace: Place = {
             $id: 'mock-facial-001',
             id: 'mock-facial-001',
             name: 'Bali Glow Facial Spa',
@@ -133,6 +134,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
         // If user has location, filter by 15km radius
         if (userLocation && userLocation.lat && userLocation.lng && localSelectedCity !== 'all') {
             const filtered = facialPlaces.filter(place => {
+                // Parse coordinates from place
                 let placeCoords = { lat: 0, lng: 0 };
                 if (place.coordinates) {
                     try {
@@ -147,10 +149,12 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                     }
                 }
                 
+                // Skip if no valid coordinates
                 if (!placeCoords.lat || !placeCoords.lng) {
                     return false;
                 }
                 
+                // Calculate distance
                 const distance = calculateDistance(
                     userLocation.lat,
                     userLocation.lng,
@@ -159,8 +163,11 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                 );
                 
                 console.log(`📍 ${place.name}: ${distance.toFixed(2)}km away`);
+                
+                // Only show places within 15km
                 return distance <= 15;
             });
+            // Add mock place at the beginning
             return [mockFacialPlace as any, ...filtered];
         }
         
@@ -169,10 +176,11 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
             const filtered = facialPlaces.filter(place => {
                 return place.location === localSelectedCity || place.location?.includes(localSelectedCity);
             });
+            // Add mock place at the beginning
             return [mockFacialPlace as any, ...filtered];
         }
         
-        // Show all if "All Indonesia" selected
+        // Show all if "All Indonesia" selected (including mock)
         return [mockFacialPlace as any, ...facialPlaces];
     })();
 
@@ -184,12 +192,11 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
         <div className="min-h-screen bg-gray-50 w-full max-w-[100vw] overflow-x-hidden">
             <PageNumberBadge pageNumber={400} pageName="FacialProviders" isLocked={false} />
             
-            {/* Header */}
+            {/* Header - Same as HomePage */}
             <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
-                <PageContainer className="py-2 sm:py-3 max-w-full">
+                <PageContainer className="py-3 sm:py-4 max-w-full">
                 <div className="flex justify-between items-center max-w-full">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
-                        {/* Simplified brand markup to prevent production clipping of last letter */}
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
@@ -219,159 +226,131 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                             </span>
                         </button>
 
-                        <button onClick={() => {
-                            console.log('🍔 Burger menu clicked! Current drawerOpen:', drawerOpen);
-                            console.log('🍔 Setting drawerOpen to true');
-                            setDrawerOpen(true);
-                            console.log('🍔 After setting - drawerOpen should be true');
-                        }} title="Menu" className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
-                           <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <button 
+                            onClick={() => setDrawerOpen(true)}
+                            title="Menu" 
+                            className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                        >
+                            <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
                     </div>
                 </div>
                 </PageContainer>
             </header>
+            <main className="w-full max-w-full overflow-x-hidden">
+            <PageContainer className="pb-24 max-w-full">
 
-            {/* Sticky Hero Section - Compact */}
-            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
-                <PageContainer className="px-3 sm:px-4 pt-4 sm:pt-5 pb-4">
-                    <div className="space-y-4 max-w-6xl mx-auto">
-                        {/* Location Display */}
-                        <div className="w-full">
-                            {userLocation ? (
-                                <div className="flex flex-col items-center gap-0.5 py-1">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <svg 
-                                            className="w-4 h-4 text-gray-600" 
-                                            fill="none" 
-                                            viewBox="0 0 24 24" 
-                                            stroke="currentColor" 
-                                            strokeWidth={2}
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span className="text-sm font-semibold text-gray-800">
-                                            {(() => {
-                                                if (!userLocation.address || userLocation.address.trim() === '') {
-                                                    return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                                }
-                                                try {
-                                                    const parts = String(userLocation.address).split(',').map(p => p.trim());
-                                                    return parts.slice(-2).join(', ');
-                                                } catch (e) {
-                                                    return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
-                                                }
-                                            })()}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-center gap-1">
-                                        <span className="text-xs font-medium text-orange-600">
-                                            {localSelectedCity === 'all' ? 'All Indonesia' : (() => {
-                                                for (const category of INDONESIAN_CITIES_CATEGORIZED) {
-                                                    const foundCity = category.cities.find(city => city.name === localSelectedCity);
-                                                    if (foundCity) {
-                                                        return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
-                                                    }
-                                                }
-                                                return localSelectedCity;
-                                            })()}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 font-medium">
-                                        {language === 'id' ? 'Pusat Klinik Facial Indonesia' : 'Indonesia\'s Facial Clinic Hub'}
-                                    </p>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center gap-1 py-1">
-                                    <p className="text-sm text-gray-600 text-center">
-                                        {language === 'id' ? 'Temukan klinik facial premium' : 'Discover premium facial clinics'}
-                                    </p>
-                                    <p className="text-xs text-gray-500 font-medium">
-                                        {language === 'id' ? 'Pusat Klinik Facial Indonesia' : 'Indonesia\'s Facial Clinic Hub'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Toggle Buttons - Standard Height (44px min) */}
-                        <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
-                            <button 
-                                onClick={() => {
-                                    console.log('Switching to home service tab');
-                                    setActiveTab('home');
-                                }} 
-                                className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+            {/* Location Display & City Selector - Same as HomePage */}
+            <div className="mb-3 w-full mt-4 px-4">
+                {userLocation ? (
+                    <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center justify-center gap-2">
+                            <svg 
+                                className="w-5 h-5 text-orange-500" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor" 
+                                strokeWidth={2}
                             >
-                                <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{t?.home?.homeServiceTab || 'Home Service'}</span>
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    console.log('Switching to massage places tab');
-                                    setActiveTab('places');
-                                }} 
-                                className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                            >
-                                <Building className="w-4 h-4 flex-shrink-0" />
-                                <span className="whitespace-nowrap overflow-hidden text-ellipsis">{t?.home?.massagePlacesTab || 'Massage Places'}</span>
-                            </button>
-                        </div>
-
-                        {/* City Dropdown + Facial Button - Responsive Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center max-w-2xl mx-auto">
-                            {/* City Dropdown */}
-                            <div className="relative w-full z-20">
-                                <CityLocationDropdown
-                                    selectedCity={localSelectedCity}
-                                    onCityChange={handleCityChange}
-                                    placeholder={localSelectedCity === 'all' ? 
-                                        (language === 'id' ? '🇮🇩 Seluruh Indonesia' : '🇮🇩 All Indonesia') : 
-                                        '📍 Select Different City'
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-gray-800">
+                                {(() => {
+                                    if (!userLocation.address || userLocation.address.trim() === '') {
+                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
                                     }
-                                    includeAll={true}
-                                    showLabel={false}
-                                    className="w-full"
-                                />
-                            </div>
-                            
-                            {/* Facial Button - Compact size (120x120) */}
-                            <div className="flex justify-center sm:justify-end">
-                                <button
-                                    className="inline-flex p-1 bg-transparent border-0 outline-none focus:outline-none hover:opacity-90 active:opacity-75 transition-opacity"
-                                    style={{ 
-                                        WebkitTapHighlightColor: 'rgba(255, 165, 0, 0.3)',
-                                        touchAction: 'manipulation',
-                                        userSelect: 'none'
-                                    } as React.CSSProperties}
-                                    title="Facials Indonesia"
-                                    aria-label="Facials Indonesia - Current Page"
-                                >
-                                    <img 
-                                        src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
-                                        alt="Facials Indonesia"
-                                        className="select-none transition-opacity hover:opacity-90 h-[120px] w-[120px] sm:h-[140px] sm:w-[140px] object-contain pointer-events-none"
-                                        loading="lazy"
-                                        draggable={false}
-                                        style={{ userSelect: 'none', WebkitUserSelect: 'none' } as React.CSSProperties}
-                                    />
-                                </button>
-                            </div>
+                                    try {
+                                        const parts = String(userLocation.address).split(',').map(p => p.trim());
+                                        return parts.slice(-2).join(', ');
+                                    } catch (e) {
+                                        return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
+                                    }
+                                })()}
+                            </span>
                         </div>
+                        <div className="flex items-center justify-center gap-1">
+                            <span className="text-xs font-medium text-orange-600">
+                                {localSelectedCity === 'all' ? 'All Indonesia' : (() => {
+                                    // Find city to show emoji
+                                    for (const category of INDONESIAN_CITIES_CATEGORIZED) {
+                                        const foundCity = category.cities.find(city => city.name === localSelectedCity);
+                                        if (foundCity) {
+                                            return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
+                                        }
+                                    }
+                                    return localSelectedCity;
+                                })()}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 font-medium">{language === 'id' ? 'Pusat Klinik Facial Indonesia' : 'Indonesia\'s Facial Clinic Hub'}</p>
                     </div>
-                </PageContainer>
+                ) : (
+                    <div className="flex flex-col items-center gap-2">
+                        <p className="text-sm text-gray-600 text-center">{language === 'id' ? 'Temukan klinik facial premium di seluruh Indonesia' : 'Discover premium facial clinics across Indonesia'}</p>
+                        <p className="text-xs text-gray-500 font-medium">{language === 'id' ? 'Pusat Klinik Facial Indonesia' : 'Indonesia\'s Facial Clinic Hub'}</p>
+                    </div>
+                )}
             </div>
-            
-            {/* Scrollable Content Area */}
-            <PageContainer className="px-3 sm:px-4 pt-4 pb-24">
-                {/* Content changes based on active tab */}
-                {activeTab === 'facials' && (
-                    <div>
-                        {/* Facial Places List */}
-                        <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                                {language === 'id' ? 'Klinik Facial' : 'Facial Clinics'}
-                            </h3>
+
+            {/* Toggle Tabs (Home Service / Massage Places) - Same as HomePage */}
+            <div className="px-2 sm:px-4 mb-4">
+                <div className="flex bg-gray-200 rounded-full p-1 mb-3">
+                    <button 
+                        onClick={() => {
+                            setActiveTab('home');
+                            onNavigate?.('home');
+                        }} 
+                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                    >
+                        <HomeIcon className="w-4 h-4 flex-shrink-0" />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{t?.home?.homeServiceTab || 'Home Service'}</span>
+                    </button>
+                    <button 
+                        onClick={() => {
+                            setActiveTab('places');
+                            onNavigate?.('home');
+                        }} 
+                        className={`w-1/2 py-2 px-2 sm:px-4 rounded-full flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                    >
+                        <Building className="w-4 h-4 flex-shrink-0" />
+                        <span className="whitespace-nowrap overflow-hidden text-ellipsis">{t?.home?.massagePlacesTab || 'Massage Places'}</span>
+                    </button>
+                </div>
+                <div className="space-y-2 mb-4 w-full max-w-full overflow-visible">
+                    <div className="flex flex-wrap items-center w-full max-w-full gap-2">
+                        <div className="relative flex-1 min-w-0 max-w-[280px] z-20">
+                            <CityLocationDropdown
+                                selectedCity={localSelectedCity}
+                                onCityChange={handleCityChange}
+                                placeholder={localSelectedCity === 'all' ? '🇮🇩 All Indonesia' : '📍 Select Different City'}
+                                includeAll={true}
+                                showLabel={false}
+                                className="w-full min-w-0 max-w-full"
+                            />
+                        </div>
+                        <button
+                            className="inline-flex p-0 bg-transparent border-0 outline-none focus:outline-none active:outline-none ring-0 focus:ring-0 items-center justify-center flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+                            title="Facials Indonesia - Current Page"
+                            aria-label="Facials Indonesia - Current Page"
+                        >
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/facials%20indonisea.png?updatedAt=1764934744400"
+                                alt="Facials Indonesia"
+                                className="select-none h-[168px] w-[168px] object-contain"
+                                loading="lazy"
+                                draggable={false}
+                            />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Facial Places List */}
+            <div className="px-2 sm:px-4 pb-24">
+                <div className="mb-6 text-center">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{language === 'id' ? 'Klinik Facial' : 'Facial Clinics'}</h3>
                     <p className="text-gray-600">
                         {localSelectedCity === 'all' 
                             ? language === 'id' 
@@ -391,9 +370,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                         </div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                            {language === 'id' ? 'Tidak Ada Klinik Facial' : 'No Facial Clinics Found'}
-                        </h4>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-2">{language === 'id' ? 'Tidak Ada Klinik Facial' : 'No Facial Clinics Found'}</h4>
                         <p className="text-gray-600 mb-4">
                             {localSelectedCity === 'all' 
                                 ? language === 'id' 
@@ -412,7 +389,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-3 max-w-full overflow-hidden">
+                    <div className="space-y-4 max-w-full overflow-hidden">
                         {filteredFacialPlaces.map((place: Place) => (
                             <FacialPlaceCard
                                 key={place.$id || place.id}
@@ -431,47 +408,9 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                         ))}
                     </div>
                 )}
-                    </div>
-                )}
+            </div>
 
-                {/* Home Service Tab - Show therapists */}
-                {activeTab === 'home' && (
-                    <div className="text-center py-12">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                            {language === 'id' ? 'Terapis Home Service' : 'Home Service Therapists'}
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                            {language === 'id' ? 'Silakan kembali ke halaman utama untuk melihat terapis' : 'Please return to the main page to view therapists'}
-                        </p>
-                        <button
-                            onClick={() => onNavigate?.('home')}
-                            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold"
-                        >
-                            {language === 'id' ? 'Ke Halaman Utama' : 'Go to Home Page'}
-                        </button>
-                    </div>
-                )}
-
-                {/* Massage Places Tab - Show places */}
-                {activeTab === 'places' && (
-                    <div className="text-center py-12">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                            {language === 'id' ? 'Tempat Pijat' : 'Massage Places'}
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                            {language === 'id' ? 'Silakan kembali ke halaman utama untuk melihat tempat pijat' : 'Please return to the main page to view massage places'}
-                        </p>
-                        <button
-                            onClick={() => onNavigate?.('home')}
-                            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold"
-                        >
-                            {language === 'id' ? 'Ke Halaman Utama' : 'Go to Home Page'}
-                        </button>
-                    </div>
-                )}
-            </PageContainer>
-
-            {/* Drawer */}
+            {/* Drawer - Same as HomePage */}
             <AppDrawer
                 isHome={false}
                 isOpen={drawerOpen}
@@ -493,6 +432,8 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                 therapists={therapists || []}
                 places={places || []}
             />
+            </PageContainer>
+            </main>
         </div>
     );
 };
