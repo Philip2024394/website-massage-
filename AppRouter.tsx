@@ -104,6 +104,7 @@ interface AppRouterProps {
     loggedInCustomer: any;
     therapists: Therapist[];
     places: Place[];
+    facialPlaces: Place[];
     hotels: any[];
     userLocation: UserLocation | null;
     selectedMassageType: string | null;
@@ -190,6 +191,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         loggedInCustomer,
         therapists,
         places,
+        facialPlaces,
         hotels,
         userLocation,
         selectedMassageType,
@@ -852,6 +854,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 loggedInCustomer={loggedInCustomer}
                 therapists={therapists}
                 places={places}
+                facialPlaces={facialPlaces}
                 hotels={hotels}
                 userLocation={userLocation}
                 onSetUserLocation={handleSetUserLocation}

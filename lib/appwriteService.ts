@@ -1369,6 +1369,94 @@ export const placeService = {
 };
 
 // ================================
+// Facial Place Service
+// ================================
+export const facialPlaceService = {
+    async getAll(): Promise<any[]> {
+        try {
+            // Check if facial_places collection exists
+            if (!APPWRITE_CONFIG.collections.facial_places || APPWRITE_CONFIG.collections.facial_places === '') {
+                console.log('⚠️ Facial places collection disabled - returning empty array');
+                return [];
+            }
+            
+            console.log('📋 Fetching all FACIAL PLACES from collection:', APPWRITE_CONFIG.collections.facial_places);
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.facial_places
+            );
+            console.log('✅ Fetched FACIAL PLACES:', response.documents.length);
+            
+            // Map Appwrite attributes to camelCase for frontend compatibility
+            const mappedFacialPlaces = response.documents.map((fp: any) => {
+                console.log(`  💆 ${fp.name} - category: ${fp.category}, ID: ${fp.$id}`);
+                
+                return {
+                    ...fp,
+                    // Map to Place-like structure for compatibility with FacialPlaceCard
+                    id: fp.$id,
+                    name: fp.name || 'Unnamed Facial Spa',
+                    mainImage: fp.mainImage || fp.mainimage,
+                    profilePicture: fp.mainImage || fp.mainimage, // Use mainImage as profile picture
+                    address: fp.address,
+                    location: fp.address, // Map address to location field
+                    description: fp.description,
+                    websiteUrl: fp.websiteurl,
+                    starRate: fp.starrate,
+                    rating: fp.starrate ? parseFloat(fp.starrate) : 0,
+                    distanceKm: fp.distancekm,
+                    category: fp.category,
+                    isLive: true, // Assume all facial places from DB are live
+                    // Parse JSON fields
+                    facialTypes: (() => {
+                        const raw = fp.facialtypes;
+                        if (!raw) return [];
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing facial types:', e);
+                            return [];
+                        }
+                    })(),
+                    facialServices: (() => {
+                        const raw = fp.facialservices;
+                        if (!raw) return [];
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing facial services:', e);
+                            return [];
+                        }
+                    })(),
+                    prices: (() => {
+                        const raw = fp.prices;
+                        if (!raw) return {};
+                        try {
+                            return typeof raw === 'string' ? JSON.parse(raw) : raw;
+                        } catch (e) {
+                            console.error('Error parsing prices:', e);
+                            return {};
+                        }
+                    })(),
+                    openingTime: fp.openclosetime,
+                    closingTime: fp.openclosetime,
+                    discounted: fp.discounted,
+                    equipmentList: fp.equipmentList,
+                    popularityScore: fp.popularityScore,
+                    averageSessionDuration: fp.averageSessionDuration
+                };
+            });
+            
+            return mappedFacialPlaces;
+        } catch (error) {
+            console.error('❌ Error fetching facial places:', error);
+            return [];
+        }
+    }
+};
+
+// ================================
 // Hotel Service
 // ================================
 export const hotelService = {

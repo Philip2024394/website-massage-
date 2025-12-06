@@ -25,15 +25,17 @@ export const useAllHooks = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
-                const { therapists, places, hotels } = await dataFetching.fetchPublicData();
+                const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
                 state.setTherapists(therapists);
                 state.setPlaces(places);
+                state.setFacialPlaces(facialPlaces);
                 state.setHotels(hotels);
             } catch (error) {
                 console.error('❌ Failed to initialize app data:', error);
                 // Set empty arrays to prevent loading state
                 state.setTherapists([]);
                 state.setPlaces([]);
+                state.setFacialPlaces([]);
                 state.setHotels([]);
             }
         };

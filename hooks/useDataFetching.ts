@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Therapist, Place } from '../types';
-import { therapistService, placeService, hotelService } from '../lib/appwriteService';
+import { therapistService, placeService, hotelService, facialPlaceService } from '../lib/appwriteService';
 import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 import { robustCollectionQuery } from '../lib/robustApiWrapper';
@@ -17,6 +17,7 @@ export const useDataFetching = () => {
         therapists: Therapist[];
         places: Place[];
         hotels: any[];
+        facialPlaces: Place[];
     }> => {
         try {
             setIsLoading(true);
@@ -39,6 +40,15 @@ export const useDataFetching = () => {
             );
             console.log('✅ Places data received:', placesData?.length || 0);
             
+            // Try to fetch facial places
+            console.log('🔄 Attempting to fetch facial places data...');
+            const facialPlacesData = await robustCollectionQuery(
+                () => facialPlaceService.getAll(),
+                'facial_places',
+                [] as Place[]
+            );
+            console.log('✅ Facial places data received:', facialPlacesData?.length || 0);
+            
             // Try to fetch hotels for location dropdown filtering
             console.log('🔄 Attempting to fetch hotels data...');
             const hotelsData = await robustCollectionQuery(
@@ -57,6 +67,11 @@ export const useDataFetching = () => {
                 reviewService.initializeProvider(place) as Place
             );
             
+            // Initialize review data for facial places
+            const facialPlacesWithReviews = (facialPlacesData || []).map((facialPlace: Place) => 
+                reviewService.initializeProvider(facialPlace) as Place
+            );
+            
             // Initialize review data for hotels (if needed)
             const hotelsWithReviews = (hotelsData || []).map((hotel: any) => 
                 reviewService.initializeProvider(hotel) as any
@@ -65,6 +80,7 @@ export const useDataFetching = () => {
             return {
                 therapists: therapistsWithReviews,
                 places: placesWithReviews,
+                facialPlaces: facialPlacesWithReviews,
                 hotels: hotelsWithReviews
             };
         } catch (error) {
@@ -89,6 +105,7 @@ export const useDataFetching = () => {
             return {
                 therapists: [],
                 places: [],
+                facialPlaces: [],
                 hotels: []
             };
         } finally {

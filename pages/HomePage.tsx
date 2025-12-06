@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistCard from '../components/TherapistCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
+import FacialPlaceCard from '../components/FacialPlaceCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -30,6 +31,7 @@ interface HomePageProps {
     userCoins?: UserCoins | null; // Add user coins
     therapists: any[];
     places: any[];
+    facialPlaces: any[];
     hotels: any[];
     userLocation: UserLocation | null;
     selectedCity?: string; // Add optional prop for external control
@@ -106,6 +108,7 @@ const HomePage: React.FC<HomePageProps> = ({
     loggedInCustomer,
     therapists,
     places,
+    facialPlaces,
     hotels,
     userLocation,
     selectedCity: propSelectedCity, // Get from prop
@@ -1371,22 +1374,80 @@ const HomePage: React.FC<HomePageProps> = ({
                             </p>
                         </div>
                         
-                        <div className="text-center py-12">
-                            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                            </div>
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                                {language === 'id' ? 'Segera Hadir' : 'Coming Soon'}
-                            </h4>
-                            <p className="text-gray-600 mb-4">
-                                {language === 'id' 
-                                    ? 'Klinik facial premium akan segera tersedia di area Anda. Pantau terus!'
-                                    : 'Premium facial clinics will be available in your area soon. Stay tuned!'
+                        {/* Show facial places from Appwrite */}
+                        {(() => {
+                            // Filter facial places by live status and city
+                            const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
+                                // All facial places from the collection are assumed live
+                                // Apply city filtering if not 'all'
+                                if (selectedCity === 'all') return true;
+                                
+                                // Try to match place location to selected city
+                                if (place.coordinates) {
+                                    // Handle both array [lng, lat] and object {lat, lng} formats
+                                    const placeLocation = Array.isArray(place.coordinates)
+                                        ? { lat: place.coordinates[1], lng: place.coordinates[0] }
+                                        : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
+                                    const matchedCity = matchProviderToCity(placeLocation, 25);
+                                    return matchedCity?.name === selectedCity;
                                 }
-                            </p>
-                        </div>
+                                
+                                return false;
+                            }) || []).slice();
+
+                            console.log('🔍 Facial Places on HomePage:', {
+                                total: facialPlaces?.length || 0,
+                                liveFacialPlaces: liveFacialPlaces.length,
+                                selectedCity,
+                                facialPlaceNames: liveFacialPlaces.map((p: any) => p.name)
+                            });
+                            
+                            if (liveFacialPlaces.length === 0) {
+                                return (
+                                    <div className="text-center py-12">
+                                        <div className="mb-4">
+                                            <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-500 mb-2 text-lg font-semibold">
+                                            {language === 'id' ? 'Tidak ada klinik facial tersedia' : 'No facial clinics available'}
+                                        </p>
+                                        <p className="text-sm text-gray-400">
+                                            {language === 'id' ? 'Periksa kembali untuk spa facial unggulan!' : 'Check back soon for featured facial spas!'}
+                                        </p>
+                                        <p className="text-xs text-gray-300 mt-4">
+                                            Total facial places in DB: {facialPlaces?.length || 0} | Filtered: {liveFacialPlaces.length}
+                                        </p>
+                                    </div>
+                                );
+                            }
+                            
+                            return (
+                                <div className="space-y-4 max-w-full overflow-hidden">
+                                    {liveFacialPlaces
+                                        .slice(0, 9) // Show maximum 9 facial places
+                                        .map((place: any) => {
+                                            const placeId = place.id || place.$id;
+                                            
+                                            return (
+                                                <FacialPlaceCard
+                                                    key={placeId}
+                                                    place={place}
+                                                    onRate={() => handleOpenRatingModal(place, 'place')}
+                                                    onSelectPlace={onSelectPlace}
+                                                    onNavigate={onNavigate}
+                                                    onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
+                                                    onShowRegisterPrompt={onShowRegisterPrompt}
+                                                    isCustomerLoggedIn={!!loggedInCustomer}
+                                                    t={translationsObject}
+                                                    userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                                />
+                                            );
+                                        })}
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
 

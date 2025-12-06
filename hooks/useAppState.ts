@@ -199,6 +199,7 @@ export const useAppState = () => {
   // Data state
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
+  const [facialPlaces, setFacialPlaces] = useState<Place[]>([]);
   const [hotels, setHotels] = useState<any[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -309,6 +310,7 @@ export const useAppState = () => {
     // Data
     therapists, setTherapists,
     places, setPlaces,
+    facialPlaces, setFacialPlaces,
     hotels, setHotels,
     bookings, setBookings,
     notifications, setNotifications,

@@ -410,6 +410,7 @@ const App = () => {
                     isVillaLoggedIn={state.isVillaLoggedIn}
                     therapists={state.therapists}
                     places={state.places}
+                    facialPlaces={state.facialPlaces}
                     hotels={state.hotels}
                     notifications={state.notifications}
                     bookings={state.bookings}
