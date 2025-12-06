@@ -1022,7 +1022,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return (
                 <React.Suspense fallback={<LoadingSpinner message="Loading facial spas..." />}>
                     <FacialProvidersPage
-                        facialPlaces={places}
+                        facialPlaces={facialPlaces}
                         userLocation={userLocation}
                         onSetUserLocation={() => {}}
                         onSelectPlace={(place) => {

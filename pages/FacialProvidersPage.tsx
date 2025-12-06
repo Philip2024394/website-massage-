@@ -69,6 +69,20 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
     const [localSelectedCity, setLocalSelectedCity] = useState<string>(selectedCity || 'all');
     const [activeTab, setActiveTab] = useState('facials');
     
+    // DIAGNOSTIC: Log facial places prop on mount and updates
+    useEffect(() => {
+        console.log('🎭 [FacialProvidersPage] DIAGNOSTIC - Facial places received:', {
+            count: facialPlaces?.length || 0,
+            facialPlaces: facialPlaces,
+            samplePlace: facialPlaces?.[0],
+            allImages: facialPlaces?.map(p => ({
+                name: p.name,
+                mainImage: (p as any).mainImage,
+                images: (p as any).images
+            }))
+        });
+    }, [facialPlaces]);
+    
     // Update local city when prop changes
     useEffect(() => {
         if (selectedCity) {
