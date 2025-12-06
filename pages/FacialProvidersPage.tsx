@@ -102,6 +102,13 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
 
     // Filter facial places by selected city OR by 15km radius if user location available
     const filteredFacialPlaces = (() => {
+        console.log('🔍 Facial Places Debug:', {
+            totalFacialPlaces: facialPlaces.length,
+            localSelectedCity,
+            userLocation,
+            facialPlaces: facialPlaces.map(p => ({ name: p.name, mainImage: (p as any).mainImage }))
+        });
+        
         // If user has location, filter by 15km radius
         if (userLocation && userLocation.lat && userLocation.lng && localSelectedCity !== 'all') {
             const filtered = facialPlaces.filter(place => {
