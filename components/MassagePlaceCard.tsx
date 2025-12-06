@@ -438,7 +438,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         </svg>
                     </button>
                 </div>
-                </div>
+            </div>
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
