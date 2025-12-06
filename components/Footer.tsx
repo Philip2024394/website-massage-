@@ -248,7 +248,7 @@ const Footer: React.FC<FooterProps> = ({
                         className="flex flex-col items-center justify-center flex-1 h-full"
                     >
                         <MenuIcon className="w-6 h-6 text-orange-500" />
-                        <span className="text-xs mt-1 text-black">QR Menu</span>
+                        <span className="text-xs mt-1 text-black">QR Code</span>
                     </button>
 
                     {/* Profile */}
