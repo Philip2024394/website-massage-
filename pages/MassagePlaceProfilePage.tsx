@@ -543,7 +543,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
                     // Fallback to original Massage Prices section if no social configured
                     return (
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative min-h-[400px] max-w-full">
+                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 relative h-48 max-w-full">
                             <div className="absolute inset-0">
                                 <img
                                     src="https://ik.imagekit.io/7grri5v7d/massage%20oil.png?updatedAt=1760816872135"
