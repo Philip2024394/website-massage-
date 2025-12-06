@@ -1017,10 +1017,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             <CityLocationDropdown
                                 selectedCity={selectedCity}
                                 onCityChange={setSelectedCity}
-                                placeholder={selectedCity === 'all' ? 
-                                    (translationsObject?.home?.viewingAllIndonesia || '🇮🇩 All Indonesia') : 
-                                    (translationsObject?.home?.selectDifferentCity || '📍 Select Different City')
-                                }
+                                placeholder={translationsObject?.home?.viewingAllIndonesia || '🇮🇩 All Indonesia'}
                                 includeAll={true}
                                 showLabel={false}
                                 className="w-full"
