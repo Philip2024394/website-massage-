@@ -360,19 +360,67 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                 {/* Content changes based on active tab */}
                 {activeTab === 'facials' && (
                     <div>
+                        {/* SEO-Optimized Header Section */}
+                        <div className="mb-6 text-center">
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                                {language === 'id' ? 'Klinik Facial & Perawatan Wajah Profesional Indonesia' : 'Professional Facial Clinics & Skincare Centers Indonesia'}
+                            </h1>
+                            <h2 className="text-lg sm:text-xl font-semibold text-orange-600 mb-3">
+                                {language === 'id' 
+                                    ? 'Perawatan Kulit Premium - Microdermabrasion, Anti-Aging, Deep Cleansing'
+                                    : 'Premium Skincare Treatments - Microdermabrasion, Anti-Aging, Deep Cleansing'
+                                }
+                            </h2>
+                            <p className="text-gray-700 text-sm sm:text-base max-w-4xl mx-auto mb-4 leading-relaxed">
+                                {language === 'id' 
+                                    ? `Direktori terlengkap klinik kecantikan & spa facial di Indonesia. Temukan ${filteredFacialPlaces.length} klinik facial profesional untuk perawatan wajah berjerawat, flek hitam, pencerah kulit, anti-penuaan, hydrating facial, chemical peeling, dan microdermabrasion. Layanan perawatan kulit wajah oleh terapis kecantikan bersertifikat di ${localSelectedCity === 'all' ? 'seluruh Indonesia' : localSelectedCity}.`
+                                    : `Indonesia's most comprehensive facial clinic & beauty spa directory. Discover ${filteredFacialPlaces.length} professional facial clinics for acne treatment, dark spot removal, skin brightening, anti-aging, hydrating facials, chemical peeling, and microdermabrasion. Professional skincare services by certified beauty therapists in ${localSelectedCity === 'all' ? 'all of Indonesia' : localSelectedCity}.`
+                                }
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-2 text-xs sm:text-sm text-gray-600 mb-4">
+                                {language === 'id' ? (
+                                    <>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Facial Acne</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Perawatan Flek Hitam</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Pencerah Wajah</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Anti-Aging</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Microdermabrasion</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Chemical Peeling</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Hydrating Facial</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Deep Cleansing</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Korean Skincare</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Facial Whitening</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Acne Treatment</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Dark Spot Removal</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Skin Brightening</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Anti-Aging</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Microdermabrasion</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Chemical Peeling</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Hydrating Facial</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Deep Cleansing</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Korean Skincare</span>
+                                        <span className="bg-orange-50 px-3 py-1 rounded-full">Facial Whitening</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Facial Places List */}
                         <div className="mb-6 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                                {language === 'id' ? 'Klinik Facial' : 'Facial Clinics'}
+                            <h3 className="text-xl font-bold text-gray-900 mb-1">
+                                {language === 'id' ? 'Klinik Facial Terverifikasi' : 'Verified Facial Clinics'}
                             </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 text-sm">
                         {localSelectedCity === 'all' 
                             ? language === 'id' 
-                                ? `Temukan klinik facial terbaik di seluruh Indonesia (${filteredFacialPlaces.length})`
-                                : `Find the best facial clinics across Indonesia (${filteredFacialPlaces.length})`
+                                ? `${filteredFacialPlaces.length} klinik facial terpercaya di seluruh Indonesia`
+                                : `${filteredFacialPlaces.length} trusted facial clinics across Indonesia`
                             : language === 'id'
-                                ? `Perawatan facial premium di ${localSelectedCity}`
-                                : `Premium facial treatments in ${localSelectedCity}`
+                                ? `Perawatan facial premium di ${localSelectedCity} (${filteredFacialPlaces.length} klinik)`
+                                : `Premium facial treatments in ${localSelectedCity} (${filteredFacialPlaces.length} clinics)`
                         }
                     </p>
                 </div>
@@ -424,6 +472,111 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
                         ))}
                     </div>
                 )}
+
+                        {/* SEO-Rich Informational Section */}
+                        {filteredFacialPlaces.length > 0 && (
+                            <div className="mt-12 bg-gradient-to-br from-orange-50 to-white rounded-2xl p-6 sm:p-8 border border-orange-100 shadow-sm">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+                                    {language === 'id' ? 'Perawatan Facial Profesional di Indonesia' : 'Professional Facial Treatments in Indonesia'}
+                                </h2>
+                                
+                                <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                                    {/* Microdermabrasion */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Microdermabrasion & Eksfoliasi' : 'Microdermabrasion & Exfoliation'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Perawatan eksfoliasi mendalam menggunakan teknologi microdermabrasion untuk mengangkat sel kulit mati, mencerahkan wajah, dan meratakan tekstur kulit. Efektif mengatasi bekas jerawat, flek hitam, dan tanda penuaan. Dilakukan oleh terapis kecantikan profesional dengan alat modern dan aman untuk semua jenis kulit.'
+                                                : 'Advanced exfoliation treatment using microdermabrasion technology to remove dead skin cells, brighten complexion, and smooth skin texture. Effectively treats acne scars, dark spots, and aging signs. Performed by professional beauty therapists with modern, safe equipment for all skin types.'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Anti-Aging */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Anti-Aging & Peremajaan Kulit' : 'Anti-Aging & Skin Rejuvenation'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Treatment anti-penuaan untuk mengurangi kerutan, garis halus, dan meningkatkan elastisitas kulit. Menggunakan serum berkualitas tinggi dengan vitamin C, retinol, dan hyaluronic acid. Stimulasi produksi kolagen alami untuk kulit lebih kencang, kenyal, dan awet muda. Cocok untuk usia 30+ tahun.'
+                                                : 'Anti-aging treatment to reduce wrinkles, fine lines, and improve skin elasticity. Uses premium serums with vitamin C, retinol, and hyaluronic acid. Stimulates natural collagen production for firmer, more youthful skin. Ideal for ages 30 and above.'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Acne Treatment */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Facial Acne & Perawatan Jerawat' : 'Acne Facial & Treatment'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Perawatan khusus kulit berjerawat dengan deep cleansing, ekstraksi komedo, dan masker antibakteri. Membersihkan pori-pori tersumbat, mengurangi inflamasi, dan mencegah jerawat baru. Menggunakan produk non-comedogenic dan hypoallergenic. Termasuk LED light therapy untuk mempercepat penyembuhan.'
+                                                : 'Specialized acne treatment with deep cleansing, blackhead extraction, and antibacterial masks. Clears clogged pores, reduces inflammation, and prevents new breakouts. Uses non-comedogenic and hypoallergenic products. Includes LED light therapy for faster healing.'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Brightening & Whitening */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Pencerah Wajah & Whitening' : 'Skin Brightening & Whitening'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Treatment pencerah kulit untuk mengatasi hiperpigmentasi, flek hitam, dan warna kulit tidak merata. Menggunakan bahan aktif seperti glutathione, niacinamide, dan alpha arbutin. Chemical peeling ringan untuk hasil maksimal. Kulit tampak lebih cerah, glowing, dan bercahaya alami dalam 4-6 sesi.'
+                                                : 'Skin brightening treatment for hyperpigmentation, dark spots, and uneven skin tone. Uses active ingredients like glutathione, niacinamide, and alpha arbutin. Gentle chemical peeling for maximum results. Achieves brighter, glowing, naturally radiant skin in 4-6 sessions.'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Hydrating Facial */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Hydrating Facial & Moisturizing' : 'Hydrating Facial & Moisturizing'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Perawatan hidrasi intensif untuk kulit kering dan dehidrasi. Menggunakan sheet mask premium dengan hyaluronic acid, ceramide, dan peptides. Mengembalikan kelembaban alami kulit, meredakan kemerahan, dan memperbaiki skin barrier. Cocok untuk semua jenis kulit terutama yang sensitif.'
+                                                : 'Intensive hydration treatment for dry and dehydrated skin. Uses premium sheet masks with hyaluronic acid, ceramides, and peptides. Restores natural moisture, soothes redness, and repairs skin barrier. Suitable for all skin types, especially sensitive skin.'
+                                            }
+                                        </p>
+                                    </div>
+
+                                    {/* Korean Skincare */}
+                                    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-semibold text-orange-600 mb-2">
+                                            {language === 'id' ? 'Korean Facial & K-Beauty' : 'Korean Facial & K-Beauty'}
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {language === 'id' 
+                                                ? 'Metode perawatan wajah ala Korea dengan 10-step skincare routine. Double cleansing, essence, ampoule, dan sheet mask asli Korea. Glass skin effect untuk kulit halus, bercahaya, dan sehat alami. Menggunakan produk K-beauty original seperti COSRX, Innisfree, dan Laneige. Populer untuk hasil instan.'
+                                                : 'Korean-style facial treatment with 10-step skincare routine. Double cleansing, essence, ampoule, and authentic Korean sheet masks. Achieve glass skin effect for smooth, radiant, naturally healthy skin. Uses original K-beauty products like COSRX, Innisfree, and Laneige. Popular for instant results.'
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Call to Action */}
+                                <div className="mt-8 text-center bg-orange-100 rounded-xl p-6">
+                                    <p className="text-gray-800 font-medium mb-2">
+                                        {language === 'id' 
+                                            ? '🌟 Semua klinik telah terverifikasi dengan terapis kecantikan bersertifikat dan produk berkualitas tinggi'
+                                            : '🌟 All clinics are verified with certified beauty therapists and premium quality products'
+                                        }
+                                    </p>
+                                    <p className="text-gray-600 text-sm">
+                                        {language === 'id' 
+                                            ? 'Booking langsung via WhatsApp • Konsultasi gratis • Harga transparan • Treatment aman & higienis'
+                                            : 'Direct booking via WhatsApp • Free consultation • Transparent pricing • Safe & hygienic treatments'
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
