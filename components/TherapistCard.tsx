@@ -938,10 +938,10 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-14 sm:pt-16 pb-4">
+                        <div className="flex-1 pt-14 sm:pt-16 pb-4 overflow-visible">
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
-                            <div>
-                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
+                            <div className="overflow-visible">
+                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
                             <>
