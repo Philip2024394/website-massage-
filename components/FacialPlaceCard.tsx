@@ -203,8 +203,24 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
         return `${priceInThousands}k`;
     };
     
-    // Get main image
-    const mainImage = (place as any).mainImage || 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
+    // Get main image - check mainImage first, then images array, then fallback
+    const getMainImage = () => {
+        // Priority 1: mainImage property
+        if ((place as any).mainImage) {
+            return (place as any).mainImage;
+        }
+        
+        // Priority 2: First image from images array
+        const images = (place as any).images;
+        if (Array.isArray(images) && images.length > 0) {
+            return images[0];
+        }
+        
+        // Priority 3: Fallback
+        return 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
+    };
+    
+    const mainImage = getMainImage();
     
     // Get amenities if available
     const amenities = (place as any).amenities || [];
