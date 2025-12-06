@@ -938,8 +938,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-16 pb-2">
-                            <h3 className="text-xl font-bold text-gray-900 truncate">{therapist.name}</h3>
+                        <div className="flex-1 min-w-0 pt-14 sm:pt-16 pb-4">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{therapist.name}</h3>
                             {locationCity && (
                                 <p className="text-[11px] font-medium text-gray-700 mt-0.5">Therapist – {locationCity}</p>
                             )}
@@ -982,7 +982,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-16">
+                    <div className="flex-shrink-0 pb-4 pt-14 sm:pt-16">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
@@ -996,7 +996,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
             
             {/* Therapist Bio - Natural flow with proper margin */}
-            <div className="mt-4 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
+            <div className="mt-6 sm:mt-4 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
