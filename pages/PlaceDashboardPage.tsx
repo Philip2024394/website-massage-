@@ -19,6 +19,7 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import PhoneIcon from '../components/icons/PhoneIcon';
 import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
 import MapPinIcon from '../components/icons/MapPinIcon';
+import CityLocationDropdown from '../components/CityLocationDropdown';
 import ClockIcon from '../components/icons/ClockIcon';
 import NotificationBell from '../components/NotificationBell';
 import CustomCheckbox from '../components/CustomCheckbox';
@@ -141,6 +142,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const [languages, setLanguages] = useState<string[]>([]);
     const [additionalServices, setAdditionalServices] = useState<string[]>([]);
     const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+    const [selectedCity, setSelectedCity] = useState<string>('all');
 
     // Debug function to check location system status
     const debugLocationSystem = () => {
@@ -289,6 +291,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             setAdditionalServices(typeof servicesRaw === 'string' ? JSON.parse(servicesRaw) : servicesRaw || []);
             
             setYearsEstablished((placeData as any).yearsEstablished || placeData.yearsEstablished || 1);
+            // Load saved city if present
+            try {
+                const savedCity = (placeData as any).city;
+                if (savedCity && typeof savedCity === 'string') {
+                    setSelectedCity(savedCity);
+                }
+            } catch {}
         } catch (_e) {
             console.error('Error parsing place data:', _e);
         }
@@ -456,7 +465,10 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
         if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
-        if (!location || location.trim() === '') missingFields.push('• Full Address/Location');
+        // Require either city or full address
+        if ((selectedCity === 'all') && (!location || location.trim() === '')) {
+            missingFields.push('• City/Location (choose a city or enter full address)');
+        }
         if (!description || description.trim() === '') missingFields.push('• Business Description');
         if (!mainImage || mainImage.trim() === '') missingFields.push('• Main Business Photo');
         if (!profilePicture || profilePicture.trim() === '') missingFields.push('• Profile Picture');
@@ -524,6 +536,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Location
             location,
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
+            city: selectedCity !== 'all' ? selectedCity : null,
             
             // Hours
             openingtime: openingTime,
@@ -1525,6 +1538,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div>
                             <label className="block text-sm font-medium text-gray-900 mb-2">{t?.locationLabel || 'Location'}</label>
                             <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
+                                {/* City / Tourist Location */}
+                                <div className="mb-4">
+                                    <CityLocationDropdown
+                                        selectedCity={selectedCity}
+                                        onCityChange={setSelectedCity}
+                                        placeholder="Select Your City/Location"
+                                        label="🏙️ City / Tourist Location"
+                                        showLabel={true}
+                                        includeAll={false}
+                                        className="w-full"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Choose your city or tourist area. Exact device location is optional.
+                                    </p>
+                                </div>
                                 <div className="relative mb-3">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <MapPinIcon className="h-5 w-5 text-gray-400" />
@@ -1550,7 +1578,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                     }`}
                                 >
                                     <MapPinIcon className="w-5 h-5" />
-                                    <span className="font-semibold">{location ? 'Location Set ✓' : 'Set Location from Device'}</span>
+                                    <span className="font-semibold">{location ? 'Location Set ✓' : 'Set Location from Device (optional)'}</span>
                                 </Button>
                                 {location && (
                                     <div className="mt-3 space-y-2">

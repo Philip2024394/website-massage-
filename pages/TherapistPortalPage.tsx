@@ -259,7 +259,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
-      if (!coordinates) missingFields.push('Location (use Set Location button)');
       if (selectedCity === 'all') missingFields.push('City/Location selection');
       
       if (missingFields.length > 0) {
@@ -371,7 +370,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
-  const canSave = name.trim() && /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && coordinates;
+  const canSave = name.trim() && /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && selectedCity !== 'all';
 
   // Safety check for null therapist
   if (!therapist) {
@@ -482,12 +481,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">📍 Location *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">📍 Location (optional)</label>
               <button
                 onClick={handleSetLocation}
                 className="w-full px-4 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 font-semibold shadow-md hover:shadow-lg transition-all"
               >
-                {locationSet ? '✅ Location Set - Click to Update' : '📍 Set My Location'}
+                {locationSet ? '✅ Location Set - Click to Update' : '📍 Set My Location (optional)'}
               </button>
               <div 
                 className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-lg"
@@ -629,7 +628,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
 
             {/* Validation Warning */}
-            <div 
+              <div 
               className="bg-red-50 border-2 border-red-200 rounded-lg p-4"
               style={{ display: !canSave ? 'block' : 'none' }}
             >
@@ -637,7 +636,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <ul className="text-xs text-red-600 mt-2 space-y-1 list-disc list-inside">
                 <li style={{ display: !name.trim() ? 'list-item' : 'none' }}>Name is required</li>
                 <li style={{ display: !/^\+62\d{6,15}$/.test(whatsappNumber.trim()) ? 'list-item' : 'none' }}>Valid WhatsApp number is required</li>
-                <li style={{ display: !coordinates ? 'list-item' : 'none' }}>Location must be set</li>
+                <li style={{ display: selectedCity === 'all' ? 'list-item' : 'none' }}>City/Location must be selected</li>
               </ul>
             </div>
 

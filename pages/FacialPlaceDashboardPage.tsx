@@ -547,7 +547,10 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
         if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
-        if (!location || location.trim() === '') missingFields.push('• Full Address/Location');
+        // Require either a city selection or a full address
+        if ((selectedCity === 'all') && (!location || location.trim() === '')) {
+            missingFields.push('• City/Location (choose a city or enter full address)');
+        }
         if (!description || description.trim() === '') missingFields.push('• Business Description');
         if (!mainImage || mainImage.trim() === '') missingFields.push('• Main Business Photo');
         if (!profilePicture || profilePicture.trim() === '') missingFields.push('• Profile Picture');

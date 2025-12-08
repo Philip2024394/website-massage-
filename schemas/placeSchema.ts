@@ -46,6 +46,8 @@ export interface PlacePayload {
 export const PLACE_ALLOWED = [
   // Core system fields (placeId, isLive, openingTime, closingTime are camelCase in Appwrite)
   'id','placeId','name','category','email','password','pricing','location','status','isLive','openingTime','closingTime','coordinates','description',
+  // Geo/Filters
+  'city',
   // Contact (1 - LOWERCASE)
   'whatsappnumber',
   // Images (3 - MIXED CASE - mainimage lowercase, others camelCase)
