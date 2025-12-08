@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear localStorage - Test Landing Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { padding: 10px 20px; margin: 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .clear-btn { background-color: #dc3545; color: white; }
+        .test-btn { background-color: #007bff; color: white; }
+        .success { background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🧹 Clear localStorage to Test Landing Page Flow</h1>
+    
+    <div>
+        <h3>📋 Current localStorage Contents:</h3>
+        <pre id="currentStorage"></pre>
+    </div>
+
+    <div>
+        <button class="button clear-btn" onclick="clearStorage()">Clear All localStorage</button>
+        <button class="button test-btn" onclick="testLandingFlow()">Test Landing Page Flow</button>
+        <button class="button test-btn" onclick="refreshStorage()">Refresh Storage View</button>
+    </div>
+
+    <div id="results"></div>
+
+    <div>
+        <h3>🎯 Expected Flow After Clear:</h3>
+        <ol>
+            <li><strong>Landing Page</strong> - Shows language selection and continue button</li>
+            <li><strong>User selects language</strong> - Indonesian or English</li>
+            <li><strong>User clicks continue</strong> - Gets location automatically</li>
+            <li><strong>Home Page</strong> - Shows with selected language and location</li>
+        </ol>
+    </div>
+
+    <script>
+        function displayStorage() {
+            const storage = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                storage[key] = localStorage.getItem(key);
+            }
+            document.getElementById('currentStorage').textContent = JSON.stringify(storage, null, 2);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            logResult('✅ localStorage cleared! Now reload your app to test landing page flow.', 'success');
+            displayStorage();
+        }
+
+        function testLandingFlow() {
+            // Clear storage first
+            localStorage.clear();
+            
+            // Open the app in a new tab
+            window.open('http://localhost:3023/', '_blank');
+            
+            logResult('✅ Opening fresh app instance. Should show landing page first!', 'success');
+        }
+
+        function refreshStorage() {
+            displayStorage();
+            logResult('🔄 Storage view refreshed', 'info');
+        }
+
+        function logResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+        }
+
+        // Display storage on load
+        window.onload = displayStorage;
+    </script>
+</body>
+</html>

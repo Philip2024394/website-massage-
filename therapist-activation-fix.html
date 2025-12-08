@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Activation Fix</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .logs {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .warning { color: #ff9800; }
+        h1 { text-align: center; margin-bottom: 30px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/umd/sdk.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Therapist Activation Fix</h1>
+        <p>This tool will activate all therapists by setting their <code>isLive</code> field to <code>true</code>, allowing them to update their online status.</p>
+        
+        <button id="activateBtn" onclick="activateAllTherapists()">
+            🚀 Activate All Therapists
+        </button>
+        
+        <button id="checkBtn" onclick="checkTherapistStatus()" style="background: linear-gradient(45deg, #2196F3, #1976D2);">
+            📊 Check Current Status
+        </button>
+
+        <div id="logs" class="logs">
+            <div class="info">📋 Ready to activate therapists. Click the button above to start.</div>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+            endpoint: 'https://appwrite.indostreet.com/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id'
+            }
+        };
+
+        // Initialize Appwrite
+        let client, databases;
+        
+        function initializeAppwrite() {
+            try {
+                client = new Appwrite.Client()
+                    .setEndpoint(config.endpoint)
+                    .setProject(config.projectId);
+
+                databases = new Appwrite.Databases(client);
+                console.log('✅ Appwrite initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Appwrite initialization failed:', error);
+                return false;
+            }
+        }
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        async function checkTherapistStatus() {
+            const btn = document.getElementById('checkBtn');
+            btn.disabled = true;
+            
+            try {
+                log('🔍 Checking therapist status...', 'info');
+                
+                // Initialize Appwrite first
+                if (!initializeAppwrite()) {
+                    throw new Error('Failed to initialize Appwrite SDK');
+                }
+                
+                const response = await databases.listDocuments(
+                    config.databaseId,
+                    config.collections.therapists
+                );
+
+                const therapists = response.documents;
+                const liveCount = therapists.filter(t => t.isLive === true).length;
+                const inactiveCount = therapists.length - liveCount;
+
+                log(`📊 Found ${therapists.length} total therapists`, 'info');
+                log(`✅ Live therapists: ${liveCount}`, 'success');
+                log(`❌ Inactive therapists: ${inactiveCount}`, inactiveCount > 0 ? 'warning' : 'success');
+
+                if (inactiveCount > 0) {
+                    log('💡 Some therapists need activation!', 'warning');
+                } else {
+                    log('🎉 All therapists are already live!', 'success');
+                }
+
+            } catch (error) {
+                log(`❌ Failed to check status: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function activateAllTherapists() {
+            const btn = document.getElementById('activateBtn');
+            btn.disabled = true;
+            btn.textContent = '🔄 Activating...';
+
+            try {
+                log('🚀 Starting therapist activation process...', 'info');
+                
+                // Initialize Appwrite first
+                if (!initializeAppwrite()) {
+                    throw new Error('Failed to initialize Appwrite SDK');
+                }
+                
+                // Fetch all therapists
+                log('🔍 Fetching all therapists...', 'info');
+                const response = await databases.listDocuments(
+                    config.databaseId,
+                    config.collections.therapists
+                );
+
+                const therapists = response.documents;
+                log(`📊 Found ${therapists.length} therapists`, 'info');
+                
+                let updated = 0;
+                let errors = 0;
+                let skipped = 0;
+
+                // Update each therapist
+                for (let i = 0; i < therapists.length; i++) {
+                    const therapist = therapists[i];
+                    
+                    try {
+                        // Skip if already live
+                        if (therapist.isLive === true) {
+                            log(`⏭️ Skipping ${therapist.name || 'Unnamed'} - already live`, 'info');
+                            skipped++;
+                            continue;
+                        }
+
+                        log(`🔄 Activating ${therapist.name || 'Unnamed'} (${i + 1}/${therapists.length})`, 'info');
+                        
+                        await databases.updateDocument(
+                            config.databaseId,
+                            config.collections.therapists,
+                            therapist.$id,
+                            {
+                                isLive: true,
+                                status: therapist.status || 'Available',
+                                availability: therapist.availability || 'Available',
+                                isOnline: true
+                            }
+                        );
+                        
+                        log(`✅ Activated: ${therapist.name || 'Unnamed'}`, 'success');
+                        updated++;
+                        
+                        // Small delay to avoid rate limits
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        
+                    } catch (error) {
+                        log(`❌ Failed to activate ${therapist.name || 'Unnamed'}: ${error.message}`, 'error');
+                        errors++;
+                    }
+                }
+
+                log('🎉 ACTIVATION COMPLETE!', 'success');
+                log(`✅ Successfully activated: ${updated}`, 'success');
+                log(`⏭️ Already live: ${skipped}`, 'info');
+                log(`❌ Failed activations: ${errors}`, errors > 0 ? 'error' : 'info');
+                
+                if (updated > 0) {
+                    log('🔄 All therapists can now update their status!', 'success');
+                    log('💡 Try the therapist status page again - it should work now!', 'info');
+                }
+
+            } catch (error) {
+                log(`❌ ACTIVATION PROCESS FAILED: ${error.message}`, 'error');
+                log('🔍 Check your internet connection and Appwrite configuration', 'warning');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🚀 Activate All Therapists';
+            }
+        }
+
+        // Auto-check status on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (initializeAppwrite()) {
+                    checkTherapistStatus();
+                } else {
+                    log('❌ Failed to initialize Appwrite. Please refresh the page.', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

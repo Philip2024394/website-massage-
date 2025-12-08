@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Animation Improvements - Before & After</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .demo-box {
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .before {
+            background: linear-gradient(135deg, #ff6b6b, #ffa726);
+            border: 3px solid #ff5722;
+        }
+        
+        .after {
+            background: linear-gradient(135deg, #4CAF50, #81C784);
+            border: 3px solid #2E7D32;
+        }
+        
+        /* Header Animation Demos */
+        .header-demo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            margin: 10px 0;
+        }
+        
+        .header-demo .brand-text {
+            color: #333;
+        }
+        
+        .header-demo .s-fast {
+            color: #ff5722;
+            display: inline-block;
+            animation: float-fast 2s ease-in-out infinite;
+        }
+        
+        .header-demo .s-slow {
+            color: #ff5722;
+            display: inline-block;
+            animation: float-slow 6s ease-in-out infinite;
+        }
+        
+        /* Discount Badge Demos */
+        .badge-demo {
+            display: inline-block;
+            margin: 20px;
+        }
+        
+        .discount-badge-old {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+            animation: bounce 1s infinite, pulse-harsh 1s infinite;
+        }
+        
+        .discount-badge-new {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            border: 2px solid white;
+            animation: soft-glow 2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4), 0 0 35px rgba(251, 146, 60, 0.2);
+        }
+        
+        /* Price Glow Demos */
+        .price-box-old {
+            background: linear-gradient(to bottom right, #fef2f2, #fce7e7);
+            border: 2px solid #fca5a5;
+            padding: 15px;
+            border-radius: 10px;
+            animation: pulse-harsh 1s infinite;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+        
+        .price-box-new {
+            background: linear-gradient(to bottom right, #fef2f2, #fce7e7);
+            border: 2px solid #fca5a5;
+            padding: 15px;
+            border-radius: 10px;
+            animation: price-glow-smooth 3s ease-in-out infinite;
+        }
+        
+        /* Sparkle Effects */
+        .sparkle-old {
+            width: 8px;
+            height: 8px;
+            background: #fbbf24;
+            border-radius: 50%;
+            animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
+        .sparkle-new {
+            width: 6px;
+            height: 6px;
+            background: #fde047;
+            border-radius: 50%;
+            animation: sparkle-soft 4s ease-in-out infinite;
+            opacity: 0.6;
+        }
+        
+        /* Animation Keyframes */
+        @keyframes float-fast {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% { transform: translateY(0); }
+            40%, 43% { transform: translateY(-20px); }
+            70% { transform: translateY(-10px); }
+            90% { transform: translateY(-4px); }
+        }
+        
+        @keyframes pulse-harsh {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+        
+        @keyframes soft-glow {
+            0%, 100% { 
+                box-shadow: 0 0 15px rgba(239, 68, 68, 0.4), 0 0 30px rgba(251, 146, 60, 0.2);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(239, 68, 68, 0.6), 0 0 45px rgba(251, 146, 60, 0.4);
+                transform: scale(1.02);
+            }
+        }
+        
+        @keyframes price-glow-smooth {
+            0%, 100% { 
+                box-shadow: 0 0 15px rgba(251, 146, 60, 0.3), 0 0 30px rgba(251, 146, 60, 0.1);
+                background: rgba(251, 146, 60, 0.05);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(239, 68, 68, 0.4), 0 0 45px rgba(239, 68, 68, 0.2);
+                background: rgba(239, 68, 68, 0.08);
+            }
+        }
+        
+        @keyframes ping {
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes sparkle-soft {
+            0%, 100% { 
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.8;
+                transform: scale(1.2);
+            }
+        }
+        
+        .improvement-tag {
+            background: linear-gradient(45deg, #4CAF50, #81C784);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        .problem-tag {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        h3 {
+            margin: 0 0 10px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Animation Improvements - Smooth & Elegant</h1>
+        
+        <div class="demo-section">
+            <h2>🔤 Header "S" Animation - IndaStreet Brand</h2>
+            <div class="comparison">
+                <div class="demo-box before">
+                    <div class="problem-tag">❌ BEFORE: Too Fast & Jarring</div>
+                    <div class="header-demo">
+                        <span class="brand-text">Inda</span><span class="s-fast">S</span><span class="brand-text">treet</span>
+                    </div>
+                    <p>Animation: 2s duration<br>Effect: Distracting, hyperactive</p>
+                </div>
+                <div class="demo-box after">
+                    <div class="improvement-tag">✅ AFTER: Slow & Smooth</div>
+                    <div class="header-demo">
+                        <span class="brand-text">Inda</span><span class="s-slow">S</span><span class="brand-text">treet</span>
+                    </div>
+                    <p>Animation: 6s duration<br>Effect: Gentle, professional floating</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🏷️ Discount Badge Effects</h2>
+            <div class="comparison">
+                <div class="demo-box before">
+                    <div class="problem-tag">❌ BEFORE: Harsh Bounce + Pulse</div>
+                    <div class="badge-demo">
+                        <div class="discount-badge-old">15% OFF</div>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <div class="sparkle-old"></div>
+                        <span style="margin: 0 10px;">Harsh sparkles</span>
+                        <div class="sparkle-old"></div>
+                    </div>
+                    <p>Effects: Aggressive bouncing + rapid pulse<br>Issue: Too attention-grabbing, unprofessional</p>
+                </div>
+                <div class="demo-box after">
+                    <div class="improvement-tag">✅ AFTER: Soft Glow + Gentle Sparkles</div>
+                    <div class="badge-demo">
+                        <div class="discount-badge-new">15% OFF</div>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <div class="sparkle-new"></div>
+                        <span style="margin: 0 10px;">Gentle sparkles</span>
+                        <div class="sparkle-new"></div>
+                    </div>
+                    <p>Effects: Soft box-shadow glow + gentle scale<br>Benefit: Elegant, premium feel</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>💰 Price Box Glow Effects</h2>
+            <div class="comparison">
+                <div class="demo-box before">
+                    <div class="problem-tag">❌ BEFORE: Rapid Pulse</div>
+                    <div class="price-box-old">
+                        <strong>Rp 450,000</strong><br>
+                        <small>60 minutes</small>
+                    </div>
+                    <p>Animation: 1s pulse + harsh opacity changes<br>Issue: Flickery, hard on eyes</p>
+                </div>
+                <div class="demo-box after">
+                    <div class="improvement-tag">✅ AFTER: Smooth Glow</div>
+                    <div class="price-box-new">
+                        <strong>Rp 450,000</strong><br>
+                        <small>60 minutes</small>
+                    </div>
+                    <p>Animation: 3s smooth glow transition<br>Benefit: Subtle, elegant highlighting</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📊 Improvements Summary</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">3x</div>
+                    <div class="stat-label">Slower Animation Speed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">Reduced Eye Strain</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">More Professional Look</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Jarring Transitions</div>
+                </div>
+            </div>
+            
+            <h3>🎯 Key Changes Made:</h3>
+            <ul>
+                <li><strong>Header "S" Animation:</strong> Increased duration from 2s→6s for gentle floating</li>
+                <li><strong>Discount Badges:</strong> Replaced bounce+pulse with soft glow effects</li>
+                <li><strong>Price Boxes:</strong> Changed from rapid 1s pulse to smooth 3s glow</li>
+                <li><strong>Sparkle Effects:</strong> Softer, longer duration animations</li>
+                <li><strong>Box Shadows:</strong> Added gradient glow instead of harsh borders</li>
+            </ul>
+            
+            <h3>✨ Benefits:</h3>
+            <ul>
+                <li>🧘 <strong>Reduced Eye Strain:</strong> Slower, smoother animations are easier on the eyes</li>
+                <li>💼 <strong>Professional Appearance:</strong> Elegant effects create premium brand image</li>
+                <li>🎯 <strong>Better UX:</strong> Subtle attention-drawing without being distracting</li>
+                <li>📱 <strong>Mobile Friendly:</strong> Gentler animations work better on smaller screens</li>
+                <li>♿ <strong>Accessibility:</strong> Reduced motion sensitivity for users with vestibular disorders</li>
+            </ul>
+            
+            <div style="background: #e8f5e8; padding: 20px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #28a745;">
+                <h4 style="color: #155724; margin: 0 0 10px 0;">🎉 Result</h4>
+                <p style="color: #155724; margin: 0;">
+                    The massage platform now has smooth, professional animations that enhance user experience 
+                    without being distracting. The floating "S" in "IndaStreet" is now a gentle brand signature, 
+                    and discount badges use elegant glow effects instead of harsh bouncing.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

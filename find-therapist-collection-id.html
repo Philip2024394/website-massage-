@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Find Therapist Collection ID</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ff6b6b;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #ff6b6b;
+        }
+        .button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+            text-decoration: none;
+            text-align: center;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .urgent {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        .results {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 2px solid #4caf50;
+            color: #4caf50;
+        }
+        .error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 2px solid #f44336;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Find Therapist Collection ID</h1>
+        
+        <div class="urgent">
+            ⚠️ Your therapist status updates are failing because the collection ID is a placeholder!<br>
+            Let's fix this right now...
+        </div>
+
+        <div class="step">
+            <h3>🎯 The Problem</h3>
+            <p>Your current configuration has:</p>
+            <div class="code-block">therapists: 'therapists_collection_id'  ❌ Placeholder</div>
+            <p>But Appwrite needs the <strong>real collection ID</strong> which looks like: <code>68f9abc123def456</code></p>
+        </div>
+
+        <div class="step">
+            <h3>📋 Step 1: Open Your Appwrite Console</h3>
+            <a href="https://cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05" 
+               target="_blank" class="button">
+                🔗 Open Appwrite Database Console
+            </a>
+            <p><strong>What to look for:</strong> Find the collection that contains your therapist data. It should have attributes like:</p>
+            <div class="code-block">✓ isOnline (boolean)
+✓ status (enum)  
+✓ availability (enum)
+✓ therapistId (string)
+✓ name (string)
+✓ email (string)
+✓ specialization (string)
+✓ location (string)
+✓ pricing (string)</div>
+        </div>
+
+        <div class="step">
+            <h3>🔧 Step 2: Enter the Real Collection ID</h3>
+            <p>Once you find the therapist collection, copy its ID and paste it here:</p>
+            <input type="text" 
+                   id="collectionId" 
+                   placeholder="Paste your real collection ID here (e.g., 68f9abc123def456)"
+                   maxlength="25">
+            <button class="button" onclick="generateFix()">⚡ Generate Fix Code</button>
+        </div>
+
+        <div id="results" class="results" style="display: none;">
+            <!-- Results will appear here -->
+        </div>
+
+        <div class="step">
+            <h3>📊 Current Status Analysis</h3>
+            <p>Based on your attributes schema, your therapist collection has these status-related fields:</p>
+            <div class="code-block">• isOnline (required boolean) - Controls online/offline status
+• status (enum) - Values: Available, Busy, Offline  
+• availability (enum) - Duplicate field for status
+• isLive (boolean) - Admin approval status</div>
+            <p>The status update should modify both <code>status</code> and <code>isOnline</code> fields.</p>
+        </div>
+    </div>
+
+    <script>
+        function generateFix() {
+            const collectionId = document.getElementById('collectionId').value.trim();
+            const results = document.getElementById('results');
+            
+            if (!collectionId) {
+                results.innerHTML = '❌ Please paste your collection ID first!';
+                results.className = 'results error';
+                results.style.display = 'block';
+                return;
+            }
+            
+            if (collectionId === 'therapists_collection_id') {
+                results.innerHTML = '❌ That\'s still the placeholder! Please get the REAL collection ID from Appwrite Console.';
+                results.className = 'results error';
+                results.style.display = 'block';
+                return;
+            }
+            
+            if (collectionId.length < 16) {
+                results.innerHTML = '❌ Collection ID seems too short. Make sure you copied the complete ID.';
+                results.className = 'results error';
+                results.style.display = 'block';
+                return;
+            }
+            
+            const fixCode = `✅ THERAPIST STATUS FIX CODE:
+
+1. Open: lib/appwrite.config.ts
+
+2. Find this line (around line 11):
+   therapists: 'therapists_collection_id',
+
+3. Replace with:
+   therapists: '${collectionId}',
+
+4. Also open: lib/appwrite.ts
+
+5. Find this line:
+   THERAPISTS: 'therapists_collection_id',
+
+6. Replace with:
+   THERAPISTS: '${collectionId}',
+
+7. Save both files
+
+8. Restart your dev server:
+   npm run dev
+
+9. Test therapist status changes - should work now! 🎉
+
+🔧 WHAT THIS FIXES:
+• Therapist status updates (Available/Busy/Offline)
+• Profile data persistence  
+• Authentication flow
+• Live card updates on homepage
+
+💡 IMPORTANT: The status update will modify these fields in Appwrite:
+• status: "${collectionId === 'your-id' ? 'Available' : 'Available/Busy/Offline'}"
+• isOnline: ${collectionId === 'your-id' ? 'true' : 'true/false'}
+• availability: "${collectionId === 'your-id' ? 'Available' : 'Available/Busy/Offline'}" (backup field)`;
+
+            results.innerHTML = fixCode;
+            results.className = 'results success';
+            results.style.display = 'block';
+            
+            // Auto-scroll to results
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Auto-focus on input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('collectionId').focus();
+        });
+    </script>
+</body>
+</html>

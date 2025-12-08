@@ -1,0 +1,1 @@
+import{a as r}from"./chunk-QV2EYLXC.js";import{c as e}from"./chunk-E6PAVYKE.js";var o=e(r(),1),s=({className:t="w-6 h-6"})=>(0,o.jsx)("svg",{xmlns:"http://www.w3.org/2000/svg",className:t,fill:"none",viewBox:"0 0 24 24",stroke:"currentColor",strokeWidth:2,children:(0,o.jsx)("path",{strokeLinecap:"round",strokeLinejoin:"round",d:"M4 6h16M4 12h16M4 18h16"})}),n=s;export{n as a};

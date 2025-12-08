@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Phil10 Final Discount Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .field { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 3px solid #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Phil10 Final Discount Test</h1>
+        <p>Testing if discount badges now display correctly after the isDiscountActive function fix.</p>
+        
+        <div class="test-section info">
+            <h3>🔍 Test Steps</h3>
+            <ol>
+                <li>Check current phil10 therapist data from database</li>
+                <li>Verify all discount fields are present</li>
+                <li>Test the isDiscountActive function logic</li>
+                <li>Confirm if badges should display</li>
+            </ol>
+        </div>
+
+        <button onclick="runFinalTest()">🧪 Run Final Discount Test</button>
+        <button onclick="checkTherapistCard()">👤 Check TherapistCard Logic</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.1"></script>
+    <script>
+        const { Client, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        
+        // Simulate the isDiscountActive function from TherapistCard.tsx
+        function isDiscountActive(therapist) {
+            console.log('🔍 Testing isDiscountActive function...');
+            
+            const hasDiscountData = !!(
+                therapist.discountPercentage && 
+                therapist.discountPercentage > 0 && 
+                therapist.discountEndTime &&
+                therapist.isDiscountActive === true // Check the boolean flag
+            );
+            
+            if (!hasDiscountData) {
+                console.log('❌ Missing discount data:', {
+                    discountPercentage: therapist.discountPercentage,
+                    discountEndTime: therapist.discountEndTime,
+                    isDiscountActive: therapist.isDiscountActive
+                });
+                return false;
+            }
+            
+            // Check if discount hasn't expired
+            const now = new Date();
+            const endTime = therapist.discountEndTime ? new Date(therapist.discountEndTime) : null;
+            const notExpired = endTime && !isNaN(endTime.getTime()) && endTime > now;
+            
+            const result = hasDiscountData && notExpired;
+            
+            console.log('🔍 DISCOUNT DEBUG - isDiscountActive check:', {
+                therapistId: therapist.$id || therapist.id,
+                therapistName: therapist.name,
+                discountPercentage: therapist.discountPercentage,
+                discountEndTime: therapist.discountEndTime,
+                isDiscountActiveFlag: therapist.isDiscountActive,
+                hasDiscountData,
+                notExpired,
+                finalResult: result,
+                currentTime: now.toISOString(),
+                endTimeObj: endTime ? endTime.toISOString() : null
+            });
+            
+            return result;
+        }
+        
+        async function runFinalTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Running final discount test...</p>';
+            
+            try {
+                // Get phil10 therapist data
+                const response = await databases.listDocuments(
+                    '68f23b11000c96815983',
+                    '68f25bf4000ba08315b5',
+                    [Query.equal('name', 'phil10')]
+                );
+                
+                if (response.documents.length === 0) {
+                    resultsDiv.innerHTML = '<div class="test-section error"><h3>❌ Phil10 Not Found</h3><p>Could not find phil10 therapist in database.</p></div>';
+                    return;
+                }
+                
+                const phil10 = response.documents[0];
+                console.log('👤 Phil10 data loaded:', phil10);
+                
+                // Test the function
+                const shouldShowBadge = isDiscountActive(phil10);
+                
+                let html = '<div class="test-section ' + (shouldShowBadge ? 'success' : 'error') + '">';
+                html += '<h3>' + (shouldShowBadge ? '✅ SUCCESS!' : '❌ ISSUE FOUND') + '</h3>';
+                html += '<p><strong>Discount Badge Should Display:</strong> ' + (shouldShowBadge ? 'YES' : 'NO') + '</p>';
+                
+                html += '<div class="field"><strong>Current Phil10 Data:</strong></div>';
+                html += '<div class="field">Name: ' + phil10.name + '</div>';
+                html += '<div class="field">ID: ' + phil10.$id + '</div>';
+                html += '<div class="field">Discount Percentage: ' + (phil10.discountPercentage || 'undefined') + '</div>';
+                html += '<div class="field">Discount End Time: ' + (phil10.discountEndTime || 'undefined') + '</div>';
+                html += '<div class="field">Is Discount Active: ' + (phil10.isDiscountActive !== undefined ? phil10.isDiscountActive : 'undefined') + '</div>';
+                
+                if (phil10.discountEndTime) {
+                    const endTime = new Date(phil10.discountEndTime);
+                    const now = new Date();
+                    const timeLeft = endTime.getTime() - now.getTime();
+                    html += '<div class="field">Time Until Expiry: ' + (timeLeft > 0 ? Math.round(timeLeft / (1000 * 60)) + ' minutes' : 'EXPIRED') + '</div>';
+                }
+                
+                html += '</div>';
+                
+                // Add explanation
+                if (shouldShowBadge) {
+                    html += '<div class="test-section success">';
+                    html += '<h3>🎉 Discount System Fixed!</h3>';
+                    html += '<p>The isDiscountActive function is now working correctly. Badges should display on TherapistCard.</p>';
+                    html += '<p><strong>Next:</strong> Check the actual TherapistCard component to confirm badges appear.</p>';
+                    html += '</div>';
+                } else {
+                    html += '<div class="test-section error">';
+                    html += '<h3>🔧 Action Required</h3>';
+                    if (!phil10.isDiscountActive) {
+                        html += '<p>The <code>isDiscountActive</code> field is false or missing. This needs to be set to true when activating discounts.</p>';
+                    } else if (!phil10.discountPercentage) {
+                        html += '<p>The <code>discountPercentage</code> field is missing or 0.</p>';
+                    } else if (!phil10.discountEndTime) {
+                        html += '<p>The <code>discountEndTime</code> field is missing.</p>';
+                    } else {
+                        const endTime = new Date(phil10.discountEndTime);
+                        const now = new Date();
+                        if (endTime <= now) {
+                            html += '<p>The discount has expired. End time was: ' + endTime.toLocaleString() + '</p>';
+                        }
+                    }
+                    html += '</div>';
+                }
+                
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                resultsDiv.innerHTML = '<div class="test-section error"><h3>❌ Test Failed</h3><p>' + error.message + '</p></div>';
+            }
+        }
+        
+        function checkTherapistCard() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="test-section info">
+                    <h3>👤 TherapistCard Logic Check</h3>
+                    <p><strong>Fixed isDiscountActive Function:</strong></p>
+                    <pre style="background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto;">
+const isDiscountActive = (therapist) => {
+    const hasDiscountData = !!(
+        therapist.discountPercentage && 
+        therapist.discountPercentage > 0 && 
+        therapist.discountEndTime &&
+        therapist.isDiscountActive === true // ✅ NOW CHECKING BOOLEAN FLAG
+    );
+    
+    if (!hasDiscountData) return false;
+    
+    const now = new Date();
+    const endTime = therapist.discountEndTime ? new Date(therapist.discountEndTime) : null;
+    const notExpired = endTime && !isNaN(endTime.getTime()) && endTime > now;
+    
+    return hasDiscountData && notExpired;
+};
+                    </pre>
+                    <p><strong>What Changed:</strong></p>
+                    <ul>
+                        <li>✅ Added <code>therapist.isDiscountActive === true</code> check</li>
+                        <li>✅ Function now requires ALL discount fields to be properly set</li>
+                        <li>✅ Added comprehensive debug logging for phil10</li>
+                        <li>✅ Fixed TypeScript undefined handling</li>
+                    </ul>
+                    <p><strong>Badge Display Logic:</strong></p>
+                    <ul>
+                        <li>Discount badges will show when <code>isDiscountActive(therapist)</code> returns true</li>
+                        <li>Countdown timers will display when active</li>
+                        <li>Pricing will show discounted amounts with red badges</li>
+                    </ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Production Collection Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Production Database Collection Finder</h1>
+    <div id="results"></div>
+    <button onclick="findCollections()">🔄 Search Collections</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+    <script>
+        const { Client, Databases, Account } = Appwrite;
+
+        async function findCollections() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">🔍 Searching for collections in production database...</div>';
+            
+            const client = new Client();
+            client
+                .setEndpoint('https://syd.cloud.appwrite.io/v1')
+                .setProject('68f23b11000d25eb3664');
+
+            const databases = new Databases(client);
+            const account = new Account(client);
+
+            // PRODUCTION DATABASE ID
+            const PRODUCTION_DATABASE_ID = '68f76ee1000e64ca8d05';
+            
+            // Possible collection ID variations to test
+            const testCollections = [
+                // Original placeholders
+                'therapists_collection_id',
+                'places_collection_id', 
+                'users_collection_id',
+                'bookings_collection_id',
+                
+                // Simple names
+                'therapists',
+                'places',
+                'users', 
+                'bookings',
+                
+                // Capitalized
+                'Therapists',
+                'Places',
+                'Users',
+                'Bookings',
+                
+                // Other possible formats
+                'therapist',
+                'place',
+                'user',
+                'booking'
+            ];
+
+            try {
+                results.innerHTML += '<div class="info">📋 Testing collection IDs in production database...</div>';
+                
+                const workingCollections = [];
+                
+                for (const collectionId of testCollections) {
+                    try {
+                        const docs = await databases.listDocuments(PRODUCTION_DATABASE_ID, collectionId, []);
+                        const count = docs.documents.length;
+                        results.innerHTML += `<div class="success">✅ FOUND: "${collectionId}" → ${count} documents</div>`;
+                        workingCollections.push({ id: collectionId, count });
+                        
+                        // Show sample data for therapists and places
+                        if ((collectionId.includes('therapist') || collectionId.includes('place')) && count > 0) {
+                            const sample = docs.documents[0];
+                            results.innerHTML += `<div class="info">📋 Sample: ${sample.name || sample.title || 'No name'} (ID: ${sample.$id})</div>`;
+                        }
+                    } catch (error) {
+                        results.innerHTML += `<div class="error">❌ "${collectionId}": ${error.message}</div>`;
+                    }
+                }
+                
+                if (workingCollections.length > 0) {
+                    results.innerHTML += '<div class="success">🎯 WORKING COLLECTION IDS FOUND:</div>';
+                    workingCollections.forEach(col => {
+                        results.innerHTML += `<div class="success">✅ "${col.id}" (${col.count} items)</div>`;
+                    });
+                    
+                    // Generate the correct config
+                    results.innerHTML += '<div class="warning">📝 USE THESE IN YOUR CONFIG:</div>';
+                    const therapistCol = workingCollections.find(c => c.id.toLowerCase().includes('therapist'));
+                    const placeCol = workingCollections.find(c => c.id.toLowerCase().includes('place'));
+                    
+                    if (therapistCol) {
+                        results.innerHTML += `<div class="info">THERAPISTS: '${therapistCol.id}',</div>`;
+                    }
+                    if (placeCol) {
+                        results.innerHTML += `<div class="info">PLACES: '${placeCol.id}',</div>`;
+                    }
+                } else {
+                    results.innerHTML += '<div class="error">❌ No working collections found!</div>';
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<div class="error">❌ Fatal error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run
+        findCollections();
+    </script>
+</body>
+</html>

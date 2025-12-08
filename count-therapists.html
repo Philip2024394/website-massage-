@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Therapist Count in Appwrite</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2/dist/umd/sdk.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { 
+            max-width: 600px; 
+            width: 100%;
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 30px; 
+            font-size: 2.2rem;
+        }
+        .count-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 30px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .label {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .loading {
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            padding: 15px;
+            border-radius: 8px;
+            color: #c62828;
+            margin: 20px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            padding: 15px;
+            border-radius: 8px;
+            color: #2e7d32;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Therapist Count</h1>
+        
+        <button onclick="countTherapists()">🔄 Count Registered Therapists</button>
+        
+        <div id="loading" style="display: none;" class="loading">
+            🔄 Counting therapists in Appwrite...
+        </div>
+        
+        <div id="results" style="display: none;">
+            <div class="count-display" id="totalCount">0</div>
+            <div class="label">Registered Therapists in Appwrite</div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="activeCount">0</div>
+                    <div class="stat-label">Available</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="busyCount">0</div>
+                    <div class="stat-label">Busy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="offlineCount">0</div>
+                    <div class="stat-label">Offline</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="withEmailCount">0</div>
+                    <div class="stat-label">With Email</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="error" style="display: none;" class="error"></div>
+        <div id="success" style="display: none;" class="success"></div>
+    </div>
+
+    <script>
+        // Appwrite configuration 
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: 'therapists_collection_id'
+            }
+        };
+
+        // Initialize Appwrite
+        const client = new Appwrite.Client()
+            .setEndpoint(APPWRITE_CONFIG.endpoint)
+            .setProject(APPWRITE_CONFIG.projectId);
+
+        const databases = new Appwrite.Databases(client);
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('results').style.display = show ? 'none' : 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error').innerHTML = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            document.getElementById('success').innerHTML = message;
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        async function countTherapists() {
+            try {
+                showLoading(true);
+                
+                console.log('📊 Counting therapists in Appwrite...');
+                console.log('🔗 Collection:', APPWRITE_CONFIG.collections.therapists);
+                
+                // Get all therapist documents
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists
+                );
+                
+                const therapists = response.documents;
+                const totalCount = therapists.length;
+                
+                console.log(`✅ Found ${totalCount} registered therapists`);
+                
+                // Count by status
+                const activeCount = therapists.filter(t => 
+                    t.status === 'Available' || t.status === 'available' || 
+                    t.isOnline === true || t.isLive === true
+                ).length;
+                
+                const busyCount = therapists.filter(t => 
+                    t.status === 'Busy' || t.status === 'busy'
+                ).length;
+                
+                const offlineCount = therapists.filter(t => 
+                    t.status === 'Offline' || t.status === 'offline' || 
+                    (!t.status && !t.isOnline && !t.isLive)
+                ).length;
+                
+                const withEmailCount = therapists.filter(t => t.email && t.email.trim().length > 0).length;
+                
+                // Update display
+                document.getElementById('totalCount').textContent = totalCount;
+                document.getElementById('activeCount').textContent = activeCount;
+                document.getElementById('busyCount').textContent = busyCount;
+                document.getElementById('offlineCount').textContent = offlineCount;
+                document.getElementById('withEmailCount').textContent = withEmailCount;
+                
+                showLoading(false);
+                
+                if (totalCount === 0) {
+                    showError('❌ No therapists found in the database. The collection might be empty or the collection ID might be incorrect.');
+                } else {
+                    showSuccess(`✅ Successfully counted ${totalCount} registered therapist${totalCount !== 1 ? 's' : ''} in your Appwrite database!`);
+                    
+                    // Log detailed info
+                    console.log('📊 Therapist Statistics:');
+                    console.log(`  Total: ${totalCount}`);
+                    console.log(`  Available: ${activeCount}`);
+                    console.log(`  Busy: ${busyCount}`);
+                    console.log(`  Offline: ${offlineCount}`);
+                    console.log(`  With Email: ${withEmailCount}`);
+                    
+                    // Log sample therapist names
+                    if (therapists.length > 0) {
+                        console.log('📋 Sample therapists:');
+                        therapists.slice(0, 5).forEach((t, i) => {
+                            console.log(`  ${i + 1}. ${t.name || 'Unnamed'} (${t.$id})`);
+                        });
+                        if (therapists.length > 5) {
+                            console.log(`  ... and ${therapists.length - 5} more`);
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Error counting therapists:', error);
+                showLoading(false);
+                
+                let errorMessage = `❌ Failed to count therapists: ${error.message}`;
+                
+                if (error.message.includes('Collection with the requested ID could not be found')) {
+                    errorMessage += '<br><br>💡 This means the collection "therapists_collection_id" does not exist in your Appwrite database.';
+                } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+                    errorMessage += '<br><br>🔑 This is a permission issue. Make sure the collection allows public read access.';
+                }
+                
+                showError(errorMessage);
+            }
+        }
+
+        // Auto-count on page load
+        window.addEventListener('load', () => {
+            console.log('🚀 Therapist counter ready!');
+            // Automatically count on load
+            countTherapists();
+        });
+    </script>
+</body>
+</html>

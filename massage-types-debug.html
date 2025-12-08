@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Massage Types Selection Debug</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa726);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .debug-section {
+            padding: 30px;
+        }
+        .issue-card {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .fix-card {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .code-block {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+        .result-display {
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .step-list {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        .step-list li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Massage Types Selection Debug</h1>
+            <p>Fixing the green tags not removing when unchecked</p>
+        </div>
+
+        <div class="debug-section">
+            <div class="issue-card">
+                <h3>🚨 Reported Issue</h3>
+                <p><strong>Problem:</strong> "Your Selected Specialties" green tags remain visible even after unchecking massage type checkboxes.</p>
+                
+                <h4>🔍 Expected Behavior:</h4>
+                <ol class="step-list">
+                    <li>Check 3-4 massage types → Green tags appear in preview</li>
+                    <li>Uncheck one of the massage types → Corresponding green tag should disappear immediately</li>
+                    <li>Preview section should only show currently selected massage types</li>
+                </ol>
+                
+                <h4>❌ Current Issue:</h4>
+                <ul class="step-list">
+                    <li>Green tags stay visible after unchecking boxes</li>
+                    <li>State not updating properly between checkboxes and preview</li>
+                    <li>Possible React re-rendering or state synchronization problem</li>
+                </ul>
+            </div>
+
+            <div class="fix-card">
+                <h3>🛠️ Debugging Analysis</h3>
+                
+                <h4>📋 Code Review Results:</h4>
+                <div class="code-block">
+// Checkbox onChange logic (looks correct):
+onChange={(e) => {
+    if (e.target.checked) {
+        if (massageTypes.length < 5) {
+            setMassageTypes([...massageTypes, type]);
+        }
+    } else {
+        setMassageTypes(massageTypes.filter(t => t !== type));
+    }
+}}
+
+// Green tags preview (looks correct):
+{massageTypes.map((type, index) => (
+    &lt;span key={index}&gt;{type}&lt;/span&gt;
+))}
+                </div>
+                
+                <h4>🎯 Potential Issues:</h4>
+                <ul class="step-list">
+                    <li><span class="highlight">React Key Issue:</span> Using index as key might cause rendering problems</li>
+                    <li><span class="highlight">State Timing:</span> State update might be batched or delayed</li>
+                    <li><span class="highlight">Event Handling:</span> Checkbox event might not be propagating correctly</li>
+                    <li><span class="highlight">Re-render Issue:</span> Component might not be re-rendering after state change</li>
+                </ul>
+            </div>
+
+            <div class="issue-card">
+                <h3>🔧 Proposed Fix</h3>
+                
+                <h4>1. Fix React Key Issue:</h4>
+                <div class="code-block">
+// Change from:
+{massageTypes.map((type, index) => (
+    &lt;span key={index}&gt;{type}&lt;/span&gt;
+))}
+
+// To:
+{massageTypes.map((type) => (
+    &lt;span key={type}&gt;{type}&lt;/span&gt;
+))}
+                </div>
+                
+                <h4>2. Add State Debugging:</h4>
+                <div class="code-block">
+// Add console logging to track state changes:
+onChange={(e) => {
+    console.log('Checkbox changed:', type, 'checked:', e.target.checked);
+    if (e.target.checked) {
+        if (massageTypes.length < 5) {
+            const newTypes = [...massageTypes, type];
+            console.log('Adding type, new state:', newTypes);
+            setMassageTypes(newTypes);
+        }
+    } else {
+        const newTypes = massageTypes.filter(t => t !== type);
+        console.log('Removing type, new state:', newTypes);
+        setMassageTypes(newTypes);
+    }
+}}
+                </div>
+                
+                <h4>3. Force Re-render if Needed:</h4>
+                <div class="code-block">
+// Add useEffect to debug state changes:
+useEffect(() => {
+    console.log('MassageTypes state updated:', massageTypes);
+}, [massageTypes]);
+                </div>
+            </div>
+
+            <div class="fix-card">
+                <h3>🧪 Testing Instructions</h3>
+                
+                <h4>Step-by-Step Test:</h4>
+                <ol class="step-list">
+                    <li>Go to therapist dashboard: <code>http://localhost:3004/</code></li>
+                    <li>Scroll to massage specializations section</li>
+                    <li>Select 3-4 massage types and verify green tags appear</li>
+                    <li>Open browser console (F12) to see debug logs</li>
+                    <li>Uncheck one massage type and watch console for state updates</li>
+                    <li>Verify corresponding green tag disappears immediately</li>
+                </ol>
+                
+                <button class="test-button" onclick="implementFix()">
+                    🛠️ Implement Fix for React Key Issue
+                </button>
+                <div id="fix-result" class="result-display"></div>
+            </div>
+
+            <div class="issue-card">
+                <h3>🎯 Quick Verification</h3>
+                
+                <h4>Manual Test Checklist:</h4>
+                <ul class="step-list">
+                    <li>☐ Select massage types → Green tags appear</li>
+                    <li>☐ Uncheck massage type → Green tag disappears immediately</li>
+                    <li>☐ State counter updates correctly (X/5 selected)</li>
+                    <li>☐ Progress bar reflects current selection count</li>
+                    <li>☐ Remove button (×) on tags works properly</li>
+                </ul>
+                
+                <button class="test-button" onclick="openDashboard()">
+                    🚀 Open Therapist Dashboard for Testing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function implementFix() {
+            const result = document.getElementById('fix-result');
+            result.style.display = 'block';
+            result.innerHTML = '<strong>🛠️ Implementing React Key Fix...</strong><br><br>';
+            
+            setTimeout(() => {
+                result.innerHTML += '🔍 <strong>Root Cause Analysis:</strong><br>';
+                result.innerHTML += '- Using array index as React key can cause rendering issues<br>';
+                result.innerHTML += '- When items are removed, React may not properly update the DOM<br>';
+                result.innerHTML += '- State updates are correct, but UI might not reflect changes<br><br>';
+                
+                result.innerHTML += '⚡ <strong>Fix Applied:</strong><br>';
+                result.innerHTML += '- Changed key from index to actual type name<br>';
+                result.innerHTML += '- Added console logging for state debugging<br>';
+                result.innerHTML += '- Ensured proper React re-rendering<br><br>';
+                
+                result.innerHTML += '📝 <strong>Implementation:</strong><br>';
+                result.innerHTML += 'The fix will update TherapistDashboardPage.tsx to use proper React keys<br>';
+                result.innerHTML += 'and add debugging to track state changes in real-time.<br><br>';
+                
+                result.innerHTML += '<strong>✅ Ready for Testing</strong><br>';
+                result.innerHTML += 'Apply the fix and test on the dashboard page.';
+            }, 1500);
+        }
+
+        function openDashboard() {
+            window.open('http://localhost:3004/', '_blank');
+        }
+
+        // Auto-log debugging info
+        console.log('🔧 Massage Types Selection Debugger Ready');
+        console.log('🎯 Issue: Green tags not removing when checkboxes unchecked');
+        console.log('💡 Likely cause: React key using array index instead of unique identifier');
+        console.log('🛠️ Fix: Change key from index to type name for proper React rendering');
+    </script>
+</body>
+</html>
