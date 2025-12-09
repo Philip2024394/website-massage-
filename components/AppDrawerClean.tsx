@@ -179,23 +179,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex justify-center gap-4 px-4 py-2">
-                  {onQRCodeClick && (
-                    <button onClick={() => handleItemClick(onQRCodeClick)} className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold">
-                      {translate('home.menu.qrCode')}
-                    </button>
-                  )}
-                  {onQRCodeClick && (onTermsClick || onPrivacyClick) && <span className="text-xs text-gray-400">•</span>}
-                  {onTermsClick && (
-                    <button onClick={() => handleItemClick(onTermsClick)} className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold">
-                      {translate('home.menu.terms')}
-                    </button>
-                  )}
-                  {onTermsClick && onPrivacyClick && <span className="text-xs text-gray-400">•</span>}
-                  {onPrivacyClick && (
-                    <button onClick={() => handleItemClick(onPrivacyClick)} className="text-xs text-orange-500 hover:text-orange-600 transition-colors font-bold">
-                      {translate('home.menu.privacy')}
-                    </button>
-                  )}
+                  <button onClick={() => handleItemClick(onAdminPortalClick, 'adminDashboard')} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
+                    Admin
+                  </button>
                 </div>
               </div>
             </div>

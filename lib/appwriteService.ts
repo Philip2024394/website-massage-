@@ -4084,6 +4084,1378 @@ export const monthlyAgentMetricsService = {
     }
 };
 
+// --- Member Stats Service ---
+export const memberStatsService = {
+    /**
+     * Get stats for a member for a specific month
+     */
+    async getStatsByMonth(memberId: string, month: string): Promise<any> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'member_stats',
+                [
+                    Query.equal('memberId', memberId),
+                    Query.equal('month', month),
+                    Query.limit(1)
+                ]
+            );
+            return response.documents[0] || null;
+        } catch (error) {
+            console.error('Error fetching member stats:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Get current month stats for a member
+     */
+    async getCurrentMonthStats(memberId: string): Promise<any> {
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        return this.getStatsByMonth(memberId, currentMonth);
+    },
+
+    /**
+     * Increment clicks for a member
+     */
+    async incrementClicks(memberId: string, memberType: string): Promise<void> {
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const stats = await this.getStatsByMonth(memberId, currentMonth);
+            
+            if (stats) {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    stats.$id,
+                    {
+                        clicksCount: stats.clicksCount + 1,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            } else {
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    ID.unique(),
+                    {
+                        memberId,
+                        memberType,
+                        month: currentMonth,
+                        clicksCount: 1,
+                        viewsCount: 0,
+                        bookingsCount: 0,
+                        revenue: 0,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            }
+        } catch (error) {
+            console.error('Error incrementing clicks:', error);
+        }
+    },
+
+    /**
+     * Increment views for a member
+     */
+    async incrementViews(memberId: string, memberType: string): Promise<void> {
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const stats = await this.getStatsByMonth(memberId, currentMonth);
+            
+            if (stats) {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    stats.$id,
+                    {
+                        viewsCount: stats.viewsCount + 1,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            } else {
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    ID.unique(),
+                    {
+                        memberId,
+                        memberType,
+                        month: currentMonth,
+                        clicksCount: 0,
+                        viewsCount: 1,
+                        bookingsCount: 0,
+                        revenue: 0,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            }
+        } catch (error) {
+            console.error('Error incrementing views:', error);
+        }
+    },
+
+    /**
+     * Update revenue for a member
+     */
+    async updateRevenue(memberId: string, memberType: string, amount: number): Promise<void> {
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const stats = await this.getStatsByMonth(memberId, currentMonth);
+            
+            if (stats) {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    stats.$id,
+                    {
+                        revenue: stats.revenue + amount,
+                        bookingsCount: stats.bookingsCount + 1,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            } else {
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'member_stats',
+                    ID.unique(),
+                    {
+                        memberId,
+                        memberType,
+                        month: currentMonth,
+                        clicksCount: 0,
+                        viewsCount: 0,
+                        bookingsCount: 1,
+                        revenue: amount,
+                        lastUpdated: new Date().toISOString()
+                    }
+                );
+            }
+        } catch (error) {
+            console.error('Error updating revenue:', error);
+        }
+    }
+};
+
+// --- Subscription Service ---
+export const subscriptionService = {
+    /**
+     * Get subscription for a member
+     */
+    async getSubscription(memberId: string): Promise<any> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                [
+                    Query.equal('memberId', memberId),
+                    Query.limit(1)
+                ]
+            );
+            return response.documents[0] || null;
+        } catch (error) {
+            console.error('Error fetching subscription:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Get all subscriptions
+     */
+    async getAllSubscriptions(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                [Query.limit(1000)]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching all subscriptions:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get subscriptions with payments due within specified days
+     */
+    async getDueSoon(days: number = 7): Promise<any[]> {
+        try {
+            const now = new Date();
+            const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                [
+                    Query.lessThanEqual('nextPaymentDate', futureDate.toISOString()),
+                    Query.greaterThanEqual('nextPaymentDate', now.toISOString()),
+                    Query.equal('subscriptionStatus', 'active'),
+                    Query.limit(1000)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching due soon subscriptions:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get overdue subscriptions
+     */
+    async getOverdue(): Promise<any[]> {
+        try {
+            const now = new Date();
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                [
+                    Query.lessThan('nextPaymentDate', now.toISOString()),
+                    Query.equal('subscriptionStatus', 'active'),
+                    Query.limit(1000)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching overdue subscriptions:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Update subscription
+     */
+    async updateSubscription(subscriptionId: string, data: any): Promise<any> {
+        try {
+            return await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                subscriptionId,
+                data
+            );
+        } catch (error) {
+            console.error('Error updating subscription:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Create subscription for a member
+     */
+    async createSubscription(data: {
+        memberId: string;
+        memberType: string;
+        memberName: string;
+        memberLocation: string;
+        activationDate: string;
+    }): Promise<any> {
+        try {
+            const nextPaymentDate = new Date(data.activationDate);
+            nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+
+            return await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                'member_subscriptions',
+                ID.unique(),
+                {
+                    ...data,
+                    currentMonth: 1,
+                    monthlyFee: 0, // First month free
+                    nextPaymentDate: nextPaymentDate.toISOString(),
+                    subscriptionStatus: 'active',
+                    notes: ''
+                }
+            );
+        } catch (error) {
+            console.error('Error creating subscription:', error);
+            throw error;
+        }
+    }
+};
+
+// --- Payment Service ---
+export const paymentService = {
+    /**
+     * Create a payment record
+     */
+    async createPayment(data: {
+        memberId: string;
+        subscriptionId: string;
+        monthNumber: number;
+        amount: number;
+        dueDate: string;
+    }): Promise<any> {
+        try {
+            return await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_records',
+                ID.unique(),
+                {
+                    ...data,
+                    paymentStatus: 'pending',
+                    notes: ''
+                }
+            );
+        } catch (error) {
+            console.error('Error creating payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Mark payment as paid
+     */
+    async markAsPaid(paymentId: string, transactionId: string, paymentMethod: string): Promise<any> {
+        try {
+            return await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_records',
+                paymentId,
+                {
+                    paymentStatus: 'paid',
+                    paidDate: new Date().toISOString(),
+                    transactionId,
+                    paymentMethod
+                }
+            );
+        } catch (error) {
+            console.error('Error marking payment as paid:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get payment history for a member
+     */
+    async getPaymentHistory(memberId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_records',
+                [
+                    Query.equal('memberId', memberId),
+                    Query.orderDesc('monthNumber'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching payment history:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get all pending payments
+     */
+    async getPendingPayments(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_records',
+                [
+                    Query.equal('paymentStatus', 'pending'),
+                    Query.limit(1000)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching pending payments:', error);
+            return [];
+        }
+    }
+};
+
+// --- Lead Generation Service ---
+// Handles pay-per-lead system for members without active subscriptions
+export const leadGenerationService = {
+    LEAD_COST: 50000, // IDR per accepted lead
+    RESPONSE_TIMEOUT: 5 * 60 * 1000, // 5 minutes
+    
+    /**
+     * Check if member is on lead-based payment model
+     */
+    async isLeadBasedMember(memberId: string, memberType: 'therapist' | 'massage_place' | 'facial_place'): Promise<boolean> {
+        try {
+            const collectionId = memberType === 'therapist' 
+                ? APPWRITE_CONFIG.collections.therapists
+                : memberType === 'massage_place'
+                ? APPWRITE_CONFIG.collections.places
+                : APPWRITE_CONFIG.collections.facial_places;
+            
+            const member = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                memberId
+            );
+            
+            // Check if subscription is inactive or expired
+            const subscriptionStatus = member.subscriptionStatus || 'inactive';
+            const subscriptionEndDate = member.subscriptionEndDate ? new Date(member.subscriptionEndDate) : new Date(0);
+            const now = new Date();
+            
+            // Member is lead-based if:
+            // 1. Subscription status is 'inactive' or 'lead_based'
+            // 2. Subscription end date has passed
+            // 3. Payment model is explicitly 'lead_based'
+            const isInactive = subscriptionStatus === 'inactive' || subscriptionStatus === 'lead_based';
+            const isExpired = subscriptionEndDate < now;
+            const isLeadModel = member.paymentModel === 'lead_based';
+            
+            return isInactive || isExpired || isLeadModel;
+        } catch (error) {
+            console.error('Error checking lead-based status:', error);
+            // Default to subscription model if error
+            return false;
+        }
+    },
+
+    /**
+     * Create a new lead for member
+     */
+    async createLead(data: {
+        memberId: string;
+        memberType: 'therapist' | 'massage_place' | 'facial_place';
+        memberName: string;
+        memberWhatsApp: string;
+        customerName: string;
+        customerWhatsApp: string;
+        customerLocation?: string;
+        hotelVillaName?: string;
+        roomNumber?: string;
+        serviceType: string;
+        duration: number;
+        requestedDateTime: string;
+        notes?: string;
+    }): Promise<any> {
+        try {
+            const leadId = ID.unique();
+            const now = new Date();
+            const expiresAt = new Date(now.getTime() + this.RESPONSE_TIMEOUT);
+            
+            // Generate unique accept/decline URLs with tokens
+            const acceptToken = ID.unique();
+            const declineToken = ID.unique();
+            const acceptUrl = `${window.location.origin}/lead/accept/${leadId}?token=${acceptToken}`;
+            const declineUrl = `${window.location.origin}/lead/decline/${leadId}?token=${declineToken}`;
+            
+            const leadData = {
+                leadId,
+                ...data,
+                leadCost: this.LEAD_COST,
+                status: 'pending',
+                sentAt: now.toISOString(),
+                expiresAt: expiresAt.toISOString(),
+                acceptUrl,
+                declineUrl,
+                billed: false,
+                paymentStatus: 'pending'
+            };
+            
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId,
+                leadData
+            );
+            
+            console.log('✅ Lead created:', leadId);
+            
+            // Send WhatsApp message to member
+            await this.sendLeadWhatsApp(response);
+            
+            // Set expiry timer
+            this.setExpiryTimer(leadId);
+            
+            return response;
+        } catch (error) {
+            console.error('Error creating lead:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Send WhatsApp message with lead details
+     */
+    async sendLeadWhatsApp(lead: any): Promise<void> {
+        try {
+            const serviceEmoji = lead.serviceType.toLowerCase().includes('facial') ? '💆‍♀️' : '💆';
+            const locationText = lead.hotelVillaName 
+                ? `${lead.hotelVillaName}${lead.roomNumber ? ` - Room ${lead.roomNumber}` : ''}`
+                : lead.customerLocation || 'Not specified';
+            
+            const message = `🎯 NEW BOOKING LEAD - INDASTREET
+
+${serviceEmoji} ${lead.serviceType.toUpperCase()} SERVICE REQUEST
+
+👤 Customer: ${lead.customerName}
+📱 WhatsApp: ${lead.customerWhatsApp}
+📍 Location: ${locationText}
+⏰ Requested: ${lead.requestedDateTime}
+⏱️ Duration: ${lead.duration} minutes
+
+💰 LEAD COST: Rp ${lead.leadCost.toLocaleString()}
+   (Billed ONLY if you accept)
+
+✅ ACCEPT LEAD (Rp ${lead.leadCost.toLocaleString()} will be charged):
+${lead.acceptUrl}
+
+❌ DECLINE LEAD (No charge):
+${lead.declineUrl}
+
+⏰ YOU HAVE 5 MINUTES TO RESPOND
+   After 5 minutes, this lead will be sent to other providers.
+
+${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact IndaStreet Support
++62-XXX-XXXX`;
+
+            const whatsappUrl = `https://wa.me/${lead.memberWhatsApp}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            console.log('✅ Lead WhatsApp sent to:', lead.memberWhatsApp);
+        } catch (error) {
+            console.error('Error sending lead WhatsApp:', error);
+        }
+    },
+
+    /**
+     * Accept a lead
+     */
+    async acceptLead(leadId: string, token: string): Promise<{ success: boolean; message: string; lead?: any }> {
+        try {
+            const lead = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId
+            );
+            
+            // Verify token matches
+            if (!lead.acceptUrl.includes(token)) {
+                return { success: false, message: 'Invalid token' };
+            }
+            
+            // Check if already responded
+            if (lead.status !== 'pending') {
+                return { success: false, message: `Lead already ${lead.status}` };
+            }
+            
+            // Check if expired
+            const now = new Date();
+            const expiresAt = new Date(lead.expiresAt);
+            if (now > expiresAt) {
+                await this.expireLead(leadId);
+                return { success: false, message: 'Lead has expired (5 minute window passed)' };
+            }
+            
+            // Update lead status
+            const updatedLead = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId,
+                {
+                    status: 'accepted',
+                    respondedAt: now.toISOString(),
+                    billed: true,
+                    billedAt: now.toISOString()
+                }
+            );
+            
+            // Notify customer
+            await this.notifyCustomerAccepted(updatedLead);
+            
+            // Update monthly billing summary
+            await this.updateBillingSummary(updatedLead.memberId, updatedLead.memberType);
+            
+            console.log('✅ Lead accepted:', leadId);
+            
+            return { 
+                success: true, 
+                message: 'Lead accepted! You will be billed Rp 50,000. Customer has been notified.',
+                lead: updatedLead
+            };
+        } catch (error) {
+            console.error('Error accepting lead:', error);
+            return { success: false, message: 'Error processing acceptance' };
+        }
+    },
+
+    /**
+     * Decline a lead
+     */
+    async declineLead(leadId: string, token: string): Promise<{ success: boolean; message: string }> {
+        try {
+            const lead = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId
+            );
+            
+            // Verify token matches
+            if (!lead.declineUrl.includes(token)) {
+                return { success: false, message: 'Invalid token' };
+            }
+            
+            // Check if already responded
+            if (lead.status !== 'pending') {
+                return { success: false, message: `Lead already ${lead.status}` };
+            }
+            
+            // Update lead status
+            const now = new Date();
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId,
+                {
+                    status: 'declined',
+                    respondedAt: now.toISOString()
+                }
+            );
+            
+            // Notify customer and find alternative
+            await this.notifyCustomerDeclined(lead);
+            
+            // Update monthly billing summary
+            await this.updateBillingSummary(lead.memberId, lead.memberType);
+            
+            console.log('✅ Lead declined:', leadId);
+            
+            return { 
+                success: true, 
+                message: 'Lead declined. No charges applied. Customer will be notified.'
+            };
+        } catch (error) {
+            console.error('Error declining lead:', error);
+            return { success: false, message: 'Error processing decline' };
+        }
+    },
+
+    /**
+     * Expire a lead (after 5 minutes)
+     */
+    async expireLead(leadId: string): Promise<void> {
+        try {
+            const lead = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                leadId
+            );
+            
+            if (lead.status === 'pending') {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'lead_generations',
+                    leadId,
+                    {
+                        status: 'expired',
+                        respondedAt: new Date().toISOString()
+                    }
+                );
+                
+                // Notify customer and find alternative
+                await this.notifyCustomerDeclined(lead);
+                
+                console.log('⏰ Lead expired:', leadId);
+            }
+        } catch (error) {
+            console.error('Error expiring lead:', error);
+        }
+    },
+
+    /**
+     * Set timer to auto-expire lead after 5 minutes
+     */
+    setExpiryTimer(leadId: string): void {
+        setTimeout(async () => {
+            await this.expireLead(leadId);
+        }, this.RESPONSE_TIMEOUT);
+    },
+
+    /**
+     * Notify customer that lead was accepted
+     */
+    async notifyCustomerAccepted(lead: any): Promise<void> {
+        try {
+            const message = `✅ BOOKING CONFIRMED!
+
+Your ${lead.serviceType} booking has been accepted by ${lead.memberName}!
+
+📅 Date/Time: ${lead.requestedDateTime}
+⏱️ Duration: ${lead.duration} minutes
+👤 Provider: ${lead.memberName}
+📱 Contact: ${lead.memberWhatsApp}
+
+The provider will contact you shortly to confirm details.
+
+Thank you for using IndaStreet! 🙏`;
+
+            const whatsappUrl = `https://wa.me/${lead.customerWhatsApp}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        } catch (error) {
+            console.error('Error notifying customer (accepted):', error);
+        }
+    },
+
+    /**
+     * Notify customer that lead was declined/expired
+     */
+    async notifyCustomerDeclined(lead: any): Promise<void> {
+        try {
+            const message = `⚠️ PROVIDER UNAVAILABLE
+
+Unfortunately, ${lead.memberName} is not available for your requested booking.
+
+📅 Your Request: ${lead.requestedDateTime}
+⏱️ Duration: ${lead.duration} minutes
+
+We're finding another available provider for you. You'll receive a new notification shortly.
+
+Thank you for your patience! 🙏
+
+Need help? Contact IndaStreet Support:
+📞 +62-XXX-XXXX`;
+
+            const whatsappUrl = `https://wa.me/${lead.customerWhatsApp}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        } catch (error) {
+            console.error('Error notifying customer (declined):', error);
+        }
+    },
+
+    /**
+     * Get all leads for a member
+     */
+    async getMemberLeads(memberId: string, status?: string): Promise<any[]> {
+        try {
+            const queries = [
+                Query.equal('memberId', memberId),
+                Query.orderDesc('sentAt'),
+                Query.limit(100)
+            ];
+            
+            if (status) {
+                queries.push(Query.equal('status', status));
+            }
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                queries
+            );
+            
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching member leads:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Get all leads (admin view)
+     */
+    async getAllLeads(filters?: {
+        status?: string;
+        memberType?: string;
+        dateFrom?: string;
+        dateTo?: string;
+    }): Promise<any[]> {
+        try {
+            const queries: any[] = [
+                Query.orderDesc('sentAt'),
+                Query.limit(500)
+            ];
+            
+            if (filters?.status) {
+                queries.push(Query.equal('status', filters.status));
+            }
+            if (filters?.memberType) {
+                queries.push(Query.equal('memberType', filters.memberType));
+            }
+            if (filters?.dateFrom) {
+                queries.push(Query.greaterThanEqual('sentAt', filters.dateFrom));
+            }
+            if (filters?.dateTo) {
+                queries.push(Query.lessThanEqual('sentAt', filters.dateTo));
+            }
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                queries
+            );
+            
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching all leads:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Update monthly billing summary
+     */
+    async updateBillingSummary(memberId: string, memberType: string): Promise<void> {
+        try {
+            const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+            
+            // Get all leads for this member this month
+            const leads = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'lead_generations',
+                [
+                    Query.equal('memberId', memberId),
+                    Query.greaterThanEqual('sentAt', `${currentMonth}-01`),
+                    Query.lessThan('sentAt', `${currentMonth}-32`)
+                ]
+            );
+            
+            const totalLeads = leads.documents.length;
+            const acceptedLeads = leads.documents.filter(l => l.status === 'accepted').length;
+            const declinedLeads = leads.documents.filter(l => l.status === 'declined').length;
+            const expiredLeads = leads.documents.filter(l => l.status === 'expired').length;
+            const totalOwed = acceptedLeads * this.LEAD_COST;
+            
+            // Try to get existing summary
+            const summaryId = `${memberId}_${currentMonth}`;
+            let summary;
+            try {
+                summary = await databases.getDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'lead_billing_summary',
+                    summaryId
+                );
+            } catch {
+                // Doesn't exist, will create
+            }
+            
+            const summaryData = {
+                memberId,
+                memberType,
+                memberName: leads.documents[0]?.memberName || 'Unknown',
+                billingMonth: currentMonth,
+                totalLeads,
+                acceptedLeads,
+                declinedLeads,
+                expiredLeads,
+                totalOwed,
+                totalPaid: summary?.totalPaid || 0,
+                balance: totalOwed - (summary?.totalPaid || 0),
+                lastUpdated: new Date().toISOString()
+            };
+            
+            if (summary) {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'lead_billing_summary',
+                    summaryId,
+                    summaryData
+                );
+            } else {
+                await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    'lead_billing_summary',
+                    summaryId,
+                    summaryData
+                );
+            }
+            
+            console.log('✅ Billing summary updated for:', memberId);
+        } catch (error) {
+            console.error('Error updating billing summary:', error);
+        }
+    },
+
+    /**
+     * Get billing summary for member
+     */
+    async getMemberBillingSummary(memberId: string, month?: string): Promise<any> {
+        try {
+            const targetMonth = month || new Date().toISOString().slice(0, 7);
+            const summaryId = `${memberId}_${targetMonth}`;
+            
+            return await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_billing_summary',
+                summaryId
+            );
+        } catch (error) {
+            console.error('Error fetching billing summary:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Mark lead payment as paid
+     */
+    async markLeadsPaid(memberId: string, month: string, amountPaid: number): Promise<void> {
+        try {
+            const summaryId = `${memberId}_${month}`;
+            const summary = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_billing_summary',
+                summaryId
+            );
+            
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'lead_billing_summary',
+                summaryId,
+                {
+                    totalPaid: summary.totalPaid + amountPaid,
+                    balance: summary.balance - amountPaid,
+                    lastUpdated: new Date().toISOString()
+                }
+            );
+            
+            console.log('✅ Payment recorded:', amountPaid);
+        } catch (error) {
+            console.error('Error marking payment:', error);
+            throw error;
+        }
+    }
+};
+
+// --- Membership Service ---
+export const membershipService = {
+    // Pricing constants (Indonesia - IDR)
+    COUNTRY: 'ID', // Indonesia
+    CURRENCY: 'IDR',
+    PRICING: {
+        TRIAL: 0,
+        MONTH_2: 100000,
+        MONTH_3: 135000,
+        MONTH_4: 175000,
+        MONTH_5: 200000,
+        MONTH_6_PLUS: 200000, // Stays at 200k for all months after Month 5
+        PREMIUM_UPGRADE: 275000,
+        LEAD_COST: 50000,
+        LATE_FEE: 25000,
+        REACTIVATION_FEE: 275000
+    },
+    
+    // Grace period settings
+    GRACE_PERIOD_DAYS: 5, // Days 1-5: no penalty
+    LATE_FEE_AFTER_DAY: 5, // After day 5: late fee applies
+    SUSPENSION_AFTER_DAY: 10, // After day 10: switch to lead-based model
+
+    /**
+     * Get pricing for current membership month (Indonesia - IDR)
+     * Month 1: Free
+     * Month 2: 100k
+     * Month 3: 135k
+     * Month 4: 175k
+     * Month 5+: 200k (consistent rate for all subsequent months)
+     */
+    getPricingForMonth: (month: number): number => {
+        if (month === 1) return membershipService.PRICING.TRIAL;
+        if (month === 2) return membershipService.PRICING.MONTH_2;
+        if (month === 3) return membershipService.PRICING.MONTH_3;
+        if (month === 4) return membershipService.PRICING.MONTH_4;
+        // Month 5 and all subsequent months: 200,000 IDR
+        return membershipService.PRICING.MONTH_6_PLUS;
+    },
+
+    /**
+     * Check if member is verified (has badge)
+     */
+    isVerified: (member: any): boolean => {
+        return member.isVerified && 
+               member.subscriptionStatus !== 'suspended' &&
+               member.subscriptionStatus !== 'deactivated' &&
+               (member.outstandingDues || 0) === 0;
+    },
+
+    /**
+     * Calculate outstanding dues for member
+     */
+    calculateOutstandingDues: async (memberId: string, memberType: string) => {
+        try {
+            // Get membership payments owed
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            const member = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                memberId
+            );
+
+            let totalDues = 0;
+
+            // Add unpaid subscription fees
+            if (member.subscriptionStatus === 'active' && member.outstandingDues) {
+                totalDues += member.outstandingDues;
+            }
+
+            // Add unpaid lead charges
+            const unpaidLeads = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadGenerations,
+                [
+                    Query.equal('memberId', memberId),
+                    Query.equal('status', 'accepted'),
+                    Query.equal('paymentStatus', 'unpaid')
+                ]
+            );
+
+            unpaidLeads.documents.forEach((lead: any) => {
+                totalDues += lead.leadCost;
+            });
+
+            return totalDues;
+        } catch (error) {
+            console.error('Error calculating outstanding dues:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Accept membership agreement
+     */
+    acceptAgreement: async (memberId: string, memberType: string, agreementData: any) => {
+        try {
+            // Create agreement record
+            const agreement = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.membershipAgreements,
+                ID.unique(),
+                {
+                    memberId,
+                    memberType,
+                    agreementVersion: '1.0',
+                    acceptedDate: new Date().toISOString(),
+                    ipAddress: agreementData.ipAddress,
+                    userAgent: agreementData.userAgent,
+                    termsAcknowledged: [
+                        'five_month_commitment',
+                        'payment_schedule',
+                        'deactivation_policy',
+                        'upgrade_pricing',
+                        'verified_badge_policy'
+                    ],
+                    pricingTierAcknowledged: {
+                        month1: 0,
+                        month2: 100000,
+                        month3: 135000,
+                        month4: 175000,
+                        month5Plus: 200000,
+                        premiumUpgrade: 275000
+                    },
+                    isActive: true
+                }
+            );
+
+            // Update member document
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                memberId,
+                {
+                    agreementAccepted: true,
+                    agreementAcceptedDate: new Date().toISOString(),
+                    agreementVersion: '1.0',
+                    subscriptionStatus: 'trial',
+                    membershipMonth: 1,
+                    commitmentEndDate: new Date(Date.now() + 150 * 24 * 60 * 60 * 1000).toISOString() // 5 months
+                }
+            );
+
+            return agreement;
+        } catch (error) {
+            console.error('Error accepting agreement:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Request upgrade from lead-based to premium
+     */
+    requestPremiumUpgrade: async (memberId: string, memberType: string) => {
+        try {
+            // Check if member is eligible
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            const member = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                memberId
+            );
+
+            if (member.paymentModel !== 'lead_based') {
+                throw new Error('Only lead-based members can upgrade to premium');
+            }
+
+            // Calculate outstanding dues
+            const outstandingDues = await membershipService.calculateOutstandingDues(memberId, memberType);
+            const totalUpgradeCost = membershipService.PRICING.PREMIUM_UPGRADE + outstandingDues;
+
+            // Create upgrade request
+            const upgrade = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.membershipUpgrades,
+                ID.unique(),
+                {
+                    memberId,
+                    memberType,
+                    upgradeDate: new Date().toISOString(),
+                    previousModel: 'lead_based',
+                    newModel: 'premium',
+                    upgradeFee: membershipService.PRICING.PREMIUM_UPGRADE,
+                    outstandingDuesCleared: outstandingDues,
+                    totalPaidAtUpgrade: totalUpgradeCost,
+                    paymentStatus: 'pending',
+                    verifiedBadgeGranted: false
+                }
+            );
+
+            return {
+                upgrade,
+                totalCost: totalUpgradeCost,
+                outstandingDues,
+                upgradeFee: membershipService.PRICING.PREMIUM_UPGRADE
+            };
+        } catch (error) {
+            console.error('Error requesting premium upgrade:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Complete premium upgrade after payment
+     */
+    completePremiumUpgrade: async (upgradeId: string) => {
+        try {
+            const upgrade = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.membershipUpgrades,
+                upgradeId
+            );
+
+            // Update upgrade record
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.membershipUpgrades,
+                upgradeId,
+                {
+                    paymentStatus: 'paid',
+                    paymentDate: new Date().toISOString(),
+                    verifiedBadgeGranted: true,
+                    verifiedBadgeDate: new Date().toISOString()
+                }
+            );
+
+            // Update member record
+            const collectionId = upgrade.memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                upgrade.memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                upgrade.memberId,
+                {
+                    subscriptionStatus: 'premium',
+                    paymentModel: 'premium',
+                    previousPaymentModel: 'lead_based',
+                    upgradedToPremium: true,
+                    premiumUpgradeDate: new Date().toISOString(),
+                    isVerified: true,
+                    verifiedSince: new Date().toISOString(),
+                    outstandingDues: 0
+                }
+            );
+
+            // Mark all outstanding leads as paid
+            await leadGenerationService.markLeadsPaid(upgrade.memberId, new Date().toISOString());
+
+            return upgrade;
+        } catch (error) {
+            console.error('Error completing premium upgrade:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Request account deactivation
+     */
+    requestDeactivation: async (memberId: string, memberType: string, reason: string) => {
+        try {
+            // Check outstanding dues
+            const outstandingDues = await membershipService.calculateOutstandingDues(memberId, memberType);
+
+            if (outstandingDues > 0) {
+                throw new Error(`Cannot deactivate account with outstanding dues: Rp ${outstandingDues.toLocaleString()}`);
+            }
+
+            // Create deactivation request
+            const request = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.deactivationRequests,
+                ID.unique(),
+                {
+                    memberId,
+                    memberType,
+                    requestDate: new Date().toISOString(),
+                    reason,
+                    status: 'pending',
+                    outstandingDuesAtRequest: outstandingDues,
+                    noticeProvidedDate: new Date().toISOString(),
+                    effectiveDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+                    canReactivateAfter: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString(), // 90 days after
+                    reactivationFeeRequired: membershipService.PRICING.REACTIVATION_FEE,
+                    reactivationRequiresApproval: true
+                }
+            );
+
+            // Update member record
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                memberId,
+                {
+                    deactivationRequested: true,
+                    deactivationRequestDate: new Date().toISOString()
+                }
+            );
+
+            return request;
+        } catch (error) {
+            console.error('Error requesting deactivation:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Approve deactivation request
+     */
+    approveDeactivation: async (requestId: string, adminId: string, notes: string) => {
+        try {
+            const request = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.deactivationRequests,
+                requestId
+            );
+
+            // Update request
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.deactivationRequests,
+                requestId,
+                {
+                    status: 'approved',
+                    reviewedBy: adminId,
+                    reviewedDate: new Date().toISOString(),
+                    reviewNotes: notes,
+                    clearanceCertificateIssued: true
+                }
+            );
+
+            // Update member record
+            const collectionId = request.memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
+                                request.memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
+                                APPWRITE_CONFIG.facialPlacesCollectionId;
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                request.memberId,
+                {
+                    subscriptionStatus: 'deactivated',
+                    deactivationEffectiveDate: request.effectiveDate,
+                    isVerified: false,
+                    verifiedSince: null
+                }
+            );
+
+            return request;
+        } catch (error) {
+            console.error('Error approving deactivation:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get membership stats for admin dashboard
+     */
+    getMembershipStats: async () => {
+        try {
+            const stats = {
+                totalMembers: 0,
+                trialMembers: 0,
+                activeMembers: 0,
+                premiumMembers: 0,
+                leadBasedMembers: 0,
+                suspendedMembers: 0,
+                deactivatedMembers: 0,
+                verifiedMembers: 0,
+                totalRevenue: 0,
+                pendingUpgrades: 0,
+                pendingDeactivations: 0
+            };
+
+            // Get counts from all collections
+            const collections = [
+                APPWRITE_CONFIG.therapistsCollectionId,
+                APPWRITE_CONFIG.placesCollectionId,
+                APPWRITE_CONFIG.facialPlacesCollectionId
+            ];
+
+            for (const collectionId of collections) {
+                const members = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    collectionId
+                );
+
+                members.documents.forEach((member: any) => {
+                    stats.totalMembers++;
+                    if (member.subscriptionStatus === 'trial') stats.trialMembers++;
+                    if (member.subscriptionStatus === 'active') stats.activeMembers++;
+                    if (member.subscriptionStatus === 'premium') stats.premiumMembers++;
+                    if (member.subscriptionStatus === 'lead_based') stats.leadBasedMembers++;
+                    if (member.subscriptionStatus === 'suspended') stats.suspendedMembers++;
+                    if (member.subscriptionStatus === 'deactivated') stats.deactivatedMembers++;
+                    if (member.isVerified) stats.verifiedMembers++;
+                    stats.totalRevenue += member.totalPaidToDate || 0;
+                });
+            }
+
+            // Get pending upgrades
+            const upgrades = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.membershipUpgrades,
+                [Query.equal('paymentStatus', 'pending')]
+            );
+            stats.pendingUpgrades = upgrades.total;
+
+            // Get pending deactivations
+            const deactivations = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.deactivationRequests,
+                [Query.equal('status', 'pending')]
+            );
+            stats.pendingDeactivations = deactivations.total;
+
+            return stats;
+        } catch (error) {
+            console.error('Error getting membership stats:', error);
+            throw error;
+        }
+    }
+};
+
 
 
 

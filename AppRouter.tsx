@@ -48,11 +48,14 @@ const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
 const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
+const MembershipTermsPage = React.lazy(() => import('./pages/MembershipTermsPage'));
 const FacialPlaceDashboardPage = React.lazy(() => import('./pages/FacialPlaceDashboardPage'));
 const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
 const FacialMemberDashboard = React.lazy(() => import('./pages/FacialMemberDashboard'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
+const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
+const LeadDeclinePage = React.lazy(() => import('./pages/LeadDeclinePage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
@@ -92,6 +95,8 @@ const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTo
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
 const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
 const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage'));
+const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
+const LiveAdminDashboardEnhanced = React.lazy(() => import('./pages/LiveAdminDashboardEnhanced'));
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -167,6 +172,8 @@ interface AppRouterProps {
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
     handleHotelLogin: (hotelId?: string) => void; // Add hotel login handler
+    handleAdminLogin: () => void; // Admin login handler
+    handleAdminLogout: () => Promise<void>; // Admin logout handler
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
 
@@ -746,8 +753,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             setPage('customerPortal');
         },
         onAdminPortalClick: () => {
-            console.log('🔥 Admin portal removed → redirecting to home');
-            setPage('adminDashboard');
+            console.log('🔥 Admin portal clicked');
+            // Check if admin is logged in, if not go to login page
+            if (isAdminLoggedIn) {
+                console.log('✅ Admin already logged in, navigating to dashboard');
+                setPage('adminDashboard');
+            } else {
+                console.log('⚠️ Admin not logged in, navigating to login');
+                setPage('adminLogin');
+            }
         },
         onTermsClick: () => {
             console.log('🔥 Navigating to serviceTerms');
@@ -1347,6 +1361,57 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t={t || {}}
             />;
         }
+
+        // 🔐 Admin Routes - Login & Dashboard
+        case 'adminLogin':
+            return (
+                <React.Suspense fallback={<LoadingSpinner message="Loading admin login..." />}>
+                    <AdminLoginPage
+                        onBack={handleBackToHome}
+                        onAdminLogin={async (email: string, password: string) => {
+                            // Simple demo admin credentials - replace with real auth
+                            if (email === 'admin@indastreet.com' && password === 'admin123') {
+                                console.log('✅ Admin login successful');
+                                // Call the handleAdminLogin from useAuthHandlers via props
+                                if ((props as any).handleAdminLogin) {
+                                    (props as any).handleAdminLogin();
+                                }
+                                setPage('adminDashboard');
+                                return true;
+                            }
+                            console.log('❌ Invalid admin credentials');
+                            return false;
+                        }}
+                        t={t}
+                    />
+                </React.Suspense>
+            );
+
+        case 'adminDashboard': {
+            console.log('🎯 AppRouter: ADMIN DASHBOARD CASE TRIGGERED!');
+            console.log('🔍 AppRouter: isAdminLoggedIn:', isAdminLoggedIn);
+            
+            // Guard: Redirect to login if not authenticated
+            if (!isAdminLoggedIn) {
+                console.log('⚠️ Admin not logged in, redirecting to admin login');
+                setPage('adminLogin');
+                return null;
+            }
+
+            return (
+                <React.Suspense fallback={<LoadingSpinner message="Loading admin dashboard..." />}>
+                    <LiveAdminDashboardEnhanced
+                        onLogout={async () => {
+                            console.log('🚪 Admin logout');
+                            if ((props as any).handleAdminLogout) {
+                                await (props as any).handleAdminLogout();
+                            }
+                            setPage('home');
+                        }}
+                    />
+                </React.Suspense>
+            );
+        }
         
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
@@ -1408,6 +1473,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <AcceptBookingPage />;
         case 'decline-booking':
             return <DeclineBookingPage />;
+        case 'lead-accept':
+            // Render lead accept page when deep-linked
+            return <LeadAcceptPage />;
+        case 'lead-decline':
+            // Render lead decline page when deep-linked
+            return <LeadDeclinePage />;
+        case 'membership-terms':
+            // Render membership agreement page
+            return <MembershipTermsPage />;
             
         case 'bookings':
             return (

@@ -9,6 +9,9 @@ process.env.ROLLUP_NO_NATIVE = '1'
 // Ensure __dirname is available in ESM context
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+// Check if running in admin mode
+const isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('--mode=admin');
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -29,7 +32,7 @@ export default defineConfig({
   server: {
     port: Number(process.env.PORT) || Number(process.env.VITE_PORT) || 3000,
     host: true,
-    open: true,
+    open: isAdminMode ? '/admin.html' : true,
     headers: {
       'Cache-Control': 'no-store',
     },
@@ -74,7 +77,8 @@ export default defineConfig({
     rollupOptions: {
       external: [],
       input: {
-        main: path.resolve(__dirname, 'index.html')
+        main: path.resolve(__dirname, 'index.html'),
+        admin: path.resolve(__dirname, 'admin.html')
       },
       output: {
         // 🔥 CACHE-BUSTING: Add content hash to filenames

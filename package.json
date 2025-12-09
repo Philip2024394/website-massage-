@@ -6,6 +6,10 @@
   "packageManager": "pnpm@10.21.0",
   "scripts": {
     "dev": "cross-env VITE_PORT=3000 vite",
+    "dev:app": "cross-env VITE_PORT=3003 vite",
+    "dev:admin": "cross-env VITE_PORT=3004 vite --mode admin",
+    "open:main": "pwsh -NoProfile -Command Start-Process http://localhost:3003/",
+    "open:admin": "pwsh -NoProfile -Command Start-Process http://localhost:3004/admin.html",
     "build": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
     "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "build:npm": "npm run type-check && cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",

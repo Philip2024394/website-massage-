@@ -1517,6 +1517,22 @@ const HomePage: React.FC<HomePageProps> = ({
                     min-width: 0;
                 }
             `}</style>
+            {/* Directory footer: Terms & Privacy with brand */}
+            <div className="mt-12 mb-6 flex flex-col items-center gap-2">
+                <div className="font-bold text-lg">
+                    <span className="text-black">Inda</span>
+                    <span className="text-orange-500">Street</span>
+                </div>
+                <div className="flex justify-center gap-4">
+                    <button onClick={() => onTermsClick && onTermsClick()} className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
+                        Terms
+                    </button>
+                    <span className="text-sm text-gray-400">•</span>
+                    <button onClick={() => onPrivacyClick && onPrivacyClick()} className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
+                        Privacy
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

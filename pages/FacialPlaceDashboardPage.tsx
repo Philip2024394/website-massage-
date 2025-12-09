@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../components/ImageUpload';
+import MainImageCropper from '../components/MainImageCropper';
 import HotelVillaOptIn from '../components/HotelVillaOptIn';
 
 import { placeService } from '../lib/appwriteService';
@@ -114,6 +115,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     const [description, setDescription] = useState('');
     const [mainImage, setMainImage] = useState('');
     const [profilePicture, setProfilePicture] = useState('');
+    const [showImageCropper, setShowImageCropper] = useState(false);
     
     // Log main image changes for debugging
     useEffect(() => {
@@ -1172,6 +1174,40 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                             currentImage={mainImage}
                             onImageChange={setMainImage}
                         />
+                        <div className="flex justify-between items-center mt-1">
+                            <div className="text-xs text-gray-500">
+                                Recommended: 1200×675px (16:9 ratio)
+                            </div>
+                            {mainImage && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowImageCropper(true)}
+                                    className="text-xs text-orange-600 hover:text-orange-700 font-semibold underline"
+                                >
+                                    Edit Banner
+                                </button>
+                            )}
+                        </div>
+                        
+                        {/* Image Cropper Modal */}
+                        {showImageCropper && mainImage && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-4">Edit Banner Image</h3>
+                                        <MainImageCropper
+                                            imageUrl={mainImage}
+                                            aspect={16 / 9}
+                                            onConfirm={(croppedImage) => {
+                                                setMainImage(croppedImage);
+                                                setShowImageCropper(false);
+                                            }}
+                                            onCancel={() => setShowImageCropper(false)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         
                         {/* Profile Picture Upload (Circular Logo) */}
                         <div className="mb-6">

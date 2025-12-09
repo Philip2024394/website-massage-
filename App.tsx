@@ -472,6 +472,8 @@ const App = () => {
                     handleAgentLogout={authHandlers?.handleAgentLogout || (() => Promise.resolve())}
                     handleHotelLogout={authHandlers?.handleHotelLogout || (() => Promise.resolve())}
                     handleHotelLogin={authHandlers?.handleHotelLogin || (() => {})}
+                    handleAdminLogin={authHandlers?.handleAdminLogin || (() => {})}
+                    handleAdminLogout={authHandlers?.handleAdminLogout || (() => Promise.resolve())}
                     handleCreateBooking={() => Promise.resolve()}
 
                     handleUpdateBookingStatus={() => Promise.resolve()}

@@ -48,6 +48,13 @@ export const APPWRITE_CONFIG = {
         userRegistrations: 'user_registrations', // NEW: Device tracking for welcome bonus
         chatRooms: 'chat_rooms', // NEW: Booking chat rooms
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
+        // Lead Generation System
+        leadGenerations: 'lead_generations', // NEW: Pay-per-lead tracking
+        leadBillingSummary: 'lead_billing_summary', // NEW: Monthly lead billing
+        // Membership Agreement System
+        membershipAgreements: 'membership_agreements', // NEW: Membership contracts
+        membershipUpgrades: 'membership_upgrades', // NEW: Premium upgrade tracking
+        deactivationRequests: 'deactivation_requests', // NEW: Account deactivation
         coins: 'coins', // NEW: Coin rewards transactions
         referrals: 'referrals', // NEW: Referral tracking
         activeDiscounts: 'active_discounts', // NEW: Promotional discount system
@@ -67,6 +74,25 @@ export const APPWRITE_CONFIG = {
         libraries: ['places', 'geometry'],
         region: 'ID', // Indonesia
         language: 'id' // Indonesian
+    },
+    
+    // Country Configuration (for future multi-country expansion)
+    country: {
+        code: 'ID', // Indonesia
+        name: 'Indonesia',
+        currency: 'IDR',
+        currencySymbol: 'Rp',
+        locale: 'id-ID',
+        timezone: 'Asia/Jakarta',
+        phonePrefix: '+62',
+        defaultCity: 'Bali'
+    },
+    
+    // Language Configuration
+    languages: {
+        admin: 'en', // Admin dashboard: English only
+        member: ['en', 'id'], // Member pages: English & Indonesian
+        customer: ['en', 'id'] // Customer pages: English & Indonesian
     }
 };
 
