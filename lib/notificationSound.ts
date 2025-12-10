@@ -1,20 +1,50 @@
-// Notification Sound System for Booking Alerts
-// Plays MP3 alert when therapist/massage place receives booking request
+/**
+ * Centralized Notification Sound System
+ * 
+ * Manages audio notifications for ALL dashboards:
+ * - Therapist dashboard
+ * - Massage place dashboard
+ * - Facial place dashboard
+ * - Admin dashboard
+ * 
+ * Notification types:
+ * - message: New chat message
+ * - booking: New booking request
+ * - payment: Payment reminder
+ * - alert: System alert
+ * 
+ * All MP3 files stored in /public/sounds/
+ */
 
 class NotificationSoundManager {
-  private audio: HTMLAudioElement | null = null;
+  private audioCache: Map<string, HTMLAudioElement> = new Map();
   private isInitialized: boolean = false;
-  private loopInterval: NodeJS.Timeout | null = null;
-  private isPlaying: boolean = false;
+  private enabled: boolean = true;
+  private volume: number = 0.7;
 
   constructor() {
     if (typeof window !== 'undefined') {
+      this.loadUserPreferences();
       this.initializeAudio();
       this.requestNotificationPermission();
     }
   }
 
-  private async requestNotificationPermission() {
+  /**
+   * Load user sound preferences from localStorage
+   */
+  private loadUserPreferences(): void {
+    const savedEnabled = localStorage.getItem('notificationSoundsEnabled');
+    const savedVolume = localStorage.getItem('notificationVolume');
+    
+    this.enabled = savedEnabled !== 'false';
+    this.volume = savedVolume ? parseFloat(savedVolume) : 0.7;
+  }
+
+  /**
+   * Request browser notification permission
+   */
+  private async requestNotificationPermission(): Promise<void> {
     if ('Notification' in window && Notification.permission === 'default') {
       try {
         await Notification.requestPermission();
@@ -25,152 +55,86 @@ class NotificationSoundManager {
     }
   }
 
-  private initializeAudio() {
+  /**
+   * Initialize all audio files
+   */
+  private initializeAudio(): void {
     try {
-      // Create audio element for notification sound
-      // Using existing booking notification sound from sounds folder
-      this.audio = new Audio('/sounds/booking-notification.mp3');
-      this.audio.volume = 0.8; // 80% volume
-      this.audio.preload = 'auto';
-      this.isInitialized = true;
-      
-      console.log('🔊 Notification sound system initialized');
-    } catch (error) {
-      console.error('❌ Failed to initialize notification sound:', error);
-    }
-  }
-
-  /**
-   * Play notification sound for new booking with continuous loop until acknowledged
-   * This will play repeatedly every 3 seconds until stopPersistentAlert() is called
-   */
-  async playBookingAlert(): Promise<void> {
-    if (!this.audio || !this.isInitialized) {
-      console.warn('⚠️ Notification sound not initialized');
-      return;
-    }
-
-    try {
-      // Show browser notification if permission granted
-      this.showBrowserNotification();
-
-      // Start persistent loop
-      this.startPersistentLoop();
-      
-      console.log('🔔 Persistent booking notification started');
-    } catch (error) {
-      console.error('❌ Failed to play notification sound:', error);
-      this.playSystemBeep();
-    }
-  }
-
-  /**
-   * Start persistent notification loop - plays every 3 seconds
-   */
-  private startPersistentLoop(): void {
-    if (this.loopInterval) {
-      clearInterval(this.loopInterval);
-    }
-
-    this.isPlaying = true;
-
-    // Play immediately
-    this.playSound();
-
-    // Then play every 3 seconds
-    this.loopInterval = setInterval(() => {
-      if (this.isPlaying) {
-        this.playSound();
-      }
-    }, 3000);
-  }
-
-  /**
-   * Stop persistent notification loop
-   */
-  stopPersistentAlert(): void {
-    this.isPlaying = false;
-    if (this.loopInterval) {
-      clearInterval(this.loopInterval);
-      this.loopInterval = null;
-    }
-    if (this.audio) {
-      this.audio.pause();
-      this.audio.currentTime = 0;
-    }
-    console.log('🔕 Persistent notification stopped');
-  }
-
-  /**
-   * Play sound once
-   */
-  private async playSound(): Promise<void> {
-    if (!this.audio) return;
-
-    try {
-      this.audio.currentTime = 0;
-      await this.audio.play();
-    } catch (error) {
-      console.warn('⚠️ Audio play failed:', error);
-    }
-  }
-
-  /**
-   * Show browser notification (works when app is in background)
-   */
-  private showBrowserNotification(): void {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification('🚨 NEW BOOKING REQUEST!', {
-        body: 'You have a new massage booking. Click to respond!',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        tag: 'booking-alert',
-        requireInteraction: true, // Notification stays until user interacts
-        silent: false
-      });
-
-      notification.onclick = () => {
-        window.focus();
-        notification.close();
+      // Map sound types to MP3 files in /public/sounds/
+      const soundFiles = {
+        message: '/sounds/message-notification.mp3',
+        booking: '/sounds/booking-notification.mp3',
+        payment: '/sounds/payment-notification.mp3',
+        alert: '/sounds/alert-notification.mp3'
       };
 
-      // Trigger vibration separately if supported
-      if ('vibrate' in navigator) {
-        navigator.vibrate([200, 100, 200, 100, 200]);
-      }
+      // Create audio elements for each sound type
+      Object.entries(soundFiles).forEach(([type, path]) => {
+        const audio = new Audio(path);
+        audio.volume = this.volume;
+        audio.preload = 'auto';
+        this.audioCache.set(type, audio);
+      });
 
-      console.log('🔔 Browser notification shown');
+      this.isInitialized = true;
+      console.log('🔊 Notification sound system initialized');
+    } catch (error) {
+      console.error('❌ Failed to initialize notification sounds:', error);
     }
   }
 
   /**
-   * Play multiple beeps for urgent notifications
+   * Play notification sound
+   * @param soundType Type of notification
+   * @param withVibration Enable mobile vibration
    */
-  async playUrgentAlert(): Promise<void> {
-    if (!this.audio || !this.isInitialized) {
+  async play(
+    soundType: 'message' | 'booking' | 'payment' | 'alert' = 'message',
+    withVibration: boolean = false
+  ): Promise<void> {
+    if (!this.enabled) {
+      console.log('🔇 Notification sounds disabled');
+      return;
+    }
+
+    if (!this.isInitialized) {
       console.warn('⚠️ Notification sound not initialized');
       return;
     }
 
     try {
-      // Play sound 3 times for urgent alerts
-      for (let i = 0; i < 3; i++) {
-        this.audio.currentTime = 0;
-        await this.audio.play();
-        
-        // Wait 500ms between beeps
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      const audio = this.audioCache.get(soundType);
       
-      console.log('🚨 Urgent booking alert played');
+      if (!audio) {
+        console.warn(`⚠️ Sound type "${soundType}" not found`);
+        return;
+      }
+
+      // Reset and play
+      audio.currentTime = 0;
+      await audio.play();
+
+      console.log(`🔊 Played ${soundType} notification`);
+
+      // Vibrate if requested and supported
+      if (withVibration && 'vibrate' in navigator) {
+        const vibrationPatterns = {
+          message: [50], // Subtle click
+          booking: [300, 150, 300, 150, 300], // Strong triple pulse for main notification
+          payment: [100, 50, 100], // Medium pulse
+          alert: [400] // Single strong pulse
+        };
+        navigator.vibrate(vibrationPatterns[soundType]);
+      }
     } catch (error) {
-      console.error('❌ Failed to play urgent alert:', error);
+      console.error('❌ Failed to play notification sound:', error);
+      // Fallback to system beep
       this.playSystemBeep();
     }
   }
 
   /**
-   * Fallback system beep using Web Audio API
+   * Play system beep as fallback (Web Audio API)
    */
   private playSystemBeep(): void {
     try {
@@ -181,7 +145,7 @@ class NotificationSoundManager {
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = 800; // Frequency in Hz
+      oscillator.frequency.value = 800;
       oscillator.type = 'sine';
       
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -197,32 +161,111 @@ class NotificationSoundManager {
   }
 
   /**
-   * Set volume (0.0 to 1.0)
+   * Show browser notification
    */
-  setVolume(volume: number): void {
-    if (this.audio) {
-      this.audio.volume = Math.max(0, Math.min(1, volume));
+  showBrowserNotification(
+    title: string,
+    body: string,
+    options?: NotificationOptions
+  ): void {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, {
+        body,
+        icon: '/icon-192.png',
+        badge: '/badge-72.png',
+        ...options
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+
+      console.log('🔔 Browser notification shown');
     }
   }
 
   /**
-   * Test the notification sound
+   * Enable/disable sounds
    */
-  async testSound(): Promise<void> {
-    console.log('🧪 Testing notification sound...');
-    await this.playBookingAlert();
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+    localStorage.setItem('notificationSoundsEnabled', enabled.toString());
+    console.log(`🔊 Notification sounds ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * Check if sounds are enabled
+   */
+  isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  /**
+   * Set volume (0.0 to 1.0)
+   */
+  setVolume(volume: number): void {
+    this.volume = Math.max(0, Math.min(1, volume));
+    
+    // Update all cached audio elements
+    this.audioCache.forEach(audio => {
+      audio.volume = this.volume;
+    });
+    
+    localStorage.setItem('notificationVolume', this.volume.toString());
+    console.log(`🔊 Volume set to ${Math.round(this.volume * 100)}%`);
+  }
+
+  /**
+   * Get current volume
+   */
+  getVolume(): number {
+    return this.volume;
+  }
+
+  /**
+   * Preload all sounds for instant playback
+   */
+  async preloadSounds(): Promise<void> {
+    const soundTypes: Array<'message' | 'booking' | 'payment' | 'alert'> = 
+      ['message', 'booking', 'payment', 'alert'];
+    
+    for (const type of soundTypes) {
+      const audio = this.audioCache.get(type);
+      if (audio) {
+        // Loading the audio metadata
+        audio.load();
+      }
+    }
+    
+    console.log('🔊 All notification sounds preloaded');
   }
 }
 
-// Create singleton instance
+// Export singleton instance
 export const notificationSound = new NotificationSoundManager();
 
-// Global function to play booking notification
-(window as any).playBookingNotification = () => {
-  notificationSound.playBookingAlert();
-};
+// Convenience functions for specific notification types
+export const playMessageSound = (withVibration = false) => 
+  notificationSound.play('message', withVibration);
 
-// Global function for urgent notifications
-(window as any).playUrgentNotification = () => {
-  notificationSound.playUrgentAlert();
-};
+export const playBookingSound = (withVibration = true) => 
+  notificationSound.play('booking', withVibration);
+
+export const playPaymentSound = (withVibration = false) => 
+  notificationSound.play('payment', withVibration);
+
+export const playAlertSound = (withVibration = true) => 
+  notificationSound.play('alert', withVibration);
+
+// Preload sounds after first user interaction (browser requirement)
+if (typeof window !== 'undefined') {
+  const preloadOnInteraction = () => {
+    notificationSound.preloadSounds();
+  };
+  
+  document.addEventListener('click', preloadOnInteraction, { once: true });
+  document.addEventListener('touchstart', preloadOnInteraction, { once: true });
+}
+
+export default notificationSound;

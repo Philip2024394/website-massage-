@@ -1,6 +1,6 @@
 import type { Therapist, Place, Agent, AvailabilityStatus } from '../types';
 import type { Page, LoggedInProvider } from '../types/pageTypes';
-import { therapistService, placeService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
+import { therapistService, placesService, agentService, adminMessageService, notificationService } from '../lib/appwriteService';
 
 // Toast notification utility refactored to use dedicated overlay root (portal container)
 const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -409,6 +409,20 @@ export const useProviderAgentHandlers = ({
             
             console.log('✅ Therapist profile saved successfully');
             
+            // Create default Silver membership if this is a new therapist
+            if (!existingTherapist) {
+                try {
+                    console.log('💳 Creating default Silver membership for new therapist...');
+                    const { membershipPackageService } = await import('../lib/appwriteService');
+                    const userId = loggedInProvider.id as string;
+                    await membershipPackageService.createDefaultMembership(userId, therapistId, 'therapist');
+                    console.log('✅ Default Silver membership created');
+                } catch (membershipError) {
+                    console.error('⚠️ Failed to create membership (non-blocking):', membershipError);
+                    // Don't fail profile save if membership creation fails
+                }
+            }
+            
             // Update the therapists state to reflect the changes immediately
             const updatedTherapists = therapists.map(therapist => {
                 const therapistAny = therapist as any;
@@ -525,7 +539,7 @@ export const useProviderAgentHandlers = ({
                 } else {
                     // Try querying Appwrite by provider id attribute
                     console.log('🔎 Looking up place document by provider id...');
-                    const remotePlace = await placeService.getByProviderId(String(loggedInProvider.id));
+                    const remotePlace = await placesService.getByProviderId(String(loggedInProvider.id));
                     if (remotePlace) {
                         placeDocumentId = remotePlace.$id;
                         console.log('✅ Found remote place document by provider id:', placeDocumentId);
@@ -544,14 +558,14 @@ export const useProviderAgentHandlers = ({
                 console.log('🔄 You can save/edit this card as many times as needed');
                 console.log('💾 Update data:', updateData);
                 try {
-                    savedDoc = await placeService.update(placeDocumentId, updateData);
+                    savedDoc = await placesService.update(placeDocumentId, updateData);
                     console.log('✅ Massage place profile saved successfully via update');
                 } catch (err: any) {
                     const msg = (err && (err.message || err.code || '')) || '';
                     const isNotFound = String(msg).toLowerCase().includes('not found') || String(err?.code || '').includes('404');
                     if (isNotFound) {
                         console.warn('⚠️ Document not found on update, creating new document instead...');
-                        savedDoc = await placeService.create({
+                        savedDoc = await placesService.create({
                             ...updateData,
                             id: loggedInProvider.id,
                             placeId: loggedInProvider.id, // Add missing required field
@@ -570,7 +584,7 @@ export const useProviderAgentHandlers = ({
                 }
             } else {
                 console.log('➕ Creating your massage place profile (you can only create 1 card, but edit it unlimited times)');
-                savedDoc = await placeService.create({
+                savedDoc = await placesService.create({
                     ...updateData,
                     id: loggedInProvider.id,
                     placeId: loggedInProvider.id, // Add missing required field
@@ -582,6 +596,20 @@ export const useProviderAgentHandlers = ({
                 const session = JSON.parse(localStorage.getItem('app_session') || '{}');
                 localStorage.setItem('app_session', JSON.stringify({ ...session, documentId: placeDocumentId }));
                 console.log('📝 Your massage place card has been created. You can now edit and save it as many times as you want.');
+            }
+            
+            // Create default Silver membership if this is a new place
+            if (!existingPlace) {
+                try {
+                    console.log('💳 Creating default Silver membership for new massage place...');
+                    const { membershipPackageService } = await import('../lib/appwriteService');
+                    const userId = loggedInProvider.id as string;
+                    await membershipPackageService.createDefaultMembership(userId, placeDocumentId, 'massage_place');
+                    console.log('✅ Default Silver membership created');
+                } catch (membershipError) {
+                    console.error('⚠️ Failed to create membership (non-blocking):', membershipError);
+                    // Don't fail profile save if membership creation fails
+                }
             }
             
             // Update the places state to reflect the changes immediately

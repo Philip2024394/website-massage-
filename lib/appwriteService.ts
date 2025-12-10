@@ -2,6 +2,11 @@
 import type { MonthlyAgentMetrics } from '../types';
 import { getNonRepeatingMainImage } from './appwrite/image.service';
 export { getRandomLiveMenuImage, getNonRepeatingMainImage } from './appwrite/image.service';
+import { databases, account, storage, ID, client } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config';
+import { Query, Functions } from 'appwrite';
+
+const functions = new Functions(client);
 
 // Email notification function for admin
 async function sendAdminNotification(data: {
@@ -792,142 +797,46 @@ export const therapistService = {
     }
 };
 
-export const placeService = {
-    async create(place: any): Promise<any> {
+// ============================================================================
+// PLACES SERVICE - Location/spa/massage place management
+// ============================================================================
+export const placesService = {
+    async getAllPlaces(): Promise<any[]> {
         try {
-            if (!APPWRITE_CONFIG.collections.places || APPWRITE_CONFIG.collections.places === '') {
-                console.warn('⚠️ Places collection disabled - cannot create place');
-                throw new Error('Places collection not configured');
-            }
-            // Ensure we use a single canonical identifier for the document id AND attributes
-            let canonicalId = place?.id || place?.placeId;
-            if (!canonicalId || typeof canonicalId !== 'string') {
+            // Fetch complete places from Appwrite
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.places,
+                [Query.limit(100)]
+            );
+
+            // Enrich with analytics from leads collection if available
+            for (const place of response.documents) {
                 try {
-                    const { ID } = await import('appwrite');
-                    canonicalId = ID.unique();
-                } catch {
-                    // Fallback: pseudo-random id
-                    canonicalId = 'plc_' + Math.random().toString(36).slice(2, 10);
-                }
-            }
-
-            // Normalize id and placeId attributes to match document id for reliable lookups
-            place.id = canonicalId;
-            place.placeId = canonicalId;
-
-            // Set default profilePicture if not provided (required field)
-            if (!place.profilePicture || place.profilePicture === '') {
-                place.profilePicture = 'https://via.placeholder.com/150';
-            }
-
-            // Set other default values for required fields if not provided
-            if (!place.name) place.name = 'New Massage Place';
-            if (!place.email) place.email = '';
-            if (!place.whatsappNumber) place.whatsappNumber = '';
-            if (!place.location) place.location = '';
-            if (!place.description) place.description = '';
-            if (place.rating === undefined) place.rating = 0;
-            if (place.isLive === undefined) place.isLive = false;
-
-            // Seed analytics with initial bookings (32-50) if not provided
-            if (!place.analytics) {
-                const seedBookings = 32 + Math.floor(Math.random() * 19);
-                place.analytics = JSON.stringify({
-                    impressions: 0,
-                    views: 0,
-                    profileViews: 0,
-                    whatsapp_clicks: 0,
-                    whatsappClicks: 0,
-                    phone_clicks: 0,
-                    directions_clicks: 0,
-                    bookings: seedBookings
-                });
-            } else {
-                try {
-                    const parsed = JSON.parse(place.analytics);
-                    if (parsed && typeof parsed.bookings !== 'number') {
-                        parsed.bookings = 32 + Math.floor(Math.random() * 19);
-                        place.analytics = JSON.stringify(parsed);
-                    }
+                    const leadsData = await databases.listDocuments(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.leads || 'leads',
+                        [Query.equal('placeId', place.$id)]
+                    );
+                    place.analytics = JSON.stringify({ bookings: leadsData.total });
                 } catch {
                     const seedBookings = 32 + Math.floor(Math.random() * 19);
                     place.analytics = JSON.stringify({ bookings: seedBookings });
                 }
             }
 
-            const response = await databases.createDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                canonicalId,
-                place
-            );
-            
-            // Send email notification to admin
-            try {
-                await sendAdminNotification({
-                    type: 'massage-place',
-                    name: place.name || 'Unknown',
-                    email: place.email || 'Not provided',
-                    whatsappNumber: place.whatsappNumber || 'Not provided',
-                    location: place.location || 'Not provided',
-                    registrationDate: new Date().toISOString()
-                });
-            } catch (emailError) {
-                console.error('Failed to send admin notification:', emailError);
-                // Don't throw - registration was successful even if email failed
-            }
-            
-            // Parse galleryimages JSON string if it exists
-            let parsedGalleryImages = response.galleryImages;
-            if ((response as any).galleryimages) {
-                try {
-                    parsedGalleryImages = typeof (response as any).galleryimages === 'string' 
-                        ? JSON.parse((response as any).galleryimages) 
-                        : (response as any).galleryimages;
-                } catch (e) {
-                    console.error('Error parsing galleryimages:', e);
-                    parsedGalleryImages = [];
-                }
-            }
-            
-            // Map Appwrite lowercase attributes to camelCase for frontend compatibility
-            return {
-                ...response,
-                mainImage: (response as any).mainimage || response.mainImage,
-                galleryImages: parsedGalleryImages,
-                openingTime: (response as any).openingtime || response.openingTime,
-                closingTime: (response as any).closingtime || response.closingTime,
-                discountPercentage: (response as any).discountpercentage || response.discountPercentage,
-                discountDuration: (response as any).discountduration || response.discountDuration,
-                isDiscountActive: (response as any).isdiscountactive || response.isDiscountActive,
-                discountEndTime: (response as any).discountendtime || response.discountEndTime,
-                websiteUrl: (response as any).websiteurl || response.websiteUrl,
-                websiteTitle: (response as any).websitetitle || response.websiteTitle,
-                websiteDescription: (response as any).websitedescription || response.websiteDescription,
-                // Social links
-                instagramUrl: (response as any).instagramurl || (response as any).instagramUrl || undefined,
-                facebookPageUrl: (response as any).facebookpageurl || (response as any).facebookPageUrl || undefined,
-                instagramPosts: (() => {
-                    const raw = (response as any).instagramposts || (response as any).instagramPosts;
-                    if (!raw) return undefined;
-                    try {
-                        return typeof raw === 'string' ? JSON.parse(raw) : raw;
-                    } catch {
-                        return undefined;
-                    }
-                })(),
-                // Map critical display attributes
-                massageTypes: (response as any).massagetypes || response.massageTypes,
-                languages: (response as any).languagesspoken || response.languages,
-                additionalServices: (response as any).additionalservices || response.additionalServices,
-                contactNumber: (response as any).whatsappnumber || response.contactNumber,
-                hotelVillaPricing: (response as any).hotelvillapricing || response.hotelVillaPricing,
-            };
+            return response.documents;
         } catch (error) {
-            console.error('Error creating place:', error);
-            throw error;
+            console.error('Error fetching places:', error);
+            return [];
         }
     },
+
+    // Alias for compatibility
+    async getPlaces(): Promise<any[]> {
+        return this.getAllPlaces();
+    },
+
     async getByProviderId(providerId: string): Promise<any | null> {
         // Robust lookup: attempt direct document id, then attribute fields (id, placeId)
         if (!providerId) {
@@ -1051,10 +960,7 @@ export const placeService = {
             return null;
         }
     },
-    async getPlaces(): Promise<any[]> {
-        console.log('🔥 placeService.getPlaces() CALLED!');
-        return this.getAll();
-    },
+    
     async getAll(): Promise<any[]> {
         try {
             // Check if places collection exists
@@ -2961,6 +2867,17 @@ export const notificationService = {
 // MESSAGING SERVICE - In-app chat between users and providers
 // ============================================================================
 export const messagingService = {
+    /**
+     * Generate consistent conversation ID for two users
+     * Format: role1_userId1_role2_userId2 (alphabetically sorted by userId)
+     */
+    generateConversationId(
+        user1: { id: string; role: string },
+        user2: { id: string; role: string }
+    ): string {
+        const participants = [user1, user2].sort((a, b) => a.id.localeCompare(b.id));
+        return `${participants[0].role}_${participants[0].id}_${participants[1].role}_${participants[1].id}`;
+    },
     async sendMessage(message: {
         conversationId: string;
         senderId: string;
@@ -4469,46 +4386,52 @@ export const paymentService = {
 };
 
 // --- Lead Generation Service ---
-// Handles pay-per-lead system for members without active subscriptions
+// Handles pay-per-lead system for members (integrated with membership packages)
 export const leadGenerationService = {
-    LEAD_COST: 50000, // IDR per accepted lead
+    LEAD_COST_PERCENTAGE: 0.25, // 25% of booking price per accepted lead (Silver package)
     RESPONSE_TIMEOUT: 5 * 60 * 1000, // 5 minutes
     
     /**
-     * Check if member is on lead-based payment model
+     * Calculate lead cost based on membership package type
+     */
+    async calculateLeadCost(
+        memberId: string, 
+        memberType: 'therapist' | 'massage_place' | 'facial_place',
+        bookingPrice: number
+    ): Promise<number> {
+        try {
+            // Get membership package
+            const membership = await membershipPackageService.getMembership(memberId, memberType);
+            
+            if (!membership) {
+                // Default to Silver (25%) if no membership found
+                return Math.round(bookingPrice * this.LEAD_COST_PERCENTAGE);
+            }
+            
+            // Calculate based on package type
+            return membershipPackageService.calculateLeadCost(membership.packageType, bookingPrice);
+        } catch (error) {
+            console.error('Error calculating lead cost:', error);
+            // Default to Silver (25%) on error
+            return Math.round(bookingPrice * this.LEAD_COST_PERCENTAGE);
+        }
+    },
+    
+    /**
+     * Check if member is on lead-based payment model (Silver package)
      */
     async isLeadBasedMember(memberId: string, memberType: 'therapist' | 'massage_place' | 'facial_place'): Promise<boolean> {
         try {
-            const collectionId = memberType === 'therapist' 
-                ? APPWRITE_CONFIG.collections.therapists
-                : memberType === 'massage_place'
-                ? APPWRITE_CONFIG.collections.places
-                : APPWRITE_CONFIG.collections.facial_places;
+            // Get membership package
+            const membership = await membershipPackageService.getMembership(memberId, memberType);
             
-            const member = await databases.getDocument(
-                APPWRITE_CONFIG.databaseId,
-                collectionId,
-                memberId
-            );
-            
-            // Check if subscription is inactive or expired
-            const subscriptionStatus = member.subscriptionStatus || 'inactive';
-            const subscriptionEndDate = member.subscriptionEndDate ? new Date(member.subscriptionEndDate) : new Date(0);
-            const now = new Date();
-            
-            // Member is lead-based if:
-            // 1. Subscription status is 'inactive' or 'lead_based'
-            // 2. Subscription end date has passed
-            // 3. Payment model is explicitly 'lead_based'
-            const isInactive = subscriptionStatus === 'inactive' || subscriptionStatus === 'lead_based';
-            const isExpired = subscriptionEndDate < now;
-            const isLeadModel = member.paymentModel === 'lead_based';
-            
-            return isInactive || isExpired || isLeadModel;
+            // Silver package = lead-based (pay 25% per lead)
+            // Bronze & Gold = no leads or free leads
+            return membership?.packageType === 'silver';
         } catch (error) {
             console.error('Error checking lead-based status:', error);
-            // Default to subscription model if error
-            return false;
+            // Default to Silver (lead-based) if error
+            return true;
         }
     },
 
@@ -4527,6 +4450,7 @@ export const leadGenerationService = {
         roomNumber?: string;
         serviceType: string;
         duration: number;
+        bookingPrice: number; // Full booking price to calculate lead cost from
         requestedDateTime: string;
         notes?: string;
     }): Promise<any> {
@@ -4534,6 +4458,9 @@ export const leadGenerationService = {
             const leadId = ID.unique();
             const now = new Date();
             const expiresAt = new Date(now.getTime() + this.RESPONSE_TIMEOUT);
+            
+            // Calculate lead cost based on membership package
+            const leadCost = await this.calculateLeadCost(data.memberId, data.memberType, data.bookingPrice);
             
             // Generate unique accept/decline URLs with tokens
             const acceptToken = ID.unique();
@@ -4544,14 +4471,14 @@ export const leadGenerationService = {
             const leadData = {
                 leadId,
                 ...data,
-                leadCost: this.LEAD_COST,
+                leadCost, // Dynamic based on membership package (0 for Bronze/Gold, 25% for Silver)
                 status: 'pending',
                 sentAt: now.toISOString(),
                 expiresAt: expiresAt.toISOString(),
                 acceptUrl,
                 declineUrl,
                 billed: false,
-                paymentStatus: 'pending'
+                paymentStatus: leadCost > 0 ? 'pending' : 'free' // Free for Bronze/Gold
             };
             
             const response = await databases.createDocument(
@@ -4561,7 +4488,7 @@ export const leadGenerationService = {
                 leadData
             );
             
-            console.log('✅ Lead created:', leadId);
+            console.log('✅ Lead created:', leadId, 'Cost:', leadCost);
             
             // Send WhatsApp message to member
             await this.sendLeadWhatsApp(response);
@@ -4595,8 +4522,9 @@ ${serviceEmoji} ${lead.serviceType.toUpperCase()} SERVICE REQUEST
 📍 Location: ${locationText}
 ⏰ Requested: ${lead.requestedDateTime}
 ⏱️ Duration: ${lead.duration} minutes
+💵 Booking Price: Rp ${lead.bookingPrice.toLocaleString()}
 
-💰 LEAD COST: Rp ${lead.leadCost.toLocaleString()}
+💰 LEAD COST: Rp ${lead.leadCost.toLocaleString()} (25% of booking)
    (Billed ONLY if you accept)
 
 ✅ ACCEPT LEAD (Rp ${lead.leadCost.toLocaleString()} will be charged):
@@ -4611,10 +4539,25 @@ ${lead.declineUrl}
 ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact IndaStreet Support
 +62-XXX-XXXX`;
 
-            const whatsappUrl = `https://wa.me/${lead.memberWhatsApp}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+            // Send in-app message/notification to provider
+            const conversationId = `booking_${leadId}`;
+            await this.messagingService.sendMessage(
+                conversationId,
+                'system',
+                lead.memberId,
+                `🆕 New booking request! Customer: ${lead.customerName}. Service: ${lead.serviceType}. Price: Rp ${lead.bookingPrice.toLocaleString()}. You have 5 minutes to respond.`,
+                'system',
+                { 
+                    bookingId: leadId, 
+                    leadId, 
+                    status: 'pending',
+                    acceptUrl: lead.acceptUrl,
+                    declineUrl: lead.declineUrl,
+                    leadCost: lead.leadCost
+                }
+            );
             
-            console.log('✅ Lead WhatsApp sent to:', lead.memberWhatsApp);
+            console.log('✅ Lead notification sent to provider:', lead.memberWhatsApp);
         } catch (error) {
             console.error('Error sending lead WhatsApp:', error);
         }
@@ -4662,8 +4605,16 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                 }
             );
             
-            // Notify customer
-            await this.notifyCustomerAccepted(updatedLead);
+            // Send in-app message to customer
+            const conversationId = `booking_${leadId}`;
+            await this.messagingService.sendMessage(
+                conversationId,
+                updatedLead.memberId,
+                updatedLead.customerId,
+                `✅ Your ${updatedLead.serviceType} booking has been confirmed! Provider: ${updatedLead.memberName}. They will contact you shortly via WhatsApp at ${updatedLead.customerWhatsApp}.`,
+                'system',
+                { bookingId: leadId, leadId, status: 'accepted' }
+            );
             
             // Update monthly billing summary
             await this.updateBillingSummary(updatedLead.memberId, updatedLead.memberType);
@@ -4714,8 +4665,16 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                 }
             );
             
-            // Notify customer and find alternative
-            await this.notifyCustomerDeclined(lead);
+            // Send in-app message to customer about decline
+            const conversationId = `booking_${leadId}`;
+            await this.messagingService.sendMessage(
+                conversationId,
+                lead.memberId,
+                lead.customerId,
+                `⚠️ Provider ${lead.memberName} is currently unavailable. We're finding you another available provider. You'll receive a new booking notification shortly.`,
+                'system',
+                { bookingId: leadId, leadId, status: 'declined' }
+            );
             
             // Update monthly billing summary
             await this.updateBillingSummary(lead.memberId, lead.memberType);
@@ -4754,8 +4713,16 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                     }
                 );
                 
-                // Notify customer and find alternative
-                await this.notifyCustomerDeclined(lead);
+                // Send in-app message to customer about expiration
+                const conversationId = `booking_${leadId}`;
+                await this.messagingService.sendMessage(
+                    conversationId,
+                    lead.memberId,
+                    lead.customerId,
+                    `⏰ Your booking request has expired (5 minute response window). We're finding you another available provider. You'll receive a new notification shortly.`,
+                    'system',
+                    { bookingId: leadId, leadId, status: 'expired' }
+                );
                 
                 console.log('⏰ Lead expired:', leadId);
             }
@@ -4773,56 +4740,7 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
         }, this.RESPONSE_TIMEOUT);
     },
 
-    /**
-     * Notify customer that lead was accepted
-     */
-    async notifyCustomerAccepted(lead: any): Promise<void> {
-        try {
-            const message = `✅ BOOKING CONFIRMED!
 
-Your ${lead.serviceType} booking has been accepted by ${lead.memberName}!
-
-📅 Date/Time: ${lead.requestedDateTime}
-⏱️ Duration: ${lead.duration} minutes
-👤 Provider: ${lead.memberName}
-📱 Contact: ${lead.memberWhatsApp}
-
-The provider will contact you shortly to confirm details.
-
-Thank you for using IndaStreet! 🙏`;
-
-            const whatsappUrl = `https://wa.me/${lead.customerWhatsApp}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        } catch (error) {
-            console.error('Error notifying customer (accepted):', error);
-        }
-    },
-
-    /**
-     * Notify customer that lead was declined/expired
-     */
-    async notifyCustomerDeclined(lead: any): Promise<void> {
-        try {
-            const message = `⚠️ PROVIDER UNAVAILABLE
-
-Unfortunately, ${lead.memberName} is not available for your requested booking.
-
-📅 Your Request: ${lead.requestedDateTime}
-⏱️ Duration: ${lead.duration} minutes
-
-We're finding another available provider for you. You'll receive a new notification shortly.
-
-Thank you for your patience! 🙏
-
-Need help? Contact IndaStreet Support:
-📞 +62-XXX-XXXX`;
-
-            const whatsappUrl = `https://wa.me/${lead.customerWhatsApp}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        } catch (error) {
-            console.error('Error notifying customer (declined):', error);
-        }
-    },
 
     /**
      * Get all leads for a member
@@ -4915,7 +4833,10 @@ Need help? Contact IndaStreet Support:
             const acceptedLeads = leads.documents.filter(l => l.status === 'accepted').length;
             const declinedLeads = leads.documents.filter(l => l.status === 'declined').length;
             const expiredLeads = leads.documents.filter(l => l.status === 'expired').length;
-            const totalOwed = acceptedLeads * this.LEAD_COST;
+            // Calculate total owed by summing actual leadCost from each accepted lead (25% of each booking)
+            const totalOwed = leads.documents
+                .filter(l => l.status === 'accepted')
+                .reduce((sum, l) => sum + (l.leadCost || 0), 0);
             
             // Try to get existing summary
             const summaryId = `${memberId}_${currentMonth}`;
@@ -5030,7 +4951,7 @@ export const membershipService = {
         MONTH_5: 200000,
         MONTH_6_PLUS: 200000, // Stays at 200k for all months after Month 5
         PREMIUM_UPGRADE: 275000,
-        LEAD_COST: 50000,
+        LEAD_COST_PERCENTAGE: 0.25, // 25% of booking price per accepted lead
         LATE_FEE: 25000,
         REACTIVATION_FEE: 275000
     },
@@ -5455,6 +5376,645 @@ export const membershipService = {
         }
     }
 };
+
+// ===================================
+// Membership Package Service (Bronze, Silver, Gold)
+// ===================================
+
+export interface MembershipPackage {
+    $id?: string;
+    userId: string;
+    memberType: 'therapist' | 'massage_place' | 'facial_place';
+    memberId: string;
+    packageType: 'bronze' | 'silver' | 'gold';
+    status: 'active' | 'inactive' | 'expired' | 'pending';
+    startDate: string;
+    endDate?: string; // For Bronze yearly
+    renewalDate?: string; // For Gold monthly
+    goldTier?: number; // Current month tier for Gold (1-5+)
+    totalPaid: number; // Total amount paid in IDR
+    lastPaymentDate?: string;
+    lastPaymentAmount?: number;
+    autoRenew: boolean;
+    paymentMethod?: 'bank_transfer' | 'credit_card' | 'e_wallet';
+    notes?: string;
+    $createdAt?: string;
+    $updatedAt?: string;
+}
+
+export const membershipPackageService = {
+    /**
+     * Get membership package for a specific member
+     */
+    async getMembership(memberId: string, memberType: 'therapist' | 'massage_place' | 'facial_place'): Promise<MembershipPackage | null> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('memberId', memberId),
+                    Query.equal('memberType', memberType),
+                    Query.equal('status', 'active')
+                ]
+            );
+
+            return response.documents.length > 0 ? response.documents[0] as any : null;
+        } catch (error) {
+            console.error('Error getting membership:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Create default Silver membership for new member
+     */
+    async createDefaultMembership(
+        userId: string,
+        memberId: string,
+        memberType: 'therapist' | 'massage_place' | 'facial_place'
+    ): Promise<MembershipPackage> {
+        try {
+            const membership: Partial<MembershipPackage> = {
+                userId,
+                memberId,
+                memberType,
+                packageType: 'silver', // Default to Silver (25% leads)
+                status: 'active',
+                startDate: new Date().toISOString(),
+                totalPaid: 0,
+                autoRenew: false
+            };
+
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                ID.unique(),
+                membership
+            );
+
+            return response as any;
+        } catch (error) {
+            console.error('Error creating default membership:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update membership package
+     */
+    async updatePackage(
+        membershipId: string,
+        packageType: 'bronze' | 'silver' | 'gold',
+        paymentDetails?: {
+            amount: number;
+            method: 'bank_transfer' | 'credit_card' | 'e_wallet';
+        }
+    ): Promise<MembershipPackage> {
+        try {
+            const updates: any = {
+                packageType,
+                status: 'active',
+                $updatedAt: new Date().toISOString()
+            };
+
+            // Handle package-specific logic
+            if (packageType === 'bronze') {
+                // Bronze: 2M IDR/year
+                const endDate = new Date();
+                endDate.setFullYear(endDate.getFullYear() + 1);
+                updates.endDate = endDate.toISOString();
+                updates.renewalDate = null;
+                updates.goldTier = null;
+            } else if (packageType === 'gold') {
+                // Monthly Package: 200K IDR/month (flat rate)
+                const renewalDate = new Date();
+                renewalDate.setMonth(renewalDate.getMonth() + 1);
+                updates.renewalDate = renewalDate.toISOString();
+                updates.goldTier = null; // No tiers for flat monthly
+                updates.endDate = null;
+            } else {
+                // Silver: Pay-per-lead (25% commission), no subscription
+                updates.endDate = null;
+                updates.renewalDate = null;
+                updates.goldTier = null;
+            }
+
+            // Update payment details if provided
+            if (paymentDetails) {
+                const currentMembership = await databases.getDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.memberships,
+                    membershipId
+                );
+
+                updates.totalPaid = (currentMembership.totalPaid || 0) + paymentDetails.amount;
+                updates.lastPaymentDate = new Date().toISOString();
+                updates.lastPaymentAmount = paymentDetails.amount;
+                updates.paymentMethod = paymentDetails.method;
+            }
+
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                membershipId,
+                updates
+            );
+
+            return response as any;
+        } catch (error) {
+            console.error('Error updating membership package:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get Monthly Package price (flat 200K IDR)
+     */
+    getMonthlyPackagePrice(): number {
+        return 200000; // Fixed 200K IDR per month
+    },
+
+    /**
+     * Calculate lead cost based on membership package
+     */
+    calculateLeadCost(packageType: 'bronze' | 'silver' | 'gold', bookingPrice: number): number {
+        switch (packageType) {
+            case 'bronze':
+                return 0; // Bronze (2M/year): NO commission
+            case 'silver':
+                return Math.floor(bookingPrice * 0.25); // Silver: 25% admin commission
+            case 'gold':
+                return 0; // Monthly Package (200K/month): NO commission
+            default:
+                return 0;
+        }
+    },
+
+    /**
+     * Get all memberships (Admin)
+     */
+    async getAllMemberships(): Promise<MembershipPackage[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(100)
+                ]
+            );
+
+            return response.documents as any[];
+        } catch (error) {
+            console.error('Error getting all memberships:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get membership stats for admin dashboard
+     */
+    async getMembershipStats(): Promise<{
+        totalMembers: number;
+        bronzeCount: number;
+        silverCount: number;
+        goldCount: number;
+        bronzeRevenue: number;
+        goldRevenue: number;
+        expiringSoon: number; // Bronze memberships expiring in 30 days
+    }> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('status', 'active'),
+                    Query.limit(1000)
+                ]
+            );
+
+            const stats = {
+                totalMembers: response.documents.length,
+                bronzeCount: 0,
+                silverCount: 0,
+                goldCount: 0,
+                bronzeRevenue: 0,
+                goldRevenue: 0,
+                expiringSoon: 0
+            };
+
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+            response.documents.forEach((doc: any) => {
+                // Count by package type
+                if (doc.packageType === 'bronze') {
+                    stats.bronzeCount++;
+                    stats.bronzeRevenue += doc.totalPaid || 0;
+                    
+                    // Check if expiring soon
+                    if (doc.endDate && new Date(doc.endDate) <= thirtyDaysFromNow) {
+                        stats.expiringSoon++;
+                    }
+                } else if (doc.packageType === 'silver') {
+                    stats.silverCount++;
+                } else if (doc.packageType === 'gold') {
+                    stats.goldCount++;
+                    stats.goldRevenue += doc.totalPaid || 0;
+                }
+            });
+
+            return stats;
+        } catch (error) {
+            console.error('Error getting membership stats:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Expire Bronze memberships past end date
+     */
+    async expireBronzeMemberships(): Promise<number> {
+        try {
+            const now = new Date().toISOString();
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('packageType', 'bronze'),
+                    Query.equal('status', 'active'),
+                    Query.lessThan('endDate', now)
+                ]
+            );
+
+            let expiredCount = 0;
+
+            for (const membership of response.documents) {
+                // Set to expired status
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.memberships,
+                    membership.$id,
+                    {
+                        status: 'expired'
+                    }
+                );
+
+                // Create new Silver membership (revert to default)
+                await this.createDefaultMembership(
+                    membership.userId,
+                    membership.memberId,
+                    membership.memberType
+                );
+
+                expiredCount++;
+            }
+
+            return expiredCount;
+        } catch (error) {
+            console.error('Error expiring Bronze memberships:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Expire Monthly Package (Gold) memberships past renewal date
+     * Auto-revert to Silver (25% commission default)
+     */
+    async expireMonthlyMemberships(): Promise<number> {
+        try {
+            const now = new Date().toISOString();
+            
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('packageType', 'gold'),
+                    Query.equal('status', 'active'),
+                    Query.lessThan('renewalDate', now)
+                ]
+            );
+
+            let expiredCount = 0;
+
+            for (const membership of response.documents) {
+                // Set to expired status
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.memberships,
+                    membership.$id,
+                    {
+                        status: 'expired'
+                    }
+                );
+
+                // Create new Silver membership (revert to default 25% commission)
+                await this.createDefaultMembership(
+                    membership.userId,
+                    membership.memberId,
+                    membership.memberType
+                );
+
+                expiredCount++;
+            }
+
+            return expiredCount;
+        } catch (error) {
+            console.error('Error expiring Monthly memberships:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get memberships expiring within specified days
+     * Used for 7-day advance notifications
+     */
+    async getExpiringSoon(days: number = 7): Promise<MembershipPackage[]> {
+        try {
+            const now = new Date();
+            const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+            
+            // Get Bronze memberships expiring (check endDate)
+            const bronzeResponse = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('packageType', 'bronze'),
+                    Query.equal('status', 'active'),
+                    Query.lessThanEqual('endDate', futureDate.toISOString()),
+                    Query.greaterThanEqual('endDate', now.toISOString())
+                ]
+            );
+
+            // Get Monthly Package memberships expiring (check renewalDate)
+            const monthlyResponse = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.memberships,
+                [
+                    Query.equal('packageType', 'gold'),
+                    Query.equal('status', 'active'),
+                    Query.lessThanEqual('renewalDate', futureDate.toISOString()),
+                    Query.greaterThanEqual('renewalDate', now.toISOString())
+                ]
+            );
+
+            return [...bronzeResponse.documents, ...monthlyResponse.documents] as any;
+        } catch (error) {
+            console.error('Error getting expiring memberships:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Send expiry notifications via email/WhatsApp
+     * Call this daily via cron job or scheduled task
+     */
+    async sendExpiryNotifications(): Promise<{ sent: number; failed: number }> {
+        try {
+            const expiring = await this.getExpiringSoon(7);
+            let sent = 0;
+            let failed = 0;
+
+            for (const membership of expiring) {
+                try {
+                    const expiryDate = membership.packageType === 'bronze' 
+                        ? membership.endDate 
+                        : membership.renewalDate;
+                    
+                    const daysLeft = Math.ceil(
+                        (new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                    );
+
+                    // Send admin notification
+                    await sendAdminNotification({
+                        type: 'membership_expiring',
+                        title: `⚠️ Membership Expiring: ${membership.memberType}`,
+                        message: `${membership.memberType} membership for ${membership.memberId} expires in ${daysLeft} days. Package: ${membership.packageType.toUpperCase()}`,
+                        priority: 'high',
+                        data: {
+                            memberId: membership.memberId,
+                            memberType: membership.memberType,
+                            packageType: membership.packageType,
+                            expiryDate,
+                            daysLeft
+                        }
+                    });
+
+                    sent++;
+                } catch (error) {
+                    console.error(`Failed to send expiry notification for ${membership.memberId}:`, error);
+                    failed++;
+                }
+            }
+
+            console.log(`✅ Expiry notifications sent: ${sent}, failed: ${failed}`);
+            return { sent, failed };
+        } catch (error) {
+            console.error('Error sending expiry notifications:', error);
+            return { sent: 0, failed: 0 };
+        }
+    }
+};
+
+// --- Lead Billing Service ---
+export const leadBillingService = {
+    /**
+     * Get monthly billing summary for a provider
+     */
+    async getMonthlyBilling(
+        providerId: string,
+        providerType: 'therapist' | 'place' | 'facial-place',
+        month: string,
+        year: number
+    ) {
+        try {
+            // Get all accepted leads for this provider in the specified month
+            const startDate = new Date(year, new Date(`${month} 1, ${year}`).getMonth(), 1);
+            const endDate = new Date(year, new Date(`${month} 1, ${year}`).getMonth() + 1, 0);
+
+            const result = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadGenerations,
+                [
+                    Query.equal('memberId', providerId),
+                    Query.equal('memberType', providerType),
+                    Query.equal('status', 'accepted'),
+                    Query.greaterThanEqual('acceptedDate', startDate.toISOString()),
+                    Query.lessThanEqual('acceptedDate', endDate.toISOString())
+                ]
+            );
+
+            const leads = result.documents.map(doc => ({
+                $id: doc.$id,
+                customerName: doc.customerName,
+                customerWhatsApp: doc.customerWhatsApp,
+                leadCost: doc.leadCost || 50000,
+                acceptedDate: doc.acceptedDate,
+                bookingDetails: doc.bookingDetails
+            }));
+
+            const totalAmount = leads.reduce((sum, lead) => sum + lead.leadCost, 0);
+
+            // Calculate due date (7 days after month end)
+            const dueDate = new Date(endDate);
+            dueDate.setDate(dueDate.getDate() + 7);
+
+            // Check if there's a billing summary record
+            const summaryResult = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadBillingSummary,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('month', month),
+                    Query.equal('year', year)
+                ]
+            );
+
+            let summary;
+            if (summaryResult.documents.length > 0) {
+                summary = summaryResult.documents[0];
+            } else {
+                // Create new summary
+                summary = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.leadBillingSummary,
+                    ID.unique(),
+                    {
+                        providerId,
+                        providerType,
+                        month,
+                        year,
+                        totalLeads: leads.length,
+                        totalAmount,
+                        paidAmount: 0,
+                        pendingAmount: totalAmount,
+                        status: 'pending',
+                        dueDate: dueDate.toISOString()
+                    }
+                );
+            }
+
+            return {
+                $id: summary.$id,
+                month,
+                year,
+                totalLeads: leads.length,
+                totalAmount,
+                paidAmount: summary.paidAmount || 0,
+                pendingAmount: summary.pendingAmount || totalAmount,
+                status: summary.status || 'pending',
+                dueDate: summary.dueDate || dueDate.toISOString(),
+                leads
+            };
+        } catch (error) {
+            console.error('Error getting monthly billing:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get billing history for past months
+     */
+    async getBillingHistory(
+        providerId: string,
+        providerType: 'therapist' | 'place' | 'facial-place',
+        months: number = 6
+    ) {
+        try {
+            const history = [];
+            const now = new Date();
+
+            for (let i = 1; i <= months; i++) {
+                const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const month = date.toLocaleString('default', { month: 'long' });
+                const year = date.getFullYear();
+
+                const billing = await this.getMonthlyBilling(providerId, providerType, month, year);
+                if (billing.totalLeads > 0) {
+                    history.push(billing);
+                }
+            }
+
+            return history;
+        } catch (error) {
+            console.error('Error getting billing history:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Record a payment
+     */
+    async recordPayment(
+        summaryId: string,
+        amount: number,
+        paymentMethod: string,
+        transactionId?: string
+    ) {
+        try {
+            // Get current summary
+            const summary = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadBillingSummary,
+                summaryId
+            );
+
+            const newPaidAmount = (summary.paidAmount || 0) + amount;
+            const newPendingAmount = summary.totalAmount - newPaidAmount;
+            const newStatus = newPendingAmount <= 0 ? 'paid' : newPendingAmount < summary.totalAmount ? 'partial' : 'pending';
+
+            // Update summary
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadBillingSummary,
+                summaryId,
+                {
+                    paidAmount: newPaidAmount,
+                    pendingAmount: newPendingAmount,
+                    status: newStatus,
+                    lastPaymentDate: new Date().toISOString(),
+                    lastPaymentAmount: amount,
+                    lastPaymentMethod: paymentMethod,
+                    lastTransactionId: transactionId || ''
+                }
+            );
+
+            console.log(`✅ Payment recorded: ${amount} for summary ${summaryId}`);
+            return { success: true, newStatus };
+        } catch (error) {
+            console.error('Error recording payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get total pending amount across all months
+     */
+    async getTotalPending(providerId: string, providerType: string): Promise<number> {
+        try {
+            const result = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.leadBillingSummary,
+                [
+                    Query.equal('providerId', providerId),
+                    Query.equal('providerType', providerType),
+                    Query.greaterThan('pendingAmount', 0)
+                ]
+            );
+
+            return result.documents.reduce((sum, doc) => sum + (doc.pendingAmount || 0), 0);
+        } catch (error) {
+            console.error('Error getting total pending:', error);
+            return 0;
+        }
+    }
+};
+
+
+
+
+
 
 
 

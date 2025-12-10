@@ -86,10 +86,10 @@ const LeadManagement: React.FC = () => {
         const acceptedLeads = leadsData.filter(l => l.status === 'accepted').length;
         const declinedLeads = leadsData.filter(l => l.status === 'declined').length;
         const expiredLeads = leadsData.filter(l => l.status === 'expired').length;
-        const totalRevenue = acceptedLeads * leadGenerationService.LEAD_COST;
+        const totalRevenue = leadsData.filter(l => l.status === 'accepted').reduce((sum, l) => sum + (l.leadCost || 0), 0);
         const outstandingPayments = leadsData.filter(
             l => l.status === 'accepted' && l.paymentStatus !== 'paid'
-        ).length * leadGenerationService.LEAD_COST;
+        ).reduce((sum, l) => sum + (l.leadCost || 0), 0);
         
         setStats({
             totalLeads,

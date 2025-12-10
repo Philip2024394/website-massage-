@@ -90,11 +90,16 @@ const LeadAcceptPage: React.FC = () => {
                                 {result.message}
                             </p>
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                                <p className="text-sm text-green-800 font-medium">
-                                    ✅ You will be billed Rp {leadGenerationService.LEAD_COST.toLocaleString()}
+                                <p className="text-sm text-green-800 font-medium mb-2">
+                                    ✅ Lead Accepted - Commission Details:
                                 </p>
-                                <p className="text-xs text-green-600 mt-1">
-                                    Customer has been notified and will contact you shortly
+                                <ul className="text-xs text-green-700 space-y-1 mb-3">
+                                    <li>• <strong>Amount Due:</strong> Rp {result.lead?.leadCost?.toLocaleString() || '0'} (25% commission)</li>
+                                    <li>• <strong>Payment Deadline:</strong> Within 7 days of month-end invoice</li>
+                                    <li>• <strong>Invoice Date:</strong> 1st of next month</li>
+                                </ul>
+                                <p className="text-xs text-green-600 border-t border-green-200 pt-2">
+                                    📱 Customer has been notified and will contact you shortly via WhatsApp
                                 </p>
                             </div>
                             <p className="text-sm text-gray-500">
@@ -203,15 +208,24 @@ const LeadAcceptPage: React.FC = () => {
                         <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-6 mb-6">
                             <div className="flex items-center gap-3 mb-3">
                                 <DollarSign className="w-6 h-6 text-orange-600" />
-                                <h3 className="text-lg font-bold text-orange-900">Lead Cost</h3>
+                                <h3 className="text-lg font-bold text-orange-900">Lead Cost - 25% Commission</h3>
                             </div>
                             <p className="text-3xl font-bold text-orange-600 mb-2">
-                                Rp {leadGenerationService.LEAD_COST.toLocaleString()}
+                                Rp {(lead?.leadCost || 0).toLocaleString()}
                             </p>
-                            <p className="text-sm text-orange-700">
-                                This amount will be added to your monthly invoice if you accept this lead.
-                                No charge if you decline.
+                            <p className="text-sm text-orange-700 mb-3">
+                                This is 25% of the booking price (Rp {(lead?.bookingPrice || 0).toLocaleString()}), payable to IndaStreet.
                             </p>
+                            <div className="bg-white/70 rounded-lg p-3 border border-orange-300">
+                                <p className="text-sm font-semibold text-orange-900 mb-1">
+                                    💰 Payment Terms:
+                                </p>
+                                <ul className="text-xs text-orange-800 space-y-1">
+                                    <li>• Added to your monthly invoice</li>
+                                    <li>• <strong>Payment due within 7 days of month-end</strong></li>
+                                    <li>• No charge if you decline this lead</li>
+                                </ul>
+                            </div>
                         </div>
 
                         {/* Expiry Warning */}
@@ -257,9 +271,16 @@ const LeadAcceptPage: React.FC = () => {
                             </button>
                         </div>
 
-                        <p className="text-xs text-center text-gray-500 mt-4">
-                            By accepting, you agree to be billed Rp {leadGenerationService.LEAD_COST.toLocaleString()} for this lead
-                        </p>
+                        <div className="bg-gray-100 rounded-lg p-4 mt-4">
+                            <p className="text-xs text-center text-gray-700 font-medium mb-2">
+                                ⚠️ By accepting, you agree to:
+                            </p>
+                            <ul className="text-xs text-gray-600 space-y-1">
+                                <li>✓ Pay Rp {(lead?.leadCost || 0).toLocaleString()} (25% commission) to IndaStreet</li>
+                                <li>✓ Payment due within 7 days of month-end invoice</li>
+                                <li>✓ Contact customer immediately to confirm booking</li>
+                            </ul>
+                        </div>
                     </>
                 )}
             </div>

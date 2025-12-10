@@ -157,7 +157,18 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
 
                     <div className="py-4">
                         <div className="flex items-start gap-4 mb-4">
-                            <div className="w-16 h-16">
+                            <div className="w-16 h-16 relative">
+                                {/* Verified Badge - Top Left Corner */}
+                                {(therapist as any).membershipTier === 'premium' && (therapist as any).verifiedBadge && (
+                                    <div className="absolute -top-1 -left-1 z-10 w-7 h-7">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                                            alt="Verified"
+                                            className="w-full h-full object-contain drop-shadow-lg"
+                                            style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                                        />
+                                    </div>
+                                )}
                                 <img
                                     src={(therapist as any).profilePicture || `https://via.placeholder.com/150/CCCCCC/000000?text=${encodeURIComponent(therapist.name.charAt(0))}`}
                                     alt={`${therapist.name} profile`}

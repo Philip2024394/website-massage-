@@ -1,0 +1,362 @@
+import { useState, useEffect, useRef } from 'react';
+import { messagingService } from '../lib/appwriteService';
+
+interface Message {
+    $id: string;
+    $createdAt: string;
+    senderId: string;
+    senderName: string;
+    message: string;
+    messageType: 'text' | 'system' | 'booking';
+    isRead: boolean;
+}
+
+interface ChatWindowProps {
+    // Provider info
+    providerId: string;
+    providerRole: 'therapist' | 'place';
+    providerName: string;
+    
+    // Customer info (from booking)
+    customerId: string;
+    customerName: string;
+    customerWhatsApp: string;
+    
+    // Booking info
+    bookingId?: string;
+    bookingDetails?: {
+        date?: string;
+        duration?: number;
+        price?: number;
+    };
+    
+    // UI props
+    isOpen: boolean;
+    onClose: () => void;
+}
+
+/**
+ * ChatWindow - Lightweight chat for provider dashboards
+ * 
+ * Opens when booking is confirmed
+ * Shows customer WhatsApp and allows direct messaging
+ * Push notifications + sound on new message
+ * Unread badge counter
+ */
+export default function ChatWindow({
+    providerId,
+    providerRole,
+    providerName,
+    customerId,
+    customerName,
+    customerWhatsApp,
+    bookingId,
+    bookingDetails,
+    isOpen,
+    onClose
+}: ChatWindowProps) {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [sending, setSending] = useState(false);
+    const [conversationId, setConversationId] = useState('');
+    const [unreadCount, setUnreadCount] = useState(0);
+    
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // Initialize audio notification
+    useEffect(() => {
+        audioRef.current = new Audio('/notification.mp3');
+    }, []);
+
+    // Generate conversation ID
+    useEffect(() => {
+        if (providerId && customerId) {
+            const convId = messagingService.generateConversationId(
+                { id: customerId, role: 'customer' },
+                { id: providerId, role: providerRole }
+            );
+            setConversationId(convId);
+        }
+    }, [providerId, customerId, providerRole]);
+
+    // Load messages and subscribe to updates
+    useEffect(() => {
+        if (!conversationId) return;
+
+        loadMessages();
+
+        // Subscribe to real-time messages
+        const unsubscribe = messagingService.subscribeToConversation(
+            conversationId,
+            (message) => {
+                console.log('📩 New message:', message);
+                
+                // Add to messages list
+                setMessages(prev => [...prev, message]);
+                
+                // Play sound if message is from customer
+                if (message.senderId === customerId && audioRef.current) {
+                    audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+                }
+                
+                // Update unread count
+                if (message.senderId === customerId && !message.isRead) {
+                    setUnreadCount(prev => prev + 1);
+                    
+                    // Show browser notification
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification(`New message from ${customerName}`, {
+                            body: message.message,
+                            icon: '/icon-192.png',
+                            badge: '/badge-72.png',
+                            tag: conversationId,
+                            requireInteraction: false
+                        });
+                    }
+                    
+                    // Update app badge
+                    if ('setAppBadge' in navigator) {
+                        (navigator as any).setAppBadge(unreadCount + 1);
+                    }
+                }
+            }
+        );
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [conversationId, customerId, customerName, unreadCount]);
+
+    // Mark messages as read when window is open
+    useEffect(() => {
+        if (isOpen && conversationId) {
+            markAsRead();
+        }
+    }, [isOpen, conversationId, messages]);
+
+    // Auto-scroll to bottom
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const loadMessages = async () => {
+        try {
+            const msgs = await messagingService.getConversationMessages(conversationId, 100);
+            setMessages(msgs);
+            
+            // Count unread messages from customer
+            const unread = msgs.filter((m: Message) => 
+                m.senderId === customerId && !m.isRead
+            ).length;
+            setUnreadCount(unread);
+        } catch (error) {
+            console.error('Error loading messages:', error);
+        }
+    };
+
+    const markAsRead = async () => {
+        try {
+            await messagingService.markConversationAsRead(conversationId, providerId);
+            setUnreadCount(0);
+            
+            // Clear app badge
+            if ('clearAppBadge' in navigator) {
+                (navigator as any).clearAppBadge();
+            }
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    };
+
+    const sendMessage = async () => {
+        if (!newMessage.trim() || sending) return;
+
+        setSending(true);
+
+        try {
+            const message = await messagingService.sendMessage({
+                senderId: providerId,
+                senderRole: providerRole,
+                senderName: providerName,
+                receiverId: customerId,
+                receiverRole: 'customer',
+                receiverName: customerName,
+                message: newMessage.trim(),
+                messageType: 'text',
+                bookingId
+            });
+
+            setMessages(prev => [...prev, message as any]);
+            setNewMessage('');
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    const openWhatsApp = () => {
+        const phone = customerWhatsApp.replace(/[^0-9]/g, '');
+        window.open(`https://wa.me/${phone}`, '_blank');
+    };
+
+    const formatTime = (timestamp: string) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed bottom-4 right-4 w-96 h-[600px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                    <div className="relative">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                            {customerName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div>
+                        <h3 className="font-bold">{customerName}</h3>
+                        <p className="text-xs text-indigo-200">Customer</p>
+                    </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                    {/* WhatsApp Button */}
+                    <button
+                        onClick={openWhatsApp}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                        title="Open WhatsApp"
+                    >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                    </button>
+                    
+                    {/* Unread Badge */}
+                    {unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                            {unreadCount}
+                        </span>
+                    )}
+                    
+                    {/* Close Button */}
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {/* Booking Info Banner (if provided) */}
+            {bookingDetails && (
+                <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-sm">
+                    <div className="flex items-center justify-between text-amber-900">
+                        <span>📅 Booking #{bookingId?.slice(-6)}</span>
+                        <span>{bookingDetails.duration || 60} min • Rp {bookingDetails.price?.toLocaleString()}</span>
+                    </div>
+                </div>
+            )}
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                {messages.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-8">
+                        <svg className="w-16 h-16 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <p className="font-medium">Start chatting with {customerName}</p>
+                        <p className="text-xs mt-1">Messages appear here in real-time</p>
+                    </div>
+                ) : (
+                    messages.map(msg => {
+                        const isOwnMessage = msg.senderId === providerId;
+                        const isSystemMessage = msg.messageType === 'system';
+
+                        return (
+                            <div
+                                key={msg.$id}
+                                className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} ${
+                                    isSystemMessage ? 'justify-center' : ''
+                                }`}
+                            >
+                                <div
+                                    className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+                                        isSystemMessage
+                                            ? 'bg-gray-200 text-gray-700 text-xs text-center'
+                                            : isOwnMessage
+                                            ? 'bg-indigo-600 text-white'
+                                            : 'bg-white text-gray-900 shadow-sm'
+                                    }`}
+                                >
+                                    <p className="whitespace-pre-wrap break-words text-sm">
+                                        {msg.message}
+                                    </p>
+                                    {!isSystemMessage && (
+                                        <p className={`text-xs mt-1 ${
+                                            isOwnMessage ? 'text-indigo-200' : 'text-gray-500'
+                                        }`}>
+                                            {formatTime(msg.$createdAt)}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-gray-200 p-3 bg-white rounded-b-lg">
+                <div className="flex items-end space-x-2">
+                    <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type a message..."
+                        className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none text-sm"
+                        rows={2}
+                        disabled={sending}
+                    />
+                    <button
+                        onClick={sendMessage}
+                        disabled={!newMessage.trim() || sending}
+                        className="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {sending ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        ) : (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 px-1">
+                    Press Enter to send • Shift+Enter for new line
+                </p>
+            </div>
+        </div>
+    );
+}

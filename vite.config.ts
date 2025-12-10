@@ -47,6 +47,9 @@ export default defineConfig({
         '**/.git/**',
         '**/coverage/**',
         '**/*.log',
+        '**/*.md',
+        '**/docs/**',
+        '**/deleted/**',
       ],
     },
     // Increase timeout to prevent connection drops with conservative HMR

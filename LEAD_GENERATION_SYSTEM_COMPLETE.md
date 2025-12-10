@@ -1,7 +1,7 @@
 # Lead Generation System - Complete Implementation
 
 ## Overview
-A comprehensive pay-per-lead billing system for members (therapists, massage places, facial places) without active subscriptions. When members don't activate a paid plan after 30 days, they automatically switch to a lead-based model where they pay **Rp 50,000 per accepted lead**.
+A comprehensive pay-per-lead billing system for members (therapists, massage places, facial places) without active subscriptions. When members don't activate a paid plan after 30 days, they automatically switch to a lead-based model where they pay **25% of the booking price per accepted lead**.
 
 ---
 
@@ -9,7 +9,7 @@ A comprehensive pay-per-lead billing system for members (therapists, massage pla
 
 ### For Members
 - ✅ No monthly subscription required
-- ✅ Pay only for leads you accept (Rp 50,000 each)
+- ✅ Pay only for leads you accept (25% of booking price each)
 - ✅ 5-minute response window
 - ✅ WhatsApp integration for lead notifications
 - ✅ One-click accept/decline links
@@ -583,7 +583,7 @@ Transparent information on homepage about provider response system
 
 ## 📝 Notes
 
-- Lead cost: **Rp 50,000** (configurable in `leadGenerationService.LEAD_COST`)
+- Lead cost: **25% of booking price** (calculated dynamically: 60min=62.5K, 90min=87.5K, 120min=112.5K)
 - Response timeout: **5 minutes** (configurable in `leadGenerationService.RESPONSE_TIMEOUT`)
 - Grace period after subscription ends: **7 days** (before switching to leads)
 - Account suspension after: **45 days** of non-payment

@@ -1,171 +1,25 @@
-/* Global Scroll & Footer Fix - Modern Architecture */
+/* Footer layout corrections for main app */
+/* Keep overrides minimal; loaded before Tailwind */
 
-/* CRITICAL: Fix body and html scrolling behavior */
+/* Ensure footer stays at bottom without overlapping content */
 html, body {
-  height: 100vh !important;
-  overflow: hidden !important; /* Prevent body scroll */
-  margin: 0;
-  padding: 0;
-  position: relative; /* Establish stacking context for proper z-index */
+  min-height: 100%;
 }
 
-/* CRITICAL: Root container handles ALL scrolling */
-#root {
-  height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-/* CRITICAL: App container structure */
-.mobile-optimized, 
-.container-mobile {
-  height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  /* overflow: hidden removed to allow drawers to display */
-}
-
-/* CRITICAL: Content area handles scrolling, not body */
-.content-landscape,
-.flex-1 {
-  flex: 1 !important;
-  overflow-y: auto !important; /* Content scrolls, not body */
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
-  position: relative; /* Create stacking context */
-  z-index: 20; /* Above footer, below drawers */
-}
-
-/* CRITICAL: Footer always at bottom, behind drawers */
+/* Default footer styling safety net */
 footer {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  z-index: 50 !important; /* Lower than drawers (z-99999) */
-  flex-shrink: 0 !important; /* Footer never shrinks */
+  position: relative;
+  width: 100%;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  z-index: 10;
+  transform: none;
 }
 
-/* CRITICAL: Ensure drawers/modals appear above footer */
-[role="dialog"], 
-.fixed.inset-0,
-div[role="dialog"] {
-  position: fixed !important;
-  z-index: 2147483647 !important; /* Maximum possible z-index */
-  isolation: isolate; /* Create new stacking context */
-  transform: translateZ(0); /* Force hardware acceleration and new layer */
-}
-
-/* Prevent invisible full-screen layers from swallowing clicks */
-.fixed.inset-0 {
-  pointer-events: none !important; /* Outer container doesn't capture events */
-}
-.fixed.inset-0 > * {
-  pointer-events: auto !important; /* Backdrop and panels remain interactive */
-}
-
-/* Force drawer backdrop and panel to top */
-.fixed.inset-0 > .absolute,
-.fixed.inset-0 .bg-white {
-  z-index: 2147483647 !important;
-  transform: translateZ(0); /* Force to top layer */
-}
-
-/* Ensure backdrop is under the panel to allow clicks inside drawer */
-.fixed.inset-0 > .absolute.bg-black {
-  z-index: 2147483646 !important; /* One below panel */
-}
-/* Common gradient panel containers get highest priority */
-.fixed.inset-0 > .absolute.bg-white,
-.fixed.inset-0 > .absolute[class*="bg-gradient-to-"] {
-  z-index: 2147483647 !important;
-}
-
-/* SAFETY NET: Also enforce for any dialog-scoped drawers, even if not using .fixed.inset-0 */
-[role="dialog"] > .absolute.bg-black {
-  z-index: 2147483646 !important; /* Backdrop below panel */
-}
-[role="dialog"] > .absolute {
-  z-index: 2147483647 !important; /* Panels above backdrop & footer */
-}
-[role="dialog"] > .absolute[class*="bg-gradient-to-"],
-[role="dialog"] > .absolute.bg-white {
-  z-index: 2147483647 !important; /* Ensure gradient/white panels are on top */
-}
-
-/* Z-Index Hierarchy (Footer Behind Drawers) */
-/* 
-  Footer: z-10 (behind everything)
-  Content: z-20 (above footer)
-  Drawers & Modals: z-[100] (above content)
-  High Priority Modals: z-[9999]+ (top layer)
-*/
-
-/* Page content scrolling rules - CRITICAL FIX */
-.min-h-screen {
-  height: 100% !important; /* Fill available space */
-  overflow-y: auto !important; /* Allow page content to scroll */
-  overflow-x: hidden !important;
-  position: relative; /* Create stacking context */
-  z-index: 1; /* LOWER than footer - allows drawer to escape page context */
-}
-
-/* CRITICAL: Allow drawers to escape page containers */
-.min-h-screen [role="dialog"] {
-  position: fixed !important;
-  z-index: 2147483647 !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-}
-
-/* FORCE ALL DRAWERS TO TOP LAYER */
-[role="dialog"] {
-  position: fixed !important;
-  z-index: 2147483647 !important;
-  isolation: isolate !important;
-  transform: translateZ(0) !important;
-}
-
-/* Ensure no container can contain the drawer */
-*:has([role="dialog"]) {
-  transform: none !important;
-  contain: none !important;
-  isolation: auto !important;
-}
-
-/* Ensure page headers are always clickable above content layers (below drawers) */
-header {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 2147483645 !important; /* Below drawer (2147483647), above content/footer */
-  pointer-events: auto !important;
-}
-
-/* Remove all bottom padding that interferes with footer */
-.pb-16, .pb-20, .pb-24 {
-  padding-bottom: 0 !important;
-}
-
-/* Ensure all overlays appear above footer */
-/* z-index hierarchy enforced via component classes */
-
-/* Ensure smooth scrolling on all devices */
-* {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
-/* Fix for mobile devices */
-@media (max-width: 640px) {
-  .content-landscape {
-    -webkit-overflow-scrolling: touch !important;
-  }
-}
-
-.flex-grow {
-  flex: 1;
+/* Avoid fixed positioning unless explicitly set in components */
+footer[class*="fixed"],
+footer.fixed {
+  position: fixed;
+  bottom: 0;
 }

@@ -1,0 +1,764 @@
+import React, { useState, useEffect } from 'react';
+import {
+    DollarSign, CreditCard, AlertTriangle, CheckCircle, Clock,
+    User, Phone, Calendar, TrendingUp, Download, Filter,
+    Search, Eye, Send, MessageCircle, History, Users,
+    FileText, XCircle, RefreshCw, Mail, ArrowUpRight
+} from 'lucide-react';
+
+interface Payment {
+    $id: string;
+    memberId: string;
+    memberName: string;
+    memberType: 'therapist' | 'place' | 'facial';
+    whatsappNumber: string;
+    email: string;
+    amount: number;
+    currency: string;
+    dueDate: Date;
+    paidDate?: Date;
+    status: 'paid' | 'pending' | 'overdue' | 'partial';
+    paymentMethod?: 'stripe' | 'bank_transfer' | 'cash' | 'other';
+    invoiceNumber: string;
+    description: string;
+    lastReminderSent?: Date;
+}
+
+interface PaymentHistory {
+    $id: string;
+    memberId: string;
+    payments: Payment[];
+    totalPaid: number;
+    totalOutstanding: number;
+    lastPaymentDate?: Date;
+    paymentFrequency: 'monthly' | 'quarterly' | 'annual' | 'one-time';
+}
+
+interface LeadGenerated {
+    $id: string;
+    leadId: string;
+    memberId: string;
+    memberName: string;
+    customerName: string;
+    customerPhone: string;
+    serviceType: string;
+    leadValue: number;
+    leadDate: Date;
+    status: 'new' | 'contacted' | 'converted' | 'lost';
+    commissionOwed: number;
+    commissionPaid: boolean;
+}
+
+interface PaymentStats {
+    totalRevenue: number;
+    paidThisMonth: number;
+    pendingPayments: number;
+    overduePayments: number;
+    overdueAmount: number;
+    totalMembers: number;
+    averagePayment: number;
+    leadsGenerated: number;
+    leadsValue: number;
+}
+
+const PaymentManagement: React.FC = () => {
+    const [payments, setPayments] = useState<Payment[]>([]);
+    const [paymentHistory, setPaymentHistory] = useState<PaymentHistory[]>([]);
+    const [leads, setLeads] = useState<LeadGenerated[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedCategory, setSelectedCategory] = useState<'all' | 'therapist' | 'place' | 'facial'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending' | 'overdue' | 'partial'>('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedMember, setSelectedMember] = useState<string | null>(null);
+    const [showHistoryModal, setShowHistoryModal] = useState(false);
+    const [showLeadsModal, setShowLeadsModal] = useState(false);
+
+    useEffect(() => {
+        loadPaymentData();
+    }, []);
+
+    const loadPaymentData = async () => {
+        setLoading(true);
+        try {
+            // TODO: Load from Appwrite
+            // Collections: payments, payment_history, lead_tracking
+            
+            // Mock data
+            const mockPayments: Payment[] = [
+                {
+                    $id: '1',
+                    memberId: 'therapist1',
+                    memberName: 'Sarah Johnson',
+                    memberType: 'therapist',
+                    whatsappNumber: '+62812345678',
+                    email: 'sarah@example.com',
+                    amount: 500000,
+                    currency: 'IDR',
+                    dueDate: new Date('2025-12-15'),
+                    status: 'pending',
+                    invoiceNumber: 'INV-2025-001',
+                    description: 'Monthly subscription - December 2025',
+                    lastReminderSent: new Date('2025-12-08')
+                },
+                {
+                    $id: '2',
+                    memberId: 'place1',
+                    memberName: 'Bali Massage Spa',
+                    memberType: 'place',
+                    whatsappNumber: '+62823456789',
+                    email: 'bali@example.com',
+                    amount: 1500000,
+                    currency: 'IDR',
+                    dueDate: new Date('2025-12-01'),
+                    paidDate: new Date('2025-11-30'),
+                    status: 'paid',
+                    paymentMethod: 'stripe',
+                    invoiceNumber: 'INV-2025-002',
+                    description: 'Quarterly subscription - Q4 2025'
+                },
+                {
+                    $id: '3',
+                    memberId: 'therapist2',
+                    memberName: 'Mike Chen',
+                    memberType: 'therapist',
+                    whatsappNumber: '+65987654321',
+                    email: 'mike@example.com',
+                    amount: 800000,
+                    currency: 'IDR',
+                    dueDate: new Date('2025-11-25'),
+                    status: 'overdue',
+                    invoiceNumber: 'INV-2025-003',
+                    description: 'Monthly subscription - November 2025',
+                    lastReminderSent: new Date('2025-12-05')
+                }
+            ];
+
+            const mockLeads: LeadGenerated[] = [
+                {
+                    $id: '1',
+                    leadId: 'LEAD-001',
+                    memberId: 'therapist1',
+                    memberName: 'Sarah Johnson',
+                    customerName: 'John Doe',
+                    customerPhone: '+62811222333',
+                    serviceType: 'Thai Massage',
+                    leadValue: 500000,
+                    leadDate: new Date('2025-12-08'),
+                    status: 'converted',
+                    commissionOwed: 50000,
+                    commissionPaid: true
+                },
+                {
+                    $id: '2',
+                    leadId: 'LEAD-002',
+                    memberId: 'place1',
+                    memberName: 'Bali Massage Spa',
+                    customerName: 'Jane Smith',
+                    customerPhone: '+62822333444',
+                    serviceType: 'Full Body Massage',
+                    leadValue: 750000,
+                    leadDate: new Date('2025-12-09'),
+                    status: 'contacted',
+                    commissionOwed: 75000,
+                    commissionPaid: false
+                }
+            ];
+
+            setPayments(mockPayments);
+            setLeads(mockLeads);
+        } catch (error) {
+            console.error('Error loading payment data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const calculateStats = (): PaymentStats => {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const paidPayments = payments.filter(p => p.status === 'paid');
+        const overduePayments = payments.filter(p => p.status === 'overdue');
+        const paidThisMonth = payments.filter(p => 
+            p.status === 'paid' && 
+            p.paidDate && 
+            new Date(p.paidDate) >= startOfMonth
+        );
+
+        return {
+            totalRevenue: paidPayments.reduce((sum, p) => sum + p.amount, 0),
+            paidThisMonth: paidThisMonth.reduce((sum, p) => sum + p.amount, 0),
+            pendingPayments: payments.filter(p => p.status === 'pending').length,
+            overduePayments: overduePayments.length,
+            overdueAmount: overduePayments.reduce((sum, p) => sum + p.amount, 0),
+            totalMembers: new Set(payments.map(p => p.memberId)).size,
+            averagePayment: paidPayments.length > 0 ? paidPayments.reduce((sum, p) => sum + p.amount, 0) / paidPayments.length : 0,
+            leadsGenerated: leads.length,
+            leadsValue: leads.reduce((sum, l) => sum + l.leadValue, 0)
+        };
+    };
+
+    const getFilteredPayments = () => {
+        return payments.filter(payment => {
+            const categoryMatch = selectedCategory === 'all' || payment.memberType === selectedCategory;
+            const statusMatch = statusFilter === 'all' || payment.status === statusFilter;
+            const searchMatch = searchTerm === '' || 
+                payment.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                payment.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                payment.whatsappNumber.includes(searchTerm);
+            
+            return categoryMatch && statusMatch && searchMatch;
+        });
+    };
+
+    const sendWhatsAppReminder = async (payment: Payment) => {
+        const message = `Hello ${payment.memberName}, this is a reminder that your payment of ${formatCurrency(payment.amount, payment.currency)} for invoice ${payment.invoiceNumber} is due on ${formatDate(payment.dueDate)}. Please process your payment at your earliest convenience. Thank you!`;
+        
+        // Open WhatsApp with pre-filled message
+        const whatsappUrl = `https://wa.me/${payment.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        
+        // TODO: Update lastReminderSent in Appwrite
+        const updatedPayments = payments.map(p => 
+            p.$id === payment.$id ? { ...p, lastReminderSent: new Date() } : p
+        );
+        setPayments(updatedPayments);
+    };
+
+    const sendEmailReminder = async (payment: Payment) => {
+        // TODO: Integrate with email service via Appwrite Functions
+        alert(`Email reminder sent to ${payment.email}`);
+    };
+
+    const formatCurrency = (amount: number, currency: string) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: currency
+        }).format(amount);
+    };
+
+    const formatDate = (date: Date) => {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+
+    const getDaysOverdue = (dueDate: Date) => {
+        const now = new Date();
+        const due = new Date(dueDate);
+        const diffTime = now.getTime() - due.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : 0;
+    };
+
+    const exportToCSV = () => {
+        const filteredPayments = getFilteredPayments();
+        const headers = ['Invoice', 'Member', 'Type', 'Amount', 'Due Date', 'Status', 'WhatsApp', 'Email'];
+        const rows = filteredPayments.map(p => [
+            p.invoiceNumber,
+            p.memberName,
+            p.memberType,
+            p.amount.toString(),
+            formatDate(p.dueDate),
+            p.status,
+            p.whatsappNumber,
+            p.email
+        ]);
+        
+        const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+    };
+
+    const stats = calculateStats();
+    const filteredPayments = getFilteredPayments();
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            {/* Header */}
+            <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                            <DollarSign className="w-8 h-8 text-orange-500" />
+                            Payment Management
+                        </h1>
+                        <p className="text-gray-600 mt-1">Track payments, manage overdue accounts, and monitor revenue</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={loadPaymentData}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <TrendingUp className="w-8 h-8 text-green-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
+                    <p className="text-3xl font-bold text-green-600">{formatCurrency(stats.totalRevenue, 'IDR')}</p>
+                    <p className="text-xs text-gray-500 mt-2">This month: {formatCurrency(stats.paidThisMonth, 'IDR')}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <Clock className="w-8 h-8 text-yellow-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Pending Payments</p>
+                    <p className="text-3xl font-bold text-yellow-600">{stats.pendingPayments}</p>
+                    <p className="text-xs text-gray-500 mt-2">{stats.totalMembers} active members</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <AlertTriangle className="w-8 h-8 text-red-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Overdue Payments</p>
+                    <p className="text-3xl font-bold text-red-600">{stats.overduePayments}</p>
+                    <p className="text-xs text-gray-500 mt-2">Amount: {formatCurrency(stats.overdueAmount, 'IDR')}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <Users className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <p className="text-sm text-gray-500 mb-1">Leads Generated</p>
+                    <p className="text-3xl font-bold text-blue-600">{stats.leadsGenerated}</p>
+                    <p className="text-xs text-gray-500 mt-2">Value: {formatCurrency(stats.leadsValue, 'IDR')}</p>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {/* Search */}
+                    <div className="md:col-span-1">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Search
+                        </label>
+                        <div className="relative">
+                            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Name, invoice, phone..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Category Filter */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Member Type
+                        </label>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value as any)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                        >
+                            <option value="all">All Types</option>
+                            <option value="therapist">Therapists</option>
+                            <option value="place">Massage Places</option>
+                            <option value="facial">Facial Places</option>
+                        </select>
+                    </div>
+
+                    {/* Status Filter */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Payment Status
+                        </label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as any)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="partial">Partial</option>
+                        </select>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Quick Actions
+                        </label>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setStatusFilter('overdue')}
+                                className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors"
+                            >
+                                Show Overdue
+                            </button>
+                            <button
+                                onClick={() => setShowLeadsModal(true)}
+                                className="flex-1 px-3 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
+                            >
+                                View Leads
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Payments Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Member</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Type</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Invoice</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Amount</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Due Date</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Status</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Contact</th>
+                                <th className="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {filteredPayments.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} className="px-6 py-12 text-center">
+                                        <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                                        <p className="text-gray-500">No payments found matching your filters</p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredPayments.map((payment) => (
+                                    <tr key={payment.$id} className="hover:bg-gray-50 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <User className="w-5 h-5 text-gray-400" />
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">{payment.memberName}</p>
+                                                    <p className="text-xs text-gray-500">{payment.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                                                payment.memberType === 'therapist' ? 'bg-blue-100 text-blue-700' :
+                                                payment.memberType === 'place' ? 'bg-purple-100 text-purple-700' :
+                                                'bg-pink-100 text-pink-700'
+                                            }`}>
+                                                {payment.memberType}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="font-mono text-sm text-gray-700">{payment.invoiceNumber}</p>
+                                            <p className="text-xs text-gray-500">{payment.description}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="font-bold text-gray-800">{formatCurrency(payment.amount, payment.currency)}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <p className="text-sm text-gray-700">{formatDate(payment.dueDate)}</p>
+                                            {payment.status === 'overdue' && (
+                                                <p className="text-xs text-red-600 font-semibold mt-1">
+                                                    {getDaysOverdue(payment.dueDate)} days overdue
+                                                </p>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                                                payment.status === 'paid' ? 'bg-green-100 text-green-700' :
+                                                payment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                payment.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                                                'bg-gray-100 text-gray-700'
+                                            }`}>
+                                                {payment.status === 'paid' && <CheckCircle className="w-3 h-3" />}
+                                                {payment.status === 'pending' && <Clock className="w-3 h-3" />}
+                                                {payment.status === 'overdue' && <AlertTriangle className="w-3 h-3" />}
+                                                {payment.status.toUpperCase()}
+                                            </span>
+                                            {payment.paidDate && (
+                                                <p className="text-xs text-gray-500 mt-1">Paid: {formatDate(payment.paidDate)}</p>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <a 
+                                                    href={`https://wa.me/${payment.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-green-600 hover:text-green-700"
+                                                    title="WhatsApp"
+                                                >
+                                                    <MessageCircle className="w-5 h-5" />
+                                                </a>
+                                                <a 
+                                                    href={`tel:${payment.whatsappNumber}`}
+                                                    className="text-blue-600 hover:text-blue-700"
+                                                    title="Call"
+                                                >
+                                                    <Phone className="w-5 h-5" />
+                                                </a>
+                                                <button
+                                                    onClick={() => sendEmailReminder(payment)}
+                                                    className="text-purple-600 hover:text-purple-700"
+                                                    title="Email"
+                                                >
+                                                    <Mail className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">{payment.whatsappNumber}</p>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedMember(payment.memberId);
+                                                        setShowHistoryModal(true);
+                                                    }}
+                                                    className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                                                    title="View History"
+                                                >
+                                                    <History className="w-4 h-4" />
+                                                </button>
+                                                {payment.status !== 'paid' && (
+                                                    <button
+                                                        onClick={() => sendWhatsAppReminder(payment)}
+                                                        className="p-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                                                        title="Send WhatsApp Reminder"
+                                                    >
+                                                        <Send className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Payment History Modal */}
+            {showHistoryModal && selectedMember && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                <History className="w-6 h-6" />
+                                Payment History
+                            </h2>
+                            <button
+                                onClick={() => setShowHistoryModal(false)}
+                                className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            {/* Member Info */}
+                            {payments.filter(p => p.memberId === selectedMember).length > 0 && (
+                                <div className="bg-blue-50 rounded-lg p-4 mb-6 border border-blue-200">
+                                    <div className="flex items-center gap-4">
+                                        <User className="w-12 h-12 text-blue-600" />
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-800">
+                                                {payments.find(p => p.memberId === selectedMember)?.memberName}
+                                            </h3>
+                                            <p className="text-sm text-gray-600">
+                                                {payments.find(p => p.memberId === selectedMember)?.email}
+                                            </p>
+                                            <p className="text-sm text-gray-600">
+                                                {payments.find(p => p.memberId === selectedMember)?.whatsappNumber}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Payment Timeline */}
+                            <div className="space-y-4">
+                                {payments
+                                    .filter(p => p.memberId === selectedMember)
+                                    .sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime())
+                                    .map((payment, index) => (
+                                        <div key={payment.$id} className="flex gap-4">
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                    payment.status === 'paid' ? 'bg-green-100' :
+                                                    payment.status === 'overdue' ? 'bg-red-100' :
+                                                    'bg-yellow-100'
+                                                }`}>
+                                                    {payment.status === 'paid' ? (
+                                                        <CheckCircle className="w-5 h-5 text-green-600" />
+                                                    ) : payment.status === 'overdue' ? (
+                                                        <AlertTriangle className="w-5 h-5 text-red-600" />
+                                                    ) : (
+                                                        <Clock className="w-5 h-5 text-yellow-600" />
+                                                    )}
+                                                </div>
+                                                {index < payments.filter(p => p.memberId === selectedMember).length - 1 && (
+                                                    <div className="w-0.5 h-full bg-gray-200 mt-2"></div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 bg-gray-50 rounded-lg p-4 mb-4">
+                                                <div className="flex items-start justify-between mb-2">
+                                                    <div>
+                                                        <p className="font-semibold text-gray-800">{payment.invoiceNumber}</p>
+                                                        <p className="text-sm text-gray-600">{payment.description}</p>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                                        payment.status === 'paid' ? 'bg-green-100 text-green-700' :
+                                                        payment.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                        {payment.status}
+                                                    </span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 mt-3">
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">Amount</p>
+                                                        <p className="font-bold text-gray-800">{formatCurrency(payment.amount, payment.currency)}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500">Due Date</p>
+                                                        <p className="text-sm text-gray-700">{formatDate(payment.dueDate)}</p>
+                                                    </div>
+                                                    {payment.paidDate && (
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Paid Date</p>
+                                                            <p className="text-sm text-gray-700">{formatDate(payment.paidDate)}</p>
+                                                        </div>
+                                                    )}
+                                                    {payment.paymentMethod && (
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Method</p>
+                                                            <p className="text-sm text-gray-700 capitalize">{payment.paymentMethod.replace('_', ' ')}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Leads Modal */}
+            {showLeadsModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+                        <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 flex items-center justify-between">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                <ArrowUpRight className="w-6 h-6" />
+                                Lead Generation Tracking
+                            </h2>
+                            <button
+                                onClick={() => setShowLeadsModal(false)}
+                                className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Lead ID</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Member</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Service</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Value</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Date</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Commission</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                        {leads.map((lead) => (
+                                            <tr key={lead.$id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-3">
+                                                    <p className="font-mono text-sm text-gray-700">{lead.leadId}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="font-semibold text-gray-800">{lead.memberName}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-sm text-gray-700">{lead.customerName}</p>
+                                                    <p className="text-xs text-gray-500">{lead.customerPhone}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-sm text-gray-700">{lead.serviceType}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="font-bold text-gray-800">{formatCurrency(lead.leadValue, 'IDR')}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-sm text-gray-700">{formatDate(lead.leadDate)}</p>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                                                        lead.status === 'converted' ? 'bg-green-100 text-green-700' :
+                                                        lead.status === 'contacted' ? 'bg-blue-100 text-blue-700' :
+                                                        lead.status === 'lost' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                        {lead.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-sm font-semibold text-gray-700">{formatCurrency(lead.commissionOwed, 'IDR')}</p>
+                                                    <span className={`text-xs ${lead.commissionPaid ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {lead.commissionPaid ? '✓ Paid' : '✗ Unpaid'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default PaymentManagement;

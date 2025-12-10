@@ -239,8 +239,16 @@ const App = () => {
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
     
+    // Log current language state
+    console.log('🌐 App.tsx: Current language state:', language);
+    
     // Get translations using the actual language state - provide to AppRouter
     const { t: _t, dict } = useTranslations(language);
+    
+    // Log loaded translations
+    console.log('🌐 App.tsx: Loaded translations for language:', language);
+
+    console.log('📄 App.tsx: Current page state:', state.page);
 
     // Detect direct path navigation for accept-booking links and switch to that page
     useEffect(() => {
@@ -288,7 +296,12 @@ const App = () => {
     const handleLanguageSelect = async (lang: 'en' | 'id' | 'gb') => {
         console.log('🌍 App.tsx: handleLanguageSelect called with:', lang);
         const normalized = lang === 'gb' ? 'en' : lang;
+        console.log('🌍 App.tsx: Normalized language:', normalized);
+        console.log('🌍 App.tsx: Previous language:', language);
         setLanguage(normalized);
+        console.log('🌍 App.tsx: Language state updated to:', normalized);
+        // Force re-render by ensuring state change is processed
+        await new Promise(resolve => setTimeout(resolve, 0));
         return Promise.resolve();
     };
 

@@ -719,6 +719,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20 overflow-visible">
                     <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
+                        {/* Verified Badge - Top Left Corner */}
+                        {(therapist as any).membershipTier === 'premium' && (therapist as any).verifiedBadge && (
+                            <div className="absolute -top-2 -left-2 z-30 w-10 h-10">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                                    alt="Verified"
+                                    className="w-full h-full object-contain drop-shadow-lg"
+                                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                                />
+                            </div>
+                        )}
+                        
                         {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                             <img 
                                 className="w-full h-full rounded-full object-cover aspect-square" 

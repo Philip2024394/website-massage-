@@ -100,7 +100,7 @@ Benefits of staying subscribed:
 ✅ Priority customer support
 ✅ Verified provider badge
 
-⚠️ If payment is not received by the due date, your account will switch to pay-per-lead mode (Rp 50,000 per accepted lead).
+⚠️ If payment is not received by the due date, your account will switch to pay-per-lead mode (25% of booking price per accepted lead).
 
 Questions? Contact us:
 📞 ${process.env.ADMIN_PHONE}

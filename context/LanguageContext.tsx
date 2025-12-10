@@ -6,7 +6,7 @@ export interface LanguageContextValue {
 }
 
 const defaultValue: LanguageContextValue = {
-  language: 'id',
+  language: 'id', // Default to Indonesian
   setLanguage: () => {}
 };
 

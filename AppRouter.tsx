@@ -30,10 +30,8 @@ const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
 const JoinIndastreetPage = React.lazy(() => import('./pages/JoinIndastreetPage'));
-const TherapistPortalPage = React.lazy(() => import('./pages/TherapistPortalPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
-const PlaceDashboardPage = React.lazy(() => import('./pages/PlaceDashboardPage'));
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
@@ -49,7 +47,6 @@ const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLogin
 const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
 const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
 const MembershipTermsPage = React.lazy(() => import('./pages/MembershipTermsPage'));
-const FacialPlaceDashboardPage = React.lazy(() => import('./pages/FacialPlaceDashboardPage'));
 const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
 const FacialMemberDashboard = React.lazy(() => import('./pages/FacialMemberDashboard'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
@@ -96,7 +93,6 @@ const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
 const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
 const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage'));
 const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
-const LiveAdminDashboardEnhanced = React.lazy(() => import('./pages/LiveAdminDashboardEnhanced'));
 import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
@@ -372,8 +368,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     console.log('🌍 AppRouter: Props language:', language);
     console.log('🌍 AppRouter: Context language:', ctxLanguage); 
     console.log('🌍 AppRouter: Active language resolved:', activeLanguage);
+    console.log(`🌍 AppRouter: Using ${activeLanguage === 'id' ? 'INDONESIAN 🇮🇩' : 'ENGLISH 🇬🇧'} translations`);
     const { t: tFn, dict } = useTranslations(activeLanguage as any);
     console.log('🌍 AppRouter: Dict received from useTranslations:', dict ? Object.keys(dict) : 'null');
+    console.log('🌍 AppRouter: Sample home translation (homeServiceTab):', dict?.home?.homeServiceTab);
 
     // One-time sync of core translation keys to Appwrite
     React.useEffect(() => {
@@ -852,10 +850,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // 🏠 CORE APPLICATION ROUTES  
         // ========================
         case 'landing':
+            console.log('🎬 AppRouter: Rendering LandingPage component');
             return <LandingPage 
                 onLanguageSelect={handleLanguageSelect} 
                 onEnterApp={handleEnterApp} 
-            />;        case 'home':
+            />;
+        
+        case 'home':
             console.log('🏠 AppRouter: Rendering HomePage component');
             return <HomePage 
                 user={user} 
@@ -1096,28 +1097,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             );
 
         case 'facialPlaceDashboard':
-            if (!loggedInProvider || loggedInProvider.type !== 'place') {
-                setPage('home');
-                return null;
-            }
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading dashboard..." />}>
-                    <FacialPlaceDashboardPage
-                        placeId={loggedInProvider.id}
-                        onSave={(data: any) => {
-                            console.log('Saving facial place:', data);
-                            // You can add save logic here
-                        }}
-                        onLogout={handleLogout}
-                        onNavigateToNotifications={handleNavigateToNotifications}
-                        onNavigate={commonNavigateHandler}
-                        onUpdateBookingStatus={(bookingId, status) => {
-                            console.log('Update booking:', bookingId, status);
-                        }}
-                        t={t}
-                    />
-                </React.Suspense>
-            );
+            // Redirect to separate facial dashboard app
+            window.open('http://localhost:3003', '_blank');
+            setPage('home');
+            return null;
 
         case 'facialPortal':
             return (
@@ -1176,58 +1159,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }} 
                 onBack={handleBackToHome} 
             />;
-        case 'therapistPortal': {
-            console.log('🎯 AppRouter: THERAPIST DASHBOARD CASE TRIGGERED!');
-            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
-            
-            // Find therapist by document ID (now passed from login)
-            const existingTherapist = therapists.find(t => 
-                t.id === loggedInProvider?.id || 
-                (t as any).$id === loggedInProvider?.id ||
-                String(t.id) === String(loggedInProvider?.id) ||
-                String((t as any).$id) === String(loggedInProvider?.id)
-            );
-            
-            console.log('🎯 AppRouter: Found therapist:', !!existingTherapist, existingTherapist?.name);
-            
-            if (loggedInProvider?.type === 'therapist') {
-                const finalTherapist = portalTherapist || existingTherapist || null;
-                // Industry-standard loading skeleton
-                if (portalLoading && !finalTherapist) {
-                    return (
-                        <div className="min-h-screen flex items-center justify-center bg-white">
-                            <div className="flex flex-col items-center gap-4">
-                                <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin" />
-                                <p className="text-sm text-gray-600">Loading therapist dashboard...</p>
-                            </div>
-                        </div>
-                    );
-                }
-                if (portalError && !finalTherapist) {
-                    return (
-                        <div className="min-h-screen flex items-center justify-center bg-red-50 p-4">
-                            <div className="bg-white border border-red-400 rounded-lg p-6 max-w-sm w-full">
-                                <h2 className="text-lg font-semibold text-red-700 mb-2">Dashboard Load Error</h2>
-                                <p className="text-sm text-red-600 mb-4">{portalError}</p>
-                                <button
-                                    onClick={() => { setPortalTherapist(null); setPortalError(null); }}
-                                    className="px-4 py-2 text-sm rounded bg-orange-600 text-white hover:bg-orange-700"
-                                >Retry</button>
-                            </div>
-                        </div>
-                    );
-                }
-                return (
-                    <TherapistPortalPage 
-                        therapist={finalTherapist}
-                        onNavigateToStatus={() => setPage('therapistStatus')}
-                        onLogout={handleProviderLogout}
-                        onNavigateHome={() => setPage('home')}
-                    />
-                );
-            }
+        case 'therapistPortal':
+            // Redirect to separate therapist dashboard app
+            window.open('http://localhost:3001', '_blank');
+            setPage('home');
             return null;
-        }
 
         case 'therapistStatus':
             return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 
@@ -1246,121 +1182,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         // unifiedLogin removed
             
-        case 'placeDashboard': {
-            console.log('🎯 AppRouter: PLACE DASHBOARD CASE TRIGGERED!');
-            console.log('🔍 AppRouter: Current loggedInProvider:', loggedInProvider);
-            
-            // localStorage disabled - using Appwrite session only
-            const effectiveProvider = loggedInProvider;
-            if (!effectiveProvider) {
-                console.log('⚠️ loggedInProvider is null (localStorage disabled - check Appwrite session)');
-            }
-            
-            console.log('🔍 AppRouter: Effective provider after restore:', effectiveProvider);
-            console.log('🔍 AppRouter: places array length:', places.length);
-            
-            // Show error banner if provider not set
-            if (!effectiveProvider) {
-                console.error('❌ CRITICAL: loggedInProvider is null/undefined in placeDashboard case!');
-                return (
-                    <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full border-2 border-red-500">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-2xl">⚠️</span>
-                                </div>
-                                <h2 className="text-xl font-bold text-red-900">Dashboard Error</h2>
-                            </div>
-                            <p className="text-red-700 mb-4">
-                                <strong>Provider not authenticated.</strong> The dashboard could not load because no provider information was found.
-                            </p>
-                            <div className="bg-red-100 p-3 rounded mb-4 text-xs text-red-800">
-                                <strong>Debug Info:</strong><br/>
-                                • loggedInProvider: {effectiveProvider ? 'exists' : 'NULL'}<br/>
-                                • localStorage: disabled (using Appwrite only)<br/>
-                                • Check browser console for detailed logs
-                            </div>
-                            <button 
-                                onClick={() => {
-                                    console.log('🔄 Redirecting to massage place login...');
-                                    setPage('massagePlaceLogin');
-                                }}
-                                className="w-full bg-red-500 text-white py-3 px-4 rounded-lg hover:bg-red-600 font-semibold"
-                            >
-                                Return to Login
-                            </button>
-                        </div>
-                    </div>
-                );
-            }
-            
-            if (effectiveProvider.type !== 'place') {
-                console.error('❌ CRITICAL: loggedInProvider.type is not "place"!', effectiveProvider);
-                return (
-                    <div className="min-h-screen bg-yellow-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full border-2 border-yellow-500">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-2xl">⚠️</span>
-                                </div>
-                                <h2 className="text-xl font-bold text-yellow-900">Wrong Provider Type</h2>
-                            </div>
-                            <p className="text-yellow-700 mb-4">
-                                <strong>Invalid provider type detected.</strong> Expected 'place' but received '{effectiveProvider.type}'.
-                            </p>
-                            <div className="bg-yellow-100 p-3 rounded mb-4 text-xs text-yellow-800">
-                                <strong>Debug Info:</strong><br/>
-                                • Provider Type: {effectiveProvider.type}<br/>
-                                • Provider ID: {effectiveProvider.id}<br/>
-                                • Expected: place<br/>
-                                <pre className="mt-2 overflow-auto">{JSON.stringify(effectiveProvider, null, 2)}</pre>
-                            </div>
-                            <button 
-                                onClick={() => {
-                                    console.log('🔄 Clearing state and redirecting...');
-                                    setLoggedInProvider(null);
-                                    setPage('massagePlaceLogin');
-                                }}
-                                className="w-full bg-yellow-500 text-white py-3 px-4 rounded-lg hover:bg-yellow-600 font-semibold"
-                            >
-                                Clear & Return to Login
-                            </button>
-                        </div>
-                    </div>
-                );
-            }
-            
-            // Find place or create basic object for dashboard loading
-            let currentPlace = places.find(p => p.id == effectiveProvider?.id || p.id === effectiveProvider?.id || String(p.id) === String(effectiveProvider?.id));
-            
-            console.log('🔍 AppRouter: Found place in places array:', !!currentPlace);
-            
-            if (!currentPlace && effectiveProvider?.id) {
-                console.log('🔧 AppRouter: Creating stub place object for dashboard loading');
-                // Create basic place object - PlaceDashboardPage will handle loading saved data
-                currentPlace = {
-                    id: effectiveProvider.id,
-                    name: '', description: '', rating: 0, isLive: false,
-                    openingTime: '09:00', closingTime: '21:00', location: '', phoneNumber: '', whatsappNumber: '',
-                    images: [], services: [], therapists: [], lat: 0, lng: 0, $id: String(effectiveProvider.id),
-                    mainImage: '', pricing: '{}', coordinates: '{"lat":0,"lng":0}', massageTypes: '[]',
-                    languages: [], additionalServices: []
-                } as any;
-            }
-            
-            console.log('✅ AppRouter: Rendering PlaceDashboardPage with placeId:', effectiveProvider.id);
-            return <PlaceDashboardPage 
-                placeId={effectiveProvider.id}
-                place={currentPlace}
-                userLocation={userLocation}
-                onSave={handleSavePlace}
-                onLogout={handleProviderLogout}
-                onNavigate={(page) => setPage(page as Page)}
-                {...commonDashboardProps}
-                bookings={bookings?.filter(b => b.providerId === loggedInProvider.id && b.providerType === 'place') || []}
-                t={t || {}}
-            />;
-        }
+        case 'placeDashboard':
+            // Redirect to separate place dashboard app
+            window.open('http://localhost:3002', '_blank');
+            setPage('home');
+            return null;
 
         // 🔐 Admin Routes - Login & Dashboard
         case 'adminLogin':
@@ -1387,31 +1213,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 </React.Suspense>
             );
 
-        case 'adminDashboard': {
-            console.log('🎯 AppRouter: ADMIN DASHBOARD CASE TRIGGERED!');
-            console.log('🔍 AppRouter: isAdminLoggedIn:', isAdminLoggedIn);
-            
-            // Guard: Redirect to login if not authenticated
-            if (!isAdminLoggedIn) {
-                console.log('⚠️ Admin not logged in, redirecting to admin login');
-                setPage('adminLogin');
-                return null;
-            }
-
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading admin dashboard..." />}>
-                    <LiveAdminDashboardEnhanced
-                        onLogout={async () => {
-                            console.log('🚪 Admin logout');
-                            if ((props as any).handleAdminLogout) {
-                                await (props as any).handleAdminLogout();
-                            }
-                            setPage('home');
-                        }}
-                    />
-                </React.Suspense>
-            );
-        }
+        case 'adminDashboard':
+            // Redirect to separate admin dashboard app
+            window.open('http://localhost:3004', '_blank');
+            setPage('home');
+            return null;
         
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
@@ -1536,6 +1342,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userRole={userRole}
                 dashboardType={notificationsDashboardType}
             />;
+        }
+
+        case 'membership': {
+            // Membership page for therapists, massage places, and facial places
+            if (!loggedInProvider) {
+                // Redirect to login if not authenticated
+                setPage('registrationChoice');
+                return null;
+            }
+
+            return (
+                <React.Suspense fallback={<LoadingSpinner message="Loading membership plans..." />}>
+                    <MembershipPage />
+                </React.Suspense>
+            );
         }
             
         case 'massageTypes':

@@ -8,8 +8,11 @@ import {
 } from 'lucide-react';
 import { 
     therapistService, 
-    placeService, 
-    bookingService
+    placesService,
+    facialPlaceService,
+    bookingService,
+    membershipService,
+    membershipPackageService
 } from '../../../../lib/appwriteService';
 import { analyticsService } from '../../../../services/analyticsService';
 import PageNumberBadge from '../../../../components/PageNumberBadge';
@@ -57,15 +60,24 @@ interface LiveStats {
     totalUsers: number;
     totalTherapists: number;
     totalPlaces: number;
+    totalFacialPlaces: number;
     totalBookings: number;
     totalRevenue: number;
     activeTherapists: number;
     activePlaces: number;
+    activeFacialPlaces: number;
     pendingApprovals: number;
     todayBookings: number;
     monthlyRevenue: number;
     newRegistrations: number;
     liveMembers: number;
+    // Membership stats
+    bronzeMembers: number;
+    silverMembers: number;
+    goldMembers: number;
+    bronzeRevenue: number;
+    goldRevenue: number;
+    expiringSoon: number;
 }
 
 interface RecentActivity {
@@ -109,15 +121,23 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         totalUsers: 0,
         totalTherapists: 0,
         totalPlaces: 0,
+        totalFacialPlaces: 0,
         totalBookings: 0,
         totalRevenue: 0,
         activeTherapists: 0,
         activePlaces: 0,
+        activeFacialPlaces: 0,
         pendingApprovals: 0,
         todayBookings: 0,
         monthlyRevenue: 0,
         newRegistrations: 0,
-        liveMembers: 0
+        liveMembers: 0,
+        bronzeMembers: 0,
+        silverMembers: 0,
+        goldMembers: 0,
+        bronzeRevenue: 0,
+        goldRevenue: 0,
+        expiringSoon: 0
     });
     
     const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -149,11 +169,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
             const [
                 therapistsData,
                 placesData,
-                bookings
+                facialPlacesData,
+                bookings,
+                membershipStats
             ] = await Promise.all([
                 therapistService.getAll(),
                 placeService.getAll(),
-                bookingService.getAll()
+                facialPlaceService.getAll(),
+                bookingService.getAll(),
+                membershipPackageService.getMembershipStats()
             ]);
 
             // Use analytics service to get additional platform data
@@ -174,6 +198,10 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
             // Process places data
             const activePlaces = placesData.filter((p: any) => p.status === 'active').length;
             const pendingPlaces = placesData.filter((p: any) => p.status === 'pending').length;
+
+            // Process facial places data
+            const activeFacialPlaces = facialPlacesData.filter((fp: any) => fp.isLive).length;
+            const pendingFacialPlaces = facialPlacesData.filter((fp: any) => !fp.isLive).length;
 
             // Process bookings data
             const todayBookings = bookings.filter((b: any) => 
@@ -197,6 +225,9 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
             const newPlaces = placesData.filter((p: any) => 
                 new Date(p.$createdAt) > weekAgo
             ).length;
+            const newFacialPlaces = facialPlacesData.filter((fp: any) => 
+                new Date(fp.$createdAt) > weekAgo
+            ).length;
 
             // Calculate total revenue
             const totalRevenue = bookings.reduce((sum: number, booking: any) => 
@@ -208,15 +239,23 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 totalUsers: platformAnalytics.totalUsers || 0,
                 totalTherapists: therapistsData.length,
                 totalPlaces: placesData.length,
+                totalFacialPlaces: facialPlacesData.length,
                 totalBookings: bookings.length,
                 totalRevenue,
                 activeTherapists,
                 activePlaces,
-                pendingApprovals: pendingTherapists + pendingPlaces,
+                activeFacialPlaces,
+                pendingApprovals: pendingTherapists + pendingPlaces + pendingFacialPlaces,
                 todayBookings,
                 monthlyRevenue,
-                newRegistrations: newTherapists + newPlaces,
-                liveMembers: activeTherapists + activePlaces
+                newRegistrations: newTherapists + newPlaces + newFacialPlaces,
+                liveMembers: activeTherapists + activePlaces + activeFacialPlaces,
+                bronzeMembers: membershipStats.bronzeCount,
+                silverMembers: membershipStats.silverCount,
+                goldMembers: membershipStats.goldCount,
+                bronzeRevenue: membershipStats.bronzeRevenue,
+                goldRevenue: membershipStats.goldRevenue,
+                expiringSoon: membershipStats.expiringSoon
             });
 
             // Set card data for editing
@@ -1337,6 +1376,139 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                         <span className="text-gray-600">Active Members</span>
                                         <span className="font-semibold text-green-600">{stats.liveMembers}</span>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Membership Packages Stats */}
+                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100 mb-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-gray-800">Membership Packages</h3>
+                                <div className="flex items-center gap-2">
+                                    <div className="px-3 py-1 bg-white rounded-full text-sm font-medium text-gray-700">
+                                        Total: {stats.bronzeMembers + stats.silverMembers + stats.goldMembers}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                {/* Bronze Package */}
+                                <div className="bg-white rounded-lg p-5 border-2 border-amber-200 shadow-sm">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-lg font-bold text-amber-700">Bronze</h4>
+                                        <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-bold">
+                                            {stats.bronzeMembers}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Package Price</span>
+                                            <span className="font-semibold">Rp 2M/year</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Total Revenue</span>
+                                            <span className="font-semibold text-green-600">
+                                                {formatCurrency(stats.bronzeRevenue)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Lead Cost</span>
+                                            <span className="font-semibold">Free</span>
+                                        </div>
+                                        {stats.expiringSoon > 0 && (
+                                            <div className="mt-3 p-2 bg-amber-50 rounded text-xs text-amber-700 border border-amber-200">
+                                                ⚠️ {stats.expiringSoon} expiring in 30 days
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Silver Package */}
+                                <div className="bg-white rounded-lg p-5 border-2 border-gray-300 shadow-sm">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-lg font-bold text-gray-700">Silver</h4>
+                                        <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-bold">
+                                            {stats.silverMembers}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Package Price</span>
+                                            <span className="font-semibold">Rp 0/month</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Revenue Model</span>
+                                            <span className="font-semibold text-indigo-600">Pay-per-lead</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Lead Cost</span>
+                                            <span className="font-semibold">25% per booking</span>
+                                        </div>
+                                        <div className="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700 border border-blue-200">
+                                            ℹ️ Default package for all members
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Monthly Package */}
+                                <div className="bg-white rounded-lg p-5 border-2 border-yellow-300 shadow-sm">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-lg font-bold text-yellow-700">Monthly Package</h4>
+                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-bold">
+                                            {stats.goldMembers}
+                                        </span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Package Price</span>
+                                            <span className="font-semibold">Rp 200K/month</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Total Revenue</span>
+                                            <span className="font-semibold text-green-600">
+                                                {formatCurrency(stats.goldRevenue)}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Commission</span>
+                                            <span className="font-semibold text-green-600">0% - Keep 100%</span>
+                                        </div>
+                                        <div className="mt-3 p-2 bg-yellow-50 rounded text-xs text-yellow-700 border border-yellow-200">
+                                            ⭐ Fixed monthly rate package
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Membership Summary */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-white rounded-lg p-4 text-center">
+                                    <p className="text-xs text-gray-600 mb-1">Total Revenue (Packages)</p>
+                                    <p className="text-lg font-bold text-green-600">
+                                        {formatCurrency(stats.bronzeRevenue + stats.goldRevenue)}
+                                    </p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4 text-center">
+                                    <p className="text-xs text-gray-600 mb-1">Avg per Bronze</p>
+                                    <p className="text-lg font-bold text-amber-600">
+                                        {stats.bronzeMembers > 0 
+                                            ? formatCurrency(Math.floor(stats.bronzeRevenue / stats.bronzeMembers))
+                                            : 'Rp 0'}
+                                    </p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4 text-center">
+                                    <p className="text-xs text-gray-600 mb-1">Avg per Monthly</p>
+                                    <p className="text-lg font-bold text-yellow-600">
+                                        {stats.goldMembers > 0 
+                                            ? formatCurrency(Math.floor(stats.goldRevenue / stats.goldMembers))
+                                            : 'Rp 0'}
+                                    </p>
+                                </div>
+                                <div className="bg-white rounded-lg p-4 text-center">
+                                    <p className="text-xs text-gray-600 mb-1">Silver Members</p>
+                                    <p className="text-lg font-bold text-gray-600">
+                                        {((stats.silverMembers / (stats.bronzeMembers + stats.silverMembers + stats.goldMembers || 1)) * 100).toFixed(0)}%
+                                    </p>
                                 </div>
                             </div>
                         </div>

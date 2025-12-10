@@ -48,7 +48,17 @@ export const useAppState = () => {
       
       // Restore last page from session if available
       const sessionPage = sessionStorage.getItem('current_page') as Page | null;
-      if (sessionPage && typeof sessionPage === 'string') {
+      
+      // 🔧 FIX: Always clear session on fresh page loads to ensure landing page shows
+      // This prevents the app from getting stuck on 'home' after browser refresh
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+      const isPageReload = navigation?.type === 'reload' || navigation?.type === 'navigate';
+      
+      if (isPageReload && !pageParam) {
+        console.log('🔄 Fresh page load detected - clearing session to show landing page');
+        sessionStorage.removeItem('has_entered_app');
+        sessionStorage.removeItem('current_page');
+      } else if (sessionPage && typeof sessionPage === 'string') {
         console.log('↩️ Restoring session page:', sessionPage);
         return sessionPage as Page;
       }
@@ -131,6 +141,13 @@ export const useAppState = () => {
     // Try to get from actual localStorage (not the disabled wrapper)
     try {
       const stored = window.localStorage.getItem('app_language');
+      if (!stored) {
+        // First visit - set Indonesian as default
+        console.log('🌐 useAppState: First visit - setting Indonesian as default language');
+        window.localStorage.setItem('app_language', 'id');
+        console.log('🌐 useAppState: ✅ Indonesian saved to localStorage for first visit');
+        return 'id';
+      }
       const storedLang = (stored === 'en' || stored === 'id' || stored === 'gb') ? (stored as Language) : 'id';
       console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
       return storedLang;

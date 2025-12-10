@@ -16,6 +16,7 @@ interface LandingPageProps {
 const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
+    console.log('🎬 LandingPage component mounted');
     const [imageLoaded, setImageLoaded] = useState(false);
     const defaultLanguage: Language = 'id';
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);

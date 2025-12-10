@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import AdminRouter from './AdminRouter.tsx';
 import { useAdminAuth } from './hooks/useAdminAuth.ts';
-import { therapistService, placeService, facialPlaceService } from '../../../lib/appwriteService';
+import { therapistService, placesService, facialPlaceService } from '../../../lib/appwriteService';
 
 /**
  * Standalone Admin App
@@ -35,7 +35,7 @@ const AdminApp = () => {
 
                 const [therapistsData, placesData, facialPlacesData] = await Promise.all([
                     therapistService.getAll(),
-                    placeService.getAll(),
+                    placesService.getAll(),
                     facialPlaceService.getAll()
                 ]);
 
@@ -74,7 +74,7 @@ const AdminApp = () => {
         try {
             const [therapistsData, placesData, facialPlacesData] = await Promise.all([
                 therapistService.getAll(),
-                placeService.getAll(),
+                placesService.getAll(),
                 facialPlaceService.getAll()
             ]);
 

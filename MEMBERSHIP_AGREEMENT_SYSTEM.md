@@ -21,14 +21,14 @@ Complete membership management system with pricing tiers, upgrade policies, veri
 - **Month 6+**: Rp 200,000/month (continues at this rate)
 
 ### Lead-Based Model (Fallback)
-- **Cost per Lead**: Rp 50,000 per accepted booking
+- **Cost per Lead**: 25% of booking price per accepted booking
 - **Applies when**: 
   - Payment not received by the 10th of the month
   - Member chooses not to pay monthly subscription
   - Account automatically switches from subscription to per-lead
 - **How it works**:
   - No monthly fee
-  - Pay only for bookings you accept (Rp 50,000 each)
+  - Pay only for bookings you accept (25% of booking price each)
   - Can upgrade to Premium (Rp 275,000/month) at any time
 
 ### Premium Upgrade Pricing

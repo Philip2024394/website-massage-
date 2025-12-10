@@ -1,6 +1,6 @@
 import { 
     therapistService, 
-    placeService, 
+    placesService, 
     facialPlaceService,
     memberStatsService,
     subscriptionService 
@@ -90,7 +90,7 @@ export const fetchAllMembersWithData = async (): Promise<MemberData[]> => {
         // Fetch all member types
         const [therapists, massagePlaces, facialPlaces] = await Promise.all([
             therapistService.getAll(),
-            placeService.getAll(),
+            placesService.getAll(),
             facialPlaceService.getAll()
         ]);
 
@@ -225,7 +225,7 @@ export const updateMemberVerified = async (
         if (memberType === 'therapist') {
             await therapistService.update(memberId, { verified });
         } else if (memberType === 'massage_place') {
-            await placeService.update(memberId, { verified });
+            await placesService.update(memberId, { verified });
         } else if (memberType === 'facial_place') {
             // TODO: Implement facialPlaceService.update method
             console.warn('Facial place update not yet implemented');
@@ -248,7 +248,7 @@ export const updateMemberVisibility = async (
         if (memberType === 'therapist') {
             await therapistService.update(memberId, { visibleOnHomepage });
         } else if (memberType === 'massage_place') {
-            await placeService.update(memberId, { visibleOnHomepage });
+            await placesService.update(memberId, { visibleOnHomepage });
         } else if (memberType === 'facial_place') {
             // TODO: Implement facialPlaceService.update method
             console.warn('Facial place update not yet implemented');
@@ -271,7 +271,7 @@ export const updateMemberStatus = async (
         if (memberType === 'therapist') {
             await therapistService.update(memberId, { status });
         } else if (memberType === 'massage_place') {
-            await placeService.update(memberId, { status });
+            await placesService.update(memberId, { status });
         } else if (memberType === 'facial_place') {
             // TODO: Implement facialPlaceService.update method
             console.warn('Facial place update not yet implemented');

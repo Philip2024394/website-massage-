@@ -62,6 +62,7 @@ export const APPWRITE_CONFIG = {
         // NEW: Affiliate tracking
         affiliateClicks: 'affiliate_clicks',
         affiliateAttributions: 'affiliate_attributions',
+        memberships: 'memberships_collection_id', // NEW: Membership packages (Bronze, Silver, Gold)
     },
     
     // Storage bucket IDs

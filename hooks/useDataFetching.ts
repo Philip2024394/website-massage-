@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import type { Therapist, Place } from '../types';
-import { therapistService, placeService, hotelService, facialPlaceService } from '../lib/appwriteService';
+import { therapistService, placesService, hotelService, facialPlaceService } from '../lib/appwriteService';
 import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 import { robustCollectionQuery } from '../lib/robustApiWrapper';
@@ -34,7 +34,7 @@ export const useDataFetching = () => {
             // Try to fetch places, but handle gracefully if collection is empty
             console.log('🔄 Attempting to fetch places data...');
             const placesData = await robustCollectionQuery(
-                () => placeService.getPlaces(),
+                () => placesService.getPlaces(),
                 'places',
                 [] as Place[]
             );
@@ -130,7 +130,7 @@ export const useDataFetching = () => {
             setIsLoading(true);
             const [therapistsData, placesData] = await Promise.all([
                 therapistService.getTherapists(),
-                placeService.getPlaces()
+                placesService.getPlaces()
             ]);
 
             return {
