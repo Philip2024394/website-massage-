@@ -148,6 +148,30 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: false,
         isTouristDestination: true,
         aliases: ["Rain City", "Bogor West Java"]
+      },
+      {
+        name: "Banyuwangi",
+        province: "East Java",
+        coordinates: { lat: -8.2191, lng: 114.3689 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Ijen", "Gateway to Bali", "Sunrise Java", "Blue Fire"]
+      },
+      {
+        name: "Bromo Area",
+        province: "East Java",
+        coordinates: { lat: -7.9425, lng: 112.9531 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Mount Bromo", "Bromo Tengger Semeru", "Probolinggo"]
+      },
+      {
+        name: "Karimunjawa",
+        province: "Central Java",
+        coordinates: { lat: -5.8406, lng: 110.4203 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Karimun Java", "Marine Park", "Island Paradise"]
       }
     ]
   },
@@ -275,6 +299,38 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: false,
         isTouristDestination: true,
         aliases: ["Danau Toba", "Toba Lake", "Batak Land"]
+      },
+      {
+        name: "Banda Aceh",
+        province: "Aceh",
+        coordinates: { lat: 5.5483, lng: 95.3238 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Aceh Capital", "Tsunami Memorial", "Baiturrahman Mosque"]
+      },
+      {
+        name: "Sabang (Weh Island)",
+        province: "Aceh",
+        coordinates: { lat: 5.8933, lng: 95.3194 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Weh Island", "Sabang", "Diving Aceh", "Iboih Beach"]
+      },
+      {
+        name: "Nias Island",
+        province: "North Sumatra",
+        coordinates: { lat: 1.0833, lng: 97.6167 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Nias", "Surf Island", "Nias Surf", "Lagundri Bay"]
+      },
+      {
+        name: "Bukittinggi",
+        province: "West Sumatra",
+        coordinates: { lat: -0.3055, lng: 100.3693 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Bukittinggi Minang", "Jam Gadang", "Fort de Kock"]
       }
     ]
   },
@@ -357,6 +413,38 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: false,
         isTouristDestination: true,
         aliases: ["Four Kings", "Diving Paradise"]
+      },
+      {
+        name: "Toraja",
+        province: "South Sulawesi",
+        coordinates: { lat: -2.9833, lng: 119.8833 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Tana Toraja", "Cultural Tourism", "Tongkonan", "Rantepao"]
+      },
+      {
+        name: "Bunaken",
+        province: "North Sulawesi",
+        coordinates: { lat: 1.6167, lng: 124.7667 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Bunaken Marine Park", "Manado Diving", "Bunaken Island"]
+      },
+      {
+        name: "Wakatobi",
+        province: "Southeast Sulawesi",
+        coordinates: { lat: -5.4815, lng: 123.5928 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Wakatobi Islands", "Diving Paradise", "Underwater Paradise"]
+      },
+      {
+        name: "Kupang",
+        province: "East Nusa Tenggara",
+        coordinates: { lat: -10.1718, lng: 123.6075 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Kupang NTT", "East Nusa Tenggara Capital"]
       }
     ]
   },
@@ -388,12 +476,20 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         aliases: ["Belitung Island", "Laskar Pelangi"]
       },
       {
-        name: "Karimunjawa",
-        province: "Central Java",
-        coordinates: { lat: -5.8406, lng: 110.4203 },
+        name: "Derawan Islands",
+        province: "East Kalimantan",
+        coordinates: { lat: 2.2833, lng: 118.2333 },
         isMainCity: false,
         isTouristDestination: true,
-        aliases: ["Karimun Java", "Marine Park"]
+        aliases: ["Derawan", "Turtle Island", "Sangalaki"]
+      },
+      {
+        name: "Thousand Islands (Kepulauan Seribu)",
+        province: "DKI Jakarta",
+        coordinates: { lat: -5.6167, lng: 106.5833 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Pulau Seribu", "Pramuka Island", "Jakarta Islands"]
       }
     ]
   }

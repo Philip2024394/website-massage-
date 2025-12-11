@@ -25,6 +25,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapistStatus': '/therapist-status',
         'massagePlaceLogin': '/place-login',
         'massagePlacePortal': '/place-portal',
+        'provider-portals': '/provider-portals',
         'customerProviders': '/providers',
         'customerReviews': '/reviews',
         'customerSupport': '/support',

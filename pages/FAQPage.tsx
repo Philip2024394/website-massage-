@@ -207,12 +207,12 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'payment',
             question: 'What if my payment is rejected?',
-            answer: 'Common rejection reasons include: wrong transfer amount, unclear payment proof screenshot, or transfer to wrong account. If rejected, you\'ll receive email with specific reason and instructions to resubmit. Simply upload a new payment proof with the correct information. Contact support@indastreet.com if you need assistance.'
+            answer: 'Common rejection reasons include: wrong transfer amount, unclear payment proof screenshot, or transfer to wrong account. If rejected, you\'ll receive email with specific reason and instructions to resubmit. Simply upload a new payment proof with the correct information. Contact indastreet.id@gmail.com if you need assistance.'
         },
         {
             category: 'payment',
             question: 'Can I get a refund if I cancel my membership?',
-            answer: 'Memberships are non-refundable once activated. However, if you haven\'t used the platform at all and request cancellation within 7 days of payment, we can issue 50% refund. Refund requests must be submitted via email to support@indastreet.com with your transaction details and reason.'
+            answer: 'Memberships are non-refundable once activated. However, if you haven\'t used the platform at all and request cancellation within 7 days of payment, we can issue 50% refund. Refund requests must be submitted via email to indastreet.id@gmail.com with your transaction details and reason.'
         },
 
         // Technical FAQs
@@ -239,7 +239,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'technical',
             question: 'How do I delete my account?',
-            answer: 'Email support@indastreet.com from your registered email address with subject "Account Deletion Request". Include your full name and phone number. We\'ll process deletion within 7 business days. Note: account deletion is permanent and cannot be reversed. All profile data, reviews, and booking history will be permanently removed.'
+            answer: 'Email indastreet.id@gmail.com from your registered email address with subject "Account Deletion Request". Include your full name and phone number. We\'ll process deletion within 7 business days. Note: account deletion is permanent and cannot be reversed. All profile data, reviews, and booking history will be permanently removed.'
         },
         // Platform & App Flow FAQs
         {

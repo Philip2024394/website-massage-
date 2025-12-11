@@ -794,6 +794,34 @@ export const therapistService = {
             console.error('Error searching therapists:', error);
             return [];
         }
+    },
+    async uploadKtpId(therapistId: string, file: File): Promise<{ url: string; fileId: string }> {
+        try {
+            console.log('📤 Uploading KTP ID card for therapist:', therapistId);
+            
+            // Upload file to Appwrite Storage
+            const bucketId = APPWRITE_CONFIG.storage.therapistImages || 'therapist-images';
+            const fileId = `ktp-${therapistId}-${Date.now()}`;
+            
+            const uploadedFile = await storage.createFile(
+                bucketId,
+                fileId,
+                file
+            );
+            
+            console.log('✅ KTP file uploaded:', uploadedFile.$id);
+            
+            // Get file URL
+            const fileUrl = storage.getFileView(bucketId, uploadedFile.$id);
+            
+            return {
+                url: String(fileUrl),
+                fileId: uploadedFile.$id
+            };
+        } catch (error) {
+            console.error('❌ Error uploading KTP ID:', error);
+            throw error;
+        }
     }
 };
 
@@ -6011,7 +6039,352 @@ export const leadBillingService = {
     }
 };
 
+// Export new services
+export { simpleChatService, simpleBookingService } from './simpleChatService';
 
+// --- Payment Confirmation Service ---
+export const paymentConfirmationService = {
+    /**
+     * Submit payment proof for admin review
+     */
+    async submitPaymentProof(data: {
+        userId: string;
+        userEmail: string;
+        userName: string;
+        memberType: 'therapist' | 'place' | 'agent' | 'hotel' | 'lead_buyer';
+        paymentType: 'membership' | 'lead_fee' | 'commission' | 'package_upgrade';
+        packageName?: string;
+        packageDuration?: string;
+        amount: number;
+        bankName: string;
+        accountNumber: string;
+        accountName: string;
+        proofOfPaymentFile: File;
+    }): Promise<any> {
+        try {
+            console.log('📤 Submitting payment proof for review...');
+
+            // Upload payment proof to storage
+            const fileResponse = await storage.createFile(
+                APPWRITE_CONFIG.bucketId,
+                ID.unique(),
+                data.proofOfPaymentFile
+            );
+
+            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${fileResponse.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+
+            // Calculate expiry date (7 days from now)
+            const now = new Date();
+            const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+            // Create payment confirmation document
+            const confirmation = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_transactions',
+                ID.unique(),
+                {
+                    transactionId: ID.unique(),
+                    userId: data.userId,
+                    userEmail: data.userEmail,
+                    userName: data.userName,
+                    userType: data.memberType, // Map memberType to userType
+                    memberType: data.memberType,
+                    paymentType: data.paymentType,
+                    packageType: data.packageName || null, // Map packageName to packageType
+                    packageDuration: data.packageDuration || null,
+                    amount: data.amount,
+                    currency: 'IDR', // Default currency
+                    transactionDate: now.toISOString(),
+                    paymentMethod: 'bank_transfer', // Default payment method
+                    bankName: data.bankName,
+                    accountNumber: data.accountNumber,
+                    accountName: data.accountName,
+                    paymentProofUrl: proofUrl, // Match existing field name
+                    proofOfPaymentFileId: fileResponse.$id,
+                    status: 'pending',
+                    submittedAt: now.toISOString(),
+                    expiresAt: expiresAt.toISOString(),
+                    notificationSent: false,
+                }
+            );
+
+            // Send notification to admin
+            await this.notifyAdminNewPayment(confirmation);
+
+            console.log('✅ Payment proof submitted successfully:', confirmation.$id);
+            return confirmation;
+        } catch (error) {
+            console.error('❌ Failed to submit payment proof:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get user's payment confirmations
+     */
+    async getUserPayments(userId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_transactions',
+                [
+                    Query.equal('userId', userId),
+                    Query.orderDesc('submittedAt'),
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Failed to get user payments:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all pending payments (for admin)
+     */
+    async getPendingPayments(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_transactions',
+                [
+                    Query.equal('status', 'pending'),
+                    Query.orderDesc('submittedAt'),
+                    Query.limit(100),
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Failed to get pending payments:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get all payments with optional filters (for admin)
+     */
+    async getAllPayments(filter?: {
+        status?: string;
+        memberType?: string;
+        paymentType?: string;
+        startDate?: string;
+        endDate?: string;
+    }): Promise<any[]> {
+        try {
+            const queries: string[] = [
+                Query.orderDesc('submittedAt'),
+                Query.limit(100),
+            ];
+
+            if (filter?.status) {
+                queries.push(Query.equal('status', filter.status));
+            }
+            if (filter?.memberType) {
+                queries.push(Query.equal('memberType', filter.memberType));
+            }
+            if (filter?.paymentType) {
+                queries.push(Query.equal('paymentType', filter.paymentType));
+            }
+
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_transactions',
+                queries
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Failed to get all payments:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Approve payment (admin only)
+     */
+    async approvePayment(confirmationId: string, adminId: string): Promise<void> {
+        try {
+            console.log('✅ Approving payment:', confirmationId);
+
+            const payment = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_confirmations',
+                confirmationId
+            );
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_confirmations',
+                confirmationId,
+                {
+                    status: 'approved',
+                    reviewedBy: adminId,
+                    reviewedAt: new Date().toISOString(),
+                }
+            );
+
+            // Send approval notification to user
+            await notificationService.create({
+                userId: payment.userId,
+                type: 'payment_approved',
+                title: '✅ Payment Confirmed',
+                message: `Your payment of IDR ${payment.amount.toLocaleString()} has been verified. ${
+                    payment.paymentType === 'membership' ? 'Your membership is now active!' : 'Your payment has been processed.'
+                }`,
+                priority: 'high',
+            });
+
+            // TODO: Activate membership if paymentType === 'membership'
+
+            console.log('✅ Payment approved and user notified');
+        } catch (error) {
+            console.error('❌ Failed to approve payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Decline payment (admin only)
+     */
+    async declinePayment(
+        confirmationId: string,
+        adminId: string,
+        reason: string
+    ): Promise<void> {
+        try {
+            console.log('❌ Declining payment:', confirmationId);
+
+            const payment = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_confirmations',
+                confirmationId
+            );
+
+            await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                'payment_confirmations',
+                confirmationId,
+                {
+                    status: 'declined',
+                    reviewedBy: adminId,
+                    reviewedAt: new Date().toISOString(),
+                    declineReason: reason,
+                    notificationSent: true,
+                }
+            );
+
+            // Send decline notification to user
+            await notificationService.create({
+                userId: payment.userId,
+                type: 'payment_declined',
+                title: '❌ Payment Not Received',
+                message: `Payment was not received. Please check the proof of payment attachment. Reason: ${reason}`,
+                priority: 'high',
+                link: '/payment-status',
+            });
+
+            console.log('✅ Payment declined and user notified');
+        } catch (error) {
+            console.error('❌ Failed to decline payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get expired payments (for admin auto-decline)
+     */
+    async getExpiredPayments(): Promise<any[]> {
+        try {
+            const now = new Date().toISOString();
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                'payment_transactions',
+                [
+                    Query.equal('status', 'pending'),
+                    Query.lessThan('expiresAt', now),
+                    Query.limit(50),
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Failed to get expired payments:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Auto-decline expired payments
+     */
+    async autoDeclineExpired(): Promise<number> {
+        try {
+            const expiredPayments = await this.getExpiredPayments();
+            let declinedCount = 0;
+
+            for (const payment of expiredPayments) {
+                await this.declinePayment(
+                    payment.$id,
+                    'system',
+                    'No response from admin within 7 days. Please resubmit your payment proof.'
+                );
+                declinedCount++;
+            }
+
+            console.log(`✅ Auto-declined ${declinedCount} expired payments`);
+            return declinedCount;
+        } catch (error) {
+            console.error('❌ Failed to auto-decline expired payments:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Notify admin of new payment submission
+     */
+    async notifyAdminNewPayment(confirmation: any): Promise<void> {
+        try {
+            const emailBody = `
+New Payment Proof Submitted
+
+Transaction ID: ${confirmation.transactionId}
+User: ${confirmation.userName} (${confirmation.userEmail})
+Member Type: ${confirmation.memberType}
+Payment Type: ${confirmation.paymentType}
+${confirmation.packageType ? `Package: ${confirmation.packageType}` : ''}
+Amount: IDR ${confirmation.amount.toLocaleString()}
+Bank: ${confirmation.bankName}
+Account: ${confirmation.accountNumber}
+Submitted: ${new Date(confirmation.submittedAt).toLocaleString()}
+Expires: ${new Date(confirmation.expiresAt).toLocaleString()}
+
+View proof: ${confirmation.paymentProofUrl}
+
+Please review and approve/decline within 7 days.
+            `.trim();
+
+            const response = await fetch('https://api.web3forms.com/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    access_key: '46ce7d7f-e9d5-4d49-8f14-0b0e3c3e1f5a',
+                    subject: `🔔 New Payment Proof Submitted - ${confirmation.memberType}`,
+                    from_name: 'IndaStreet Payment System',
+                    email: 'indastreet.id@gmail.com',
+                    message: emailBody,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Email service returned ${response.status}`);
+            }
+
+            console.log('✅ Admin notification sent for new payment');
+        } catch (error) {
+            console.error('❌ Failed to send admin notification:', error);
+            // Don't throw - payment is still submitted
+        }
+    },
+};
 
 
 

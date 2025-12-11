@@ -18,7 +18,7 @@ export const APPWRITE_CONFIG = {
         agents: 'agents_collection_id', // REVERTED: Back to original ID
         bookings: 'bookings_collection_id', // REVERTED: Back to original ID  
         reviews: 'reviews_collection_id', // REVERTED: Back to original ID
-        notifications: 'notifications_collection_id', // REVERTED: Back to original ID
+        notifications: 'notifications', // Therapist notification system
         users: 'users_collection_id', // REVERTED: Back to original ID
         // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
@@ -39,7 +39,7 @@ export const APPWRITE_CONFIG = {
         employerJobPostings: 'employer_job_postings',
         bankDetails: 'bank_details',
         paymentTransactions: 'payment_transactions',
-        messages: 'messages_collection_id', // NEW: In-app messaging
+        messages: 'messages', // Therapist-customer chat messages
         packages: 'packages_collection_id', // NEW: Pricing packages
         pushSubscriptions: 'push_subscriptions', // NEW: Push notification subscriptions
         loyaltyWallets: 'loyalty_wallets', // NEW: Customer loyalty coins

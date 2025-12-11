@@ -13,5 +13,46 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration for PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('✅ Facial Dashboard Service Worker registered:', registration);
+              
+              // Request notification permission
+              if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then((permission) => {
+                  console.log('📢 Notification permission:', permission);
+                });
+              }
+              
+              // Set up push subscription
+              if ('PushManager' in window) {
+                registration.pushManager.getSubscription().then((subscription) => {
+                  if (!subscription) {
+                    // Subscribe to push notifications
+                    registration.pushManager.subscribe({
+                      userVisibleOnly: true,
+                      applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY' // TODO: Add VAPID key
+                    }).then((sub) => {
+                      console.log('🔔 Push subscription created:', sub);
+                    }).catch((err) => {
+                      console.log('Push subscription error:', err);
+                    });
+                  }
+                });
+              }
+            })
+            .catch((error) => {
+              console.error('❌ Service Worker registration failed:', error);
+            });
+        });
+      } else {
+        console.log('⚠️ Service Workers not supported in this browser');
+      }
+    </script>
   </body>
 </html>

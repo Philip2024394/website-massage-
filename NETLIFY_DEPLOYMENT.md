@@ -117,7 +117,7 @@ These are automatically set via `netlify.toml`:
 
 ### Contact & Support Configuration
 - `VITE_WHATSAPP_SUPPORT` = `6281392000050`
-- `VITE_SUPPORT_EMAIL` = `support@indastreet.com`
+- `VITE_SUPPORT_EMAIL` = `indastreet.id@gmail.com`
 - `VITE_PRIVACY_EMAIL` = `privacy@indastreet.com`
 
 ### Banking Information

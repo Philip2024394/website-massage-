@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Crown, Star, Check, Upload, Copy, AlertCircle, CreditCard, Building, TrendingUp, Shield, Gift } from 'lucide-react';
+import { paymentConfirmationService } from '../lib/appwriteService';
 
 interface MembershipPackagesPageProps {
     onNavigateBack: () => void;
     userType: 'therapist' | 'massage-place';
     currentMembership?: string;
+    userId?: string;
+    userEmail?: string;
+    userName?: string;
     onPurchase: (packageType: string, paymentScreenshot: File, bankDetails: any) => void;
 }
 
@@ -26,6 +30,9 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
     onNavigateBack,
     userType,
     currentMembership = 'free',
+    userId,
+    userEmail,
+    userName,
     onPurchase
 }) => {
     const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
@@ -33,6 +40,7 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     // Bank details for payment
     const bankDetails = {
@@ -252,17 +260,54 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
     const handleSubmitPayment = async () => {
         if (!selectedPackage || !paymentScreenshot) return;
         
-        setIsSubmitting(true);
-        try {
-            await onPurchase(selectedPackage.id, paymentScreenshot, bankDetails);
-            setShowPaymentModal(false);
-            setSelectedPackage(null);
-            setPaymentScreenshot(null);
-            setUploadedImagePreview(null);
-        } catch (error) {
-            console.error('Payment submission failed:', error);
-        } finally {
-            setIsSubmitting(false);
+        // If userId/userEmail/userName available, use new payment confirmation service
+        if (userId && userEmail && userName) {
+            setIsSubmitting(true);
+            try {
+                await paymentConfirmationService.submitPaymentProof({
+                    userId,
+                    userEmail,
+                    userName,
+                    memberType: userType === 'therapist' ? 'therapist' : 'place',
+                    paymentType: 'membership',
+                    packageName: selectedPackage.name,
+                    packageDuration: selectedPackage.duration.toLowerCase().replace(' ', '_'),
+                    amount: selectedPackage.price,
+                    bankName: bankDetails.bankName,
+                    accountNumber: bankDetails.accountNumber,
+                    accountName: bankDetails.accountName,
+                    proofOfPaymentFile: paymentScreenshot,
+                });
+                
+                // Show success message
+                setShowSuccessMessage(true);
+                setShowPaymentModal(false);
+                setSelectedPackage(null);
+                setPaymentScreenshot(null);
+                setUploadedImagePreview(null);
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => setShowSuccessMessage(false), 5000);
+            } catch (error) {
+                console.error('Payment submission failed:', error);
+                alert('Failed to submit payment proof. Please try again.');
+            } finally {
+                setIsSubmitting(false);
+            }
+        } else {
+            // Fallback to old onPurchase callback
+            setIsSubmitting(true);
+            try {
+                await onPurchase(selectedPackage.id, paymentScreenshot, bankDetails);
+                setShowPaymentModal(false);
+                setSelectedPackage(null);
+                setPaymentScreenshot(null);
+                setUploadedImagePreview(null);
+            } catch (error) {
+                console.error('Payment submission failed:', error);
+            } finally {
+                setIsSubmitting(false);
+            }
         }
     };
 
@@ -272,6 +317,19 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+            {/* Success Message */}
+            {showSuccessMessage && (
+                <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl animate-bounce">
+                    <div className="flex items-center gap-3">
+                        <Check className="w-6 h-6" />
+                        <div>
+                            <p className="font-bold">Payment Proof Submitted! ✅</p>
+                            <p className="text-sm">Admin will review within 7 days</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="bg-white shadow-sm border-b">
                 <div className="max-w-7xl mx-auto px-4 py-4">
@@ -563,13 +621,15 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
 
                             {/* Instructions */}
                             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                                <h5 className="font-medium text-yellow-800 mb-2">Payment Instructions:</h5>
+                                <h5 className="font-medium text-yellow-800 mb-2">📋 Payment Instructions:</h5>
                                 <ol className="text-sm text-yellow-700 space-y-1">
                                     <li>1. Transfer the exact amount to the bank account above</li>
                                     <li>2. Take a screenshot of the successful transaction</li>
                                     <li>3. Upload the screenshot using the form above</li>
-                                    <li>4. Wait for admin approval (usually within 24 hours)</li>
-                                    <li>5. Your membership will be activated once verified</li>
+                                    <li>4. Click "Send to Admin" (only enabled after upload)</li>
+                                    <li>5. Admin will review within 7 days</li>
+                                    <li>6. Your membership activates once approved ✅</li>
+                                    <li>7. You'll receive a notification if payment is declined</li>
                                 </ol>
                             </div>
 
@@ -583,7 +643,7 @@ const MembershipPackagesPage: React.FC<MembershipPackagesPageProps> = ({
                                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 }`}
                             >
-                                {isSubmitting ? 'Submitting...' : 'Submit Payment for Review'}
+                                {isSubmitting ? 'Submitting to Admin...' : '📤 Send to Admin for Review'}
                             </button>
                         </div>
                     </div>

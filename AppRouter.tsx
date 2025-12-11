@@ -20,6 +20,7 @@ const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage
 const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
 const FacialTypesPage = React.lazy(() => import('./pages/FacialTypesPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
+const ProviderPortalsPage = React.lazy(() => import('./pages/ProviderPortalsPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
 const TodaysDiscountsPage = React.lazy(() => import('./pages/TodaysDiscountsPage'));
@@ -31,7 +32,6 @@ const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlacePro
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
 const JoinIndastreetPage = React.lazy(() => import('./pages/JoinIndastreetPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
-const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
 const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
@@ -373,8 +373,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     console.log('🌍 AppRouter: Dict received from useTranslations:', dict ? Object.keys(dict) : 'null');
     console.log('🌍 AppRouter: Sample home translation (homeServiceTab):', dict?.home?.homeServiceTab);
 
-    // One-time sync of core translation keys to Appwrite
+    // DISABLED: One-time sync of core translation keys to Appwrite
+    // This was causing rate limit errors (429) - translations now loaded from Appwrite only
     React.useEffect(() => {
+        // Translation sync disabled to prevent rate limiting
+        return;
+        
         const KEY = 'coreTranslationsSynced_v2';
         try {
             const already = localStorage.getItem(KEY);
@@ -845,6 +849,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         return null;
     }
 
+    console.log('🎯 AppRouter: Current page state is:', page);
+    
     switch (page) {
         // ========================
         // 🏠 CORE APPLICATION ROUTES  
@@ -1154,27 +1160,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onSuccess={(therapistId) => {
                     console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
                     setLoggedInProvider({ id: therapistId, type: 'therapist' });
-                    // First page after login: status page with availability & discount controls
-                    setPage('therapistStatus');
+                    // Redirect directly to new therapist dashboard
+                    window.open('http://localhost:3003', '_blank');
+                    setPage('home');
                 }} 
                 onBack={handleBackToHome} 
             />;
         case 'therapistPortal':
             // Redirect to separate therapist dashboard app
-            window.open('http://localhost:3001', '_blank');
+            window.open('http://localhost:3003', '_blank');
             setPage('home');
             return null;
-
-        case 'therapistStatus':
-            return loggedInProvider?.type === 'therapist' && <TherapistStatusPage 
-                therapist={therapists.find(t => t.id === loggedInProvider.id) ?? null}
-                onStatusChange={async (status: AvailabilityStatus) => {
-                    await handleTherapistStatusChange(status as string);
-                }}
-                onLogout={handleProviderLogout}
-                onNavigateToDashboard={() => setPage('therapistPortal')}
-                t={t} 
-            /> || null;
             
         case 'providerAuth': 
             // Route provider auth to registration choice to avoid removed UnifiedLoginPage
@@ -1466,6 +1462,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'indastreet-partners':
             return <IndastreetPartnersPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
+            
+        case 'provider-portals':
+            return <ProviderPortalsPage 
+                onBack={() => setPage('home' as Page)} 
+                onNavigate={(page: string) => {
+                    console.log('🎯 AppRouter provider-portals: onNavigate called with:', page);
+                    console.log('🎯 AppRouter provider-portals: Setting page to:', page);
+                    setPage(page as Page);
+                }}
+            />;
             
         case 'partnership-application': 
             return <PartnershipApplicationPage 

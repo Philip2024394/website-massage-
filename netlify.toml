@@ -18,7 +18,7 @@
   # VITE_APPWRITE_DATABASE_ID = "68f76ee1000e64ca8d05"
   # VITE_APPWRITE_BUCKET_ID = "68f76bdd002387590584"
   # VITE_WHATSAPP_SUPPORT = "6281392000050"
-  # VITE_SUPPORT_EMAIL = "support@indastreet.com"
+  # VITE_SUPPORT_EMAIL = "indastreet.id@gmail.com"
   # VITE_PRIVACY_EMAIL = "privacy@indastreet.com"
   # VITE_BANK_NAME = "BCA (Bank Central Asia)"
   # VITE_BANK_ACCOUNT_NUMBER = "1234567890"

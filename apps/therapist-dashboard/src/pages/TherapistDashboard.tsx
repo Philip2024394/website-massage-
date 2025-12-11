@@ -18,6 +18,7 @@ interface TherapistPortalPageProps {
   onNavigateToNotifications?: () => void;
   onNavigateToLegal?: () => void;
   onNavigateToCalendar?: () => void;
+  onNavigateToPayment?: () => void;
   onLogout?: () => void;
   onNavigateHome?: () => void;
 }
@@ -27,6 +28,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToStatus,
   onNavigateToBookings,
   onNavigateToEarnings,
+  onNavigateToPayment,
   onNavigateToChat,
   onNavigateToMembership,
   onNavigateToNotifications,
@@ -421,87 +423,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <p className="text-xs text-gray-500">Complete all fields to publish</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {onNavigateToStatus && (
-              <button 
-                onClick={onNavigateToStatus} 
-                className="text-xs px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 font-medium"
-              >
-                🟢 Status
-              </button>
-            )}
-            {onNavigateToBookings && (
-              <button 
-                onClick={onNavigateToBookings} 
-                className="text-xs px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium"
-              >
-                📅 Bookings
-              </button>
-            )}
-            {onNavigateToEarnings && (
-              <button 
-                onClick={onNavigateToEarnings} 
-                className="text-xs px-3 py-2 rounded-lg bg-purple-100 text-purple-700 hover:bg-purple-200 font-medium"
-              >
-                💰 Earnings
-              </button>
-            )}
-            {onNavigateToChat && (
-              <button 
-                onClick={onNavigateToChat} 
-                className="text-xs px-3 py-2 rounded-lg bg-pink-100 text-pink-700 hover:bg-pink-200 font-medium relative"
-              >
-                💬 Support
-                {therapist?.membershipTier === 'premium' && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-                )}
-              </button>
-            )}
-            {onNavigateToMembership && (
-              <button 
-                onClick={onNavigateToMembership} 
-                className="text-xs px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 font-medium"
-              >
-                👑 Membership
-              </button>
-            )}
-            {onNavigateToNotifications && (
-              <button 
-                onClick={onNavigateToNotifications} 
-                className="text-xs px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 font-medium relative"
-              >
-                🔔 Notifications
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-            )}
-            {onNavigateToCalendar && (
-              <button 
-                onClick={onNavigateToCalendar} 
-                className="text-xs px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium"
-              >
-                📅 Calendar
-                {therapist?.membershipTier === 'premium' && (
-                  <span className="ml-1 text-[10px] bg-yellow-500 text-white px-1 rounded">PRO</span>
-                )}
-              </button>
-            )}
-            {onNavigateToLegal && (
-              <button 
-                onClick={onNavigateToLegal} 
-                className="text-xs px-3 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium"
-              >
-                📄 Legal
-              </button>
-            )}
-            {onLogout && (
-              <button 
-                onClick={onLogout} 
-                className="text-xs px-3 py-2 rounded-lg border hover:bg-gray-50"
-              >
-                Logout
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -697,10 +618,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Pricing */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">💰 Pricing (in thousands, e.g., 100 = 100k IDR)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">💰 Pricing (IDR in thousands, e.g., 100 = Rp 100,000)</label>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">60 min</label>
+                  <label className="block text-xs text-gray-600 mb-1 font-medium">60 min (IDR '000)</label>
                   <input
                     value={price60}
                     onChange={e => setPrice60(e.target.value)}
@@ -709,7 +630,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">90 min</label>
+                  <label className="block text-xs text-gray-600 mb-1 font-medium">90 min (IDR '000)</label>
                   <input
                     value={price90}
                     onChange={e => setPrice90(e.target.value)}
@@ -718,7 +639,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">120 min</label>
+                  <label className="block text-xs text-gray-600 mb-1 font-medium">120 min (IDR '000)</label>
                   <input
                     value={price120}
                     onChange={e => setPrice120(e.target.value)}

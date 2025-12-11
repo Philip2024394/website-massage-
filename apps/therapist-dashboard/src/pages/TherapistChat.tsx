@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, Send, User, CheckCircle, Crown, Lock } from 'lucide-react';
+import { messagingService } from '../../../../lib/appwriteService';
 
 interface Message {
   $id: string;
@@ -44,41 +45,27 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
     
     setLoading(true);
     try {
-      // TODO: Fetch from Appwrite messages collection
-      // Filter by therapistId === therapist.$id
+      // Generate conversation ID for therapist-admin chat
+      const conversationId = messagingService.generateConversationId(
+        { id: String(therapist.$id || therapist.id), role: 'therapist' },
+        { id: 'admin', role: 'admin' }
+      );
       
-      // Mock data
-      const mockMessages: Message[] = [
-        {
-          $id: '1',
-          senderId: 'admin-001',
-          senderName: 'Support Team',
-          senderType: 'admin',
-          message: 'Welcome to Premium Support! 🎉 How can we help you today?',
-          timestamp: '2024-12-11T10:00:00',
-          read: true
-        },
-        {
-          $id: '2',
-          senderId: therapist.$id,
-          senderName: therapist.name,
-          senderType: 'therapist',
-          message: 'Hi! I need help updating my profile description.',
-          timestamp: '2024-12-11T10:05:00',
-          read: true
-        },
-        {
-          $id: '3',
-          senderId: 'admin-001',
-          senderName: 'Support Team',
-          senderType: 'admin',
-          message: 'Of course! Go to your Profile page and edit the Description field. You can add up to 350 words. Need help with translation?',
-          timestamp: '2024-12-11T10:07:00',
-          read: true
-        }
-      ];
+      // Fetch conversation messages from Appwrite
+      const data = await messagingService.getConversation(conversationId);
       
-      setMessages(mockMessages);
+      // Map Appwrite format to UI format
+      const mappedMessages: Message[] = data.map((msg: any) => ({
+        $id: msg.$id,
+        senderId: msg.senderId,
+        senderName: msg.senderName,
+        senderType: msg.senderType === 'therapist' ? 'therapist' : 'admin',
+        message: msg.content,
+        timestamp: msg.createdAt,
+        read: msg.isRead
+      }));
+      
+      setMessages(mappedMessages);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
@@ -91,24 +78,30 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
     
     setSending(true);
     try {
-      // TODO: Send message to Appwrite
-      const message: Message = {
-        $id: Date.now().toString(),
-        senderId: therapist.$id,
-        senderName: therapist.name,
+      // Generate conversation ID for therapist-admin chat
+      const conversationId = messagingService.generateConversationId(
+        { id: String(therapist.$id || therapist.id), role: 'therapist' },
+        { id: 'admin', role: 'admin' }
+      );
+      
+      // Send message to Appwrite (also creates notification for admin)
+      await messagingService.sendMessage({
+        conversationId,
+        senderId: String(therapist.$id || therapist.id),
         senderType: 'therapist',
-        message: newMessage.trim(),
-        timestamp: new Date().toISOString(),
-        read: false
-      };
+        senderName: therapist.name || 'Therapist',
+        receiverId: 'admin',
+        receiverType: 'user', // Use 'user' type for admin
+        receiverName: 'Support Team',
+        content: newMessage.trim(),
+      });
       
-      setMessages(prev => [...prev, message]);
       setNewMessage('');
-      
-      // TODO: Send notification to admin
-      console.log('Message sent:', message);
+      // Refresh messages to show the new one
+      await fetchMessages();
     } catch (error) {
       console.error('Failed to send message:', error);
+      alert('Failed to send message. Please try again.');
     } finally {
       setSending(false);
     }
@@ -241,7 +234,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
             </div>
 
             <div className="text-center text-sm text-gray-500">
-              Questions about Premium? Email us at <a href="mailto:support@indastreet.com" className="text-orange-600 font-semibold">support@indastreet.com</a>
+              Questions about Premium? Email us at <a href="mailto:indastreet.id@gmail.com" className="text-orange-600 font-semibold">indastreet.id@gmail.com</a>
             </div>
           </div>
         ) : (

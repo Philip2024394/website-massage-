@@ -87,13 +87,14 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     <span className="text-xs text-gray-300">({place.reviewCount})</span>
                 </div>
                 
-                {/* Verified Badge - Top Left Corner */}
-                {(place as any).isVerified && (
+                {/* Verified Badge - Top Left Corner - Premium + KTP Verified */}
+                {(place as any).membershipTier === 'premium' && (place as any).ktpVerified && (
                     <div className="absolute top-2 left-2 z-20">
                         <img 
-                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
-                            alt="Verified"
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
+                            alt="Verified Place"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg"
+                            style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
                         />
                     </div>
                 )}

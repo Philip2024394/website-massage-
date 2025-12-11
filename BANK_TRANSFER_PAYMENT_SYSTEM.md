@@ -370,7 +370,7 @@ Track these metrics in your analytics:
 
 If members have questions:
 - WhatsApp: +6281392000050
-- Email: support@indastreet.com
+- Email: indastreet.id@gmail.com
 
 For technical issues, check:
 1. Appwrite collections exist

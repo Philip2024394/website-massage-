@@ -138,7 +138,7 @@ const CookiesPolicyPage: React.FC<CookiesPolicyPageProps> = ({ onBack, t: _t }) 
                         </p>
                         <div className="mt-4 bg-gray-50 p-4 rounded-lg">
                             <p className="text-gray-700 font-semibold">IndaStreet Massage</p>
-                            <p className="text-gray-700">Email: support@indastreet.com</p>
+                            <p className="text-gray-700">Email: indastreet.id@gmail.com</p>
                         </div>
                     </section>
                 </div>

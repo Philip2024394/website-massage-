@@ -301,6 +301,18 @@ export interface Therapist {
     // Busy timer functionality
     busyUntil?: string; // ISO timestamp when therapist becomes available again
     busyDuration?: number; // Duration in minutes for the busy period
+    
+    // Bank details for direct P2P payment (platform doesn't process payments)
+    bankName?: string; // Bank name (e.g., Bank Central Asia, Bank Mandiri)
+    accountName?: string; // Account holder name
+    accountNumber?: string; // Bank account number
+    
+    // KTP (Indonesian ID Card) Verification
+    ktpPhotoUrl?: string; // URL to uploaded KTP ID card photo
+    ktpPhotoFileId?: string; // Appwrite Storage file ID for KTP photo
+    ktpVerified?: boolean; // Admin verification status
+    ktpVerifiedAt?: string; // Date when KTP was verified by admin
+    ktpVerifiedBy?: string; // Admin ID who verified the KTP
 }
 
 export interface Place {
@@ -360,6 +372,21 @@ export interface Place {
     discountDuration?: number; // Duration in hours for discount period
     discountEndTime?: string; // ISO string for when discount ends
     isDiscountActive?: boolean; // Whether discount is currently active
+    
+    // Bank details for P2P payment
+    bankName?: string;
+    accountName?: string;
+    accountNumber?: string;
+    
+    // KTP (Indonesian ID Card) Verification
+    ktpPhotoUrl?: string;       // URL to uploaded KTP photo
+    ktpPhotoFileId?: string;    // Appwrite Storage file ID
+    ktpVerified?: boolean;      // Admin verification status
+    ktpVerifiedAt?: string;     // Verification timestamp
+    ktpVerifiedBy?: string;     // Admin ID who verified
+    
+    // Membership tier for verified badge
+    membershipTier?: 'free' | 'premium';
 }
 
 export interface User {

@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { authService } from '@shared/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
+import PlaceChat from './pages/PlaceChat';
+import PlacePaymentInfo from './pages/PlacePaymentInfo';
 import LoginPage from './pages/LoginPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'chat' | 'payment'>('dashboard');
 
   useEffect(() => {
     checkAuth();
@@ -60,7 +63,22 @@ function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  return <PlaceDashboard user={user} onLogout={handleLogout} />;
+  // Render different views based on currentView
+  if (currentView === 'chat') {
+    return <PlaceChat place={user?.place || null} onBack={() => setCurrentView('dashboard')} />;
+  }
+
+  if (currentView === 'payment') {
+    return <PlacePaymentInfo place={user?.place || null} onBack={() => setCurrentView('dashboard')} />;
+  }
+
+  return (
+    <PlaceDashboard 
+      onLogout={handleLogout}
+      onNavigateToChat={() => setCurrentView('chat')}
+      onNavigateToPayment={() => setCurrentView('payment')}
+    />
+  );
 }
 
 export default App;

@@ -670,14 +670,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner (mobile-friendly positioning) */}
-                    <div className="absolute top-2 left-2 z-30">
-                        <img 
-                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
-                            alt="Verified"
-                            className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
-                        />
-                    </div>
+                    {/* Verified Badge - Top Left Corner - Only for Premium + KTP Verified */}
+                    {(therapist as any).membershipTier === 'premium' && (therapist as any).ktpVerified && (
+                        <div className="absolute top-2 left-2 z-30">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
+                                alt="Verified Member"
+                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
+                                style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
@@ -719,12 +722,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20 overflow-visible">
                     <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
-                        {/* Verified Badge - Top Left Corner */}
-                        {(therapist as any).membershipTier === 'premium' && (therapist as any).verifiedBadge && (
+                        {/* Verified Badge - Top Left Corner - Premium + KTP Verified */}
+                        {(therapist as any).membershipTier === 'premium' && (therapist as any).ktpVerified && (
                             <div className="absolute -top-2 -left-2 z-30 w-10 h-10">
                                 <img 
                                     src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                                    alt="Verified"
+                                    alt="Verified Member"
                                     className="w-full h-full object-contain drop-shadow-lg"
                                     style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
                                 />

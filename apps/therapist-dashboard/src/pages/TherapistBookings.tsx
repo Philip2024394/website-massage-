@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, User, Phone, DollarSign, CheckCircle, XCircle, Filter, Search } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle } from 'lucide-react';
+import ChatWindow from '../components/ChatWindow';
 
 interface Booking {
   $id: string;
@@ -14,6 +15,7 @@ interface Booking {
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   createdAt: string;
   notes?: string;
+  customerId?: string;
 }
 
 interface TherapistBookingsProps {
@@ -26,6 +28,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'received' | 'scheduled' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     fetchBookings();
@@ -238,7 +242,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-gray-600">Earnings</span>
-              <DollarSign className="w-5 h-5 text-purple-500" />
+              <Banknote className="w-5 h-5 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-gray-800">
               {(stats.totalEarnings / 1000).toFixed(0)}k
@@ -342,7 +346,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                     <span><strong>Location:</strong> {booking.location}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <DollarSign className="w-4 h-4 text-gray-400" />
+                    <Banknote className="w-4 h-4 text-gray-400" />
                     <span><strong>Price:</strong> Rp {booking.price.toLocaleString()}</span>
                   </div>
                 </div>
@@ -378,18 +382,28 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                   {booking.status === 'confirmed' && (
                     <>
                       <button
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setChatOpen(true);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold transition-colors"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                        Chat
+                      </button>
+                      <button
                         onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold transition-colors"
                       >
                         <Phone className="w-5 h-5" />
-                        Contact Customer
+                        WhatsApp
                       </button>
                       <button
                         onClick={() => handleCompleteBooking(booking.$id)}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-semibold transition-colors"
                       >
                         <CheckCircle className="w-5 h-5" />
-                        Mark Complete
+                        Complete
                       </button>
                     </>
                   )}
@@ -408,6 +422,29 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           </div>
         )}
       </div>
+
+      {/* Chat Window */}
+      {chatOpen && selectedBooking && (
+        <ChatWindow
+          providerId={therapist.$id}
+          providerRole="therapist"
+          providerName={therapist.name}
+          customerId={selectedBooking.customerId || 'customer-' + selectedBooking.$id}
+          customerName={selectedBooking.customerName}
+          customerWhatsApp={selectedBooking.customerPhone}
+          bookingId={selectedBooking.$id}
+          bookingDetails={{
+            date: selectedBooking.date,
+            duration: selectedBooking.duration,
+            price: selectedBooking.price
+          }}
+          isOpen={chatOpen}
+          onClose={() => {
+            setChatOpen(false);
+            setSelectedBooking(null);
+          }}
+        />
+      )}
     </div>
   );
 };

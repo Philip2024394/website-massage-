@@ -9,15 +9,19 @@ import MembershipPage from './pages/MembershipPage';
 import TherapistNotifications from './pages/TherapistNotifications';
 import TherapistLegal from './pages/TherapistLegal';
 import TherapistCalendar from './pages/TherapistCalendar';
+import TherapistPaymentInfo from './pages/TherapistPaymentInfo';
+import TherapistPaymentStatus from './pages/TherapistPaymentStatus';
+import TherapistLayout from './components/TherapistLayout';
 import LoginPage from './pages/LoginPage';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [currentPage, setCurrentPage] = useState<Page>('status');
 
   useEffect(() => {
     checkAuth();
@@ -71,65 +75,74 @@ function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  // Page routing
-  if (currentPage === 'status') {
-    return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-  
-  if (currentPage === 'bookings') {
-    return <TherapistBookings therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-  
-  if (currentPage === 'earnings') {
-    return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-  
-  if (currentPage === 'chat') {
-    return <TherapistChat therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-  
-  if (currentPage === 'membership') {
-    return <MembershipPage therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-
-  if (currentPage === 'notifications') {
-    return (
-      <TherapistNotifications 
-        therapist={user} 
-        onBack={() => setCurrentPage('dashboard')}
-        onNavigateToBookings={() => setCurrentPage('bookings')}
-        onNavigateToChat={() => setCurrentPage('chat')}
-      />
-    );
-  }
-
-  if (currentPage === 'legal') {
-    return <TherapistLegal therapist={user} onBack={() => setCurrentPage('dashboard')} />;
-  }
-
-  if (currentPage === 'calendar') {
-    return (
-      <TherapistCalendar 
-        therapist={user} 
-        onBack={() => setCurrentPage('dashboard')}
-        onNavigateToMembership={() => setCurrentPage('membership')}
-      />
-    );
-  }
+  // Render page content
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'status':
+        return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'bookings':
+        return <TherapistBookings therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'earnings':
+        return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'chat':
+        return <TherapistChat therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'membership':
+        return <MembershipPage therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'notifications':
+        return (
+          <TherapistNotifications 
+            therapist={user} 
+            onBack={() => setCurrentPage('status')}
+            onNavigateToBookings={() => setCurrentPage('bookings')}
+            onNavigateToChat={() => setCurrentPage('chat')}
+          />
+        );
+      case 'legal':
+        return <TherapistLegal therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'calendar':
+        return (
+          <TherapistCalendar 
+            therapist={user} 
+            onBack={() => setCurrentPage('status')}
+            onNavigateToMembership={() => setCurrentPage('membership')}
+          />
+        );
+      case 'payment':
+        return <TherapistPaymentInfo therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'payment-status':
+        return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'dashboard':
+      default:
+        return (
+          <TherapistDashboard 
+            therapist={user} 
+            onLogout={handleLogout}
+            onNavigateToStatus={() => setCurrentPage('status')}
+            onNavigateToBookings={() => setCurrentPage('bookings')}
+            onNavigateToEarnings={() => setCurrentPage('earnings')}
+            onNavigateToChat={() => setCurrentPage('chat')}
+            onNavigateToMembership={() => setCurrentPage('membership')}
+            onNavigateToNotifications={() => setCurrentPage('notifications')}
+            onNavigateToLegal={() => setCurrentPage('legal')}
+            onNavigateToCalendar={() => setCurrentPage('calendar')}
+            onNavigateToPayment={() => setCurrentPage('payment')}
+          />
+        );
+    }
+  };
 
   return (
-    <TherapistDashboard 
-      therapist={user} 
-      onLogout={handleLogout}
-        onNavigateToStatus={() => setCurrentPage('status')}
-        onNavigateToBookings={() => setCurrentPage('bookings')}
-        onNavigateToEarnings={() => setCurrentPage('earnings')}
-        onNavigateToChat={() => setCurrentPage('chat')}
-        onNavigateToMembership={() => setCurrentPage('membership')}
-        onNavigateToNotifications={() => setCurrentPage('notifications')}
-        onNavigateToLegal={() => setCurrentPage('legal')}
-        onNavigateToCalendar={() => setCurrentPage('calendar')}
-    />
+    <>
+      <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+      <TherapistLayout
+        therapist={user}
+        currentPage={currentPage}
+        onNavigate={(page) => setCurrentPage(page as Page)}
+        onLogout={handleLogout}
+      >
+        {renderPage()}
+      </TherapistLayout>
+    </>
   );
 }
 

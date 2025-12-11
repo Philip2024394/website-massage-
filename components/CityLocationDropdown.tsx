@@ -27,6 +27,7 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState(INDONESIAN_CITIES_CATEGORIZED); // Start with static fallback
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
@@ -105,7 +106,19 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
   const handleCitySelect = (city: string) => {
     onCityChange(city);
     setIsOpen(false);
+    setSearchQuery('');
   };
+
+  // Filter cities based on search query
+  const filteredCities = searchQuery.trim()
+    ? cities.map(category => ({
+        ...category,
+        cities: category.cities.filter(city =>
+          city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          city.aliases?.some(alias => alias.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      })).filter(category => category.cities.length > 0)
+    : cities;
 
   const getDisplayText = () => {
     if (selectedCity === 'all') {
@@ -209,26 +222,71 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
                 Loading cities from Appwrite... 🏙️
               </div>
             ) : (
-              cities.map((category, categoryIndex) => (
-                <div key={`${category.category}-${categoryIndex}`}>
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                    {category.category}
-                  </div>
-                  {category.cities.map((city: CityLocation, cityIndex: number) => (
-                    <button
-                      key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
-                      type="button"
-                      onClick={() => handleCitySelect(city.name)}
-                      className={`
-                        w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
-                        ${selectedCity === city.name ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
-                      `}
-                    >
-                      {city.name}
-                    </button>
-                  ))}
+              <>
+                {/* Search Input */}
+                <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-3 z-10">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search location..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
+                    onClick={(e) => e.stopPropagation()}
+                  />
                 </div>
-              ))
+
+                {filteredCities.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                    No locations found. Try "Other Location" below.
+                  </div>
+                ) : (
+                  filteredCities.map((category, categoryIndex) => (
+                    <div key={`${category.category}-${categoryIndex}`}>
+                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                        {category.category}
+                      </div>
+                      {category.cities.map((city: CityLocation, cityIndex: number) => (
+                        <button
+                          key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
+                          type="button"
+                          onClick={() => handleCitySelect(city.name)}
+                          className={`
+                            w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
+                            ${selectedCity === city.name ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
+                          `}
+                        >
+                          {city.name}
+                        </button>
+                      ))}
+                    </div>
+                  ))
+                )}
+                
+                {/* Custom Location Option */}
+                <div className="border-t-2 border-gray-200">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+                    📍 Other Location
+                  </div>
+                  <div className="px-4 py-3">
+                    <input
+                      type="text"
+                      placeholder="Type your city/area..."
+                      value={selectedCity && !cities.some(cat => cat.cities.some(c => c.name === selectedCity)) ? selectedCity : ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.trim()) {
+                          handleCitySelect(value);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Can't find your location? Type it manually
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
           </div>,
           document.body

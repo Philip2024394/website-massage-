@@ -4,7 +4,7 @@ import {
     Users, ChevronDown, ChevronRight, User, Building, Sparkles,
     Clock, X, MoreVertical, CheckCheck, Paperclip, Image as ImageIcon, FileText
 } from 'lucide-react';
-import { messagingService, therapistService, placesService } from '@/lib/appwriteService';
+import { therapistService, placesService, messagingService } from '@shared/appwriteService';
 
 interface Member {
     $id: string;
@@ -72,6 +72,9 @@ const AdminChatCenter: React.FC = () => {
     useEffect(() => {
         if (selectedMember) {
             loadMessages(selectedMember.$id);
+            // Poll for new messages every 5 seconds
+            const interval = setInterval(() => loadMessages(selectedMember.$id), 5000);
+            return () => clearInterval(interval);
         }
     }, [selectedMember]);
 
@@ -139,10 +142,43 @@ const AdminChatCenter: React.FC = () => {
         }
     };
 
-    const loadMessages = async (_memberId: string) => {
+    const loadMessages = async (memberId: string) => {
         try {
-            // TODO: Load messages for selected member from messaging service
-            setMessages([]);
+            // Determine member role
+            const member = members.find(m => m.$id === memberId);
+            const memberRole = member?.category === 'therapist' ? 'therapist' : 'place';
+            
+            // Generate conversation ID using messagingService (same format as TherapistChat)
+            const conversationId = messagingService.generateConversationId(
+                { id: 'admin', role: 'admin' },
+                { id: memberId, role: memberRole }
+            );
+            
+            // Fetch messages from Appwrite
+            const dbMessages = await messagingService.getConversation(conversationId);
+            
+            // Transform to admin chat format
+            const formatted: Message[] = dbMessages.map((msg: any) => ({
+                $id: msg.$id || Date.now().toString(),
+                senderId: msg.senderId,
+                receiverId: msg.receiverId,
+                content: msg.content,
+                timestamp: new Date(msg.createdAt || new Date()),
+                read: msg.isRead,
+                senderName: msg.senderName,
+                deliveredAt: new Date(msg.createdAt || new Date()),
+                readAt: msg.isRead ? new Date(msg.createdAt || new Date()) : undefined
+            }));
+            
+            setMessages(formatted);
+            
+            // Mark unread messages as read
+            for (const msg of dbMessages) {
+                if (!msg.isRead && msg.receiverId === 'admin') {
+                    await messagingService.markAsRead(msg.$id);
+                }
+            }
+            
         } catch (error) {
             console.error('Error loading messages:', error);
         }
@@ -152,21 +188,46 @@ const AdminChatCenter: React.FC = () => {
         if (!newMessage.trim() || !selectedMember) return;
 
         try {
-            // TODO: Send message via messaging service
+            // Determine member role
+            const memberRole = selectedMember.category === 'therapist' ? 'therapist' : 'place';
+            
+            // Generate conversation ID using messagingService (same format as TherapistChat)
+            const conversationId = messagingService.generateConversationId(
+                { id: 'admin', role: 'admin' },
+                { id: selectedMember.$id, role: memberRole }
+            );
+            
+            // Save message to Appwrite database (also creates notification)
+            const savedMsg = await messagingService.sendMessage({
+                conversationId,
+                senderId: 'admin',
+                senderType: 'user', // Use 'user' for admin
+                senderName: 'Support Team',
+                receiverId: selectedMember.$id,
+                receiverType: memberRole,
+                receiverName: selectedMember.name,
+                content: newMessage.trim(),
+            });
+
+            // Add to local messages immediately
             const message: Message = {
-                $id: Date.now().toString(),
+                $id: savedMsg.$id || Date.now().toString(),
                 senderId: 'admin',
                 receiverId: selectedMember.$id,
-                content: newMessage,
-                timestamp: new Date(),
+                content: newMessage.trim(),
+                timestamp: new Date(savedMsg.createdAt || new Date()),
                 read: false,
-                senderName: 'Admin'
+                senderName: 'Support Team',
+                deliveredAt: new Date()
             };
 
-            setMessages([...messages, message]);
+            setMessages(prev => [...prev, message]);
             setNewMessage('');
+            
+            console.log('✅ Admin message sent to database');
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('❌ Error sending message:', error);
+            alert('Failed to send message. Please try again.');
         }
     };
 

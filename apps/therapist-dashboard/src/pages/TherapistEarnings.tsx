@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
+import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
 
 interface Payment {
   $id: string;
@@ -21,11 +21,8 @@ interface TherapistEarningsProps {
 const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack }) => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const membershipTier = therapist?.membershipTier || 'free';
-  const commissionRate = 
-    membershipTier === 'elite' ? 0.05 : 
-    membershipTier === 'premium' ? 0.10 : 
-    0.30;
+  const membershipTier = therapist?.membershipTier || 'free'; // 'free' or 'plus'
+  const commissionRate = membershipTier === 'plus' ? 0 : 0.25; // Plus: 0%, Free: 25%
 
   useEffect(() => {
     fetchPayments();
@@ -138,23 +135,17 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               ←
             </button>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg">
-              <DollarSign className="w-6 h-6 text-white" />
+              <Banknote className="w-6 h-6 text-white" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-800">Earnings & Payments</h1>
               <p className="text-xs text-gray-500">Track your income</p>
             </div>
           </div>
-          {membershipTier === 'elite' && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full">
+          {membershipTier === 'plus' && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full">
               <Crown className="w-4 h-4 text-white" />
-              <span className="text-xs font-bold text-white">ELITE</span>
-            </div>
-          )}
-          {membershipTier === 'premium' && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full">
-              <Crown className="w-4 h-4 text-white" />
-              <span className="text-xs font-bold text-white">PREMIUM</span>
+              <span className="text-xs font-bold text-white">PLUS</span>
             </div>
           )}
         </div>
@@ -166,7 +157,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-gray-600">Your Earnings</span>
-              <DollarSign className="w-5 h-5 text-green-500" />
+              <Banknote className="w-5 h-5 text-green-500" />
             </div>
             <p className="text-2xl font-bold text-green-600">
               {(stats.totalDue / 1000).toFixed(0)}k
@@ -183,7 +174,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               {(stats.adminDue / 1000).toFixed(0)}k
             </p>
             <p className="text-xs text-gray-500">
-              {membershipTier === 'elite' ? '5%' : membershipTier === 'premium' ? '10%' : '30%'} commission
+              {membershipTier === 'plus' ? '0%' : '25%'} commission
             </p>
           </div>
 

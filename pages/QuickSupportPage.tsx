@@ -62,7 +62,7 @@ const QuickSupportPage: React.FC<QuickSupportPageProps> = ({ onNavigate }) => {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Email</h3>
-                            <p className="text-sm text-gray-600 mb-2 text-center">support@indastreet.com</p>
+                            <p className="text-sm text-gray-600 mb-2 text-center">indastreet.id@gmail.com</p>
                             <p className="text-xs text-teal-600 font-semibold text-center">24hr Response</p>
                         </div>
 

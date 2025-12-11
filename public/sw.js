@@ -5,21 +5,25 @@
  * This ensures therapists NEVER miss booking notifications - essential for business revenue
  */
 
-const CACHE_NAME = 'indastreet-v2';
+const CACHE_NAME = 'indastreet-v4';
 const NOTIFICATION_SOUND_URL = '/sounds/booking-alert.mp3';
 
 // Install service worker
 self.addEventListener('install', (event) => {
-    console.log('🔧 IndaStreet Service Worker installing...');
+    console.log('✅ Service Worker v4: Installing...');
     
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            // Avoid pre-caching multi-megabyte audio files to keep first-load fast
-            return cache.addAll([
-                '/',
-                '/icon-192.png',
-                '/icon-512.png'
-            ]);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            console.log('✅ Service Worker v4: Caching assets');
+            try {
+                // Cache only the root - don't cache manifest to avoid errors
+                await cache.add('/').catch((err) => {
+                    console.log('⚠️ SW: Root cache failed:', err);
+                });
+                console.log('✅ Service Worker v4: Assets cached successfully');
+            } catch (err) {
+                console.log('⚠️ SW: Cache error:', err);
+            }
         })
     );
     

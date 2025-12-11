@@ -47,17 +47,19 @@ import {
 
 interface PlaceDashboardPageProps {
     // Accept sanitized place payload rather than strict Place subset to avoid schema mismatch errors
-    onSave: (data: any) => void;
+    onSave?: (data: any) => void;
     onLogout: () => void;
-    onNavigateToNotifications: () => void;
+    onNavigateToNotifications?: () => void;
     onNavigate?: (page: any) => void;
-    onUpdateBookingStatus: (bookingId: number, status: BookingStatus) => void;
-    placeId: number | string;
+    onUpdateBookingStatus?: (bookingId: number, status: BookingStatus) => void;
+    placeId?: number | string;
     place?: Place | null;
     bookings?: Booking[];
     notifications?: Notification[];
     userLocation?: UserLocation | null;
-    t: any;
+    t?: any;
+    onNavigateToChat?: () => void;
+    onNavigateToPayment?: () => void;
 }
 
 const AnalyticsCard: React.FC<{ title: string; value: number; description: string }> = ({ title, value, description }) => (
@@ -103,7 +105,7 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
 }
 
 
-const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t }) => {
+const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t, onNavigateToChat, onNavigateToPayment }) => {
     const [place, setPlace] = useState<Place | null>(placeProp || null);
     const [isLoading, setIsLoading] = useState(true);
     
@@ -1898,6 +1900,31 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Chat Button */}
+                        {onNavigateToChat && (
+                            <button
+                                onClick={onNavigateToChat}
+                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-pink-600 active:text-pink-700 active:bg-pink-50 rounded-full transition-colors touch-manipulation relative"
+                                title="Customer Support Chat"
+                                aria-label="Customer Support Chat"
+                            >
+                                <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
+                                {(place as any)?.membershipTier === 'premium' && (
+                                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+                                )}
+                            </button>
+                        )}
+                        {/* Payment Info Button */}
+                        {onNavigateToPayment && (
+                            <button
+                                onClick={onNavigateToPayment}
+                                className="min-w-[44px] min-h-[44px] p-2 flex items-center justify-center text-blue-600 active:text-blue-700 active:bg-blue-50 rounded-full transition-colors touch-manipulation"
+                                title="Payment Information"
+                                aria-label="Payment Information"
+                            >
+                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
+                            </button>
+                        )}
                         <NotificationBell 
                             count={unreadNotificationsCount} 
                             onClick={() => setShowNotificationsView(!showNotificationsView)} 

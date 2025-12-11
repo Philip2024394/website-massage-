@@ -346,7 +346,7 @@ collections: {
 ## 📞 Support
 
 ### For Technical Issues
-- Contact: support@indastreet.com
+- Contact: indastreet.id@gmail.com
 - WhatsApp: [To be configured]
 
 ### For Business Inquiries

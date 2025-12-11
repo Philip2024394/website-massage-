@@ -305,7 +305,7 @@ const PaymentInfoPage: React.FC<PaymentInfoPageProps> = ({ onNavigate }) => {
                             <div className="bg-white rounded-xl p-6 shadow-md">
                                 <h4 className="font-bold text-gray-900 mb-3">What if I transfer wrong amount?</h4>
                                 <p className="text-gray-600 text-sm">
-                                    Contact support@indastreet.com immediately with payment proof. We'll process refund or apply to correct package.
+                                    Contact indastreet.id@gmail.com immediately with payment proof. We'll process refund or apply to correct package.
                                 </p>
                             </div>
 

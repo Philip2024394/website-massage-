@@ -37,6 +37,7 @@ export type Page =
     | 'unifiedLogin' 
     | 'therapistLogin' 
     | 'massagePlaceLogin' 
+    | 'provider-portals'
     | 'employerJobPosting' 
     | 'jobPostingPayment' 
     | 'browseJobs' 

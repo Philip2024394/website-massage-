@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Crown, Check, X, Star, TrendingUp, MessageCircle, Shield, Zap, BarChart3 } from 'lucide-react';
+import React from 'react';
+import { Crown, Check, X, Star } from 'lucide-react';
 
 interface MembershipPageProps {
   therapist: any;
@@ -7,12 +7,9 @@ interface MembershipPageProps {
 }
 
 const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const currentTier = therapist?.membershipTier || 'free';
-  const premiumExpiresAt = therapist?.premiumExpiresAt ? new Date(therapist.premiumExpiresAt) : null;
-
-  const monthlyPrice = 200000; // 200k IDR
-  const annualPrice = 2000000; // 2M IDR (2 months free)
+  const currentTier = therapist?.membershipTier || 'free'; // free, plus
+  const plusExpiresAt = therapist?.plusExpiresAt ? new Date(therapist.plusExpiresAt) : null;
+  const subscriptionMonth = therapist?.subscriptionMonth || 1;
 
   const handleUpgrade = (plan: 'monthly' | 'annual') => {
     // TODO: Integrate payment gateway
@@ -50,59 +47,38 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
 
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         {/* Current Status Banner */}
-        {currentTier === 'premium' && premiumExpiresAt && (
-          <div className="mb-8 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-2xl shadow-lg p-6 text-white">
+        {currentTier === 'plus' && plusExpiresAt && (
+          <div className="mb-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                   <Crown className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">Premium Member</h2>
-                  <p className="text-yellow-100">
-                    Your premium membership expires on {formatExpiryDate(premiumExpiresAt)}
+                  <h2 className="text-2xl font-bold">Plus Member - Month {subscriptionMonth}</h2>
+                  <p className="text-purple-100">
+                    0% Commission · Next billing: {formatExpiryDate(plusExpiresAt)}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => handleUpgrade('monthly')}
-                className="px-6 py-3 bg-white text-amber-600 font-bold rounded-xl hover:shadow-lg transition-all"
+                className="px-6 py-3 bg-white text-purple-600 font-bold rounded-xl hover:shadow-lg transition-all"
               >
-                Renew Now
+                Manage Plan
               </button>
             </div>
           </div>
         )}
 
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-8">
-          <button
-            onClick={() => setBillingCycle('monthly')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all ${
-              billingCycle === 'monthly'
-                ? 'bg-orange-500 text-white shadow-lg'
-                : 'bg-white text-gray-700 border-2 border-gray-300'
-            }`}
-          >
-            Monthly
-          </button>
-          <button
-            onClick={() => setBillingCycle('annual')}
-            className={`px-6 py-3 rounded-lg font-semibold transition-all relative ${
-              billingCycle === 'annual'
-                ? 'bg-orange-500 text-white shadow-lg'
-                : 'bg-white text-gray-700 border-2 border-gray-300'
-            }`}
-          >
-            Annual
-            <span className="absolute -top-2 -right-2 px-2 py-1 bg-green-500 text-white text-xs rounded-full font-bold">
-              Save 16%
-            </span>
-          </button>
+        {/* Pricing Info */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Growth Path</h2>
+          <p className="text-gray-600">Select the plan that matches your business goals</p>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-8 mb-12 max-w-5xl mx-auto">
           {/* Free Plan */}
           <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-200 p-8">
             <div className="text-center mb-6">
@@ -110,10 +86,10 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
               <div className="text-5xl font-bold text-gray-800 mb-2">
                 Rp 0
               </div>
-              <p className="text-gray-600">Basic features to get started</p>
+              <p className="text-gray-600">Forever</p>
               <div className="mt-3 text-center">
-                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  30% commission
+                <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  25% per booking
                 </span>
               </div>
             </div>
@@ -121,7 +97,7 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700 text-sm">Profile listing</span>
+                <span className="text-gray-700 text-sm">Basic profile listing</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -129,27 +105,31 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700 text-sm">Basic earnings tracking</span>
+                <span className="text-gray-700 text-sm">Basic earnings tracker</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700 text-sm">WhatsApp integration</span>
+                <span className="text-gray-700 text-sm">Basic chat window</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">View booking history</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Basic notifications</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-400 text-sm">Verified badge</span>
+                <span className="text-gray-400 text-sm">No verified badge</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-400 text-sm">Analytics</span>
+                <span className="text-gray-400 text-sm">No analytics</span>
               </li>
               <li className="flex items-start gap-3">
                 <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-400 text-sm">Priority support</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-400 text-sm">Calendar</span>
+                <span className="text-gray-400 text-sm">No calendar</span>
               </li>
             </ul>
 
@@ -161,104 +141,114 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
             </button>
           </div>
 
-          {/* Premium Plan */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-2xl border-4 border-blue-400 p-8 relative transform scale-105">
+          {/* Plus Plan */}
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl shadow-2xl border-4 border-purple-500 p-8 relative transform scale-105">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <div className="px-6 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-bold rounded-full shadow-lg flex items-center gap-2">
+              <div className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-full shadow-lg flex items-center gap-2">
                 <Star className="w-5 h-5" />
-                <span>MOST POPULAR</span>
+                <span>BEST VALUE</span>
               </div>
             </div>
 
             <div className="text-center mb-6 mt-4">
               <div className="flex items-center justify-center gap-2 mb-2">
-                <Crown className="w-8 h-8 text-yellow-600" />
-                <h3 className="text-2xl font-bold text-gray-800">Premium</h3>
+                <Crown className="w-8 h-8 text-purple-600" />
+                <h3 className="text-2xl font-bold text-gray-800">Plus</h3>
               </div>
-              <div className="text-5xl font-bold text-gray-800 mb-2">
-                {billingCycle === 'monthly' ? (
-                  <>Rp 200k</>
-                ) : (
-                  <>Rp 2M</>
-                )}
+              <div className="space-y-2 mb-3">
+                <div className="text-lg text-gray-600">
+                  <span className="font-bold text-green-600">Month 1: FREE</span>
+                </div>
+                <div className="text-sm text-gray-500 space-y-1">
+                  <div>Month 2: Rp 100k</div>
+                  <div>Month 3: Rp 135k</div>
+                  <div>Month 4: Rp 175k</div>
+                  <div className="font-semibold">Month 5+: Rp 200k</div>
+                </div>
               </div>
-              <p className="text-gray-600">
-                {billingCycle === 'monthly' ? 'per month' : 'per year (save Rp 400k)'}
-              </p>
             </div>
 
             <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4 mb-6">
               <p className="text-lg text-green-900 font-bold text-center">🎉 0% COMMISSION</p>
               <p className="text-sm text-green-800 text-center mt-1">Keep 100% of your earnings!</p>
-              <p className="text-xs text-green-700 text-center mt-2">Save 25% on every booking vs free tier</p>
+              <p className="text-xs text-green-700 text-center mt-2">Save 25% commission on every booking</p>
             </div>
 
-            <ul className="space-y-4 mb-8">
+            <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
-                <div className="w-5 h-5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <Check className="w-3 h-3 text-white" />
                 </div>
-                <div>
-                  <span className="text-gray-800 font-semibold">Everything in Free, plus:</span>
-                </div>
+                <span className="text-gray-800 font-semibold">Everything in Free, plus:</span>
               </li>
               <li className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Verified Badge</span>
-                  <p className="text-sm text-gray-600">Blue checkmark on profile for trust & credibility</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Gold verified badge</span>
               </li>
               <li className="flex items-start gap-3">
-                <BarChart3 className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Best Times Analytics</span>
-                  <p className="text-sm text-gray-600">Peak hours, busy days, optimal schedule recommendations</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Advanced analytics dashboard</span>
               </li>
               <li className="flex items-start gap-3">
-                <MessageCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">24/7 Customer Support Chat</span>
-                  <p className="text-sm text-gray-600">Direct chat with support team, 2-hour response time</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Best times to work insights</span>
               </li>
               <li className="flex items-start gap-3">
-                <Zap className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Discount Badges</span>
-                  <p className="text-sm text-gray-600">Set 5%, 10%, 15%, or 20% discount badges to attract customers</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Customer demographics</span>
               </li>
               <li className="flex items-start gap-3">
-                <TrendingUp className="w-5 h-5 text-pink-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Priority Search Placement</span>
-                  <p className="text-sm text-gray-600">Appear at the top of customer search results</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Booking patterns & trends</span>
               </li>
               <li className="flex items-start gap-3">
-                <Star className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Advanced Analytics</span>
-                  <p className="text-sm text-gray-600">Customer demographics, booking patterns, revenue forecasting</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Revenue forecasting</span>
               </li>
               <li className="flex items-start gap-3">
-                <MessageCircle className="w-5 h-5 text-indigo-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <span className="text-gray-800 font-semibold">Profile Optimization Support</span>
-                  <p className="text-sm text-gray-600">Help with photos, descriptions, translations</p>
-                </div>
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Priority search placement (top 3)</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Smart calendar with optimization</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Custom discount campaigns</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Featured profile badge</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Profile optimization support</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Multi-location management</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Review management tools</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Automated customer reminders</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700 text-sm">Monthly performance reports</span>
               </li>
             </ul>
 
             <button
-              onClick={() => handleUpgrade(billingCycle)}
-              disabled={currentTier === 'premium'}
-              className="w-full py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => handleUpgrade('monthly')}
+              disabled={currentTier === 'plus'}
+              className="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {currentTier === 'premium' ? 'Current Plan' : `Upgrade to Premium - Rp ${billingCycle === 'monthly' ? '200k' : '2M'}`}
+              {currentTier === 'plus' ? 'Current Plan' : 'Upgrade to Plus - Start FREE'}
             </button>
           </div>
         </div>
@@ -272,26 +262,35 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
                 <tr className="border-b-2 border-gray-200">
                   <th className="text-left py-4 px-4 font-semibold text-gray-700">Feature</th>
                   <th className="text-center py-4 px-4 font-semibold text-gray-700">Free</th>
-                  <th className="text-center py-4 px-4 font-semibold text-yellow-600">Premium</th>
+                  <th className="text-center py-4 px-4 font-semibold text-purple-600">Plus</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 font-semibold text-gray-900">Monthly Cost</td>
+                  <td className="text-center py-4 px-4">
+                    <span className="text-green-600 font-bold text-lg">Rp 0</span>
+                  </td>
+                  <td className="text-center py-4 px-4">
+                    <span className="text-purple-600 font-bold text-sm">FREE → 100k → 135k → 175k → 200k</span>
+                  </td>
+                </tr>
                 <tr className="bg-yellow-50">
                   <td className="py-4 px-4 font-semibold text-gray-900">Commission Rate</td>
                   <td className="text-center py-4 px-4">
-                    <span className="text-red-600 font-bold text-lg">25%</span>
+                    <span className="text-orange-600 font-bold text-lg">25%</span>
                   </td>
                   <td className="text-center py-4 px-4">
                     <span className="text-green-600 font-bold text-lg">0% 🎉</span>
                   </td>
                 </tr>
                 <tr className="bg-green-50">
-                  <td className="py-4 px-4 text-gray-700">Your Earnings (per Rp 100k booking)</td>
+                  <td className="py-4 px-4 text-gray-700">Your Earnings (per Rp 150k booking)</td>
                   <td className="text-center py-4 px-4">
-                    <span className="font-semibold text-gray-900">Rp 75,000</span>
+                    <span className="font-semibold text-gray-900">Rp 112,500</span>
                   </td>
                   <td className="text-center py-4 px-4">
-                    <span className="font-semibold text-green-600 text-lg">Rp 100,000</span>
+                    <span className="font-semibold text-green-600 text-lg">Rp 150,000</span>
                   </td>
                 </tr>
                 <tr>
@@ -309,35 +308,35 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
                   <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
                   <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-green-500 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
+                <tr className="bg-purple-50">
                   <td className="py-4 px-4 text-gray-700 font-semibold">Verified Badge</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
-                  <td className="py-4 px-4 text-gray-700 font-semibold">Best Times Analytics</td>
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 text-gray-700 font-semibold">Advanced Analytics</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
-                  <td className="py-4 px-4 text-gray-700 font-semibold">Customer Support Chat</td>
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 text-gray-700 font-semibold">Smart Calendar</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
-                  <td className="py-4 px-4 text-gray-700 font-semibold">Discount Badges (5-20%)</td>
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 text-gray-700 font-semibold">Discount Campaigns</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
-                  <td className="py-4 px-4 text-gray-700 font-semibold">Priority Search Placement</td>
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 text-gray-700 font-semibold">Priority Search (Top 3)</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
-                <tr className="bg-yellow-50">
-                  <td className="py-4 px-4 text-gray-700 font-semibold">Profile Optimization Support</td>
+                <tr className="bg-purple-50">
+                  <td className="py-4 px-4 text-gray-700 font-semibold">Profile Optimization</td>
                   <td className="text-center py-4 px-4"><X className="w-5 h-5 text-red-500 mx-auto" /></td>
-                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-yellow-600 mx-auto" /></td>
+                  <td className="text-center py-4 px-4"><Check className="w-5 h-5 text-purple-600 mx-auto" /></td>
                 </tr>
               </tbody>
             </table>
@@ -352,20 +351,20 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
               <h4 className="font-bold text-gray-900 mb-2">What's the commission structure?</h4>
               <p className="text-sm text-gray-700">
                 <strong>Free tier:</strong> We take 25% commission on each booking, you keep 75%. 
-                <strong className="ml-2">Premium tier (Rp 200k/month):</strong> 0% commission - you keep 100% of all earnings! 
-                Plus you get the verified badge displayed on your profile image. Premium members typically earn back the membership fee after just 1-2 bookings.
+                <strong className="ml-2">Plus tier:</strong> 0% commission - you keep 100% of all earnings! 
+                Month 1 is FREE, then Rp 100k (month 2), Rp 135k (month 3), Rp 175k (month 4), and Rp 200k from month 5 onwards.
               </p>
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 mb-2">How does billing work?</h3>
+              <h3 className="font-bold text-gray-800 mb-2">How does Plus billing work?</h3>
               <p className="text-gray-600">
-                Monthly subscriptions are billed every 30 days. Annual subscriptions are billed once per year and save you Rp 400,000 (2 months free).
+                Plus tier has escalating monthly pricing: your first month is completely FREE to try all premium features. Month 2 is Rp 100k, month 3 is Rp 135k, month 4 is Rp 175k, and from month 5 onwards it's Rp 200k per month.
               </p>
             </div>
             <div>
               <h3 className="font-bold text-gray-800 mb-2">Can I cancel anytime?</h3>
               <p className="text-gray-600">
-                Yes! You can cancel your Premium subscription anytime. You'll continue to have access until the end of your billing period.
+                Yes! You can cancel your Plus subscription anytime. You'll continue to have access until the end of your billing period.
               </p>
             </div>
             <div>
@@ -377,13 +376,13 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack }) =>
             <div>
               <h3 className="font-bold text-gray-800 mb-2">How long does it take to get verified badge?</h3>
               <p className="text-gray-600">
-                After upgrading to Premium, our team will review your profile within 24-48 hours. Once approved, the verified badge will appear automatically on all your listings.
+                After upgrading to Plus, the gold verified badge will appear automatically on your profile.
               </p>
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 mb-2">What's included in customer support?</h3>
+              <h3 className="font-bold text-gray-800 mb-2">Is Plus worth it?</h3>
               <p className="text-gray-600">
-                Premium members get direct chat access to our support team for help with profile optimization, technical issues, booking management, and general platform questions. Response time is typically within 2 hours during business hours.
+                Yes! With 0% commission, you save 25% on every booking. If you get just 2-3 bookings per month (at Rp 150k each), you'll save more than the subscription cost. Plus you get all premium features like analytics, priority placement, and profile optimization.
               </p>
             </div>
           </div>

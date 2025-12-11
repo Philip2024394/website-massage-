@@ -158,17 +158,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <span className="text-sm text-gray-700 font-medium">FAQ</span>
                 </button>
                 <div className="space-y-2">
-                  <button onClick={() => { window.open('http://localhost:3001', '_blank'); onClose(); }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <button onClick={() => handleItemClick(undefined, 'provider-portals')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Therapist Portal</span>
-                  </button>
-                  <button onClick={() => { window.open('http://localhost:3002', '_blank'); onClose(); }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                    <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Massage Spa Portal</span>
-                  </button>
-                  <button onClick={() => { window.open('http://localhost:3003', '_blank'); onClose(); }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
-                    <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Facial Spa Portal</span>
+                    <span className="text-sm text-gray-700 font-medium">Provider Portals</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
@@ -178,8 +170,16 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               </div>
 
               <div className="pt-4 mt-6 border-t border-gray-300">
-                <div className="flex justify-center gap-4 px-4 py-2">
-                  <button onClick={() => { window.open('http://localhost:3004', '_blank'); onClose(); }} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
+                <div className="flex flex-col items-center gap-3 px-4 py-2">
+                  <button 
+                    onClick={() => handleItemClick(undefined, 'provider-portals')} 
+                    className="text-sm font-bold text-gray-700 hover:text-orange-600 transition-colors"
+                  >
+                    <span className="text-gray-800">Inda</span>
+                    <span className="text-orange-500">Street</span>
+                    <span className="text-gray-600 text-xs ml-1">2026</span>
+                  </button>
+                  <button onClick={() => handleItemClick(() => onNavigate?.('admin-login'))} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
                     Admin
                   </button>
                 </div>
