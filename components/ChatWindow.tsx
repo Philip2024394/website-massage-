@@ -147,13 +147,10 @@ export default function ChatWindow({
     const [roomNumber, setRoomNumber] = useState('');
     const [isCreatingBooking, setIsCreatingBooking] = useState(false);
     
-    // Translation state
-    const [userLanguage, setUserLanguage] = useState('en');
-    const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+    // Language now comes from global context only
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const languageDropdownRef = useRef<HTMLDivElement>(null);
 
     // Debug logging
     useEffect(() => {
@@ -170,19 +167,7 @@ export default function ChatWindow({
         });
     }, [isOpen, isRegistered, isMinimized, providerId, providerName, providerStatus, customerName, chatRoomId, messages.length]);
 
-    // Handle clicking outside language dropdown
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
-                setShowLanguageDropdown(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
+    // Language managed globally through context
 
     // Initialize audio notification
     useEffect(() => {
@@ -718,8 +703,8 @@ export default function ChatWindow({
         try {
             // Translate message to Indonesian (member's language) before sending
             let messageContent = newMessage.trim();
-            if (userLanguage !== 'id') {
-                const translated = await translationService.translate(messageContent, 'id', userLanguage);
+            if (chatLang !== 'id') {
+                const translated = await translationService.translate(messageContent, 'id', chatLang);
                 console.log('🌐 Message translated:', { original: messageContent, translated: translated.translatedText });
                 messageContent = translated.translatedText;
             }
@@ -734,7 +719,7 @@ export default function ChatWindow({
                 receiverName: providerName,
                 content: messageContent,
                 originalContent: newMessage.trim(),
-                originalLanguage: userLanguage
+                originalLanguage: chatLang
             } as any);
 
             // Send admin copy to admin conversation
@@ -854,15 +839,29 @@ export default function ChatWindow({
     // REGISTRATION SCREEN
     if (!isRegistered) {
         return (
-            <div className="fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
+            <div className="fixed bottom-0 sm:bottom-4 left-0 sm:left-auto right-0 sm:right-4 w-full sm:w-96 max-w-full bg-white rounded-t-lg sm:rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 max-h-[90vh] sm:max-h-[80vh]">
                 {/* Header */}
                 <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                             {providerPhoto ? (
-                                <img src={providerPhoto} alt={providerName} className="w-16 h-16 rounded-full object-cover" style={{border: 'none', boxShadow: 'none', outline: 'none'}} />
+                                <img 
+                                    src={providerPhoto} 
+                                    alt={providerName} 
+                                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover aspect-square" 
+                                    style={{
+                                        border: '2px solid rgba(255,255,255,0.3)', 
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)', 
+                                        outline: 'none'
+                                    }} 
+                                />
                             ) : (
-                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-2xl" style={{border: 'none', boxShadow: 'none', outline: 'none'}}>
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-2xl aspect-square" 
+                                     style={{
+                                        border: '2px solid rgba(255,255,255,0.3)', 
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)', 
+                                        outline: 'none'
+                                     }}>
                                     {providerName?.charAt(0)?.toUpperCase() || 'M'}
                                 </div>
                             )}
@@ -881,11 +880,12 @@ export default function ChatWindow({
                             </span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                         <button
                             onClick={handleClose}
-                            className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
+                            className="w-10 h-10 sm:w-8 sm:h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20 touch-manipulation"
                             title="Close"
+                            style={{ minWidth: '40px', minHeight: '40px' }}
                         >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
@@ -895,7 +895,7 @@ export default function ChatWindow({
                 </div>
 
                 {/* Booking Form - Immediate vs Scheduled */}
-                <div className="p-4 space-y-4">
+                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4 overflow-y-auto flex-1 min-h-0">
                     {mode === 'scheduled' ? (
                         // SCHEDULED BOOKING FLOW
                         <>
@@ -905,59 +905,14 @@ export default function ChatWindow({
                                         <h3 className="text-xl font-bold text-gray-800">📅 {t.scheduleYourMassage}</h3>
                                     </div>
                                     
-                                    {/* Language Selector for Scheduled Bookings */}
-                                    <div className="relative mb-4" ref={languageDropdownRef}>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Select Your Language
-                                        </label>
-                                        <div className="relative">
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400 bg-white flex items-center justify-between text-left"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-lg">
-                                                        {userLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
-                                                    </span>
-                                                    <span>
-                                                        {userLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}
-                                                    </span>
-                                                </div>
-                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-                                            
-                                            {showLanguageDropdown && (
-                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                                    <div 
-                                                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100"
-                                                        onClick={() => {
-                                                            setUserLanguage('en');
-                                                            setShowLanguageDropdown(false);
-                                                        }}
-                                                    >
-                                                        <span className="text-lg">🇬🇧</span>
-                                                        <span className="text-sm font-medium text-gray-700">English</span>
-                                                    </div>
-                                                    <div 
-                                                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-                                                        onClick={() => {
-                                                            setUserLanguage('id');
-                                                            setShowLanguageDropdown(false);
-                                                        }}
-                                                    >
-                                                        <span className="text-lg">🇮🇩</span>
-                                                        <span className="text-sm font-medium text-gray-700">Bahasa Indonesia</span>
-                                                    </div>
-                                                </div>
-                                            )}
+                                    {/* Translation notice only shown when languages differ */}
+                                    {chatLang !== 'id' && (
+                                        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                            <p className="text-sm text-blue-700">
+                                                💬 Messages will be translated automatically
+                                            </p>
                                         </div>
-                                        <p className="mt-2 text-xs text-gray-500">
-                                            Messages will be translated automatically
-                                        </p>
-                                    </div>
+                                    )}
                                     
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -975,8 +930,8 @@ export default function ChatWindow({
                                                             : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
                                                     }`}
                                                 >
-                                                    <div className="font-bold">{duration} min</div>
-                                                    <div className="text-xs mt-1">{getPriceLabel(duration.toString() as '60' | '90' | '120')}</div>
+                                                    <div className="text-xs">{duration} min</div>
+                                                    <div className="font-bold mt-1">{getPriceLabel(duration.toString() as '60' | '90' | '120')}</div>
                                                     {/* Star Rating - Top Right */}
                                                     {typeof providerRating === 'number' && providerRating > 0 && (
                                                         <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
@@ -1104,58 +1059,14 @@ export default function ChatWindow({
                     ) : (
                         // IMMEDIATE BOOKING FLOW (Original)
                         <>
-                            <div className="relative" ref={languageDropdownRef}>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Select Your Language
-                                </label>
-                                <div className="relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400 bg-white flex items-center justify-between text-left"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg">
-                                                {userLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
-                                            </span>
-                                            <span>
-                                                {userLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}
-                                            </span>
-                                        </div>
-                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    
-                                    {showLanguageDropdown && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                                            <div 
-                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100"
-                                                onClick={() => {
-                                                    setUserLanguage('en');
-                                                    setShowLanguageDropdown(false);
-                                                }}
-                                            >
-                                                <span className="text-lg">🇬🇧</span>
-                                                <span className="text-sm font-medium text-gray-700">English</span>
-                                            </div>
-                                            <div 
-                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
-                                                onClick={() => {
-                                                    setUserLanguage('id');
-                                                    setShowLanguageDropdown(false);
-                                                }}
-                                            >
-                                                <span className="text-lg">🇮🇩</span>
-                                                <span className="text-sm font-medium text-gray-700">Bahasa Indonesia</span>
-                                            </div>
-                                        </div>
-                                    )}
+                            {/* Translation notice only shown when languages differ */}
+                            {chatLang !== 'id' && (
+                                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <p className="text-sm text-blue-700">
+                                        💬 Messages will be translated automatically
+                                    </p>
                                 </div>
-                                <p className="mt-2 text-xs text-gray-500">
-                                    Messages will be translated automatically
-                                </p>
-                            </div>
+                            )}
 
                             <div className="space-y-3">
                                 <div>
@@ -1199,18 +1110,19 @@ export default function ChatWindow({
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Select Massage Duration
                                     </label>
-                                    <div className="grid grid-cols-3 gap-2">
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
                                         {['60', '90', '120'].map((duration) => (
                                             <button
                                                 key={duration}
                                                 type="button"
                                                 onClick={() => setServiceDuration(duration as '60' | '90' | '120')}
                                                 disabled={registering}
-                                                className={`p-3 rounded-lg border transition-all relative ${
+                                                className={`p-3 sm:p-4 rounded-lg border transition-all relative touch-manipulation min-h-[64px] sm:min-h-[72px] ${
                                                     serviceDuration === duration
                                                         ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                                                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
+                                                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                                                 } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                style={{ minWidth: '80px', minHeight: '64px' }}
                                             >
                                                 {/* Star Rating - Top Right */}
                                                 {typeof providerRating === 'number' && providerRating > 0 && (
@@ -1218,8 +1130,8 @@ export default function ChatWindow({
                                                         ★{providerRating.toFixed(1)}
                                                     </div>
                                                 )}
-                                                <div className="font-bold">{duration} min</div>
-                                                <div className="text-xs mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
+                                                <div className="text-xs">{duration} min</div>
+                                                <div className="font-bold mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
                                             </button>
                                         ))}
                                     </div>
@@ -1229,7 +1141,8 @@ export default function ChatWindow({
                             <button
                                 onClick={handleActivateChat}
                                 disabled={registering || !customerName.trim() || !customerWhatsApp.trim()}
-                                className="w-full bg-orange-600 text-white py-2 rounded-lg font-bold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                                className="w-full bg-orange-600 text-white py-3 sm:py-2 rounded-lg font-bold hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg touch-manipulation"
+                                style={{ minHeight: '48px' }}
                             >
                                 {registering ? (
                                     <div className="flex items-center justify-center space-x-2">

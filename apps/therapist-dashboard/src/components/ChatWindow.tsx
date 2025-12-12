@@ -98,12 +98,10 @@ export default function ChatWindow({
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [unreadCount] = useState(0);
-    const [userLanguage, setUserLanguage] = useState('id'); // Customer's language
-    const [showLanguageSelector, setShowLanguageSelector] = useState(false);
-    const [translationNoticeShown, setTranslationNoticeShown] = useState(false);
+    // Language is now managed globally - therapist dashboard uses Indonesian by default
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const therapistLanguage = 'id'; // Therapist always sees Indonesian
+    const therapistLanguage = 'id'; // Therapist dashboard uses Indonesian
 
     // Load initial messages
     useEffect(() => {
@@ -329,7 +327,7 @@ export default function ChatWindow({
             const originalText = newMessage.trim();
             
             // Show translation notice on first non-Indonesian message
-            if (userLanguage !== 'id' && !translationNoticeShown) {
+            if (false) { // Translation notice disabled - using global language
                 await simpleChatService.sendMessage({
                     conversationId,
                     senderId: 'system',
@@ -338,16 +336,15 @@ export default function ChatWindow({
                     receiverId: customerId,
                     receiverName: customerName,
                     receiverRole: 'customer',
-                    message: `🌐 Auto-translation is enabled.\n\nMessages are being translated between ${LANGUAGES.find(l => l.code === userLanguage)?.name} and Bahasa Indonesia.\n\n⚠️ Please note: Translations may have slight inaccuracies. We use Google Translate to help bridge language differences.`,
+                    message: `🌐 Auto-translation is enabled.\n\nMessages are being translated.\n\n⚠️ Please note: Translations may have slight inaccuracies.`,
                     messageType: 'system',
                     bookingId
                 });
-                setTranslationNoticeShown(true);
+                // Translation notice removed
             }
 
             // Translate message if needed (for therapist to see in Indonesian)
-            const translatedForTherapist = userLanguage !== 'id' 
-                ? await translateText(originalText, therapistLanguage, userLanguage)
+            const translatedForTherapist = originalText // No translation needed - using Indonesian
                 : originalText;
 
             // Save message to database
@@ -364,7 +361,7 @@ export default function ChatWindow({
                 bookingId,
                 metadata: {
                     translated: translatedForTherapist,
-                    language: userLanguage
+                    language: 'id'
                 }
             });
 
@@ -444,41 +441,7 @@ export default function ChatWindow({
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                    {/* Language Selector */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowLanguageSelector(!showLanguageSelector)}
-                            className="p-2 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1"
-                            title="Select Language"
-                        >
-                            <span className="text-lg">{LANGUAGES.find(l => l.code === userLanguage)?.flag || '🌐'}</span>
-                        </button>
-                        
-                        {showLanguageSelector && (
-                            <div className="absolute right-0 top-12 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[110px] z-50 max-h-80 overflow-y-auto">
-                                <div className="px-3 py-2 text-xs font-bold text-gray-500 uppercase border-b border-gray-200 mb-1 whitespace-nowrap">Language</div>
-                                {LANGUAGES.map(lang => (
-                                    <button
-                                        key={lang.code}
-                                        onClick={() => {
-                                            setUserLanguage(lang.code);
-                                            setShowLanguageSelector(false);
-                                            if (lang.code !== 'id') {
-                                                setTranslationNoticeShown(false); // Reset to show notice again
-                                            }
-                                        }}
-                                        className={`w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2 whitespace-nowrap ${
-                                            userLanguage === lang.code ? 'bg-orange-50 text-orange-700 font-semibold' : 'text-gray-700'
-                                        }`}
-                                    >
-                                        <span className="text-xl flex-shrink-0">{lang.flag}</span>
-                                        <span className="text-sm font-medium uppercase flex-shrink-0">{lang.code}</span>
-                                        {userLanguage === lang.code && <span className="ml-auto text-orange-500 text-sm flex-shrink-0">✓</span>}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {/* Language now managed globally */}
                     
                     {/* Unread Badge */}
                     {unreadCount > 0 && (

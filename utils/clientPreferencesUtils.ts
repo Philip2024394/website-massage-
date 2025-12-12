@@ -19,11 +19,11 @@ export const CLIENT_PREFERENCE_OPTIONS: ClientPreference[] = [
 ];
 
 export const CLIENT_PREFERENCE_LABELS: Record<ClientPreference, string> = {
-    'Males And Females': 'Males And Females',
+    'Males And Females': 'Males / Females',
     'Males Only': 'Males Only',
     'Females Only': 'Females Only',
     'Babies Only': 'Babies Only',
-    'All Ages And Genders': 'All Ages And Genders'
+    'All Ages And Genders': 'All Ages / Genders'
 };
 
 export const CLIENT_PREFERENCE_DESCRIPTIONS: Record<ClientPreference, string> = {
@@ -35,10 +35,32 @@ export const CLIENT_PREFERENCE_DESCRIPTIONS: Record<ClientPreference, string> = 
 };
 
 /**
- * Get the display text for a client preference
+ * Get the display text for a client preference with translation support
  */
-export function getClientPreferenceDisplay(preference?: ClientPreference): string {
-    return preference || 'Males And Females';
+export function getClientPreferenceDisplay(preference?: ClientPreference, language: 'en' | 'id' = 'en'): string {
+    const pref = preference || 'Males And Females';
+    
+    if (language === 'id') {
+        const translations: Record<ClientPreference, string> = {
+            'Males And Females': 'Pria / Wanita',
+            'Males Only': 'Hanya Pria',
+            'Females Only': 'Hanya Wanita',
+            'Babies Only': 'Hanya Bayi',
+            'All Ages And Genders': 'Semua Usia / Jenis Kelamin'
+        };
+        return translations[pref];
+    }
+    
+    // English versions with / instead of And
+    const englishLabels: Record<ClientPreference, string> = {
+        'Males And Females': 'Males / Females',
+        'Males Only': 'Males Only', 
+        'Females Only': 'Females Only',
+        'Babies Only': 'Babies Only',
+        'All Ages And Genders': 'All Ages / Genders'
+    };
+    
+    return englishLabels[pref];
 }
 
 /**

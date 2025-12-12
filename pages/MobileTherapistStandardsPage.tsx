@@ -71,24 +71,6 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <span className="text-orange-500">Street</span>
             </h1>
             <div className="flex items-center gap-2">
-              {/* Language Toggle */}
-              <button
-                onClick={() => {
-                  const newLang = language === 'id' ? 'gb' : 'id';
-                  if (typeof window !== 'undefined') {
-                    localStorage.setItem('preferredLanguage', newLang);
-                    window.location.reload();
-                  }
-                }}
-                className="flex items-center gap-1 px-2 py-1 bg-orange-50 hover:bg-orange-100 rounded-md text-xs transition-colors border border-orange-200"
-                title={language === 'id' ? t.switchToEnglish : t.switchToIndonesian}
-              >
-                <span className="w-4 h-3 text-xs font-bold">
-                  {language === 'id' ? '🇮🇩' : '🇬🇧'}
-                </span>
-                <span className="text-xs text-orange-600 font-medium">{language === 'id' ? 'ID' : 'GB'}</span>
-              </button>
-              
               <button 
                 onClick={onBack} 
                 className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -123,8 +105,8 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
         </div>
       </div>
 
-      <main className="space-y-6">
-        <PageContainer className="pt-6 pb-20">
+      <main className="space-y-8">
+        <PageContainer className="pt-6 pb-20 space-y-8">
           {/* Introduction Section */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center gap-3 mb-4">

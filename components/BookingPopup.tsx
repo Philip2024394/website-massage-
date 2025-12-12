@@ -160,24 +160,29 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         bookingId = `booking_${Date.now()}`;
       }
 
-      // Complete booking data with all required attributes
+      // Complete booking data with all required attributes matching APPWRITE_THERAPIST_BOOKINGS_COLLECTION_SCHEMA
       const bookingData: any = {
+        // Core required fields
         bookingId, // Required - unique identifier
-        therapistId, // Required
-        therapistName, // Required
-        therapistType: providerType || 'therapist', // Required
-        providerId: therapistId, // Required - maps to therapistId
-        providerName: therapistName, // Required - maps to therapistName  
-        providerType: providerType || 'therapist', // Required - maps to therapistType
-        duration: selectedOption.duration, // Required
+        bookingDate: now.toISOString(), // Required - creation timestamp
+        providerId: therapistId, // Required - therapist/place ID
+        providerType: providerType || 'therapist', // Required - 'therapist' or 'place'
+        providerName: therapistName, // Required - name for notifications
+        service: selectedOption.duration.toString(), // Required - enum('60','90','120')
+        startTime: now.toISOString(), // Required - requested start time
+        duration: selectedOption.duration, // Required - numeric minutes
+        status: 'Pending', // Required - enum status value
+        
+        // Additional fields for compatibility
+        therapistId, // Keep for backward compatibility
+        therapistName, // Keep for backward compatibility  
+        therapistType: providerType || 'therapist', // Keep for backward compatibility
         price: Math.round(selectedOption.price / 1000), // Convert to thousands (IDR to k)
-        status: 'pending', // Required
-        createdAt: now.toISOString(), // Required
-        bookingDate: now.toISOString(), // Required - your schema needs this
-        responseDeadline: responseDeadline.toISOString(), // Required
-        startTime: now.toISOString(), // Your schema uses startTime
+        createdAt: now.toISOString(), // Additional timestamp field
+        responseDeadline: responseDeadline.toISOString(), // SLA deadline
         bookingType: 'immediate', // Optional - booking type
-        service: 'massage', // Required in your schema
+        totalCost: selectedOption.price, // Optional - full cost before conversion
+        paymentMethod: 'Unpaid', // Optional - default payment status
         
         // Customer Information
         customerName: customerName.trim(),

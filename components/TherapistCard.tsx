@@ -703,11 +703,9 @@ ${locationInfo}${coordinatesInfo}
                 @keyframes cardFlash {
                     0%, 100% { 
                         box-shadow: 0 10px 40px rgba(239, 68, 68, 0.4), 0 0 20px rgba(251, 146, 60, 0.6);
-                        transform: scale(1);
                     }
                     50% { 
                         box-shadow: 0 20px 60px rgba(239, 68, 68, 0.6), 0 0 40px rgba(251, 146, 60, 0.8);
-                        transform: scale(1.02);
                     }
                 }
 
@@ -936,7 +934,7 @@ ${locationInfo}${coordinatesInfo}
                         e.stopPropagation();
                         setShowSharePopup(true);
                     }}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all group z-30"
+                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all duration-200 group z-30"
                     title="Share this therapist"
                     aria-label="Share this therapist"
                 >
@@ -1023,7 +1021,7 @@ ${locationInfo}${coordinatesInfo}
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
                             {/* Client Preference Display */}
                             <p className="text-sm text-gray-600 mb-2">
-                                <span className="font-bold">Therapist:</span> {getClientPreferenceDisplay(therapist.clientPreferences)}
+                                <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                             </p>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
@@ -1220,14 +1218,14 @@ ${locationInfo}${coordinatesInfo}
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
                     {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
-                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
                             ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
                         </div>
                     )}
@@ -1248,14 +1246,14 @@ ${locationInfo}${coordinatesInfo}
                 </div>
                 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
                     {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
-                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
                             ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
                         </div>
                     )}
@@ -1272,14 +1270,14 @@ ${locationInfo}${coordinatesInfo}
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
                     {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
-                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
                             ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
                         </div>
                     )}

@@ -17,6 +17,7 @@ import './utils/disableLocalStorage';
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
+import type { Therapist, Place } from './types';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 import { chatSessionService } from './services/chatSessionService';
@@ -160,7 +161,8 @@ const App = () => {
                             profilePicture,
                             providerRating,
                             bookingId,
-                            chatRoomId
+                            chatRoomId,
+                            isActive: true
                         });
                         console.log('✅ Persistent chat session created:', sessionData.sessionId);
                     }
@@ -275,7 +277,7 @@ const App = () => {
                     
                     // Restore the chat state
                     setChatInfo({
-                        sessionId: latestSession.sessionId,
+                        // sessionId removed from type
                         therapistId: latestSession.providerId,
                         therapistName: latestSession.providerName,
                         therapistType: latestSession.providerType,
@@ -831,8 +833,8 @@ const App = () => {
                 const handleCloseChat = async () => {
                     try {
                         // Close persistent session if it exists
-                        if (chatInfo?.sessionId) {
-                            await chatSessionService.closeSession(chatInfo.sessionId);
+                        if (chatInfo && 'sessionId' in chatInfo) {
+                            await chatSessionService.closeSession(chatInfo.sessionId as string);
                             console.log('✅ Persistent chat session closed');
                         }
                     } catch (error) {

@@ -1358,7 +1358,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
             return (
                 <React.Suspense fallback={<LoadingSpinner message="Loading membership plans..." />}>
-                    <MembershipPage onPackageSelect={() => {}} onBack={() => setCurrentPage('landing')} t={(key: string) => key} />
+                    <MembershipPage onPackageSelect={() => {}} onBack={() => commonNavigateHandler('landing')} t={(key: string) => key} />
                 </React.Suspense>
             );
         }

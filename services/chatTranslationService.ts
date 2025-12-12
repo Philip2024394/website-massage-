@@ -61,6 +61,7 @@ const defaultChatTranslations: Omit<ChatTranslation, '$id' | 'createdAt' | 'upda
     { key: 'booking_confirmed_title', en: '✅ Booking Confirmed!', id: '✅ Booking Dikonfirmasi!', category: 'messages' },
     { key: 'booking_summary', en: 'Booking Summary:', id: 'Ringkasan Booking:', category: 'chat' },
     { key: 'therapist', en: 'Therapist:', id: 'Terapis:', category: 'chat' },
+    { key: 'accepts', en: 'Accepts', id: 'Menerima', category: 'chat' },
     { key: 'time', en: 'Time:', id: 'Waktu:', category: 'chat' },
     { key: 'duration', en: 'Duration:', id: 'Durasi:', category: 'chat' },
     { key: 'total_cost', en: 'Total Cost:', id: 'Total Biaya:', category: 'chat' },

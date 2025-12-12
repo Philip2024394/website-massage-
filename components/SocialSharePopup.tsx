@@ -146,9 +146,9 @@ export default function SocialSharePopup({
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
             {/* Popup Container */}
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full transform animate-slideUp">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform animate-slideUp">
                 {/* Header */}
-                <div className="relative p-6 pb-4 border-b border-gray-200">
+                <div className="relative p-4 sm:p-6 pb-4 border-b border-gray-200">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -164,25 +164,27 @@ export default function SocialSharePopup({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                             </svg>
                         </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-gray-900">Share {title}</h3>
-                            <p className="text-sm text-gray-500">Choose your platform</p>
+                        <div className="flex-1 pr-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight break-words">Share {title}</h3>
+                            <p className="text-sm text-gray-500 break-words">Choose your platform</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Share Buttons Grid */}
-                <div className="p-6">
-                    <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="p-4 sm:p-6">
+                    <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
                         {shareButtons.map((button) => (
                             <button
                                 key={button.name}
                                 onClick={button.action}
-                                className={`${button.color} text-white rounded-xl p-4 flex flex-col items-center justify-center gap-2 transition-all transform hover:scale-105 hover:shadow-lg active:scale-95`}
+                                className={`${button.color} text-white rounded-lg sm:rounded-xl p-2 sm:p-4 flex flex-col items-center justify-center gap-1 sm:gap-2 transition-all transform hover:scale-105 hover:shadow-lg active:scale-95 min-h-[60px] sm:min-h-[80px]`}
                                 title={`Share on ${button.name}`}
                             >
-                                {button.icon}
-                                <span className="text-xs font-medium">{button.name}</span>
+                                <div className="text-sm sm:text-base">{button.icon}</div>
+                                <span className="text-[10px] sm:text-xs font-medium leading-tight text-center break-words">
+                                    {button.name.length > 8 ? button.name.substring(0, 6) + '..' : button.name}
+                                </span>
                             </button>
                         ))}
                     </div>

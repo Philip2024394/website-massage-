@@ -145,7 +145,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'members' | 'therapists' | 'places' | 'facial_places' | 'leads' | 'health'>('members');
+    const [activeView, setActiveView] = useState<'dashboard' | 'members' | 'therapists' | 'places' | 'facial_places' | 'leads' | 'health' | 'chat' | 'notifications' | 'reports' | 'settings' | 'security'>('members');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -416,7 +416,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const handleStatusToggle = async (card: CardData) => {
         const newStatus = card.status === 'active' ? 'inactive' : 'active';
         const isTherapist = activeView === 'therapists';
-        const service = isTherapist ? therapistService : placeService;
+        const service = isTherapist ? therapistService : placesService;
         
         try {
             await service.update(card.$id, { status: newStatus });
@@ -1511,7 +1511,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 )}
 
 
-                {activeView === 'therapists' && (
+                {(activeView as string) === 'therapists' && (
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Therapist Cards</h2>
 
@@ -1520,7 +1520,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 )}
 
 
-                {activeView === 'places' && (
+                {(activeView as string) === 'places' && (
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Massage Place Cards</h2>
 

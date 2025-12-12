@@ -3279,7 +3279,7 @@ export const verificationService = {
             if (providerType === 'therapist') {
                 await therapistService.update(providerId.toString(), updateData);
             } else {
-                await placeService.update(providerId.toString(), updateData);
+                await placesService.update(providerId.toString(), updateData);
             }
             
             console.log(`✅ Provider ${providerId} verified`);
@@ -3311,7 +3311,7 @@ export const verificationService = {
             if (providerType === 'therapist') {
                 await therapistService.update(providerId.toString(), updateData);
             } else {
-                await placeService.update(providerId.toString(), updateData);
+                await placesService.update(providerId.toString(), updateData);
             }
             
             console.log(`✅ Verification revoked for provider ${providerId}`);
@@ -4717,14 +4717,17 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
             
             // Send in-app message to customer about decline
             const conversationId = `booking_${leadId}`;
-            await this.messagingService.sendMessage(
+            await messagingService.sendMessage({
                 conversationId,
-                lead.memberId,
-                lead.customerId,
-                `⚠️ Provider ${lead.memberName} is currently unavailable. We're finding you another available provider. You'll receive a new booking notification shortly.`,
-                'system',
-                { bookingId: leadId, leadId, status: 'declined' }
-            );
+                senderId: 'system',
+                senderType: 'user',
+                senderName: 'System',
+                receiverId: lead.customerId,
+                receiverType: 'user',
+                receiverName: lead.customerName || 'Customer',
+                content: `⚠️ Provider ${lead.memberName} is currently unavailable. We're finding you another available provider. You'll receive a new booking notification shortly.`,
+                bookingId: leadId
+            });
             
             // Update monthly billing summary
             await this.updateBillingSummary(lead.memberId, lead.memberType);
@@ -4765,14 +4768,17 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                 
                 // Send in-app message to customer about expiration
                 const conversationId = `booking_${leadId}`;
-                await messagingService.sendMessage(
+                await messagingService.sendMessage({
                     conversationId,
-                    lead.memberId,
-                    lead.customerId,
-                    `⏰ Your booking request has expired (5 minute response window). We're finding you another available provider. You'll receive a new notification shortly.`,
-                    'system',
-                    { bookingId: leadId, leadId, status: 'expired' }
-                );
+                    senderId: 'system',
+                    senderType: 'user',
+                    senderName: 'System',
+                    receiverId: lead.customerId,
+                    receiverType: 'user',
+                    receiverName: lead.customerName || 'Customer',
+                    content: `⏰ Your booking request has expired (5 minute response window). We're finding you another available provider. You'll receive a new notification shortly.`,
+                    bookingId: leadId
+                });
                 
                 console.log('⏰ Lead expired:', leadId);
             }
@@ -5151,11 +5157,9 @@ export const membershipService = {
     requestPremiumUpgrade: async (memberId: string, memberType: string) => {
         try {
             // Check if member is eligible
-            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
-
-            const member = await databases.getDocument(
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                 memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                 APPWRITE_CONFIG.collections.facial_places;            const member = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 collectionId,
                 memberId
@@ -5225,9 +5229,9 @@ export const membershipService = {
             );
 
             // Update member record
-            const collectionId = upgrade.memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                upgrade.memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
+            const collectionId = upgrade.memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                upgrade.memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                APPWRITE_CONFIG.collections.facial_places;
 
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -5288,9 +5292,9 @@ export const membershipService = {
             );
 
             // Update member record
-            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                APPWRITE_CONFIG.collections.facial_places;
 
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -5335,9 +5339,9 @@ export const membershipService = {
             );
 
             // Update member record
-            const collectionId = request.memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                request.memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
+            const collectionId = request.memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                request.memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                APPWRITE_CONFIG.collections.facial_places;
 
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -5379,9 +5383,9 @@ export const membershipService = {
 
             // Get counts from all collections
             const collections = [
-                APPWRITE_CONFIG.therapistsCollectionId,
-                APPWRITE_CONFIG.placesCollectionId,
-                APPWRITE_CONFIG.facialPlacesCollectionId
+                APPWRITE_CONFIG.collections.therapists,
+                APPWRITE_CONFIG.collections.places,
+                APPWRITE_CONFIG.collections.facial_places
             ];
 
             for (const collectionId of collections) {
@@ -5833,22 +5837,17 @@ export const membershipPackageService = {
                         : membership.renewalDate;
                     
                     const daysLeft = Math.ceil(
-                        (new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                        (new Date(expiryDate || new Date()).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
                     );
 
-                    // Send admin notification
+                    // Send admin notification  
                     await sendAdminNotification({
-                        type: 'system',
-                        title: `⚠️ Membership Expiring: ${membership.memberType}`,
-                        message: `${membership.memberType} membership for ${membership.memberId} expires in ${daysLeft} days. Package: ${membership.packageType.toUpperCase()}`,
-                        priority: 'high',
-                        data: {
-                            memberId: membership.memberId,
-                            memberType: membership.memberType,
-                            packageType: membership.packageType,
-                            expiryDate,
-                            daysLeft
-                        }
+                        type: 'therapist',
+                        name: 'Member Expiry Alert',
+                        email: 'admin@indastreet.com',
+                        whatsappNumber: 'N/A',
+                        location: 'System Alert',
+                        registrationDate: new Date().toISOString()
                     });
 
                     sent++;
@@ -6246,12 +6245,10 @@ export const paymentConfirmationService = {
 
             // Send approval notification to user
             await notificationService.create({
-                userId: payment.userId,
-                type: 'payment_received',
-                title: '✅ Payment Confirmed',
                 message: `Your payment of IDR ${payment.amount.toLocaleString()} has been verified. ${
                     payment.paymentType === 'membership' ? 'Your membership is now active!' : 'Your payment has been processed.'
                 }`,
+                type: 'payment_received',
                 priority: 'high',
             });
 
@@ -6296,12 +6293,9 @@ export const paymentConfirmationService = {
 
             // Send decline notification to user
             await notificationService.create({
-                userId: payment.userId,
-                type: 'system',
-                title: '❌ Payment Not Received',
                 message: `Payment was not received. Please check the proof of payment attachment. Reason: ${reason}`,
+                type: 'system',
                 priority: 'high',
-                link: '/payment-status',
             });
 
             console.log('✅ Payment declined and user notified');

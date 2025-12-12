@@ -274,7 +274,7 @@ export const dataService = {
             const newPlace = { ...place, id: Date.now() };
             return newPlace;
         } else {
-            return placesService.update(place.id, place);
+            return placeService.update(place.$id || '', place);
         }
     },
 
