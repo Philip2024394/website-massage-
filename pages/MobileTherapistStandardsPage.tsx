@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Home, ShieldCheck, CheckCircle2, Sparkles, User, Droplet, Shirt, Package, ThumbsUp, Star } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
-import { useLanguageContext } from '../components/context/LanguageContext';
+import { useLanguageContext } from '../context/LanguageContext';
 import { chatTranslationService } from '../services/chatTranslationService';
 
 interface MobileTherapistStandardsPageProps {
