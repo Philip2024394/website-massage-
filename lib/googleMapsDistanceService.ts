@@ -223,13 +223,10 @@ export const enhancedDistanceService = {
   },
 
   /**
-   * Format distance for display
+   * Format distance for display (always in kilometers)
    */
   formatDistance(distance: number): string {
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
-    }
-    return `${distance.toFixed(1)}km`;
+    return `${distance.toFixed(1)} km`;
   },
 
   /**

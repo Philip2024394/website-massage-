@@ -1086,7 +1086,7 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Therapist Bio - Natural flow with proper margin */}
             <div className="therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
-                <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
+                <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
             </div>
@@ -1308,9 +1308,9 @@ ${locationInfo}${coordinatesInfo}
                             return;
                         }
                         (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                        setTimeout(() => {
+                        requestAnimationFrame(() => {
                             (e.target as HTMLElement).removeAttribute('data-clicking');
-                        }, 100);
+                        });
                         
                         console.log('🟢 Book Now button clicked - opening chat window');
                         const pricing = getPricing();
@@ -1369,9 +1369,9 @@ ${locationInfo}${coordinatesInfo}
                             return;
                         }
                         (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                        setTimeout(() => {
+                        requestAnimationFrame(() => {
                             (e.target as HTMLElement).removeAttribute('data-clicking');
-                        }, 100);
+                        });
                         
                         console.log('📅 Schedule button clicked - opening popup');
                         
