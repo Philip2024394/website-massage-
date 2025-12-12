@@ -4,10 +4,231 @@ interface HealthEvent {
     timestamp: number;
 }
 
-type HealthEventListener = (event: HealthEvent) => void;\n\n/**
+type HealthEventListener = (event: HealthEvent) => void;
+
+/**
  * Real-time health monitoring service
  * Simulates WebSocket-like real-time updates for health status
  */
 class RealTimeHealthService {
     private static instance: RealTimeHealthService;
-    private listeners: HealthEventListener[] = [];\n    private isConnected = false;\n    private intervalId: NodeJS.Timeout | null = null;\n    private lastHealthData: any = null;\n\n    static getInstance(): RealTimeHealthService {\n        if (!RealTimeHealthService.instance) {\n            RealTimeHealthService.instance = new RealTimeHealthService();\n        }\n        return RealTimeHealthService.instance;\n    }\n\n    // Connect to real-time updates\n    connect(): void {\n        if (this.isConnected) {\n            console.log('🔄 Real-time health service already connected');\n            return;\n        }\n\n        console.log('🚀 Starting real-time health monitoring...');\n        this.isConnected = true;\n\n        // Start polling for health updates every 5 seconds\n        this.intervalId = setInterval(async () => {\n            await this.checkForUpdates();\n        }, 5000);\n\n        // Emit initial connection event\n        this.emitEvent({\n            type: 'health_update',\n            data: { connected: true },\n            timestamp: Date.now()\n        });\n    }\n\n    // Disconnect from real-time updates\n    disconnect(): void {\n        if (!this.isConnected) {\n            return;\n        }\n\n        console.log('🛑 Stopping real-time health monitoring');\n        this.isConnected = false;\n\n        if (this.intervalId) {\n            clearInterval(this.intervalId);\n            this.intervalId = null;\n        }\n\n        // Emit disconnection event\n        this.emitEvent({\n            type: 'health_update',\n            data: { connected: false },\n            timestamp: Date.now()\n        });\n    }\n\n    // Check for health updates and emit events if changed\n    private async checkForUpdates(): Promise<void> {\n        try {\n            const { adminHealthService } = await import('../services/adminHealthService');\n            const currentHealth = await adminHealthService.getHealthMetrics();\n\n            // Check if health data has changed\n            if (this.hasHealthChanged(currentHealth)) {\n                console.log('📊 Health metrics changed, broadcasting update');\n                \n                this.emitEvent({\n                    type: 'health_update',\n                    data: currentHealth,\n                    timestamp: Date.now()\n                });\n\n                this.lastHealthData = currentHealth;\n            }\n\n            // Check for specific events\n            this.checkForSpecificEvents(currentHealth);\n\n        } catch (error) {\n            console.warn('⚠️ Failed to check health updates:', error);\n            \n            // Emit error event\n            this.emitEvent({\n                type: 'error_logged',\n                data: {\n                    type: 'HEALTH_CHECK_FAILED',\n                    message: `Health check failed: ${error}`,\n                    critical: false\n                },\n                timestamp: Date.now()\n            });\n        }\n    }\n\n    // Check if health data has meaningfully changed\n    private hasHealthChanged(newHealth: any): boolean {\n        if (!this.lastHealthData) {\n            return true;\n        }\n\n        const old = this.lastHealthData;\n        const current = newHealth;\n\n        // Check key indicators for changes\n        return (\n            old.appwriteHealth.isHealthy !== current.appwriteHealth.isHealthy ||\n            old.appwriteHealth.circuitOpen !== current.appwriteHealth.circuitOpen ||\n            old.chatSessions.totalActive !== current.chatSessions.totalActive ||\n            old.errorStats.criticalErrors !== current.errorStats.criticalErrors ||\n            Math.abs(old.performance.successRate - current.performance.successRate) > 5\n        );\n    }\n\n    // Check for specific events to broadcast\n    private checkForSpecificEvents(healthData: any): void {\n        // Circuit breaker state changes\n        if (this.lastHealthData && \n            this.lastHealthData.appwriteHealth.circuitOpen !== healthData.appwriteHealth.circuitOpen) {\n            \n            this.emitEvent({\n                type: 'circuit_breaker_change',\n                data: {\n                    isOpen: healthData.appwriteHealth.circuitOpen,\n                    failures: healthData.appwriteHealth.consecutiveFailures\n                },\n                timestamp: Date.now()\n            });\n        }\n\n        // Session activity changes\n        if (this.lastHealthData && \n            this.lastHealthData.chatSessions.totalActive !== healthData.chatSessions.totalActive) {\n            \n            this.emitEvent({\n                type: 'session_activity',\n                data: {\n                    previousCount: this.lastHealthData.chatSessions.totalActive,\n                    currentCount: healthData.chatSessions.totalActive,\n                    change: healthData.chatSessions.totalActive - this.lastHealthData.chatSessions.totalActive\n                },\n                timestamp: Date.now()\n            });\n        }\n    }\n\n    // Subscribe to health events\n    subscribe(listener: HealthEventListener): () => void {\n        this.listeners.push(listener);\n        console.log(`📡 New health event subscriber (${this.listeners.length} total)`);\n\n        // Return unsubscribe function\n        return () => {\n            const index = this.listeners.indexOf(listener);\n            if (index > -1) {\n                this.listeners.splice(index, 1);\n                console.log(`📡 Health event subscriber removed (${this.listeners.length} remaining)`);\n            }\n        };\n    }\n\n    // Emit event to all listeners\n    private emitEvent(event: HealthEvent): void {\n        this.listeners.forEach(listener => {\n            try {\n                listener(event);\n            } catch (error) {\n                console.warn('⚠️ Error in health event listener:', error);\n            }\n        });\n    }\n\n    // Manually emit events (for testing or admin actions)\n    emitHealthUpdate(data: any): void {\n        this.emitEvent({\n            type: 'health_update',\n            data,\n            timestamp: Date.now()\n        });\n    }\n\n    emitError(type: string, message: string, critical: boolean = false): void {\n        this.emitEvent({\n            type: 'error_logged',\n            data: { type, message, critical },\n            timestamp: Date.now()\n        });\n    }\n\n    // Get connection status\n    getConnectionStatus(): { connected: boolean; listeners: number } {\n        return {\n            connected: this.isConnected,\n            listeners: this.listeners.length\n        };\n    }\n\n    // Force health check (manual refresh)\n    async forceHealthCheck(): Promise<void> {\n        console.log('🔄 Forcing health check...');\n        await this.checkForUpdates();\n    }\n}\n\nexport const realTimeHealthService = RealTimeHealthService.getInstance();\n\n// Auto-start service when imported\nif (typeof window !== 'undefined') {\n    // Start service after a short delay to allow other services to initialize\n    setTimeout(() => {\n        realTimeHealthService.connect();\n    }, 1000);\n\n    // Clean disconnect on page unload\n    window.addEventListener('beforeunload', () => {\n        realTimeHealthService.disconnect();\n    });\n}\n\nexport type { HealthEvent, HealthEventListener };
+    private listeners: HealthEventListener[] = [];
+    private isConnected = false;
+    private intervalId: NodeJS.Timeout | null = null;
+    private lastHealthData: any = null;
+
+    static getInstance(): RealTimeHealthService {
+        if (!RealTimeHealthService.instance) {
+            RealTimeHealthService.instance = new RealTimeHealthService();
+        }
+        return RealTimeHealthService.instance;
+    }
+
+    // Connect to real-time updates
+    connect(): void {
+        if (this.isConnected) {
+            console.log('🔄 Real-time health service already connected');
+            return;
+        }
+
+        console.log('🚀 Starting real-time health monitoring...');
+        this.isConnected = true;
+
+        // Start polling for health updates every 5 seconds
+        this.intervalId = setInterval(async () => {
+            await this.checkForUpdates();
+        }, 5000);
+
+        // Emit initial connection event
+        this.emitEvent({
+            type: 'health_update',
+            data: { connected: true },
+            timestamp: Date.now()
+        });
+    }
+
+    // Disconnect from real-time updates
+    disconnect(): void {
+        if (!this.isConnected) {
+            return;
+        }
+
+        console.log('🛑 Stopping real-time health monitoring');
+        this.isConnected = false;
+
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+
+        // Emit disconnection event
+        this.emitEvent({
+            type: 'health_update',
+            data: { connected: false },
+            timestamp: Date.now()
+        });
+    }
+
+    // Check for health updates and emit events if changed
+    private async checkForUpdates(): Promise<void> {
+        try {
+            const { adminHealthService } = await import('../services/adminHealthService');
+            const currentHealth = await adminHealthService.getHealthMetrics();
+
+            // Check if health data has changed
+            if (this.hasHealthChanged(currentHealth)) {
+                console.log('📊 Health metrics changed, broadcasting update');
+                
+                this.emitEvent({
+                    type: 'health_update',
+                    data: currentHealth,
+                    timestamp: Date.now()
+                });
+
+                this.lastHealthData = currentHealth;
+            }
+
+            // Check for specific events
+            this.checkForSpecificEvents(currentHealth);
+
+        } catch (error) {
+            console.warn('⚠️ Failed to check health updates:', error);
+            
+            // Emit error event
+            this.emitEvent({
+                type: 'error_logged',
+                data: {
+                    type: 'HEALTH_CHECK_FAILED',
+                    message: `Health check failed: ${error}`,
+                    critical: false
+                },
+                timestamp: Date.now()
+            });
+        }
+    }
+
+    // Check if health data has meaningfully changed
+    private hasHealthChanged(newHealth: any): boolean {
+        if (!this.lastHealthData) {
+            return true;
+        }
+
+        const old = this.lastHealthData;
+        const current = newHealth;
+
+        // Check key indicators for changes
+        return (
+            old.appwriteHealth.isHealthy !== current.appwriteHealth.isHealthy ||
+            old.appwriteHealth.circuitOpen !== current.appwriteHealth.circuitOpen ||
+            old.chatSessions.totalActive !== current.chatSessions.totalActive ||
+            old.errorStats.criticalErrors !== current.errorStats.criticalErrors ||
+            Math.abs(old.performance.successRate - current.performance.successRate) > 5
+        );
+    }
+
+    // Check for specific events to broadcast
+    private checkForSpecificEvents(healthData: any): void {
+        // Circuit breaker state changes
+        if (this.lastHealthData && 
+            this.lastHealthData.appwriteHealth.circuitOpen !== healthData.appwriteHealth.circuitOpen) {
+            
+            this.emitEvent({
+                type: 'circuit_breaker_change',
+                data: {
+                    isOpen: healthData.appwriteHealth.circuitOpen,
+                    failures: healthData.appwriteHealth.consecutiveFailures
+                },
+                timestamp: Date.now()
+            });
+        }
+
+        // Session activity changes
+        if (this.lastHealthData && 
+            this.lastHealthData.chatSessions.totalActive !== healthData.chatSessions.totalActive) {
+            
+            this.emitEvent({
+                type: 'session_activity',
+                data: {
+                    previousCount: this.lastHealthData.chatSessions.totalActive,
+                    currentCount: healthData.chatSessions.totalActive,
+                    change: healthData.chatSessions.totalActive - this.lastHealthData.chatSessions.totalActive
+                },
+                timestamp: Date.now()
+            });
+        }
+    }
+
+    // Subscribe to health events
+    subscribe(listener: HealthEventListener): () => void {
+        this.listeners.push(listener);
+        console.log(`📡 New health event subscriber (${this.listeners.length} total)`);
+
+        // Return unsubscribe function
+        return () => {
+            const index = this.listeners.indexOf(listener);
+            if (index > -1) {
+                this.listeners.splice(index, 1);
+                console.log(`📡 Health event subscriber removed (${this.listeners.length} remaining)`);
+            }
+        };
+    }
+
+    // Emit event to all listeners
+    private emitEvent(event: HealthEvent): void {
+        this.listeners.forEach(listener => {
+            try {
+                listener(event);
+            } catch (error) {
+                console.warn('⚠️ Error in health event listener:', error);
+            }
+        });
+    }
+
+    // Manually emit events (for testing or admin actions)
+    emitHealthUpdate(data: any): void {
+        this.emitEvent({
+            type: 'health_update',
+            data,
+            timestamp: Date.now()
+        });
+    }
+
+    emitError(type: string, message: string, critical: boolean = false): void {
+        this.emitEvent({
+            type: 'error_logged',
+            data: { type, message, critical },
+            timestamp: Date.now()
+        });
+    }
+
+    // Get connection status
+    getConnectionStatus(): { connected: boolean; listeners: number } {
+        return {
+            connected: this.isConnected,
+            listeners: this.listeners.length
+        };
+    }
+
+    // Force health check (manual refresh)
+    async forceHealthCheck(): Promise<void> {
+        console.log('🔄 Forcing health check...');
+        await this.checkForUpdates();
+    }
+}
+
+export const realTimeHealthService = RealTimeHealthService.getInstance();
+
+// Auto-start service when imported
+if (typeof window !== 'undefined') {
+    // Start service after a short delay to allow other services to initialize
+    setTimeout(() => {
+        realTimeHealthService.connect();
+    }, 1000);
+
+    // Clean disconnect on page unload
+    window.addEventListener('beforeunload', () => {
+        realTimeHealthService.disconnect();
+    });
+}
+
+export type { HealthEvent, HealthEventListener };

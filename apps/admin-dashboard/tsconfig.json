@@ -39,7 +39,11 @@
   },
   "include": [
     "src",
-    "../../lib",
-    "../../components"
+    "../../lib/**/*",
+    "../../components/**/*",
+    "../../services/**/*",
+    "../../utils/**/*",
+    "../../constants/**/*",
+    "../../types.ts"
   ]
 }

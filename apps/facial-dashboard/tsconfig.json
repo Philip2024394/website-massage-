@@ -34,5 +34,13 @@
       "@services/*": ["../../lib/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../lib/**/*",
+    "../../components/**/*",
+    "../../services/**/*",
+    "../../utils/**/*",
+    "../../constants/**/*",
+    "../../types.ts"
+  ]
 }
