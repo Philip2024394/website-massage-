@@ -48,6 +48,8 @@ export const APPWRITE_CONFIG = {
         userRegistrations: 'user_registrations', // NEW: Device tracking for welcome bonus
         chatRooms: 'chat_rooms', // NEW: Booking chat rooms
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
+        chatSessions: 'chat_sessions', // NEW: Persistent chat session management
+        chatTranslations: 'chat_translations', // NEW: Chat UI translations (EN/ID)
         // Lead Generation System
         leads: '', // Disabled - collection doesn't exist (causes 404 errors)
         leadGenerations: 'lead_generations', // NEW: Pay-per-lead tracking

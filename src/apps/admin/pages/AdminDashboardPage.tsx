@@ -18,6 +18,7 @@ import { analyticsService } from '../../../../services/analyticsService';
 import PageNumberBadge from '../../../../components/PageNumberBadge';
 import MemberManagement from '../components/MemberManagement';
 import LeadManagement from '../components/LeadManagement';
+import HealthMonitoringDashboard from '../components/HealthMonitoringDashboard';
 import { 
     fetchAllMembersWithData, 
     updateMemberVerified,
@@ -144,7 +145,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'members' | 'therapists' | 'places' | 'facial_places' | 'leads'>('members');
+    const [activeView, setActiveView] = useState<'dashboard' | 'members' | 'therapists' | 'places' | 'facial_places' | 'leads' | 'health'>('members');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -1103,9 +1104,28 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
+                            {/* System Health */}
+                            <button
+                                onClick={() => {
+                                    setActiveView('health');
+                                    setDrawerOpen(false);
+                                }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                                    activeView === 'health'
+                                        ? 'bg-orange-500 text-white'
+                                        : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                            >
+                                <Activity className="w-5 h-5" />
+                                <div className="flex-1 text-left">
+                                    <div className="font-medium">System Health</div>
+                                    <div className="text-xs opacity-80">Monitor chat & connections</div>
+                                </div>
+                            </button>
+
                             <div className="my-4 border-t border-gray-200"></div>
 
-                            {/* Analytics */}
+                            {/* Analytics */>
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
@@ -1582,6 +1602,13 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 {activeView === 'leads' && (
                     <div>
                         <LeadManagement />
+                    </div>
+                )}
+
+                {/* System Health Monitoring View */}
+                {activeView === 'health' && (
+                    <div>
+                        <HealthMonitoringDashboard />
                     </div>
                 )}
             </div>

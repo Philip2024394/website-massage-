@@ -171,14 +171,14 @@ export default function MessageCenter({
 
         try {
             const message = await messagingService.sendMessage({
+                conversationId: conversation.id,
                 senderId: currentUserId,
-                // senderRole: currentUserRole,
+                senderType: 'user',
                 senderName: currentUserName,
                 receiverId: conversation.otherUserId,
-                // receiverRole: conversation.otherUserRole as any,
+                receiverType: 'user',
                 receiverName: conversation.otherUserName,
-                message: newMessage.trim(),
-                messageType: 'text'
+                content: newMessage.trim()
             });
 
             // Add message to list

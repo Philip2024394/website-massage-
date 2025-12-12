@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Place } from '../types';
 import SocialSharePopup from './SocialSharePopup';
+import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 
 interface PlaceCardProps {
     place: Place;
@@ -249,15 +250,33 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                                         try { pricing = JSON.parse(place.pricing); } catch { /* ignore parsing errors */ }
                                         return (
                                             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-3">
-                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                                                    {/* Star Rating - Top Right */}
+                                                    {getDisplayRating(place.rating, place.reviewCount) > 0 && (
+                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                            ★{formatRating(getDisplayRating(place.rating, place.reviewCount))}
+                                                        </div>
+                                                    )}
                                                     <p className="text-gray-600">60 min</p>
                                                     <p className="font-bold text-gray-800">Rp {String(pricing["60"]).padStart(3, '0')}k</p>
                                                 </div>
-                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                                                    {/* Star Rating - Top Right */}
+                                                    {getDisplayRating(place.rating, place.reviewCount) > 0 && (
+                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                            ★{formatRating(getDisplayRating(place.rating, place.reviewCount))}
+                                                        </div>
+                                                    )}
                                                     <p className="text-gray-600">90 min</p>
                                                     <p className="font-bold text-gray-800">Rp {String(pricing["90"]).padStart(3, '0')}k</p>
                                                 </div>
-                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md">
+                                                <div className="bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative">
+                                                    {/* Star Rating - Top Right */}
+                                                    {getDisplayRating(place.rating, place.reviewCount) > 0 && (
+                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                            ★{formatRating(getDisplayRating(place.rating, place.reviewCount))}
+                                                        </div>
+                                                    )}
                                                     <p className="text-gray-600">120 min</p>
                                                     <p className="font-bold text-gray-800">Rp {String(pricing["120"]).padStart(3, '0')}k</p>
                                                 </div>

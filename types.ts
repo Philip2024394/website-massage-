@@ -299,6 +299,9 @@ export interface Therapist {
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
     hotelVillaPricing?: PricingString; // Special pricing for hotel/villa live menu (JSON string for Appwrite)
     
+    // Client Preferences - who the therapist accepts for massage services
+    clientPreferences?: 'Males Only' | 'Females Only' | 'Males And Females' | 'Babies Only' | 'All Ages And Genders'; // Default: 'Males And Females'
+    
     // Busy timer functionality
     busyUntil?: string; // ISO timestamp when therapist becomes available again
     busyDuration?: number; // Duration in minutes for the busy period

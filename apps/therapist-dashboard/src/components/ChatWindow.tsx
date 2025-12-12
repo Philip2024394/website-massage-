@@ -97,7 +97,7 @@ export default function ChatWindow({
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
+    const [unreadCount] = useState(0);
     const [userLanguage, setUserLanguage] = useState('id'); // Customer's language
     const [showLanguageSelector, setShowLanguageSelector] = useState(false);
     const [translationNoticeShown, setTranslationNoticeShown] = useState(false);

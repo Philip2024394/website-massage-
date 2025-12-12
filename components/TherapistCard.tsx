@@ -13,6 +13,9 @@ import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { useUIConfig } from '../hooks/useUIConfig';
 import { MessageCircle } from 'lucide-react';
+import { chatTranslationService } from '../services/chatTranslationService';
+import { useLanguageContext } from '../context/LanguageContext';
+import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -56,14 +59,9 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     // Use availability field (has proper default) or status as fallback
     const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Offline;
     
-    // Debug Budi's status specifically
-    if (therapist.name && therapist.name.toLowerCase().includes('budi')) {
-        console.log('🔍 BUDI STATUS TRACE - getDisplayStatus():');
-        console.log('  Raw therapist object:', therapist);
-        console.log('  therapist.availability:', (therapist as any).availability);
-        console.log('  therapist.status:', therapist.status);
-        console.log('  therapist.busyUntil:', therapist.busyUntil);
-        console.log('  Returning currentStatus:', currentStatus);
+    // Debug status in development mode (reduced verbosity)
+    if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
+        console.log(`🔍 ${therapist.name} getDisplayStatus: ${currentStatus}`);
     }
     
     return currentStatus;
@@ -216,6 +214,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return longSpacing;
     };
 
+    // Get language context for chat translations
+    const { language } = useLanguageContext();
+    const chatLang = language === 'gb' ? 'en' : language;
+    
+    // Get chat translations
+    const bookNowText = chatTranslationService.getTranslation('book_now', chatLang);
+    const scheduleText = chatTranslationService.getTranslation('schedule', chatLang);
+    
     // Detect language from translations object
     const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
 
@@ -319,15 +325,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return () => clearInterval(interval);
     }, [therapist]);
     
-    // Debug Budi's raw data
-    if (therapist.name && therapist.name.toLowerCase().includes('budi')) {
-        console.log('🔍 BUDI RAW DATA from Appwrite:');
-        console.log('  Full therapist object:', JSON.stringify(therapist, null, 2));
-        console.log('  therapist.availability:', (therapist as any).availability);
-        console.log('  therapist.status:', therapist.status);
-        console.log('  Available field:', (therapist as any).available);
-        console.log('  Busy field:', (therapist as any).busy);
-        console.log('  busyUntil field:', therapist.busyUntil);
+    // Debug Budi's raw data (only in development and reduced verbosity)
+    if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
+        console.log(`🔍 ${therapist.name} status: ${(therapist as any).availability || therapist.status}, busy until: ${therapist.busyUntil}`);
     }
     
     // Map any status value to valid AvailabilityStatus - check availability field first
@@ -1021,6 +1021,10 @@ ${locationInfo}${coordinatesInfo}
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-14 sm:pt-16 pb-4 overflow-visible">
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
+                            {/* Client Preference Display */}
+                            <p className="text-sm text-gray-600 mb-2">
+                                <span className="font-bold">Therapist:</span> {getClientPreferenceDisplay(therapist.clientPreferences)}
+                            </p>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
                     <span className="relative mr-1.5">
@@ -1117,18 +1121,16 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Languages Spoken - Compact */}
             {(() => {
-                console.log('🌐 TherapistCard Debug - Raw therapist.languages:', therapist.languages);
-                console.log('🌐 TherapistCard Debug - Languages type:', typeof therapist.languages);
-                
                 const languages = therapist.languages 
                     ? (typeof therapist.languages === 'string' 
                         ? parseLanguages(therapist.languages) 
                         : therapist.languages)
                     : [];
                 
-                console.log('🌐 TherapistCard Debug - Parsed languages:', languages);
-                console.log('🌐 TherapistCard Debug - Languages length:', languages.length);
-                console.log('🌐 TherapistCard Debug - Is Array?:', Array.isArray(languages));
+                // Debug in development mode (reduced verbosity)
+                if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
+                    console.log(`🌐 ${therapist.name} languages:`, languages);
+                }
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
                     <div className={`${getDynamicSpacing('mt-4', 'mt-3', 'mt-2')}`}>
@@ -1223,6 +1225,12 @@ ${locationInfo}${coordinatesInfo}
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
+                    {/* Star Rating - Top Right */}
+                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                        </div>
+                    )}
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
                     {isDiscountActive(therapist) ? (
                         <>
@@ -1245,6 +1253,12 @@ ${locationInfo}${coordinatesInfo}
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
+                    {/* Star Rating - Top Right */}
+                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                        </div>
+                    )}
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
                     {isDiscountActive(therapist) ? (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
@@ -1263,6 +1277,12 @@ ${locationInfo}${coordinatesInfo}
                         ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
+                    {/* Star Rating - Top Right */}
+                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                        </div>
+                    )}
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
                     {isDiscountActive(therapist) ? (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
@@ -1278,7 +1298,9 @@ ${locationInfo}${coordinatesInfo}
 
             <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
                 <button
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         console.log('🟢 Book Now button clicked - opening chat window');
                         const pricing = getPricing();
                         console.log('👤 Therapist object:', { 
@@ -1324,10 +1346,12 @@ ${locationInfo}${coordinatesInfo}
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
                     <MessageCircle className="w-4 h-4"/>
-                    <span className="text-sm">Book Now</span>
+                    <span className="text-sm">{bookNowText}</span>
                 </button>
                  <button 
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         console.log('📅 Schedule button clicked - opening popup');
                         
                         // Open ChatWindow directly in scheduled mode
@@ -1351,7 +1375,7 @@ ${locationInfo}${coordinatesInfo}
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
                     <CalendarIcon className="w-4 h-4"/>
-                    <span className="text-sm">{_t.home?.therapistCard?.schedule || 'Schedule'}</span>
+                    <span className="text-sm">{scheduleText}</span>
                 </button>
             </div>
 
@@ -1662,6 +1686,8 @@ ${locationInfo}${coordinatesInfo}
                 price90: pricing['90'].toString(),
                 price120: pricing['120'].toString()
             }}
+            rating={therapist.rating}
+            reviewCount={therapist.reviewCount}
             language={currentLanguage}
         />
         

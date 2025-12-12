@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Home, Building2, X } from 'lucide-react';
+import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 
 interface BookingFormPopupProps {
     isOpen: boolean;
@@ -12,6 +13,8 @@ interface BookingFormPopupProps {
         price90?: string;
         price120?: string;
     };
+    rating?: number;
+    reviewCount?: number;
     language: 'en' | 'id';
 }
 
@@ -32,6 +35,8 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
     therapistName,
     therapistId,
     pricing,
+    rating,
+    reviewCount,
     language
 }) => {
     const [customerName, setCustomerName] = useState('');
@@ -316,12 +321,18 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                                         key={mins}
                                         type="button"
                                         onClick={() => setDuration(mins as 60 | 90 | 120)}
-                                        className={`p-4 rounded-lg border-2 transition-all text-center ${
+                                        className={`p-4 rounded-lg border-2 transition-all text-center relative ${
                                             duration === mins
                                                 ? 'border-green-500 bg-green-50'
                                                 : 'border-gray-300 hover:border-gray-400'
                                         }`}
                                     >
+                                        {/* Star Rating - Top Right */}
+                                        {rating && reviewCount && getDisplayRating(rating, reviewCount) > 0 && (
+                                            <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                ★{formatRating(getDisplayRating(rating, reviewCount))}
+                                            </div>
+                                        )}
                                         <div className={`text-2xl font-bold ${
                                             duration === mins ? 'text-green-700' : 'text-gray-800'
                                         }`}>

@@ -5,6 +5,8 @@
 
 import { databases, ID, Query } from './appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
+import { MessageSenderType } from '../types';
+import * as chatService from './chatService';
 
 export interface Booking {
     $id?: string;
@@ -75,14 +77,14 @@ export const bookingService = {
             console.log('✅ Booking ready for chat integration');
 
             // Notify therapist
-            await this.notifyTherapist(booking as Booking);
+            await this.notifyTherapist(booking as unknown as Booking);
 
             // Schedule alternative search after 5 minutes
             setTimeout(() => {
                 this.checkAndSearchAlternative(booking.$id);
             }, 5 * 60 * 1000);
 
-            return booking as Booking;
+            return booking as unknown as Booking;
         } catch (error) {
             console.error('❌ Error creating booking:', error);
             throw error;
@@ -114,9 +116,9 @@ export const bookingService = {
             console.log(`✅ Booking ${bookingId} status updated to:`, status);
 
             // Send status update to chat
-            await this.sendStatusUpdateMessage(booking as Booking);
+            await this.sendStatusUpdateMessage(booking as unknown as Booking);
 
-            return booking as Booking;
+            return booking as unknown as Booking;
         } catch (error) {
             console.error('❌ Error updating booking status:', error);
             throw error;
@@ -231,17 +233,13 @@ export const bookingService = {
             // Send fallback message to customer
             const conversationId = `customer_${booking.customerId}_therapist_${booking.therapistId}`;
             await chatService.sendMessage({
-                conversationId,
+                roomId: conversationId,
                 senderId: 'system',
+                senderType: 'system' as MessageSenderType,
                 senderName: 'System',
-                senderRole: 'admin',
-                receiverId: booking.customerId,
-                receiverName: booking.customerName,
-                receiverRole: 'customer',
-                message: `${booking.therapistName} is currently booked.\n\n🔍 We are searching for the next best match therapist for you.\n\n✨ You will be notified once we find an available therapist.`,
-                messageType: 'fallback',
-                bookingId,
-                metadata: { showActions: true }
+                text: `${booking.therapistName} is currently booked.\n\n🔍 We are searching for the next best match therapist for you.\n\n✨ You will be notified once we find an available therapist.`,
+                senderLanguage: 'en',
+                recipientLanguage: 'en'
             });
 
             // Notify admin
@@ -257,16 +255,13 @@ export const bookingService = {
                 ).join('\n');
 
                 await chatService.sendMessage({
-                    conversationId,
+                    roomId: conversationId,
                     senderId: 'system',
+                    senderType: MessageSenderType.System,
                     senderName: 'System',
-                    senderRole: 'admin',
-                    receiverId: booking.customerId,
-                    receiverName: booking.customerName,
-                    receiverRole: 'customer',
-                    message: `✅ We found alternative therapists:\n\n${altList}\n\nWe are contacting them now...`,
-                    messageType: 'system',
-                    bookingId
+                    text: `✅ We found alternative therapists:\n\n${altList}\n\nWe are contacting them now...`,
+                    senderLanguage: 'en',
+                    recipientLanguage: 'en'
                 });
 
                 // Notify alternatives (implement later)
@@ -331,17 +326,13 @@ export const bookingService = {
             };
 
             await chatService.sendMessage({
-                conversationId,
+                roomId: conversationId,
                 senderId: 'system',
+                senderType: MessageSenderType.System,
                 senderName: 'System',
-                senderRole: 'admin',
-                receiverId: booking.customerId,
-                receiverName: booking.customerName,
-                receiverRole: 'customer',
-                message: statusMessages[booking.status] || 'Booking status updated',
-                messageType: 'status-update',
-                bookingId: booking.$id,
-                metadata: { statusType: booking.status }
+                text: statusMessages[booking.status] || 'Booking status updated',
+                senderLanguage: 'en',
+                recipientLanguage: 'en'
             });
         } catch (error) {
             console.error('❌ Error sending status update:', error);
@@ -509,17 +500,12 @@ export const bookingService = {
      */
     subscribeToBooking(bookingId: string, callback: (booking: Booking) => void): () => void {
         try {
-            const unsubscribe = databases.subscribe(
-                `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings || 'bookings'}.documents.${bookingId}`,
-                (response: any) => {
-                    if (response.events.includes('databases.*.collections.*.documents.*.update')) {
-                        callback(response.payload as Booking);
-                    }
-                }
-            );
-
-            console.log('✅ Subscribed to booking updates:', bookingId);
-            return unsubscribe;
+            // Note: Real-time subscriptions need to be implemented with Appwrite Realtime
+            // const unsubscribe = databases.subscribe(...)
+            console.log('✅ Real-time subscription placeholder for booking:', bookingId);
+            
+            // Return a no-op unsubscribe function
+            return () => console.log('Unsubscribed from booking:', bookingId);
         } catch (error) {
             console.error('❌ Error subscribing to booking:', error);
             return () => {};

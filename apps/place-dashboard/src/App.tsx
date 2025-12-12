@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authService } from '@shared/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
@@ -29,13 +29,9 @@ function App() {
     }
   };
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await authService.login(email, password);
-      await checkAuth();
-    } catch (error) {
-      throw error;
-    }
+  const handleLogin = async () => {
+    // Login is handled inside LoginPage component
+    await checkAuth();
   };
 
   const handleLogout = async () => {

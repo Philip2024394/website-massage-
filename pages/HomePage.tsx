@@ -1145,20 +1145,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                     languagesParsed = therapist.languages ? therapist.languages.split(',').map((lang: string) => lang.trim()) : [];
                                 }
                                 
-                                console.log('🏠 HomePage passing to TherapistCard:', {
-                                    id: therapist.$id || therapist.id,
-                                    name: therapist.name,
-                                    languages: therapist.languages,
-                                    languagesType: typeof therapist.languages,
-                                    languagesLength: therapist.languages ? therapist.languages.length : 0,
-                                    languagesEmpty: therapist.languages === '',
-                                    languagesNull: therapist.languages === null,
-                                    languagesUndefined: therapist.languages === undefined,
-                                    languagesParsed: languagesParsed,
-                                    isLive: therapist.isLive,
-                                    massageTypes: therapist.massageTypes,
-                                    allFields: Object.keys(therapist)
-                                });
+                                // Debug in development mode (reduced verbosity)
+                                if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
+                                    console.log(`🏠 HomePage → ${therapist.name}: languages=${therapist.languages}, isLive=${therapist.isLive}`);
+                                }
                                 
                                 // Real discount data - check if therapist has active discount
                                 const realDiscount = (therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime) ? {
@@ -1167,9 +1157,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                 } : null;
                                 
                                 return (
-                                <>
+                                <div key={therapist.$id || `therapist-wrapper-${therapist.id}-${index}`}>
                                 <TherapistCard
-                                    key={therapist.$id || `therapist-${therapist.id}-${index}`}
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                     onRate={() => handleOpenRatingModal(therapist)}
@@ -1196,7 +1185,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                         <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
                                     </button>
                                 </div>
-                                </>
+                                </div>
                                 );
                             });
                         })()}

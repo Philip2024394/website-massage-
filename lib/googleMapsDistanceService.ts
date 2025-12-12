@@ -69,13 +69,14 @@ export class GoogleMapsDistanceService {
   ): Promise<DistanceResult> {
     const isApiLoaded = await this.initializeGoogleMaps();
     
-    if (!isApiLoaded || !(window as any).google?.maps) {
+    if (!isApiLoaded || !(window as any).google?.maps || !(window as any).google?.maps?.DistanceMatrixService) {
       // Fallback to Haversine formula
       return this.calculateHaversineDistance(origin, destination);
     }
 
     return new Promise((resolve) => {
-      const service = new (window as any).google.maps.DistanceMatrixService();
+      try {
+        const service = new (window as any).google.maps.DistanceMatrixService();
       
       service.getDistanceMatrix({
         origins: [new (window as any).google.maps.LatLng(origin.lat, origin.lng)],
@@ -98,6 +99,10 @@ export class GoogleMapsDistanceService {
           resolve(this.calculateHaversineDistance(origin, destination));
         }
       });
+      } catch (error) {
+        console.warn('Distance calculation error, using fallback:', error);
+        resolve(this.calculateHaversineDistance(origin, destination));
+      }
     });
   }
 

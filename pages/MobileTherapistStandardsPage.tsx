@@ -1,12 +1,65 @@
 import React, { useState } from 'react';
 import { Home, ShieldCheck, CheckCircle2, Sparkles, User, Droplet, Shirt, Package, ThumbsUp, Star } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
+import { useLanguageContext } from '../components/context/LanguageContext';
+import { chatTranslationService } from '../services/chatTranslationService';
 
 interface MobileTherapistStandardsPageProps {
   onBack: () => void;
 }
 
 const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> = ({ onBack }) => {
+  // Language context and translation
+  const { language } = useLanguageContext();
+  const chatLang = language === 'gb' ? 'en' : language;
+  
+  const t = {
+    mobileTherapistStandards: chatTranslationService.getTranslation('mobile_therapist_standards', chatLang),
+    professionalInHomeHotel: chatTranslationService.getTranslation('professional_in_home_hotel', chatLang),
+    therapistStandards: chatTranslationService.getTranslation('therapist_standards', chatLang),
+    professionalServiceLocation: chatTranslationService.getTranslation('professional_service_location', chatLang),
+    verifiedBadgeConfidence: chatTranslationService.getTranslation('verified_badge_confidence', chatLang),
+    identityVerificationSafety: chatTranslationService.getTranslation('identity_verification_safety', chatLang),
+    identityVerificationDescription: chatTranslationService.getTranslation('identity_verification_description', chatLang),
+    whyMobileStandardsMatter: chatTranslationService.getTranslation('why_mobile_standards_matter', chatLang),
+    mobileStandardsIntro: chatTranslationService.getTranslation('mobile_standards_intro', chatLang),
+    // Verification standards
+    professionalCertification: chatTranslationService.getTranslation('professional_certification', chatLang),
+    professionalCertificationDesc: chatTranslationService.getTranslation('professional_certification_desc', chatLang),
+    equipmentHygiene: chatTranslationService.getTranslation('equipment_hygiene', chatLang),
+    equipmentHygieneDesc: chatTranslationService.getTranslation('equipment_hygiene_desc', chatLang),
+    communicationProfessionalism: chatTranslationService.getTranslation('communication_professionalism', chatLang),
+    communicationProfessionalismDesc: chatTranslationService.getTranslation('communication_professionalism_desc', chatLang),
+    boundaryRespect: chatTranslationService.getTranslation('boundary_respect', chatLang),
+    boundaryRespectDesc: chatTranslationService.getTranslation('boundary_respect_desc', chatLang),
+    flexibleScheduling: chatTranslationService.getTranslation('flexible_scheduling', chatLang),
+    flexibleSchedulingDesc: chatTranslationService.getTranslation('flexible_scheduling_desc', chatLang),
+    customTreatmentPlans: chatTranslationService.getTranslation('custom_treatment_plans', chatLang),
+    customTreatmentPlansDesc: chatTranslationService.getTranslation('custom_treatment_plans_desc', chatLang),
+    insuranceCoverage: chatTranslationService.getTranslation('insurance_coverage', chatLang),
+    insuranceCoverageDesc: chatTranslationService.getTranslation('insurance_coverage_desc', chatLang),
+    continuousTraining: chatTranslationService.getTranslation('continuous_training', chatLang),
+    continuousTrainingDesc: chatTranslationService.getTranslation('continuous_training_desc', chatLang),
+    // Additional sections
+    verificationProcessNote: chatTranslationService.getTranslation('verification_process_note', chatLang),
+    pendingVerificationNote: chatTranslationService.getTranslation('pending_verification_note', chatLang),
+    therapistVerificationStandards: chatTranslationService.getTranslation('therapist_verification_standards', chatLang),
+    professionalAppearanceHygiene: chatTranslationService.getTranslation('professional_appearance_hygiene', chatLang),
+    freshLinensTowels: chatTranslationService.getTranslation('fresh_linens_towels', chatLang),
+    regulatedOilsProducts: chatTranslationService.getTranslation('regulated_oils_products', chatLang),
+    professionalismConduct: chatTranslationService.getTranslation('professionalism_conduct', chatLang),
+    trainingCertification: chatTranslationService.getTranslation('training_certification', chatLang),
+    healthSafetyProtocols: chatTranslationService.getTranslation('health_safety_protocols', chatLang),
+    additionalRequirements: chatTranslationService.getTranslation('additional_requirements', chatLang),
+    whyChooseVerified: chatTranslationService.getTranslation('why_choose_verified', chatLang),
+    clientSafetyTips: chatTranslationService.getTranslation('client_safety_tips', chatLang),
+    questionsAboutStandards: chatTranslationService.getTranslation('questions_about_standards', chatLang),
+    transparencyCommitment: chatTranslationService.getTranslation('transparency_commitment', chatLang),
+    contactSupport: chatTranslationService.getTranslation('contact_support', chatLang),
+    switchToEnglish: language === 'id' ? 'Switch to English' : 'Switch to English',
+    switchToIndonesian: language === 'id' ? 'Ganti ke Bahasa Indonesia' : 'Ganti ke Bahasa Indonesia'
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -17,12 +70,32 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <span className="text-gray-900">Inda</span>
               <span className="text-orange-500">Street</span>
             </h1>
-            <button 
-              onClick={onBack} 
-              className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            >
-              <Home className="w-5 h-5 text-orange-600" />
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Language Toggle */}
+              <button
+                onClick={() => {
+                  const newLang = language === 'id' ? 'gb' : 'id';
+                  if (typeof window !== 'undefined') {
+                    localStorage.setItem('preferredLanguage', newLang);
+                    window.location.reload();
+                  }
+                }}
+                className="flex items-center gap-1 px-2 py-1 bg-orange-50 hover:bg-orange-100 rounded-md text-xs transition-colors border border-orange-200"
+                title={language === 'id' ? t.switchToEnglish : t.switchToIndonesian}
+              >
+                <span className="w-4 h-3 text-xs font-bold">
+                  {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                </span>
+                <span className="text-xs text-orange-600 font-medium">{language === 'id' ? 'ID' : 'GB'}</span>
+              </button>
+              
+              <button 
+                onClick={onBack} 
+                className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <Home className="w-5 h-5 text-orange-600" />
+              </button>
+            </div>
           </div>
         </PageContainer>
       </header>
@@ -30,8 +103,8 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
       {/* Hero Image Banner */}
       <div className="w-full h-64 sm:h-80 overflow-hidden relative">
         <img 
-          src="https://ik.imagekit.io/7grri5v7d/mobile%20massage%20therapist%20indonesia.png?updatedAt=1733995000000" 
-          alt="Mobile Massage Therapist Indonesia"
+          src="https://ik.imagekit.io/7grri5v7d/indonisea%20spa.png" 
+          alt="Indonesian Spa - Mobile Massage Therapist Standards"
           className="w-full h-full object-cover"
           onError={(e) => {
             e.currentTarget.src = "https://ik.imagekit.io/7grri5v7d/verfied%20massage%20spa%20indonisea.png";
@@ -42,10 +115,10 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
           <h2 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-lg">
             <span className="text-white">Inda</span>
             <span className="text-orange-400">street</span>
-            <span className="text-white"> Mobile Therapist Standards</span>
+            <span className="text-white"> {t.mobileTherapistStandards}</span>
           </h2>
           <p className="text-white/90 text-sm sm:text-base mt-2 drop-shadow">
-            Professional In-Home & Hotel Massage Services
+            {t.professionalInHomeHotel}
           </p>
         </div>
       </div>
@@ -61,17 +134,16 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
                 className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
               />
               <div>
-                <h1 className="text-xl font-bold text-gray-800"><span className="text-black">Inda</span><span className="text-orange-500">street</span> Therapist Standards</h1>
-                <p className="text-sm text-gray-600">Professional Service at Your Location</p>
+                <h1 className="text-xl font-bold text-gray-800"><span className="text-black">Inda</span><span className="text-orange-500">street</span> {t.therapistStandards}</h1>
+                <p className="text-sm text-gray-600">{t.professionalServiceLocation}</p>
               </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed">
-              When you see our verified badge on a mobile therapist's profile, you can book with complete confidence knowing they meet our rigorous standards for in-home and hotel massage services. Your comfort, safety, and satisfaction are our top priorities.
+              {t.verifiedBadgeConfidence}
             </p>
             <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-gray-700 font-semibold mb-2">🛡️ Identity Verification & Safety Assurance</p>
-                <p className="text-sm text-gray-700">
-                    All verified badge partners have completed identity verification by submitting official government-issued identification, undergoing comprehensive background checks, and meeting our standard verification requirements. <strong>Indastreet</strong> upholds safety and exceptional service as core industry standards. For your protection, we recommend selecting verified service providers when inviting professionals into your home or hotel villa, ensuring you engage only with trusted therapists who have successfully completed our rigorous screening protocols.
+                <p className="text-sm text-gray-700 font-semibold mb-2">{t.identityVerificationSafety}</p>
+                <p className="text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: t.identityVerificationDescription.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
                 </p>
             </div>
           </div>
@@ -80,18 +152,15 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
           <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-sm p-6 border border-orange-200">
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="w-6 h-6 text-orange-600" />
-              <h2 className="text-lg font-bold text-gray-900">
-                Why <span className="text-orange-600">Indastreet</span> Mobile Standards Matter
+              <h2 className="text-lg font-bold text-gray-900" dangerouslySetInnerHTML={{ __html: t.whyMobileStandardsMatter.replace(/\*\*(.*?)\*\*/g, '<span class="text-orange-600">$1</span>') }}>
               </h2>
             </div>
-            <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-              At <strong>Indastreet</strong>, we understand that inviting a massage therapist into your home or hotel room is a personal decision that requires the highest level of trust. That's why every verified mobile therapist on our platform has been carefully evaluated to ensure they meet strict professional standards for in-home services.
+            <p className="text-sm text-gray-700 mb-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.mobileStandardsIntro.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
             </p>
             <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-              Our verification process protects you by confirming that mobile therapists arrive prepared with clean equipment, professional appearance, certified products, and exceptional service standards. This commitment to quality means you can relax in your own space knowing you're receiving spa-quality treatment.
+              {t.verificationProcessNote}
             </p>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              <strong>Please note:</strong> Some mobile therapist profiles may not yet display the verified badge due to pending inspection or awaiting final confirmation. We continuously review all providers to maintain the highest standards across our platform.
+            <p className="text-sm text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: t.pendingVerificationNote.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}>
             </p>
           </div>
 
@@ -99,7 +168,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <CheckCircle2 className="w-6 h-6 text-green-600" />
-              <span><span className="text-black">Inda</span><span className="text-orange-500">street</span> Therapist Verification Standards</span>
+              <span dangerouslySetInnerHTML={{ __html: t.therapistVerificationStandards.replace(/\*\*(.*?)\*\*/g, '<span class="text-black">Inda</span><span class="text-orange-500">street</span>') }}></span>
             </h2>
 
             <div className="space-y-6">
@@ -107,7 +176,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Shirt className="w-5 h-5 text-orange-600" />
-                  <h3 className="font-semibold text-gray-900">1. Professional Appearance & Personal Hygiene</h3>
+                  <h3 className="font-semibold text-gray-900">{t.professionalAppearanceHygiene}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Clean & Professional Dress Code:</strong> Therapists must wear clean, neat, and professional attire at all times. Uniforms or massage therapy appropriate clothing is required.</li>
@@ -120,7 +189,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-gray-900">2. Fresh Linens, Towels & Bed Sheets</h3>
+                  <h3 className="font-semibold text-gray-900">{t.freshLinensTowels}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Freshly Laundered Linens:</strong> All towels, bed sheets, and face cradle covers must be freshly laundered, pressed, and completely clean for each session.</li>
@@ -135,7 +204,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Droplet className="w-5 h-5 text-purple-600" />
-                  <h3 className="font-semibold text-gray-900">3. Regulated Oils & Skin-Safe Products</h3>
+                  <h3 className="font-semibold text-gray-900">{t.regulatedOilsProducts}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Certified Massage Oils:</strong> Only use massage oils, lotions, and creams that are certified safe for human skin and approved by relevant health authorities.</li>
@@ -165,7 +234,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <ThumbsUp className="w-5 h-5 text-red-600" />
-                  <h3 className="font-semibold text-gray-900">5. Professionalism & Conduct</h3>
+                  <h3 className="font-semibold text-gray-900">{t.professionalismConduct}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Punctuality:</strong> Therapists arrive on time and notify clients immediately if delays occur.</li>
@@ -181,7 +250,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Star className="w-5 h-5 text-yellow-600" />
-                  <h3 className="font-semibold text-gray-900">6. Training & Certification Requirements</h3>
+                  <h3 className="font-semibold text-gray-900">{t.trainingCertification}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Certified Training:</strong> Therapists must have completed recognized massage therapy training from accredited institutions.</li>
@@ -196,7 +265,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-semibold text-gray-900">7. Health & Safety Protocols</h3>
+                  <h3 className="font-semibold text-gray-900">{t.healthSafetyProtocols}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Health Screening:</strong> Therapists conduct brief health screenings before sessions to identify contraindications.</li>
@@ -211,7 +280,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
               <div className="pl-4 py-2">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckCircle2 className="w-5 h-5 text-pink-600" />
-                  <h3 className="font-semibold text-gray-900">8. Additional Professional Requirements</h3>
+                  <h3 className="font-semibold text-gray-900">{t.additionalRequirements}</h3>
                 </div>
                 <ul className="list-disc pl-5 text-sm text-gray-700 space-y-2">
                   <li><strong>Background Verification:</strong> All mobile therapists undergo thorough background checks for client safety and peace of mind.</li>
@@ -228,7 +297,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
             <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
               <ShieldCheck className="w-6 h-6" />
-              Why Choose Verified Mobile Therapists?
+              {t.whyChooseVerified}
             </h2>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
@@ -256,7 +325,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
 
           {/* Client Safety Tips */}
           <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-orange-200">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">Client Safety Tips</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">{t.clientSafetyTips}</h2>
             <div className="space-y-2 text-sm text-gray-700">
               <p>✓ Always book through the Indastreet platform to ensure verified therapists</p>
               <p>✓ <strong>Use the in-app chat system for all communications</strong> - Indastreet maintains complete chat records for your protection. In the event of any dispute or concern, we have full documentation on file to assist you. Please note that WhatsApp communications are not accessible to Indastreet and cannot be used for dispute resolution.</p>
@@ -270,12 +339,12 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
 
           {/* Contact Section */}
           <div className="bg-gray-50 rounded-xl shadow-sm p-6 border border-gray-200 text-center">
-            <h3 className="font-bold text-gray-900 mb-2">Questions About Our Standards?</h3>
+            <h3 className="font-bold text-gray-900 mb-2">{t.questionsAboutStandards}</h3>
             <p className="text-sm text-gray-600 mb-4">
-              We're committed to transparency and your safety. If you have questions about our mobile therapist verification standards or want to report a concern, please contact us.
+              {t.transparencyCommitment}
             </p>
             <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors">
-              Contact Support
+              {t.contactSupport}
             </button>
           </div>
         </PageContainer>

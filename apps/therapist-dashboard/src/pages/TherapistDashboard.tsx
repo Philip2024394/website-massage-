@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MASSAGE_TYPES_CATEGORIZED } from '@/constants/rootConstants';
 import type { Therapist } from '@/types';
 import { therapistService, imageUploadService } from '@/lib/appwriteService';
+import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '@/utils/clientPreferencesUtils';
 import { showToast } from '@/utils/showToastPortal';
 import { loadGoogleMapsScript } from '@/constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '@/utils/appConfig';
@@ -53,6 +54,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [price90, setPrice90] = useState(String(therapist?.price90 || '150'));
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
   const [yearsOfExperience, setYearsOfExperience] = useState(String(therapist?.yearsOfExperience || '5'));
+  const [clientPreferences, setClientPreferences] = useState(therapist?.clientPreferences || 'Males And Females');
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
     try {
       const raw: any = therapist?.languages;
@@ -337,6 +339,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         price90: price90.trim(),
         price120: price120.trim(),
         yearsOfExperience: parseInt(yearsOfExperience) || 5,
+        clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         coordinates: JSON.stringify(coordinates),
@@ -598,6 +601,25 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 placeholder="5"
               />
               <p className="text-xs text-gray-500 mt-1">Enter your years of professional massage experience (1-50)</p>
+            </div>
+
+            {/* Client Preferences */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">👥 Client Preferences</label>
+              <select
+                value={clientPreferences}
+                onChange={e => setClientPreferences(e.target.value as ClientPreference)}
+                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+              >
+                {CLIENT_PREFERENCE_OPTIONS.map(preference => (
+                  <option key={preference} value={preference}>
+                    {CLIENT_PREFERENCE_LABELS[preference]}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                {CLIENT_PREFERENCE_DESCRIPTIONS[clientPreferences as ClientPreference]}
+              </p>
             </div>
 
             {/* Languages */}

@@ -126,10 +126,19 @@ export const useNavigation = ({
                 (provider as any).profilePicture || (provider as any).mainImage
             );
         } else {
-            // Fallback to old booking page if global handler not available
-            console.warn('⚠️ Global booking popup not available, using fallback');
-            setProviderForBooking({ provider, type });
-            setPage('booking');
+            // Fallback: Open chat window directly
+            console.log('🔄 Global booking popup not available, opening chat directly');
+            window.dispatchEvent(new CustomEvent('openChat', {
+                detail: {
+                    therapistId: provider.id || (provider as any).$id,
+                    therapistName: provider.name,
+                    therapistType: type,
+                    therapistStatus: (provider as any).status || (provider as any).availability || 'available',
+                    pricing: (provider as any).pricing ? JSON.parse((provider as any).pricing) : { '60': 200000, '90': 300000, '120': 400000 },
+                    profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
+                    mode: 'immediate'
+                }
+            }));
         }
     }, [setProviderForBooking, setPage]);
 

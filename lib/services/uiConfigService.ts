@@ -83,7 +83,12 @@ class UIConfigService {
             console.log(`✅ Config loaded from Appwrite:`, config);
             return config;
         } catch (error) {
-            console.warn(`⚠️ Failed to fetch UI config for ${key}, using defaults:`, error);
+            // In development, show a simpler message to reduce console noise
+            if (process.env.NODE_ENV === 'development') {
+                console.warn(`⚠️ UI config '${key}' not found, using defaults`);
+            } else {
+                console.warn(`⚠️ Failed to fetch UI config for ${key}, using defaults:`, error);
+            }
             
             // Return default config
             const defaultSettings = DEFAULT_CONFIGS[key] || {};

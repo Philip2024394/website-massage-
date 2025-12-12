@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { authService, therapistService } from '@shared/appwriteService';
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { messagingService } from '../lib/appwriteService';
 import { translationService } from '../lib/translationService';
+import { useLanguageContext } from '../context/LanguageContext';
+import { chatTranslationService } from '../services/chatTranslationService';
 
 interface Message {
     $id: string;
@@ -70,6 +72,52 @@ export default function ChatWindow({
 }: ChatWindowProps) {
     console.log('🟢 ChatWindow received status:', { providerName, providerStatus });
     
+    // Get language context
+    const { language } = useLanguageContext();
+    const chatLang = language === 'gb' ? 'en' : language;
+    
+    // Combined translation object
+    const t = {
+        // From chatTranslationService
+        activateChat: chatTranslationService.getTranslation('activate_chat', chatLang),
+        sendMessage: chatTranslationService.getTranslation('send_message', chatLang),
+        closeChat: chatTranslationService.getTranslation('close_chat', chatLang),
+        chatWith: chatTranslationService.getTranslation('chat_with', chatLang),
+        typeMessage: language === 'id' ? 'Ketik pesan...' : 'Type a message...',
+        connectionFailed: chatTranslationService.getTranslation('connection_failed', chatLang),
+        welcomeMessage: chatTranslationService.getTranslation('welcome_message', chatLang),
+        nameRequired: chatTranslationService.getTranslation('name_required', chatLang),
+        whatsappRequired: chatTranslationService.getTranslation('whatsapp_required', chatLang),
+        durationRequired: chatTranslationService.getTranslation('duration_required', chatLang),
+        
+        // Additional scheduling translations
+        scheduleYourMassage: language === 'id' ? 'Jadwalkan Pijat Anda' : 'Schedule Your Massage',
+        selectDuration: language === 'id' ? 'Pilih Durasi Pijatan' : 'Select Massage Duration',
+        nextSelectTime: language === 'id' ? 'Selanjutnya: Pilih Waktu' : 'Next: Select Time',
+        selectTime: language === 'id' ? 'Pilih Waktu' : 'Select Time',
+        back: language === 'id' ? '← Kembali' : '← Back',
+        nextEnterDetails: language === 'id' ? 'Selanjutnya: Masukkan Detail' : 'Next: Enter Details',
+        customerDetails: language === 'id' ? 'Detail Pelanggan' : 'Customer Details',
+        yourName: language === 'id' ? 'Nama Anda' : 'Your Name',
+        whatsappNumber: language === 'id' ? 'Nomor WhatsApp' : 'WhatsApp Number',
+        confirmBooking: language === 'id' ? 'Konfirmasi Booking' : 'Confirm Booking',
+        bookingConfirmed: language === 'id' ? '✅ Booking Dikonfirmasi!' : '✅ Booking Confirmed!',
+        bookingSummary: language === 'id' ? 'Ringkasan Booking:' : 'Booking Summary:',
+        depositNotice: language === 'id' ? '30% Deposit booking mungkin diminta' : '30% Booking deposit may be requested',
+        therapist: language === 'id' ? 'Terapis:' : 'Therapist:',
+        time: language === 'id' ? 'Waktu:' : 'Time:',
+        duration: language === 'id' ? 'Durasi:' : 'Duration:',
+        totalCost: language === 'id' ? 'Total Biaya:' : 'Total Cost:',
+        closeWindow: language === 'id' ? 'Tutup Jendela' : 'Close Window',
+        minutes: language === 'id' ? 'menit' : 'minutes',
+        pleaseEnterName: language === 'id' ? 'Mohon masukkan nama Anda' : 'Please enter your name',
+        pleaseEnterValidWhatsApp: language === 'id' ? 'Mohon masukkan nomor WhatsApp yang valid (contoh: +6281234567890 atau 081234567890)' : 'Please enter a valid WhatsApp number (e.g., +6281234567890 or 081234567890)',
+        bookNow: language === 'id' ? 'Booking Sekarang' : 'Book Now',
+        send: language === 'id' ? 'Kirim' : 'Send',
+        online: language === 'id' ? 'Online' : 'Online',
+        offline: language === 'id' ? 'Offline' : 'Offline'
+    };
+    
     // Registration state
     const [isRegistered, setIsRegistered] = useState(!!initialCustomerName && !!initialCustomerWhatsApp);
     const [customerName, setCustomerName] = useState(initialCustomerName || '');
@@ -101,9 +149,11 @@ export default function ChatWindow({
     
     // Translation state
     const [userLanguage, setUserLanguage] = useState('en');
+    const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const languageDropdownRef = useRef<HTMLDivElement>(null);
 
     // Debug logging
     useEffect(() => {
@@ -119,6 +169,20 @@ export default function ChatWindow({
             messageCount: messages.length
         });
     }, [isOpen, isRegistered, isMinimized, providerId, providerName, providerStatus, customerName, chatRoomId, messages.length]);
+
+    // Handle clicking outside language dropdown
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+                setShowLanguageDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Initialize audio notification
     useEffect(() => {
@@ -225,28 +289,83 @@ export default function ChatWindow({
 
     // Generate time slots for scheduling
     const generateTimeSlots = async () => {
-        const slots = [];
+
+        
+        const slots: {hour: number, minute: number, label: string, available: boolean}[] = [];
         const today = new Date();
         const currentHour = today.getHours();
         const currentMinute = today.getMinutes();
         
-        // Generate slots from 8 AM to 9 PM
-        for (let hour = 8; hour <= 21; hour++) {
-            for (let minute = 0; minute <= 45; minute += 15) {
-                // Skip past times
-                if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
-                    continue;
+
+        
+        // Helper function to parse time string (e.g., "08:00" -> 8)
+        const parseTimeString = (timeStr: string): number => {
+            if (!timeStr) return 0;
+            const [hours] = timeStr.split(':');
+            return parseInt(hours) || 0;
+        };
+        
+        // Determine time range based on provider type
+        let startHour = 6; // Default early start
+        let endHour = 23;  // Default late end
+        let isPlace = false;
+        
+        if (providerRole === 'therapist') {
+            // Therapists: Extended hours (6 AM to 11 PM for practical booking)
+            startHour = 6;
+            endHour = 23;
+        } else if (providerRole === 'place') {
+            // Massage places and facial places: Use business hours or defaults
+            isPlace = true;
+            // TODO: Fetch actual place data to get openingTime/closingTime
+            // For now use default business hours
+            startHour = 8;  // Default 8 AM opening
+            endHour = 21;   // Default 9 PM closing
+        }
+        
+
+        
+        // Check if place is closed for today
+        const placeClosedToday = isPlace && currentHour >= endHour;
+        
+        // Generate slots for today (if not closed) or tomorrow
+        const generateSlotsForDay = (isNextDay: boolean = false) => {
+
+            
+            for (let hour = startHour; hour <= endHour; hour++) {
+                for (let minute = 0; minute <= 45; minute += 15) {
+                    // Skip past times for today only
+                    if (!isNextDay && (hour < currentHour || (hour === currentHour && minute <= currentMinute))) {
+                        continue;
+                    }
+                    
+                    const timeLabel = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const displayLabel = isNextDay ? `${timeLabel} (Next Day)` : timeLabel;
+                    
+                    slots.push({
+                        hour,
+                        minute,
+                        label: displayLabel,
+                        available: true // Simplified - could check against existing bookings
+                    });
                 }
-                
-                slots.push({
-                    hour,
-                    minute,
-                    label: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-                    available: true // Simplified - could check against existing bookings
-                });
+            }
+        };
+        
+        if (placeClosedToday) {
+            // Place is closed today, show tomorrow's schedule
+            generateSlotsForDay(true);
+        } else {
+            // Show today's remaining slots
+            generateSlotsForDay(false);
+            
+            // For places after midnight (00:00-05:59), also show next day options
+            if (isPlace && currentHour < 6) {
+                generateSlotsForDay(true);
             }
         }
         
+
         setTimeSlots(slots);
     };
 
@@ -708,11 +827,7 @@ export default function ChatWindow({
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="font-bold">{providerName}</span>
-                        {typeof providerRating === 'number' && providerRating > 0 && (
-                            <span className="text-yellow-300 text-xs font-bold flex items-center">
-                                ★ {providerRating.toFixed(1)}
-                            </span>
-                        )}
+
                     </div>
                     <div className="text-xs text-white/80">
                         {bookingStatus === 'pending' ? '⏳ Waiting for response...' : 
@@ -741,27 +856,20 @@ export default function ChatWindow({
         return (
             <div className="fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
                 {/* Header */}
-                <div className="bg-orange-600 text-white px-3 py-2 rounded-t-lg flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
                         <div className="relative">
                             {providerPhoto ? (
-                                <img src={providerPhoto} alt={providerName} className="w-9 h-9 rounded-full object-cover" style={{border: 'none', boxShadow: 'none', outline: 'none'}} />
+                                <img src={providerPhoto} alt={providerName} className="w-16 h-16 rounded-full object-cover" style={{border: 'none', boxShadow: 'none', outline: 'none'}} />
                             ) : (
-                                <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white font-bold" style={{border: 'none', boxShadow: 'none', outline: 'none'}}>
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-2xl" style={{border: 'none', boxShadow: 'none', outline: 'none'}}>
                                     {providerName?.charAt(0)?.toUpperCase() || 'M'}
                                 </div>
                             )}
                         </div>
                         <div className="flex flex-col leading-tight">
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm">{providerName}</span>
-                                {typeof providerRating === 'number' && providerRating > 0 && (
-                                    <span className="text-yellow-300 text-[10px] font-bold flex items-center">
-                                        ★ {providerRating.toFixed(1)}
-                                    </span>
-                                )}
-                            </div>
-                            <span className="text-xs flex items-center gap-1">
+                            <span className="font-bold text-lg">{providerName}</span>
+                            <span className="text-sm flex items-center gap-1 mt-1">
                                 <span className={`inline-block w-2 h-2 rounded-full relative ${providerStatus === 'available' ? 'bg-green-500' : providerStatus === 'busy' ? 'bg-yellow-500' : 'bg-red-600'}`}>
                                     {(providerStatus === 'available' || providerStatus === 'busy') && (
                                         <span className={`absolute inset-0 rounded-full animate-ping ${
@@ -773,15 +881,17 @@ export default function ChatWindow({
                             </span>
                         </div>
                     </div>
-                    <button
-                        onClick={handleClose}
-                        className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
-                        title="Close"
-                    >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
-                        </svg>
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleClose}
+                            className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
+                            title="Close"
+                        >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Booking Form - Immediate vs Scheduled */}
@@ -791,10 +901,67 @@ export default function ChatWindow({
                         <>
                             {schedulingStep === 'duration' && (
                                 <>
-                                    <h3 className="text-lg font-bold text-gray-800 mb-3">📅 Schedule Your Massage</h3>
+                                    <div className="mb-4 pb-3 border-b border-gray-200">
+                                        <h3 className="text-xl font-bold text-gray-800">📅 {t.scheduleYourMassage}</h3>
+                                    </div>
+                                    
+                                    {/* Language Selector for Scheduled Bookings */}
+                                    <div className="relative mb-4" ref={languageDropdownRef}>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Select Your Language
+                                        </label>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400 bg-white flex items-center justify-between text-left"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg">
+                                                        {userLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
+                                                    </span>
+                                                    <span>
+                                                        {userLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}
+                                                    </span>
+                                                </div>
+                                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </button>
+                                            
+                                            {showLanguageDropdown && (
+                                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                                    <div 
+                                                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100"
+                                                        onClick={() => {
+                                                            setUserLanguage('en');
+                                                            setShowLanguageDropdown(false);
+                                                        }}
+                                                    >
+                                                        <span className="text-lg">🇬🇧</span>
+                                                        <span className="text-sm font-medium text-gray-700">English</span>
+                                                    </div>
+                                                    <div 
+                                                        className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
+                                                        onClick={() => {
+                                                            setUserLanguage('id');
+                                                            setShowLanguageDropdown(false);
+                                                        }}
+                                                    >
+                                                        <span className="text-lg">🇮🇩</span>
+                                                        <span className="text-sm font-medium text-gray-700">Bahasa Indonesia</span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="mt-2 text-xs text-gray-500">
+                                            Messages will be translated automatically
+                                        </p>
+                                    </div>
+                                    
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Select Massage Duration
+                                            {t.selectDuration}
                                         </label>
                                         <div className="grid grid-cols-3 gap-2">
                                             {[60, 90, 120].map((duration) => (
@@ -802,7 +969,7 @@ export default function ChatWindow({
                                                     key={duration}
                                                     type="button"
                                                     onClick={() => setSelectedDuration(duration as 60 | 90 | 120)}
-                                                    className={`p-3 rounded-lg border transition-all ${
+                                                    className={`p-3 rounded-lg border transition-all relative ${
                                                         selectedDuration === duration
                                                             ? 'border-green-500 bg-green-500 text-white shadow-sm'
                                                             : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
@@ -810,6 +977,12 @@ export default function ChatWindow({
                                                 >
                                                     <div className="font-bold">{duration} min</div>
                                                     <div className="text-xs mt-1">{getPriceLabel(duration.toString() as '60' | '90' | '120')}</div>
+                                                    {/* Star Rating - Top Right */}
+                                                    {typeof providerRating === 'number' && providerRating > 0 && (
+                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                            ★{providerRating.toFixed(1)}
+                                                        </div>
+                                                    )}
                                                 </button>
                                             ))}
                                         </div>
@@ -824,7 +997,7 @@ export default function ChatWindow({
                                         disabled={!selectedDuration}
                                         className="w-full bg-orange-600 text-white py-2 rounded-lg font-bold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
-                                        Next: Select Time
+                                        {t.nextSelectTime}
                                     </button>
                                 </>
                             )}
@@ -832,8 +1005,8 @@ export default function ChatWindow({
                             {schedulingStep === 'time' && (
                                 <>
                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-bold text-gray-800">⏰ Select Time</h3>
-                                        <button onClick={() => setSchedulingStep('duration')} className="text-orange-600 text-sm">← Back</button>
+                                        <h3 className="text-lg font-bold text-gray-800">⏰ {t.selectTime}</h3>
+                                        <button onClick={() => setSchedulingStep('duration')} className="text-orange-600 text-sm">{t.back}</button>
                                     </div>
                                     <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto">
                                         {timeSlots.map((slot, index) => (
@@ -858,7 +1031,7 @@ export default function ChatWindow({
                                         disabled={!selectedTime}
                                         className="w-full bg-orange-600 text-white py-2 rounded-lg font-bold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                     >
-                                        Next: Your Details
+                                        {t.nextEnterDetails}
                                     </button>
                                 </>
                             )}
@@ -866,30 +1039,30 @@ export default function ChatWindow({
                             {schedulingStep === 'details' && (
                                 <>
                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-bold text-gray-800">📝 Your Details</h3>
-                                        <button onClick={() => setSchedulingStep('time')} className="text-orange-600 text-sm">← Back</button>
+                                        <h3 className="text-lg font-bold text-gray-800">📝 {t.customerDetails}</h3>
+                                        <button onClick={() => setSchedulingStep('time')} className="text-orange-600 text-sm">{t.back}</button>
                                     </div>
                                     <div className="space-y-3">
                                         <div>
                                             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                                                Your Name *
+                                                {t.yourName} *
                                             </label>
                                             <input
                                                 id="name"
                                                 type="text"
                                                 value={customerName}
                                                 onChange={(e) => setCustomerName(e.target.value)}
-                                                placeholder="Enter your name"
+                                                placeholder="Type Your Name"
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
                                                 disabled={isCreatingBooking}
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-1">
-                                                WhatsApp Number *
+                                                {t.whatsappNumber} *
                                             </label>
                                             <div className="relative">
-                                                <span className="absolute left-3 top-2 text-gray-500 z-10">+62</span>
+                                                <span className="absolute left-3 top-2 text-black font-bold z-10">+62</span>
                                                 <input
                                                     id="whatsapp"
                                                     type="tel"
@@ -908,7 +1081,8 @@ export default function ChatWindow({
                                     </div>
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <h4 className="font-semibold text-sm text-gray-800 mb-1">Booking Summary:</h4>
-                                        <p className="text-sm text-gray-600">📅 {selectedTime?.label} • ⏱️ {selectedDuration} min • 💰 {getPriceLabel((selectedDuration?.toString() || '60') as '60' | '90' | '120')}</p>
+                                        <p className="text-sm text-gray-600 mb-2">📅 {selectedTime?.label} • ⏱️ {selectedDuration} min • 💰 {getPriceLabel((selectedDuration?.toString() || '60') as '60' | '90' | '120')}</p>
+                                        <p className="text-xs text-gray-500 italic">{t.depositNotice}</p>
                                     </div>
                                     <button
                                         onClick={handleCreateScheduledBooking}
@@ -930,21 +1104,54 @@ export default function ChatWindow({
                     ) : (
                         // IMMEDIATE BOOKING FLOW (Original)
                         <>
-                            <div>
+                            <div className="relative" ref={languageDropdownRef}>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Select Your Language
                                 </label>
-                                <select
-                                    value={userLanguage}
-                                    onChange={(e) => setUserLanguage(e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400 bg-white"
-                                >
-                                    {translationService.getSupportedLanguages().map(lang => (
-                                        <option key={lang.code} value={lang.code}>
-                                            {lang.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400 bg-white flex items-center justify-between text-left"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg">
+                                                {userLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
+                                            </span>
+                                            <span>
+                                                {userLanguage === 'id' ? 'Bahasa Indonesia' : 'English'}
+                                            </span>
+                                        </div>
+                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    
+                                    {showLanguageDropdown && (
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                                            <div 
+                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3 border-b border-gray-100"
+                                                onClick={() => {
+                                                    setUserLanguage('en');
+                                                    setShowLanguageDropdown(false);
+                                                }}
+                                            >
+                                                <span className="text-lg">🇬🇧</span>
+                                                <span className="text-sm font-medium text-gray-700">English</span>
+                                            </div>
+                                            <div 
+                                                className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex items-center gap-3"
+                                                onClick={() => {
+                                                    setUserLanguage('id');
+                                                    setShowLanguageDropdown(false);
+                                                }}
+                                            >
+                                                <span className="text-lg">🇮🇩</span>
+                                                <span className="text-sm font-medium text-gray-700">Bahasa Indonesia</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 <p className="mt-2 text-xs text-gray-500">
                                     Messages will be translated automatically
                                 </p>
@@ -960,7 +1167,7 @@ export default function ChatWindow({
                                         type="text"
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
-                                        placeholder="Enter your name"
+                                        placeholder="Type Your Name"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500"
                                         disabled={registering}
                                     />
@@ -971,7 +1178,7 @@ export default function ChatWindow({
                                         WhatsApp Number
                                     </label>
                                     <div className="relative">
-                                        <span className="absolute left-3 top-2 text-gray-500 z-10">+62</span>
+                                        <span className="absolute left-3 top-2 text-black font-bold z-10">+62</span>
                                         <input
                                             id="whatsapp"
                                             type="tel"
@@ -999,12 +1206,18 @@ export default function ChatWindow({
                                                 type="button"
                                                 onClick={() => setServiceDuration(duration as '60' | '90' | '120')}
                                                 disabled={registering}
-                                                className={`p-3 rounded-lg border transition-all ${
+                                                className={`p-3 rounded-lg border transition-all relative ${
                                                     serviceDuration === duration
                                                         ? 'border-green-500 bg-green-500 text-white shadow-sm'
                                                         : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
                                                 } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
                                             >
+                                                {/* Star Rating - Top Right */}
+                                                {typeof providerRating === 'number' && providerRating > 0 && (
+                                                    <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                        ★{providerRating.toFixed(1)}
+                                                    </div>
+                                                )}
                                                 <div className="font-bold">{duration} min</div>
                                                 <div className="text-xs mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
                                             </button>
@@ -1042,27 +1255,11 @@ export default function ChatWindow({
     return (
         <div className="fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
             {/* Header */}
-            <div className="bg-orange-600 text-white px-3 py-3 rounded-t-lg flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                    <div className="relative">
-                        {providerPhoto ? (
-                            <img src={providerPhoto} alt={providerName} className="w-11 h-11 rounded-full object-cover" style={{border: 'none', boxShadow: 'none', outline: 'none'}} />
-                        ) : (
-                            <div className="w-11 h-11 bg-white/20 rounded-full flex items-center justify-center text-white font-bold" style={{border: 'none', boxShadow: 'none', outline: 'none'}}>
-                                {providerName?.charAt(0)?.toUpperCase() || 'M'}
-                            </div>
-                        )}
-                    </div>
+            <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
+                <div className="flex items-center space-x-4">
                     <div className="flex flex-col leading-tight">
-                        <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm">{providerName}</span>
-                            {typeof providerRating === 'number' && providerRating > 0 && (
-                                <span className="text-yellow-300 text-[11px] font-bold flex items-center">
-                                    ★ {providerRating.toFixed(1)}
-                                </span>
-                            )}
-                        </div>
-                        <span className="text-xs flex items-center gap-1">
+                        <span className="font-bold text-lg">{providerName}</span>
+                        <span className="text-sm flex items-center gap-1 mt-1">
                             <span className={`inline-block w-2 h-2 rounded-full relative ${providerStatus === 'available' ? 'bg-green-500' : providerStatus === 'busy' ? 'bg-yellow-500' : 'bg-red-600'}`}>
                                 {(providerStatus === 'available' || providerStatus === 'busy') && (
                                     <span className={`absolute inset-0 rounded-full animate-ping ${
@@ -1074,15 +1271,17 @@ export default function ChatWindow({
                         </span>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsMinimized(true)}
-                    className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
-                    title="Minimize"
-                >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 12h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
-                    </svg>
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsMinimized(true)}
+                        className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
+                        title="Minimize"
+                    >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 12h12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Messages Area */}

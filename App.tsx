@@ -19,6 +19,8 @@ import { LanguageProvider } from './context/LanguageContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
+import { chatSessionService } from './services/chatSessionService';
+import ChatErrorBoundary from './components/ChatErrorBoundary';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
 
@@ -98,48 +100,133 @@ const App = () => {
             console.log('💬 Opening chat window for booking:', bookingId);
             console.log('📋 Chat info:', { therapistId, therapistName, therapistType, chatRoomId, therapistStatus, pricing });
             
-            // Try to get customer details from booking for scheduled bookings
-            let customerName = 'Guest';
-            let customerWhatsApp = '';
-            
-            if (bookingId) {
-                try {
-                    const { databases } = await import('./lib/appwrite');
-                    const { APPWRITE_CONFIG } = await import('./lib/appwrite.config');
-                    
-                    const booking = await databases.getDocument(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.bookings || 'bookings',
-                        bookingId
-                    );
-                    
-                    if (booking.customerName) customerName = booking.customerName;
-                    if (booking.customerWhatsApp) customerWhatsApp = booking.customerWhatsApp;
-                    
-                    console.log('✅ Retrieved customer details from booking:', { customerName, customerWhatsApp });
-                } catch (error) {
-                    console.warn('⚠️ Could not retrieve customer details from booking:', error);
+            try {
+                // Try to get customer details from booking for scheduled bookings
+                let customerName = '';
+                let customerWhatsApp = '';
+                
+                if (bookingId) {
+                    try {
+                        const { databases } = await import('./lib/appwrite');
+                        const { APPWRITE_CONFIG } = await import('./lib/appwrite.config');
+                        
+                        const booking = await databases.getDocument(
+                            APPWRITE_CONFIG.databaseId,
+                            APPWRITE_CONFIG.collections.bookings || 'bookings',
+                            bookingId
+                        );
+                        
+                        if (booking.customerName) customerName = booking.customerName;
+                        if (booking.customerWhatsApp) customerWhatsApp = booking.customerWhatsApp;
+                        
+                        console.log('✅ Retrieved customer details from booking:', { customerName, customerWhatsApp });
+                    } catch (error) {
+                        console.warn('⚠️ Could not retrieve customer details from booking:', error);
+                    }
                 }
+
+                // Check for existing active session or create new one
+                let sessionData;
+                try {
+                    const existingSession = await chatSessionService.getActiveSession(therapistId);
+                    
+                    if (existingSession && existingSession.isActive) {
+                        // Use existing session
+                        console.log('♻️ Reusing existing chat session:', existingSession.sessionId);
+                        sessionData = existingSession;
+                        
+                        // Update session with latest info if needed
+                        await chatSessionService.updateSession(existingSession.sessionId, {
+                            providerStatus: therapistStatus || existingSession.providerStatus,
+                            pricing: pricing || existingSession.pricing,
+                            discountPercentage: discountPercentage || existingSession.discountPercentage,
+                            discountActive: discountActive !== undefined ? discountActive : existingSession.discountActive
+                        });
+                    } else {
+                        // Create new persistent session
+                        console.log('💾 Creating new persistent chat session');
+                        sessionData = await chatSessionService.createSession({
+                            customerId: customerName || undefined,
+                            customerName,
+                            customerWhatsApp,
+                            providerId: therapistId,
+                            providerName: therapistName,
+                            providerType: therapistType || 'therapist',
+                            providerStatus: therapistStatus || 'available',
+                            mode: mode || 'immediate',
+                            pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                            discountPercentage,
+                            discountActive,
+                            profilePicture,
+                            providerRating,
+                            bookingId,
+                            chatRoomId
+                        });
+                        console.log('✅ Persistent chat session created:', sessionData.sessionId);
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to handle persistent session, using local state:', error);
+                    // Fallback to local state if Appwrite fails
+                    sessionData = {
+                        sessionId: `local-${Date.now()}`,
+                        providerId: therapistId,
+                        providerName: therapistName,
+                        providerType: therapistType || 'therapist',
+                        providerStatus: therapistStatus || 'available',
+                        pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                        discountPercentage,
+                        discountActive,
+                        profilePicture,
+                        providerRating,
+                        bookingId,
+                        chatRoomId,
+                        customerName,
+                        customerWhatsApp,
+                        mode: mode || 'immediate'
+                    };
+                }
+
+                // Set chat info from session data (normalize field names)
+                setChatInfo({
+                    therapistId: sessionData.providerId || therapistId,
+                    therapistName: sessionData.providerName || therapistName,
+                    therapistType: sessionData.providerType || therapistType || 'therapist',
+                    therapistStatus: sessionData.providerStatus || therapistStatus || 'available',
+                    pricing: sessionData.pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                    discountPercentage: sessionData.discountPercentage,
+                    discountActive: sessionData.discountActive,
+                    profilePicture: sessionData.profilePicture,
+                    providerRating: sessionData.providerRating,
+                    bookingId: sessionData.bookingId,
+                    chatRoomId: sessionData.chatRoomId,
+                    customerName: sessionData.customerName || customerName,
+                    customerWhatsApp: sessionData.customerWhatsApp || customerWhatsApp,
+                    mode: sessionData.mode || mode || 'immediate'
+                });
+                setIsChatOpen(true);
+                console.log('✅ Chat state updated with persistent session - window should open');
+            } catch (error) {
+                console.error('❌ Failed to handle chat opening:', error);
+                // Final fallback to original behavior
+                setChatInfo({
+                    therapistId,
+                    therapistName,
+                    therapistType: therapistType || 'therapist',
+                    therapistStatus: therapistStatus || 'available',
+                    pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                    discountPercentage,
+                    discountActive,
+                    profilePicture,
+                    providerRating,
+                    bookingId,
+                    chatRoomId,
+                    customerName: '',
+                    customerWhatsApp: '',
+                    mode: mode || 'immediate'
+                });
+                setIsChatOpen(true);
+                console.log('⚠️ Using fallback chat state');
             }
-            
-            setChatInfo({
-                therapistId,
-                therapistName,
-                therapistType: therapistType || 'therapist', // Use the type from event
-                therapistStatus: therapistStatus || 'available',
-                pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                discountPercentage,
-                discountActive,
-                profilePicture,
-                providerRating,
-                bookingId,
-                chatRoomId,
-                customerName,
-                customerWhatsApp,
-                mode: mode || 'immediate'
-            });
-            setIsChatOpen(true);
-            console.log('✅ Chat state updated - window should open');
         };
 
         window.addEventListener('openChat' as any, handleOpenChat);
@@ -174,8 +261,49 @@ const App = () => {
         };
     }, [isChatOpen, chatInfo]);
 
-    // Start booking expiration service on mount
+    // Session restoration and cleanup on app startup
     useEffect(() => {
+        const restoreChatSession = async () => {
+            try {
+                // Check if we have any active sessions that need to be restored
+                const allSessions = await chatSessionService.listActiveSessions();
+                
+                if (allSessions && allSessions.length > 0) {
+                    // Get the most recent active session
+                    const latestSession = allSessions[0];
+                    console.log('🔄 Restoring active chat session from previous visit:', latestSession.sessionId);
+                    
+                    // Restore the chat state
+                    setChatInfo({
+                        sessionId: latestSession.sessionId,
+                        therapistId: latestSession.providerId,
+                        therapistName: latestSession.providerName,
+                        therapistType: latestSession.providerType,
+                        therapistStatus: latestSession.providerStatus,
+                        pricing: latestSession.pricing,
+                        discountPercentage: latestSession.discountPercentage,
+                        discountActive: latestSession.discountActive,
+                        profilePicture: latestSession.profilePicture,
+                        providerRating: latestSession.providerRating,
+                        bookingId: latestSession.bookingId,
+                        chatRoomId: latestSession.chatRoomId,
+                        customerName: latestSession.customerName,
+                        customerWhatsApp: latestSession.customerWhatsApp,
+                        mode: latestSession.mode
+                    });
+                    setIsChatOpen(true);
+                }
+                
+                // Clean up expired sessions
+                await chatSessionService.cleanupExpiredSessions();
+            } catch (error) {
+                console.warn('⚠️ Failed to restore chat session:', error);
+                // Continue normally if session restoration fails
+            }
+        };
+
+        restoreChatSession();
+        
         // localStorage disabled: skip cleanupLocalStorage()
         
         // Play welcome music only once ever (not per session)
@@ -557,7 +685,21 @@ const App = () => {
                     handleNavigateToTherapistLogin={navigation?.handleNavigateToTherapistLogin || (() => {})}
                     handleNavigateToRegistrationChoice={navigation?.handleNavigateToRegistrationChoice || (() => {})}
                     handleNavigateToBooking={navigation?.handleNavigateToBooking || (() => {})}
-                    handleQuickBookWithChat={() => Promise.resolve()}
+                    handleQuickBookWithChat={(provider: Therapist | Place, type: 'therapist' | 'place') => {
+                        console.log('🚀 Opening chat for provider:', provider.name);
+                        window.dispatchEvent(new CustomEvent('openChat', {
+                            detail: {
+                                therapistId: provider.id || (provider as any).$id,
+                                therapistName: provider.name,
+                                therapistType: type,
+                                therapistStatus: (provider as any).status || (provider as any).availability || 'available',
+                                pricing: (provider as any).pricing ? JSON.parse((provider as any).pricing) : { '60': 200000, '90': 300000, '120': 400000 },
+                                profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
+                                mode: 'immediate'
+                            }
+                        }));
+                        return Promise.resolve();
+                    }}
                     handleChatWithBusyTherapist={() => Promise.resolve()}
                     handleShowRegisterPromptForChat={() => {
                         state.setRegisterPromptContext('booking');
@@ -685,25 +827,51 @@ const App = () => {
             {/* Global Chat Window - Opens with registration flow */}
             {(() => {
                 console.log('🔍 App.tsx render check - chatInfo:', chatInfo, 'isChatOpen:', isChatOpen);
+                
+                const handleCloseChat = async () => {
+                    try {
+                        // Close persistent session if it exists
+                        if (chatInfo?.sessionId) {
+                            await chatSessionService.closeSession(chatInfo.sessionId);
+                            console.log('✅ Persistent chat session closed');
+                        }
+                    } catch (error) {
+                        console.warn('Failed to close persistent chat session:', error);
+                        // Continue with local cleanup even if Appwrite fails
+                    }
+                    
+                    // Always close local chat
+                    setChatInfo(null);
+                    setIsChatOpen(false);
+                };
+                
                 return chatInfo && (
-                    <ChatWindow
-                        isOpen={isChatOpen}
-                        onClose={() => setIsChatOpen(false)}
-                        providerId={chatInfo.therapistId}
-                        providerRole={chatInfo.therapistType}
-                        providerName={chatInfo.therapistName}
-                        providerStatus={chatInfo.therapistStatus || 'available'}
-                        pricing={chatInfo.pricing as { '60': number; '90': number; '120': number } | undefined}
-                        discountPercentage={chatInfo.discountPercentage}
-                        discountActive={chatInfo.discountActive}
-                        providerPhoto={chatInfo.profilePicture}
-                        providerRating={chatInfo.providerRating}
-                        bookingId={chatInfo.bookingId}
-                        chatRoomId={chatInfo.chatRoomId}
-                        customerName={chatInfo.customerName}
-                        customerWhatsApp={chatInfo.customerWhatsApp}
-                        mode={chatInfo.mode}
-                    />
+                    <ChatErrorBoundary
+                        onError={(error, errorInfo) => {
+                            console.error('🚨 ChatWindow crashed:', error);
+                            console.error('Error context:', errorInfo);
+                            // Could also send to error tracking service
+                        }}
+                    >
+                        <ChatWindow
+                            isOpen={isChatOpen}
+                            onClose={handleCloseChat}
+                            providerId={chatInfo.therapistId}
+                            providerRole={chatInfo.therapistType}
+                            providerName={chatInfo.therapistName}
+                            providerStatus={chatInfo.therapistStatus || 'available'}
+                            pricing={chatInfo.pricing as { '60': number; '90': number; '120': number } | undefined}
+                            discountPercentage={chatInfo.discountPercentage}
+                            discountActive={chatInfo.discountActive}
+                            providerPhoto={chatInfo.profilePicture}
+                            providerRating={chatInfo.providerRating}
+                            bookingId={chatInfo.bookingId}
+                            chatRoomId={chatInfo.chatRoomId}
+                            customerName={chatInfo.customerName}
+                            customerWhatsApp={chatInfo.customerWhatsApp}
+                            mode={chatInfo.mode}
+                        />
+                    </ChatErrorBoundary>
                 );
             })()}
         </DeviceStylesProvider>
