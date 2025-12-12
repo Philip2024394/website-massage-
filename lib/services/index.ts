@@ -19,7 +19,7 @@ export {
   
   // Business Logic Services
   therapistService,
-  placeService,
+  placesService as placeService,
   userService,
   authService,
   bookingService,

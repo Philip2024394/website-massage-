@@ -1,21 +1,154 @@
 /**
- * Translation Service for Chat Messages
- * Auto-translates between English and Indonesian
- * 
- * Uses LibreTranslate (free, self-hosted option) or Google Translate API
- * For production: Recommended to use Google Cloud Translation API for better quality
+ * Translation Service for Chat Messages using Google Translate API
+ * Handles real-time message translation between multiple languages
  */
 
-// Simple translation cache to avoid duplicate API calls
+interface TranslationCache {
+    [key: string]: string;
+}
+
+class TranslationService {
+    private apiKey: string = '';
+    private cache: TranslationCache = {};
+    private apiEndpoint = 'https://translation.googleapis.com/language/translate/v2';
+
+    /**
+     * Set the Google Translate API key
+     */
+    setApiKey(key: string) {
+        this.apiKey = key;
+        console.log('🔑 Translation API key updated');
+    }
+
+    /**
+     * Get the current API key
+     */
+    getApiKey(): string {
+        return this.apiKey;
+    }
+
+    /**
+     * Translate text from source language to target language
+     * @param text - Text to translate
+     * @param targetLang - Target language code (e.g., 'en', 'id', 'zh', 'ja')
+     * @param sourceLang - Source language code (optional, auto-detect if not provided)
+     */
+    async translate(
+        text: string,
+        targetLang: string,
+        sourceLang?: string
+    ): Promise<{ translatedText: string; detectedSourceLanguage?: string }> {
+        if (!text || !text.trim()) {
+            return { translatedText: text };
+        }
+
+        if (!this.apiKey) {
+            console.warn('⚠️ Translation API key not configured');
+            return { translatedText: text };
+        }
+
+        // Create cache key
+        const cacheKey = `${text}|${targetLang}|${sourceLang || 'auto'}`;
+        
+        // Check cache first
+        if (this.cache[cacheKey]) {
+            console.log('📦 Translation from cache');
+            return { translatedText: this.cache[cacheKey] };
+        }
+
+        try {
+            const params = new URLSearchParams({
+                key: this.apiKey,
+                q: text,
+                target: targetLang,
+                format: 'text'
+            });
+
+            if (sourceLang) {
+                params.append('source', sourceLang);
+            }
+
+            const response = await fetch(`${this.apiEndpoint}?${params.toString()}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Translation API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.data && data.data.translations && data.data.translations[0]) {
+                const translation = data.data.translations[0];
+                const translatedText = translation.translatedText;
+                const detectedSourceLanguage = translation.detectedSourceLanguage;
+
+                // Cache the translation
+                this.cache[cacheKey] = translatedText;
+
+                console.log('🌐 Translated:', { from: detectedSourceLanguage || sourceLang, to: targetLang });
+
+                return { 
+                    translatedText,
+                    detectedSourceLanguage 
+                };
+            }
+
+            throw new Error('Invalid translation response');
+
+        } catch (error) {
+            console.error('❌ Translation error:', error);
+            // Return original text if translation fails
+            return { translatedText: text };
+        }
+    }
+
+    /**
+     * Clear translation cache
+     */
+    clearCache() {
+        this.cache = {};
+        console.log('🗑️ Translation cache cleared');
+    }
+
+    /**
+     * Get supported languages
+     */
+    getSupportedLanguages() {
+        return [
+            { code: 'en', name: 'English', flag: '🇬🇧' },
+            { code: 'id', name: 'Indonesian', flag: '🇮🇩' },
+            { code: 'zh-CN', name: 'Chinese (Simplified)', flag: '🇨🇳' },
+            { code: 'zh-TW', name: 'Chinese (Traditional)', flag: '🇹🇼' },
+            { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+            { code: 'ko', name: 'Korean', flag: '🇰🇷' },
+            { code: 'th', name: 'Thai', flag: '🇹🇭' },
+            { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' },
+            { code: 'ru', name: 'Russian', flag: '🇷🇺' },
+            { code: 'ar', name: 'Arabic', flag: '🇸🇦' },
+            { code: 'fr', name: 'French', flag: '🇫🇷' },
+            { code: 'de', name: 'German', flag: '🇩🇪' },
+            { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+            { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
+            { code: 'it', name: 'Italian', flag: '🇮🇹' },
+            { code: 'nl', name: 'Dutch', flag: '🇳🇱' },
+            { code: 'hi', name: 'Hindi', flag: '🇮🇳' },
+            { code: 'bn', name: 'Bengali', flag: '🇧🇩' },
+            { code: 'ms', name: 'Malay', flag: '🇲🇾' },
+            { code: 'tl', name: 'Tagalog', flag: '🇵🇭' },
+        ];
+    }
+}
+
+// Export singleton instance
+export const translationService = new TranslationService();
+
+// Legacy compatibility
 const translationCache = new Map<string, string>();
 
-/**
- * Translates text between English and Indonesian
- * @param text - Text to translate
- * @param fromLang - Source language
- * @param toLang - Target language
- * @returns Translated text
- */
 export async function translateText(
     text: string,
     fromLang: 'en' | 'id',
@@ -33,19 +166,9 @@ export async function translateText(
     }
 
     try {
-        // Option 1: Use LibreTranslate (Free, requires instance)
-        // const translated = await translateWithLibreTranslate(text, fromLang, toLang);
-        
-        // Option 2: Use MyMemory Translation API (Free, no API key needed, 5000 chars/day)
-        const translated = await translateWithMyMemory(text, fromLang, toLang);
-        
-        // Option 3: Google Cloud Translation (Production - uncomment when ready)
-        // const translated = await translateWithGoogle(text, fromLang, toLang);
-        
-        // Cache the result
-        translationCache.set(cacheKey, translated);
-        
-        return translated;
+        const result = await translationService.translate(text, toLang, fromLang);
+        translationCache.set(cacheKey, result.translatedText);
+        return result.translatedText;
     } catch (error) {
         console.error('Translation error:', error);
         // Return original text if translation fails

@@ -240,6 +240,25 @@ class NotificationSoundManager {
     
     console.log('🔊 All notification sounds preloaded');
   }
+
+  /**
+   * Play booking alert (alias for booking sound)
+   */
+  playBookingAlert(): void {
+    this.play('booking', true);
+  }
+
+  /**
+   * Stop persistent alert (stop all sounds)
+   */
+  stopPersistentAlert(): void {
+    this.audioCache.forEach(audio => {
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
+  }
 }
 
 // Export singleton instance

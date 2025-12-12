@@ -24,12 +24,12 @@ const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
  * Create a new chat room for a booking
  */
 export async function createChatRoom(data: {
-    bookingId: number;
+    bookingId: string | number;
     customerId: string;
     customerName: string;
     customerLanguage: 'en' | 'id';
     customerPhoto?: string;
-    therapistId: number;
+    therapistId: string | number;
     therapistName: string;
     therapistLanguage: 'en' | 'id';
     therapistType: 'therapist' | 'place';
@@ -151,6 +151,7 @@ export async function sendSystemMessage(
                 originalLanguage: 'en',
                 translatedText: message.id,
                 translatedLanguage: 'id',
+                read: false, // Changed from isRead to read
                 isRead: false,
                 isSystemMessage: true,
                 createdAt: new Date().toISOString()

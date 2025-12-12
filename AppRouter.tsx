@@ -38,6 +38,7 @@ const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
 const PlaceTermsPage = React.lazy(() => import('./pages/PlaceTermsPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
 const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
+const MobileTherapistStandardsPage = React.lazy(() => import('./pages/MobileTherapistStandardsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
 const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
@@ -1240,6 +1241,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 />
             );
         }
+
+        case 'mobileTherapistStandards':
+            return (
+                <MobileTherapistStandardsPage
+                    onBack={handleBackToHome}
+                />
+            );
             
         case 'privacy':
             // Pass only the privacyPolicy translation namespace to avoid runtime errors
@@ -1247,7 +1255,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'cookies-policy':
             return renderBackPage(CookiesPolicyPage);
             
-        case 'membership':
+        case 'membership-select':
             return <MembershipPage 
                 onSelectPackage={handleSelectMembershipPackage}
                 onPackageSelect={handleSelectMembershipPackage}
@@ -1350,7 +1358,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
             return (
                 <React.Suspense fallback={<LoadingSpinner message="Loading membership plans..." />}>
-                    <MembershipPage />
+                    <MembershipPage onPackageSelect={() => {}} onBack={() => setCurrentPage('landing')} t={(key: string) => key} />
                 </React.Suspense>
             );
         }

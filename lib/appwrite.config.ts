@@ -49,6 +49,7 @@ export const APPWRITE_CONFIG = {
         chatRooms: 'chat_rooms', // NEW: Booking chat rooms
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
         // Lead Generation System
+        leads: '', // Disabled - collection doesn't exist (causes 404 errors)
         leadGenerations: 'lead_generations', // NEW: Pay-per-lead tracking
         leadBillingSummary: 'lead_billing_summary', // NEW: Monthly lead billing
         // Membership Agreement System

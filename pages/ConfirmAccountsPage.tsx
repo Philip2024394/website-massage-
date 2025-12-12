@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { therapistService, placeService } from '../lib/appwriteService';
+import { therapistService, placesService as placeService } from '../lib/appwriteService';
 import { MapPin, Phone, Clock } from 'lucide-react';
 
 interface PendingAccount {

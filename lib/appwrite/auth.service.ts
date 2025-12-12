@@ -4,8 +4,12 @@ export const authService = {
     async getCurrentUser(): Promise<any> {
         try {
             return await appwriteAccount.get();
-        } catch (error) {
-            console.error('Error getting current user:', error);
+        } catch (error: any) {
+            // Silently handle expected guest/401 errors (not logged in)
+            // Only log unexpected errors
+            if (error?.code !== 401 && error?.type !== 'general_unauthorized_scope') {
+                console.error('Error getting current user:', error);
+            }
             return null;
         }
     },

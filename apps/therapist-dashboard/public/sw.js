@@ -8,12 +8,22 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('✅ Service Worker: Caching assets');
-      return cache.addAll([
+      // Cache assets individually to avoid failing on any single error
+      const urlsToCache = [
         '/',
         '/index.html',
         '/manifest.json',
         NOTIFICATION_SOUND_URL
-      ]);
+      ];
+      
+      return Promise.allSettled(
+        urlsToCache.map(url => 
+          cache.add(url).catch(err => {
+            console.warn(`⚠️ Failed to cache ${url}:`, err.message);
+            return null;
+          })
+        )
+      );
     })
   );
   self.skipWaiting();

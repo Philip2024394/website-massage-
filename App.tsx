@@ -8,6 +8,7 @@ import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
+import ChatWindow from './components/ChatWindow';
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally
@@ -66,6 +67,112 @@ const App = () => {
         discountPercentage?: number;
         discountActive?: boolean;
     } | null>(null);
+
+    // Chat Window state
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatInfo, setChatInfo] = useState<{
+        therapistId: string;
+        therapistName: string;
+        therapistType: 'therapist' | 'place';
+        bookingId?: string;
+        chatRoomId?: string;
+        customerName?: string;
+        customerWhatsApp?: string;
+        therapistStatus?: 'available' | 'busy' | 'offline';
+        pricing?: { [key: string]: number };
+        discountPercentage?: number;
+        discountActive?: boolean;
+        profilePicture?: string;
+        providerRating?: number;
+        mode?: 'immediate' | 'scheduled';
+    } | null>(null);
+
+    // Listen for openChat events from booking creation
+    useEffect(() => {
+        console.log('🎧 App.tsx: Setting up openChat event listener');
+        
+        const handleOpenChat = async (event: CustomEvent) => {
+            console.log('📨 App.tsx: Received openChat event!', event.detail);
+            const { therapistId, therapistName, therapistType, bookingId, chatRoomId, therapistStatus, pricing, discountPercentage, discountActive, profilePicture, providerRating, mode } = event.detail;
+            
+            console.log('💬 Opening chat window for booking:', bookingId);
+            console.log('📋 Chat info:', { therapistId, therapistName, therapistType, chatRoomId, therapistStatus, pricing });
+            
+            // Try to get customer details from booking for scheduled bookings
+            let customerName = 'Guest';
+            let customerWhatsApp = '';
+            
+            if (bookingId) {
+                try {
+                    const { databases } = await import('./lib/appwrite');
+                    const { APPWRITE_CONFIG } = await import('./lib/appwrite.config');
+                    
+                    const booking = await databases.getDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.bookings || 'bookings',
+                        bookingId
+                    );
+                    
+                    if (booking.customerName) customerName = booking.customerName;
+                    if (booking.customerWhatsApp) customerWhatsApp = booking.customerWhatsApp;
+                    
+                    console.log('✅ Retrieved customer details from booking:', { customerName, customerWhatsApp });
+                } catch (error) {
+                    console.warn('⚠️ Could not retrieve customer details from booking:', error);
+                }
+            }
+            
+            setChatInfo({
+                therapistId,
+                therapistName,
+                therapistType: therapistType || 'therapist', // Use the type from event
+                therapistStatus: therapistStatus || 'available',
+                pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                discountPercentage,
+                discountActive,
+                profilePicture,
+                providerRating,
+                bookingId,
+                chatRoomId,
+                customerName,
+                customerWhatsApp,
+                mode: mode || 'immediate'
+            });
+            setIsChatOpen(true);
+            console.log('✅ Chat state updated - window should open');
+        };
+
+        window.addEventListener('openChat' as any, handleOpenChat);
+        console.log('✅ Event listener attached');
+        
+        return () => {
+            window.removeEventListener('openChat' as any, handleOpenChat);
+            console.log('🧹 Event listener cleaned up');
+        };
+    }, []);
+
+    // Listen for data refresh events to update ChatWindow status
+    useEffect(() => {
+        const handleDataRefresh = (event: CustomEvent) => {
+            console.log('🔄 App.tsx: Data refresh detected:', event.detail);
+            
+            // If ChatWindow is open and this refresh is for the current therapist
+            if (isChatOpen && chatInfo && event.detail?.therapistId === chatInfo.therapistId) {
+                console.log('🔄 Updating ChatWindow status for therapist:', chatInfo.therapistName);
+                setChatInfo(prev => prev ? {
+                    ...prev,
+                    therapistStatus: event.detail.newStatus?.toLowerCase() || 'available'
+                } : null);
+                console.log('✅ ChatWindow status updated to:', event.detail.newStatus);
+            }
+        };
+
+        window.addEventListener('refreshData' as any, handleDataRefresh);
+        
+        return () => {
+            window.removeEventListener('refreshData' as any, handleDataRefresh);
+        };
+    }, [isChatOpen, chatInfo]);
 
     // Start booking expiration service on mount
     useEffect(() => {
@@ -574,6 +681,31 @@ const App = () => {
                 discountPercentage={scheduleBookingInfo?.discountPercentage}
                 discountActive={scheduleBookingInfo?.discountActive}
             />
+
+            {/* Global Chat Window - Opens with registration flow */}
+            {(() => {
+                console.log('🔍 App.tsx render check - chatInfo:', chatInfo, 'isChatOpen:', isChatOpen);
+                return chatInfo && (
+                    <ChatWindow
+                        isOpen={isChatOpen}
+                        onClose={() => setIsChatOpen(false)}
+                        providerId={chatInfo.therapistId}
+                        providerRole={chatInfo.therapistType}
+                        providerName={chatInfo.therapistName}
+                        providerStatus={chatInfo.therapistStatus || 'available'}
+                        pricing={chatInfo.pricing as { '60': number; '90': number; '120': number } | undefined}
+                        discountPercentage={chatInfo.discountPercentage}
+                        discountActive={chatInfo.discountActive}
+                        providerPhoto={chatInfo.profilePicture}
+                        providerRating={chatInfo.providerRating}
+                        bookingId={chatInfo.bookingId}
+                        chatRoomId={chatInfo.chatRoomId}
+                        customerName={chatInfo.customerName}
+                        customerWhatsApp={chatInfo.customerWhatsApp}
+                        mode={chatInfo.mode}
+                    />
+                );
+            })()}
         </DeviceStylesProvider>
         </LanguageProvider>
     );

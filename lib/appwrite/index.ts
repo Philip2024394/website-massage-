@@ -9,7 +9,7 @@ export {
     imageUploadService,
     customLinksService,
     therapistService,
-    placeService,
+    placesService as placeService,
     hotelService,
     agentShareAnalyticsService,
     recruitLookupService,

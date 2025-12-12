@@ -23,6 +23,10 @@ export type Page =
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'qr-code' // QR Code sharing page
+    | 'membership-select'
+    | 'lead-accept'
+    | 'lead-decline'
+    | 'membership-terms'
     | 'placeDashboard' 
     | 'serviceTerms' 
     | 'placeTerms' 
@@ -132,6 +136,7 @@ export type Page =
     | 'accept-booking'
     | 'decline-booking'
     | 'verifiedProBadge'
+    | 'mobileTherapistStandards'
     | 'customerProviders'
     | 'customerReviews'
     | 'customerSupport';

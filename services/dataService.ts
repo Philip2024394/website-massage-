@@ -2,7 +2,7 @@ import { APP_CONFIG } from '../config';
 import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types';
 import { AvailabilityStatus } from '../types';
 import { stringifyPricing, stringifyMassageTypes, stringifyCoordinates, stringifyAnalytics } from '../utils/appwriteHelpers';
-import { therapistService, placeService, agentService } from '../lib/appwriteService';
+import { therapistService, placesService as placeService, agentService } from '../lib/appwriteService';
 
 // Main image URLs from ImageKit for therapists
 const THERAPIST_MAIN_IMAGES = [
@@ -274,7 +274,7 @@ export const dataService = {
             const newPlace = { ...place, id: Date.now() };
             return newPlace;
         } else {
-            return placeService.create(place);
+            return placesService.update(place.id, place);
         }
     },
 

@@ -1,7 +1,9 @@
-import { databases } from '../lib/appwriteService';
+import { appwriteDatabases } from '../lib/appwrite/client';
 import { ID } from 'appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 
-const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'indastreet-db';
+const DATABASE_ID = APPWRITE_CONFIG.databaseId;
+const databases = appwriteDatabases;
 
 const ANALYTICS_COLLECTION_ID = 'user-sessions'; // You'll need to create this collection
 

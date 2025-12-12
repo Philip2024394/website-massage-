@@ -174,7 +174,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 membershipStats
             ] = await Promise.all([
                 therapistService.getAll(),
-                placeService.getAll(),
+                placesService.getAll(),
                 facialPlaceService.getAll(),
                 bookingService.getAll(),
                 membershipPackageService.getMembershipStats()
@@ -369,7 +369,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
         try {
             const isTherapist = activeView === 'therapists';
-            const service = isTherapist ? therapistService : placeService;
+            const service = isTherapist ? therapistService : placesService;
             
             await service.update(editingCard.$id, {
                 name: editingCard.name,

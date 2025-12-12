@@ -584,9 +584,11 @@ const HomePage: React.FC<HomePageProps> = ({
         if (userLocation && userLocation.lat && userLocation.lng) {
             // Find the closest Indonesian city to user's location
             const detectedCity = findCityByCoordinates(userLocation.lat, userLocation.lng);
-            if (detectedCity && detectedCity.name !== selectedCity && selectedCity === 'all') {
+            if (detectedCity) {
                 console.log('🎯 Auto-detected city from user location:', detectedCity.name);
-                setSelectedCity(detectedCity.name);
+                // DON'T auto-change selectedCity - let user manually select
+                // This was causing Budi to be hidden in Chrome but not Firefox
+                // setSelectedCity(detectedCity.name);
             }
         }
     }, [userLocation]);

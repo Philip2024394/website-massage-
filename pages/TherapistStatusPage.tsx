@@ -81,8 +81,11 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
     const handleStatusChange = async (status: AvailabilityStatus) => {
         setCurrentStatus(status);
         try {
-            // Map to lowercase for backend
-            const update: any = { status: status.toLowerCase() };
+            // Update both status and availability fields
+            const update: any = { 
+                status: status.toLowerCase(),
+                availability: status  // Use proper case for availability enum
+            };
             if (status === AvailabilityStatus.Busy) {
                 const duration = busyMinutes || 120;
                 const bookedUntil = new Date(Date.now() + duration * 60 * 1000).toISOString();
@@ -106,6 +109,16 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
                 const resp = await therapistService.update(String((therapist as any).$id || therapist.id), update);
                 console.log('✅ Status updated (status page):', resp.status, resp.availability);
                 showToast(`Status set: ${status}`, 'success');
+                
+                // 🔄 Trigger data refresh for HomePage and ChatWindow
+                console.log('🔄 Triggering data refresh after status change...');
+                window.dispatchEvent(new CustomEvent('refreshData', {
+                    detail: { 
+                        source: 'therapist-status-update',
+                        therapistId: therapist.id,
+                        newStatus: status
+                    }
+                }));
             }
         } catch (e) {
             console.error('❌ Failed status update from status page', e);

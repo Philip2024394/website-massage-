@@ -161,26 +161,34 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }, [coordinates, mapsApiLoaded]);
 
   const initializeMap = (coords: {lat: number, lng: number}) => {
-    if (!mapRef.current || !(window as any).google) return;
+    try {
+      if (!mapRef.current || !(window as any).google || !(window as any).google.maps || !(window as any).google.maps.Map) {
+        console.warn('⚠️ Google Maps API not fully loaded yet');
+        return;
+      }
 
-    const map = new (window as any).google.maps.Map(mapRef.current, {
-      center: coords,
-      zoom: 15,
-      mapTypeControl: false,
-      streetViewControl: false,
-    });
+      const map = new (window as any).google.maps.Map(mapRef.current, {
+        center: coords,
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
 
-    // Clear existing marker
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
-    }
+      // Clear existing marker
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+      }
 
-    // Add new marker
-    markerRef.current = new (window as any).google.maps.Marker({
-      position: coords,
+      // Add new marker
+      markerRef.current = new (window as any).google.maps.Marker({
+        position: coords,
       map: map,
       title: 'Your Location',
     });
+    } catch (error) {
+      console.error('❌ Error initializing map:', error);
+      // Don't throw - allow page to continue loading
+    }
   };
 
   const handleSetLocation = () => {
@@ -267,7 +275,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   const handleSaveProfile = async () => {
-    if (!therapist) return;
+    console.log('🚀 handleSaveProfile called');
+    if (!therapist) {
+      console.error('❌ No therapist data found');
+      showToast('❌ Error: Therapist data not loaded', 'error');
+      return;
+    }
+    console.log('📝 Starting save with therapist:', therapist.$id || therapist.id);
     setSaving(true);
     
     try {
@@ -376,11 +390,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       console.log('🔔 Dispatching refreshTherapistData event...');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-updated' }));
       
+      console.log('🎉 About to show success toast...');
       showToast('✅ Profile saved and LIVE!', 'success');
-      console.log('✅ Profile saved successfully - Check HomePage in 2 seconds');
-    } catch (e) {
+      console.log('✅ Toast dispatched - Profile saved successfully');
+      console.log('✅ Check HomePage for your therapist card!');
+    } catch (e: any) {
       console.error('❌ Failed to save profile:', e);
-      showToast('Failed to save profile', 'error');
+      const errorMessage = e?.message || e?.toString() || 'Failed to save profile';
+      showToast(`❌ Error: ${errorMessage}`, 'error');
     } finally {
       setSaving(false);
     }
@@ -451,13 +468,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* WhatsApp */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">📱 WhatsApp Number *</label>
-              <input
-                value={whatsappNumber}
-                onChange={e => setWhatsappNumber(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
-                placeholder="+62812345678"
-              />
-              <p className="text-xs text-gray-500 mt-1">Format: +62 followed by 6-15 digits</p>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 font-medium pointer-events-none">
+                  +62
+                </span>
+                <input
+                  type="tel"
+                  value={whatsappNumber.replace(/^\+62/, '')}
+                  onChange={e => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    setWhatsappNumber('+62' + digits);
+                  }}
+                  className="w-full border-2 border-gray-300 rounded-lg pl-14 pr-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                  placeholder="812345678"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Enter your WhatsApp number (numbers only after +62)</p>
             </div>
 
             {/* Profile Picture */}
@@ -666,9 +692,26 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* Publish Button */}
             <div className="pt-4">
               <button
-                onClick={handleSaveProfile}
-                disabled={saving || !canSave}
-                className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-lg hover:from-orange-700 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:transform-none"
+                onClick={(e) => {
+                  if (!canSave) {
+                    e.preventDefault();
+                    const missingFields: string[] = [];
+                    if (!name.trim()) missingFields.push('Name');
+                    if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
+                    if (selectedCity === 'all') missingFields.push('City/Location');
+                    showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
+                    return;
+                  }
+                  handleSaveProfile();
+                }}
+                disabled={saving}
+                className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
+                  saving 
+                    ? 'bg-gray-400 cursor-wait' 
+                    : !canSave 
+                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 cursor-pointer animate-pulse' 
+                      : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
+                }`}
               >
                 {saving ? (
                   <span className="flex items-center justify-center gap-2">
@@ -677,6 +720,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                     </svg>
                     Publishing...
+                  </span>
+                ) : !canSave ? (
+                  <span className="flex items-center justify-center gap-2">
+                    ⚠️ Complete Required Fields
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">

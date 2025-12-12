@@ -2,9 +2,7 @@
 import type { MonthlyAgentMetrics } from '../types';
 import { getNonRepeatingMainImage } from './appwrite/image.service';
 export { getRandomLiveMenuImage, getNonRepeatingMainImage } from './appwrite/image.service';
-import { databases, account, storage, ID, client } from './appwrite';
-import { APPWRITE_CONFIG } from './appwrite.config';
-import { Query, Functions } from 'appwrite';
+import { Functions } from 'appwrite';
 
 const functions = new Functions(client);
 
@@ -255,13 +253,11 @@ export const customLinksService = {
     }
 };
 // Appwrite service - Real implementation
-import { Client, Databases, Account, Query, Storage, ID, Permission, Role } from 'appwrite';
+import { Query, ID, Permission, Role } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { rateLimitedDb } from './rateLimitService';
 import type { AgentVisit } from '../types';
 
-
-// Initialize Appwrite Client
 // Import from new modular structure
 import { appwriteClient as client, appwriteDatabases as databases, appwriteAccount as account, appwriteStorage as storage } from './appwrite/client';
 
@@ -800,7 +796,7 @@ export const therapistService = {
             console.log('📤 Uploading KTP ID card for therapist:', therapistId);
             
             // Upload file to Appwrite Storage
-            const bucketId = APPWRITE_CONFIG.storage.therapistImages || 'therapist-images';
+            const bucketId = 'therapist-images';
             const fileId = `ktp-${therapistId}-${Date.now()}`;
             
             const uploadedFile = await storage.createFile(
@@ -841,12 +837,18 @@ export const placesService = {
             // Enrich with analytics from leads collection if available
             for (const place of response.documents) {
                 try {
-                    const leadsData = await databases.listDocuments(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.leads || 'leads',
-                        [Query.equal('placeId', place.$id)]
-                    );
-                    place.analytics = JSON.stringify({ bookings: leadsData.total });
+                    // Only query leads if collection exists (not empty string)
+                    if (APPWRITE_CONFIG.collections.leads) {
+                        const leadsData = await databases.listDocuments(
+                            APPWRITE_CONFIG.databaseId,
+                            APPWRITE_CONFIG.collections.leads,
+                            [Query.equal('placeId', place.$id)]
+                        );
+                        place.analytics = JSON.stringify({ bookings: leadsData.total });
+                    } else {
+                        // Use seed data if leads collection doesn't exist
+                        throw new Error('Leads collection disabled');
+                    }
                 } catch {
                     const seedBookings = 32 + Math.floor(Math.random() * 19);
                     place.analytics = JSON.stringify({ bookings: seedBookings });
@@ -2312,7 +2314,9 @@ export const bookingService = {
                     status: 'Pending',
                     duration: booking.duration || parseInt(booking.service),
                     totalCost: booking.totalCost || 0,
-                    paymentMethod: booking.paymentMethod || 'Unpaid'
+                    paymentMethod: booking.paymentMethod || 'Unpaid',
+                    price: Math.round((booking.totalCost || 0) / 1000), // Add required price field
+                    createdAt: new Date().toISOString() // Add required createdAt field
                 };
                 console.log('✅ Mock booking created:', mockBooking.$id);
                 return mockBooking;
@@ -2340,12 +2344,9 @@ export const bookingService = {
                     duration: booking.duration || parseInt(booking.service),
                     totalCost: booking.totalCost || 0,
                     paymentMethod: booking.paymentMethod || 'Unpaid',
-                    // New lifecycle fields
-                    confirmedAt: null,
-                    completedAt: null,
-                    cancelledAt: null,
-                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minute SLA
-                    providerResponseStatus: 'AwaitingResponse'
+                    price: Math.round((booking.totalCost || 0) / 1000), // Add required price field (in K format)
+                    createdAt: new Date().toISOString(), // Add required createdAt field
+                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minute response deadline
                 }
             );
             console.log('✅ Booking created successfully:', response.$id);
@@ -2918,25 +2919,49 @@ export const messagingService = {
         bookingId?: string;
     }): Promise<any> {
         try {
+            const messageId = ID.unique();
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'chat_messages', // Add to config
-                ID.unique(),
+                APPWRITE_CONFIG.collections.messages || 'messages',
+                messageId,
                 {
-                    ...message,
+                    messageId: messageId,
+                    conversationId: message.conversationId,
+                    senderId: message.senderId,
+                    senderName: message.senderName,
+                    senderRole: message.senderType,
+                    senderType: message.senderType,
+                    recipientId: message.receiverId,
+                    receiverId: message.receiverId,
+                    receiverName: message.receiverName,
+                    receiverRole: message.receiverType,
+                    message: message.content,
+                    content: message.content,
+                    messageType: 'text',
+                    bookingId: message.bookingId || null,
+                    metadata: null,
                     isRead: false,
-                    createdAt: new Date().toISOString()
+                    sentAt: new Date().toISOString()
                 }
             );
             console.log('✅ Message sent:', response.$id);
             
-            // Create notification for receiver
-            await notificationService.create({
-                providerId: parseInt(message.receiverId),
-                message: `New message from ${message.senderName}`,
-                type: 'system',
-                bookingId: message.bookingId
-            });
+            // Create notification for receiver (only if receiverId is a valid number)
+            if (message.receiverType === 'therapist' || message.receiverType === 'place') {
+                try {
+                    const receiverIdNum = parseInt(message.receiverId);
+                    if (!isNaN(receiverIdNum)) {
+                        await notificationService.create({
+                            providerId: receiverIdNum,
+                            message: `New message from ${message.senderName}`,
+                            type: 'system',
+                            bookingId: message.bookingId
+                        });
+                    }
+                } catch (notifError) {
+                    console.warn('⚠️ Could not create notification:', notifError);
+                }
+            }
             
             return response;
         } catch (error) {
@@ -2949,10 +2974,10 @@ export const messagingService = {
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages_collection_id',
+                APPWRITE_CONFIG.collections.messages || 'messages',
                 [
                     Query.equal('conversationId', conversationId),
-                    Query.orderAsc('createdAt'),
+                    Query.orderAsc('sentAt'),
                     Query.limit(100)
                 ]
             );
@@ -2968,13 +2993,13 @@ export const messagingService = {
             // Get all messages where user is sender or receiver
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages_collection_id',
+                APPWRITE_CONFIG.collections.messages || 'messages',
                 [
                     Query.or([
                         Query.equal('senderId', userId),
                         Query.equal('receiverId', userId)
                     ]),
-                    Query.orderDesc('createdAt'),
+                    Query.orderDesc('sentAt'),
                     Query.limit(100)
                 ]
             );
@@ -3174,7 +3199,7 @@ export const verificationService = {
             // Get provider data
             const provider = providerType === 'therapist' 
                 ? await therapistService.getById(providerId.toString())
-                : await placeService.getById(providerId.toString());
+                : await placesService.getById(providerId.toString());
             
             if (!provider) {
                 return {
@@ -3379,7 +3404,7 @@ export const adminMessageService = {
             );
 
             // Mark each as read
-            const updatePromises = response.documents.map(doc =>
+            const updatePromises = response.documents.map((doc: any) =>
                 databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     'admin_messages',
@@ -3448,9 +3473,7 @@ export const hotelVillaBookingService = {
                     bookingTime: bookingData.startTime || new Date().toISOString(),
                     status: bookingData.status || 'pending',
                     price: bookingData.price || 0,
-                    createdAt: new Date().toISOString(),
-                    confirmedAt: null,
-                    completedAt: null
+                    createdAt: new Date().toISOString()
                 }
             );
             
@@ -4568,22 +4591,18 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
 +62-XXX-XXXX`;
 
             // Send in-app message/notification to provider
-            const conversationId = `booking_${leadId}`;
-            await this.messagingService.sendMessage(
+            const conversationId = `booking_${lead.$id}`;
+            await messagingService.sendMessage({
                 conversationId,
-                'system',
-                lead.memberId,
-                `🆕 New booking request! Customer: ${lead.customerName}. Service: ${lead.serviceType}. Price: Rp ${lead.bookingPrice.toLocaleString()}. You have 5 minutes to respond.`,
-                'system',
-                { 
-                    bookingId: leadId, 
-                    leadId, 
-                    status: 'pending',
-                    acceptUrl: lead.acceptUrl,
-                    declineUrl: lead.declineUrl,
-                    leadCost: lead.leadCost
-                }
-            );
+                senderId: 'system',
+                senderType: 'user',
+                senderName: 'System',
+                receiverId: lead.memberId,
+                receiverType: 'user',
+                receiverName: lead.memberName || 'Provider',
+                content: `🆕 New booking request! Customer: ${lead.customerName}. Service: ${lead.serviceType}. Price: Rp ${lead.bookingPrice.toLocaleString()}. You have 5 minutes to respond.`,
+                bookingId: lead.$id
+            });
             
             console.log('✅ Lead notification sent to provider:', lead.memberWhatsApp);
         } catch (error) {
@@ -4635,14 +4654,17 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
             
             // Send in-app message to customer
             const conversationId = `booking_${leadId}`;
-            await this.messagingService.sendMessage(
+            await messagingService.sendMessage({
                 conversationId,
-                updatedLead.memberId,
-                updatedLead.customerId,
-                `✅ Your ${updatedLead.serviceType} booking has been confirmed! Provider: ${updatedLead.memberName}. They will contact you shortly via WhatsApp at ${updatedLead.customerWhatsApp}.`,
-                'system',
-                { bookingId: leadId, leadId, status: 'accepted' }
-            );
+                senderId: updatedLead.memberId,
+                senderType: 'user',
+                senderName: updatedLead.memberName,
+                receiverId: updatedLead.customerId,
+                receiverType: 'user',
+                receiverName: updatedLead.customerName,
+                content: `✅ Your ${updatedLead.serviceType} booking has been confirmed! Provider: ${updatedLead.memberName}. They will contact you shortly via WhatsApp at ${updatedLead.customerWhatsApp}.`,
+                bookingId: leadId
+            });
             
             // Update monthly billing summary
             await this.updateBillingSummary(updatedLead.memberId, updatedLead.memberType);
@@ -4743,7 +4765,7 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                 
                 // Send in-app message to customer about expiration
                 const conversationId = `booking_${leadId}`;
-                await this.messagingService.sendMessage(
+                await messagingService.sendMessage(
                     conversationId,
                     lead.memberId,
                     lead.customerId,
@@ -5022,9 +5044,9 @@ export const membershipService = {
     calculateOutstandingDues: async (memberId: string, memberType: string) => {
         try {
             // Get membership payments owed
-            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                APPWRITE_CONFIG.collections.facial_places;
 
             const member = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -5098,9 +5120,9 @@ export const membershipService = {
             );
 
             // Update member document
-            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.therapistsCollectionId :
-                                memberType === 'massage_place' ? APPWRITE_CONFIG.placesCollectionId :
-                                APPWRITE_CONFIG.facialPlacesCollectionId;
+            const collectionId = memberType === 'therapist' ? APPWRITE_CONFIG.collections.therapists :
+                                memberType === 'massage_place' ? APPWRITE_CONFIG.collections.places :
+                                APPWRITE_CONFIG.collections.facial_places;
 
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -5224,7 +5246,7 @@ export const membershipService = {
             );
 
             // Mark all outstanding leads as paid
-            await leadGenerationService.markLeadsPaid(upgrade.memberId, new Date().toISOString());
+            await leadGenerationService.markLeadsPaid(upgrade.memberId, new Date().toISOString().substring(0,7), upgrade.amount || 0);
 
             return upgrade;
         } catch (error) {
@@ -5816,7 +5838,7 @@ export const membershipPackageService = {
 
                     // Send admin notification
                     await sendAdminNotification({
-                        type: 'membership_expiring',
+                        type: 'system',
                         title: `⚠️ Membership Expiring: ${membership.memberType}`,
                         message: `${membership.memberType} membership for ${membership.memberId} expires in ${daysLeft} days. Package: ${membership.packageType.toUpperCase()}`,
                         priority: 'high',
@@ -6225,7 +6247,7 @@ export const paymentConfirmationService = {
             // Send approval notification to user
             await notificationService.create({
                 userId: payment.userId,
-                type: 'payment_approved',
+                type: 'payment_received',
                 title: '✅ Payment Confirmed',
                 message: `Your payment of IDR ${payment.amount.toLocaleString()} has been verified. ${
                     payment.paymentType === 'membership' ? 'Your membership is now active!' : 'Your payment has been processed.'
@@ -6275,7 +6297,7 @@ export const paymentConfirmationService = {
             // Send decline notification to user
             await notificationService.create({
                 userId: payment.userId,
-                type: 'payment_declined',
+                type: 'system',
                 title: '❌ Payment Not Received',
                 message: `Payment was not received. Please check the proof of payment attachment. Reason: ${reason}`,
                 priority: 'high',

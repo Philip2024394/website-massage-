@@ -121,7 +121,7 @@ export const useMassagePlaceProfile = (place: Place | null): UseMassagePlaceProf
     // Gallery images - use place's gallery if available, otherwise use defaults
     const galleryImages = useMemo((): GalleryImage[] => {
         // If place has custom gallery images, use them
-        if (place?.galleryImages && place.galleryImages.length > 0) {
+        if (place?.galleryImages && Array.isArray(place.galleryImages) && place.galleryImages.length > 0) {
             return place.galleryImages.map(img => ({
                 imageUrl: img.imageUrl,
                 caption: img.caption,

@@ -1,4 +1,4 @@
-import { Client, Databases, Account, Storage, ID, Permission, Role } from 'appwrite';
+import { Client, Databases, Account, Storage, ID, Permission, Role, Query } from 'appwrite';
 
 const client = new Client();
 
@@ -10,7 +10,7 @@ export const databases = new Databases(client);
 export const account = new Account(client);
 export const storage = new Storage(client);
 
-export { client, ID, Permission, Role };
+export { client, ID, Permission, Role, Query };
 
 // Database and Collection IDs - REVERTED TO PRODUCTION DATABASE
 export const DATABASE_ID = '68f76ee1000e64ca8d05';

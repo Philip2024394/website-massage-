@@ -253,7 +253,9 @@ const FacialPlaceProfilePage: React.FC<FacialPlaceProfilePageProps> = ({
                 therapistId: String(place.$id || place.id),
                 therapistName: place.name,
                 therapistType: 'place',
+                therapistStatus: (place as any).status || 'available',
                 profilePicture: place.profilePicture || place.mainImage,
+                providerRating: (place as any).rating || 0,
                 pricing: pricing,
                 discountPercentage: (place as any).discountPercentage || 0,
                 discountActive: isDiscountActive(place)

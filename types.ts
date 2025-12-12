@@ -243,6 +243,7 @@ export interface Therapist {
     mainImage?: string; // Main banner image URL
     description: string;
     status: AvailabilityStatus;
+    availability?: AvailabilityStatus; // Primary status field in Appwrite (has proper default)
     pricing: PricingString; // JSON string for Appwrite (legacy format)
     // New separate pricing fields for cleaner data management
     price60?: string; // 60-minute massage price (stored as "250" for 250k)

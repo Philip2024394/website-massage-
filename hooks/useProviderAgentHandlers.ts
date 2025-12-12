@@ -565,7 +565,7 @@ export const useProviderAgentHandlers = ({
                     const isNotFound = String(msg).toLowerCase().includes('not found') || String(err?.code || '').includes('404');
                     if (isNotFound) {
                         console.warn('⚠️ Document not found on update, creating new document instead...');
-                        savedDoc = await placesService.create({
+                        savedDoc = await placesService.update(loggedInProvider.id.toString(), {
                             ...updateData,
                             id: loggedInProvider.id,
                             placeId: loggedInProvider.id, // Add missing required field
@@ -584,7 +584,7 @@ export const useProviderAgentHandlers = ({
                 }
             } else {
                 console.log('➕ Creating your massage place profile (you can only create 1 card, but edit it unlimited times)');
-                savedDoc = await placesService.create({
+                savedDoc = await placesService.update(loggedInProvider.id.toString(), {
                     ...updateData,
                     id: loggedInProvider.id,
                     placeId: loggedInProvider.id, // Add missing required field
@@ -599,7 +599,7 @@ export const useProviderAgentHandlers = ({
             }
             
             // Create default Silver membership if this is a new place
-            if (!existingPlace) {
+            if (!savedDoc) {
                 try {
                     console.log('💳 Creating default Silver membership for new massage place...');
                     const { membershipPackageService } = await import('../lib/appwriteService');

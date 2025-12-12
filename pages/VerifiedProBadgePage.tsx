@@ -122,6 +122,12 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
             </div>
           </div>
           <p className="text-sm text-gray-600">When you see our verified badge on a provider's profile, you can book with complete confidence knowing they meet our rigorous safety and quality standards.</p>
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-gray-700 font-semibold mb-2">🛡️ Identity Verification & Safety Assurance</p>
+            <p className="text-sm text-gray-700">
+              All verified badge partners have completed identity verification by submitting official government-issued identification, undergoing comprehensive background checks, and meeting our standard verification requirements. <strong>Indastreet</strong> upholds safety and exceptional service as core industry standards. For your peace of mind, we recommend selecting verified service providers, ensuring you engage only with trusted professionals who have successfully completed our rigorous screening protocols.
+            </p>
+          </div>
         </div>
 
         {/* Verification Standards & Safety Requirements */}
@@ -189,6 +195,19 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
 
           <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <p className="text-sm text-gray-700 font-semibold">Indastreet Team</p>
+          </div>
+        </div>
+
+        {/* Client Safety Tips */}
+        <div className="bg-white rounded-xl shadow-sm p-6 border-2 border-orange-200">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Client Safety Tips</h2>
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>✓ Always book through the Indastreet platform to ensure verified service providers</p>
+            <p>✓ <strong>Use the in-app chat system for all communications</strong> - Indastreet maintains complete chat records for your protection. In the event of any dispute or concern, we have full documentation on file to assist you. Please note that WhatsApp communications are not accessible to Indastreet and cannot be used for dispute resolution.</p>
+            <p>✓ Verify provider credentials and certification upon request</p>
+            <p>✓ Communicate any concerns, allergies, or preferences before your session</p>
+            <p>✓ Report any unprofessional behavior immediately through our platform</p>
+            <p>✓ Leave honest feedback to help maintain community standards</p>
           </div>
         </div>
 

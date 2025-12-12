@@ -7,9 +7,12 @@ import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
+import BookingFormPopup, { BookingData } from './BookingFormPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
+import SocialSharePopup from './SocialSharePopup';
 import { useUIConfig } from '../hooks/useUIConfig';
+import { MessageCircle } from 'lucide-react';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -50,8 +53,20 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
         // ignore parsing errors
     }
 
-    // Return the actual therapist status
-    return therapist.status || AvailabilityStatus.Offline;
+    // Use availability field (has proper default) or status as fallback
+    const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Offline;
+    
+    // Debug Budi's status specifically
+    if (therapist.name && therapist.name.toLowerCase().includes('budi')) {
+        console.log('🔍 BUDI STATUS TRACE - getDisplayStatus():');
+        console.log('  Raw therapist object:', therapist);
+        console.log('  therapist.availability:', (therapist as any).availability);
+        console.log('  therapist.status:', therapist.status);
+        console.log('  therapist.busyUntil:', therapist.busyUntil);
+        console.log('  Returning currentStatus:', currentStatus);
+    }
+    
+    return currentStatus;
 };
 
 // Helper function to check if discount is currently active
@@ -143,7 +158,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
+    const [showBookingForm, setShowBookingForm] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showSharePopup, setShowSharePopup] = useState(false);
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
@@ -302,9 +319,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return () => clearInterval(interval);
     }, [therapist]);
     
-    // Map any status value to valid AvailabilityStatus
+    // Debug Budi's raw data
+    if (therapist.name && therapist.name.toLowerCase().includes('budi')) {
+        console.log('🔍 BUDI RAW DATA from Appwrite:');
+        console.log('  Full therapist object:', JSON.stringify(therapist, null, 2));
+        console.log('  therapist.availability:', (therapist as any).availability);
+        console.log('  therapist.status:', therapist.status);
+        console.log('  Available field:', (therapist as any).available);
+        console.log('  Busy field:', (therapist as any).busy);
+        console.log('  busyUntil field:', therapist.busyUntil);
+    }
+    
+    // Map any status value to valid AvailabilityStatus - check availability field first
     let validStatus = AvailabilityStatus.Offline;
-    const statusStr = String(therapist.status || '');
+    const statusStr = String((therapist as any).availability || therapist.status || '');
     
     if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
         validStatus = AvailabilityStatus.Available;
@@ -478,44 +506,139 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         : (mainImage || getRandomTherapistImage(therapist.id.toString()));
 
     const openWhatsApp = () => {
-        console.log('📱 Book Now Config:', bookNowConfig);
+        console.log('📱 Book Now clicked - showing booking form');
         
-        // Check if config says to skip popup (direct WhatsApp)
-        if (bookNowConfig.skipPopup || bookNowConfig.type === 'whatsapp') {
-            // No login required for WhatsApp booking - direct contact allowed
-            
-            // Send notification to therapist ONLY if it's not them clicking their own button
-            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-            if (loggedInProviderId !== therapistIdNum) {
-                notificationService.createWhatsAppContactNotification(
-                    therapistIdNum,
-                    therapist.name
-                ).catch(err => console.log('Notification failed:', err));
+        // Check if there's already a pending booking
+        const pendingBooking = sessionStorage.getItem('pending_booking');
+        if (pendingBooking) {
+            const parsed = JSON.parse(pendingBooking);
+            const deadline = new Date(parsed.deadline);
+            if (deadline > new Date()) {
+                const minutesLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / 60000);
+                alert(`⚠️ You have a pending ${parsed.type} booking with ${parsed.therapistName}.\n\nPlease wait for their response (${minutesLeft} min remaining) before booking with another therapist.`);
+                return;
             } else {
-                console.log('🔇 Skipping self-notification (you clicked your own button)');
+                // Expired, clear it
+                sessionStorage.removeItem('pending_booking');
             }
+        }
+        
+        // Check if therapist is busy
+        if (displayStatus === AvailabilityStatus.Busy) {
+            setShowBusyModal(true);
+        } else {
+            // Show booking form popup
+            setShowBookingForm(true);
+        }
+    };
 
-            // Use message from config or default
-            const message = bookNowConfig.message || `Hi ${therapist.name}! 👋\n\nI found your profile on Indastreet and I'm interested in booking a massage service.\n\nCould you please share your availability and confirm the pricing?\n\nThank you! 🙏`;
+    const handleBookingSubmit = async (bookingData: BookingData) => {
+        console.log('✅ Booking submitted:', bookingData);
+        
+        // Check if there's already a pending booking
+        const pendingBooking = sessionStorage.getItem('pending_booking');
+        if (pendingBooking) {
+            const parsed = JSON.parse(pendingBooking);
+            const deadline = new Date(parsed.deadline);
+            if (deadline > new Date()) {
+                alert(`⚠️ You have a pending booking with ${parsed.therapistName}. Please wait for their response before booking with another therapist.`);
+                setShowBookingForm(false);
+                return;
+            } else {
+                // Expired, clear it
+                sessionStorage.removeItem('pending_booking');
+            }
+        }
+        
+        // Close booking form
+        setShowBookingForm(false);
 
-            // Direct WhatsApp - no busy modal
-            onIncrementAnalytics('whatsapp_clicks');
-            window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
+        // Create booking message with all details
+        const locationInfo = bookingData.locationType === 'hotel'
+            ? `🏨 Hotel/Villa: ${bookingData.address}\n🚪 Room: ${bookingData.roomNumber}`
+            : `🏠 Home Address: ${bookingData.address}`;
+
+        const coordinatesInfo = bookingData.coordinates
+            ? `\n📍 GPS: ${bookingData.coordinates.lat.toFixed(6)}, ${bookingData.coordinates.lng.toFixed(6)}`
+            : '';
+
+        const bookingMessage = `🎯 NEW BOOKING REQUEST
+
+👤 Customer: ${bookingData.customerName}
+⏱️ Duration: ${bookingData.duration} minutes
+💰 Price: ${bookingData.price}
+
+📍 Location:
+${locationInfo}${coordinatesInfo}
+
+📝 Please confirm availability and arrival time.`;
+
+        try {
+            // Send notification to therapist with sound
+            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
             
-            // After opening WhatsApp, also open the chat window if available
+            // Set 15-minute deadline
+            const deadline = new Date();
+            deadline.setMinutes(deadline.getMinutes() + 15);
+            
+            // Create booking in database
+            const booking = await bookingService.create({
+                providerId: therapistIdNum.toString(),
+                providerType: 'therapist' as const,
+                providerName: therapist.name,
+                userId: loggedInProviderId?.toString(),
+                userName: bookingData.customerName,
+                service: bookingData.duration.toString() as '60' | '90' | '120',
+                startTime: new Date().toISOString(),
+                duration: bookingData.duration,
+                totalCost: parseFloat(bookingData.price),
+                paymentMethod: 'Unpaid'
+            });
+
+            // Lock booking - store pending booking info
+            sessionStorage.setItem('pending_booking', JSON.stringify({
+                bookingId: booking.$id || booking.id,
+                therapistId: therapistIdNum,
+                therapistName: therapist.name,
+                deadline: deadline.toISOString(),
+                type: 'immediate'
+            }));
+            
+            console.log('🔒 Booking locked until:', deadline.toISOString());
+
+            // Send notification to therapist
+            await notificationService.create({
+                providerId: therapistIdNum,
+                message: `New booking request from ${bookingData.customerName} for ${bookingData.duration} minutes`,
+                type: 'booking_request'
+            });
+            
+            console.log('🔔 Booking notification sent to therapist with MP3 sound');
+
+            // Open in-app chat window with booking message and lock indication
             if (onQuickBookWithChat) {
                 setTimeout(() => {
+                    console.log('💬 Opening in-app chat with booking details (locked until response)');
                     onQuickBookWithChat(therapist);
-                }, 500);
-            }
-        } else {
-            // Config says to show popup
-            if (displayStatus === AvailabilityStatus.Busy) {
-                setShowBusyModal(true);
+                }, 300);
             } else {
-                // Show booking confirmation popup
-                setShowBookingConfirmation(true);
+                // Fallback: dispatch event to open chat
+                const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                window.dispatchEvent(new CustomEvent('openChat', {
+                    detail: {
+                        therapistId: therapistIdNum,
+                        therapistName: therapist.name,
+                        therapistStatus: normalizedStatus,
+                        initialMessage: bookingMessage,
+                        profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
+                        pricing: pricing
+                    }
+                }));
             }
+
+        } catch (error) {
+            console.error('❌ Error creating booking:', error);
+            alert('Failed to create booking. Please try again.');
         }
     };
 
@@ -806,80 +929,23 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </div>
                     </div>
                 </div>
-
-
                 
-
-
-                {/* Social Share Buttons - Bottom Right Corner */}
-                <div className="absolute bottom-2 right-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    {/* WhatsApp */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const text = `Check out ${therapist.name} on IndaStreet - Amazing massage therapist!`;
-                            const url = window.location.href;
-                            window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
-                        }}
-                        className="w-7 h-7 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
-                        title="Share on WhatsApp"
-                        aria-label="Share on WhatsApp"
-                    >
-                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
-                        </svg>
-                    </button>
-                    
-                    {/* Facebook */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            const url = window.location.href;
-                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-                        }}
-                        className="w-7 h-7 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
-                        title="Share on Facebook"
-                        aria-label="Share on Facebook"
-                    >
-                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </button>
-                    
-                    {/* Instagram */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(`Check out ${therapist.name} on IndaStreet - Amazing massage therapist! ${window.location.href}`);
-                            alert('Instagram message copied! Open Instagram and paste to share.');
-                        }}
-                        className="w-7 h-7 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
-                        title="Share on Instagram"
-                        aria-label="Share on Instagram"
-                    >
-                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </button>
-                    
-                    {/* TikTok */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(`Check out ${therapist.name} on IndaStreet - Amazing massage therapist! ${window.location.href}`);
-                            alert('TikTok message copied! Open TikTok and paste to share.');
-                        }}
-                        className="w-7 h-7 bg-black hover:bg-gray-900 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
-                        title="Share on TikTok"
-                        aria-label="Share on TikTok"
-                    >
-                        <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </button>
-                </div>
+                {/* Share Button - Bottom Right Corner of image banner */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSharePopup(true);
+                    }}
+                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all group z-30"
+                    title="Share this therapist"
+                    aria-label="Share this therapist"
+                >
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                </button>
             </div>
-            
+
             {/* Profile Section - Flexbox layout for stable positioning */}
             <div className="px-4 -mt-12 relative z-10">
                 <div className="flex items-start justify-between gap-4">
@@ -960,12 +1026,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="relative mr-1.5">
                         {displayStatus === AvailabilityStatus.Available && (
                             <>
-                                {/* Satellite ring animation for Available status */}
-                                <span className="absolute inset-0 w-6 h-6 -left-2 -top-2 rounded-full border-2 border-green-300 animate-ping opacity-75"></span>
-                                <span className="absolute inset-0 w-5 h-5 -left-1.5 -top-1.5 rounded-full border border-green-400 animate-pulse"></span>
+                                {/* Static ring glow effect for Available status */}
+                                <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-300 opacity-40"></span>
+                                <span className="absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full bg-green-400 opacity-30"></span>
                             </>
                         )}
-                        <span className={`w-2 h-2 rounded-full block status-indicator ${isOvertime ? 'bg-red-500' : style.dot} ${displayStatus === AvailabilityStatus.Available ? 'animate-pulse' : ''}`}></span>
+                        <span className={`w-2 h-2 rounded-full block status-indicator relative ${isOvertime ? 'bg-red-500' : style.dot}`}>
+                            {!isOvertime && (displayStatus === AvailabilityStatus.Available || displayStatus === AvailabilityStatus.Busy) && (
+                                <span className={`absolute inset-0 rounded-full animate-ping ${
+                                    displayStatus === AvailabilityStatus.Available ? 'bg-green-400' : 'bg-yellow-400'
+                                }`}></span>
+                            )}
+                        </span>
                     </span>
                                         {displayStatus === AvailabilityStatus.Busy ? (
                                             therapist.busyUntil ? (
@@ -1125,13 +1197,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             })()}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
-            {/* Indastreet Verification Standards Link */}
+            {/* Indastreet Therapist Standards Link */}
             <div className="text-center mb-2 mt-2">
                 <button
-                    onClick={() => onNavigate?.('verifiedProBadge')}
+                    onClick={() => onNavigate?.('mobileTherapistStandards')}
                     className="text-sm font-medium hover:underline"
                 >
-                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
+                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Therapist Standards</span>
                 </button>
             </div>
 
@@ -1207,39 +1279,74 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
                 <button
                     onClick={() => {
-                        console.log('🟢 Book Now button clicked - opening WhatsApp for direct contact');
-                        // Direct WhatsApp contact - no popup needed
-                        openWhatsApp();
+                        console.log('🟢 Book Now button clicked - opening chat window');
+                        const pricing = getPricing();
+                        console.log('👤 Therapist object:', { 
+                            id: therapist.id, 
+                            name: therapist.name, 
+                            status: therapist.status,
+                            pricing: pricing,
+                            fullObject: therapist 
+                        });
+                        
+        // Final status debugging for Budi
+        if (therapist.name && (therapist.name.toLowerCase().includes('budi') || therapist.name === 'Budi')) {
+            console.log('🎯 BUDI STATUS DEBUG:');
+            console.log('  Raw Appwrite availability:', (therapist as any).availability);
+            console.log('  Raw Appwrite status:', therapist.status);
+            console.log('  Card calculates and shows:', displayStatus);
+            console.log('  ✅ FIXED: Converting', displayStatus, '→', displayStatus.toLowerCase(), 'for ChatWindow');
+        }                        // Open chat window directly with registration flow
+                        console.log('🔵 TherapistCard dispatching openChat:', { 
+                            therapistName: therapist.name, 
+                            displayStatus: displayStatus,
+                            availability: (therapist as any).availability,
+                            status: therapist.status 
+                        });
+                        // Convert displayStatus to lowercase format expected by ChatWindow
+                        const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                        
+                        window.dispatchEvent(new CustomEvent('openChat', {
+                            detail: {
+                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                therapistName: therapist.name,
+                                therapistType: 'therapist',
+                                therapistStatus: normalizedStatus, // Use normalized lowercase status
+                                pricing: pricing,
+                                profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
+                                providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
+                                discountPercentage: therapist.discountPercentage || 0,
+                                discountActive: isDiscountActive(therapist),
+                                mode: 'immediate'
+                            }
+                        }));
                     }}
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
                 >
-                    <WhatsAppIcon className="w-4 h-4"/>
+                    <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">Book Now</span>
                 </button>
                  <button 
                     onClick={() => {
                         console.log('📅 Schedule button clicked - opening popup');
                         
-                        // Always use scheduled booking popup for better UX and data tracking
-                        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
-                        if (openScheduleBookingPopup) {
-                            openScheduleBookingPopup({
+                        // Open ChatWindow directly in scheduled mode
+                        console.log('📅 Schedule button clicked - opening chat in scheduled mode');
+                        window.dispatchEvent(new CustomEvent('openChat', {
+                            detail: {
                                 therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
                                 therapistName: therapist.name,
                                 therapistType: 'therapist',
-                                profilePicture: therapist.profilePicture || therapist.mainImage,
+                                therapistStatus: displayStatus.toLowerCase(),
                                 pricing: pricing,
+                                profilePicture: therapist.profilePicture || therapist.mainImage,
+                                providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
                                 discountPercentage: therapist.discountPercentage || 0,
-                                discountActive: isDiscountActive(therapist)
-                            });
-                            onIncrementAnalytics('bookings');
-                        } else {
-                            console.error('Schedule booking popup not available');
-                            // Fallback to WhatsApp if popup not available
-                            const message = `Hi ${therapist.name}! 👋\n\nI'd like to schedule a massage appointment.\n\nWhat times do you have available?\n\nThank you! 🙏`;
-                            onIncrementAnalytics('whatsapp_clicks');
-                            window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
-                        }
+                                discountActive: isDiscountActive(therapist),
+                                mode: 'scheduled'
+                            }
+                        }));
+                        onIncrementAnalytics('bookings');
                     }} 
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 transition-colors duration-300"
                 >
@@ -1542,6 +1649,21 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 mobilePaymentType: (therapist as any).mobilePaymentType
             }}
         />
+
+        {/* Booking Form Popup */}
+        <BookingFormPopup
+            isOpen={showBookingForm}
+            onClose={() => setShowBookingForm(false)}
+            onSubmit={handleBookingSubmit}
+            therapistName={therapist.name}
+            therapistId={String(therapist.id)}
+            pricing={{
+                price60: pricing['60'].toString(),
+                price90: pricing['90'].toString(),
+                price120: pricing['120'].toString()
+            }}
+            language={currentLanguage}
+        />
         
         <style>{`
             @keyframes coin-fall-1 {
@@ -1602,6 +1724,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         `}</style>
             </div>
+
+            {/* Social Share Popup */}
+            <SocialSharePopup
+                isOpen={showSharePopup}
+                onClose={() => setShowSharePopup(false)}
+                title={therapist.name}
+                description={`Check out ${therapist.name} on IndaStreet! Amazing massage therapist offering professional services.`}
+                url={window.location.href}
+                type="therapist"
+            />
         </>
     );
 };

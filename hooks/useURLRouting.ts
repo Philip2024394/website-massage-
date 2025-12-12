@@ -51,6 +51,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'website-management': '/website',
         'placeDiscountBadge': '/discount-badge',
         'verifiedProBadge': '/verified-badge',
+        'mobileTherapistStandards': '/mobile-therapist-standards',
         'qr-code': '/qr'
     };
 

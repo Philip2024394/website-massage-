@@ -1,8 +1,9 @@
+// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
 import { 
     MessageSquare, Send, Search, Trash2, Archive, 
-    Users, ChevronDown, ChevronRight, User, Building, Sparkles,
-    Clock, X, MoreVertical, CheckCheck, Paperclip, Image as ImageIcon, FileText
+    ChevronDown, ChevronRight, User, Building, Sparkles,
+    Clock, X, CheckCheck, Paperclip, Image as ImageIcon, FileText
 } from 'lucide-react';
 import { therapistService, placesService, messagingService } from '@shared/appwriteService';
 
@@ -252,12 +253,12 @@ const AdminChatCenter: React.FC = () => {
         });
     };
 
-    const getCategoryIcon = (category: string) => {
+    const getCategoryIcon = (category: string): React.ReactElement => {
         switch (category) {
-            case 'therapist': return <User className="w-4 h-4" />;
-            case 'massage-place': return <Building className="w-4 h-4" />;
-            case 'facial-place': return <Sparkles className="w-4 h-4" />;
-            default: return <User className="w-4 h-4" />;
+            case 'therapist': return React.createElement(User, { className: "w-4 h-4" });
+            case 'massage-place': return React.createElement(Building, { className: "w-4 h-4" });
+            case 'facial-place': return React.createElement(Sparkles, { className: "w-4 h-4" });
+            default: return React.createElement(User, { className: "w-4 h-4" });
         }
     };
 

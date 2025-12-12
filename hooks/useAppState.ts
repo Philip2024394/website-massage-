@@ -33,18 +33,18 @@ export const useAppState = () => {
         return 'hotelVillaMenu';
       }
       
-      // 🔧 FIX: Check if user is already logged in as place provider and restore dashboard
-      const storedProvider = getFromLocalStorage('app_logged_in_provider');
-      if (storedProvider && storedProvider.type === 'place') {
-        console.log('✅ Found logged in place provider, restoring placeDashboard:', storedProvider.id);
-        return 'placeDashboard';
-      }
-      
-      // Check for other logged-in states
-      if (storedProvider && storedProvider.type === 'therapist') {
-        console.log('✅ Found logged in therapist, restoring therapistPortal:', storedProvider.id);
-        return 'therapistPortal';
-      }
+      // 🔧 DISABLED: Provider auto-login to prevent confusion with customer landing page
+      // Providers should manually log in via their respective login pages
+      // This ensures customers always see the landing page first
+      // const storedProvider = getFromLocalStorage('app_logged_in_provider');
+      // if (storedProvider && storedProvider.type === 'place') {
+      //   console.log('✅ Found logged in place provider, restoring placeDashboard:', storedProvider.id);
+      //   return 'placeDashboard';
+      // }
+      // if (storedProvider && storedProvider.type === 'therapist') {
+      //   console.log('✅ Found logged in therapist, restoring therapistPortal:', storedProvider.id);
+      //   return 'therapistPortal';
+      // }
       
       // Restore last page from session if available
       const sessionPage = sessionStorage.getItem('current_page') as Page | null;
@@ -213,6 +213,12 @@ export const useAppState = () => {
   const [chatBooking, setChatBooking] = useState<Booking | null>(null);
   const [isChatWindowVisible, setIsChatWindowVisible] = useState(false);
   
+  // Pending booking state - prevents multiple simultaneous bookings
+  const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
+  const [pendingBookingTherapistId, setPendingBookingTherapistId] = useState<string | null>(null);
+  const [pendingBookingDeadline, setPendingBookingDeadline] = useState<Date | null>(null);
+  const [isBookingLocked, setIsBookingLocked] = useState(false);
+  
   // Data state
   const [therapists, setTherapists] = useState<Therapist[]>([]);
   const [places, setPlaces] = useState<Place[]>([]);
@@ -323,6 +329,12 @@ export const useAppState = () => {
     activeChatRoom, setActiveChatRoom,
     chatBooking, setChatBooking,
     isChatWindowVisible, setIsChatWindowVisible,
+    
+    // Pending booking lock
+    pendingBookingId, setPendingBookingId,
+    pendingBookingTherapistId, setPendingBookingTherapistId,
+    pendingBookingDeadline, setPendingBookingDeadline,
+    isBookingLocked, setIsBookingLocked,
     
     // Data
     therapists, setTherapists,

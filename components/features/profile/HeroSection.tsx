@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react';
 import AnonymousReviewModal from '../../AnonymousReviewModal';
+import SocialSharePopup from '../../SocialSharePopup';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -67,6 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
+    const [showSharePopup, setShowSharePopup] = useState(false);
     
     // Handle anonymous review submission
     const handleAnonymousReviewSubmit = async (reviewData: any) => {
@@ -241,50 +243,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Social Share Buttons - Below main image, right side with spacing */}
-            <div className="flex justify-end pr-6 py-4 max-w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                <div className="flex gap-3 flex-wrap justify-end">
-                    {/* WhatsApp */}
-                    <a
-                        href={`https://wa.me/?text=Check out ${place.name} on IndaStreet!`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on WhatsApp"
-                    >
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
-                        </svg>
-                    </a>
-                    
-                    {/* Instagram */}
-                    <a
-                        href={`https://www.instagram.com/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on Instagram"
-                    >
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                    </a>
-                    
-                    {/* Facebook */}
-                    <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                        aria-label="Share on Facebook"
-                    >
-                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                </div>
+                
+                {/* Share Button - Bottom Right Corner */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSharePopup(true);
+                    }}
+                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                    title="Share this place"
+                    aria-label="Share this place"
+                >
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                </button>
             </div>
 
             {/* Content Section with padding adjustments */}
@@ -297,8 +270,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     </div>
                 )}
                 
-                {/* Place Name - Positioned higher */}
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{place.name || 'Relax Massage Jogja'}</h2>
+                {/* Place Name - Positioned higher with left margin to avoid profile image overlap */}
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 ml-16 md:ml-20">{place.name || 'Relax Massage Jogja'}</h2>
                 
                 {/* Location */}
                 {place.location && place.location.trim() !== '' && place.location !== 'Location pending setup' && (
@@ -779,6 +752,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     onSubmit={handleAnonymousReviewSubmit}
                 />
             )}
+
+            {/* Social Share Popup */}
+            <SocialSharePopup
+                isOpen={showSharePopup}
+                onClose={() => setShowSharePopup(false)}
+                title={place.name}
+                description={`Check out ${place.name} on IndaStreet! ${place.description || 'Amazing massage place with great services.'}`}
+                url={window.location.href}
+                type="place"
+            />
             
             <style>{`
                 @keyframes coin-fall-1 {

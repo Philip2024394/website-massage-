@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authService } from '@shared/appwriteService';
+import { authService, therapistService } from '@shared/appwriteService';
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
 import TherapistBookings from './pages/TherapistBookings';
@@ -14,6 +14,7 @@ import TherapistPaymentStatus from './pages/TherapistPaymentStatus';
 import TherapistLayout from './components/TherapistLayout';
 import LoginPage from './pages/LoginPage';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import ToastContainer from './components/ToastContainer';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status';
 
@@ -31,23 +32,36 @@ function App() {
     try {
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
+        console.log('✅ Authenticated user:', currentUser.email);
+        
+        // Fetch the actual therapist document from therapists collection
+        const therapists = await therapistService.getByEmail(currentUser.email);
+        if (therapists && therapists.length > 0) {
+          const therapistDoc = therapists[0];
+          console.log('✅ Found therapist document:', therapistDoc.$id);
+          setUser(therapistDoc);
+          setIsAuthenticated(true);
+        } else {
+          console.error('❌ No therapist document found for email:', currentUser.email);
+          // User is authenticated but has no therapist profile
+          setIsAuthenticated(false);
+        }
       }
     } catch (error) {
-      console.log('Not authenticated');
+      // Silently handle not authenticated state (expected on first load)
+      // Only log if it's not a 401/guest error
+      if (error instanceof Error && !error.message.includes('guests') && !error.message.includes('401')) {
+        console.error('Auth check error:', error);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLogin = async (email: string, password: string) => {
-    try {
-      await authService.login(email, password);
-      await checkAuth();
-    } catch (error) {
-      throw error;
-    }
+  const handleLogin = async () => {
+    // LoginPage handles authentication internally
+    // This just refreshes the auth state after successful login
+    await checkAuth();
   };
 
   const handleLogout = async () => {
@@ -134,6 +148,7 @@ function App() {
   return (
     <>
       <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+      <ToastContainer />
       <TherapistLayout
         therapist={user}
         currentPage={currentPage}

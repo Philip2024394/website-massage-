@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import ImageUpload from '../components/ImageUpload';
-import { placeService, authService } from '../lib/appwriteService';
+import { placesService as placeService, authService } from '../lib/appwriteService';
 import { membershipOptions } from '../constants/languages';
 import { LanguageSelector } from '../components/admin/LanguageSelector';
 

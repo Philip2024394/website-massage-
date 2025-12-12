@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, X, User, Phone, Calendar } from 'lucide-react';
-import { databases } from '../lib/appwrite';
+import { databases, ID, Query } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
+import { createChatRoom, sendSystemMessage } from '../lib/chatService';
 
 // Extend window type
 declare global {
@@ -18,6 +19,7 @@ declare global {
       hotelVillaType?: 'hotel' | 'villa';
       isImmediateBooking?: boolean; // For immediate bookings via green "Pesan" button
       pricing?: { [key: string]: number }; // Pricing object (e.g., {"60": 250, "90": 350, "120": 450})
+      providerRating?: number; // Provider rating for chat header overlay
       discountPercentage?: number; // Discount percentage if applicable
       discountActive?: boolean; // Whether discount is currently active
     }) => void;
@@ -37,6 +39,7 @@ interface ScheduleBookingPopupProps {
   therapistId: string;
   therapistName: string;
   therapistType: 'therapist' | 'place';
+  therapistStatus?: 'available' | 'busy' | 'offline';
   profilePicture?: string;
   hotelVillaId?: string;
   hotelVillaName?: string;
@@ -53,6 +56,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   therapistId,
   therapistName,
   therapistType,
+  therapistStatus,
   profilePicture,
   hotelVillaId,
   hotelVillaName,
@@ -70,7 +74,6 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
   const [selectedTime, setSelectedTime] = useState<TimeSlot | null>(null);
   const [customerName, setCustomerName] = useState('');
-  const [countryCode, setCountryCode] = useState<string>('+62');
   const [customerWhatsApp, setCustomerWhatsApp] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -240,6 +243,53 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     if (!isImmediateBooking && (!selectedDuration || !selectedTime)) return;
     if (!customerName || !customerWhatsApp) return;
 
+    // Check for existing pending bookings with this WhatsApp number
+    console.log('🔍 Checking for existing pending bookings for WhatsApp:', customerWhatsApp);
+    
+    try {
+      const existingBookings = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.bookings || 'bookings',
+        [
+          Query.equal('customerWhatsApp', customerWhatsApp),
+          Query.equal('status', 'Pending'),
+          Query.orderDesc('$createdAt'),
+          Query.limit(1)
+        ]
+      );
+
+      if (existingBookings.documents.length > 0) {
+        const existingBooking = existingBookings.documents[0];
+        const providerName = existingBooking.providerName || existingBooking.therapistName || 'a therapist';
+        
+        console.log('❌ Found existing pending booking:', existingBooking);
+        showToast(`You have a pending scheduled booking with ${providerName}. Please wait for their response before booking with another therapist.`, 'warning');
+        setIsCreating(false);
+        onClose();
+        return;
+      }
+      
+      console.log('✅ No existing pending bookings found for WhatsApp number. Proceeding with new booking.');
+    } catch (checkError: any) {
+      console.warn('⚠️ Could not check existing bookings (proceeding anyway):', checkError.message);
+      // Continue with booking creation even if check fails
+    }
+
+    // Also check sessionStorage for local pending bookings (backup check)
+    const pendingBooking = sessionStorage.getItem('pending_booking');
+    if (pendingBooking) {
+      const parsed = JSON.parse(pendingBooking);
+      const deadline = new Date(parsed.deadline);
+      if (deadline > new Date()) {
+        showToast(`You have a pending ${parsed.type} booking with ${parsed.therapistName}. Please wait for their response before booking with another therapist.`, 'warning');
+        onClose();
+        return;
+      } else {
+        // Expired, clear it
+        sessionStorage.removeItem('pending_booking');
+      }
+    }
+
     try {
       setIsCreating(true);
 
@@ -265,26 +315,10 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       const finalDuration = selectedDuration || (isImmediateBooking ? 60 : 0);
       const finalPrice = durations.find(d => d.minutes === finalDuration)?.price || 0;
 
-      // Get therapist/place WhatsApp number from database
-      let therapistWhatsApp = '';
-      try {
-        const collectionId = therapistType === 'therapist' 
-          ? APPWRITE_CONFIG.collections.therapists 
-          : APPWRITE_CONFIG.collections.places;
-        
-        if (collectionId && collectionId !== '') {
-          const provider = await databases.getDocument(
-            APPWRITE_CONFIG.databaseId,
-            collectionId,
-            therapistId
-          );
-          therapistWhatsApp = (provider as any).whatsappNumber || '';
-        }
-      } catch (error) {
-        console.error('Error fetching provider WhatsApp:', error);
-      }
+      // Prepare booking message for in-app chat
+      console.log('📱 Preparing booking notification for therapist:', therapistId);
 
-      // Format booking date and time for WhatsApp message
+      // Format booking date and time for chat message
       const bookingDate = scheduledTime.toLocaleDateString('en-US', { 
         weekday: 'long', 
         year: 'numeric', 
@@ -298,51 +332,166 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       });
 
       // Save scheduled booking to Appwrite database
-      const bookingData = {
-        therapistId: therapistId,
-        therapistName: therapistName,
-        customerName: customerName,
-        customerWhatsApp: customerWhatsApp,
-        duration: finalDuration,
-        scheduledTime: scheduledTime.toISOString(),
-        bookingType: 'scheduled',
-        status: 'pending',
-        providerType: therapistType,
-        hotelVillaId: hotelVillaId || null,
-        hotelVillaName: hotelVillaName || null,
-        price: (selectedDuration && pricing?.[selectedDuration]) || 0,
-        discountApplied: discountActive ? discountPercentage : 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      // Match exact Appwrite schema: providerId, providerType, providerName, service, startTime are REQUIRED
+      
+      const bookingData: any = {
+        // Required fields matching Appwrite schema
+        bookingId: bookingId,
+        bookingDate: new Date().toISOString(), // Required datetime
+        status: 'Pending', // Required string (default: 'Pending')
+        duration: finalDuration, // Required integer (1-365)
+        providerId: therapistId, // Required - Full therapist/place ID (now 255 chars)
+        providerType: therapistType, // Required - 'therapist' or 'place'
+        providerName: therapistName, // Required - therapist/place name
+        service: String(finalDuration), // Required - '60', '90', or '120'
+        startTime: scheduledTime.toISOString(), // Required datetime
+        price: Math.round(finalPrice / 1000), // Required integer (0-1000)
+        createdAt: new Date().toISOString(), // Required datetime
+        responseDeadline: responseDeadline.toISOString(), // Required datetime
+        
+        // Optional fields with proper defaults
+        totalCost: finalPrice, // Optional double
+        paymentMethod: 'Unpaid', // Optional string (default: 'Unpaid')
+        scheduledTime: scheduledTime.toISOString(), // Optional datetime
+        customerName: customerName, // Optional string
+        customerWhatsApp: customerWhatsApp, // Optional string - WhatsApp contact
+        bookingType: isImmediateBooking ? 'immediate' : 'scheduled', // Optional string
+        
+        // Legacy fields (optional, can be null) - for compatibility
+        therapistId: therapistId, // Optional - duplicate of providerId
+        therapistName: therapistName, // Optional - duplicate of providerName
+        therapistType: therapistType // Optional - duplicate of providerType
       };
 
+      // Add optional fields only if they have values
+      if (hotelVillaId) {
+        bookingData.hotelId = hotelVillaId;
+        bookingData.hotelGuestName = customerName;
+      }
+      if (roomNumber) bookingData.hotelRoomNumber = roomNumber;
+
       try {
-        // Save to Appwrite bookings collection
+        console.log('📤 Attempting to save booking with data:', bookingData);
+        console.log('📤 Database ID:', APPWRITE_CONFIG.databaseId);
+        console.log('📤 Collection ID:', APPWRITE_CONFIG.collections.bookings);
+        
+        // Save to Appwrite bookings collection (fallback to 'bookings' if config is wrong)
         const bookingResponse = await databases.createDocument(
           APPWRITE_CONFIG.databaseId,
-          APPWRITE_CONFIG.collections.bookings,
+          APPWRITE_CONFIG.collections.bookings || 'bookings',
           'unique()',
           bookingData
         );
         
         console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
         
-        // Create simple WhatsApp booking message - adapt for facial vs massage
+        // Lock booking - store pending booking info (15 min deadline)
+        const deadline = new Date();
+        deadline.setMinutes(deadline.getMinutes() + 15);
+        sessionStorage.setItem('pending_booking', JSON.stringify({
+          bookingId: bookingResponse.$id,
+          therapistId: therapistId,
+          therapistName: therapistName,
+          customerWhatsApp: customerWhatsApp,
+          deadline: deadline.toISOString(),
+          type: isImmediateBooking ? 'immediate' : 'scheduled'
+        }));
+        
+        console.log('🔒 Booking locked until:', deadline.toISOString());
+        
+        // Create booking message for in-app chat
         const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
           ? 'facial treatment' 
           : 'massage';
-        let message = `Hi, can I book ${serviceType} for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you. Booking ID: ${bookingResponse.$id}`;
+        const message = `🎯 NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING
 
-        // Send WhatsApp message directly to therapist/place
-        if (therapistWhatsApp) {
-          const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;
-          window.open(whatsappUrl, '_blank');
-        } else {
-          console.warn('⚠️ Therapist WhatsApp number not found');
-          alert('Could not send WhatsApp message - therapist contact not available');
+👤 Customer: ${customerName}
+📱 WhatsApp: ${customerWhatsApp}
+📅 Date: ${bookingDate}
+⏰ Time: ${bookingTime}
+⏱️ Duration: ${finalDuration} minutes
+💰 Price: IDR ${Math.round(finalPrice / 1000)}K
+${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Location: ${hotelVillaName}\n` : ''}
+📝 Booking ID: ${bookingResponse.$id}
+
+✅ Please confirm availability and arrival time.
+
+⏰ You have 15 minutes to respond. After that, this booking may be offered to other ${therapistType === 'therapist' ? 'therapists' : 'places'}.`;
+
+        // Create chat room and send booking notification
+        console.log('💬 Creating chat room for booking...');
+        
+        try {
+          // Create or get existing chat room
+          const expiresAt = new Date();
+          expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 minutes for response
+          
+          const chatRoom = await createChatRoom({
+            bookingId: bookingResponse.$id,
+            customerId: 'guest', // Guest user for now
+            customerName: customerName,
+            customerLanguage: 'en', // Default to English for scheduled bookings
+            customerPhoto: '',
+            therapistId: parseInt(therapistId) || 0,
+            therapistName: therapistName,
+            therapistLanguage: 'id', // Default to Indonesian for providers
+            therapistType: therapistType,
+            therapistPhoto: profilePicture || '',
+            expiresAt: expiresAt.toISOString()
+          });
+          
+          console.log('✅ Chat room created:', chatRoom.$id);
+          
+          // Send system message with booking details to the chat room
+          if (chatRoom?.$id) await sendSystemMessage(chatRoom.$id, { en: message, id: message });
+          
+          console.log('✅ Booking notification sent to therapist');
+          
+          // Open in-app chat with booking details
+          console.log('💬 Dispatching openChat event with data:', {
+            therapistId,
+            therapistName,
+            bookingId: bookingResponse.$id,
+            chatRoomId: chatRoom.$id
+          });
+          
+          // Small delay to ensure App.tsx listener is ready
+          setTimeout(() => {
+            // First dispatch the scheduled booking event for chat status tracking
+            window.dispatchEvent(new CustomEvent('scheduledBookingCreated', {
+              detail: {
+                bookingId: bookingResponse.$id,
+                therapistId: therapistId,
+                therapistName: therapistName,
+                bookingType: isImmediateBooking ? 'immediate' : 'scheduled'
+              }
+            }));
+            
+            // Then open the chat window
+            window.dispatchEvent(new CustomEvent('openChat', {
+              detail: {
+                therapistId: therapistId,
+                therapistName: therapistName,
+                therapistType: therapistType,
+                bookingId: bookingResponse.$id,
+                chatRoomId: chatRoom.$id,
+                therapistStatus: therapistStatus,
+                profilePicture: profilePicture,
+                pricing: pricing,
+                discountPercentage: discountPercentage,
+                discountActive: discountActive
+              }
+            }));
+            console.log('✅ scheduledBookingCreated and openChat events dispatched');
+          }, 100);
+          
+          showToast('✅ Booking saved! Opening chat...', 'success');
+          
+        } catch (chatError: any) {
+          console.error('❌ Error creating chat/notification:', chatError);
+          // Still show success for booking, but note chat issue
+          showToast('✅ Booking saved! (Chat setup pending)', 'success');
         }
-
-        showToast('Scheduled booking saved and WhatsApp message sent!', 'success');
         
         // Close popup after showing success message
         setTimeout(() => {
@@ -351,20 +500,16 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         }, 2000);
       } catch (saveError: any) {
         console.error('❌ Error saving scheduled booking to Appwrite:', saveError);
+        console.error('❌ Error details:', {
+          message: saveError.message,
+          code: saveError.code,
+          type: saveError.type,
+          response: saveError.response
+        });
         
-        // Still send WhatsApp message even if save fails - adapt for facial vs massage
-        const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
-          ? 'facial treatment' 
-          : 'massage';
-        let message = `Hi, can I book ${serviceType} for ${bookingDate} at ${bookingTime} with ${finalDuration} minutes. I wait your reply, thank you.`;
-        
-        if (therapistWhatsApp) {
-          const whatsappUrl = `https://wa.me/${therapistWhatsApp}?text=${encodeURIComponent(message)}`;
-          window.open(whatsappUrl, '_blank');
-          showToast('WhatsApp message sent (booking save failed)', 'warning');
-        } else {
-          showToast('Failed to save booking and send message', 'error');
-        }
+        // Show detailed error message
+        const errorMsg = saveError.message || 'Unknown error occurred';
+        showToast(`⚠️ Failed to save booking: ${errorMsg}`, 'error');
         
         setTimeout(() => {
           onClose();
@@ -386,6 +531,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     setSelectedTime(null);
     setCustomerName('');
     setCustomerWhatsApp('');
+    setRoomNumber('');
   };
 
   if (!isOpen) return null;
@@ -559,38 +705,21 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                  <Phone className="inline w-3 h-3 mr-1" />
+                  <svg className="inline w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
                   WhatsApp Number
                 </label>
-                <div className="flex gap-2">
-                  <select
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900 bg-white"
-                    style={{ width: '110px' }}
-                  >
-                    <option value="+62">🇮🇩 +62</option>
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+61">🇦🇺 +61</option>
-                    <option value="+86">🇨🇳 +86</option>
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+81">🇯🇵 +81</option>
-                    <option value="+82">🇰🇷 +82</option>
-                    <option value="+65">🇸🇬 +65</option>
-                    <option value="+60">🇲🇾 +60</option>
-                    <option value="+66">🇹🇭 +66</option>
-                    <option value="+84">🇻🇳 +84</option>
-                    <option value="+63">🇵🇭 +63</option>
-                  </select>
-                  <input
-                    type="tel"
-                    value={customerWhatsApp}
-                    onChange={(e) => setCustomerWhatsApp(e.target.value.replace(/[^0-9]/g, ''))}
-                    placeholder="812 3456 7890"
-                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
-                  />
-                </div>
+                <input
+                  type="tel"
+                  value={customerWhatsApp}
+                  onChange={(e) => setCustomerWhatsApp(e.target.value)}
+                  placeholder="e.g., +62 812 3456 7890"
+                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  For direct communication and booking updates
+                </p>
               </div>
 
               {/* Room Number - Only for hotel/villa bookings */}
@@ -617,11 +746,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
               <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
                 <p className="text-xs text-orange-800">
-                  <strong>{isImmediateBooking ? 'Immediate Booking' : '15-Minute Confirmation'}</strong>
+                  <strong>💬 In-App Chat Confirmation</strong>
                   <br />
                   {isImmediateBooking 
-                    ? `You'll be connected directly with ${therapistName} to discuss availability and pricing.`
-                    : `The ${therapistType} has 15 minutes to confirm. If they don't respond, your booking will be sent to other available ${therapistType === 'therapist' ? 'therapists' : 'massage places'}.`
+                    ? `You'll be connected directly with ${therapistName} via in-app chat to discuss availability and pricing.`
+                    : `Your booking will be sent to ${therapistName} via in-app chat. They'll confirm availability and arrival time.`
                   }
                 </p>
               </div>
@@ -635,7 +764,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     : 'bg-gray-300 cursor-not-allowed'
                 }`}
               >
-                {isCreating ? 'Sending...' : '📱 Send WhatsApp Request'}
+                {isCreating ? 'Sending...' : '💬 Send Booking via Chat'}
               </button>
             </div>
           )}
