@@ -138,16 +138,29 @@ export const useAppState = () => {
   };
 
   const [language, _setLanguage] = useState<Language>(() => {
-    // Try to get from actual localStorage (not the disabled wrapper)
+    // Try to get from localStorage first, then sessionStorage as fallback
     try {
-      const stored = window.localStorage.getItem('app_language');
-      console.log('🌐 useAppState: Raw localStorage value:', stored);
+      let stored = window.localStorage.getItem('app_language');
+      let storageType = 'localStorage';
+      
+      // Fallback to sessionStorage if localStorage is empty/blocked
+      if (!stored || stored === 'null' || stored === 'undefined') {
+        stored = window.sessionStorage.getItem('app_language');
+        storageType = 'sessionStorage';
+      }
+      
+      console.log(`🌐 useAppState: Raw ${storageType} value:`, stored);
       
       if (!stored || stored === 'null' || stored === 'undefined') {
         // First visit or invalid value - set Indonesian as default
         console.log('🌐 useAppState: No valid language stored - setting Indonesian as default');
-        window.localStorage.setItem('app_language', 'id');
-        console.log('🌐 useAppState: ✅ Indonesian saved to localStorage');
+        try {
+          window.localStorage.setItem('app_language', 'id');
+          console.log('🌐 useAppState: ✅ Indonesian saved to localStorage');
+        } catch (e) {
+          window.sessionStorage.setItem('app_language', 'id');
+          console.log('🌐 useAppState: ✅ Indonesian saved to sessionStorage (localStorage blocked)');
+        }
         return 'id';
       }
       
@@ -158,13 +171,17 @@ export const useAppState = () => {
       if (storedLang !== 'en' && storedLang !== 'id' && storedLang !== 'gb') {
         console.log('🌐 useAppState: Invalid language value, defaulting to Indonesian');
         storedLang = 'id';
-        window.localStorage.setItem('app_language', 'id');
+        try {
+          window.localStorage.setItem('app_language', 'id');
+        } catch (e) {
+          window.sessionStorage.setItem('app_language', 'id');
+        }
       }
       
-      console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
+      console.log(`🌐 useAppState: Initial language from ${storageType}:`, storedLang);
       return storedLang;
     } catch (error) {
-      console.error('🌐 useAppState: localStorage error:', error);
+      console.error('🌐 useAppState: Storage error:', error);
       console.log('🌐 useAppState: Defaulting to Indonesian due to error');
       return 'id';
     }
@@ -181,19 +198,41 @@ export const useAppState = () => {
     
     _setLanguage(normalizedLang);
     
-    // Save to actual localStorage (not the disabled wrapper)
+    // Multi-layer persistence: try localStorage, sessionStorage, and in-memory fallback
+    let saved = false;
+    
+    // Try localStorage
     try {
       window.localStorage.setItem('app_language', normalizedLang);
       const verified = window.localStorage.getItem('app_language');
-      console.log(`🌐 useAppState [${timestamp}]: Language saved to localStorage:`, normalizedLang);
-      console.log(`🌐 useAppState [${timestamp}]: Verified localStorage value:`, verified);
+      console.log(`🌐 useAppState [${timestamp}]: localStorage save attempt - verified:`, verified);
       
-      if (verified !== normalizedLang) {
-        console.error(`🌐 useAppState [${timestamp}]: ⚠️ WARNING: localStorage verification failed! Expected ${normalizedLang}, got ${verified}`);
+      if (verified === normalizedLang) {
+        saved = true;
+        console.log(`🌐 useAppState [${timestamp}]: ✅ Language saved to localStorage successfully`);
       }
     } catch (error) {
-      console.error(`🌐 useAppState [${timestamp}]: Failed to save language to localStorage:`, error);
+      console.error(`🌐 useAppState [${timestamp}]: localStorage failed:`, error);
     }
+    
+    // Fallback to sessionStorage if localStorage failed
+    if (!saved) {
+      try {
+        window.sessionStorage.setItem('app_language', normalizedLang);
+        const verified = window.sessionStorage.getItem('app_language');
+        if (verified === normalizedLang) {
+          saved = true;
+          console.log(`🌐 useAppState [${timestamp}]: ✅ Language saved to sessionStorage (localStorage unavailable)`);
+        }
+      } catch (error) {
+        console.error(`🌐 useAppState [${timestamp}]: sessionStorage also failed:`, error);
+      }
+    }
+    
+    if (!saved) {
+      console.error(`🌐 useAppState [${timestamp}]: ⚠️ CRITICAL: All storage methods failed! Language will reset on refresh.`);
+    }
+    
     console.log(`🌐 useAppState [${timestamp}]: Language state updated to:`, normalizedLang);
   };
 
