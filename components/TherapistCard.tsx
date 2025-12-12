@@ -1432,7 +1432,7 @@ ${locationInfo}${coordinatesInfo}
             )}
 
             {/* Refer Friend and Leave Review Links */}
-            <div className="flex flex-wrap justify-between items-center gap-2 mt-2 px-1">
+            <div className="flex flex-wrap justify-between items-center gap-2 mt-6 px-1">
                 <button
                     onClick={() => setShowReferModal(true)}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
