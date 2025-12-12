@@ -125,7 +125,7 @@ const App = () => {
             console.log('✅ Chat window opened immediately');
             
             // Handle session creation and customer details in background (non-blocking)
-            (async () => {
+            void (async () => {
                 try {
                     // Try to get customer details from booking for scheduled bookings
                     let customerName = '';

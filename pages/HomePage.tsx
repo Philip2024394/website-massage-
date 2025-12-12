@@ -1040,7 +1040,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>{language === 'id' ? 'Facial' : 'Facials'}</span>
+                                <span>{t?.home?.facial || 'Facial'}</span>
                             </button>
                         </div>
                     </div>
@@ -1353,11 +1353,11 @@ const HomePage: React.FC<HomePageProps> = ({
                 {activeTab === 'facials' && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-3 text-center">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{language === 'id' ? 'Klinik Facial' : 'Facial Clinics'}</h3>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialClinics || 'Facial Clinics'}</h3>
                             <p className="text-gray-600">
                                 {selectedCity === 'all' 
-                                    ? (language === 'id' ? 'Temukan klinik facial terbaik di seluruh Indonesia' : 'Find the best facial clinics across Indonesia')
-                                    : (language === 'id' ? `Perawatan facial premium di ${selectedCity}` : `Premium facial treatments in ${selectedCity}`)
+                                    ? (t?.home?.facialClinicsSubtitle || 'Find the best facial clinics across Indonesia')
+                                    : (t?.home?.facialClinicsSubtitleCity?.replace('{city}', selectedCity) || `Premium facial treatments in ${selectedCity}`)
                                 }
                             </p>
                         </div>
@@ -1399,10 +1399,10 @@ const HomePage: React.FC<HomePageProps> = ({
                                             </svg>
                                         </div>
                                         <p className="text-gray-500 mb-2 text-lg font-semibold">
-                                            {language === 'id' ? 'Tidak ada klinik facial tersedia' : 'No facial clinics available'}
+                                            {t?.home?.noFacialClinicsAvailable || 'No facial clinics available'}
                                         </p>
                                         <p className="text-sm text-gray-400">
-                                            {language === 'id' ? 'Periksa kembali untuk spa facial unggulan!' : 'Check back soon for featured facial spas!'}
+                                            {t?.home?.checkBackFacials || 'Check back soon for featured facial spas!'}
                                         </p>
                                         <p className="text-xs text-gray-300 mt-4">
                                             Total facial places in DB: {facialPlaces?.length || 0} | Filtered: {liveFacialPlaces.length}

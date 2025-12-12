@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { authService, therapistService } from '@shared/appwriteService';
+import { systemHealthService } from '@/lib/systemHealthService';
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
 import TherapistBookings from './pages/TherapistBookings';
@@ -41,6 +42,23 @@ function App() {
           console.log('✅ Found therapist document:', therapistDoc.$id);
           setUser(therapistDoc);
           setIsAuthenticated(true);
+          
+          // 🏥 START SYSTEM HEALTH MONITORING
+          systemHealthService.startHealthMonitoring(therapistDoc.$id);
+          console.log('✅ System health monitoring started for therapist:', therapistDoc.$id);
+          
+          // Test notification system on first load
+          const hasTestedBefore = localStorage.getItem('notificationTested');
+          if (!hasTestedBefore) {
+            systemHealthService.testNotificationSystem().then(success => {
+              if (success) {
+                localStorage.setItem('notificationTested', 'true');
+                console.log('✅ Notification system test successful');
+              } else {
+                console.warn('⚠️ Notification system test failed');
+              }
+            });
+          }
         } else {
           console.error('❌ No therapist document found for email:', currentUser.email);
           // User is authenticated but has no therapist profile
@@ -66,6 +84,10 @@ function App() {
 
   const handleLogout = async () => {
     try {
+      // 🛑 STOP SYSTEM HEALTH MONITORING
+      systemHealthService.stopHealthMonitoring();
+      console.log('🛑 System health monitoring stopped');
+      
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
