@@ -966,9 +966,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
             {/* Side Drawer */}
             <div
-                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
-                    drawerOpen ? 'translate-x-0' : 'translate-x-full'
-                }`}
+                className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out translate-x-full"
             >
                 <div className="flex flex-col h-full">
                     {/* Drawer Header */}
@@ -996,11 +994,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('members');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'members'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Users className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1015,11 +1009,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('dashboard');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'dashboard'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Home className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1034,11 +1024,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('therapists');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'therapists'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <UserCheck className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1053,11 +1039,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('places');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'places'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <MapPin className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1072,11 +1054,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('facial_places');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'facial_places'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Star className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1091,11 +1069,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('leads');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'leads'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <DollarSign className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1110,11 +1084,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     setActiveView('health');
                                     setDrawerOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                                    activeView === 'health'
-                                        ? 'bg-orange-500 text-white'
-                                        : 'text-gray-700 hover:bg-gray-100'
-                                }`}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Activity className="w-5 h-5" />
                                 <div className="flex-1 text-left">
