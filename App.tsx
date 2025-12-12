@@ -159,62 +159,65 @@ const App = () => {
                     try {
                         const existingSession = await chatSessionService.getActiveSession(therapistId);
                     
-                    if (existingSession && existingSession.isActive) {
-                        // Use existing session
-                        console.log('♻️ Reusing existing chat session:', existingSession.sessionId);
-                        sessionData = existingSession;
+                        if (existingSession && existingSession.isActive) {
+                            // Use existing session
+                            console.log('♻️ Reusing existing chat session:', existingSession.sessionId);
+                            sessionData = existingSession;
+                            
+                            // Update session with latest info if needed
+                            await chatSessionService.updateSession(existingSession.sessionId, {
+                                providerStatus: therapistStatus || existingSession.providerStatus,
+                                pricing: pricing || existingSession.pricing,
+                                discountPercentage: discountPercentage || existingSession.discountPercentage,
+                                discountActive: discountActive !== undefined ? discountActive : existingSession.discountActive
+                            });
+                        } else {
+                            // Create new persistent session
+                            console.log('💾 Creating new persistent chat session');
+                            sessionData = await chatSessionService.createSession({
+                                customerId: customerName || undefined,
+                                customerName,
+                                customerWhatsApp,
+                                providerId: therapistId,
+                                providerName: therapistName,
+                                providerType: therapistType || 'therapist',
+                                providerStatus: therapistStatus || 'available',
+                                mode: mode || 'immediate',
+                                pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                                discountPercentage,
+                                discountActive,
+                                profilePicture,
+                                providerRating,
+                                bookingId,
+                                chatRoomId,
+                                isActive: true
+                            });
+                            console.log('✅ Persistent chat session created:', sessionData.sessionId);
+                        }
                         
-                        // Update session with latest info if needed
-                        await chatSessionService.updateSession(existingSession.sessionId, {
-                            providerStatus: therapistStatus || existingSession.providerStatus,
-                            pricing: pricing || existingSession.pricing,
-                            discountPercentage: discountPercentage || existingSession.discountPercentage,
-                            discountActive: discountActive !== undefined ? discountActive : existingSession.discountActive
-                        });
-                    } else {
-                        // Create new persistent session
-                        console.log('💾 Creating new persistent chat session');
-                        sessionData = await chatSessionService.createSession({
-                            customerId: customerName || undefined,
-                            customerName,
-                            customerWhatsApp,
-                            providerId: therapistId,
-                            providerName: therapistName,
-                            providerType: therapistType || 'therapist',
-                            providerStatus: therapistStatus || 'available',
-                            mode: mode || 'immediate',
-                            pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                            discountPercentage,
-                            discountActive,
-                            profilePicture,
-                            providerRating,
-                            bookingId,
-                            chatRoomId,
-                            isActive: true
-                        });
-                        console.log('✅ Persistent chat session created:', sessionData.sessionId);
-                    }
-                    
-                    // Update chat info with session data if we got it
-                    if (sessionData) {
-                        const updatedChatInfo = {
-                            therapistId: sessionData.providerId || therapistId,
-                            therapistName: sessionData.providerName || therapistName,
-                            therapistType: sessionData.providerType || therapistType || 'therapist',
-                            therapistStatus: sessionData.providerStatus || therapistStatus || 'available',
-                            pricing: sessionData.pricing || pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                            discountPercentage: sessionData.discountPercentage,
-                            discountActive: sessionData.discountActive,
-                            profilePicture: sessionData.profilePicture,
-                            providerRating: sessionData.providerRating,
-                            bookingId: sessionData.bookingId,
-                            chatRoomId: sessionData.chatRoomId,
-                            customerName: sessionData.customerName || customerName,
-                            customerWhatsApp: sessionData.customerWhatsApp || customerWhatsApp,
-                            mode: sessionData.mode || mode || 'immediate'
-                        };
-                        setChatInfo(updatedChatInfo);
-                        console.log('✅ Chat info updated with session data');
+                        // Update chat info with session data if we got it
+                        if (sessionData) {
+                            const updatedChatInfo = {
+                                therapistId: sessionData.providerId || therapistId,
+                                therapistName: sessionData.providerName || therapistName,
+                                therapistType: sessionData.providerType || therapistType || 'therapist',
+                                therapistStatus: sessionData.providerStatus || therapistStatus || 'available',
+                                pricing: sessionData.pricing || pricing || { '60': 200000, '90': 300000, '120': 400000 },
+                                discountPercentage: sessionData.discountPercentage,
+                                discountActive: sessionData.discountActive,
+                                profilePicture: sessionData.profilePicture,
+                                providerRating: sessionData.providerRating,
+                                bookingId: sessionData.bookingId,
+                                chatRoomId: sessionData.chatRoomId,
+                                customerName: sessionData.customerName || customerName,
+                                customerWhatsApp: sessionData.customerWhatsApp || customerWhatsApp,
+                                mode: sessionData.mode || mode || 'immediate'
+                            };
+                            setChatInfo(updatedChatInfo);
+                            console.log('✅ Chat info updated with session data');
+                        }
+                    } catch (sessionError) {
+                        console.warn('⚠️ Session handling failed:', sessionError);
                     }
                 } catch (error) {
                     console.error('❌ Failed to handle persistent session:', error);
