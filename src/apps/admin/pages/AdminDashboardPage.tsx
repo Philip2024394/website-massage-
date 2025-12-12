@@ -504,7 +504,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         <span>Logout</span>
                     </button>
                 </div>
-                {/* <AdminChatListPage /> */}
+
                 <div className="p-6 text-center text-gray-500">
                     Chat system is currently disabled
                 </div>
@@ -518,7 +518,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
         return (
             <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                {/* Header */}
+
                 <div className="bg-white shadow-sm border-b">
                     <div className="px-4 sm:px-6 py-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -550,7 +550,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                     </div>
                 </div>
 
-                {/* Filters */}
+
                 <div className="p-4 sm:p-6">
                     <div className="flex flex-col sm:flex-row gap-4 mb-6">
                         <div className="flex-1 relative">
@@ -579,11 +579,11 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         </div>
                     </div>
 
-                    {/* Cards Grid */}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {cards.map((card) => (
                             <div key={card.$id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                                {/* Card Image */}
+
                                 <div className="h-40 sm:h-48 bg-gradient-to-br from-gray-200 to-gray-300 relative">
                                     {card.profileImage ? (
                                         <img 
@@ -597,13 +597,13 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                         </div>
                                     )}
                                     
-                                    {/* Status Badge */}
+
                                     <div className={`absolute top-4 right-4 px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(card.status)}`}>
                                         {card.status}
                                     </div>
                                 </div>
 
-                                {/* Card Content */}
+
                                 <div className="p-4 sm:p-6">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1 min-w-0">
@@ -626,7 +626,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">{card.description}</p>
 
-                                    {/* Pricing */}
+
                                     {(card.price60 || card.price90 || card.price120) && (
                                         <div className="mb-4">
                                             <p className="text-sm font-medium text-gray-700 mb-2">Pricing:</p>
@@ -638,7 +638,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                         </div>
                                     )}
 
-                                    {/* Action Buttons */}
+
                                     <div className="flex flex-col sm:flex-row gap-2">
                                         <button
                                             onClick={() => handleEditCard(card)}
@@ -681,7 +681,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                     )}
                 </div>
 
-                {/* Edit Modal */}
+
                 {editingCard && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
                         <div className="bg-white rounded-lg sm:rounded-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
@@ -700,7 +700,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
 
                             <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                                {/* Basic Information */}
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
@@ -736,7 +736,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     />
                                 </div>
 
-                                {/* Contact Information */}
+
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
@@ -779,7 +779,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
 
-                                {/* Pricing */}
+
                                 <div>
                                     <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-4">Pricing</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
@@ -815,7 +815,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
 
-                                {/* Image Upload */}
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Profile Image URL</label>
                                     <div className="flex gap-2">
@@ -835,7 +835,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
 
-                                {/* Additional Fields for Therapists */}
+
                                 {activeView === 'therapists' && (
                                     <>
                                         <div>
@@ -865,7 +865,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </>
                                 )}
 
-                                {/* Additional Fields for Places */}
+
                                 {activeView === 'places' && (
                                     <>
                                         <div>
@@ -896,7 +896,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 )}
                             </div>
 
-                            {/* Modal Footer */}
+
                             <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                                 <button
                                     onClick={() => setEditingCard(null)}
@@ -923,11 +923,11 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={42} pageName="LiveAdminDashboard" isLocked={false} />
             
-            {/* Header with Brand and Burger Menu */}
+
             <header className="bg-gradient-to-r from-black via-gray-900 to-orange-600 shadow-lg sticky top-0 z-50">
                 <div className="px-4 sm:px-6 py-4">
                     <div className="flex items-center justify-between">
-                        {/* Brand Logo */}
+
                         <div className="flex items-center gap-2">
                             <div className="bg-white rounded-lg p-2">
                                 <span className="text-2xl font-bold">
@@ -944,7 +944,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* Burger Menu Button */}
+
                         <button
                             onClick={() => setDrawerOpen(!drawerOpen)}
                             className="p-3 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors"
@@ -956,7 +956,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 </div>
             </header>
 
-            {/* Side Drawer Overlay */}
+
             {drawerOpen && (
                 <div 
                     className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -964,12 +964,12 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 />
             )}
 
-            {/* Side Drawer */}
+
             <div
                 className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className="flex flex-col h-full">
-                    {/* Drawer Header */}
+
                     <div className="bg-gradient-to-r from-black to-orange-600 p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -985,10 +985,10 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         </div>
                     </div>
 
-                    {/* Drawer Menu Items */}
+
                     <nav className="flex-1 overflow-y-auto py-4">
                         <div className="space-y-1 px-3">
-                            {/* Member Control */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1000,7 +1000,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Dashboard */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1012,7 +1012,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Therapists */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1024,7 +1024,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Massage Places */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1036,7 +1036,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Facial Places */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1048,7 +1048,6 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Leads */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1060,7 +1059,6 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* System Health */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
@@ -1094,7 +1092,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Notifications */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'notifications' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
@@ -1106,7 +1104,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Reports */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'reports' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
@@ -1118,7 +1116,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Settings */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'settings' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
@@ -1130,7 +1128,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Security */}
+
                             <button
                                 onClick={() => setDrawerOpen(false)}
                                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'security' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
@@ -1144,7 +1142,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         </div>
                     </nav>
 
-                    {/* Drawer Footer */}
+
                     <div className="border-t border-gray-200 p-4">
                         <button
                             onClick={() => {
@@ -1163,9 +1161,9 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 </div>
             </div>
 
-            {/* Main Content */}
+
             <div className="p-4 sm:p-6">
-                {/* Member Management View */}
+
                 {activeView === 'members' && (
                     <div>
                         <div className="mb-6">
@@ -1191,12 +1189,12 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                     </div>
                 )}
 
-                {/* Dashboard View */}
+
                 {activeView === 'dashboard' && (
                     <div>
-                        {/* Key Metrics Grid */}
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-                            {/* Total Revenue */}
+
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
                                 <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1">
@@ -1214,7 +1212,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Total Members */}
+
                             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-100">
                                 <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1">
@@ -1232,7 +1230,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Total Bookings */}
+
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -1248,7 +1246,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Pending Approvals */}
+
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <div className="flex items-center justify-between">
                                     <div>
@@ -1265,9 +1263,9 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* Secondary Metrics */}
+
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                            {/* Therapists */}
+
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Therapists</h3>
@@ -1296,7 +1294,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Places */}
+
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-gray-800">Places</h3>
@@ -1325,7 +1323,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Users */}
+
                             <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Platform Users</h3>
                                 <div className="space-y-3">
@@ -1345,7 +1343,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* Membership Packages Stats */}
+
                         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm p-6 border border-indigo-100 mb-8">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold text-gray-800">Membership Packages</h3>
@@ -1357,7 +1355,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
                             
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                {/* Bronze Package */}
+
                                 <div className="bg-white rounded-lg p-5 border-2 border-amber-200 shadow-sm">
                                     <div className="flex items-center justify-between mb-4">
                                         <h4 className="text-lg font-bold text-amber-700">Bronze</h4>
@@ -1388,7 +1386,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
 
-                                {/* Silver Package */}
+
                                 <div className="bg-white rounded-lg p-5 border-2 border-gray-300 shadow-sm">
                                     <div className="flex items-center justify-between mb-4">
                                         <h4 className="text-lg font-bold text-gray-700">Silver</h4>
@@ -1415,7 +1413,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                     </div>
                                 </div>
 
-                                {/* Monthly Package */}
+
                                 <div className="bg-white rounded-lg p-5 border-2 border-yellow-300 shadow-sm">
                                     <div className="flex items-center justify-between mb-4">
                                         <h4 className="text-lg font-bold text-yellow-700">Monthly Package</h4>
@@ -1445,7 +1443,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </div>
 
-                            {/* Membership Summary */}
+
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div className="bg-white rounded-lg p-4 text-center">
                                     <p className="text-xs text-gray-600 mb-1">Total Revenue (Packages)</p>
@@ -1478,7 +1476,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </div>
                         </div>
 
-                        {/* Recent Activity */}
+
                         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                             <h3 className="text-lg font-semibold text-gray-800 mb-6">Recent Activity</h3>
                             <div className="space-y-4">
@@ -1516,41 +1514,41 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                     </div>
                 )}
 
-                {/* Therapist Editing View */}
+
                 {activeView === 'therapists' && (
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Therapist Cards</h2>
-                        {/* Therapist editing content will go here */}
+
                         <p className="text-gray-600">Therapist card editing coming soon. Use Member Control for now.</p>
                     </div>
                 )}
 
-                {/* Massage Places Editing View */}
+
                 {activeView === 'places' && (
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Massage Place Cards</h2>
-                        {/* Massage place editing content will go here */}
+
                         <p className="text-gray-600">Massage place card editing coming soon. Use Member Control for now.</p>
                     </div>
                 )}
 
-                {/* Facial Places Editing View */}
+
                 {activeView === 'facial_places' && (
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">Edit Facial Place Cards</h2>
-                        {/* Facial place editing content will go here */}
+
                         <p className="text-gray-600">Facial place card editing coming soon. Use Member Control for now.</p>
                     </div>
                 )}
 
-                {/* Lead Generation View */}
+
                 {activeView === 'leads' && (
                     <div>
                         <LeadManagement />
                     </div>
                 )}
 
-                {/* System Health Monitoring View */}
+
                 {activeView === 'health' && (
                     <div>
                         <HealthMonitoringDashboard />
