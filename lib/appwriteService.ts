@@ -2346,8 +2346,7 @@ export const bookingService = {
                     paymentMethod: booking.paymentMethod || 'Unpaid',
                     price: Math.round((booking.totalCost || 0) / 1000), // Add required price field (in K format)
                     createdAt: new Date().toISOString(), // Add required createdAt field
-                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minute response deadline
-                    status: 'pending' // Add required status field
+                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minute response deadline
                 }
             );
             console.log('✅ Booking created successfully:', response.$id);
