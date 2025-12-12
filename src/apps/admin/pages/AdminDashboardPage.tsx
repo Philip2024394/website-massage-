@@ -966,7 +966,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
             {/* Side Drawer */}
             <div
-                className="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out translate-x-full"
+                className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 <div className="flex flex-col h-full">
                     {/* Drawer Header */}
@@ -990,10 +990,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                         <div className="space-y-1 px-3">
                             {/* Member Control */}
                             <button
-                                onClick={() => {
-                                    setActiveView('members');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Users className="w-5 h-5" />
@@ -1005,10 +1002,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* Dashboard */}
                             <button
-                                onClick={() => {
-                                    setActiveView('dashboard');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Home className="w-5 h-5" />
@@ -1020,10 +1014,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* Therapists */}
                             <button
-                                onClick={() => {
-                                    setActiveView('therapists');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <UserCheck className="w-5 h-5" />
@@ -1035,10 +1026,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* Massage Places */}
                             <button
-                                onClick={() => {
-                                    setActiveView('places');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <MapPin className="w-5 h-5" />
@@ -1050,10 +1038,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* Facial Places */}
                             <button
-                                onClick={() => {
-                                    setActiveView('facial_places');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Star className="w-5 h-5" />
@@ -1065,10 +1050,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* Leads */}
                             <button
-                                onClick={() => {
-                                    setActiveView('leads');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <DollarSign className="w-5 h-5" />
@@ -1080,10 +1062,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
                             {/* System Health */}
                             <button
-                                onClick={() => {
-                                    setActiveView('health');
-                                    setDrawerOpen(false);
-                                }}
+                                onClick={() => setDrawerOpen(false)}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <Activity className="w-5 h-5" />
@@ -1098,7 +1077,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             {/* Analytics */
                             <button
                                 onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100"
                             >
                                 <BarChart className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1107,11 +1086,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 </div>
                             </button>
 
-                            {/* Payments */}
-                            <button
-                                onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                            >
+                            <button onClick={() => setDrawerOpen(false)} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-gray-700 hover:bg-gray-100">
                                 <CreditCard className="w-5 h-5" />
                                 <div className="flex-1 text-left">
                                     <div className="font-medium">Payments</div>
@@ -1122,7 +1097,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             {/* Notifications */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'notifications' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 <Bell className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1134,7 +1109,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             {/* Reports */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'reports' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 <FileText className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1146,7 +1121,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             {/* Settings */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'settings' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 <Settings className="w-5 h-5" />
                                 <div className="flex-1 text-left">
@@ -1158,7 +1133,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             {/* Security */}
                             <button
                                 onClick={() => setDrawerOpen(false)}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeView === 'security' ? 'bg-orange-100 text-orange-700 border-l-4 border-orange-500' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 <Shield className="w-5 h-5" />
                                 <div className="flex-1 text-left">
