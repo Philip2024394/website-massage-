@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Place } from '../types';
 import SocialSharePopup from './SocialSharePopup';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
+import { useLanguageContext } from '../context/LanguageContext';
 
 interface PlaceCardProps {
     place: Place;
@@ -25,11 +26,12 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
 
 
 const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDiscount, _t }) => {
+    const { language } = useLanguageContext();
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     const [showSharePopup, setShowSharePopup] = useState(false);
     
-    // Detect language from translations object
-    const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
+    // Use language from context instead of detecting from translations
+    const currentLanguage: 'en' | 'id' = language as 'en' | 'id';
     
     // Get translated description based on current language
     const getTranslatedDescription = () => {

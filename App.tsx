@@ -208,10 +208,7 @@ const App = () => {
                 
                 // Batch state updates to prevent flashing
                 setChatInfo(newChatInfo);
-                // Small delay to ensure DOM is ready for animation
-                setTimeout(() => {
-                    setIsChatOpen(true);
-                }, 10);
+                setIsChatOpen(true);
                 console.log('✅ Chat state updated with persistent session - window should open');
             } catch (error) {
                 console.error('❌ Failed to handle chat opening:', error);
@@ -235,9 +232,7 @@ const App = () => {
                 
                 // Batch state updates to prevent flashing
                 setChatInfo(fallbackChatInfo);
-                setTimeout(() => {
-                    setIsChatOpen(true);
-                }, 10);
+                setIsChatOpen(true);
                 console.log('⚠️ Using fallback chat state');
             }
         };

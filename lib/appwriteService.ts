@@ -3869,12 +3869,12 @@ export const agentVisitService = {
 
             // Client-side date filtering (since Appwrite Query might not support date range)
             if (filters?.dateFrom) {
-                visits = visits.filter(visit => 
+                visits = visits.filter((visit: any) => 
                     new Date(visit.visitDate) >= new Date(filters.dateFrom!)
                 );
             }
             if (filters?.dateTo) {
-                visits = visits.filter(visit => 
+                visits = visits.filter((visit: any) => 
                     new Date(visit.visitDate) <= new Date(filters.dateTo!)
                 );
             }

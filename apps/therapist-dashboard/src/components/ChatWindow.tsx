@@ -343,9 +343,8 @@ export default function ChatWindow({
                 // Translation notice removed
             }
 
-            // Translate message if needed (for therapist to see in Indonesian)
-            const translatedForTherapist = originalText // No translation needed - using Indonesian
-                : originalText;
+            // No translation needed - therapist dashboard uses Indonesian
+            const translatedForTherapist = originalText;
 
             // Save message to database
             await simpleChatService.sendMessage({

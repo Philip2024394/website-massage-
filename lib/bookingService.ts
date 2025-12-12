@@ -237,9 +237,9 @@ export const bookingService = {
                 senderId: 'system',
                 senderType: 'system' as MessageSenderType,
                 senderName: 'System',
-                text: `${booking.therapistName} is currently booked.\n\n🔍 We are searching for the next best match therapist for you.\n\n✨ You will be notified once we find an available therapist.`,
-                senderLanguage: 'en',
-                recipientLanguage: 'en'
+                text: `${booking.therapistName} sedang dalam booking.\n\n🔍 Kami mencari terapis terbaik berikutnya untuk Anda.\n\n✨ Anda akan diberitahu setelah kami menemukan terapis yang tersedia.`,
+                senderLanguage: 'id',
+                recipientLanguage: 'id'
             });
 
             // Notify admin
@@ -259,9 +259,9 @@ export const bookingService = {
                     senderId: 'system',
                     senderType: MessageSenderType.System,
                     senderName: 'System',
-                    text: `✅ We found alternative therapists:\n\n${altList}\n\nWe are contacting them now...`,
-                    senderLanguage: 'en',
-                    recipientLanguage: 'en'
+                    text: `✅ Kami menemukan terapis alternatif:\n\n${altList}\n\nKami sedang menghubungi mereka sekarang...`,
+                    senderLanguage: 'id',
+                    recipientLanguage: 'id'
                 });
 
                 // Notify alternatives (implement later)
@@ -330,9 +330,9 @@ export const bookingService = {
                 senderId: 'system',
                 senderType: MessageSenderType.System,
                 senderName: 'System',
-                text: statusMessages[booking.status] || 'Booking status updated',
-                senderLanguage: 'en',
-                recipientLanguage: 'en'
+                text: statusMessages[booking.status] || 'Status booking telah diperbarui',
+                senderLanguage: 'id',
+                recipientLanguage: 'id'
             });
         } catch (error) {
             console.error('❌ Error sending status update:', error);

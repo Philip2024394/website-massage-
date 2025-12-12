@@ -222,8 +222,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const bookNowText = chatTranslationService.getTranslation('book_now', chatLang);
     const scheduleText = chatTranslationService.getTranslation('schedule', chatLang);
     
-    // Detect language from translations object
-    const currentLanguage: 'en' | 'id' = _t?.schedule === 'Schedule' ? 'en' : 'id';
+    // Use language from context instead of detecting from translations
+    const currentLanguage: 'en' | 'id' = language as 'en' | 'id';
 
     // Get translated description based on current language
     const getTranslatedDescription = () => {
@@ -1310,7 +1310,7 @@ ${locationInfo}${coordinatesInfo}
                         (e.target as HTMLElement).setAttribute('data-clicking', 'true');
                         setTimeout(() => {
                             (e.target as HTMLElement).removeAttribute('data-clicking');
-                        }, 1000);
+                        }, 100);
                         
                         console.log('🟢 Book Now button clicked - opening chat window');
                         const pricing = getPricing();
@@ -1354,7 +1354,7 @@ ${locationInfo}${coordinatesInfo}
                             }
                         }));
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 active:bg-green-700 active:scale-95 transition-all duration-200 transform touch-manipulation"
+                    className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-4 px-3 rounded-lg hover:bg-green-600 active:bg-green-700 active:scale-95 transition-all duration-100 transform touch-manipulation min-h-[48px]"
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1371,7 +1371,7 @@ ${locationInfo}${coordinatesInfo}
                         (e.target as HTMLElement).setAttribute('data-clicking', 'true');
                         setTimeout(() => {
                             (e.target as HTMLElement).removeAttribute('data-clicking');
-                        }, 1000);
+                        }, 100);
                         
                         console.log('📅 Schedule button clicked - opening popup');
                         
@@ -1393,7 +1393,7 @@ ${locationInfo}${coordinatesInfo}
                         }));
                         onIncrementAnalytics('bookings');
                     }} 
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 active:bg-orange-700 active:scale-95 transition-all duration-200 transform touch-manipulation"
+                    className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-4 px-3 rounded-lg hover:bg-orange-600 active:bg-orange-700 active:scale-95 transition-all duration-100 transform touch-manipulation min-h-[48px]"
                 >
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
