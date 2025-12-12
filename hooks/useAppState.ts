@@ -141,18 +141,31 @@ export const useAppState = () => {
     // Try to get from actual localStorage (not the disabled wrapper)
     try {
       const stored = window.localStorage.getItem('app_language');
-      if (!stored) {
-        // First visit - set Indonesian as default
-        console.log('🌐 useAppState: First visit - setting Indonesian as default language');
+      console.log('🌐 useAppState: Raw localStorage value:', stored);
+      
+      if (!stored || stored === 'null' || stored === 'undefined') {
+        // First visit or invalid value - set Indonesian as default
+        console.log('🌐 useAppState: No valid language stored - setting Indonesian as default');
         window.localStorage.setItem('app_language', 'id');
-        console.log('🌐 useAppState: ✅ Indonesian saved to localStorage for first visit');
+        console.log('🌐 useAppState: ✅ Indonesian saved to localStorage');
         return 'id';
       }
-      const storedLang = (stored === 'en' || stored === 'id' || stored === 'gb') ? (stored as Language) : 'id';
+      
+      // Normalize: gb -> en, otherwise keep as-is if valid
+      let storedLang: Language = stored === 'gb' ? 'en' : (stored as Language);
+      
+      // If stored value is not valid, default to Indonesian
+      if (storedLang !== 'en' && storedLang !== 'id' && storedLang !== 'gb') {
+        console.log('🌐 useAppState: Invalid language value, defaulting to Indonesian');
+        storedLang = 'id';
+        window.localStorage.setItem('app_language', 'id');
+      }
+      
       console.log('🌐 useAppState: Initial language from localStorage:', storedLang);
       return storedLang;
-    } catch {
-      console.log('🌐 useAppState: localStorage unavailable, defaulting to Indonesian');
+    } catch (error) {
+      console.error('🌐 useAppState: localStorage error:', error);
+      console.log('🌐 useAppState: Defaulting to Indonesian due to error');
       return 'id';
     }
   });
@@ -161,15 +174,27 @@ export const useAppState = () => {
     console.log(`🌐 useAppState [${timestamp}]: setLanguage called with:`, lang);
     console.log(`🌐 useAppState [${timestamp}]: Current language before change:`, language);
     console.log(`🌐 useAppState [${timestamp}]: Stack trace:`, new Error().stack);
-    _setLanguage(lang);
+    
+    // Normalize gb -> en before saving
+    const normalizedLang = lang === 'gb' ? 'en' : lang;
+    console.log(`🌐 useAppState [${timestamp}]: Normalized language:`, normalizedLang);
+    
+    _setLanguage(normalizedLang);
+    
     // Save to actual localStorage (not the disabled wrapper)
     try {
-      window.localStorage.setItem('app_language', lang);
-      console.log(`🌐 useAppState [${timestamp}]: Language saved to localStorage:`, lang);
+      window.localStorage.setItem('app_language', normalizedLang);
+      const verified = window.localStorage.getItem('app_language');
+      console.log(`🌐 useAppState [${timestamp}]: Language saved to localStorage:`, normalizedLang);
+      console.log(`🌐 useAppState [${timestamp}]: Verified localStorage value:`, verified);
+      
+      if (verified !== normalizedLang) {
+        console.error(`🌐 useAppState [${timestamp}]: ⚠️ WARNING: localStorage verification failed! Expected ${normalizedLang}, got ${verified}`);
+      }
     } catch (error) {
       console.error(`🌐 useAppState [${timestamp}]: Failed to save language to localStorage:`, error);
     }
-    console.log(`🌐 useAppState [${timestamp}]: Language state updated to:`, lang);
+    console.log(`🌐 useAppState [${timestamp}]: Language state updated to:`, normalizedLang);
   };
 
   const [userLocation, _setUserLocation] = useState<UserLocation | null>(() => getFromLocalStorage('app_user_location'));
