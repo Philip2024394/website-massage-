@@ -839,7 +839,7 @@ export default function ChatWindow({
     // REGISTRATION SCREEN
     if (!isRegistered) {
         return (
-            <div className="fixed bottom-0 sm:bottom-4 left-0 sm:left-auto right-0 sm:right-4 w-full sm:w-96 max-w-full bg-white rounded-t-lg sm:rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 max-h-[90vh] sm:max-h-[80vh]">
+            <div className={`fixed bottom-0 sm:bottom-4 left-0 sm:left-auto right-0 sm:right-4 w-full sm:w-96 max-w-full bg-white rounded-t-lg sm:rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 max-h-[90vh] sm:max-h-[80vh] transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
                 {/* Header */}
                 <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -1166,7 +1166,7 @@ export default function ChatWindow({
 
     // ACTIVE CHAT SCREEN
     return (
-        <div className="fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200">
+        <div className={`fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
             {/* Header */}
             <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center space-x-4">

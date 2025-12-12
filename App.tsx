@@ -189,7 +189,7 @@ const App = () => {
                 }
 
                 // Set chat info from session data (normalize field names)
-                setChatInfo({
+                const newChatInfo = {
                     therapistId: sessionData.providerId || therapistId,
                     therapistName: sessionData.providerName || therapistName,
                     therapistType: sessionData.providerType || therapistType || 'therapist',
@@ -204,13 +204,19 @@ const App = () => {
                     customerName: sessionData.customerName || customerName,
                     customerWhatsApp: sessionData.customerWhatsApp || customerWhatsApp,
                     mode: sessionData.mode || mode || 'immediate'
-                });
-                setIsChatOpen(true);
+                };
+                
+                // Batch state updates to prevent flashing
+                setChatInfo(newChatInfo);
+                // Small delay to ensure DOM is ready for animation
+                setTimeout(() => {
+                    setIsChatOpen(true);
+                }, 10);
                 console.log('✅ Chat state updated with persistent session - window should open');
             } catch (error) {
                 console.error('❌ Failed to handle chat opening:', error);
                 // Final fallback to original behavior
-                setChatInfo({
+                const fallbackChatInfo = {
                     therapistId,
                     therapistName,
                     therapistType: therapistType || 'therapist',
@@ -225,8 +231,13 @@ const App = () => {
                     customerName: '',
                     customerWhatsApp: '',
                     mode: mode || 'immediate'
-                });
-                setIsChatOpen(true);
+                };
+                
+                // Batch state updates to prevent flashing
+                setChatInfo(fallbackChatInfo);
+                setTimeout(() => {
+                    setIsChatOpen(true);
+                }, 10);
                 console.log('⚠️ Using fallback chat state');
             }
         };

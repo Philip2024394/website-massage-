@@ -1019,10 +1019,6 @@ ${locationInfo}${coordinatesInfo}
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-14 sm:pt-16 pb-4 overflow-visible">
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
-                            {/* Client Preference Display */}
-                            <p className="text-sm text-gray-600 mb-2">
-                                <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
-                            </p>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
                     <span className="relative mr-1.5">
@@ -1081,8 +1077,15 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             </div>
             
+            {/* Client Preference Display - Left aligned */}
+            <div className="mx-4 mb-2">
+                <p className="text-xs text-gray-600 text-left">
+                    <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
+                </p>
+            </div>
+
             {/* Therapist Bio - Natural flow with proper margin */}
-            <div className="mt-6 sm:mt-4 therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
+            <div className="therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
                 <p className="text-xs text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
@@ -1299,6 +1302,16 @@ ${locationInfo}${coordinatesInfo}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Prevent multiple rapid clicks
+                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
+                            return;
+                        }
+                        (e.target as HTMLElement).setAttribute('data-clicking', 'true');
+                        setTimeout(() => {
+                            (e.target as HTMLElement).removeAttribute('data-clicking');
+                        }, 1000);
+                        
                         console.log('🟢 Book Now button clicked - opening chat window');
                         const pricing = getPricing();
                         console.log('👤 Therapist object:', { 
@@ -1341,7 +1354,7 @@ ${locationInfo}${coordinatesInfo}
                             }
                         }));
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 transition-colors duration-300"
+                    className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-green-600 active:bg-green-700 active:scale-95 transition-all duration-200 transform touch-manipulation"
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1350,6 +1363,16 @@ ${locationInfo}${coordinatesInfo}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        // Prevent multiple rapid clicks
+                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
+                            return;
+                        }
+                        (e.target as HTMLElement).setAttribute('data-clicking', 'true');
+                        setTimeout(() => {
+                            (e.target as HTMLElement).removeAttribute('data-clicking');
+                        }, 1000);
+                        
                         console.log('📅 Schedule button clicked - opening popup');
                         
                         // Open ChatWindow directly in scheduled mode
@@ -1370,7 +1393,7 @@ ${locationInfo}${coordinatesInfo}
                         }));
                         onIncrementAnalytics('bookings');
                     }} 
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                    className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-2.5 px-3 rounded-lg hover:bg-orange-600 active:bg-orange-700 active:scale-95 transition-all duration-200 transform touch-manipulation"
                 >
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
