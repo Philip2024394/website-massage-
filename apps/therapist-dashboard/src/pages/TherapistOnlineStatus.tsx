@@ -34,6 +34,39 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     setAutoOfflineTime(therapist?.autoOfflineTime || '22:00');
   }, [therapist]);
 
+  // Auto-offline timer - check every minute if it's time to go offline
+  useEffect(() => {
+    const checkAutoOffline = () => {
+      if (!autoOfflineTime || status === 'offline') return;
+      
+      const now = new Date();
+      const [hours, minutes] = autoOfflineTime.split(':').map(Number);
+      const targetTime = new Date();
+      targetTime.setHours(hours, minutes, 0, 0);
+      
+      // Check if current time matches or passed the auto-offline time
+      if (now >= targetTime) {
+        const lastCheck = localStorage.getItem('lastAutoOfflineCheck');
+        const today = now.toDateString();
+        
+        // Only auto-offline once per day at the specified time
+        if (lastCheck !== today) {
+          console.log('⏰ Auto-offline time reached:', autoOfflineTime);
+          handleStatusChange('offline');
+          localStorage.setItem('lastAutoOfflineCheck', today);
+        }
+      }
+    };
+    
+    // Check immediately on mount
+    checkAutoOffline();
+    
+    // Then check every minute
+    const interval = setInterval(checkAutoOffline, 60000);
+    
+    return () => clearInterval(interval);
+  }, [autoOfflineTime, status]);
+
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     setSaving(true);
     try {
@@ -254,7 +287,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           <p className="text-sm text-gray-600 mb-4">
             Automatically switch to offline status at a specific time each day
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mb-4">
             <label className="text-sm font-semibold text-gray-700">Set Time:</label>
             <input
               type="time"
@@ -269,6 +302,19 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               Save
             </button>
           </div>
+          
+          {/* Timer Status Indicator */}
+          {status !== 'offline' && autoOfflineTime && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-900">
+                ⏰ <strong>Timer Active:</strong> Will automatically go offline at {autoOfflineTime} ({new Date().toLocaleDateString()})
+              </p>
+              <p className="text-xs text-blue-700 mt-1">
+                Current time: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              </p>
+            </div>
+          )}
+          
           <p className="text-xs text-gray-500 mt-3">
             Example: Set to 22:00 to automatically go offline at 10 PM every night
           </p>
