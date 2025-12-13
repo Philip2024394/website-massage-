@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown } from 'lucide-react';
+import { therapistService } from '@shared/appwriteService';
 
 interface TherapistOnlineStatusProps {
   therapist: any;
@@ -24,11 +25,13 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     setSaving(true);
     try {
-      // TODO: Update status in Appwrite
-      console.log('Updating status to:', newStatus);
+      console.log('💾 Saving status to Appwrite:', newStatus);
       
-      // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Update status in Appwrite
+      await therapistService.update(therapist.$id, {
+        availabilityStatus: newStatus,
+        isLive: newStatus === 'available'
+      });
       
       setStatus(newStatus);
       
@@ -39,9 +42,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         offline: '⚫ You are now OFFLINE - profile hidden from search'
       };
       
-      console.log(statusMessages[newStatus]);
+      console.log('✅ Status saved:', statusMessages[newStatus]);
     } catch (error) {
-      console.error('Failed to update status:', error);
+      console.error('❌ Failed to update status:', error);
+      alert('Failed to update status. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -50,10 +54,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const handleAutoOfflineTimeChange = async (time: string) => {
     setAutoOfflineTime(time);
     try {
-      // TODO: Save to Appwrite
-      console.log('Auto-offline time set to:', time);
+      console.log('💾 Saving auto-offline time to Appwrite:', time);
+      
+      // Save to Appwrite
+      await therapistService.update(therapist.$id, {
+        autoOfflineTime: time
+      });
+      
+      console.log('✅ Auto-offline time saved');
     } catch (error) {
-      console.error('Failed to save auto-offline time:', error);
+      console.error('❌ Failed to save auto-offline time:', error);
+      alert('Failed to save auto-offline time. Please try again.');
     }
   };
 

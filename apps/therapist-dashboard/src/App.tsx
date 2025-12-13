@@ -37,6 +37,9 @@ function App() {
         
         // Fetch the actual therapist document from therapists collection
         const therapists = await therapistService.getByEmail(currentUser.email);
+        console.log('🔍 Looking for therapist with email:', currentUser.email);
+        console.log('🔍 Found therapists:', therapists);
+        
         if (therapists && therapists.length > 0) {
           const therapistDoc = therapists[0];
           console.log('✅ Found therapist document:', therapistDoc.$id);
@@ -61,7 +64,10 @@ function App() {
           }
         } else {
           console.error('❌ No therapist document found for email:', currentUser.email);
+          console.error('❌ This means the therapist account was not created in Appwrite therapists collection');
+          console.error('❌ Check: 1) Email matches exactly 2) therapists collection exists 3) Document was created');
           // User is authenticated but has no therapist profile
+          alert(`No therapist profile found for ${currentUser.email}. Please contact admin to create your therapist profile.`);
           setIsAuthenticated(false);
         }
       }
