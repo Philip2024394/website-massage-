@@ -17,23 +17,57 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [isPremium] = useState(therapist?.membershipTier === 'premium' || false);
 
   useEffect(() => {
-    // Load current status from therapist data
-    setStatus((therapist?.availabilityStatus as OnlineStatus) || 'offline');
+    console.log('🔍 TherapistOnlineStatus loaded with therapist:', {
+      id: therapist?.$id,
+      name: therapist?.name,
+      email: therapist?.email,
+      currentStatus: therapist?.status,
+      currentAvailability: therapist?.availability,
+      isLive: therapist?.isLive,
+      autoOfflineTime: therapist?.autoOfflineTime,
+      fullTherapistObject: therapist
+    });
+    
+    // Load current status from therapist data (check both 'status' and old 'availabilityStatus')
+    const savedStatus = therapist?.status || therapist?.availabilityStatus || 'offline';
+    setStatus(savedStatus as OnlineStatus);
     setAutoOfflineTime(therapist?.autoOfflineTime || '22:00');
   }, [therapist]);
 
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     setSaving(true);
     try {
-      console.log('💾 Saving status to Appwrite:', newStatus);
-      
-      // Update status in Appwrite
-      await therapistService.update(therapist.$id, {
-        availabilityStatus: newStatus,
-        isLive: newStatus === 'available'
+      console.log('💾 Saving status to Appwrite:', {
+        newStatus,
+        therapistId: therapist.$id,
+        therapistEmail: therapist.email,
+        therapistName: therapist.name
       });
       
+      // Update status in Appwrite (using 'status' and 'availability' fields)
+      const updateData = {
+        status: newStatus,
+        availability: newStatus.charAt(0).toUpperCase() + newStatus.slice(1), // capitalize
+        isLive: newStatus === 'available',
+        isOnline: newStatus !== 'offline'
+      };
+      
+      console.log('📤 Update data:', updateData);
+      
+      const result = await therapistService.update(therapist.$id, updateData);
+      
+      console.log('✅ Appwrite update result:', result);
+      
+      // Update local state immediately for UI feedback
       setStatus(newStatus);
+      
+      // Verify the save by refetching from Appwrite
+      const updatedTherapist = await therapistService.getById(therapist.$id);
+      console.log('🔄 Verified saved status from Appwrite:', {
+        status: updatedTherapist.status,
+        availability: updatedTherapist.availability,
+        isLive: updatedTherapist.isLive
+      });
       
       // Show toast notification
       const statusMessages = {
@@ -43,9 +77,15 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       };
       
       console.log('✅ Status saved:', statusMessages[newStatus]);
+      alert(statusMessages[newStatus]);
     } catch (error) {
       console.error('❌ Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
+      console.error('❌ Error details:', {
+        message: error?.message,
+        code: error?.code,
+        type: error?.type
+      });
+      alert(`Failed to update status: ${error?.message || 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -57,11 +97,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       console.log('💾 Saving auto-offline time to Appwrite:', time);
       
       // Save to Appwrite
-      await therapistService.update(therapist.$id, {
+      const result = await therapistService.update(therapist.$id, {
         autoOfflineTime: time
       });
       
-      console.log('✅ Auto-offline time saved');
+      console.log('✅ Auto-offline time saved:', result.autoOfflineTime);
     } catch (error) {
       console.error('❌ Failed to save auto-offline time:', error);
       alert('Failed to save auto-offline time. Please try again.');
