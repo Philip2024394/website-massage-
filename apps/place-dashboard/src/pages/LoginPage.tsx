@@ -89,6 +89,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                     : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >
+                            {/* @ts-ignore - Lucide React 19 compatibility */}
                             <LogIn className="w-4 h-4 inline mr-2" />
                             Sign In
                         </button>
@@ -105,6 +106,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                     : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >
+                            {/* @ts-ignore - Lucide React 19 compatibility */}
                             <UserPlus className="w-4 h-4 inline mr-2" />
                             Register
                         </button>
@@ -130,6 +132,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 Business Email
                             </label>
                             <div className="relative">
+                                {/* @ts-ignore - Lucide React 19 compatibility */}
                                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type="email"
@@ -148,6 +151,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                                 Password
                             </label>
                             <div className="relative">
+                                {/* @ts-ignore - Lucide React 19 compatibility */}
                                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}

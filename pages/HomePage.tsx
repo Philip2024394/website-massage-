@@ -593,6 +593,21 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [userLocation]);
 
+    // Helper to check if provider is a featured sample (always show in all cities)
+    const isFeaturedSample = (provider: any, type: 'therapist' | 'place'): boolean => {
+        if (!provider) return false;
+        
+        const name = provider.name?.toLowerCase() || '';
+        
+        if (type === 'therapist') {
+            // Budi therapist - always show as sample
+            return name.includes('budi') && (name.includes('massage') || name.includes('therapy'));
+        } else {
+            // Sample Massage Spa - always show as sample
+            return name.includes('sample') && name.includes('massage') && name.includes('spa');
+        }
+    };
+
     // Filter therapists and places by location automatically
     useEffect(() => {
         const filterByLocation = async () => {
@@ -644,7 +659,7 @@ const HomePage: React.FC<HomePageProps> = ({
             
             /* ORIGINAL LOCATION FILTERING CODE - Re-enable after adding coordinates to therapists
             if (!locationToUse) {
-                // No location available, show all therapists
+                // No location available, show all therapists (including featured samples)
                 setNearbyTherapists(therapists);
                 setNearbyPlaces(places);
                 return;
@@ -660,7 +675,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                 if (!coords) {
                     console.warn('⚠️ No valid coordinates found, showing all providers');
-                    // No coordinates available, show all therapists
+                    // No coordinates available, show all therapists (including featured samples)
                     setNearbyTherapists(therapists);
                     setNearbyPlaces(places);
                     return;
@@ -675,9 +690,32 @@ const HomePage: React.FC<HomePageProps> = ({
                 console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 50km`);
                 console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 50km`);
                 
-                // If no nearby providers found, fallback to all therapists
-                setNearbyTherapists(nearbyTherapistsResult.length > 0 ? nearbyTherapistsResult : therapists);
-                setNearbyPlaces(nearbyPlacesResult.length > 0 ? nearbyPlacesResult : places);
+                // Always include featured samples (Budi and Sample Massage Spa) regardless of location
+                const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
+                const featuredPlaces = places.filter((p: any) => isFeaturedSample(p, 'place'));
+                
+                // Merge nearby results with featured samples (remove duplicates)
+                const mergedTherapists = [
+                    ...featuredTherapists,
+                    ...nearbyTherapistsResult.filter((t: any) => 
+                        !featuredTherapists.some((ft: any) => 
+                            (ft.$id && ft.$id === t.$id) || (ft.id && ft.id === t.id)
+                        )
+                    )
+                ];
+                
+                const mergedPlaces = [
+                    ...featuredPlaces,
+                    ...nearbyPlacesResult.filter((p: any) => 
+                        !featuredPlaces.some((fp: any) => 
+                            (fp.$id && fp.$id === p.$id) || (fp.id && fp.id === p.id)
+                        )
+                    )
+                ];
+                
+                // If no nearby providers found, show featured samples + all therapists as fallback
+                setNearbyTherapists(mergedTherapists.length > 0 ? mergedTherapists : [...featuredTherapists, ...therapists]);
+                setNearbyPlaces(mergedPlaces.length > 0 ? mergedPlaces : [...featuredPlaces, ...places]);
                 
             } catch (error) {
                 console.error('❌ Location filtering error:', error);
@@ -700,6 +738,11 @@ const HomePage: React.FC<HomePageProps> = ({
             return t.isLive === true || isOwner; // Always include own profile preview
         });
         const filteredTherapists = liveTherapists.filter((t: any) => {
+            // Always show featured sample therapists (like Budi) in ALL cities
+            if (isFeaturedSample(t, 'therapist')) {
+                return true;
+            }
+            
             if (selectedCity === 'all') return true;
             
             // Try multiple matching strategies for city filtering
@@ -1077,6 +1120,11 @@ const HomePage: React.FC<HomePageProps> = ({
                             let baseList = therapists
                                 .filter((t: any) => t.isLive === true || isOwner(t))
                                 .filter((t: any) => {
+                                    // Always show featured sample therapists (Budi) in all cities
+                                    if (isFeaturedSample(t, 'therapist')) {
+                                        return true;
+                                    }
+                                    
                                     if (selectedCity === 'all') return true;
                                     
                                     // Try to match therapist location to selected city
@@ -1248,6 +1296,11 @@ const HomePage: React.FC<HomePageProps> = ({
                             const livePlaces = (places?.filter((place: any) => {
                                 // Filter by live status first
                                 if (!place.isLive) return false;
+                                
+                                // Always show featured sample places (Sample Massage Spa) in ALL cities
+                                if (isFeaturedSample(place, 'place')) {
+                                    return true;
+                                }
                                 
                                 // Apply city filtering if not 'all'
                                 if (selectedCity === 'all') return true;

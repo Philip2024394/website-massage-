@@ -123,6 +123,11 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
               <div className="inline-block bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
                 <p className="text-amber-800 font-semibold text-sm">30% commission per booking</p>
               </div>
+              <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg px-4 py-3">
+                <p className="text-orange-800 font-medium text-xs">
+                  ⏱️ Pay within 3 hours after booking or your account will be set to Busy
+                </p>
+              </div>
             </div>
 
             <div className="space-y-4 mb-8">
@@ -134,10 +139,31 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                 </div>
               </div>
               <div className="flex items-start gap-3">
+                <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium">No brand usage rights</p>
+                  <p className="text-gray-500 text-sm">Directory listing only</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-gray-900 font-medium">Pay only when you earn</p>
-                  <p className="text-gray-500 text-sm">You keep 70% of earnings</p>
+                  <p className="text-gray-500 text-sm">30% commission, 70% to you</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium">3-hour payment window</p>
+                  <p className="text-gray-500 text-sm">Upload proof within 3 hours</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium">Auto-reactivation</p>
+                  <p className="text-gray-500 text-sm">Active after upload, verified by admin</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -145,13 +171,6 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                 <div>
                   <p className="text-gray-900 font-medium">Cancel anytime</p>
                   <p className="text-gray-500 text-sm">No commitment required</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-900 font-medium">Upgrade when ready</p>
-                  <p className="text-gray-500 text-sm">Switch to Plus anytime</p>
                 </div>
               </div>
             </div>
@@ -196,36 +215,20 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Plus</h3>
-              <p className="text-gray-600 text-sm mb-6">Grow online while keeping 100% profits</p>
+              <p className="text-gray-600 text-sm mb-4">Represent Indastreet Massage Brand</p>
               
-              <div className="inline-block bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-6">
+              <div className="mb-6">
+                <div className="text-5xl font-bold text-gray-900 mb-2">Rp 250k</div>
+                <div className="text-gray-500 text-sm font-medium">per month</div>
+              </div>
+
+              <div className="inline-block bg-green-50 border border-green-200 rounded-lg px-4 py-2 mb-4">
                 <p className="text-green-800 font-semibold text-sm">0% commission · Keep all earnings</p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-                <p className="text-xs text-gray-600 font-semibold mb-3">5-Month Agreement · Progressive Pricing</p>
-                <div className="grid grid-cols-5 gap-2 text-xs">
-                  <div className="text-center">
-                    <div className="text-gray-600 font-medium mb-1">M1</div>
-                    <div className="text-lg font-bold text-green-600">FREE</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gray-600 font-medium mb-1">M2</div>
-                    <div className="text-sm font-bold text-gray-800">100k</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gray-600 font-medium mb-1">M3</div>
-                    <div className="text-sm font-bold text-gray-800">135k</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gray-600 font-medium mb-1">M4</div>
-                    <div className="text-sm font-bold text-gray-800">175k</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-gray-600 font-medium mb-1">M5</div>
-                    <div className="text-sm font-bold text-amber-700">200k</div>
-                  </div>
-                </div>
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-4 mb-4">
+                <p className="text-purple-900 font-bold text-sm mb-1">🎯 Official Indastreet Partner</p>
+                <p className="text-purple-700 text-xs">Authorized to represent our brand professionally</p>
               </div>
             </div>
 
@@ -235,6 +238,20 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                 <div>
                   <p className="text-gray-900 font-medium">0% commission forever</p>
                   <p className="text-gray-500 text-sm">Keep 100% of all earnings</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium">🎯 Indastreet Brand Rights</p>
+                  <p className="text-gray-500 text-sm">Official partner status & branding</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-gray-900 font-medium">Profile on live site</p>
+                  <p className="text-gray-500 text-sm">After payment verification</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -256,13 +273,6 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                 <div>
                   <p className="text-gray-900 font-medium">Advanced analytics dashboard</p>
                   <p className="text-gray-500 text-sm">Insights, trends & forecasting</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-gray-900 font-medium">Profile optimization support</p>
-                  <p className="text-gray-500 text-sm">Expert help to boost bookings</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -307,7 +317,18 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ therapist, onBack, onCo
                     <span className="inline-block bg-green-100 text-green-700 font-bold text-base px-3 py-1 rounded-lg">Rp 0</span>
                   </td>
                   <td className="text-center py-5 px-6">
-                    <span className="inline-block bg-amber-100 text-amber-700 font-bold text-sm px-3 py-1 rounded-lg">FREE → 100k → 135k → 175k → 200k</span>
+                    <span className="inline-block bg-amber-100 text-amber-700 font-bold text-base px-3 py-1 rounded-lg">Rp 250,000</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="py-5 px-6 font-semibold text-gray-900">Brand Rights</td>
+                  <td className="text-center py-5 px-6">
+                    <X className="w-6 h-6 text-red-500 mx-auto" />
+                    <div className="text-xs text-gray-500 mt-1">Directory only</div>
+                  </td>
+                  <td className="text-center py-5 px-6">
+                    <Check className="w-6 h-6 text-green-600 mx-auto" />
+                    <div className="text-xs text-green-600 mt-1 font-semibold">Official Partner</div>
                   </td>
                 </tr>
                 <tr className="border-b border-gray-200 bg-yellow-50 hover:bg-yellow-100">

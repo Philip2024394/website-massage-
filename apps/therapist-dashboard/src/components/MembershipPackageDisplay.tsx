@@ -12,7 +12,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { databases, APPWRITE_CONFIG, Query, storage, ID } from '../../../../lib/services/_shared';
-import { paymentNotificationService } from '../../../../lib/services/paymentNotification.service';
+// Payment notification service - to be implemented
 
 interface MembershipPackageDisplayProps {
     providerId: string;
@@ -101,7 +101,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
             // Load subscription
             const subResponse = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.memberSubscriptions || 'member_subscriptions',
+                'member_subscriptions',
                 [Query.equal('providerId', providerId), Query.limit(1)]
             );
 
@@ -121,7 +121,8 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
             });
 
             // Load payment status
-            const status = await paymentNotificationService.getPaymentStatus(providerId);
+            // const status = await paymentNotificationService.getPaymentStatus(providerId);
+            const status = null; // Payment service to be implemented
             setPaymentStatus(status);
 
         } catch (error) {
@@ -157,7 +158,7 @@ export const MembershipPackageDisplay: React.FC<MembershipPackageDisplayProps> =
             // Create payment confirmation document
             await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.paymentConfirmations || 'payment_confirmations',
+                'payment_confirmations',
                 ID.unique(),
                 {
                     providerId: providerId,

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { databases, DATABASE_ID } from '../lib/appwrite';
+import { useState, useEffect } from 'react';
+import { databases, DATABASE_ID } from '../../../../lib/appwrite';
 import { Query } from 'appwrite';
 
 interface MemberHealthStatus {
@@ -154,9 +154,9 @@ export default function SystemHealthMonitor() {
             };
 
             // Calculate booking status
-            const bookNowBookings = bookings.documents.filter(b => b.mode === 'immediate').length;
-            const scheduledBookings = bookings.documents.filter(b => b.mode === 'scheduled').length;
-            const missedBookings = bookings.documents.filter(b => 
+            const bookNowBookings = bookings.documents.filter((b: any) => b.mode === 'immediate').length;
+            const scheduledBookings = bookings.documents.filter((b: any) => b.mode === 'scheduled').length;
+            const missedBookings = bookings.documents.filter((b: any) => 
                 !b.providerAcknowledged && 
                 new Date(b.$createdAt).getTime() < Date.now() - 5 * 60 * 1000 // 5 minutes old
             ).length;
@@ -170,7 +170,7 @@ export default function SystemHealthMonitor() {
             };
 
             // Calculate chat status
-            const unreadMessages = chatMessages.documents.filter(m => !m.isRead).length;
+            const unreadMessages = chatMessages.documents.filter((m: any) => !m.isRead).length;
             const chatStatus = {
                 isOnline: latestHealthCheck?.isOnline || false,
                 lastMessageSent: latestHealthCheck?.lastMessageSent || 'Never',

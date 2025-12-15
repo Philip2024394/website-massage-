@@ -20,10 +20,10 @@ interface SessionStart {
     longitude?: number;
 }
 
-interface SessionUpdate {
-    logoutTime: string;
-    duration: number; // in minutes
-}
+// interface SessionUpdate {
+//     logoutTime: string;
+//     duration: number; // in minutes
+// }
 
 class SessionTrackingService {
     private currentSessionId: string | null = null;

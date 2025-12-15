@@ -6,6 +6,26 @@ import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
 import { createChatRoom, sendSystemMessage } from '../lib/chatService';
+import { commissionTrackingService } from '../lib/services/commissionTrackingService';
+
+// Avatar options for customer chat profile
+const AVATAR_OPTIONS = [
+    { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
+    { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
+    { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
+    { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
+    { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
+    { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
+    { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
+    { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
+    { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
+    { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
+    { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
+    { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
+    { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
+    { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
+    { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' }
+];
 
 // Extend window type
 declare global {
@@ -76,6 +96,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const [customerName, setCustomerName] = useState('');
   const [customerWhatsApp, setCustomerWhatsApp] = useState('');
   const [roomNumber, setRoomNumber] = useState('');
+  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_OPTIONS[0].imageUrl);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [lastBookingTime, setLastBookingTime] = useState<string>('22:00');
   const [openingTime, setOpeningTime] = useState<string>('09:00');
@@ -385,6 +406,55 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         
         console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
         
+        // Create commission record for Pro members (30% commission)
+        try {
+          // Fetch therapist data to check membership tier
+          const collectionId = therapistType === 'therapist' 
+            ? APPWRITE_CONFIG.collections.therapists 
+            : APPWRITE_CONFIG.collections.facial_places;
+          
+          if (collectionId && therapistId) {
+            const therapist = await databases.getDocument(
+              APPWRITE_CONFIG.databaseId,
+              collectionId,
+              therapistId
+            );
+
+            // Check if therapist is on Pro plan (free tier with 30% commission)
+            // 'free' = Pro plan, 'plus' = Plus plan (no commission)
+            const membershipTier = (therapist as any).membershipTier || 'free';
+            
+            if (membershipTier === 'free') {
+              // Pro member - create commission record with 3-hour deadline
+              const scheduledDateTime = new Date(bookingDate + ' ' + bookingTime).toISOString();
+              
+              console.log('💰 Creating commission record for Pro member:', {
+                therapistId: therapistId,
+                therapistName: therapistName,
+                serviceAmount: finalPrice,
+                commissionRate: 30,
+                scheduledDate: scheduledDateTime
+              });
+
+              await commissionTrackingService.createCommissionRecord(
+                therapistId,
+                therapistName,
+                bookingResponse.$id,
+                new Date().toISOString(), // bookingDate (when booking was created)
+                scheduledDateTime, // scheduledDate (when service is scheduled)
+                finalPrice
+              );
+
+              console.log('✅ Commission record created successfully');
+            } else {
+              console.log('ℹ️ Plus member - no commission tracking needed');
+            }
+          }
+        } catch (commissionErr) {
+          console.error('⚠️ Failed to create commission record:', commissionErr);
+          // Don't block booking if commission creation fails
+        }
+        
         // Lock booking - store pending booking info (15 min deadline)
         const deadline = new Date();
         deadline.setMinutes(deadline.getMinutes() + 15);
@@ -399,11 +469,40 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         
         console.log('🔒 Booking locked until:', deadline.toISOString());
         
-        // Create booking message for in-app chat
+        // Create booking message for in-app chat (conditional based on membership)
         const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
           ? 'facial treatment' 
           : 'massage';
-        const message = `🎯 NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING
+        
+        // Get membership tier to determine WhatsApp access
+        const therapistMembershipTier = (therapist as any).membershipTier || 'free';
+        
+        // Pro members: NO WhatsApp, strict rules
+        const proMessage = `🚨 NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING REQUEST
+
+⏱️ YOU HAVE 5 MINUTES TO ACCEPT OR REJECT
+
+👤 Customer: ${customerName}
+📅 Date: ${bookingDate}
+⏰ Time: ${bookingTime}
+⏱️ Duration: ${finalDuration} minutes
+💰 Price: IDR ${Math.round(finalPrice / 1000)}K
+${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Location: ${hotelVillaName}\n` : ''}
+📝 Booking ID: ${bookingResponse.$id}
+
+⚠️ PRO MEMBER NOTICE:
+❌ WhatsApp contact NOT provided (Pro plan)
+✅ Communicate through in-app chat only
+
+⚠️ WARNING: Operating outside Indastreet platform = immediate deactivation + WhatsApp blocking
+
+💡 Upgrade to Plus (Rp 250K/month):
+✓ Customer WhatsApp access
+✓ 0% commission
+✓ No payment deadlines`;
+
+        // Plus members: Full WhatsApp access
+        const plusMessage = `⭐ NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING (Plus Member)
 
 👤 Customer: ${customerName}
 📱 WhatsApp: ${customerWhatsApp}
@@ -414,9 +513,14 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 ${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Location: ${hotelVillaName}\n` : ''}
 📝 Booking ID: ${bookingResponse.$id}
 
-✅ Please confirm availability and arrival time.
+✅ Plus Member Benefits Active:
+✓ 0% commission
+✓ Direct WhatsApp access
+✓ No payment deadlines
 
-⏰ You have 15 minutes to respond. After that, this booking may be offered to other ${therapistType === 'therapist' ? 'therapists' : 'places'}.`;
+You can contact the customer immediately!`;
+
+        const message = therapistMembershipTier === 'free' ? proMessage : plusMessage;
 
         // Create chat room and send booking notification
         console.log('💬 Creating chat room for booking...');
@@ -431,7 +535,7 @@ ${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Locati
             customerId: 'guest', // Guest user for now
             customerName: customerName,
             customerLanguage: 'en', // Default to English for scheduled bookings
-            customerPhoto: '',
+            customerPhoto: selectedAvatar, // Use selected avatar for chat profile
             therapistId: parseInt(therapistId) || 0,
             therapistName: therapistName,
             therapistLanguage: 'id', // Default to Indonesian for providers
@@ -720,6 +824,40 @@ ${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Locati
                 <p className="text-xs text-gray-500 mt-1">
                   For direct communication and booking updates
                 </p>
+              </div>
+
+              {/* Avatar Selection */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  {language === 'id' ? 'Pilih Avatar Anda' : 'Choose Your Avatar'}
+                </label>
+                <div className="grid grid-cols-5 gap-2">
+                  {AVATAR_OPTIONS.map((avatar) => (
+                    <button
+                      key={avatar.id}
+                      type="button"
+                      onClick={() => setSelectedAvatar(avatar.imageUrl)}
+                      className="relative transition-all hover:scale-105 focus:outline-none"
+                    >
+                      <img 
+                        src={avatar.imageUrl} 
+                        alt={avatar.label} 
+                        className={`w-14 h-14 rounded-full object-cover ${
+                          selectedAvatar === avatar.imageUrl
+                            ? 'ring-3 ring-orange-500 ring-offset-1 shadow-lg'
+                            : 'hover:ring-2 hover:ring-orange-300 hover:ring-offset-1'
+                        }`}
+                      />
+                      {selectedAvatar === avatar.imageUrl && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Room Number - Only for hotel/villa bookings */}

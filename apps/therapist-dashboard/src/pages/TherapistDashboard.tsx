@@ -8,6 +8,8 @@ import { loadGoogleMapsScript } from '../../../../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
 import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
+import BookingRequestCard from '../components/BookingRequestCard';
+import ProPlanWarnings from '../components/ProPlanWarnings';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -471,7 +473,27 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       {/* Upload Form Card */}
       <main className="flex items-center justify-center p-4 py-8">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+        <div className="w-full max-w-2xl space-y-6">
+          
+          {/* Booking Request Cards - Always visible at top */}
+          {therapist?.$id && (
+            <BookingRequestCard 
+              therapistId={therapist.$id}
+              membershipTier={therapist.membershipTier === 'plus' ? 'plus' : 'free'}
+            />
+          )}
+
+          {/* Pro Plan Warnings - Show for free tier members */}
+          {therapist?.membershipTier === 'free' && (
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-red-500 overflow-hidden">
+              <ProPlanWarnings 
+                therapistName={therapist?.name || therapist?.fullName || 'Member'}
+                showFullTerms={false}
+              />
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4">
             <h2 className="text-white text-lg font-bold">📝 Profile Information</h2>
@@ -777,6 +799,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 )}
               </button>
             </div>
+          </div>
           </div>
         </div>
       </main>
