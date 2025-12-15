@@ -202,6 +202,43 @@ const generateMockPlaces = (): Place[] => [
         hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
         hotelDiscount: 25,
         villaDiscount: 28,
+    },
+    {
+        id: 3,
+        name: 'Sample Massage Spa',
+        email: 'sample@example.com',
+        description: 'Featured sample massage spa showcasing our platform services. Always available in all Indonesian cities.',
+        mainImage: 'https://via.placeholder.com/400x250/8B5CF6/FFFFFF?text=Sample+Massage+Spa',
+        thumbnailImages: [
+            'https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Sample+1',
+            'https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Sample+2',
+            'https://via.placeholder.com/150/8B5CF6/FFFFFF?text=Sample+3'
+        ],
+        pricing: stringifyPricing({ "60": 220000, "90": 300000, "120": 380000 }),
+        whatsappNumber: '6281234567895',
+        distance: 1.5,
+        rating: 4.9,
+        reviewCount: 456,
+        massageTypes: stringifyMassageTypes(['Traditional Indonesian', 'Swedish', 'Deep Tissue', 'Aromatherapy']),
+        isLive: true,
+        location: 'Featured Sample Location, Jakarta',
+        coordinates: stringifyCoordinates({ lat: -6.2088, lng: 106.8456 }),
+        openingTime: '08:00',
+        closingTime: '23:00',
+        activeMembershipDate: new Date().toISOString().split('T')[0],
+        analytics: stringifyAnalytics({ 
+          impressions: 5000, 
+          views: 0,
+          profileViews: 2500, 
+          whatsapp_clicks: 0,
+          whatsappClicks: 500,
+          phone_clicks: 0,
+          directions_clicks: 0,
+          bookings: 0 
+        }),
+        hotelVillaServiceStatus: HotelVillaServiceStatus.OptedIn,
+        hotelDiscount: 40,
+        villaDiscount: 45,
     }
 ];
 

@@ -598,14 +598,16 @@ const HomePage: React.FC<HomePageProps> = ({
         if (!provider) return false;
         
         const name = provider.name?.toLowerCase() || '';
+        const isFeatured = type === 'therapist' 
+            ? name.includes('budi') // More flexible - just need "budi" in the name
+            : name.includes('sample') && name.includes('massage') && name.includes('spa');
         
-        if (type === 'therapist') {
-            // Budi therapist - always show as sample
-            return name.includes('budi') && (name.includes('massage') || name.includes('therapy'));
-        } else {
-            // Sample Massage Spa - always show as sample
-            return name.includes('sample') && name.includes('massage') && name.includes('spa');
+        // Debug logging for featured sample detection
+        if (isFeatured) {
+            console.log(`🎯 FEATURED SAMPLE DETECTED: ${type} "${provider.name}" - will show in ALL Indonesian cities including Yogyakarta, Jakarta, Bali, etc.`);
         }
+        
+        return isFeatured;
     };
 
     // Filter therapists and places by location automatically
@@ -694,6 +696,16 @@ const HomePage: React.FC<HomePageProps> = ({
                 const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
                 const featuredPlaces = places.filter((p: any) => isFeaturedSample(p, 'place'));
                 
+                console.log(`🔍 FEATURED SAMPLES SEARCH RESULTS:`);
+                console.log(`   - Total therapists: ${therapists.length}, Featured: ${featuredTherapists.length}`);
+                console.log(`   - Total places: ${places.length}, Featured: ${featuredPlaces.length}`);
+                if (featuredTherapists.length === 0) {
+                    console.log(`   - No "Budi" therapist found. Available therapists:`, therapists.map(t => t.name));
+                }
+                if (featuredPlaces.length === 0) {
+                    console.log(`   - No "Sample Massage Spa" found. Available places:`, places.map(p => p.name));
+                }
+                
                 // Merge nearby results with featured samples (remove duplicates)
                 const mergedTherapists = [
                     ...featuredTherapists,
@@ -740,6 +752,7 @@ const HomePage: React.FC<HomePageProps> = ({
         const filteredTherapists = liveTherapists.filter((t: any) => {
             // Always show featured sample therapists (like Budi) in ALL cities
             if (isFeaturedSample(t, 'therapist')) {
+                console.log(`✅ Including featured therapist "${t.name}" in city "${selectedCity}" (Budi shows everywhere in Indonesia)`);
                 return true;
             }
             
@@ -1299,6 +1312,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 
                                 // Always show featured sample places (Sample Massage Spa) in ALL cities
                                 if (isFeaturedSample(place, 'place')) {
+                                    console.log(`✅ Including featured place "${place.name}" in city "${selectedCity}" (Sample Massage Spa shows everywhere in Indonesia)`);
                                     return true;
                                 }
                                 
@@ -1419,6 +1433,12 @@ const HomePage: React.FC<HomePageProps> = ({
                         {(() => {
                             // Filter facial places by live status and city
                             const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
+                                // Always show featured sample places (Sample Massage Spa) in ALL cities
+                                if (isFeaturedSample(place, 'place')) {
+                                    console.log(`✅ Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
+                                    return true;
+                                }
+                                
                                 // All facial places from the collection are assumed live
                                 // Apply city filtering if not 'all'
                                 if (selectedCity === 'all') return true;
