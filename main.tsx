@@ -12,20 +12,10 @@ const isAdminMode = import.meta.env.MODE === 'admin';
 
 console.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
 
-// Admin mode: Load admin app
+// Admin mode: Redirect to separate admin dashboard app
 if (isAdminMode) {
-  console.log('🔐 Loading Admin App...');
-  import('./src/apps/admin/AdminApp').then((module) => {
-    const AdminApp = module.default;
-    const root = document.getElementById('root');
-    if (root) {
-      ReactDOM.createRoot(root).render(
-        <React.StrictMode>
-          <AdminApp />
-        </React.StrictMode>
-      );
-    }
-  });
+  console.log('🔐 Redirecting to Admin Dashboard App...');
+  window.location.href = 'http://localhost:3004';
 } else {
   // Main customer app
   console.log('🏠 Loading Main App...');

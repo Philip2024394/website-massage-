@@ -49,7 +49,7 @@ const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage
 const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
 const MembershipTermsPage = React.lazy(() => import('./pages/MembershipTermsPage'));
 const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
-const FacialMemberDashboard = React.lazy(() => import('./pages/FacialMemberDashboard'));
+// FacialMemberDashboard removed - now redirects to separate dashboard app
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
@@ -1105,7 +1105,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'facialPlaceDashboard':
             // Redirect to separate facial dashboard app
-            window.open('http://localhost:3003', '_blank');
+            window.open('http://localhost:3006', '_blank');
             setPage('home');
             return null;
 
@@ -1137,24 +1137,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             );
 
         case 'facialMemberDashboard':
-            if (!facialMemberId || !facialMemberEmail) {
-                setPage('facialPortal');
-                return null;
-            }
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading dashboard..." />}>
-                    <FacialMemberDashboard
-                        userId={facialMemberId}
-                        userEmail={facialMemberEmail}
-                        onNavigateHome={handleBackToHome}
-                        onLogout={() => {
-                            setFacialMemberId(null);
-                            setFacialMemberEmail(null);
-                            setPage('home');
-                        }}
-                    />
-                </React.Suspense>
-            );
+            // Redirect to separate facial dashboard app
+            window.open('http://localhost:3006', '_blank');
+            setPage('home');
+            return null;
 
         case 'therapistLogin': 
             return <TherapistLoginPage 
@@ -1162,14 +1148,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
                     setLoggedInProvider({ id: therapistId, type: 'therapist' });
                     // Redirect directly to new therapist dashboard
-                    window.open('http://localhost:3003', '_blank');
+                    window.open('http://localhost:3005', '_blank');
                     setPage('home');
                 }} 
                 onBack={handleBackToHome} 
             />;
         case 'therapistPortal':
             // Redirect to separate therapist dashboard app
-            window.open('http://localhost:3003', '_blank');
+            window.open('http://localhost:3005', '_blank');
             setPage('home');
             return null;
             

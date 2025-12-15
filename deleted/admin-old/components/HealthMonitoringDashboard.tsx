@@ -4,11 +4,8 @@ import {
     RefreshCw, Shield, AlertTriangle, Play, Square,
     Trash2, TestTube, WifiOff, Wifi, Users, Timer
 } from 'lucide-react';
-// Legacy admin monitoring services are not part of the main app build
-// Provide minimal mocks to satisfy TypeScript when compiling this unused component
-type HealthEvent = any;
-const adminHealthService: any = {};
-const realTimeHealthService: any = { subscribe: () => () => {}, getConnectionStatus: () => ({}) };
+import { adminHealthService } from '../services/adminHealthService';
+import { realTimeHealthService, HealthEvent } from '../services/realTimeHealthService';
 
 interface SystemHealthMetrics {
     appwriteHealth: {

@@ -1,5 +1,4 @@
-// Legacy admin service not part of main app build; provide a minimal mock
-const adminHealthService: any = {};
+import { adminHealthService } from '../services/adminHealthService';
 import { chatSessionService } from '../../../../services/chatSessionService';
 import { appwriteHealthMonitor } from '../../../../services/appwriteHealthMonitor';
 

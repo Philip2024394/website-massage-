@@ -42,6 +42,7 @@
     "dist",
     "build", 
     "mobile",
+    "src/apps/admin/**/*",
     "deleted/**/*",
     "components/AppDrawer.tsx",
     "vite.config.ts",

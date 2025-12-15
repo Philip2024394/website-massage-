@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building } from 'lucide-react';
+import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles } from 'lucide-react';
 
 interface AppDrawerProps {
   isOpen: boolean;
@@ -165,6 +165,23 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">Website Partners</span>
+                  </button>
+                </div>
+
+                {/* Join Provider Section */}
+                <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">Join as Provider</h3>
+                  <button onClick={() => handleItemClick(onTherapistPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-green-50 border border-green-200 transition-colors">
+                    <UserPlus className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-sm text-green-700 font-medium">Join Therapist</span>
+                  </button>
+                  <button onClick={() => handleItemClick(onMassagePlacePortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-blue-50 border border-blue-200 transition-colors">
+                    <Building className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <span className="text-sm text-blue-700 font-medium">Join Massage Spa</span>
+                  </button>
+                  <button onClick={() => handleItemClick(onFacialPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-purple-50 border border-purple-200 transition-colors">
+                    <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                    <span className="text-sm text-purple-700 font-medium">Join Skin Clinic</span>
                   </button>
                 </div>
               </div>
