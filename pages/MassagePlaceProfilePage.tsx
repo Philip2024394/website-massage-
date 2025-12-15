@@ -210,53 +210,122 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
         }
     };
 
-    // Handle WhatsApp booking - open WhatsApp with place number
+    // Handle Book Now - open chat window in immediate mode (same as therapist booking)
     const handleBookNowClick = () => {
-        if (place.whatsappNumber) {
-            const message = `Hi, I would like to book a massage at ${place.name}. Can you help me with availability?`;
-            const whatsappUrl = `https://wa.me/${place.whatsappNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        } else {
-            alert('WhatsApp number not available for this massage place');
-        }
-    };
-    
-    // Handle Schedule booking - open schedule popup
-    const handleBookingClick = () => {
-        const openScheduleBookingPopup = (window as any).openScheduleBookingPopup;
-        if (openScheduleBookingPopup) {
-            // Parse pricing from place data
-            const parsePricing = (pricingStr: any) => {
-                if (!pricingStr) return { "60": 0, "90": 0, "120": 0 };
-                if (typeof pricingStr === 'object') return pricingStr;
-                try {
-                    return JSON.parse(pricingStr);
-                } catch {
-                    return { "60": 0, "90": 0, "120": 0 };
-                }
-            };
+        console.log('📱 Massage Place Profile Book Now clicked - opening chat window');
+        
+        // Parse pricing from place data - same structure as therapist pricing
+        const parsePricing = (pricingData: any) => {
+            if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
+            if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
+            try {
+                const parsed = JSON.parse(pricingData);
+                // Convert to proper format if needed (assuming place pricing might be in different units)
+                return {
+                    "60": parsed["60"] && parsed["60"] < 1000 ? parsed["60"] * 1000 : parsed["60"] || 200000,
+                    "90": parsed["90"] && parsed["90"] < 1000 ? parsed["90"] * 1000 : parsed["90"] || 300000,
+                    "120": parsed["120"] && parsed["120"] < 1000 ? parsed["120"] * 1000 : parsed["120"] || 400000
+                };
+            } catch {
+                return { "60": 200000, "90": 300000, "120": 400000 };
+            }
+        };
+        
+        const pricing = parsePricing(place.pricing);
+        console.log('💰 Place pricing for chat:', pricing);
+        
+        // Calculate active discount for chat window
+        const activeDiscountData = (() => {
+            // Mock discount data for testing - same logic as HeroSection
+            const hasDiscount = place && ((place.id === '1' || place.$id === '1') || (place.name && place.name.toLowerCase().includes('relax')));
+            if (!hasDiscount) return null;
             
-            const parsedPricing = parsePricing(place.pricing);
-            const pricing = {
-                "60": parsedPricing["60"] * 1000,
-                "90": parsedPricing["90"] * 1000,
-                "120": parsedPricing["120"] * 1000
-            };
+            // Match HomePage discount logic based on place ID/index
+            let percentage = 20; // Default to 20% (first place)
+            if (place.id === '2' || place.$id === '2') percentage = 15;
+            else if (place.id === '3' || place.$id === '3') percentage = 10;
+            else if (place.id === '4' || place.$id === '4') percentage = 5;
             
-            openScheduleBookingPopup({
-                therapistId: String(place.$id || place.id),
+            return {
+                percentage: percentage,
+                expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000) // Expires in 3 hours
+            };
+        })();
+        
+        // Dispatch openChat event just like therapist bookings
+        window.dispatchEvent(new CustomEvent('openChat', {
+            detail: {
+                therapistId: String(place.$id || place.id || ''),
                 therapistName: place.name,
                 therapistType: 'place',
-                therapistStatus: (place as any).status || 'available',
-                profilePicture: place.profilePicture || place.mainImage,
-                providerRating: (place as any).rating || 0,
+                therapistStatus: 'available', // Places are considered available during business hours
                 pricing: pricing,
-                discountPercentage: (place as any).discountPercentage || 0,
-                discountActive: isDiscountActive(place)
-            });
-        } else {
-            console.error('Schedule booking popup not available');
-        }
+                profilePicture: place.mainImage || place.profilePicture,
+                providerRating: (place as any).rating || 0,
+                discountPercentage: activeDiscountData?.percentage || 0,
+                discountActive: !!activeDiscountData,
+                mode: 'immediate'
+            }
+        }));
+    };
+    
+    // Handle Schedule booking - open chat window in scheduled mode (same as therapist booking)
+    const handleBookingClick = () => {
+        console.log('📅 Massage Place Profile Schedule clicked - opening chat in scheduled mode');
+        
+        // Parse pricing from place data - same structure as therapist pricing
+        const parsePricing = (pricingData: any) => {
+            if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
+            if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
+            try {
+                const parsed = JSON.parse(pricingData);
+                // Convert to proper format if needed (assuming place pricing might be in different units)
+                return {
+                    "60": parsed["60"] && parsed["60"] < 1000 ? parsed["60"] * 1000 : parsed["60"] || 200000,
+                    "90": parsed["90"] && parsed["90"] < 1000 ? parsed["90"] * 1000 : parsed["90"] || 300000,
+                    "120": parsed["120"] && parsed["120"] < 1000 ? parsed["120"] * 1000 : parsed["120"] || 400000
+                };
+            } catch {
+                return { "60": 200000, "90": 300000, "120": 400000 };
+            }
+        };
+        
+        const pricing = parsePricing(place.pricing);
+        console.log('💰 Place pricing for scheduled chat:', pricing);
+        
+        // Calculate active discount for chat window
+        const activeDiscountData = (() => {
+            // Mock discount data for testing - same logic as HeroSection
+            const hasDiscount = place && ((place.id === '1' || place.$id === '1') || (place.name && place.name.toLowerCase().includes('relax')));
+            if (!hasDiscount) return null;
+            
+            // Match HomePage discount logic based on place ID/index
+            let percentage = 20; // Default to 20% (first place)
+            if (place.id === '2' || place.$id === '2') percentage = 15;
+            else if (place.id === '3' || place.$id === '3') percentage = 10;
+            else if (place.id === '4' || place.$id === '4') percentage = 5;
+            
+            return {
+                percentage: percentage,
+                expiresAt: new Date(Date.now() + 3 * 60 * 60 * 1000) // Expires in 3 hours
+            };
+        })();
+        
+        // Dispatch openChat event in scheduled mode
+        window.dispatchEvent(new CustomEvent('openChat', {
+            detail: {
+                therapistId: String(place.$id || place.id || ''),
+                therapistName: place.name,
+                therapistType: 'place',
+                therapistStatus: 'available', // Places are considered available during business hours
+                pricing: pricing,
+                profilePicture: place.mainImage || place.profilePicture,
+                providerRating: (place as any).rating || 0,
+                discountPercentage: activeDiscountData?.percentage || 0,
+                discountActive: !!activeDiscountData,
+                mode: 'scheduled'
+            }
+        }));
     };
 
     // Handle Bike Taxi booking

@@ -491,16 +491,86 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 {/* Booking Buttons - Added margin-top for spacing from price containers */}
                 <div className="grid grid-cols-2 gap-3 mt-6">
                     <button
-                        onClick={onBookNowClick}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            console.log('📱 Massage Place Book Now clicked - opening chat window');
+                            
+                            // Parse pricing from place data - same structure as therapist pricing
+                            const parsePricing = (pricingData: any) => {
+                                if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
+                                if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
+                                try {
+                                    return JSON.parse(pricingData);
+                                } catch {
+                                    return { "60": 200000, "90": 300000, "120": 400000 };
+                                }
+                            };
+                            
+                            const pricing = parsePricing(place.pricing);
+                            console.log('💰 Place pricing:', pricing);
+                            
+                            // Dispatch openChat event just like therapist bookings
+                            window.dispatchEvent(new CustomEvent('openChat', {
+                                detail: {
+                                    therapistId: place.id || place.$id || '',
+                                    therapistName: place.name,
+                                    therapistType: 'place',
+                                    therapistStatus: 'available', // Places are considered available during business hours
+                                    pricing: pricing,
+                                    profilePicture: place.mainImage || place.profilePicture,
+                                    providerRating: place.rating || 0,
+                                    discountPercentage: activeDiscount?.percentage || 0,
+                                    discountActive: !!activeDiscount,
+                                    mode: 'immediate'
+                                }
+                            }));
+                        }}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white font-semibold text-sm rounded-lg hover:bg-green-600 transition-colors shadow-lg"
                     >
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24z"/>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
-                        <span>WhatsApp</span>
+                        <span>Book Now</span>
                     </button>
                     <button
-                        onClick={onBookClick}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            console.log('📅 Massage Place Schedule clicked - opening chat in scheduled mode');
+                            
+                            // Parse pricing from place data - same structure as therapist pricing
+                            const parsePricing = (pricingData: any) => {
+                                if (!pricingData) return { "60": 200000, "90": 300000, "120": 400000 };
+                                if (typeof pricingData === 'object' && pricingData !== null) return pricingData;
+                                try {
+                                    return JSON.parse(pricingData);
+                                } catch {
+                                    return { "60": 200000, "90": 300000, "120": 400000 };
+                                }
+                            };
+                            
+                            const pricing = parsePricing(place.pricing);
+                            console.log('💰 Place pricing:', pricing);
+                            
+                            // Dispatch openChat event in scheduled mode
+                            window.dispatchEvent(new CustomEvent('openChat', {
+                                detail: {
+                                    therapistId: place.id || place.$id || '',
+                                    therapistName: place.name,
+                                    therapistType: 'place',
+                                    therapistStatus: 'available', // Places are considered available during business hours
+                                    pricing: pricing,
+                                    profilePicture: place.mainImage || place.profilePicture,
+                                    providerRating: place.rating || 0,
+                                    discountPercentage: activeDiscount?.percentage || 0,
+                                    discountActive: !!activeDiscount,
+                                    mode: 'scheduled'
+                                }
+                            }));
+                        }}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-orange-500 text-white font-semibold text-sm rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
                     >
                         <Calendar className="w-4 h-4" />
