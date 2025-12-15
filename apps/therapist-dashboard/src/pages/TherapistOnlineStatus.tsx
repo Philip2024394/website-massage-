@@ -1,14 +1,15 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown } from 'lucide-react';
-import { therapistService } from '@shared/appwriteService';
+import { Power, Clock, CheckCircle, XCircle, Crown } from "lucide-react";
+import { therapistService } from "../../../../lib/appwriteService";
+import { AvailabilityStatus } from "../../../../types";
 
 interface TherapistOnlineStatusProps {
   therapist: any;
   onBack: () => void;
 }
 
-type OnlineStatus = 'available' | 'busy' | 'offline';
+type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack }) => {
   const [status, setStatus] = useState<OnlineStatus>('offline');
@@ -28,11 +29,79 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       fullTherapistObject: therapist
     });
     
-    // Load current status from therapist data (check both 'status' and old 'availabilityStatus')
-    const savedStatus = therapist?.status || therapist?.availabilityStatus || 'offline';
-    setStatus(savedStatus as OnlineStatus);
+    // Load current status from therapist data (handle both formats for backward compatibility)
+    const savedStatus = therapist?.status || therapist?.availability || therapist?.availabilityStatus || 'Offline';
+    console.log('🔍 Status loading debug:', {
+      savedStatus,
+      therapistStatus: therapist?.status,
+      therapistAvailability: therapist?.availability,
+      therapistIsLive: therapist?.isLive
+    });
+    
+    // Map Appwrite status values to UI status
+    let uiStatus: OnlineStatus = 'offline';
+    const statusStr = String(savedStatus).toLowerCase();
+    if (statusStr === 'available' || statusStr === 'active') {
+      uiStatus = 'available';
+    } else if (statusStr === 'busy') {
+      uiStatus = 'busy';
+    } else if (statusStr === 'offline' || statusStr === 'null' || statusStr === 'undefined') {
+      uiStatus = 'offline';
+    } else {
+      // Default for therapists who are isLive=true but have no explicit status
+      uiStatus = therapist?.isLive === true ? 'available' : 'offline';
+    }
+    
+    // Check localStorage backup if Appwrite status is outdated
+    const backupStatus = localStorage.getItem(`therapist_status_${therapist?.$id}`);
+    if (backupStatus && (uiStatus === 'offline' || !therapist?.status)) {
+      const backupUIStatus = backupStatus.toLowerCase();
+      if (backupUIStatus === 'available' || backupUIStatus === 'busy') {
+        console.log('💾 Using backup status from localStorage:', backupStatus);
+        uiStatus = backupUIStatus as OnlineStatus;
+      }
+    }
+    
+    console.log('⚙️ Setting UI status to:', uiStatus, 'from savedStatus:', savedStatus);
+    setStatus(uiStatus);
     setAutoOfflineTime(therapist?.autoOfflineTime || '22:00');
   }, [therapist]);
+
+  // Verify status persistence by refetching on mount
+  useEffect(() => {
+    const verifyStatusPersistence = async () => {
+      if (!therapist?.$id) return;
+      
+      try {
+        console.log('🔄 Verifying status persistence from Appwrite...');
+        const freshData = await therapistService.getById(therapist.$id);
+        console.log('📊 Fresh data from Appwrite:', {
+          status: freshData?.status,
+          availability: freshData?.availability,
+          isLive: freshData?.isLive,
+          isOnline: freshData?.isOnline
+        });
+        
+        // Update UI if there's a discrepancy
+        const freshStatus = freshData?.status || freshData?.availability || 'Offline';
+        const freshUIStatus = freshStatus.toLowerCase();
+        if (freshUIStatus !== status && (freshUIStatus === 'available' || freshUIStatus === 'busy' || freshUIStatus === 'offline')) {
+          console.log('⚠️ Status discrepancy detected, updating UI:', freshUIStatus);
+          setStatus(freshUIStatus as OnlineStatus);
+        }
+        
+        // Auto-initialize status for therapists with isLive=true but no status set
+        if ((!freshData?.status && !freshData?.availability) && freshData?.isLive === true) {
+          console.log('🆕 Auto-initializing status to Available for active therapist');
+          await handleStatusChange('available');
+        }
+      } catch (error) {
+        console.error('❌ Failed to verify status persistence:', error);
+      }
+    };
+
+    verifyStatusPersistence();
+  }, []); // Run once on mount
 
   // Auto-offline timer - check every minute if it's time to go offline
   useEffect(() => {
@@ -77,12 +146,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         therapistName: therapist.name
       });
       
-      // Update status in Appwrite (using 'status' and 'availability' fields)
+      // Update status in Appwrite (using proper AvailabilityStatus enum values)
+      const properStatusValue = newStatus === 'available' ? AvailabilityStatus.Available :
+                               newStatus === 'busy' ? AvailabilityStatus.Busy :
+                               newStatus === 'active' ? AvailabilityStatus.Available : // Treat 'active' as Available
+                               AvailabilityStatus.Offline;
+      
       const updateData = {
-        status: newStatus,
-        availability: newStatus.charAt(0).toUpperCase() + newStatus.slice(1), // capitalize
+        status: properStatusValue,
+        availability: properStatusValue, // Use same proper enum value
         isLive: newStatus === 'available',
-        isOnline: newStatus !== 'offline'
+        isOnline: newStatus !== 'offline',
+        // Clear conflicting timestamp fields based on new status
+        busyUntil: newStatus === 'available' ? null : undefined,
+        bookedUntil: newStatus === 'available' ? null : undefined,
+        busy: newStatus === 'available' ? '' : (newStatus === 'busy' ? new Date().toISOString() : ''),
+        available: newStatus === 'available' ? new Date().toISOString() : ''
       };
       
       console.log('📤 Update data:', updateData);
@@ -105,14 +184,38 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       // Show toast notification
       const statusMessages = {
         available: '✅ You are now AVAILABLE for bookings',
+        active: '✅ You are now ACTIVE and ready for bookings',
         busy: '🟡 Status set to BUSY - customers can still view your profile',
         offline: '⚫ You are now OFFLINE - profile hidden from search'
       };
       
       console.log('✅ Status saved:', statusMessages[newStatus]);
       alert(statusMessages[newStatus]);
+      
+      // 🔄 Trigger global data refresh for HomePage to update therapist cards
+      console.log('🔄 Triggering global data refresh after status update...');
+      window.dispatchEvent(new CustomEvent('refreshTherapistData', {
+        detail: { 
+          source: 'therapist-dashboard-status-update',
+          therapistId: therapist.$id,
+          newStatus: properStatusValue,
+          timestamp: new Date().toISOString()
+        }
+      }));
+      
+      // Store status in localStorage as backup
+      localStorage.setItem(`therapist_status_${therapist.$id}`, properStatusValue);
+      console.log('💾 Status backed up to localStorage');
+      
     } catch (error) {
       console.error('❌ Failed to update status:', error);
+      
+      // Revert UI status on error
+      const revertStatus = status === 'available' ? 'offline' : 
+                          status === 'busy' ? 'available' : 
+                          status === 'offline' ? 'available' : 'offline';
+      setStatus(revertStatus);
+      alert('❌ Failed to update status. Please try again.');
       console.error('❌ Error details:', {
         message: error?.message,
         code: error?.code,
@@ -187,6 +290,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       </div>
 
       <div className="max-w-4xl mx-auto p-4 space-y-6">
+        {/* Alert if not live */}
+        {!therapist?.isLive && status === 'offline' && (
+          <div className="bg-red-50 border-2 border-red-500 rounded-2xl p-4 shadow-lg">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xl">⚠️</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-red-900 text-lg">Your Profile is NOT Visible to Customers!</h3>
+                <p className="text-red-800 mt-1">
+                  Set your status to <strong>"Available"</strong> below to appear on the live site and start receiving bookings.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Current Status Display */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">

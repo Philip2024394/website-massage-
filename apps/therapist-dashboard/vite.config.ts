@@ -27,7 +27,12 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3003,
-    strictPort: true
+    port: 3005,
+    strictPort: true,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 3005
+    }
   }
 });

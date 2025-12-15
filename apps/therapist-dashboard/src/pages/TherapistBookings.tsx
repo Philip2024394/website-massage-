@@ -34,6 +34,52 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
   useEffect(() => {
     fetchBookings();
+    
+    // Subscribe to real-time booking updates with audio notification
+    let unsubscribe: (() => void) | null = null;
+    
+    const setupRealtimeBookings = async () => {
+      try {
+        const { bookingService } = await import('../../../../lib/appwriteService');
+        
+        unsubscribe = bookingService.subscribeToProviderBookings(
+          therapist.$id,
+          (newBooking) => {
+            console.log('🔔 New booking notification:', newBooking);
+            
+            // Play booking notification sound
+            try {
+              const audio = new Audio('/sounds/booking-notification.mp3');
+              audio.volume = 0.8;
+              audio.play().catch(err => console.warn('Failed to play booking sound:', err));
+            } catch (err) {
+              console.warn('Audio playback error:', err);
+            }
+            
+            // Show browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('New Booking Request! 🎉', {
+                body: `${newBooking.userName || 'Customer'} requested ${newBooking.service} min massage`,
+                icon: '/icon-192x192.png',
+                badge: '/icon-192x192.png',
+                tag: 'booking-' + newBooking.$id
+              });
+            }
+            
+            // Add to bookings list
+            setBookings(prev => [newBooking, ...prev]);
+          }
+        );
+      } catch (error) {
+        console.error('Failed to setup real-time bookings:', error);
+      }
+    };
+    
+    setupRealtimeBookings();
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, [therapist]);
 
   const fetchBookings = async () => {

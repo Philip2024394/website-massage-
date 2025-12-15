@@ -14,26 +14,36 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration (disabled on localhost to prevent stale-cache white screens) -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-              console.log('✅ Service Worker registered:', registration);
-              
-              // Listen for messages from service worker
-              navigator.serviceWorker.addEventListener('message', event => {
-                if (event.data.type === 'PLAY_NOTIFICATION_SOUND') {
-                  const audio = new Audio(event.data.soundUrl);
-                  audio.play().catch(e => console.log('Audio play failed:', e));
-                }
+        const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+        if (isLocal) {
+          // Proactively unregister SWs during local development
+          navigator.serviceWorker.getRegistrations().then((regs) => {
+            regs.forEach((reg) => reg.unregister());
+            console.log('🧹 Unregistered existing service workers on localhost');
+          });
+        } else {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+              .then((registration) => {
+                console.log('✅ Service Worker registered:', registration);
+
+                // Listen for messages from service worker
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                  if (event.data?.type === 'PLAY_NOTIFICATION_SOUND') {
+                    const audio = new Audio(event.data.soundUrl);
+                    audio.play().catch((e) => console.log('Audio play failed:', e));
+                  }
+                });
+              })
+              .catch((error) => {
+                console.log('❌ Service Worker registration failed:', error);
               });
-            })
-            .catch(error => {
-              console.log('❌ Service Worker registration failed:', error);
-            });
-        });
+          });
+        }
       }
     </script>
   </body>

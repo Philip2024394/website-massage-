@@ -7,7 +7,8 @@ interface Message {
   $id: string;
   senderId: string;
   senderName: string;
-  senderType: 'therapist' | 'admin';
+  senderAvatar?: string; // Avatar URL or emoji
+  senderType: 'therapist' | 'admin' | 'user';
   message: string;
   timestamp: string;
   read: boolean;
@@ -60,7 +61,8 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
         $id: msg.$id,
         senderId: msg.senderId,
         senderName: msg.senderName,
-        senderType: msg.senderType === 'therapist' ? 'therapist' : 'admin',
+        senderAvatar: msg.senderAvatar || msg.receiverAvatar, // Get avatar from message
+        senderType: msg.senderType === 'therapist' ? 'therapist' : (msg.senderType === 'user' ? 'user' : 'admin'),
         message: msg.content,
         timestamp: msg.createdAt,
         read: msg.isRead
@@ -261,15 +263,27 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                   {messages.map((msg) => (
                     <div
                       key={msg.$id}
-                      className={`flex ${msg.senderType === 'therapist' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex gap-2 ${msg.senderType === 'therapist' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-[70%] ${msg.senderType === 'therapist' ? 'order-2' : 'order-1'}`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          {msg.senderType === 'admin' && (
-                            <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-orange-600" />
+                      {/* Avatar on left for customer/admin, right for therapist */}
+                      {msg.senderType !== 'therapist' && (
+                        <div className="flex-shrink-0">
+                          {msg.senderAvatar && msg.senderAvatar.startsWith('http') ? (
+                            <img 
+                              src={msg.senderAvatar} 
+                              alt={msg.senderName}
+                              className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center border-2 border-orange-200">
+                              <span className="text-lg">{msg.senderAvatar || '👤'}</span>
                             </div>
                           )}
+                        </div>
+                      )}
+                      
+                      <div className="max-w-[70%]">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-semibold text-gray-700">
                             {msg.senderName}
                           </span>
@@ -285,6 +299,23 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                           <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                         </div>
                       </div>
+                      
+                      {/* Avatar on right for therapist */}
+                      {msg.senderType === 'therapist' && (
+                        <div className="flex-shrink-0">
+                          {therapist?.mainImage ? (
+                            <img 
+                              src={therapist.mainImage} 
+                              alt={therapist.name}
+                              className="w-8 h-8 rounded-full object-cover border-2 border-orange-300"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center border-2 border-orange-300">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                   <div ref={messagesEndRef} />

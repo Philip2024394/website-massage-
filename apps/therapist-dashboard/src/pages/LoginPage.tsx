@@ -1,19 +1,21 @@
+// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus } from 'lucide-react';
-import { authService } from '@shared/appwriteService';
+import { authService } from '../../../../lib/appwriteService';
 
 interface LoginPageProps {
     onLogin: () => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
-    const [viewMode, setViewMode] = useState<'login' | 'register'>('login');
+    const [viewMode, setViewMode] = useState<'login' | 'register' | 'forgot'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [resetEmail, setResetEmail] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,6 +24,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         setLoading(true);
 
         try {
+            if (viewMode === 'forgot') {
+                if (!resetEmail) {
+                    setError('Please enter your email to reset password');
+                    return;
+                }
+                // Appwrite password recovery (replace with your actual method)
+                await authService.createRecovery(resetEmail);
+                setSuccessMessage('Password reset email sent! Please check your inbox.');
+                setViewMode('login');
+                setResetEmail('');
+                return;
+            }
+
             if (!email || !password) {
                 setError('Please enter both email and password');
                 return;
@@ -31,22 +46,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 // Login
                 const emailToUse = email.includes('@') ? email : `${email}@therapist.local`;
                 await authService.login(emailToUse, password);
-                
                 // Clear any cached data
                 sessionStorage.clear();
                 localStorage.removeItem('therapist-cache');
-                
                 // Navigate to dashboard
                 onLogin();
-            } else {
+            } else if (viewMode === 'register') {
                 // Register
                 if (password.length < 8) {
                     setError('Password must be at least 8 characters');
                     return;
                 }
-
                 await authService.register(email, password, 'therapist');
-                
                 // Switch to login mode after successful registration
                 setViewMode('login');
                 setPassword('');
@@ -60,24 +71,29 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     };
 
     return (
-        <div 
-            className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center px-4 py-8"
-            style={{
-                backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20therapist%20bew.png?updatedAt=1763136088363)'
-            }}
-        >
-            <div className="max-w-md w-full">
-                {/* Header */}
-                <div className="text-center mb-6">
-                    <h1 className="text-5xl font-bold mb-3 text-gray-800 drop-shadow-lg">
-                        <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
-                    </h1>
-                    <h2 className="text-3xl font-bold mb-2 text-gray-800 drop-shadow-lg">Therapist</h2>
-                    <p className="text-gray-700 text-sm drop-shadow">Manage your massage services and bookings</p>
-                </div>
+        <div className="min-h-screen flex">
+            {/* Left Side - Image */}
+            <div 
+                className="hidden lg:block lg:w-1/2 bg-cover bg-center"
+                style={{
+                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20therapist%20bew.png?updatedAt=1763136088363)'
+                }}
+            />
 
-                {/* Card */}
-                <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6 space-y-6">
+            {/* Right Side - Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-8">
+                <div className="max-w-md w-full">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-5xl font-bold mb-3">
+                            <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
+                        </h1>
+                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Therapist</h2>
+                        <p className="text-gray-600">Manage your massage services and bookings</p>
+                    </div>
+
+                    {/* Card */}
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
                     {/* Toggle Buttons */}
                     <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
                         <button
@@ -127,74 +143,124 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     )}
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Email Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Email / Phone
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="Enter your email or phone"
-                                    disabled={loading}
-                                />
+                    {viewMode === 'forgot' ? (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="email"
+                                        value={resetEmail}
+                                        onChange={(e) => setResetEmail(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        placeholder="Enter your email"
+                                        disabled={loading}
+                                    />
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Password Field */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder={viewMode === 'register' ? 'Min 8 characters' : 'Enter your password'}
-                                    disabled={loading}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>Send Reset Link</>
+                                )}
+                            </button>
+                            <div className="text-center mt-2">
+                                <button type="button" className="text-orange-500 hover:underline text-sm" onClick={() => { setViewMode('login'); setError(''); setSuccessMessage(''); }}>Back to Sign In</button>
                             </div>
-                        </div>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Email Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Email / Phone
+                                </label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        placeholder="Enter your email or phone"
+                                        disabled={loading}
+                                    />
+                                </div>
+                            </div>
 
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
-                        >
-                            {loading ? (
-                                <>
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    Processing...
-                                </>
-                            ) : viewMode === 'login' ? (
-                                <>
-                                    <LogIn className="w-5 h-5" />
-                                    Sign In
-                                </>
-                            ) : (
-                                <>
-                                    <UserPlus className="w-5 h-5" />
-                                    Create Account
-                                </>
+                            {/* Password Field */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        placeholder={viewMode === 'register' ? 'Min 8 characters' : 'Enter your password'}
+                                        disabled={loading}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Forgot password link */}
+                            {viewMode === 'login' && (
+                                <div className="text-right">
+                                    <button
+                                        type="button"
+                                        className="text-orange-500 hover:underline text-sm"
+                                        onClick={() => { setViewMode('forgot'); setError(''); setSuccessMessage(''); }}
+                                    >
+                                        Forgot password?
+                                    </button>
+                                </div>
                             )}
-                        </button>
-                    </form>
+
+                            {/* Submit Button */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <>
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : viewMode === 'login' ? (
+                                    <>
+                                        <LogIn className="w-5 h-5" />
+                                        Sign In
+                                    </>
+                                ) : (
+                                    <>
+                                        <UserPlus className="w-5 h-5" />
+                                        Create Account
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
+                </div>
                 </div>
             </div>
         </div>

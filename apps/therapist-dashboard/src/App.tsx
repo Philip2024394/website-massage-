@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { authService, therapistService } from '@shared/appwriteService';
-import { systemHealthService } from '@/lib/systemHealthService';
+import { authService, therapistService } from '../../../lib/appwriteService';
+import { systemHealthService } from "../../../lib/systemHealthService";
+// import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
 import TherapistBookings from './pages/TherapistBookings';
@@ -17,15 +18,18 @@ import LoginPage from './pages/LoginPage';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'onboarding';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('status');
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
+    // Always rely on server state to decide onboarding
+    console.log('🔄 App mounted - checking auth...');
     checkAuth();
   }, []);
 
@@ -35,7 +39,6 @@ function App() {
       if (currentUser) {
         console.log('✅ Authenticated user:', currentUser.email);
         
-        // Fetch the actual therapist document from therapists collection
         const therapists = await therapistService.getByEmail(currentUser.email);
         console.log('🔍 Looking for therapist with email:', currentUser.email);
         console.log('🔍 Found therapists:', therapists);
@@ -45,6 +48,30 @@ function App() {
           console.log('✅ Found therapist document:', therapistDoc.$id);
           setUser(therapistDoc);
           setIsAuthenticated(true);
+          
+          // Check if therapist needs membership onboarding
+          const hasType = !!(therapistDoc as any)?.membershipType;
+          const hasSelectedAt = !!(therapistDoc as any)?.membershipSelectedAt;
+          const needsMembershipSetup = !(hasType && hasSelectedAt);
+
+          console.log('[Onboarding Gate - Decision]', {
+            therapistId: therapistDoc.$id,
+            email: therapistDoc.email,
+            name: therapistDoc.name,
+            hasType,
+            hasSelectedAt,
+            membershipType: therapistDoc.membershipType,
+            membershipSelectedAt: therapistDoc.membershipSelectedAt,
+            needsMembershipSetup,
+          });
+          
+          if (needsMembershipSetup) {
+            console.log('🎯 Therapist needs membership selection - showing MembershipPage first');
+            setNeedsOnboarding(true);
+            setCurrentPage('membership');
+          } else {
+            console.log('✅ Therapist has completed membership selection - showing dashboard');
+          }
           
           // 🏥 START SYSTEM HEALTH MONITORING
           systemHealthService.startHealthMonitoring(therapistDoc.$id);
@@ -120,6 +147,18 @@ function App() {
   // Render page content
   const renderPage = () => {
     switch (currentPage) {
+      case 'onboarding':
+        // Fallback to membership page; onboarding now uses MembershipPage
+        return <MembershipPage 
+          therapist={user} 
+          onBack={() => setCurrentPage('status')}
+          onContinue={() => {
+            setNeedsOnboarding(false);
+            setCurrentPage('dashboard');
+          }}
+          showLogout={true}
+          onLogout={handleLogout}
+        />;
       case 'status':
         return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'bookings':
@@ -129,7 +168,15 @@ function App() {
       case 'chat':
         return <TherapistChat therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'membership':
-        return <MembershipPage therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <MembershipPage 
+          therapist={user} 
+          onBack={() => setCurrentPage('status')} 
+          onContinue={needsOnboarding ? () => {
+            setNeedsOnboarding(false);
+            setCurrentPage('dashboard');
+          } : undefined}
+          onLogout={handleLogout}
+        />;
       case 'notifications':
         return (
           <TherapistNotifications 
@@ -164,6 +211,7 @@ function App() {
             onNavigateToEarnings={() => setCurrentPage('earnings')}
             onNavigateToChat={() => setCurrentPage('chat')}
             onNavigateToMembership={() => setCurrentPage('membership')}
+            onProfileSaved={() => setCurrentPage('status')}
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}
@@ -172,6 +220,25 @@ function App() {
         );
     }
   };
+
+  // If user needs onboarding, show without layout
+  console.log('🎨 Render check:', { needsOnboarding, currentPage, willShowOnboarding: needsOnboarding && (currentPage === 'onboarding' || currentPage === 'membership') });
+  
+  if (needsOnboarding && (currentPage === 'onboarding' || currentPage === 'membership')) {
+    console.log('🎯 RENDERING MEMBERSHIP PAGE FOR ONBOARDING');
+    return (
+      <>
+        <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+        <ToastContainer />
+        {/* Render membership page without layout during onboarding */}
+        <MembershipPage therapist={user} onBack={() => {
+          console.log('⬅️ MembershipPage onBack called - routing to dashboard (profile page)');
+          setNeedsOnboarding(false);
+          setCurrentPage('dashboard'); // Show profile page first after membership selection
+        }} />
+      </>
+    );
+  }
 
   return (
     <>

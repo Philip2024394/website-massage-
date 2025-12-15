@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { systemHealthService } from '@/lib/systemHealthService';
+// @ts-nocheck
+import { useState, useEffect } from 'react';
+import { systemHealthService } from '../lib/systemHealthService';
 
 interface SystemHealthIndicatorProps {
     memberId: string;

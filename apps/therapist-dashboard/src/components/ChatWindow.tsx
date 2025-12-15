@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { simpleChatService, simpleBookingService } from '@shared/appwriteService';
+import { simpleChatService, simpleBookingService } from '../../../../lib/appwriteService';
 
 interface Message {
     $id: string;
     $createdAt: string;
     senderId: string;
     senderName: string;
+    senderAvatar?: string; // Avatar URL or emoji
     message: string;
     messageType: 'text' | 'system' | 'booking' | 'auto-reply' | 'status-update' | 'fallback';
     isRead: boolean;
@@ -37,20 +38,20 @@ interface ChatWindowProps {
     onClose: () => void;
 }
 
-// Supported languages with flags
-const LANGUAGES = [
-    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-];
+// Supported languages with flags (unused - language is globally managed)
+// const LANGUAGES = [
+//     { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+//     { code: 'en', name: 'English', flag: '🇬🇧' },
+//     { code: 'zh', name: '中文', flag: '🇨🇳' },
+//     { code: 'ja', name: '日本語', flag: '🇯🇵' },
+//     { code: 'ko', name: '한국어', flag: '🇰🇷' },
+//     { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+//     { code: 'fr', name: 'Français', flag: '🇫🇷' },
+//     { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+//     { code: 'es', name: 'Español', flag: '🇪🇸' },
+//     { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+//     { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+// ];
 
 /**
  * ChatWindow - Lightweight chat for therapist-customer communication
@@ -98,10 +99,11 @@ export default function ChatWindow({
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [unreadCount] = useState(0);
+    const [customerAvatar, setCustomerAvatar] = useState<string | null>(null); // Track customer's avatar
     // Language is now managed globally - therapist dashboard uses Indonesian by default
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const therapistLanguage = 'id'; // Therapist dashboard uses Indonesian
+    // const therapistLanguage = 'id'; // Therapist dashboard uses Indonesian (unused)
 
     // Load initial messages
     useEffect(() => {
@@ -129,6 +131,7 @@ export default function ChatWindow({
                     $createdAt: msg.$createdAt || new Date().toISOString(),
                     senderId: msg.senderId,
                     senderName: msg.senderName,
+                    senderAvatar: (msg as any).senderAvatar || (msg as any).receiverAvatar, // Get avatar from message
                     message: msg.message,
                     messageType: msg.messageType as any,
                     isRead: msg.isRead,
@@ -136,6 +139,15 @@ export default function ChatWindow({
                     statusType: JSON.parse(msg.metadata || '{}').statusType,
                     showActions: JSON.parse(msg.metadata || '{}').showActions
                 }));
+                
+                // Extract customer avatar from messages (look for first non-system message with avatar)
+                const customerMsg = dbMessages.find(msg => 
+                    msg.senderId === customerId && ((msg as any).senderAvatar || (msg as any).receiverAvatar)
+                );
+                if (customerMsg) {
+                    setCustomerAvatar((customerMsg as any).senderAvatar || (customerMsg as any).receiverAvatar);
+                }
+                
                 setMessages(formatted);
             } else {
                 // First time - create booking messages
@@ -173,6 +185,7 @@ export default function ChatWindow({
                     $createdAt: msg.$createdAt || new Date().toISOString(),
                     senderId: msg.senderId,
                     senderName: msg.senderName,
+                    senderAvatar: (msg as any).senderAvatar || (msg as any).receiverAvatar, // Get avatar from message
                     message: msg.message,
                     messageType: msg.messageType as any,
                     isRead: msg.isRead,
@@ -186,6 +199,18 @@ export default function ChatWindow({
                 setMessages(prev => {
                     const exists = prev.some(m => m.$id === newMsg.$id);
                     if (!exists) {
+                        // Play notification sound for new customer messages (not system messages)
+                        if (newMsg.senderId !== 'system' && newMsg.senderId !== providerId) {
+                            try {
+                                const audio = new Audio('/sounds/message-notification.mp3');
+                                audio.volume = 0.7;
+                                audio.play().catch(err => console.warn('Failed to play message sound:', err));
+                                console.log('🔊 New message notification played');
+                            } catch (err) {
+                                console.warn('Audio playback error:', err);
+                            }
+                        }
+                        
                         return [...prev, {
                             $id: newMsg.$id || '',
                             $createdAt: newMsg.$createdAt || new Date().toISOString(),
@@ -208,36 +233,37 @@ export default function ChatWindow({
         }
     };
 
-    const handleCountdownExpiry = async () => {
-        try {
-            const conversationId = `customer_${customerId}_therapist_${providerId}`;
-            
-            // Send fallback message to database
-            await simpleChatService.sendMessage({
-                conversationId,
-                senderId: 'system',
-                senderName: 'System',
-                senderRole: 'admin',
-                receiverId: customerId,
-                receiverName: customerName,
-                receiverRole: 'customer',
-                message: `${providerName} is currently booked.\n\n🔍 We are searching for the next best match therapist for you.\n\n✨ You will be notified once we find an available therapist.`,
-                messageType: 'fallback',
-                bookingId,
-                metadata: { showActions: true, statusType: 'pending' }
-            });
-            
-            // Notify admin about expired countdown
-            await simpleBookingService.notifyAdmin(
-                `⏰ Booking ${bookingId} - Therapist ${providerName} did not respond within 5 minutes`,
-                { bookingId, therapistId: providerId, customerId }
-            );
-            
-            console.log('✅ Countdown expired - fallback message sent, admin notified');
-        } catch (error) {
-            console.error('Error handling countdown expiry:', error);
-        }
-    };
+    // Unused function - kept for future countdown feature
+    // const handleCountdownExpiry = async () => {
+    //     try {
+    //         const conversationId = `customer_${customerId}_therapist_${providerId}`;
+    //         
+    //         // Send fallback message to database
+    //         await simpleChatService.sendMessage({
+    //             conversationId,
+    //             senderId: 'system',
+    //             senderName: 'System',
+    //             senderRole: 'admin',
+    //             receiverId: customerId,
+    //             receiverName: customerName,
+    //             receiverRole: 'customer',
+    //             message: `${providerName} is currently booked.\n\n🔍 We are searching for the next best match therapist for you.\n\n✨ You will be notified once we find an available therapist.`,
+    //             messageType: 'fallback',
+    //             bookingId,
+    //             metadata: { showActions: true, statusType: 'pending' }
+    //         });
+    //         
+    //         // Notify admin about expired countdown
+    //         await simpleBookingService.notifyAdmin(
+    //             `⏰ Booking ${bookingId} - Therapist ${providerName} did not respond within 5 minutes`,
+    //             { bookingId, therapistId: providerId, customerId }
+    //         );
+    //         
+    //         console.log('✅ Countdown expired - fallback message sent, admin notified');
+    //     } catch (error) {
+    //         console.error('Error handling countdown expiry:', error);
+    //     }
+    // };
 
     const handleCancelBooking = async () => {
         try {
@@ -282,40 +308,40 @@ export default function ChatWindow({
         }
     };
 
-    // Translation function using Google Translate API
-    const translateText = async (text: string, targetLang: string, sourceLang: string = 'auto'): Promise<string> => {
-        try {
-            // TODO: Replace with your Google Cloud API key
-            const API_KEY = process.env.VITE_GOOGLE_TRANSLATE_API_KEY || 'YOUR_API_KEY';
-            
-            // For demo, return text as-is with [Translated] marker
-            // In production, call actual Google Translate API
-            if (API_KEY === 'YOUR_API_KEY') {
-                console.log(`[Translation Demo] ${sourceLang} → ${targetLang}: ${text}`);
-                return text; // Return original text in demo mode
-            }
-
-            const response = await fetch(
-                `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        q: text,
-                        target: targetLang,
-                        source: sourceLang === 'auto' ? undefined : sourceLang,
-                        format: 'text'
-                    })
-                }
-            );
-
-            const data = await response.json();
-            return data.data.translations[0].translatedText;
-        } catch (error) {
-            console.error('Translation error:', error);
-            return text; // Return original if translation fails
-        }
-    };
+    // Translation function using Google Translate API (unused - kept for future feature)
+    // const translateText = async (text: string, targetLang: string, sourceLang: string = 'auto'): Promise<string> => {
+    //     try {
+    //         // TODO: Replace with your Google Cloud API key
+    //         const API_KEY = process.env.VITE_GOOGLE_TRANSLATE_API_KEY || 'YOUR_API_KEY';
+    //         
+    //         // For demo, return text as-is with [Translated] marker
+    //         // In production, call actual Google Translate API
+    //         if (API_KEY === 'YOUR_API_KEY') {
+    //             console.log(`[Translation Demo] ${sourceLang} → ${targetLang}: ${text}`);
+    //             return text; // Return original text in demo mode
+    //         }
+    // 
+    //         const response = await fetch(
+    //             `https://translation.googleapis.com/language/translate/v2?key=${API_KEY}`,
+    //             {
+    //                 method: 'POST',
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 body: JSON.stringify({
+    //                     q: text,
+    //                     target: targetLang,
+    //                     source: sourceLang === 'auto' ? undefined : sourceLang,
+    //                     format: 'text'
+    //                 })
+    //             }
+    //         );
+    // 
+    //         const data = await response.json();
+    //         return data.data.translations[0].translatedText;
+    //     } catch (error) {
+    //         console.error('Translation error:', error);
+    //         return text; // Return original if translation fails
+    //     }
+    // };
 
     const sendMessage = async () => {
         if (!newMessage.trim() || sending) return;
@@ -428,10 +454,31 @@ export default function ChatWindow({
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-3 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                     <div className="relative">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 font-bold">
-                            {customerName.charAt(0).toUpperCase()}
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-orange-600 font-bold overflow-hidden">
+                            {customerAvatar ? (
+                                customerAvatar.startsWith('http') ? (
+                                    <img 
+                                        src={customerAvatar}
+                                        alt={customerName}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-2xl">{customerAvatar}</span>
+                                )
+                            ) : (
+                                <img 
+                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(customerName)}&background=f97316&color=fff&size=128`}
+                                    alt={customerName}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        target.parentElement!.innerHTML = customerName.charAt(0).toUpperCase();
+                                    }}
+                                />
+                            )}
                         </div>
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"></div>
                     </div>
                     <div>
                         <h3 className="font-bold">{customerName}</h3>
@@ -521,8 +568,25 @@ export default function ChatWindow({
                         return (
                             <div
                                 key={msg.$id}
-                                className={`flex ${isOwnMessage && !isSystemMessage && !isAutoReply ? 'justify-end' : 'justify-center'}`}
+                                className={`flex gap-2 items-end ${isOwnMessage && !isSystemMessage && !isAutoReply ? 'justify-end' : isSystemMessage || isAutoReply ? 'justify-center' : 'justify-start'}`}
                             >
+                                {/* Customer avatar on left for customer messages (not system/auto) */}
+                                {!isOwnMessage && !isSystemMessage && !isAutoReply && (
+                                    <div className="flex-shrink-0 mb-1">
+                                        {msg.senderAvatar && msg.senderAvatar.startsWith('http') ? (
+                                            <img 
+                                                src={msg.senderAvatar} 
+                                                alt={msg.senderName}
+                                                className="w-8 h-8 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span className="text-lg">{msg.senderAvatar || '👤'}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                
                                 <div
                                     className={`${isSystemMessage || isAutoReply ? 'max-w-[90%]' : 'max-w-[75%]'} rounded-2xl px-4 py-3 ${messageStyle}`}
                                 >
@@ -575,6 +639,15 @@ export default function ChatWindow({
                                         </p>
                                     )}
                                 </div>
+                                
+                                {/* Provider avatar on right for provider messages */}
+                                {isOwnMessage && !isSystemMessage && !isAutoReply && (
+                                    <div className="flex-shrink-0 mb-1">
+                                        <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center">
+                                            <span className="text-white font-bold text-xs">{providerName.charAt(0).toUpperCase()}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })

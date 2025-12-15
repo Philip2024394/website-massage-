@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MASSAGE_TYPES_CATEGORIZED } from '@/constants/rootConstants';
-import type { Therapist } from '@/types';
-import { therapistService, imageUploadService } from '@/lib/appwriteService';
-import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '@/utils/clientPreferencesUtils';
-import { showToast } from '@/utils/showToastPortal';
-import { loadGoogleMapsScript } from '@/constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '@/utils/appConfig';
-import CityLocationDropdown from '@/components/CityLocationDropdown';
-import { matchProviderToCity } from '@/constants/indonesianCities';
+import { MASSAGE_TYPES_CATEGORIZED } from '../../../../constants';
+import type { Therapist } from '../../../../types';
+import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
+import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../../../utils/clientPreferencesUtils';
+import { showToast } from '../../../../utils/showToastPortal';
+import { loadGoogleMapsScript } from '../../../../constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
+import CityLocationDropdown from '../../../../components/CityLocationDropdown';
+import { matchProviderToCity } from '../../../../constants/indonesianCities';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -22,6 +22,7 @@ interface TherapistPortalPageProps {
   onNavigateToPayment?: () => void;
   onLogout?: () => void;
   onNavigateHome?: () => void;
+  onProfileSaved?: () => void;
 }
 
 const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
@@ -36,7 +37,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToLegal,
   onNavigateToCalendar,
   onLogout,
-  onNavigateHome
+  onNavigateHome,
+  onProfileSaved
 }) => {
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
@@ -345,6 +347,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         coordinates: JSON.stringify(coordinates),
         city: selectedCity !== 'all' ? selectedCity : null,
         isLive: true, // Auto-live on save
+        // 🎯 NEW: Set default status fields for new profiles
+        status: therapist.status || 'Available', // Default to Available if no status set
+        availability: therapist.availability || 'Available', // Ensure consistency
+        isOnline: true, // Set as online when profile is saved
       };
       
       // Only include profilePicture if it's a valid URL
@@ -364,7 +370,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Auto-translate profile data to both languages
       console.log('🌐 Auto-translating profile data...');
       try {
-        const { adminTranslationService } = await import('@/lib/translationService');
+        const { adminTranslationService } = await import('../../../../lib/translationService');
         
         // Detect if the user entered data in Indonesian or English
         const sourceLanguage = description.match(/[a-zA-Z]/) ? 'en' : 'id';
@@ -397,6 +403,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       showToast('✅ Profile saved and LIVE!', 'success');
       console.log('✅ Toast dispatched - Profile saved successfully');
       console.log('✅ Check HomePage for your therapist card!');
+      
+      // Call onProfileSaved callback if provided (for onboarding flow)
+      // Otherwise fall back to onNavigateToStatus
+      const navigationCallback = onProfileSaved || onNavigateToStatus;
+      if (navigationCallback) {
+        setTimeout(() => {
+          console.log('🔄 Navigating after profile save...');
+          navigationCallback();
+        }, 1500); // Short delay to let user see the success message
+      }
     } catch (e: any) {
       console.error('❌ Failed to save profile:', e);
       const errorMessage = e?.message || e?.toString() || 'Failed to save profile';
@@ -443,6 +459,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <p className="text-xs text-gray-500">Complete all fields to publish</p>
             </div>
           </div>
+          {/* TEST: Membership Page Button */}
+          <button 
+            onClick={onNavigateToMembership}
+            className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors shadow-md"
+          >
+            👑 View Membership
+          </button>
         </div>
       </div>
 
