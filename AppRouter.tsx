@@ -30,7 +30,6 @@ const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
 const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
 const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
-const JoinIndastreetPage = React.lazy(() => import('./pages/JoinIndastreetPage'));
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
@@ -788,6 +787,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     }
 
     // 🛡️ SECURITY: Validate authentication states and prevent dashboard cross-contamination
+    // Safely derive a minimal loggedInUser shape for guard checks
+    const derivedLoggedInUser: AuthenticationState['loggedInUser'] = (
+        isAdminLoggedIn ? { id: (user as any)?.id || 'admin', type: 'admin' } :
+        isHotelLoggedIn ? { id: (user as any)?.id || 'hotel', type: 'hotel' } :
+        isVillaLoggedIn ? { id: (user as any)?.id || 'villa', type: 'villa' } :
+        loggedInAgent ? { id: (loggedInAgent as any)?.id || 'agent', type: 'agent' } :
+        null
+    );
+
     const authState: AuthenticationState = {
         isHotelLoggedIn,
         isVillaLoggedIn, 
@@ -795,7 +803,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         loggedInProvider,
         loggedInAgent,
         loggedInCustomer,
-        loggedInUser: user as { id: string; type: 'admin' | 'hotel' | 'villa' | 'agent' } | null
+        loggedInUser: derivedLoggedInUser
     };
 
     const dashboardAccess = validateDashboardAccess(authState);
@@ -906,59 +914,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
 
         case 'joinIndastreet':
-            return <JoinIndastreetPage 
+            return <ProviderPortalsPage 
                 onBack={handleBackToHome}
-                onNavigateToTherapistLogin={handleNavigateToTherapistLogin}
-                onNavigateToMassagePlaceLogin={handleNavigateToMassagePlaceLogin}
-                t={t?.joinIndastreet || {
-                    title: "Join Indonesia's Massage Directory",
-                    titleHighlight: "FREE TODAY",
-                    subtitle: "Experience the true potential of online massage booking",
-                    whyJoinTitle: "🌟 Why Join Indastreet?",
-                    whyJoinText: "No matter where you are across Indonesia, Indastreet customers are searching for massage services right now. Don't miss out—register your account for FREE and scale your business to the next level with Indonesia's largest massage booking platform.",
-                    benefit1Title: "Get More Bookings",
-                    benefit1Text: "Reach customers 24/7 with instant online booking",
-                    benefit2Title: "Grow Your Income",
-                    benefit2Text: "Fill your schedule with verified customers",
-                    benefit3Title: "Build Your Brand",
-                    benefit3Text: "Showcase reviews and grow your reputation",
-                    platformFeaturesTitle: "✨ Platform Features",
-                    feature1Title: "Your Own Profile Page",
-                    feature1Text: "Professional profile with photos, services, and pricing",
-                    feature2Title: "Real-Time Notifications",
-                    feature2Text: "Get instant alerts for new booking requests",
-                    feature3Title: "Customer Reviews",
-                    feature3Text: "Build trust with verified customer feedback",
-                    feature4Title: "Mobile Dashboard",
-                    feature4Text: "Manage bookings anywhere, anytime",
-                    feature5Title: "Hotel & Villa Partnerships",
-                    feature5Text: "Get bookings from luxury properties",
-                    feature6Title: "No Commission Fees",
-                    feature6Text: "Keep 100% of your earnings from bookings",
-                    successStoriesTitle: "❤️ Success Stories",
-                    testimonial1Name: "Balinese Massage Therapist",
-                    testimonial1Text: "I doubled my bookings in the first month. Customers love the easy online booking system!",
-                    testimonial1Rating: "⭐⭐⭐⭐⭐ 4.9 rating • 250+ bookings",
-                    testimonial2Name: "Ubud Wellness Spa",
-                    testimonial2Text: "The hotel partnership program connected us with luxury villas. Our revenue increased 3x!",
-                    testimonial2Rating: "⭐⭐⭐⭐⭐ 5.0 rating • 500+ bookings",
-                    howItWorksTitle: "🚀 How It Works",
-                    step1Title: "Create Your Profile",
-                    step1Text: "Add photos, services, pricing, and availability",
-                    step2Title: "Get Verified",
-                    step2Text: "Complete verification to build customer trust",
-                    step3Title: "Receive Bookings",
-                    step3Text: "Accept or reject requests instantly via notifications",
-                    step4Title: "Grow Your Business",
-                    step4Text: "Collect reviews, build reputation, and increase earnings",
-                    ctaTherapistTitle: "JOIN THERAPIST",
-                    ctaTherapistButton: "Create Therapist Account →",
-                    ctaSpaTitle: "JOIN MASSAGE SPA",
-                    ctaSpaButton: "Create Massage Spa Account →",
-                    contactTitle: "Need Help Getting Started?",
-                    contactText: "Our team is ready to assist you with the registration process",
-                    contactButton: "Contact Us on WhatsApp",
-                }}
+                onNavigate={commonNavigateHandler}
             />;
 
         case 'therapistProfile':

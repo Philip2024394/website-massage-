@@ -13,6 +13,8 @@
  * - Different sounds for different event types
  */
 
+import { devLog } from './devMode';
+
 export type NotificationSoundType = 'booking' | 'message' | 'alert' | 'success';
 
 export const soundNotificationService = {
@@ -30,7 +32,7 @@ export const soundNotificationService = {
      */
     setSoundPreference(enabled: boolean): void {
         // No-op: Sound notifications cannot be disabled for active members
-        console.log(`🔊 Sound notifications are always enabled for active members`);
+        devLog(`🔊 Sound notifications are always enabled for active members`);
     },
 
     /**
@@ -50,7 +52,7 @@ export const soundNotificationService = {
         // Normalize to 0-1 range if percentage given
         const normalizedVolume = volume > 1 ? volume / 100 : volume;
         localStorage.setItem('notification_volume', normalizedVolume.toString());
-        console.log(`🔊 Volume set to ${Math.round(normalizedVolume * 100)}%`);
+        devLog(`🔊 Volume set to ${Math.round(normalizedVolume * 100)}%`);
     },
 
     /**
@@ -60,7 +62,7 @@ export const soundNotificationService = {
     async playSound(type: NotificationSoundType): Promise<void> {
         // Check if sounds are enabled
         if (!this.getSoundPreference()) {
-            console.log('🔇 Sound notifications disabled by user');
+            devLog('🔇 Sound notifications disabled by user');
             return;
         }
 
@@ -78,7 +80,7 @@ export const soundNotificationService = {
             
             // Play sound
             await audio.play();
-            console.log(`🔊 Played ${type} notification sound`);
+            devLog(`🔊 Played ${type} notification sound`);
         } catch (error) {
             console.error('❌ Error playing notification sound:', error);
             
@@ -107,7 +109,7 @@ export const soundNotificationService = {
      */
     async requestPermission(): Promise<NotificationPermission> {
         if (!('Notification' in window)) {
-            console.log('⚠️ This browser does not support desktop notifications');
+            devLog('⚠️ This browser does not support desktop notifications');
             return 'denied';
         }
 
@@ -121,7 +123,7 @@ export const soundNotificationService = {
 
         // Request permission
         const permission = await Notification.requestPermission();
-        console.log(`🔔 Notification permission: ${permission}`);
+        devLog(`🔔 Notification permission: ${permission}`);
         return permission;
     },
 
@@ -140,7 +142,7 @@ export const soundNotificationService = {
         const permission = await this.requestPermission();
 
         if (permission !== 'granted') {
-            console.log('⚠️ Notification permission not granted');
+            devLog('⚠️ Notification permission not granted');
             // Still play sound even if notification permission denied
             await this.playSound(soundType);
             return;

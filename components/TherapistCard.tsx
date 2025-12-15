@@ -4,6 +4,7 @@ import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
 import { notificationService, bookingService, reviewService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
@@ -61,7 +62,7 @@ const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     
     // Debug status in development mode (reduced verbosity)
     if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
-        console.log(`🔍 ${therapist.name} getDisplayStatus: ${currentStatus}`);
+        devLog(`🔍 ${therapist.name} getDisplayStatus: ${currentStatus}`);
     }
     
     return currentStatus;
@@ -87,7 +88,7 @@ const isDiscountActive = (therapist: Therapist): boolean => {
     
     // Debug logging for phil10 specifically
     if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
-        console.log('🔍 DISCOUNT DEBUG - isDiscountActive check:', {
+        devLog('🔍 DISCOUNT DEBUG - isDiscountActive check:', {
             therapistId: therapist.$id || therapist.id,
             therapistName: therapist.name,
             discountPercentage: therapist.discountPercentage,
@@ -327,7 +328,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Debug Budi's raw data (only in development and reduced verbosity)
     if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
-        console.log(`🔍 ${therapist.name} status: ${(therapist as any).availability || therapist.status}, busy until: ${therapist.busyUntil}`);
+        devLog(`🔍 ${therapist.name} status: ${(therapist as any).availability || therapist.status}, busy until: ${therapist.busyUntil}`);
     }
     
     // Map any status value to valid AvailabilityStatus - check availability field first
@@ -432,7 +433,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const pricing = getPricing();
     
     // Debug pricing for this specific therapist
-    console.log(`💰 TherapistCard pricing for ${therapist.name}:`, {
+    devLog(`💰 TherapistCard pricing for ${therapist.name}:`, {
         therapistId: therapist.$id || therapist.id,
         rawPrice60: therapist.price60,
         rawPrice90: therapist.price90,
@@ -445,7 +446,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Debug logging for pricing issues (only when no pricing data)
     const hasAnyPricing = pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0;
     if (!hasAnyPricing) {
-        console.warn(`⚠️ TherapistCard - ${therapist.name} has no pricing data:`, {
+        devWarn(`⚠️ TherapistCard - ${therapist.name} has no pricing data:`, {
             newFormat: {
                 price60: therapist.price60,
                 price90: therapist.price90,
@@ -459,7 +460,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Debug logging for massage types and languages
     if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
-        console.log('🔍 CARD DATA DEBUG:', {
+        devLog('🔍 CARD DATA DEBUG:', {
             therapistId: therapist.$id || therapist.id,
             therapistName: therapist.name,
             rawMassageTypes: therapist.massageTypes,
@@ -506,7 +507,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         : (mainImage || getRandomTherapistImage(therapist.id.toString()));
 
     const openWhatsApp = () => {
-        console.log('📱 Book Now clicked - showing booking form');
+        devLog('📱 Book Now clicked - showing booking form');
         
         // Check if there's already a pending booking
         const pendingBooking = sessionStorage.getItem('pending_booking');
@@ -533,7 +534,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     };
 
     const handleBookingSubmit = async (bookingData: BookingData) => {
-        console.log('✅ Booking submitted:', bookingData);
+        devLog('✅ Booking submitted:', bookingData);
         
         // Check if there's already a pending booking
         const pendingBooking = sessionStorage.getItem('pending_booking');
@@ -604,7 +605,7 @@ ${locationInfo}${coordinatesInfo}
                 type: 'immediate'
             }));
             
-            console.log('🔒 Booking locked until:', deadline.toISOString());
+            devLog('🔒 Booking locked until:', deadline.toISOString());
 
             // Send notification to therapist
             await notificationService.create({
@@ -613,12 +614,12 @@ ${locationInfo}${coordinatesInfo}
                 type: 'booking_request'
             });
             
-            console.log('🔔 Booking notification sent to therapist with MP3 sound');
+            devLog('🔔 Booking notification sent to therapist with MP3 sound');
 
             // Open in-app chat window with booking message and lock indication
             if (onQuickBookWithChat) {
                 setTimeout(() => {
-                    console.log('💬 Opening in-app chat with booking details (locked until response)');
+                    devLog('💬 Opening in-app chat with booking details (locked until response)');
                     onQuickBookWithChat(therapist);
                 }, 300);
             } else {
@@ -644,7 +645,7 @@ ${locationInfo}${coordinatesInfo}
 
     // Handle confirmed booking - called after BookingConfirmationPopup
     const handleConfirmedBooking = () => {
-        console.log('✅ Booking confirmed - sending WhatsApp message and opening chat');
+        devLog('✅ Booking confirmed - sending WhatsApp message and opening chat');
         
         // Send notification to therapist
         const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
@@ -652,16 +653,16 @@ ${locationInfo}${coordinatesInfo}
             notificationService.createWhatsAppContactNotification(
                 therapistIdNum,
                 therapist.name
-            ).catch(err => console.log('Notification failed:', err));
+            ).catch(err => devLog('Notification failed:', err));
         }
 
         // Play booking confirmation sound
         try {
             const audio = new Audio('/sounds/booking-notification.mp3');
             audio.volume = 0.3;
-            audio.play().catch(err => console.log('Sound play failed:', err));
+            audio.play().catch(err => devLog('Sound play failed:', err));
         } catch (error) {
-            console.log('Could not play confirmation sound:', error);
+            devLog('Could not play confirmation sound:', error);
         }
 
         // Increment analytics
@@ -787,7 +788,7 @@ ${locationInfo}${coordinatesInfo}
                             (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
                         }}
                         onLoad={() => {
-                            console.log('✅ Main image loaded successfully:', displayImage);
+                            devLog('✅ Main image loaded successfully:', displayImage);
                         }}
                     />
                     
@@ -871,7 +872,7 @@ ${locationInfo}${coordinatesInfo}
                                     }
                                 }}
                                 onLoad={() => {
-                                    console.log('✅ Profile image loaded successfully:', (therapist as any).profilePicture);
+                                    devLog('✅ Profile image loaded successfully:', (therapist as any).profilePicture);
                                 }}
                             />
                         ) : null}
@@ -1044,7 +1045,7 @@ ${locationInfo}${coordinatesInfo}
                                                     <BusyCountdownTimer
                                                         endTime={therapist.busyUntil}
                                                         onExpired={() => {
-                                                            console.log('Busy period ended – therapist should be available.');
+                                                            devLog('Busy period ended – therapist should be available.');
                                                         }}
                                                     />
                                                 </div>
@@ -1130,7 +1131,7 @@ ${locationInfo}${coordinatesInfo}
                 
                 // Debug in development mode (reduced verbosity)
                 if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
-                    console.log(`🌐 ${therapist.name} languages:`, languages);
+                    devLog(`🌐 ${therapist.name} languages:`, languages);
                 }
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
@@ -1312,9 +1313,9 @@ ${locationInfo}${coordinatesInfo}
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        console.log('🟢 Book Now button clicked - opening chat window');
+                        devLog('🟢 Book Now button clicked - opening chat window');
                         const pricing = getPricing();
-                        console.log('👤 Therapist object:', { 
+                        devLog('👤 Therapist object:', { 
                             id: therapist.id, 
                             name: therapist.name, 
                             status: therapist.status,

@@ -40,10 +40,7 @@ export const getRandomTherapistImage = (therapistId: string): string => {
     const index = Math.abs(hash) % APPWRITE_THERAPIST_IMAGES.length;
     const selectedImage = APPWRITE_THERAPIST_IMAGES[index];
     
-    console.log(`🎨 [Random Image] Therapist ${therapistId}:`);
-    console.log(`   - Hash: ${hash}`);
-    console.log(`   - Index: ${index} of ${APPWRITE_THERAPIST_IMAGES.length}`);
-    console.log(`   - Selected URL: ${selectedImage}`);
+    // Verbose logging removed for performance (runs on every card render)
     
     return selectedImage;
 };

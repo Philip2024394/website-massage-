@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Building, Sparkles, ArrowLeft } from 'lucide-react';
+import { User, Building, Sparkles, Home } from 'lucide-react';
 
 interface ProviderPortalsPageProps {
   onBack: () => void;
@@ -48,34 +48,163 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm font-medium">Back</span>
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-lg">I</span>
-              </div>
-              <h1 className="text-xl font-bold">
-                <span className="text-gray-800">Inda</span>
-                <span className="text-orange-500">Street</span>
-              </h1>
+      <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
+              <span className="text-black">Inda</span>
+              <span className="text-orange-500">Street</span>
+            </h1>
+            <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
+              <button
+                onClick={onBack}
+                className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                title="Back to Home"
+              >
+                <Home className="w-5 h-5" />
+              </button>
             </div>
-            <div className="w-20" /> {/* Spacer for alignment */}
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Plans row (minimalistic, no hero image) */}
+        <div className="mb-12">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              <span className="text-gray-800">Choose Your </span>
+              <span className="text-orange-500">Membership</span>
+            </h2>
+            <p className="text-lg text-gray-600">Simple pricing. Start earning today.</p>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Pro Package - Pay per Lead */}
+            <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="absolute -top-4 left-8">
+                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">Pay Per Lead</span>
+              </div>
+              <div className="mt-2 mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+                <p className="text-sm text-gray-600">Great for starting out. Only pay when you get bookings</p>
+              </div>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-extrabold text-gray-900">Rp 0</span>
+                  <span className="text-lg text-gray-500">/month</span>
+                </div>
+                <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
+                  <span>+</span>
+                  <span className="text-xl font-bold">30%</span>
+                  <span>commission per booking</span>
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-gray-300">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Zero upfront cost</strong> - Start immediately</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Pay only on success</strong> - 30% per booking</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>Full profile with photos & services</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-300">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>Customer chat & booking system</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>Lead generation included</span>
+                </li>
+              </ul>
+              <div className="space-y-3">
+                <button onClick={() => window.location.assign('/packages?plan=pro')} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg">
+                  View Full Details
+                </button>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Perfect for:</p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-2">
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Independent Therapists</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Starting Out</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-orange-400 border border-gray-700 font-medium">Low Risk</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Plus Package - All-Inclusive */}
+            <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-xl hover:shadow-2xl transition-shadow">
+              <div className="absolute -top-4 left-8">
+                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">Most Popular</span>
+              </div>
+              <div className="mt-2 mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Plus</h3>
+                <p className="text-sm text-gray-600">All-in premium membership. Keep 100% of bookings</p>
+              </div>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-extrabold text-gray-900">Rp 250K</span>
+                  <span className="text-lg text-gray-500">/month</span>
+                </div>
+                <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>0% Commission - Keep Everything</span>
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Zero commission</strong> - Keep 100% of earnings</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Verified badge</strong> on your profile</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Live discount</strong> promotions system</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">Profile sharing</strong> & social media tools</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span><strong className="font-semibold text-gray-900">High priority listing</strong> - Top placement</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>Unlimited leads & advanced analytics</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>Priority customer support</span>
+                </li>
+              </ul>
+              <div className="space-y-3">
+                <button onClick={() => window.location.assign('/packages?plan=plus')} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-6 rounded-xl transition-colors shadow-md hover:shadow-lg">
+                  View Full Details
+                </button>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Perfect for:</p>
+                  <div className="flex flex-wrap justify-center gap-2 mt-2">
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Spas & Clinics</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">High Volume</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Maximum Earnings</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your Portal

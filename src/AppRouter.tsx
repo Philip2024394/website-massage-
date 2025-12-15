@@ -9,6 +9,7 @@ import PlaceApp from './apps/place/PlaceApp';
 // import HotelApp from './apps/hotel/HotelApp';
 // import VillaApp from './apps/villa/VillaApp';
 import LandingPage from './shared/components/LandingPage';
+import PackagesPage from './pages/PackagesPage';
 
 const AppRouter: React.FC = () => {
   return (
@@ -31,6 +32,9 @@ const AppRouter: React.FC = () => {
         
         {/* Place app */}
         <Route path="/place/*" element={<PlaceApp />} />
+
+        {/* Membership packages */}
+        <Route path="/packages" element={<PackagesPage />} />
         
         {/* Hotel app - deprecated */}
         {/* <Route path="/hotel/*" element={<HotelApp />} /> */}

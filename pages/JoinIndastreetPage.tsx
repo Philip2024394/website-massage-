@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import PageContainer from '../components/layout/PageContainer';
 import HomeIcon from '../components/icons/HomeIcon';
@@ -18,100 +18,78 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
     onNavigateToMassagePlaceLogin,
     t
 }) => {
-    const [heroImage, setHeroImage] = useState<string>('https://ik.imagekit.io/7grri5v7d/membrship%20price%20list.png');
-    
-    // Fetch hero image from Appwrite
-    useEffect(() => {
-        const fetchHeroImage = async () => {
-            try {
-                if (APPWRITE_CONFIG.collections.imageAssets && APPWRITE_CONFIG.collections.imageAssets !== '') {
-                    const response = await databases.listDocuments(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.imageAssets,
-                        []
-                    );
-                    
-                    // Find the join page hero image
-                    const joinHeroAsset = response.documents.find((doc: any) => 
-                        doc.page === 'joinIndastreet' || 
-                        doc.assetType === 'heroImage' || 
-                        doc.name?.toLowerCase().includes('membership') ||
-                        doc.name?.toLowerCase().includes('join')
-                    );
-                    
-                    if (joinHeroAsset && joinHeroAsset.imageUrl) {
-                        console.log('✅ Loaded hero image from Appwrite:', joinHeroAsset.imageUrl);
-                        setHeroImage(joinHeroAsset.imageUrl);
-                    } else {
-                        console.log('ℹ️ No join hero image in Appwrite, using default');
-                    }
-                }
-            } catch (error) {
-                console.warn('⚠️ Could not fetch hero image from Appwrite:', error);
-                // Keep default hardcoded image as fallback
-            }
-        };
-        
-        fetchHeroImage();
-    }, []);
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-teal-50">
             {/* Global Header - Same as HomePage */}
             <header className="bg-white shadow-md sticky top-0 z-[9997]">
                 <PageContainer>
-                <div className="flex justify-between items-center py-4">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <div className="flex items-center gap-3 text-gray-600">
-                        <button 
-                            onClick={onBack}
-                            className="p-2 hover:bg-orange-50 rounded-full transition-colors"
-                            title="Home"
-                        >
-                            <HomeIcon className="w-5 h-5 text-orange-500" />
-                        </button>
-                        <button className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
+                    <div className="flex justify-between items-center py-4">
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            <span className="text-black">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </h1>
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <button 
+                                onClick={onBack}
+                                className="p-2 hover:bg-orange-50 rounded-full transition-colors"
+                                title="Home"
+                            >
+                                <HomeIcon className="w-5 h-5 text-orange-500" />
+                            </button>
+                            <button className="p-2 hover:bg-orange-50 rounded-full transition-colors text-orange-500">
+                                <BurgerMenuIcon className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
-                </div>
                 </PageContainer>
             </header>
             <PageContainer>
-            <div className="py-8 pb-24">
-                {/* Hero Section */}
-                <div className="text-center mb-12">
-                    <div className="max-w-4xl mx-auto mb-8">
-                        <img 
-                            src={heroImage}
-                            alt="Join Indastreet - Indonesia's #1 Massage Directory"
-                            className="w-full h-auto rounded-3xl shadow-2xl object-cover"
-                            onError={(e) => {
-                                console.error('❌ Hero image failed to load:', heroImage);
-                                // Fallback to default if image fails
-                                e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/membrship%20price%20list.png';
-                            }}
-                        />
+                <div className="py-8 pb-24">
+                {/* Minimal Plans Section: Pro and Plus */}
+                <div className="max-w-5xl mx-auto mb-10">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Choose Your Membership</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-600">Pro</div>
+                                    <p className="mt-3 text-2xl font-bold text-gray-900">IDR 99k / month</p>
+                                    <p className="mt-1 text-sm text-gray-600">Great to start and grow</p>
+                                </div>
+                            </div>
+                            <ul className="mt-5 space-y-2 text-sm text-gray-700">
+                                <li>• Profile listing + search</li>
+                                <li>• Customer reviews</li>
+                                <li>• Real-time notifications</li>
+                                <li>• No commission fees</li>
+                            </ul>
+                            <div className="mt-6 flex gap-3">
+                                <button onClick={() => window.location.assign('/packages?plan=pro')} className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-white font-semibold hover:bg-orange-600">View</button>
+                            </div>
+                        </div>
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-600">Plus</div>
+                                    <p className="mt-3 text-2xl font-bold text-gray-900">IDR 199k / month</p>
+                                    <p className="mt-1 text-sm text-gray-600">For maximum visibility</p>
+                                </div>
+                            </div>
+                            <ul className="mt-5 space-y-2 text-sm text-gray-700">
+                                <li>• Everything in Pro</li>
+                                <li>• Priority placement</li>
+                                <li>• Verified Pro badge</li>
+                                <li>• Hotel & villa access</li>
+                            </ul>
+                            <div className="mt-6 flex gap-3">
+                                <button onClick={() => window.location.assign('/packages?plan=plus')} className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-4 py-2 text-white font-semibold hover:bg-orange-600">View</button>
+                            </div>
+                        </div>
                     </div>
-                    
-                    {/* Main Header */}
-                    <div className="max-w-4xl mx-auto mb-12">
-                        <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-                            {t.title} <span className="text-orange-600">{t.titleHighlight}</span>
-                        </h2>
-                        <p className="text-xl md:text-2xl text-gray-600 mb-8">
-                            {t.subtitle}
-                        </p>
-                    </div>
+                </div>
 
-                    <h3 className="text-3xl font-bold text-orange-600 mb-6">
-                        {t.whyJoinTitle}
-                    </h3>
-                    <p className="text-lg text-gray-700 mb-8 leading-relaxed max-w-4xl mx-auto">
-                        {t.whyJoinText}
-                    </p>
+                    <h3 className="text-3xl font-bold text-orange-600 mb-6">{t.whyJoinTitle}</h3>
+                    <p className="text-lg text-gray-700 mb-8 leading-relaxed max-w-4xl mx-auto">{t.whyJoinText}</p>
                     
                     {/* Benefits Grid */}
                     <div className="grid md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
@@ -359,9 +337,8 @@ const JoinIndastreetPage: React.FC<JoinIndastreetPageProps> = ({
                                     </svg>
                                     {t.contactButton}
                                 </a>
-                            </div>
                         </div>
-            </div>
+                </div>
             </PageContainer>
         </div>
     );

@@ -45,15 +45,15 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         unsubscribe = bookingService.subscribeToProviderBookings(
           therapist.$id,
           (newBooking) => {
-            console.log('🔔 New booking notification:', newBooking);
+            devLog('🔔 New booking notification:', newBooking);
             
             // Play booking notification sound
             try {
               const audio = new Audio('/sounds/booking-notification.mp3');
               audio.volume = 0.8;
-              audio.play().catch(err => console.warn('Failed to play booking sound:', err));
+              audio.play().catch(err => devWarn('Failed to play booking sound:', err));
             } catch (err) {
-              console.warn('Audio playback error:', err);
+              devWarn('Audio playback error:', err);
             }
             
             // Show browser notification
@@ -144,14 +144,14 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       // TODO: Update booking status to 'confirmed' in Appwrite
-      console.log('Accepting booking:', bookingId);
+      devLog('Accepting booking:', bookingId);
       
       setBookings(prev => prev.map(b => 
         b.$id === bookingId ? { ...b, status: 'confirmed' as const } : b
       ));
       
       // TODO: Send notification to customer
-      console.log('✅ Booking accepted and customer notified');
+      devLog('✅ Booking accepted and customer notified');
     } catch (error) {
       console.error('Failed to accept booking:', error);
     }
@@ -160,14 +160,14 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const handleRejectBooking = async (bookingId: string) => {
     try {
       // TODO: Update booking status to 'cancelled' in Appwrite
-      console.log('Rejecting booking:', bookingId);
+      devLog('Rejecting booking:', bookingId);
       
       setBookings(prev => prev.map(b => 
         b.$id === bookingId ? { ...b, status: 'cancelled' as const } : b
       ));
       
       // TODO: Send notification to customer and offer to reassign
-      console.log('❌ Booking rejected and customer notified');
+      devLog('❌ Booking rejected and customer notified');
     } catch (error) {
       console.error('Failed to reject booking:', error);
     }
@@ -176,13 +176,13 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const handleCompleteBooking = async (bookingId: string) => {
     try {
       // TODO: Update booking status to 'completed' in Appwrite
-      console.log('Marking booking as completed:', bookingId);
+      devLog('Marking booking as completed:', bookingId);
       
       setBookings(prev => prev.map(b => 
         b.$id === bookingId ? { ...b, status: 'completed' as const } : b
       ));
       
-      console.log('✅ Booking completed');
+      devLog('✅ Booking completed');
     } catch (error) {
       console.error('Failed to complete booking:', error);
     }

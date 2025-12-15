@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown } from "lucide-react";
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
+import { devLog, devWarn } from "../../../../utils/devMode";
 
 interface TherapistOnlineStatusProps {
   therapist: any;
@@ -18,7 +19,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [isPremium] = useState(therapist?.membershipTier === 'premium' || false);
 
   useEffect(() => {
-    console.log('🔍 TherapistOnlineStatus loaded with therapist:', {
+    devLog('🔍 TherapistOnlineStatus loaded with therapist:', {
       id: therapist?.$id,
       name: therapist?.name,
       email: therapist?.email,
@@ -31,7 +32,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     
     // Load current status from therapist data (handle both formats for backward compatibility)
     const savedStatus = therapist?.status || therapist?.availability || therapist?.availabilityStatus || 'Offline';
-    console.log('🔍 Status loading debug:', {
+    devLog('🔍 Status loading debug:', {
       savedStatus,
       therapistStatus: therapist?.status,
       therapistAvailability: therapist?.availability,
@@ -57,12 +58,12 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     if (backupStatus && (uiStatus === 'offline' || !therapist?.status)) {
       const backupUIStatus = backupStatus.toLowerCase();
       if (backupUIStatus === 'available' || backupUIStatus === 'busy') {
-        console.log('💾 Using backup status from localStorage:', backupStatus);
+        devLog('💾 Using backup status from localStorage:', backupStatus);
         uiStatus = backupUIStatus as OnlineStatus;
       }
     }
     
-    console.log('⚙️ Setting UI status to:', uiStatus, 'from savedStatus:', savedStatus);
+    devLog('⚙️ Setting UI status to:', uiStatus, 'from savedStatus:', savedStatus);
     setStatus(uiStatus);
     setAutoOfflineTime(therapist?.autoOfflineTime || '22:00');
   }, [therapist]);
@@ -73,9 +74,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       if (!therapist?.$id) return;
       
       try {
-        console.log('🔄 Verifying status persistence from Appwrite...');
+        devLog('🔄 Verifying status persistence from Appwrite...');
         const freshData = await therapistService.getById(therapist.$id);
-        console.log('📊 Fresh data from Appwrite:', {
+        devLog('📊 Fresh data from Appwrite:', {
           status: freshData?.status,
           availability: freshData?.availability,
           isLive: freshData?.isLive,
@@ -86,13 +87,13 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         const freshStatus = freshData?.status || freshData?.availability || 'Offline';
         const freshUIStatus = freshStatus.toLowerCase();
         if (freshUIStatus !== status && (freshUIStatus === 'available' || freshUIStatus === 'busy' || freshUIStatus === 'offline')) {
-          console.log('⚠️ Status discrepancy detected, updating UI:', freshUIStatus);
+          devLog('⚠️ Status discrepancy detected, updating UI:', freshUIStatus);
           setStatus(freshUIStatus as OnlineStatus);
         }
         
         // Auto-initialize status for therapists with isLive=true but no status set
         if ((!freshData?.status && !freshData?.availability) && freshData?.isLive === true) {
-          console.log('🆕 Auto-initializing status to Available for active therapist');
+          devLog('🆕 Auto-initializing status to Available for active therapist');
           await handleStatusChange('available');
         }
       } catch (error) {
@@ -120,7 +121,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         
         // Only auto-offline once per day at the specified time
         if (lastCheck !== today) {
-          console.log('⏰ Auto-offline time reached:', autoOfflineTime);
+          devLog('⏰ Auto-offline time reached:', autoOfflineTime);
           handleStatusChange('offline');
           localStorage.setItem('lastAutoOfflineCheck', today);
         }
@@ -139,7 +140,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     setSaving(true);
     try {
-      console.log('💾 Saving status to Appwrite:', {
+      devLog('💾 Saving status to Appwrite:', {
         newStatus,
         therapistId: therapist.$id,
         therapistEmail: therapist.email,
@@ -164,18 +165,18 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         available: newStatus === 'available' ? new Date().toISOString() : ''
       };
       
-      console.log('📤 Update data:', updateData);
+      devLog('📤 Update data:', updateData);
       
       const result = await therapistService.update(therapist.$id, updateData);
       
-      console.log('✅ Appwrite update result:', result);
+      devLog('✅ Appwrite update result:', result);
       
       // Update local state immediately for UI feedback
       setStatus(newStatus);
       
       // Verify the save by refetching from Appwrite
       const updatedTherapist = await therapistService.getById(therapist.$id);
-      console.log('🔄 Verified saved status from Appwrite:', {
+      devLog('🔄 Verified saved status from Appwrite:', {
         status: updatedTherapist.status,
         availability: updatedTherapist.availability,
         isLive: updatedTherapist.isLive
@@ -189,11 +190,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         offline: '⚫ You are now OFFLINE - profile hidden from search'
       };
       
-      console.log('✅ Status saved:', statusMessages[newStatus]);
+      devLog('✅ Status saved:', statusMessages[newStatus]);
       alert(statusMessages[newStatus]);
       
       // 🔄 Trigger global data refresh for HomePage to update therapist cards
-      console.log('🔄 Triggering global data refresh after status update...');
+      devLog('🔄 Triggering global data refresh after status update...');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', {
         detail: { 
           source: 'therapist-dashboard-status-update',
@@ -205,7 +206,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       // Store status in localStorage as backup
       localStorage.setItem(`therapist_status_${therapist.$id}`, properStatusValue);
-      console.log('💾 Status backed up to localStorage');
+      devLog('💾 Status backed up to localStorage');
       
     } catch (error) {
       console.error('❌ Failed to update status:', error);
@@ -230,14 +231,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const handleAutoOfflineTimeChange = async (time: string) => {
     setAutoOfflineTime(time);
     try {
-      console.log('💾 Saving auto-offline time to Appwrite:', time);
+      devLog('💾 Saving auto-offline time to Appwrite:', time);
       
       // Save to Appwrite
       const result = await therapistService.update(therapist.$id, {
         autoOfflineTime: time
       });
       
-      console.log('✅ Auto-offline time saved:', result.autoOfflineTime);
+      devLog('✅ Auto-offline time saved:', result.autoOfflineTime);
     } catch (error) {
       console.error('❌ Failed to save auto-offline time:', error);
       alert('Failed to save auto-offline time. Please try again.');
