@@ -22,6 +22,8 @@ const LANGUAGE_MAP: Record<string, { flag: string; name: string }> = {
 };
 
 interface Place {
+    id?: string | number;
+    $id?: string;
     name: string;
     mainImage?: string;
     profilePicture?: string;
@@ -514,7 +516,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             // Dispatch openChat event just like therapist bookings
                             window.dispatchEvent(new CustomEvent('openChat', {
                                 detail: {
-                                    therapistId: place.id || place.$id || '',
+                                    therapistId: String(place.id || place.$id || ''),
                                     therapistName: place.name,
                                     therapistType: 'place',
                                     therapistStatus: 'available', // Places are considered available during business hours
@@ -558,7 +560,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             // Dispatch openChat event in scheduled mode
                             window.dispatchEvent(new CustomEvent('openChat', {
                                 detail: {
-                                    therapistId: place.id || place.$id || '',
+                                    therapistId: String(place.id || place.$id || ''),
                                     therapistName: place.name,
                                     therapistType: 'place',
                                     therapistStatus: 'available', // Places are considered available during business hours

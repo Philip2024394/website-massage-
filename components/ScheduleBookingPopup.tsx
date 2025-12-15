@@ -475,7 +475,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           : 'massage';
         
         // Get membership tier to determine WhatsApp access
-        const therapistMembershipTier = (therapist as any).membershipTier || 'free';
+        // Default to 'free' since membership tier is not passed as prop
+        const therapistMembershipTier = 'free';
         
         // Pro members: NO WhatsApp, strict rules
         const proMessage = `🚨 NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING REQUEST
