@@ -28,7 +28,6 @@ import ValidationPopup from '../components/ValidationPopup';
 import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
 import { notificationService } from '../lib/appwriteService';
 import { soundNotificationService } from '../utils/soundNotificationService';
-import PushNotificationSettings from '../components/PushNotificationSettings';
 import { 
     ColoredProfileIcon, 
     ColoredCalendarIcon, 
@@ -41,8 +40,8 @@ import {
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
 } from '../components/ColoredIcons';
-// Removed chat import - chat system removed
-// import MemberChatWindow from '../components/MemberChatWindow';
+// Modular tab components
+import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
 
 
 interface PlaceDashboardPageProps {
@@ -878,95 +877,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const renderContent = () => {
         switch (activeTab) {
             case 'promotional':
-                return (
-                    <div className="max-w-4xl mx-auto px-4 py-6">
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                    <Megaphone className="w-5 h-5 text-orange-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Promotional Tools</h2>
-                                    <p className="text-sm text-gray-600">Share discount banners to promote your services</p>
-                                </div>
-                            </div>
-
-                            {/* Discount Banners */}
-                            <div className="space-y-6">
-                                {[
-                                    { percentage: 5, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%205.png?updatedAt=1761803670532' },
-                                    { percentage: 10, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2010.png?updatedAt=1761803828896' },
-                                    { percentage: 15, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2015.png?updatedAt=1761803805221' },
-                                    { percentage: 20, url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2020.png?updatedAt=1761803783034' }
-                                ].map((banner) => (
-                                    <div key={banner.percentage} className="bg-gray-50 rounded-xl p-4">
-                                        <div className="aspect-video bg-white rounded-lg mb-4 overflow-hidden">
-                                            <img
-                                                src={banner.url}
-                                                alt={`${banner.percentage}% Discount Banner`}
-                                                className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none';
-                                                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
-                                                    if (nextElement) {
-                                                        nextElement.style.display = 'flex';
-                                                    }
-                                                }}
-                                            />
-                                            <div 
-                                                className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 hidden items-center justify-center text-white font-bold text-xl"
-                                                style={{ display: 'none' }}
-                                            >
-                                                {banner.percentage}% OFF
-                                            </div>
-                                        </div>
-                                        <h3 className="font-semibold text-gray-900 mb-2">{banner.percentage}% Discount Banner</h3>
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => {
-                                                    const whatsappText = `🌟 Special Offer! Get ${banner.percentage}% OFF on massage services! Book now through IndaStreet app. ${banner.url}`;
-                                                    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`;
-                                                    window.open(whatsappUrl, '_blank');
-                                                }}
-                                                className="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm"
-                                            >
-                                                <MessageSquare className="w-4 h-4" />
-                                                WhatsApp
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    if (navigator.share) {
-                                                        navigator.share({
-                                                            title: `${banner.percentage}% Discount on Massage Services`,
-                                                            text: `Special offer! Get ${banner.percentage}% OFF on massage services!`,
-                                                            url: banner.url
-                                                        });
-                                                    } else {
-                                                        navigator.clipboard.writeText(banner.url);
-                                                        // Note: Place dashboard would need toast state for this
-                                                        console.log('Banner URL copied to clipboard!');
-                                                    }
-                                                }}
-                                                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-sm"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                                                </svg>
-                                                Share
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="mt-6 p-4 bg-orange-50 rounded-lg">
-                                <p className="text-sm text-orange-700">
-                                    💡 <strong>Tip:</strong> Share these banners on your social media, WhatsApp status, or send directly to customers to promote your massage services and attract more bookings!
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                );
+                return <PromotionalTab />;
             case 'discounts':
                 return (
                     <DiscountSharePage
@@ -990,103 +901,21 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                     </div>
                 );
             case 'bookings':
-                 return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Calendar className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t?.bookings?.upcoming || 'Upcoming Bookings'}</h2>
-                                <p className="text-xs text-gray-500">Manage your upcoming bookings</p>
-                            </div>
-                        </div>
-                        {upcomingBookings.length > 0 ? (
-                            <div className="grid gap-4">
-                                {upcomingBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t?.bookings || {}} />)}
-                            </div>
-                        ) : (
-                            <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t?.bookings?.noUpcoming || 'No upcoming bookings'}</p>
-                            </div>
-                        )}
-                        
-                        <div className="flex items-center gap-3 mt-8">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Calendar className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t?.bookings?.past || 'Past Bookings'}</h2>
-                                <p className="text-xs text-gray-500">View past bookings</p>
-                            </div>
-                        </div>
-                        {pastBookings.length > 0 ? (
-                            <div className="grid gap-4">
-                                {pastBookings.map(b => <BookingCard key={b.id} booking={b} onUpdateStatus={onUpdateBookingStatus} t={t?.bookings || {}} />)}
-                            </div>
-                        ) : (
-                            <div className="bg-white border-2 border-gray-200 rounded-xl p-12 text-center">
-                                <p className="text-gray-500">{t?.bookings?.noPast || 'No past bookings'}</p>
-                            </div>
-                        )}
-                    </div>
-                );
-            case 'analytics': {
-                const analytics = (() => {
-                    try {
-                        return typeof place?.analytics === 'string' 
-                            ? JSON.parse(place.analytics) 
-                            : (place?.analytics || { impressions: 0, profileViews: 0, whatsappClicks: 0 });
-                    } catch {
-                        return { impressions: 0, profileViews: 0, whatsappClicks: 0 };
-                    }
-                })();
                 return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <TrendingUp className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900">{t?.analytics?.title || 'Analytics'}</h2>
-                                <p className="text-xs text-gray-500">Track your performance metrics</p>
-                            </div>
-                        </div>
-                        <div className="grid gap-4">
-                            <AnalyticsCard title={t?.analytics?.impressions || 'Impressions'} value={analytics.impressions ?? 0} description={t?.analytics?.impressionsDesc || 'Total profile impressions'} />
-                            <AnalyticsCard title={t?.analytics?.profileViews || 'Profile Views'} value={analytics.profileViews ?? 0} description={t?.analytics?.profileViewsDesc || 'Profile view count'} />
-                            <AnalyticsCard title={t?.analytics?.whatsappClicks || 'WhatsApp Clicks'} value={analytics.whatsappClicks ?? 0} description={t?.analytics?.whatsappClicksDesc || 'WhatsApp contact clicks'} />
-                        </div>
-                    </div>
+                    <BookingsTab 
+                        upcomingBookings={upcomingBookings}
+                        pastBookings={pastBookings}
+                        onUpdateBookingStatus={onUpdateBookingStatus}
+                        t={t}
+                        BookingCard={BookingCard}
+                    />
                 );
-            }
-            case 'hotelVilla': {
-                return (
-                    <div className="space-y-4">
-                        <p className="text-gray-700 text-base">
-                            Promotors Receive 20% commission from their shared links and advertisement.
-                        </p>
-                    </div>
-                );
-            }
+            case 'analytics':
+                return <AnalyticsTab place={place} t={t} AnalyticsCard={AnalyticsCard} />;
+            case 'hotelVilla':
+                return <HotelVillaTab />;
             case 'notifications':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                <Bell className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900">Push Notifications</h2>
-                                <p className="text-xs text-gray-500">Get alerts even when browsing other apps or phone is locked</p>
-                            </div>
-                        </div>
-                        <PushNotificationSettings 
-                            providerId={typeof placeId === 'string' ? parseInt(placeId) : placeId} 
-                            providerType="place" 
-                        />
-                    </div>
-                );
+                return <NotificationsTab placeId={placeId!} PushNotificationSettings={PushNotificationSettings} />;
             case 'profile':
             default:
                 return (

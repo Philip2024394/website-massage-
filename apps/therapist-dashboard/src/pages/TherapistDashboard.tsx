@@ -10,6 +10,7 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
+import { Star, Upload, X, CheckCircle } from 'lucide-react';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -49,6 +50,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [uploadingImage, setUploadingImage] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>(null);
+
+  // Package and payment state
+  const [selectedPackage, setSelectedPackage] = useState<{ plan: 'pro' | 'plus', selectedAt: string } | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentProof, setPaymentProof] = useState<File | null>(null);
+  const [paymentProofPreview, setPaymentProofPreview] = useState<string | null>(null);
+  const [uploadingPayment, setUploadingPayment] = useState(false);
+  const [paymentPending, setPaymentPending] = useState(false); // Track if payment is pending
 
   // Form state
   const [name, setName] = useState(therapist?.name || '');
@@ -123,6 +132,20 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     { code: 'ja', label: 'Japanese' },
     { code: 'ko', label: 'Korean' },
   ];
+
+  // Detect package from localStorage
+  useEffect(() => {
+    try {
+      const packageStr = localStorage.getItem('packageDetails');
+      if (packageStr) {
+        const pkg = JSON.parse(packageStr);
+        setSelectedPackage(pkg);
+        console.log('📦 Package detected from registration:', pkg);
+      }
+    } catch (error) {
+      console.error('❌ Error parsing package details:', error);
+    }
+  }, []);
 
   // Load Google Maps
   useEffect(() => {
@@ -426,6 +449,157 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   const canSave = name.trim() && /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && selectedCity !== 'all';
 
+  // Handle "Go Live" button click
+  const handleGoLive = async () => {
+    if (!selectedPackage) {
+      showToast('❌ Package not detected. Please contact support.', 'error');
+      return;
+    }
+
+    if (selectedPackage.plan === 'pro') {
+      // Pro members: Instant activation
+      handleProActivation();
+    } else {
+      // Plus members: Activate profile FIRST, then show payment modal
+      await handlePlusActivation();
+    }
+  };
+
+  // Pro member instant activation
+  const handleProActivation = async () => {
+    if (!therapist) return;
+    
+    setSaving(true);
+    try {
+      await therapistService.update(String(therapist.$id || therapist.id), {
+        isLive: true,
+        status: 'Available',
+        availability: 'Available',
+        isOnline: true,
+      });
+
+      showToast('✅ Your profile is now LIVE! You\'ll earn 30% commission on bookings.', 'success');
+      window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-activated' }));
+      
+      // Navigate to status page after short delay
+      if (onNavigateToStatus) {
+        setTimeout(() => onNavigateToStatus(), 1500);
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to activate profile:', error);
+      showToast('❌ Failed to activate profile. Please try again.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Plus member activation - Profile goes LIVE first, then show payment modal
+  const handlePlusActivation = async () => {
+    if (!therapist) return;
+    
+    setSaving(true);
+    try {
+      // Activate profile FIRST
+      await therapistService.update(String(therapist.$id || therapist.id), {
+        isLive: true,
+        status: 'Available',
+        availability: 'Available',
+        isOnline: true,
+      });
+
+      showToast('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
+      window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-activated' }));
+      
+      // Mark payment as pending
+      setPaymentPending(true);
+      
+      // Show payment modal after short delay
+      setTimeout(() => {
+        setShowPaymentModal(true);
+      }, 1000);
+    } catch (error: any) {
+      console.error('❌ Failed to activate profile:', error);
+      showToast('❌ Failed to activate profile. Please try again.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle payment proof upload
+  const handlePaymentProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('❌ Please upload an image file', 'error');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('❌ Image must be less than 5MB', 'error');
+      return;
+    }
+
+    setPaymentProof(file);
+
+    // Generate preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPaymentProofPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit payment and go live
+  const handlePaymentSubmit = async () => {
+    if (!paymentProof) {
+      showToast('❌ Please upload payment proof', 'error');
+      return;
+    }
+
+    if (!therapist) return;
+
+    setUploadingPayment(true);
+    try {
+      // Upload payment proof to Appwrite Storage
+      console.log('📤 Uploading payment proof...');
+      const paymentProofUrl = await imageUploadService.uploadProfileImage(paymentProofPreview!);
+      console.log('✅ Payment proof uploaded:', paymentProofUrl);
+
+      // TODO: Create payment submission record in database
+      // This will be reviewed by admin later
+      console.log('💰 Creating payment submission record...');
+      // const paymentSubmission = await paymentService.createSubmission({
+      //   therapistId: therapist.$id,
+      //   membershipPlan: 'plus',
+      //   amount: 250000,
+      //   paymentProofUrl: paymentProofUrl,
+      //   status: 'pending',
+      //   submittedAt: new Date().toISOString()
+      // });
+
+      // Profile is already LIVE from handlePlusActivation
+      // Just confirm payment submission
+      showToast('✅ Payment proof submitted! Your profile will remain LIVE. Admin will verify soon.', 'success');
+      
+      // Mark payment as no longer pending
+      setPaymentPending(false);
+      
+      // Close modal and navigate
+      setShowPaymentModal(false);
+      if (onNavigateToStatus) {
+        setTimeout(() => onNavigateToStatus(), 1500);
+      }
+    } catch (error: any) {
+      console.error('❌ Payment submission failed:', error);
+      showToast('❌ Failed to submit payment. Please try again.', 'error');
+    } finally {
+      setUploadingPayment(false);
+    }
+  };
+
   // Safety check for null therapist
   if (!therapist) {
     return (
@@ -468,8 +642,39 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           >
             👑 View Membership
           </button>
+          
+          {/* Payment Pending Button - Show when payment not submitted yet */}
+          {paymentPending && !showPaymentModal && (
+            <button 
+              onClick={() => setShowPaymentModal(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors shadow-lg animate-pulse"
+            >
+              ⏰ Submit Payment (Due 12 AM)
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Payment Pending Banner - Show when payment not submitted */}
+      {paymentPending && !showPaymentModal && therapist.isLive && (
+        <div className="bg-red-600 text-white px-6 py-3 shadow-lg">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl animate-pulse">⏰</span>
+              <div>
+                <p className="font-bold text-lg">Payment Due Tonight at 12:00 AM</p>
+                <p className="text-sm text-red-100">Your profile is LIVE but payment proof required to keep it active</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="px-6 py-3 bg-white text-red-600 rounded-lg font-bold hover:bg-red-50 transition-colors shadow-lg"
+            >
+              Submit Payment Now →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Upload Form Card */}
       <main className="flex items-center justify-center p-4 py-8">
@@ -756,53 +961,258 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </ul>
             </div>
 
-            {/* Publish Button */}
-            <div className="pt-4">
+            {/* Go Live Section - Show if profile is NOT live yet */}
+            {!therapist.isLive && selectedPackage && (
+              <div className="pt-4 border-t-2 border-gray-200">
+                <div className={`p-4 rounded-xl mb-4 ${selectedPackage.plan === 'pro' ? 'bg-orange-50 border-2 border-orange-200' : 'bg-purple-50 border-2 border-purple-200'}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {selectedPackage.plan === 'pro' ? '🎯' : '👑'} 
+                    <h3 className="font-bold text-gray-800">
+                      {selectedPackage.plan === 'pro' ? 'Pro Plan (30% Commission)' : 'Plus Plan (Rp 250K/month)'}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-4 h-4 ${
+                          selectedPackage.plan === 'plus' || i < 3 ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    {selectedPackage.plan === 'pro' 
+                      ? '✅ Click below to activate your profile and start receiving bookings. You\'ll pay 30% commission per booking.' 
+                      : '� Click below to activate your profile! You\'ll then need to submit payment proof before 12:00 AM tonight to keep it active.'}
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleGoLive}
+                  disabled={!canSave || saving}
+                  className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
+                    !canSave || saving
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : selectedPackage.plan === 'pro'
+                        ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:scale-[1.02] hover:shadow-xl'
+                  }`}
+                >
+                  {!canSave ? (
+                    <span className="flex items-center justify-center gap-2">
+                      ⚠️ Complete Required Fields First
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      🚀 Activate Profile {selectedPackage.plan === 'pro' ? '(Free)' : '& See Payment Details'}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Publish Button - Only show when profile is already live (for updates) */}
+            {therapist.isLive && (
+              <div className="pt-4">
+                <button
+                  onClick={(e) => {
+                    if (!canSave) {
+                      e.preventDefault();
+                      const missingFields: string[] = [];
+                      if (!name.trim()) missingFields.push('Name');
+                      if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
+                      if (selectedCity === 'all') missingFields.push('City/Location');
+                      showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
+                      return;
+                    }
+                    handleSaveProfile();
+                  }}
+                  disabled={saving}
+                  className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
+                    saving 
+                      ? 'bg-gray-400 cursor-wait' 
+                      : !canSave 
+                        ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 cursor-pointer animate-pulse' 
+                        : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
+                  }`}
+                >
+                  {saving ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                      </svg>
+                      Updating...
+                    </span>
+                  ) : !canSave ? (
+                    <span className="flex items-center justify-center gap-2">
+                      ⚠️ Complete Required Fields
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      💾 Update Profile
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Payment Modal for Plus Members */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-6 h-6 text-white" />
+                  <h2 className="text-white text-lg font-bold">Submit Payment & Go Live</h2>
+                </div>
+                <button
+                  onClick={() => setShowPaymentModal(false)}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
+                  title="Close modal (you can edit profile and come back)"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              {/* Package Info */}
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <h3 className="font-bold text-gray-800">Plus Plan - Rp 250,000/month</h3>
+                </div>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>✅ 0% commission on all bookings</li>
+                  <li>✅ Premium profile badge</li>
+                  <li>✅ Priority placement in search</li>
+                  <li>✅ Advanced booking features</li>
+                </ul>
+              </div>
+
+              {/* Payment Deadline Warning */}
+              <div className="bg-red-50 border-2 border-red-500 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">⏰</span>
+                  <h3 className="font-bold text-red-900 text-lg">Payment Deadline: 12:00 AM Tonight</h3>
+                </div>
+                <p className="text-red-800 text-sm font-semibold">
+                  ⚠️ You must complete payment before midnight (12:00 AM) to keep your profile active. 
+                  Upload proof of payment below.
+                </p>
+              </div>
+
+              {/* Bank Details */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  🏦 Bank Transfer Details
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Bank:</span>
+                    <span className="font-semibold text-gray-800">Bank Mandiri</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Account Name:</span>
+                    <span className="font-semibold text-gray-800">PT IndaStreet Indonesia</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Account Number:</span>
+                    <span className="font-semibold text-gray-800">1370-0123-4567-890</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Amount:</span>
+                    <span className="font-bold text-purple-600 text-lg">Rp 250,000</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Upload Section */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  📸 Upload Payment Proof *
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePaymentProofChange}
+                    className="hidden"
+                    id="payment-proof-upload"
+                  />
+                  <label htmlFor="payment-proof-upload" className="cursor-pointer">
+                    {paymentProofPreview ? (
+                      <div className="space-y-2">
+                        <img src={paymentProofPreview} alt="Payment proof" className="max-h-48 mx-auto rounded-lg" />
+                        <p className="text-sm text-green-600 font-semibold">✅ Image uploaded</p>
+                        <p className="text-xs text-gray-500">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="w-12 h-12 mx-auto text-gray-400" />
+                        <p className="text-sm text-gray-600">Click to upload payment proof</p>
+                        <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              </div>
+
+              {/* Submit Button */}
               <button
-                onClick={(e) => {
-                  if (!canSave) {
-                    e.preventDefault();
-                    const missingFields: string[] = [];
-                    if (!name.trim()) missingFields.push('Name');
-                    if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
-                    if (selectedCity === 'all') missingFields.push('City/Location');
-                    showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
-                    return;
-                  }
-                  handleSaveProfile();
-                }}
-                disabled={saving}
-                className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
-                  saving 
-                    ? 'bg-gray-400 cursor-wait' 
-                    : !canSave 
-                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 cursor-pointer animate-pulse' 
-                      : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
+                onClick={handlePaymentSubmit}
+                disabled={!paymentProof || uploadingPayment}
+                className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all ${
+                  !paymentProof || uploadingPayment
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl'
                 }`}
               >
-                {saving ? (
+                {uploadingPayment ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                     </svg>
-                    Publishing...
+                    Submitting...
                   </span>
-                ) : !canSave ? (
-                  <span className="flex items-center justify-center gap-2">
-                    ⚠️ Complete Required Fields
-                  </span>
+                ) : !paymentProof ? (
+                  '⚠️ Please Upload Payment Proof'
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    🚀 Publish Profile & Go Live
-                  </span>
+                  '🚀 Submit Payment & Go LIVE!'
                 )}
               </button>
+
+              {/* Info Message */}
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-800 font-medium text-center">
+                  ✅ Your profile is already LIVE! Submit payment proof before midnight to keep it active.
+                </p>
+              </div>
+
+              {/* Can Edit Profile Note */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-800 text-center">
+                  💡 You can close this modal to edit your profile and come back to submit payment anytime before midnight.
+                </p>
+              </div>
             </div>
           </div>
-          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 };

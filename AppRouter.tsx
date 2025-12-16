@@ -21,6 +21,7 @@ const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
 const FacialTypesPage = React.lazy(() => import('./pages/FacialTypesPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
 const ProviderPortalsPage = React.lazy(() => import('./pages/ProviderPortalsPage'));
+const PackageTermsPage = React.lazy(() => import('./pages/PackageTermsPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
 const TodaysDiscountsPage = React.lazy(() => import('./pages/TodaysDiscountsPage'));
@@ -184,6 +185,7 @@ interface AppRouterProps {
 }
 
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
+
     const {
         page,
         isLoading,
@@ -1162,6 +1164,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'serviceTerms': 
             return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
+
+        case 'packageTerms':
+            return <PackageTermsPage 
+                onBack={handleBackToHome} 
+                onNavigate={commonNavigateHandler}
+            />;
             
         case 'placeTerms':
             return renderBackPage(PlaceTermsPage, t);
@@ -1200,11 +1208,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderBackPage(CookiesPolicyPage);
             
         case 'membership-select':
+            // Translation object for membership selection page (NO BANK DETAILS HERE)
+            const membershipSelectTranslations = {
+                title: 'Choose Your Membership Package',
+                subtitle: 'Select the plan that fits your business needs',
+                backToDashboard: '← Back to Home'
+            };
+            
             return <MembershipPage 
                 onSelectPackage={handleSelectMembershipPackage}
                 onPackageSelect={handleSelectMembershipPackage}
                 onBack={handleBackToHome}
-                t={t}
+                t={membershipSelectTranslations}
             />;
             
         case 'booking': 
@@ -1300,9 +1315,50 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 return null;
             }
 
+            // Default translation object for MembershipPage
+            const membershipTranslations = {
+                title: 'Choose Your Membership',
+                subtitle: 'Select the perfect plan for your business',
+                selectButton: 'Select Package',
+                backToDashboard: 'Back to Dashboard',
+                packages: {
+                    oneMonth: {
+                        title: '1 Month Plan',
+                        price: 'Rp 250,000',
+                        save: null,
+                        bestValue: 'Best Value'
+                    },
+                    threeMonths: {
+                        title: '3 Months Plan',
+                        price: 'Rp 650,000',
+                        save: 'Save Rp 100,000',
+                        bestValue: 'Popular'
+                    },
+                    sixMonths: {
+                        title: '6 Months Plan',
+                        price: 'Rp 1,200,000',
+                        save: 'Save Rp 300,000',
+                        bestValue: 'Great Value'
+                    },
+                    oneYear: {
+                        title: '1 Year Plan',
+                        price: 'Rp 2,000,000',
+                        save: 'Save Rp 1,000,000',
+                        bestValue: 'Best Value'
+                    }
+                }
+            };
+
             return (
                 <React.Suspense fallback={<LoadingSpinner message="Loading membership plans..." />}>
-                    <MembershipPage onPackageSelect={() => {}} onBack={() => commonNavigateHandler('landing')} t={(key: string) => key} />
+                    <MembershipPage 
+                        onPackageSelect={(packageName: string, price: string) => {
+                            console.log('Package selected:', packageName, price);
+                            setPage('membershipPayment');
+                        }} 
+                        onBack={() => commonNavigateHandler('landing')} 
+                        t={membershipTranslations} 
+                    />
                 </React.Suspense>
             );
         }

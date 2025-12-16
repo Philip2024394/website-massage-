@@ -35,19 +35,19 @@ const PLAN_CONTENT: Record<Plan, {
     name: 'Plus',
     tagline: 'All-inclusive. Keep 100% of bookings.',
     price: 'Rp 250,000',
-    billing: 'per month · 0% commission · cancel anytime',
+    billing: 'per month · 0% commission · no contract',
     commission: '0%',
     badge: 'Most Popular',
     benefits: [
       'Zero commission - keep 100% of all earnings',
+      '★ Priority Hotel, Villa & Private Spa requests',
+      '★ Full price menu displayed on your card',
       'Priority placement at top of search results',
-      'Unlimited leads & customer inquiries',
       'Advanced analytics & performance insights',
       'Priority customer support',
-      'Featured badge on your profile',
-      'Perfect for established providers',
+      'Featured verified badge on your profile',
     ],
-    bestFor: ['Massage Spas', 'Facial Clinics', 'High Volume', 'Maximum Earnings'],
+    bestFor: ['Massage Spas', 'Facial Clinics', 'Hotels & Villas', 'Maximum Earnings'],
   }
 };
 
@@ -144,7 +144,10 @@ const PackagesPage: React.FC = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <button className={`flex-1 py-4 px-6 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 ${selected === 'plus' ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                <button 
+                  onClick={() => navigate(`/membership-signup?plan=${selected}`)}
+                  className={`flex-1 py-4 px-6 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 ${selected === 'plus' ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
                   Get Started with {content.name}
                 </button>
                 <button onClick={() => navigate('/join')} className="px-6 py-4 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold transition-colors">
@@ -165,6 +168,17 @@ const PackagesPage: React.FC = () => {
                 ))}
               </div>
             </div>
+
+            {/* View Terms Link */}
+            <button 
+              onClick={() => navigate(`/package-terms?plan=${selected}`)}
+              className="w-full text-left rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:border-orange-300 transition-colors group"
+            >
+              <h4 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Terms &amp; Conditions</h4>
+              <p className="text-sm text-gray-500 group-hover:text-orange-600 transition-colors">
+                View full {content.name} plan terms →
+              </p>
+            </button>
 
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <h4 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Quick Compare</h4>
@@ -197,7 +211,6 @@ const PackagesPage: React.FC = () => {
               <button className="w-full bg-white text-gray-900 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-100 transition-colors">
                 Contact Support
               </button>
-            </div>
             </div>
           </aside>
         </section>

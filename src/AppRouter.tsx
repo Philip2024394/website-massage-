@@ -10,6 +10,8 @@ import PlaceApp from './apps/place/PlaceApp';
 // import VillaApp from './apps/villa/VillaApp';
 import LandingPage from './shared/components/LandingPage';
 import PackagesPage from './pages/PackagesPage';
+import PackageTermsPage from './pages/PackageTermsPage';
+import MembershipSignupFlow from './pages/MembershipSignupFlow';
 
 const AppRouter: React.FC = () => {
   return (
@@ -35,6 +37,8 @@ const AppRouter: React.FC = () => {
 
         {/* Membership packages */}
         <Route path="/packages" element={<PackagesPage />} />
+        <Route path="/package-terms" element={<PackageTermsPage />} />
+        <Route path="/membership-signup" element={<MembershipSignupFlow />} />
         
         {/* Hotel app - deprecated */}
         {/* <Route path="/hotel/*" element={<HotelApp />} /> */}

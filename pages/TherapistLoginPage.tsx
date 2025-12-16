@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { therapistAuth } from '../lib/auth';
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home, CheckCircle, Star } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -52,6 +52,20 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
         email: '',
         password: ''
     });
+    const [selectedPackage, setSelectedPackage] = useState<{ plan: 'pro' | 'plus', selectedAt: string } | null>(null);
+
+    // Load selected package from localStorage
+    useEffect(() => {
+        const packageStr = localStorage.getItem('packageDetails');
+        if (packageStr) {
+            try {
+                const pkg = JSON.parse(packageStr);
+                setSelectedPackage(pkg);
+            } catch (e) {
+                console.error('Failed to parse package details:', e);
+            }
+        }
+    }, []);
 
 
 
@@ -279,6 +293,44 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                     {viewMode === 'register' && (
                         <form onSubmit={handleRegisterSubmit} className="space-y-4 sm:space-y-6">
 
+                            {/* Selected Package Display */}
+                            {selectedPackage && (
+                                <div className={`p-4 rounded-xl border-2 ${selectedPackage.plan === 'pro' ? 'border-orange-200 bg-orange-50' : 'border-purple-200 bg-purple-50'}`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="w-5 h-5 text-green-600" />
+                                            <h3 className="font-bold text-gray-900">
+                                                {selectedPackage.plan === 'pro' ? 'Pro Plan Selected' : 'Plus Plan Selected'}
+                                            </h3>
+                                        </div>
+                                        <div className="flex gap-0.5">
+                                            {selectedPackage.plan === 'pro' ? (
+                                                <>
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-gray-300 text-gray-300" />
+                                                    <Star className="w-4 h-4 fill-gray-300 text-gray-300" />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-700">
+                                        {selectedPackage.plan === 'pro' 
+                                            ? 'Rp 0/month + 30% commission per booking' 
+                                            : 'Rp 250,000/month + 0% commission'}
+                                    </p>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                     Email Address
@@ -320,6 +372,23 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                                 </div>
                             </div>
 
+                            {/* Package Info Message */}
+                            {selectedPackage && (
+                                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                    <p className="text-sm text-blue-800 font-semibold flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4" />
+                                        {selectedPackage.plan === 'pro' 
+                                            ? 'Pro Plan Selected - No upfront payment needed!' 
+                                            : 'Plus Plan Selected - Payment required when you go live'}
+                                    </p>
+                                    <p className="text-xs text-blue-700 mt-1">
+                                        {selectedPackage.plan === 'pro'
+                                            ? 'Start building your profile now. 30% commission applies when you get bookings.'
+                                            : 'Complete your profile first. You\'ll upload payment proof when ready to go live.'}
+                                    </p>
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
                                 disabled={loading}
@@ -333,7 +402,9 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                                 ) : (
                                     <div className="flex items-center justify-center">
                                         <UserPlus className="w-5 h-5 mr-2" />
-                                        Create Therapist Account
+                                        {selectedPackage?.plan === 'plus' 
+                                            ? 'Create Account & Build Profile' 
+                                            : 'Create Therapist Account'}
                                     </div>
                                 )}
                             </button>

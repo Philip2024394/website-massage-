@@ -481,12 +481,14 @@ const App = () => {
 
     console.log('📄 App.tsx: Current page state:', state.page);
 
-    // Detect direct path navigation for accept-booking links and switch to that page
+    // Detect direct path navigation for accept-booking links and membership page
     useEffect(() => {
         try {
             const path = window.location.pathname || '';
             if (path.startsWith('/accept-booking/')) {
                 state.setPage('accept-booking');
+            } else if (path === '/join' || path.startsWith('/join/')) {
+                state.setPage('membership-select');
             }
         } catch (e) {
             console.warn('Path detection failed:', e);

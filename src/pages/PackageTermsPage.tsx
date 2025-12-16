@@ -1,0 +1,307 @@
+import React from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Check } from 'lucide-react';
+
+type Plan = 'pro' | 'plus';
+
+const PackageTermsPage: React.FC = () => {
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const plan = (params.get('plan') as Plan) || 'pro';
+  const isPro = plan === 'pro';
+
+  const handleAccept = () => {
+    // Navigate to the next step (e.g., payment or registration)
+    navigate(`/packages?plan=${plan}&accepted=true`);
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold flex items-center justify-center text-sm">I</div>
+            <span className="font-semibold text-sm">Inda<span className="text-orange-600">Street</span></span>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <div className="max-w-3xl mx-auto px-4 pt-12 pb-8 text-center">
+        <p className="text-sm text-gray-500 mb-2">
+          {isPro ? 'Pro Plan' : 'Plus Plan'}
+          <span className="mx-2">•</span>
+          <span className="text-orange-600 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
+        </p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Terms &amp; Conditions</h1>
+        <p className="text-gray-600 text-sm max-w-md mx-auto">
+          {isPro 
+            ? 'Pro membership connects you to IndaStreet customers. Earn 70% of every confirmed booking.'
+            : 'Plus membership gives you full control. Fixed monthly fee, keep 100% of bookings, premium placement.'
+          }
+        </p>
+      </div>
+
+      {/* Content */}
+      <main className="max-w-3xl mx-auto px-4 pb-32">
+        {isPro ? <ProTerms /> : <PlusTerms />}
+      </main>
+
+      {/* Fixed Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+          <p className="text-xs text-gray-500 hidden sm:block">
+            By accepting, you agree to these terms
+          </p>
+          <div className="flex gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex-1 sm:flex-none px-6 py-3 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAccept}
+              className="flex-1 sm:flex-none px-8 py-3 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+            >
+              <Check className="w-4 h-4" />
+              I Accept
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ProTerms: React.FC = () => (
+  <div className="space-y-8">
+    {/* Critical Notice */}
+    <section className="py-6 border-b border-gray-100">
+      <p className="text-red-600 font-semibold text-sm mb-3">⚠ Critical Compliance Notice</p>
+      <p className="text-gray-700 text-sm leading-relaxed">
+        Violating platform rules results in immediate termination with no refund. Keep all communications, 
+        bookings, and payments inside the platform.
+      </p>
+    </section>
+
+    {/* Commission */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Commission Framework</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>30% processing fee per completed booking — pay within 3 hours of receiving each lead</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Late or missing payments trigger instant account freeze</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Consistent late payments lead to permanent removal</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Platform Rules */}
+    <section className="py-6 border-b border-gray-100">
+      <p className="text-red-600 font-semibold text-sm mb-4">Platform Exclusivity Rules</p>
+      <p className="text-gray-700 text-sm mb-4">The following actions are strictly prohibited:</p>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-red-500 mt-0.5 font-bold">✕</span>
+          <span>Sharing personal WhatsApp, phone, or social media with platform customers</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-red-500 mt-0.5 font-bold">✕</span>
+          <span>Accepting cash or direct transfers outside IndaStreet payment flow</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-red-500 mt-0.5 font-bold">✕</span>
+          <span>Encouraging customers to rebook privately or promise better prices off-platform</span>
+        </li>
+      </ul>
+      <p className="text-red-600 text-xs font-medium mt-4">
+        Off-platform activity leads to instant termination and blacklisting.
+      </p>
+    </section>
+
+    {/* Payment Timing */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Timing</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Confirm commission payment within 3 hours of lead notification</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Have funds ready before appointments — frozen accounts cannot accept bookings</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Keep payment receipts for audits</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Support */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-3">Support</h2>
+      <p className="text-gray-700 text-sm">
+        Email-based assistance with up to 72-hour response window. Plus members are prioritized.
+      </p>
+    </section>
+
+    {/* Account Changes */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Account &amp; Plan Changes</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Clear all debts before activating or upgrading</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Accounts under investigation cannot change tiers</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Changes take effect next billing cycle</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Summary */}
+    <section className="py-6">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Pro Membership Summary</h2>
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="text-gray-500">Monthly Fee</div>
+        <div className="text-gray-900 font-medium">Rp 0</div>
+        <div className="text-gray-500">Commission</div>
+        <div className="text-orange-600 font-medium">30% per booking</div>
+        <div className="text-gray-500">Payment Window</div>
+        <div className="text-gray-900 font-medium">3 hours</div>
+        <div className="text-gray-500">Support SLA</div>
+        <div className="text-gray-900 font-medium">72 hours</div>
+      </div>
+    </section>
+  </div>
+);
+
+const PlusTerms: React.FC = () => (
+  <div className="space-y-8">
+    {/* Core Inclusions */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Core Inclusions</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Rp 250,000/month with <span className="text-orange-600 font-medium">0% commission</span> on every booking</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Verified badge and premium search placement</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Advanced analytics and shareable profile links</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Priority customer support</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-600 mt-0.5 font-bold">★</span>
+          <span className="text-orange-700 font-medium">Priority access to Hotels, Villas &amp; Private Spa Resort service requests</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-600 mt-0.5 font-bold">★</span>
+          <span className="text-orange-700 font-medium">Add your full price menu with unlimited services</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Payment Schedule */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Payment Schedule</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>No contract commitment</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Due on the 1st, grace period until the 5th</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Rp 25,000 late fee applies (administration)</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Growth Tools */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-3">Growth Tools</h2>
+      <p className="text-gray-700 text-sm">
+        Campaign banners, promo codes, featured placements. Track every click, booking, and customer source.
+      </p>
+    </section>
+
+    {/* Priority Support */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-3">Priority Support</h2>
+      <p className="text-gray-700 text-sm">
+        Dedicated email support with priority routing and faster response times.
+      </p>
+    </section>
+
+    {/* Account Readiness */}
+    <section className="py-6 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Account Readiness</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Clear all outstanding invoices before activating</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Maintain healthy compliance record</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Complete profile with services, pricing, and photos</span>
+        </li>
+      </ul>
+    </section>
+
+    {/* Summary */}
+    <section className="py-6">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Plus Membership Summary</h2>
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="text-gray-500">Monthly Fee</div>
+        <div className="text-gray-900 font-medium">Rp 250,000</div>
+        <div className="text-gray-500">Commission</div>
+        <div className="text-orange-600 font-medium">0% — Keep 100%</div>
+        <div className="text-gray-500">Commitment</div>
+        <div className="text-gray-900 font-medium">No contract</div>
+        <div className="text-gray-500">Late Fee</div>
+        <div className="text-gray-900 font-medium">Rp 25,000</div>
+        <div className="text-gray-500">Priority</div>
+        <div className="text-orange-600 font-medium">Hotels, Villas, Spas</div>
+      </div>
+    </section>
+  </div>
+);
+
+export default PackageTermsPage;

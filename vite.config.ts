@@ -27,6 +27,13 @@ export default defineConfig({
       '@/place': path.resolve(__dirname, './src/apps/place'),
       '@/hotel': path.resolve(__dirname, './src/apps/hotel'),
       '@/villa': path.resolve(__dirname, './src/apps/villa'),
+      // Additional aliases for cleaner imports (Enterprise standard)
+      '@/components': path.resolve(__dirname, './components'),
+      '@/pages': path.resolve(__dirname, './pages'),
+      '@/lib': path.resolve(__dirname, './lib'),
+      '@/hooks': path.resolve(__dirname, './hooks'),
+      '@/utils': path.resolve(__dirname, './utils'),
+      '@/types': path.resolve(__dirname, './types'),
     },
   },
   server: {
@@ -36,11 +43,11 @@ export default defineConfig({
     headers: {
       'Cache-Control': 'no-store',
     },
-    // Prevent server crashes from file watcher issues
+    // Prevent server crashes from file watcher issues (Enterprise-grade stability)
     watch: {
-      usePolling: false,
+      usePolling: false, // Use native file watching for better performance
       interval: 100,
-      // Ignore large directories that don't need watching
+      // Ignore large directories that don't need watching (reduces CPU/memory)
       ignored: [
         '**/node_modules/**',
         '**/dist/**',
@@ -50,13 +57,20 @@ export default defineConfig({
         '**/*.md',
         '**/docs/**',
         '**/deleted/**',
+        '**/*-backup.*',
+        '**/*-old.*',
+        '**/*.disabled',
+        '**/.vscode/**',
+        '**/.idea/**',
       ],
     },
-    // Increase timeout to prevent connection drops with conservative HMR
+    // Optimized HMR (Hot Module Replacement) - prevents "press h or r" issues
     hmr: {
       timeout: 30000,
-      overlay: false, // Disable error overlay to prevent conflicts
-      // Let Vite automatically find an available port for HMR
+      overlay: true, // Show errors in browser overlay
+      clientPort: undefined, // Let Vite handle port automatically
+      // Prevent HMR connection loss
+      protocol: 'ws',
     },
     // Graceful shutdown handling
     // Allow auto-bumping to a free port to prevent exit code 1 when 3000 is busy
@@ -168,14 +182,27 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    // Force pre-bundle these to prevent dev server restarts
+    // Pre-bundle critical dependencies (Amazon/Facebook strategy)
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      'lucide-react',
+      'react-hot-toast',
+    ],
+    // Exclude heavy dependencies that rarely change
+    exclude: ['appwrite'],
+    // Don't force re-optimization unless dependencies change
     force: false,
   },
-  // Prevent memory issues during development
+  // Prevent memory issues during development (Enterprise optimization)
   esbuild: {
     logOverride: { 'this-is-undefined-in-esm': 'silent' },
+    // Drop console/debugger in production
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
   },
-  // Clear screen on restart
+  // Clear screen on restart (cleaner developer experience)
   clearScreen: false,
+  // Log level for better debugging
+  logLevel: 'info',
 })

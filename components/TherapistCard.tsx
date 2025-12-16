@@ -752,7 +752,7 @@ ${locationInfo}${coordinatesInfo}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        onNavigate?.('therapistLogin');
+                        onNavigate?.('joinIndastreet');
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >

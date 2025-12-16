@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { placeAuth } from '../lib/auth';
 import { saveSessionCache } from '../lib/sessionManager';
 import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
-import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home, Star, CheckCircle } from 'lucide-react';
 import PageNumberBadge from '../components/PageNumberBadge';
 
 interface MassagePlaceLoginPageProps {
@@ -19,6 +19,21 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [debugInfo, setDebugInfo] = useState<string>('');
+    const [selectedPackage, setSelectedPackage] = useState<{ plan: 'pro' | 'plus', selectedAt: string } | null>(null);
+
+    // Detect package from localStorage
+    useEffect(() => {
+        try {
+            const packageStr = localStorage.getItem('packageDetails');
+            if (packageStr) {
+                const pkg = JSON.parse(packageStr);
+                setSelectedPackage(pkg);
+                console.log('📦 Package detected for massage place:', pkg);
+            }
+        } catch (error) {
+            console.error('❌ Error parsing package details:', error);
+        }
+    }, []);
 
     // Make rate limit reset functions available in browser console for testing
     React.useEffect(() => {
@@ -310,6 +325,40 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
 
                     {/* Forms */}
                     <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                        {/* Package Info Display - Only in signup mode */}
+                        {isSignUp && selectedPackage && (
+                            <div className={`p-4 rounded-xl border-2 ${selectedPackage.plan === 'pro' ? 'border-orange-200 bg-orange-50/95' : 'border-purple-200 bg-purple-50/95'} backdrop-blur-sm`}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <h3 className="font-bold text-gray-800">
+                                        {selectedPackage.plan === 'pro' ? 'Pro Plan Selected' : 'Plus Plan Selected'}
+                                    </h3>
+                                </div>
+                                <div className="flex items-center gap-1 mb-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            className={`w-4 h-4 ${
+                                                selectedPackage.plan === 'plus' || i < 3 ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300'
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                                <div className={`text-sm p-3 rounded-lg ${selectedPackage.plan === 'pro' ? 'bg-blue-50 border border-blue-200' : 'bg-purple-100 border border-purple-200'}`}>
+                                    <p className="font-semibold text-gray-800 mb-1">
+                                        {selectedPackage.plan === 'pro' 
+                                            ? 'No upfront payment needed!' 
+                                            : 'Payment required when you go live'}
+                                    </p>
+                                    <p className="text-xs text-gray-700">
+                                        {selectedPackage.plan === 'pro'
+                                            ? 'Start building your profile now. 30% commission applies when you get bookings.'
+                                            : 'Complete your profile first. You\'ll upload payment proof when ready to go live.'}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <label className="block text-sm font-medium text-gray-800 mb-2 drop-shadow">
                                 Email Address
@@ -363,7 +412,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center gap-2">
-                                    {isSignUp ? '✨ Create Place Account' : '🔑 Sign In to Place'}
+                                    {isSignUp 
+                                        ? (selectedPackage?.plan === 'plus' ? '✨ Create Account & Build Profile' : '✨ Create Place Account')
+                                        : '🔑 Sign In to Place'}
                                 </div>
                             )}
                         </button>
