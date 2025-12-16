@@ -73,6 +73,7 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     onNavigate={onNavigate}
+                    language={language}
                 />
             </React19SafeWrapper>
             

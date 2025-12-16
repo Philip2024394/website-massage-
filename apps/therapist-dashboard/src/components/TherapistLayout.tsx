@@ -11,6 +11,8 @@ interface TherapistLayoutProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   onLogout: () => void;
+  language?: 'en' | 'id';
+  onLanguageChange?: (lang: 'en' | 'id') => void;
 }
 
 const TherapistLayout: React.FC<TherapistLayoutProps> = ({
@@ -18,22 +20,60 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   therapist,
   currentPage,
   onNavigate,
-  onLogout
+  onLogout,
+  language = 'id',
+  onLanguageChange
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  // Translations for menu items
+  const menuLabels = {
+    en: {
+      status: 'Online Status',
+      dashboard: 'Profile',
+      bookings: 'Bookings',
+      earnings: 'Earnings',
+      payment: 'Payment Info',
+      'payment-status': 'Payment History',
+      chat: 'Support Chat',
+      membership: 'Membership',
+      notifications: 'Notifications',
+      calendar: 'Calendar',
+      legal: 'Legal',
+      menu: 'Menu',
+      logout: 'Logout',
+    },
+    id: {
+      status: 'Status Online',
+      dashboard: 'Profil',
+      bookings: 'Booking',
+      earnings: 'Pendapatan',
+      payment: 'Info Pembayaran',
+      'payment-status': 'Riwayat Pembayaran',
+      chat: 'Chat Dukungan',
+      membership: 'Keanggotaan',
+      notifications: 'Notifikasi',
+      calendar: 'Kalender',
+      legal: 'Hukum',
+      menu: 'Menu',
+      logout: 'Keluar',
+    },
+  };
+
+  const labels = menuLabels[language] || menuLabels.id;
+
   const menuItems = [
-    { id: 'status', label: 'Online Status', icon: Clock, color: 'text-green-600' },
-    { id: 'dashboard', label: 'Profile', icon: User, color: 'text-orange-600' },
-    { id: 'bookings', label: 'Bookings', icon: Calendar, color: 'text-blue-600' },
-    { id: 'earnings', label: 'Earnings', icon: DollarSign, color: 'text-purple-600' },
-    { id: 'payment', label: 'Payment Info', icon: CreditCard, color: 'text-blue-600' },
-    { id: 'payment-status', label: 'Payment History', icon: FileText, color: 'text-teal-600' },
-    { id: 'chat', label: 'Support Chat', icon: MessageCircle, color: 'text-pink-600' },
-    { id: 'membership', label: 'Membership', icon: Crown, color: 'text-yellow-600' },
-    { id: 'notifications', label: 'Notifications', icon: Bell, color: 'text-red-600' },
-    { id: 'calendar', label: 'Calendar', icon: Calendar, color: 'text-indigo-600' },
-    { id: 'legal', label: 'Legal', icon: FileText, color: 'text-gray-600' },
+    { id: 'status', label: labels.status, icon: Clock, color: 'text-green-600' },
+    { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-600' },
+    { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-blue-600' },
+    { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-purple-600' },
+    { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
+    { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
+    { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
+    { id: 'membership', label: labels.membership, icon: Crown, color: 'text-yellow-600' },
+    { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
+    { id: 'calendar', label: labels.calendar, icon: Calendar, color: 'text-indigo-600' },
+    { id: 'legal', label: labels.legal, icon: FileText, color: 'text-gray-600' },
   ];
 
   const handleNavigate = (pageId: string) => {
@@ -64,6 +104,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           </div>
           
           <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <button
+              onClick={() => onLanguageChange?.(language === 'id' ? 'en' : 'id')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+            >
+              <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
+            </button>
             {therapist?.membershipTier === 'premium' && (
               <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-lg">
                 <Crown className="w-4 h-4 text-yellow-600" />
@@ -100,7 +148,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
           {/* Sidebar Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-gray-900">Menu</h2>
+              <h2 className="text-lg font-bold text-gray-900">{labels.menu}</h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -158,7 +206,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
             >
               <Power className="w-5 h-5" />
-              <span className="text-sm font-medium">Logout</span>
+              <span className="text-sm font-medium">{labels.logout}</span>
             </button>
           </div>
         </div>

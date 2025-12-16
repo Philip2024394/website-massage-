@@ -6,6 +6,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { Home } from 'lucide-react';
+import { useLanguage } from '../hooks/useLanguage';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const COLLECTIONS = APPWRITE_CONFIG.collections;
@@ -103,6 +104,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         hasOnCreateTherapistProfile: typeof onCreateTherapistProfile === 'function'
     });
     
+    const { language } = useLanguage();
     const [activeTab, setActiveTab] = useState<'employers' | 'therapists'>('employers');
     const [jobPostings, setJobPostings] = useState<EmployerJobPosting[]>([]);
     const [therapistListings, setTherapistListings] = useState<TherapistJobListing[]>([]);
@@ -243,6 +245,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     onNavigate={onNavigate}
+                    language={language}
                 />
             </React19SafeWrapper>
 

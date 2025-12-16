@@ -4,12 +4,22 @@ import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
 import LoginPage from './pages/LoginPage';
+import { LanguageProvider } from '@shared/context/LanguageContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'chat' | 'payment'>('dashboard');
+  const [language, setLanguage] = useState<'en' | 'id'>(() => {
+    const stored = localStorage.getItem('indastreet_language');
+    return (stored === 'en' || stored === 'id') ? stored : 'id';
+  });
+
+  const handleLanguageChange = (lang: 'en' | 'id') => {
+    setLanguage(lang);
+    localStorage.setItem('indastreet_language', lang);
+  };
 
   useEffect(() => {
     checkAuth();
@@ -69,11 +79,15 @@ function App() {
   }
 
   return (
-    <PlaceDashboard 
-      onLogout={handleLogout}
-      onNavigateToChat={() => setCurrentView('chat')}
-      onNavigateToPayment={() => setCurrentView('payment')}
-    />
+    <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+      <PlaceDashboard 
+        onLogout={handleLogout}
+        onNavigateToChat={() => setCurrentView('chat')}
+        onNavigateToPayment={() => setCurrentView('payment')}
+        language={language}
+        onLanguageChange={handleLanguageChange}
+      />
+    </LanguageProvider>
   );
 }
 

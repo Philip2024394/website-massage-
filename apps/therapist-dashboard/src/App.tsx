@@ -17,6 +17,8 @@ import TherapistLayout from './components/TherapistLayout';
 import LoginPage from './pages/LoginPage';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
+import { LanguageProvider } from '../../../context/LanguageContext';
+import { useTranslations } from '../../../lib/useTranslations';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'onboarding';
 
@@ -26,6 +28,18 @@ function App() {
   const [user, setUser] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('status');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'id'>(() => {
+    // Try to get language from localStorage or default to 'id'
+    const stored = localStorage.getItem('indastreet_language');
+    return (stored === 'en' || stored === 'id') ? stored : 'id';
+  });
+  const { t } = useTranslations(language);
+
+  // Persist language changes
+  const handleLanguageChange = (lang: 'en' | 'id') => {
+    setLanguage(lang);
+    localStorage.setItem('indastreet_language', lang);
+  };
 
   useEffect(() => {
     // Always rely on server state to decide onboarding
@@ -227,7 +241,7 @@ function App() {
   if (needsOnboarding && (currentPage === 'onboarding' || currentPage === 'membership')) {
     console.log('🎯 RENDERING MEMBERSHIP PAGE FOR ONBOARDING');
     return (
-      <>
+      <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
         <PWAInstallPrompt dashboardName="Therapist Dashboard" />
         <ToastContainer />
         {/* Render membership page without layout during onboarding */}
@@ -236,12 +250,12 @@ function App() {
           setNeedsOnboarding(false);
           setCurrentPage('dashboard'); // Show profile page first after membership selection
         }} />
-      </>
+      </LanguageProvider>
     );
   }
 
   return (
-    <>
+    <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
       <PWAInstallPrompt dashboardName="Therapist Dashboard" />
       <ToastContainer />
       <TherapistLayout
@@ -249,10 +263,12 @@ function App() {
         currentPage={currentPage}
         onNavigate={(page) => setCurrentPage(page as Page)}
         onLogout={handleLogout}
+        language={language}
+        onLanguageChange={handleLanguageChange}
       >
         {renderPage()}
       </TherapistLayout>
-    </>
+    </LanguageProvider>
   );
 }
 

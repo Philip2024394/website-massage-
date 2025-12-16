@@ -967,6 +967,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         setIsMenuOpen(false);
                     }}
                     t={translationsObject}
+                    language={language}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}
@@ -1114,8 +1115,8 @@ const HomePage: React.FC<HomePageProps> = ({
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
                                 {selectedCity === 'all' 
-                                    ? 'Find the best therapists across Indonesia'
-                                    : `Find the best therapists in ${selectedCity}`
+                                    ? (t?.home?.therapistsSubtitleAll || 'Find the best therapists across Indonesia')
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', selectedCity) || `Find the best therapists in ${selectedCity}`)
                                 }
                             </p>
                         </div>

@@ -7,16 +7,34 @@ interface PackageTermsPageProps {
   onBack: () => void;
   onNavigate?: (page: string) => void;
   onAcceptTerms?: (plan: Plan) => void;
+  t?: any; // translations
+  language?: 'en' | 'id';
 }
 
-const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, onAcceptTerms }) => {
-  const [plan, setPlan] = useState<Plan>('pro');
+const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, onAcceptTerms, t, language = 'en' }) => {
+  // Read plan immediately from localStorage to avoid flash of wrong content
+  const getInitialPlan = (): Plan => {
+    if (typeof window !== 'undefined') {
+      const pendingPlan = localStorage.getItem('pendingTermsPlan') as Plan;
+      if (pendingPlan === 'pro' || pendingPlan === 'plus') {
+        return pendingPlan;
+      }
+    }
+    return 'pro';
+  };
+
+  const [plan, setPlan] = useState<Plan>(getInitialPlan);
   const isPro = plan === 'pro';
 
+  // Translation helper
+  const getText = (key: string, fallback: string) => {
+    return t?.packageTerms?.[key] || fallback;
+  };
+
   useEffect(() => {
-    // Get plan from localStorage
+    // Re-check plan from localStorage on mount (handles any async updates)
     const pendingPlan = localStorage.getItem('pendingTermsPlan') as Plan;
-    if (pendingPlan) {
+    if (pendingPlan === 'pro' || pendingPlan === 'plus') {
       setPlan(pendingPlan);
     }
   }, []);
@@ -46,31 +64,34 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-[9997]">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <button 
-            onClick={handleCancel} 
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">Inda<span className="text-orange-600">Street</span></span>
+      {/* Global Header */}
+      <header className="bg-white shadow-md sticky top-0 z-[9997] w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex justify-between items-center">
+            <button 
+              onClick={handleCancel} 
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium hidden sm:inline">Back</span>
+            </button>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+              <span className="text-black">Inda</span>
+              <span className="text-orange-500">Street</span>
+            </h1>
+            <button
+              onClick={onBack}
+              className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
+              title="Back to Home"
+            >
+              <Home className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onBack}
-            className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
-            title="Back to Home"
-          >
-            <Home className="w-5 h-5" />
-          </button>
         </div>
       </header>
 
       {/* Hero */}
-      <div className="max-w-3xl mx-auto px-4 pt-8 pb-6 text-center">
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-8 pb-6 text-center">
         <p className="text-sm text-gray-500 mb-2">
           {isPro ? 'Pro Plan' : 'Plus Plan'}
           <span className="mx-2">•</span>
@@ -86,13 +107,13 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
       </div>
 
       {/* Content */}
-      <main className="max-w-3xl mx-auto px-4 pb-32">
+      <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
         {isPro ? <ProTerms /> : <PlusTerms />}
       </main>
 
       {/* Fixed Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-[9998]">
-        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500 text-center sm:text-left">
             By accepting, you agree to these terms
           </p>
@@ -123,8 +144,9 @@ const ProTerms: React.FC = () => (
     <section className="py-5 border-b border-gray-100">
       <p className="text-red-600 font-semibold text-sm mb-3">⚠ Critical Compliance Notice</p>
       <p className="text-gray-700 text-sm leading-relaxed">
-        Violating platform rules results in immediate termination with no refund. Keep all communications, 
-        bookings, and payments inside the platform.
+        Violating platform rules results in immediate termination with no refund. Keep all communications 
+        and bookings through the platform. Note: Payments are made directly between customer and provider — 
+        IndaStreet does not process payments.
       </p>
     </section>
 
@@ -134,7 +156,11 @@ const ProTerms: React.FC = () => (
       <ul className="space-y-3 text-sm text-gray-700">
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">•</span>
-          <span>30% processing fee per completed booking — pay within 3 hours of receiving each lead</span>
+          <span>30% commission fee per completed booking — pay within 3 hours of receiving each lead</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">•</span>
+          <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">•</span>
@@ -158,7 +184,7 @@ const ProTerms: React.FC = () => (
         </li>
         <li className="flex items-start gap-3">
           <span className="text-red-500 mt-0.5 font-bold">✕</span>
-          <span>Accepting cash or direct transfers outside IndaStreet payment flow</span>
+          <span>Accepting bookings from IndaStreet customers outside the platform to avoid commission</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-red-500 mt-0.5 font-bold">✕</span>
@@ -242,6 +268,10 @@ const PlusTerms: React.FC = () => (
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">✓</span>
           <span>Rp 250,000/month with <span className="text-orange-600 font-medium">0% commission</span> on every booking</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Customer pays you directly — IndaStreet does not handle or process any payments</span>
         </li>
         <li className="flex items-start gap-3">
           <span className="text-orange-500 mt-0.5">✓</span>

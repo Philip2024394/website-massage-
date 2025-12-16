@@ -919,6 +919,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <ProviderPortalsPage 
                 onBack={handleBackToHome}
                 onNavigate={commonNavigateHandler}
+                t={t}
+                language={language}
             />;
 
         case 'therapistProfile':
@@ -1169,6 +1171,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return <PackageTermsPage 
                 onBack={handleBackToHome} 
                 onNavigate={commonNavigateHandler}
+                t={t}
+                language={language}
             />;
             
         case 'placeTerms':
@@ -1479,6 +1483,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     console.log('🎯 AppRouter provider-portals: Setting page to:', page);
                     setPage(page as Page);
                 }}
+                t={t}
+                language={language}
             />;
             
         case 'partnership-application': 

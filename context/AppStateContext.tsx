@@ -106,7 +106,14 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     };
     
     const [page, _setPage] = useState<string>(getInitialPage());
-    const [language, setLanguage] = useState<Language>('en');
+    const [language, setLanguage] = useState<Language>(() => {
+        // Check localStorage for saved language, default to Indonesian
+        try {
+            const stored = localStorage.getItem('app_language');
+            if (stored === 'en' || stored === 'id') return stored as Language;
+        } catch {}
+        return 'id'; // Default to Indonesian
+    });
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState<string>('all');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);

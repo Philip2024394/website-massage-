@@ -228,6 +228,7 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     t={t}
+                    language={language}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}

@@ -2,11 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { authService } from '@shared/appwriteService';
 import FacialDashboard from './pages/FacialDashboard';
 import LoginPage from './pages/LoginPage';
+import { LanguageProvider } from '@shared/context/LanguageContext';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [language, setLanguage] = useState<'en' | 'id'>(() => {
+    const stored = localStorage.getItem('indastreet_language');
+    return (stored === 'en' || stored === 'id') ? stored : 'id';
+  });
+
+  const handleLanguageChange = (lang: 'en' | 'id') => {
+    setLanguage(lang);
+    localStorage.setItem('indastreet_language', lang);
+  };
 
   useEffect(() => {
     checkAuth();
@@ -60,7 +70,16 @@ function App() {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  return <FacialDashboard user={user} onLogout={handleLogout} />;
+  return (
+    <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+      <FacialDashboard 
+        user={user} 
+        onLogout={handleLogout}
+        language={language}
+        onLanguageChange={handleLanguageChange}
+      />
+    </LanguageProvider>
+  );
 }
 
 export default App;

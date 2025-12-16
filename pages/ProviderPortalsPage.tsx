@@ -1,18 +1,22 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { User, Building, Sparkles, Home, Star, FileText } from 'lucide-react';
-import MembershipTermsModal from '../components/MembershipTermsModal';
 
 interface ProviderPortalsPageProps {
   onBack: () => void;
   onNavigate?: (page: string) => void;
+  t?: any; // translations
+  language?: 'en' | 'id';
 }
 
-const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNavigate }) => {
+const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNavigate, t, language = 'en' }) => {
   const [selectedPackage, setSelectedPackage] = useState<'pro' | 'plus' | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState<{ pro: boolean; plus: boolean }>({ pro: false, plus: false });
-  const [showTermsModal, setShowTermsModal] = useState(false);
-  const [planForTerms, setPlanForTerms] = useState<'pro' | 'plus' | null>(null);
   const portalsRef = useRef<HTMLDivElement | null>(null);
+
+  // Translation helper
+  const getText = (key: string, fallback: string) => {
+    return t?.membership?.[key] || fallback;
+  };
 
   // Load accepted terms from localStorage on mount
   useEffect(() => {
@@ -32,34 +36,34 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
 
   const portals = [
     {
-      title: 'Therapist Portal',
-      description: 'For independent massage therapists',
+      title: getText('therapistPortal', 'Therapist Portal'),
+      description: getText('therapistPortalDesc', 'For independent massage therapists'),
       icon: User,
       image: 'https://ik.imagekit.io/7grri5v7d/image%201.png',
       color: 'from-orange-500 to-amber-500',
       hoverColor: 'hover:from-orange-600 hover:to-amber-600',
       page: 'therapistLogin',
-      features: ['Manage bookings', 'Set your rates', 'Track earnings']
+      features: [getText('manageBookings', 'Manage bookings'), getText('setYourRates', 'Set your rates'), getText('trackEarnings', 'Track earnings')]
     },
     {
-      title: 'Massage Place Portal',
-      description: 'For massage spas and wellness centers',
+      title: getText('massagePlacePortal', 'Massage Place Portal'),
+      description: getText('massagePlacePortalDesc', 'For massage spas and wellness centers'),
       icon: Building,
       image: 'https://ik.imagekit.io/7grri5v7d/image%202.png',
       color: 'from-green-500 to-emerald-500',
       hoverColor: 'hover:from-green-600 hover:to-emerald-600',
       page: 'massagePlaceLogin',
-      features: ['Manage your spa', 'Multiple therapists', 'Business analytics']
+      features: [getText('manageYourSpa', 'Manage your spa'), getText('multipleTherapists', 'Multiple therapists'), getText('businessAnalytics', 'Business analytics')]
     },
     {
-      title: 'Facial Place Portal',
-      description: 'For facial spas and beauty centers',
+      title: getText('facialPlacePortal', 'Facial Place Portal'),
+      description: getText('facialPlacePortalDesc', 'For facial spas and beauty centers'),
       icon: Sparkles,
       image: 'https://ik.imagekit.io/7grri5v7d/image%203.png',
       color: 'from-pink-500 to-rose-500',
       hoverColor: 'hover:from-pink-600 hover:to-rose-600',
       page: 'facialPortal',
-      features: ['Facial services', 'Beauty treatments', 'Spa management']
+      features: [getText('facialServices', 'Facial services'), getText('beautyTreatments', 'Beauty treatments'), getText('spaManagement', 'Spa management')]
     }
   ];
 
@@ -71,27 +75,21 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
 
   const handleTermsCheckbox = (plan: 'pro' | 'plus', checked: boolean) => {
     if (checked) {
-      setPlanForTerms(plan);
-      setShowTermsModal(true);
+      // Navigate to full page terms
+      localStorage.setItem('pendingTermsPlan', plan);
+      onNavigate?.('packageTerms');
     } else {
       setAcceptedTerms((prev) => ({ ...prev, [plan]: false }));
+      // Clear from localStorage too
+      const storedTerms = localStorage.getItem('acceptedTerms');
+      if (storedTerms) {
+        try {
+          const parsed = JSON.parse(storedTerms);
+          parsed[plan] = false;
+          localStorage.setItem('acceptedTerms', JSON.stringify(parsed));
+        } catch (e) {}
+      }
     }
-  };
-
-  const handleAcceptTerms = () => {
-    if (planForTerms) {
-      setAcceptedTerms((prev) => ({ ...prev, [planForTerms]: true }));
-    }
-    setShowTermsModal(false);
-    setPlanForTerms(null);
-  };
-
-  const handleCloseTerms = () => {
-    if (planForTerms) {
-      setAcceptedTerms((prev) => ({ ...prev, [planForTerms]: false }));
-    }
-    setShowTermsModal(false);
-    setPlanForTerms(null);
   };
 
   const handleSelectPlan = (plan: 'pro' | 'plus') => {
@@ -137,20 +135,20 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
         <div className="mb-12">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              <span className="text-gray-800">Choose Your </span>
-              <span className="text-orange-500">Membership</span>
+              <span className="text-gray-800">{language === 'id' ? 'Pilih ' : 'Choose Your '}</span>
+              <span className="text-orange-500">{language === 'id' ? 'Keanggotaan' : 'Membership'}</span>
             </h2>
-            <p className="text-lg text-gray-600">Simple pricing. Start earning today.</p>
+            <p className="text-lg text-gray-600">{getText('simplePricing', 'Simple pricing. Start earning today.')}</p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Pro Package */}
             <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-lg hover:shadow-xl transition-shadow">
               <div className="absolute -top-4 left-8">
-                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">Pay Per Lead</span>
+                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">{getText('payPerLead', 'Pay Per Lead')}</span>
               </div>
               <div className="mt-2 mb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-2xl font-bold text-gray-900">Pro</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{getText('proTitle', 'Pro')}</h3>
                   <div className="flex gap-0.5">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -159,39 +157,39 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                     <Star className="w-4 h-4 fill-gray-300 text-gray-300" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">Great for starting out. Only pay when you get bookings</p>
+                <p className="text-sm text-gray-600">{getText('proDescription', 'Great for starting out. Only pay when you get bookings')}</p>
               </div>
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-extrabold text-gray-900">Rp 0</span>
-                  <span className="text-lg text-gray-500">/month</span>
+                  <span className="text-5xl font-extrabold text-gray-900">{getText('proMonthlyFee', 'Rp 0')}</span>
+                  <span className="text-lg text-gray-500">{getText('perMonth', '/month')}</span>
                 </div>
                 <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
                   <span>+</span>
-                  <span className="text-xl font-bold">30%</span>
-                  <span>commission per booking</span>
+                  <span className="text-xl font-bold">{getText('commissionRate', '30%')}</span>
+                  <span>{getText('commissionPerBooking', 'commission per booking')}</span>
                 </div>
               </div>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3 text-gray-300">
+                <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span><strong className="font-semibold text-gray-900">Zero upfront cost</strong> - Start immediately</span>
+                  <span><strong className="font-semibold text-gray-900">{getText('zeroUpfrontCost', 'Zero upfront cost')}</strong> - {getText('startImmediately', 'Start immediately')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span><strong className="font-semibold text-gray-900">Pay only on success</strong> - 30% per booking</span>
+                  <span><strong className="font-semibold text-gray-900">{getText('payOnlyOnSuccess', 'Pay only on success')}</strong> - 30% {getText('perBooking', 'per booking')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span>Full profile with photos & services</span>
-                </li>
-                <li className="flex items-start gap-3 text-gray-300">
-                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span>Customer chat & booking system</span>
+                  <span>{getText('fullProfileWithPhotos', 'Full profile with photos & services')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span>Lead generation included</span>
+                  <span>{getText('customerChatBooking', 'Customer chat & booking system')}</span>
+                </li>
+                <li className="flex items-start gap-3 text-gray-700">
+                  <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                  <span>{getText('leadGenerationIncluded', 'Lead generation included')}</span>
                 </li>
               </ul>
               <div className="space-y-3">
@@ -204,7 +202,7 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                       className="mt-1 w-5 h-5 text-orange-600 border-2 border-orange-500 rounded focus:ring-2 focus:ring-orange-500"
                     />
                     <span className="ml-3 text-sm text-gray-900">
-                      I agree to the{' '}
+                      {getText('agreeToTerms', 'I agree to the')}{' '}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -214,17 +212,17 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                           onNavigate?.('packageTerms');
                         }}
                         className="text-orange-700 font-bold underline inline-flex items-center gap-1 hover:text-orange-800"
-                        title="View Terms & Conditions"
+                        title={getText('termsAndConditions', 'Terms & Conditions')}
                       >
                         <FileText className="w-4 h-4" />
-                        Terms & Conditions
+                        {getText('termsAndConditions', 'Terms & Conditions')}
                       </button>
                     </span>
                   </label>
                   {!acceptedTerms.pro && (
                     <p className="mt-2 text-xs text-orange-700 font-semibold flex items-center gap-1">
                       <span>⚠️</span>
-                      Accept the terms before selecting this plan.
+                      {getText('acceptTermsWarning', 'Accept the terms before selecting this plan.')}
                     </p>
                   )}
                 </div>
@@ -237,14 +235,14 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                       : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
                   }`}
                 >
-                  Select Pro Plan
+                  {getText('selectProPlan', 'Select Pro Plan')}
                 </button>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500">Perfect for:</p>
+                  <p className="text-xs text-gray-500">{getText('perfectFor', 'Perfect for:')}</p>
                   <div className="flex flex-wrap justify-center gap-2 mt-2">
-                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Independent Therapists</span>
-                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Starting Out</span>
-                    <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-orange-400 border border-gray-700 font-medium">Low Risk</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">{getText('independentTherapists', 'Independent Therapists')}</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">{getText('startingOut', 'Starting Out')}</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-orange-400 border border-gray-700 font-medium">{getText('lowRisk', 'Low Risk')}</span>
                   </div>
                 </div>
               </div>
@@ -253,11 +251,11 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
             {/* Plus Package */}
             <div className="relative rounded-3xl bg-white border-2 border-gray-200 p-8 shadow-xl hover:shadow-2xl transition-shadow">
               <div className="absolute -top-4 left-8">
-                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">Most Popular</span>
+                <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">{getText('mostPopular', 'Most Popular')}</span>
               </div>
               <div className="mt-2 mb-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-2xl font-bold text-gray-900">Plus</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">{getText('plusTitle', 'Plus')}</h3>
                   <div className="flex gap-0.5">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -266,42 +264,42 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">All-in premium membership. Keep 100% of bookings</p>
+                <p className="text-sm text-gray-600">{getText('plusDescription', 'All-in premium membership. Keep 100% of bookings')}</p>
               </div>
               <div className="mb-6">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-extrabold text-gray-900">Rp 250K</span>
-                  <span className="text-lg text-gray-500">/month</span>
+                  <span className="text-5xl font-extrabold text-gray-900">{getText('plusMonthlyFee', 'Rp 250K')}</span>
+                  <span className="text-lg text-gray-500">{getText('perMonth', '/month')}</span>
                 </div>
                 <div className="mt-2 inline-flex items-center gap-2 bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg text-sm font-semibold border border-orange-200">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span>0% Commission - Keep Everything</span>
+                  <span>{getText('zeroCommission', '0% Commission - Keep Everything')}</span>
                 </div>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span><strong className="font-semibold text-gray-900">Zero commission</strong> - Keep 100% of earnings</span>
+                  <span><strong className="font-semibold text-gray-900">{getText('zeroCommissionKeep', 'Zero commission')}</strong> - {getText('keep100Percent', 'Keep 100% of earnings')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span><strong className="font-semibold text-gray-900">Verified badge</strong> on your profile</span>
+                  <span><strong className="font-semibold text-gray-900">{getText('verifiedBadge', 'Verified badge')}</strong> {getText('onYourProfile', 'on your profile')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-orange-700">
                   <svg className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                  <span><strong className="font-semibold">Priority Hotel, Villa & Private Spa</strong> service requests</span>
+                  <span><strong className="font-semibold">{getText('priorityHotelVilla', 'Priority Hotel, Villa & Private Spa')}</strong> {getText('serviceRequests', 'service requests')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-orange-700">
                   <svg className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                  <span><strong className="font-semibold">Full price menu</strong> displayed on your card</span>
+                  <span><strong className="font-semibold">{getText('fullPriceMenu', 'Full price menu')}</strong> {getText('displayedOnCard', 'displayed on your card')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span><strong className="font-semibold text-gray-900">Live discount</strong> promotions system</span>
+                  <span><strong className="font-semibold text-gray-900">{getText('liveDiscount', 'Live discount')}</strong> {getText('promotionsSystem', 'promotions system')}</span>
                 </li>
                 <li className="flex items-start gap-3 text-gray-700">
                   <svg className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                  <span>Unlimited leads & advanced analytics</span>
+                  <span>{getText('unlimitedLeads', 'Unlimited leads & advanced analytics')}</span>
                 </li>
               </ul>
               <div className="space-y-3">
@@ -314,7 +312,7 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                       className="mt-1 w-5 h-5 text-orange-600 border-2 border-orange-500 rounded focus:ring-2 focus:ring-orange-500"
                     />
                     <span className="ml-3 text-sm text-gray-900">
-                      I agree to the{' '}
+                      {getText('agreeToTerms', 'I agree to the')}{' '}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -324,17 +322,17 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                           onNavigate?.('packageTerms');
                         }}
                         className="text-orange-700 font-bold underline inline-flex items-center gap-1 hover:text-orange-800"
-                        title="View Terms & Conditions"
+                        title={getText('termsAndConditions', 'Terms & Conditions')}
                       >
                         <FileText className="w-4 h-4" />
-                        Terms & Conditions
+                        {getText('termsAndConditions', 'Terms & Conditions')}
                       </button>
                     </span>
                   </label>
                   {!acceptedTerms.plus && (
                     <p className="mt-2 text-xs text-orange-700 font-semibold flex items-center gap-1">
                       <span>⚠️</span>
-                      Accept the terms before selecting this plan.
+                      {getText('acceptTermsWarning', 'Accept the terms before selecting this plan.')}
                     </p>
                   )}
                 </div>
@@ -347,14 +345,14 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                       : 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white'
                   }`}
                 >
-                  Select Plus Plan
+                  {getText('selectPlusPlan', 'Select Plus Plan')}
                 </button>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500">Perfect for:</p>
+                  <p className="text-xs text-gray-500">{getText('perfectFor', 'Perfect for:')}</p>
                   <div className="flex flex-wrap justify-center gap-2 mt-2">
-                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Spas & Clinics</span>
-                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">High Volume</span>
-                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">Maximum Earnings</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">{getText('spasAndClinics', 'Spas & Clinics')}</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">{getText('highVolume', 'High Volume')}</span>
+                    <span className="px-3 py-1 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-medium">{getText('maximumEarnings', 'Maximum Earnings')}</span>
                   </div>
                 </div>
               </div>
@@ -367,11 +365,11 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
           <div ref={portalsRef} className="mb-16">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold mb-3">
-                <span className="text-gray-800">Choose Your </span>
-                <span className="text-orange-500">Business Type</span>
+                <span className="text-gray-800">{language === 'id' ? 'Pilih ' : 'Choose Your '}</span>
+                <span className="text-orange-500">{language === 'id' ? 'Jenis Bisnis' : 'Business Type'}</span>
               </h2>
               <p className="text-lg text-gray-600 mb-4">
-                Selected: <span className="font-bold text-orange-600">{selectedPackage === 'pro' ? 'Pro Plan (0% monthly + 30% commission)' : 'Plus Plan (Rp 250K/month + 0% commission)'}</span>
+                {getText('selectedPlan', 'Selected')}: <span className="font-bold text-orange-600">{selectedPackage === 'pro' ? getText('proPlan', 'Pro Plan') + ' (0% ' + getText('perMonth', '/month').replace('/', '') + ' + 30% ' + getText('commissionPerBooking', 'commission') + ')' : getText('plusPlan', 'Plus Plan') + ' (Rp 250K' + getText('perMonth', '/month') + ' + 0% ' + getText('commissionPerBooking', 'commission') + ')'}</span>
               </p>
             </div>
 
@@ -419,7 +417,7 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
                       </ul>
 
                       <div className="py-2 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-sm shadow-md group-hover:shadow-lg transition-shadow">
-                        Continue to Registration
+                        {getText('continueToRegistration', 'Continue to Registration')}
                       </div>
                     </div>
                   </button>
@@ -430,13 +428,6 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
         )}
       </div>
 
-      <MembershipTermsModal
-        isOpen={showTermsModal}
-        onClose={handleCloseTerms}
-        onAccept={handleAcceptTerms}
-        planType={planForTerms || 'pro'}
-      />
-
       {/* Footer */}
       <div className="mt-16 pb-8 relative">
         <div className="relative flex items-center justify-center h-24">
@@ -445,7 +436,7 @@ const ProviderPortalsPage: React.FC<ProviderPortalsPageProps> = ({ onBack, onNav
             alt="Water drop"
             className="absolute right-4 md:right-12 h-20 w-auto opacity-80"
           />
-          <p className="text-center text-sm text-gray-500 z-10">© 2026 IndaStreet. All rights reserved.</p>
+          <p className="text-center text-sm text-gray-500 z-10">{getText('copyright', '© 2026 IndaStreet. All rights reserved.')}</p>
         </div>
       </div>
     </div>

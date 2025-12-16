@@ -7,6 +7,7 @@ interface AppDrawerProps {
   onClose: () => void;
   isHome?: boolean;
   t?: any;
+  language?: 'en' | 'id';
   onMassageJobsClick?: () => void;
   onHotelPortalClick?: () => void;
   onVillaPortalClick?: () => void;
@@ -24,11 +25,62 @@ interface AppDrawerProps {
   places?: any[];
 }
 
+// Default translations for drawer
+const drawerTranslations = {
+  en: {
+    partners: 'Partners',
+    joinIndaStreet: 'Join IndaStreet',
+    massageJobs: 'Massage Jobs',
+    howItWorks: 'How It Works',
+    aboutUs: 'About Us',
+    companyProfile: 'Company Profile',
+    contact: 'Contact',
+    blog: 'Blog',
+    massageInBali: 'Massage in Bali',
+    massageDirectory: 'Massage Directory',
+    facialDirectory: 'Facial Directory',
+    balineseMassage: 'Balinese Massage',
+    deepTissueMassage: 'Deep Tissue Massage',
+    faq: 'FAQ',
+    providerPortals: 'Provider Portals',
+    websitePartners: 'Website Partners',
+    joinAsProvider: 'Join as Provider',
+    joinTherapist: 'Join Therapist',
+    joinMassageSpa: 'Join Massage Spa',
+    joinSkinClinic: 'Join Skin Clinic',
+    admin: 'Admin',
+  },
+  id: {
+    partners: 'Mitra',
+    joinIndaStreet: 'Gabung IndaStreet',
+    massageJobs: 'Lowongan Pijat',
+    howItWorks: 'Cara Kerja',
+    aboutUs: 'Tentang Kami',
+    companyProfile: 'Profil Perusahaan',
+    contact: 'Kontak',
+    blog: 'Blog',
+    massageInBali: 'Pijat di Bali',
+    massageDirectory: 'Direktori Pijat',
+    facialDirectory: 'Direktori Facial',
+    balineseMassage: 'Pijat Bali',
+    deepTissueMassage: 'Pijat Deep Tissue',
+    faq: 'FAQ',
+    providerPortals: 'Portal Penyedia',
+    websitePartners: 'Mitra Website',
+    joinAsProvider: 'Gabung sebagai Penyedia',
+    joinTherapist: 'Gabung Terapis',
+    joinMassageSpa: 'Gabung Spa Pijat',
+    joinSkinClinic: 'Gabung Klinik Kulit',
+    admin: 'Admin',
+  },
+};
+
 export const AppDrawer: React.FC<AppDrawerProps> = ({
   isOpen,
   onClose,
   isHome = true,
   t,
+  language = 'en',
   onMassageJobsClick,
   onHotelPortalClick,
   onVillaPortalClick,
@@ -44,6 +96,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onQRCodeClick,
 }) => {
   if (!isHome || !isOpen) return null;
+
+  // Get drawer text based on language
+  const dt = drawerTranslations[language] || drawerTranslations.en;
 
   const translate = (key: string): string => {
     if (t && typeof t === 'function') {
@@ -100,88 +155,88 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="space-y-2">
                 <button onClick={() => handleItemClick(undefined, 'indastreet-partners')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Partners</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.partners}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'joinIndastreet')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Join IndaStreet</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.joinIndaStreet}</span>
                 </button>
                 <button onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Briefcase className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Massage Jobs</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.massageJobs}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'how-it-works')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">How It Works</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.howItWorks}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'about-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Info className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">About Us</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.aboutUs}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'company-profile')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Company Profile</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.companyProfile}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'contact-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Contact</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.contact}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'blog')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Blog</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.blog}</span>
                 </button>
               </div>
 
               <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
                 <button onClick={() => handleItemClick(undefined, 'massage-bali')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Massage in Bali</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.massageInBali}</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('massageTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Massage Directory</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.massageDirectory}</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('facialTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Facial Directory</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.facialDirectory}</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('balinese-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Balinese Massage</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.balineseMassage}</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('deep-tissue-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">Deep Tissue Massage</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.deepTissueMassage}</span>
                 </button>
                 <button onClick={() => handleItemClick(() => onNavigate?.('faq'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 font-medium">FAQ</span>
+                  <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
                 </button>
                 <div className="space-y-2">
                   <button onClick={() => handleItemClick(undefined, 'provider-portals')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Provider Portals</span>
+                    <span className="text-sm text-gray-700 font-medium">{dt.providerPortals}</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">Website Partners</span>
+                    <span className="text-sm text-gray-700 font-medium">{dt.websitePartners}</span>
                   </button>
                 </div>
 
                 {/* Join Provider Section */}
                 <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">Join as Provider</h3>
+                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">{dt.joinAsProvider}</h3>
                   <button onClick={() => handleItemClick(onTherapistPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-green-50 border border-green-200 transition-colors">
                     <UserPlus className="w-5 h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-sm text-green-700 font-medium">Join Therapist</span>
+                    <span className="text-sm text-green-700 font-medium">{dt.joinTherapist}</span>
                   </button>
                   <button onClick={() => handleItemClick(onMassagePlacePortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-blue-50 border border-blue-200 transition-colors">
                     <Building className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                    <span className="text-sm text-blue-700 font-medium">Join Massage Spa</span>
+                    <span className="text-sm text-blue-700 font-medium">{dt.joinMassageSpa}</span>
                   </button>
                   <button onClick={() => handleItemClick(onFacialPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-purple-50 border border-purple-200 transition-colors">
                     <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0" />
-                    <span className="text-sm text-purple-700 font-medium">Join Skin Clinic</span>
+                    <span className="text-sm text-purple-700 font-medium">{dt.joinSkinClinic}</span>
                   </button>
                 </div>
               </div>
@@ -197,7 +252,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     <span className="text-gray-600 text-xs ml-1">2026</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('admin-login'))} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
-                    Admin
+                    {dt.admin}
                   </button>
                 </div>
               </div>

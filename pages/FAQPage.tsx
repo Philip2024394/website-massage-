@@ -318,6 +318,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
+                language={language}
             />
 
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

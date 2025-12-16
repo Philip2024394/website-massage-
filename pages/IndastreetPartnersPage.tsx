@@ -20,6 +20,7 @@ import FlyingButterfly from "../components/FlyingButterfly";
 import AnonymousReviewModal from "../components/AnonymousReviewModal";
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { Query } from 'appwrite';
+import { useLanguage } from '../hooks/useLanguage';
 
 interface PartnerWebsite {
     id: string;
@@ -76,6 +77,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
     loggedInPartnerId,
     loggedInPartnerType
 }) => {
+    const { language } = useLanguage();
     const [partners, setPartners] = useState<PartnerWebsite[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -417,6 +419,7 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
                     setIsMenuOpen(false);
                 }}
                 t={t}
+                language={language}
                 onMassageJobsClick={onMassageJobsClick}
                 onHotelPortalClick={onHotelPortalClick}
                 onVillaPortalClick={onVillaPortalClick}

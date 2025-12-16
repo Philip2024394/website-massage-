@@ -22,12 +22,12 @@ interface SimpleLanguageProviderProps {
 
 export const SimpleLanguageProvider: React.FC<SimpleLanguageProviderProps> = ({ children }) => {
     const [language, setLanguage] = useState<Language>(() => {
-        // Check localStorage for consistency with app state
+        // Check localStorage for consistency with app state, default to Indonesian
         try {
             const storedLanguage = localStorage.getItem('app_language');
-            return (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'en';
+            return (storedLanguage === 'id' || storedLanguage === 'en') ? storedLanguage as Language : 'id';
         } catch {
-            return 'en'; // Default to English for consistency
+            return 'id'; // Default to Indonesian
         }
     });
 

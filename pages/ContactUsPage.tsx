@@ -97,6 +97,7 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
+                language={language}
             />
 
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">

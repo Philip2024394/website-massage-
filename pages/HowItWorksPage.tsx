@@ -84,6 +84,7 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
+                language={language}
             />
 
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-x-hidden w-full max-w-full">
