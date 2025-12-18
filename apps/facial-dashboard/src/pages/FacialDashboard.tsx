@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Smartphone } from 'lucide-react';
+
+// PWA Install interface
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  prompt(): Promise<void>;
+  readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
+}
 import PageContainer from '../components/layout/PageContainer';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
@@ -179,6 +186,10 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     };
     const [openingTime, setOpeningTime] = useState('09:00');
     const [closingTime, setClosingTime] = useState('21:00');
+    
+    // PWA Install states
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [isAppInstalled, setIsAppInstalled] = useState(false);
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const [activeTab, setActiveTab] = useState('profile');
     const [isSideDrawerOpen, setIsSideDrawerOpen] = useState(false);
@@ -260,6 +271,42 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         loadPlaceData();
         // Only re-run if the external identifier or prop changes, not when local place state updates
     }, [_placeId, placeProp]);
+    
+    // PWA Install functionality
+    useEffect(() => {
+        const handleBeforeInstallPrompt = (e: Event) => {
+            e.preventDefault();
+            setDeferredPrompt(e as BeforeInstallPromptEvent);
+        };
+        
+        const handleAppInstalled = () => {
+            setIsAppInstalled(true);
+            localStorage.setItem('pwa-installed', 'true');
+            setDeferredPrompt(null);
+        };
+        
+        const handleRequestInstall = () => {
+            handleInstallApp();
+        };
+        
+        // Check if app is already installed
+        const checkIfInstalled = () => {
+            const isInstalled = localStorage.getItem('pwa-installed') === 'true' || 
+                               window.matchMedia('(display-mode: standalone)').matches;
+            setIsAppInstalled(isInstalled);
+        };
+        
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('appinstalled', handleAppInstalled);
+        window.addEventListener('request-pwa-install', handleRequestInstall);
+        checkIfInstalled();
+        
+        return () => {
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', handleAppInstalled);
+            window.removeEventListener('request-pwa-install', handleRequestInstall);
+        };
+    }, []);
     
     const initializeWithPlaceData = (placeData: Place) => {
         setName(placeData.name || '');
@@ -550,6 +597,22 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     }, [mapsApiLoaded]);
 
     // Note: All data is saved to Appwrite only - no localStorage usage
+
+    const handleInstallApp = async () => {
+        if (deferredPrompt) {
+            try {
+                await deferredPrompt.prompt();
+                const choiceResult = await deferredPrompt.userChoice;
+                if (choiceResult.outcome === 'accepted') {
+                    setIsAppInstalled(true);
+                    localStorage.setItem('pwa-installed', 'true');
+                }
+                setDeferredPrompt(null);
+            } catch (error) {
+                console.error('Error installing app:', error);
+            }
+        }
+    };
 
     const handleSave = () => {
         // Comprehensive validation with detailed error messages
@@ -2252,6 +2315,50 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             </PageContainer>
             </main>
 
+            {/* Download App Button */}
+            <div className="fixed bottom-4 right-4 z-40">
+                <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-200 max-w-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            isAppInstalled ? 'bg-gray-100' : 'bg-gradient-to-br from-orange-500 to-amber-500'
+                        }`}>
+                            <Smartphone className={`w-5 h-5 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-800">
+                                {isAppInstalled ? 'App Installed' : 'Download App'}
+                            </h3>
+                            <p className="text-xs text-gray-600">
+                                {isAppInstalled 
+                                    ? 'IndaStreet app ready' 
+                                    : 'Better notifications'
+                                }
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <button
+                        onClick={handleInstallApp}
+                        disabled={isAppInstalled || !deferredPrompt}
+                        className={`w-full py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                            isAppInstalled 
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : deferredPrompt
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-md'
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                        }`}
+                    >
+                        <Download className="w-4 h-4" />
+                        {isAppInstalled 
+                            ? 'Installed ✓' 
+                            : deferredPrompt 
+                                ? 'Download'
+                                : 'Available in Browser'
+                        }
+                    </button>
+                </div>
+            </div>
+            
             {/* Validation Popup */}
             <ValidationPopup
                 isOpen={showValidationPopup}
