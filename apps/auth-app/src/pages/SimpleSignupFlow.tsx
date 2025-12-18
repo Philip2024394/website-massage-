@@ -359,7 +359,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                                                     onClick={() => setFormData(prev => ({ ...prev, portalType: portal.id }))}
                                                     className={`p-5 rounded-xl border-2 transition-all transform hover:scale-105 text-left ${
                                                         formData.portalType === portal.id
-                                                            ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 shadow-xl'
+                                                            ? 'border-green-500 bg-gradient-to-br from-green-500 to-green-600 shadow-xl'
                                                             : 'border-orange-300 bg-gradient-to-br from-orange-400 to-orange-500 hover:border-orange-500 shadow-md hover:shadow-xl'
                                                     }`}
                                                 >
