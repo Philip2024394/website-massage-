@@ -248,37 +248,46 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    // Pre-select therapist portal type and redirect to auth-app signup
+                    // Pre-select therapist portal type and navigate to signup
                     if (typeof localStorage !== 'undefined') {
                       localStorage.setItem('selectedPortalType', 'massage_therapist');
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = `${getAuthAppUrl()}/signup`;
+                    // Use client-side navigation instead of full page reload
+                    if (onNavigate) {
+                      onNavigate('simpleSignup');
+                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
                   </button>
                   <button onClick={() => {
-                    // Pre-select massage place portal type and redirect to auth-app signup
+                    // Pre-select massage place portal type and navigate to signup
                     if (typeof localStorage !== 'undefined') {
                       localStorage.setItem('selectedPortalType', 'massage_place');
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = `${getAuthAppUrl()}/signup`;
+                    // Use client-side navigation instead of full page reload
+                    if (onNavigate) {
+                      onNavigate('simpleSignup');
+                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
                   </button>
                   <button onClick={() => {
-                    // Pre-select facial place portal type and redirect to auth-app signup
+                    // Pre-select facial place portal type and navigate to signup
                     if (typeof localStorage !== 'undefined') {
                       localStorage.setItem('selectedPortalType', 'facial_place');
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = `${getAuthAppUrl()}/signup`;
+                    // Use client-side navigation instead of full page reload
+                    if (onNavigate) {
+                      onNavigate('simpleSignup');
+                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>
