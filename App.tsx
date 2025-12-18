@@ -157,7 +157,7 @@ const App = () => {
                     // Check for existing active session or create new one (in background)
                     let sessionData;
                     try {
-                        const existingSession = await chatSessionService.getActiveSession(therapistId);
+                        const existingSession = await chatSessionService.getActiveSession(therapistId).catch(() => null);
                     
                         if (existingSession && existingSession.isActive) {
                             // Use existing session

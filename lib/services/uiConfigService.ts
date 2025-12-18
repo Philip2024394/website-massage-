@@ -82,12 +82,12 @@ class UIConfigService {
             
             console.log(`✅ Config loaded from Appwrite:`, config);
             return config;
-        } catch (error) {
-            // In development, show a simpler message to reduce console noise
-            if (process.env.NODE_ENV === 'development') {
-                console.warn(`⚠️ UI config '${key}' not found, using defaults`);
-            } else {
-                console.warn(`⚠️ Failed to fetch UI config for ${key}, using defaults:`, error);
+        } catch (error: any) {
+            // Silent fail for 404 errors (collection doesn't exist yet)
+            if (error?.code === 404 || error?.status === 404) {
+                // Collection not set up yet - completely silent
+            } else if (process.env.NODE_ENV === 'development') {
+                console.warn(`⚠️ UI config '${key}' not available, using defaults`);
             }
             
             // Return default config

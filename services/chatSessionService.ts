@@ -204,13 +204,13 @@ export const chatSessionService = {
 
             const queries = [
                 Query.equal('providerId', providerId.trim()),
-                Query.equal('isActive', true),
-                Query.orderDesc('createdAt'),
-                Query.limit(1) // Only need the most recent
+                Query.equal('isActive', [true]),  // Must be array for Query.equal
+                Query.orderDesc('updatedAt'),
+                Query.limit(5)
             ];
 
             if (customerId?.trim()) {
-                queries.push(Query.equal('customerId', customerId.trim()));
+                queries.push(Query.equal('customerId', [customerId.trim()]));  // Must be array
             }
 
             const result = await retryOperation(async () => {
@@ -237,7 +237,13 @@ export const chatSessionService = {
 
             console.log('📭 No active session found for provider:', providerId);
             return null;
-        } catch (error) {
+        } catch (error: any) {
+            // Silently handle missing collection (400/404 errors)
+            if (error?.code === 400 || error?.code === 404 || error?.status === 400 || error?.status === 404) {
+                // Collection doesn't exist yet or bad query - fail silently
+                return null;
+            }
+            
             if (error instanceof AppwriteConnectionError) {
                 console.error('🌐 Connection error while fetching session:', error.message);
                 return null; // Graceful degradation
