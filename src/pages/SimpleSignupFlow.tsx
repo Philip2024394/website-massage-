@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, ArrowLeft, Eye, EyeOff, Building2, User, Sparkles, Briefcase, Hotel, Star } from 'lucide-react';
 import { membershipSignupService, type PlanType, type PortalType } from '../../lib/services/membershipSignup.service';
+import { useLanguage } from '../../hooks/useLanguage';
+import { translations } from '../../translations';
 
 type Step = 'plan' | 'account';
 
@@ -19,7 +21,9 @@ interface SimpleSignupFlowProps {
     t?: any;
 }
 
-const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack, t }) => {
+const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack }) => {
+    const { language } = useLanguage();
+    const t = translations[language].auth;
     
     // Get plan and portal from localStorage (set by side drawer buttons)
     const initialPlan = (localStorage.getItem('selected_membership_plan') as PlanType) || 
