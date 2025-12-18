@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, ArrowLeft, Eye, EyeOff, Building2, User, Sparkles, Briefcase, Hotel } from 'lucide-react';
+import { Check, ArrowLeft, Eye, EyeOff, Building2, User, Sparkles, Briefcase, Hotel, Star } from 'lucide-react';
 import { membershipSignupService, type PlanType, type PortalType } from '../../lib/services/membershipSignup.service';
 
 type Step = 'plan' | 'account';
@@ -273,45 +273,62 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack,
                                             )}
                                         </div>
                                         
-                                        <div className="mb-6">
-                                            <h3 className="text-2xl font-bold text-black mb-2">{plan.name}</h3>
-                                            <p className="text-gray-500 text-sm">{plan.id === 'pro' ? 'Perfect for getting started' : 'For serious professionals'}</p>
+                                        <div className="mb-4">
+                                            <h3 className="text-3xl font-bold text-black mb-3 flex items-center gap-2">
+                                                {plan.name}
+                                                <div className="flex items-center gap-0.5 ml-2">
+                                                    {plan.id === 'pro' ? (
+                                                        <>
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-gray-300 text-gray-300" />
+                                                            <Star className="w-4 h-4 fill-gray-300 text-gray-300" />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </h3>
+                                            <p className="text-gray-500 text-sm font-medium">{plan.id === 'pro' ? 'Perfect for getting started' : 'For serious professionals'}</p>
                                         </div>
 
-                                        <div className="mb-8">
+                                        <div className="mb-8 pb-6 border-b border-gray-200">
                                             <div className="flex items-baseline">
-                                                <span className="text-5xl font-light text-black">Rp {plan.price}</span>
-                                                <span className="text-gray-400 ml-2">/month</span>
+                                                <span className="text-5xl font-bold text-black">Rp {plan.price}</span>
+                                                <span className="text-gray-400 ml-2 text-base">/month</span>
                                             </div>
-                                            <div className={`font-medium mt-1 ${
+                                            <div className={`font-semibold mt-2 text-base ${
                                                 plan.id === 'pro' ? 'text-orange-600' : 'text-green-600'
                                             }`}>
                                                 {plan.commission}
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 text-sm mb-8">
+                                        <div className="space-y-3.5 text-sm mb-8">
                                             {plan.features.map((feature, idx) => (
-                                                <div key={idx} className="flex items-center gap-3 text-gray-600">
-                                                    <div className={`w-1 h-1 rounded-full ${
-                                                        plan.id === 'pro' ? 'bg-gray-400' : 'bg-orange-500'
-                                                    }`}></div>
-                                                    <span>{feature}</span>
+                                                <div key={idx} className="flex items-center gap-3 text-gray-700">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></div>
+                                                    <span className="font-medium">{feature}</span>
                                                 </div>
                                             ))}
                                         </div>
 
                                         <button
                                             onClick={() => handlePlanSelect(plan.id)}
-                                            className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                                            className={`w-full py-3.5 px-4 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg ${
                                                 formData.planType === plan.id
-                                                    ? 'bg-orange-500 text-white shadow-lg'
-                                                    : plan.id === 'plus'
-                                                    ? 'bg-black text-white hover:bg-gray-800'
-                                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                                                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white transform scale-105'
+                                                    : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
                                             }`}
                                         >
-                                            {formData.planType === plan.id ? 'Selected' : 'Select Package'}
+                                            {formData.planType === plan.id ? 'Selected ✓' : 'Select Package'}
                                         </button>
                                     </div>
                                 </div>
