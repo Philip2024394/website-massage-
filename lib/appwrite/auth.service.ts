@@ -25,7 +25,7 @@ export const authService = {
                 console.log('ℹ️ No existing session to clear');
             }
             
-            await appwriteAccount.createEmailPasswordSession(email, password);
+            await appwriteAccount.createEmailSession(email, password);
             return await appwriteAccount.get();
         } catch (error) {
             console.error('Error logging in:', error);
@@ -53,7 +53,7 @@ export const authService = {
             // Auto-login after registration unless explicitly disabled
             const shouldAutoLogin = options?.autoLogin !== false;
             if (shouldAutoLogin) {
-                await appwriteAccount.createEmailPasswordSession(email, password);
+                await appwriteAccount.createEmailSession(email, password);
             }
             return response;
         } catch (error) {

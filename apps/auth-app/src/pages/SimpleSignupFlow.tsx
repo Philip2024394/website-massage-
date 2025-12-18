@@ -160,7 +160,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             );
 
             // Create session automatically
-            await account.createEmailPasswordSession(formData.email, formData.password);
+            await account.createEmailSession(formData.email, formData.password);
 
             // Store user info
             localStorage.setItem('selected_membership_plan', formData.planType);

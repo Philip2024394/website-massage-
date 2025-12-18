@@ -60,7 +60,7 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
 
     try {
       // Sign in with email and password
-      await account.createEmailPasswordSession(email, password);
+      await account.createEmailSession(email, password);
       
       // Get user account
       const user = await account.get();
@@ -101,7 +101,7 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       await account.create(ID.unique(), email, password, name);
       
       // Automatically sign in
-      await account.createEmailPasswordSession(email, password);
+      await account.createEmailSession(email, password);
       
       // Get user account
       const user = await account.get();
