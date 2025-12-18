@@ -235,8 +235,11 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack,
                 {currentStep === 'plan' && (
                     <div className="max-w-4xl mx-auto">
                         <div className="text-center mb-16">
-                            <h1 className="text-4xl font-light text-black mb-3">Choose Your Plan</h1>
-                            <p className="text-gray-500 text-lg">Select the plan that fits your business needs</p>
+                            <h1 className="text-4xl font-bold mb-3">
+                                <span className="text-black font-bold">Choose Your </span>
+                                <span className="text-orange-500 font-bold">Plan</span>
+                            </h1>
+                            <p className="text-gray-500 text-lg font-medium">Select the plan that fits your business needs</p>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
@@ -250,9 +253,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack,
                                     }`}
                                 >
                                     {plan.badge && (
-                                        <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-white text-xs font-medium rounded-full ${
-                                            plan.id === 'plus' ? 'bg-black' : 'bg-orange-500'
-                                        }`}>
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-5 py-1.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs font-bold rounded-full shadow-lg">
                                             {plan.badge}
                                         </div>
                                     )}
