@@ -8,6 +8,7 @@ import TherapistBookings from './pages/TherapistBookings';
 import TherapistEarnings from './pages/TherapistEarnings';
 import TherapistChat from './pages/TherapistChat';
 import MembershipPage from './pages/MembershipPage';
+import PackageTermsPage from './pages/PackageTermsPage';
 import TherapistNotifications from './pages/TherapistNotifications';
 import TherapistLegal from './pages/TherapistLegal';
 import TherapistCalendar from './pages/TherapistCalendar';
@@ -20,7 +21,7 @@ import ToastContainer from './components/ToastContainer';
 import { LanguageProvider } from '../../../context/LanguageContext';
 import { useTranslations } from '../../../lib/useTranslations';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'membership' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'onboarding';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -63,29 +64,9 @@ function App() {
           setUser(therapistDoc);
           setIsAuthenticated(true);
           
-          // Check if therapist needs membership onboarding
-          const hasType = !!(therapistDoc as any)?.membershipType;
-          const hasSelectedAt = !!(therapistDoc as any)?.membershipSelectedAt;
-          const needsMembershipSetup = !(hasType && hasSelectedAt);
-
-          console.log('[Onboarding Gate - Decision]', {
-            therapistId: therapistDoc.$id,
-            email: therapistDoc.email,
-            name: therapistDoc.name,
-            hasType,
-            hasSelectedAt,
-            membershipType: therapistDoc.membershipType,
-            membershipSelectedAt: therapistDoc.membershipSelectedAt,
-            needsMembershipSetup,
-          });
-          
-          if (needsMembershipSetup) {
-            console.log('🎯 Therapist needs membership selection - showing MembershipPage first');
-            setNeedsOnboarding(true);
-            setCurrentPage('membership');
-          } else {
-            console.log('✅ Therapist has completed membership selection - showing dashboard');
-          }
+          // Package selection now happens on main site during signup flow
+          // Skip membership setup check and go directly to dashboard
+          console.log('✅ Package selection handled on main site - showing dashboard directly');
           
           // 🏥 START SYSTEM HEALTH MONITORING
           systemHealthService.startHealthMonitoring(therapistDoc.$id);
@@ -161,18 +142,6 @@ function App() {
   // Render page content
   const renderPage = () => {
     switch (currentPage) {
-      case 'onboarding':
-        // Fallback to membership page; onboarding now uses MembershipPage
-        return <MembershipPage 
-          therapist={user} 
-          onBack={() => setCurrentPage('status')}
-          onContinue={() => {
-            setNeedsOnboarding(false);
-            setCurrentPage('dashboard');
-          }}
-          showLogout={true}
-          onLogout={handleLogout}
-        />;
       case 'status':
         return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'bookings':
@@ -181,15 +150,12 @@ function App() {
         return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'chat':
         return <TherapistChat therapist={user} onBack={() => setCurrentPage('status')} />;
-      case 'membership':
-        return <MembershipPage 
-          therapist={user} 
-          onBack={() => setCurrentPage('status')} 
-          onContinue={needsOnboarding ? () => {
-            setNeedsOnboarding(false);
-            setCurrentPage('dashboard');
-          } : undefined}
-          onLogout={handleLogout}
+        />;
+      case 'package-terms':
+        return <PackageTermsPage
+          onBack={() => setCurrentPage('packages')}
+          onNavigate={setCurrentPage}
+          language={language}
         />;
       case 'notifications':
         return (
@@ -207,7 +173,6 @@ function App() {
           <TherapistCalendar 
             therapist={user} 
             onBack={() => setCurrentPage('status')}
-            onNavigateToMembership={() => setCurrentPage('membership')}
           />
         );
       case 'payment':
@@ -224,7 +189,6 @@ function App() {
             onNavigateToBookings={() => setCurrentPage('bookings')}
             onNavigateToEarnings={() => setCurrentPage('earnings')}
             onNavigateToChat={() => setCurrentPage('chat')}
-            onNavigateToMembership={() => setCurrentPage('membership')}
             onProfileSaved={() => setCurrentPage('status')}
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
@@ -235,24 +199,8 @@ function App() {
     }
   };
 
-  // If user needs onboarding, show without layout
-  console.log('🎨 Render check:', { needsOnboarding, currentPage, willShowOnboarding: needsOnboarding && (currentPage === 'onboarding' || currentPage === 'membership') });
-  
-  if (needsOnboarding && (currentPage === 'onboarding' || currentPage === 'membership')) {
-    console.log('🎯 RENDERING MEMBERSHIP PAGE FOR ONBOARDING');
-    return (
-      <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
-        <PWAInstallPrompt dashboardName="Therapist Dashboard" />
-        <ToastContainer />
-        {/* Render membership page without layout during onboarding */}
-        <MembershipPage therapist={user} onBack={() => {
-          console.log('⬅️ MembershipPage onBack called - routing to dashboard (profile page)');
-          setNeedsOnboarding(false);
-          setCurrentPage('dashboard'); // Show profile page first after membership selection
-        }} />
-      </LanguageProvider>
-    );
-  }
+  // Package selection now happens on main site, no onboarding needed here
+  console.log('✅ Skipping onboarding - package selection handled on main site');
 
   return (
     <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>

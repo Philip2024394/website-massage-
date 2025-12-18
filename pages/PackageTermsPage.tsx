@@ -6,12 +6,11 @@ type Plan = 'pro' | 'plus';
 interface PackageTermsPageProps {
   onBack: () => void;
   onNavigate?: (page: string) => void;
-  onAcceptTerms?: (plan: Plan) => void;
   t?: any; // translations
   language?: 'en' | 'id';
 }
 
-const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, onAcceptTerms, t, language = 'en' }) => {
+const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, t, language = 'en' }) => {
   // Read plan immediately from localStorage to avoid flash of wrong content
   const getInitialPlan = (): Plan => {
     if (typeof window !== 'undefined') {
@@ -38,24 +37,6 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
       setPlan(pendingPlan);
     }
   }, []);
-
-  const handleAccept = () => {
-    // Store acceptance in localStorage
-    const acceptedTerms = JSON.parse(localStorage.getItem('acceptedTerms') || '{}');
-    acceptedTerms[plan] = true;
-    localStorage.setItem('acceptedTerms', JSON.stringify(acceptedTerms));
-    
-    // Clear pending plan
-    localStorage.removeItem('pendingTermsPlan');
-    
-    // Call callback if provided
-    if (onAcceptTerms) {
-      onAcceptTerms(plan);
-    }
-    
-    // Navigate back to join page
-    onNavigate?.('joinIndastreet');
-  };
 
   const handleCancel = () => {
     localStorage.removeItem('pendingTermsPlan');
@@ -113,25 +94,17 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
 
       {/* Fixed Footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 z-[9998]">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-500 text-center sm:text-left">
-            By accepting, you agree to these terms
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3">
+          <p className="text-xs text-gray-500 text-center sm:text-left mb-2 sm:mb-0">
+            Please read the terms carefully. Use the checkbox on the Create Account page to confirm agreement.
           </p>
-          <div className="flex gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleCancel}
-              className="flex-1 sm:flex-none px-6 py-3 text-sm text-gray-600 hover:text-gray-900 transition-colors border border-gray-200 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleAccept}
-              className="flex-1 sm:flex-none px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <Check className="w-4 h-4" />
-              I Accept
-            </button>
-          </div>
+          <button
+            onClick={() => onNavigate?.('simpleSignup')}
+            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Create Account
+          </button>
         </div>
       </div>
     </div>

@@ -71,6 +71,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
     { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
     { id: 'membership', label: labels.membership, icon: Crown, color: 'text-yellow-600' },
+    { id: 'packages', label: language === 'id' ? 'Paket Membership' : 'Membership Packages', icon: Crown, color: 'text-amber-600' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
     { id: 'calendar', label: labels.calendar, icon: Calendar, color: 'text-indigo-600' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-gray-600' },

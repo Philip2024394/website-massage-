@@ -37,7 +37,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: Number(process.env.PORT) || Number(process.env.VITE_PORT) || 3000,
+    port: 3000, // Fixed port for main app
     host: true,
     open: isAdminMode ? '/admin.html' : true,
     headers: {
@@ -62,19 +62,21 @@ export default defineConfig({
         '**/*.disabled',
         '**/.vscode/**',
         '**/.idea/**',
+        '**/esbuild/**',
+        '**/*.esbuild',
+        '**/temp/**',
       ],
     },
-    // Optimized HMR (Hot Module Replacement) - prevents "press h or r" issues
+    // Optimized HMR (Hot Module Replacement) - prevents VS Code crashes
     hmr: {
-      timeout: 30000,
-      overlay: true, // Show errors in browser overlay
-      clientPort: undefined, // Let Vite handle port automatically
-      // Prevent HMR connection loss
+      timeout: 10000, // Reduced timeout
+      overlay: false, // Disabled to prevent VS Code interference
+      clientPort: 3000,
       protocol: 'ws',
     },
     // Graceful shutdown handling
-    // Allow auto-bumping to a free port to prevent exit code 1 when 3000 is busy
-    strictPort: false,
+    // Use strict port to prevent conflicts
+    strictPort: true,
   },
   // Ensure preview also uses a low, predictable port
   preview: {

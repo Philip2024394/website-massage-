@@ -14,6 +14,9 @@
  * All data stored securely in Appwrite
  */
 
+import { APP_CONFIG } from '../../config';
+import { APPWRITE_CONFIG } from '../appwrite.config';
+
 import { databases, storage, account, ID, Query } from './_shared';
 
 // Configuration
@@ -21,20 +24,20 @@ export const SIGNUP_CONFIG = {
     PAYMENT_DEADLINE_HOURS: 5, // 5 hours to upload payment proof
     STORAGE_BUCKET_ID: 'payment_proofs',
     PROFILE_IMAGES_BUCKET: 'profile_images',
-    DATABASE_ID: '6839add3002fe394c382',
+    DATABASE_ID: APP_CONFIG.APPWRITE.DATABASE_ID,
     COLLECTIONS: {
-        MEMBERSHIP_SIGNUPS: 'membership_signups',
-        THERAPISTS: 'therapists',
-        PLACES: 'places', 
-        FACIAL_PLACES: 'facial_places',
-        PAYMENT_SUBMISSIONS: 'payment_submissions',
-        MEMBERSHIP_AGREEMENTS: 'membership_agreements',
-        ADMIN_NOTIFICATIONS: 'notifications'
+        MEMBERSHIP_SIGNUPS: 'messages', // Use messages collection for signup tracking
+        THERAPISTS: APPWRITE_CONFIG.collections.therapists,
+        PLACES: APPWRITE_CONFIG.collections.places, 
+        FACIAL_PLACES: APPWRITE_CONFIG.collections.facial_places,
+        PAYMENT_SUBMISSIONS: 'messages', // Store payment submissions as messages
+        MEMBERSHIP_AGREEMENTS: 'messages', // Store agreements as messages
+        ADMIN_NOTIFICATIONS: 'messages'
     }
 };
 
 export type PlanType = 'pro' | 'plus';
-export type PortalType = 'therapist' | 'massage_place' | 'facial_place';
+export type PortalType = 'massage_therapist' | 'massage_place' | 'facial_place' | 'hotel';
 export type SignupStatus = 'plan_selected' | 'terms_accepted' | 'portal_selected' | 'account_created' | 'profile_uploaded' | 'awaiting_payment' | 'payment_pending' | 'active' | 'deactivated';
 
 export interface MembershipSignup {
@@ -111,22 +114,37 @@ class MembershipSignupService {
      */
     async initializeSignup(planType: PlanType, ipAddress: string, userAgent: string): Promise<MembershipSignup> {
         try {
+            const messageId = ID.unique();
             const signup = await databases.createDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
-                ID.unique(),
+                messageId,
                 {
-                    planType,
-                    planSelectedAt: new Date().toISOString(),
-                    termsAccepted: false,
-                    termsVersion: '1.0',
-                    ipAddress,
-                    userAgent,
-                    isLive: false,
-                    paymentAmount: planType === 'plus' ? 250000 : 0, // Plus: 250k, Pro: 0 (commission-based)
-                    status: 'plan_selected',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
+                    messageId: messageId,
+                    conversationId: 'membership_signup',
+                    senderId: 'system',
+                    senderName: 'Membership System',
+                    senderRole: 'system',
+                    senderType: 'system',
+                    recipientId: 'admin',
+                    receiverId: 'admin',
+                    receiverName: 'Admin',
+                    receiverRole: 'admin',
+                    message: `Membership signup initialized - ${planType} plan`,
+                    content: JSON.stringify({
+                        type: 'membership_signup',
+                        planType,
+                        planSelectedAt: new Date().toISOString(),
+                        termsAccepted: false,
+                        termsVersion: '1.0',
+                        ipAddress,
+                        userAgent,
+                        isLive: false,
+                        paymentAmount: planType === 'plus' ? 250000 : 0,
+                        status: 'plan_selected'
+                    }),
+                    messageType: 'membership_data',
+                    sentAt: new Date().toISOString()
                 }
             );
 
@@ -143,35 +161,66 @@ class MembershipSignupService {
      */
     async acceptTerms(signupId: string): Promise<MembershipSignup> {
         try {
+            // First get the current document to retrieve existing content
+            const currentDoc = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            // Parse existing content and update it
+            const existingContent = JSON.parse(currentDoc.content);
+            const updatedContent = {
+                ...existingContent,
+                termsAccepted: true,
+                termsAcceptedAt: new Date().toISOString(),
+                status: 'terms_accepted'
+            };
+
             const updated = await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    termsAccepted: true,
-                    termsAcceptedAt: new Date().toISOString(),
-                    status: 'terms_accepted',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: `Terms accepted for ${existingContent.planType} plan`
                 }
             );
 
             // Create membership agreement record
+            const agreementId = ID.unique();
             await databases.createDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_AGREEMENTS,
-                ID.unique(),
+                agreementId,
                 {
-                    signupId,
-                    version: '1.0',
-                    acceptedAt: new Date().toISOString(),
-                    termsAcknowledged: [
-                        'commission_structure',
-                        'payment_deadline_5_hours',
-                        'account_deactivation_policy',
-                        'platform_exclusivity',
-                        'verified_badge_policy'
-                    ],
-                    isActive: true
+                    messageId: agreementId,
+                    conversationId: 'membership_agreement',
+                    senderId: 'system',
+                    senderName: 'Membership System',
+                    senderRole: 'system',
+                    senderType: 'system',
+                    recipientId: 'admin',
+                    receiverId: 'admin',
+                    receiverName: 'Admin',
+                    receiverRole: 'admin',
+                    message: `Terms agreement for signup ${signupId}`,
+                    content: JSON.stringify({
+                        type: 'membership_agreement',
+                        signupId,
+                        version: '1.0',
+                        acceptedAt: new Date().toISOString(),
+                        termsAcknowledged: [
+                            'commission_structure',
+                            'payment_deadline_5_hours',
+                            'account_deactivation_policy',
+                            'platform_exclusivity',
+                            'verified_badge_policy'
+                        ],
+                        isActive: true
+                    }),
+                    messageType: 'membership_agreement',
+                    sentAt: new Date().toISOString()
                 }
             );
 
@@ -188,15 +237,29 @@ class MembershipSignupService {
      */
     async selectPortal(signupId: string, portalType: PortalType): Promise<MembershipSignup> {
         try {
+            // Get existing document to update content
+            const existing = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            const existingContent = JSON.parse(existing.content || '{}');
+            const updatedContent = {
+                ...existingContent,
+                portalType,
+                portalSelectedAt: new Date().toISOString(),
+                status: 'portal_selected',
+                updatedAt: new Date().toISOString()
+            };
+            
             const updated = await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    portalType,
-                    portalSelectedAt: new Date().toISOString(),
-                    status: 'portal_selected',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: `Portal selected: ${portalType}`
                 }
             );
 
@@ -219,25 +282,32 @@ class MembershipSignupService {
     ): Promise<{ signup: MembershipSignup; memberId: string }> {
         try {
             // Get signup details
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId
-            ) as unknown as MembershipSignup;
+            );
+
+            // Parse content to get portalType
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
+
+            if (!portalType) {
+                throw new Error(`Invalid portal type: ${portalType}`);
+            }
 
             // Create Appwrite user account
             const user = await account.create(ID.unique(), email, password, name);
 
             // Create member document based on portal type
-            const collectionId = this.getCollectionId(signup.portalType);
+            const collectionId = this.getCollectionId(portalType);
             
-            const memberData = {
-                userId: user.$id,
+            // Base member data
+            const baseMemberData = {
                 email,
                 name,
-                signupId,
-                planType: signup.planType,
-                membershipPlan: signup.planType,
+                planType: signupContent.planType,
+                membershipPlan: signupContent.planType,
                 isLive: false,
                 isVerified: false,
                 status: 'pending_profile',
@@ -247,25 +317,62 @@ class MembershipSignupService {
                 updatedAt: new Date().toISOString()
             };
 
+            // Add portal-specific required fields
+            const memberData = this.addPortalSpecificFields(baseMemberData, portalType, user.$id);
+
+            // Create member record as message document
+            const memberId = ID.unique();
             const member = await databases.createDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 collectionId,
-                ID.unique(),
-                memberData
+                memberId,
+                {
+                    messageId: memberId,
+                    conversationId: 'member_profile',
+                    senderId: user.$id,
+                    senderName: name,
+                    senderRole: 'member',
+                    senderType: portalType,
+                    recipientId: 'admin',
+                    receiverId: 'admin',
+                    receiverName: 'Admin',
+                    receiverRole: 'admin',
+                    message: `Member profile created for ${portalType}: ${email}`,
+                    content: JSON.stringify({
+                        type: 'member_profile',
+                        portalType: portalType,
+                        memberData: memberData
+                    }),
+                    messageType: 'member_data',
+                    sentAt: new Date().toISOString()
+                }
             );
 
             // Update signup with account info
+            const existingSignup = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            const existingContent = JSON.parse(existingSignup.content || '{}');
+            const updatedContent = {
+                ...existingContent,
+                userId: user.$id,
+                email,
+                memberId: member.$id,
+                accountCreatedAt: new Date().toISOString(),
+                status: 'account_created',
+                updatedAt: new Date().toISOString()
+            };
+            
             const updated = await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    userId: user.$id,
-                    email,
-                    memberId: member.$id,
-                    accountCreatedAt: new Date().toISOString(),
-                    status: 'account_created',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: `Account created for ${email}`
                 }
             );
 
@@ -285,14 +392,18 @@ class MembershipSignupService {
      */
     async completeProfile(signupId: string, memberId: string): Promise<MembershipSignup> {
         try {
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId
-            ) as unknown as MembershipSignup;
+            );
+
+            // Parse content to get portalType
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
 
             // Update member document
-            const collectionId = this.getCollectionId(signup.portalType);
+            const collectionId = this.getCollectionId(portalType);
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 collectionId,
@@ -306,15 +417,28 @@ class MembershipSignupService {
             );
 
             // Update signup
+            const existingSignup = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            const existingContent = JSON.parse(existingSignup.content || '{}');
+            const updatedContent = {
+                ...existingContent,
+                profileCompleted: true,
+                profileCompletedAt: new Date().toISOString(),
+                status: 'profile_uploaded',
+                updatedAt: new Date().toISOString()
+            };
+            
             const updated = await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    profileCompleted: true,
-                    profileCompletedAt: new Date().toISOString(),
-                    status: 'profile_uploaded',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: 'Profile completed and uploaded'
                 }
             );
 
@@ -331,22 +455,27 @@ class MembershipSignupService {
      */
     async submitGoLive(signupId: string): Promise<MembershipSignup> {
         try {
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId
-            ) as unknown as MembershipSignup;
+            );
+
+            // Parse content to get signup data
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
+            const memberId = signupContent.memberId;
 
             // Calculate 5-hour deadline
             const deadline = new Date();
             deadline.setHours(deadline.getHours() + SIGNUP_CONFIG.PAYMENT_DEADLINE_HOURS);
 
             // Update member to live (but with pending payment status)
-            const collectionId = this.getCollectionId(signup.portalType);
+            const collectionId = this.getCollectionId(portalType);
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 collectionId,
-                signup.memberId,
+                memberId,
                 {
                     isLive: true,
                     goLiveSubmittedAt: new Date().toISOString(),
@@ -357,21 +486,34 @@ class MembershipSignupService {
             );
 
             // Update signup
+            const existingSignup = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            const existingContent = JSON.parse(existingSignup.content || '{}');
+            const updatedContent = {
+                ...existingContent,
+                goLiveSubmittedAt: new Date().toISOString(),
+                isLive: true,
+                paymentDeadline: deadline.toISOString(),
+                status: 'awaiting_payment',
+                updatedAt: new Date().toISOString()
+            };
+            
             const updated = await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    goLiveSubmittedAt: new Date().toISOString(),
-                    isLive: true,
-                    paymentDeadline: deadline.toISOString(),
-                    status: 'awaiting_payment',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: `Go live submitted with payment deadline: ${deadline.toISOString()}`
                 }
             );
 
             // Notify admin
-            await this.notifyAdmin('new_go_live', signup.memberId, signup.portalType);
+            await this.notifyAdmin('new_go_live', memberId, portalType);
 
             // Schedule deadline check
             this.scheduleDeadlineCheck(signupId, deadline);
@@ -395,14 +537,22 @@ class MembershipSignupService {
         paymentMethod: string
     ): Promise<PaymentSubmission> {
         try {
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId
-            ) as unknown as MembershipSignup;
+            );
+
+            // Parse content to get signup data
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
+            const memberId = signupContent.memberId;
+            const planType = signupContent.planType;
+            const paymentDeadline = signupContent.paymentDeadline;
+            const paymentAmount = signupContent.paymentAmount;
 
             // Check if deadline has passed
-            if (signup.paymentDeadline && new Date(signup.paymentDeadline) < new Date()) {
+            if (paymentDeadline && new Date(paymentDeadline) < new Date()) {
                 throw new Error('Payment deadline has passed. Account has been deactivated.');
             }
 
@@ -416,46 +566,76 @@ class MembershipSignupService {
             const proofUrl = `https://cloud.appwrite.io/v1/storage/buckets/${SIGNUP_CONFIG.STORAGE_BUCKET_ID}/files/${uploadedFile.$id}/view?project=${SIGNUP_CONFIG.DATABASE_ID}`;
 
             // Create payment submission record
+            const submissionId = ID.unique();
             const submission = await databases.createDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.PAYMENT_SUBMISSIONS,
-                ID.unique(),
+                submissionId,
                 {
-                    signupId,
-                    memberId: signup.memberId,
-                    memberType: signup.portalType,
-                    planType: signup.planType,
-                    amount: signup.paymentAmount,
-                    proofFileUrl: proofUrl,
-                    bankName,
-                    accountName,
-                    paymentMethod,
-                    status: 'pending',
-                    deadline: signup.paymentDeadline,
-                    submittedAt: new Date().toISOString()
+                    messageId: submissionId,
+                    conversationId: 'payment_submission',
+                    senderId: memberId || 'unknown',
+                    senderName: `Member ${memberId}`,
+                    senderRole: 'member',
+                    senderType: 'member',
+                    recipientId: 'admin',
+                    receiverId: 'admin',
+                    receiverName: 'Admin',
+                    receiverRole: 'admin',
+                    message: `Payment proof submitted for ${planType} plan`,
+                    content: JSON.stringify({
+                        type: 'payment_submission',
+                        signupId,
+                        memberId: memberId,
+                        memberType: portalType,
+                        planType: planType,
+                        amount: paymentAmount,
+                        proofFileUrl: proofUrl,
+                        bankName,
+                        accountName,
+                        paymentMethod,
+                        status: 'pending',
+                        deadline: paymentDeadline,
+                        submittedAt: new Date().toISOString()
+                    }),
+                    messageType: 'payment_proof',
+                    sentAt: new Date().toISOString()
                 }
             );
 
             // Update signup
+            const existingSignup = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
+                signupId
+            );
+            
+            const existingContent = JSON.parse(existingSignup.content || '{}');
+            const updatedContent = {
+                ...existingContent,
+                paymentProofUrl: proofUrl,
+                paymentProofUploadedAt: new Date().toISOString(),
+                paymentMethod,
+                status: 'payment_pending',
+                updatedAt: new Date().toISOString()
+            };
+            
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    paymentProofUrl: proofUrl,
-                    paymentProofUploadedAt: new Date().toISOString(),
-                    paymentMethod,
-                    status: 'payment_pending',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(updatedContent),
+                    message: `Payment proof uploaded - ${paymentMethod}`
                 }
             );
 
             // Update member status
-            const collectionId = this.getCollectionId(signup.portalType);
+            const collectionId = this.getCollectionId(portalType);
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 collectionId,
-                signup.memberId,
+                memberId,
                 {
                     paymentStatus: 'pending_verification',
                     paymentProofUrl: proofUrl,
@@ -466,7 +646,7 @@ class MembershipSignupService {
             );
 
             // Notify admin for verification
-            await this.notifyAdmin('payment_proof_uploaded', signup.memberId, signup.portalType);
+            await this.notifyAdmin('payment_proof_uploaded', memberId, portalType);
 
             console.log('✅ Payment proof uploaded:', submission.$id);
             return submission as unknown as PaymentSubmission;
@@ -488,41 +668,62 @@ class MembershipSignupService {
             ) as unknown as PaymentSubmission;
 
             // Update submission
+            const existingSubmission = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.PAYMENT_SUBMISSIONS,
+                submissionId
+            );
+            
+            const submissionContent = JSON.parse(existingSubmission.content || '{}');
+            submissionContent.status = 'approved';
+            submissionContent.reviewedAt = new Date().toISOString();
+            submissionContent.reviewedBy = adminId;
+            
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.PAYMENT_SUBMISSIONS,
                 submissionId,
                 {
-                    status: 'approved',
-                    reviewedAt: new Date().toISOString(),
-                    reviewedBy: adminId
+                    content: JSON.stringify(submissionContent),
+                    message: 'Payment approved by admin'
                 }
             );
 
+            // Get signup ID from submission content
+            const signupId = submissionContent.signupId;
+            
             // Get signup
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
-                submission.signupId
-            ) as unknown as MembershipSignup;
+                signupId
+            );
+
+            // Parse signup content
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
+            const memberId = signupContent.memberId;
 
             // Update signup status
+            signupContent.status = 'active';
+            signupContent.updatedAt = new Date().toISOString();
+            
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
-                submission.signupId,
+                signupId,
                 {
-                    status: 'active',
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(signupContent),
+                    message: 'Membership activated - payment approved'
                 }
             );
 
             // Update member to fully active
-            const collectionId = this.getCollectionId(signup.portalType);
+            const collectionId = this.getCollectionId(portalType);
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 collectionId,
-                signup.memberId,
+                memberId,
                 {
                     isVerified: true,
                     verifiedAt: new Date().toISOString(),
@@ -545,15 +746,25 @@ class MembershipSignupService {
     async rejectPayment(submissionId: string, adminId: string, reason: string): Promise<void> {
         try {
             // Update submission
+            const existingSubmission = await databases.getDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                SIGNUP_CONFIG.COLLECTIONS.PAYMENT_SUBMISSIONS,
+                submissionId
+            );
+            
+            const submissionContent = JSON.parse(existingSubmission.content || '{}');
+            submissionContent.status = 'rejected';
+            submissionContent.reviewedAt = new Date().toISOString();
+            submissionContent.reviewedBy = adminId;
+            submissionContent.rejectionReason = reason;
+            
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.PAYMENT_SUBMISSIONS,
                 submissionId,
                 {
-                    status: 'rejected',
-                    reviewedAt: new Date().toISOString(),
-                    reviewedBy: adminId,
-                    rejectionReason: reason
+                    content: JSON.stringify(submissionContent),
+                    message: `Payment rejected: ${reason}`
                 }
             );
 
@@ -596,33 +807,41 @@ class MembershipSignupService {
      */
     async deactivateAccount(signupId: string, reason: string): Promise<void> {
         try {
-            const signup = await databases.getDocument(
+            const signupDoc = await databases.getDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId
-            ) as unknown as MembershipSignup;
+            );
+
+            // Parse content to get signup data
+            const signupContent = JSON.parse(signupDoc.content || '{}');
+            const portalType = signupContent.portalType;
+            const memberId = signupContent.memberId;
 
             // Update signup
+            signupContent.status = 'deactivated';
+            signupContent.deactivatedAt = new Date().toISOString();
+            signupContent.deactivationReason = reason;
+            signupContent.isLive = false;
+            signupContent.updatedAt = new Date().toISOString();
+            
             await databases.updateDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS,
                 signupId,
                 {
-                    status: 'deactivated',
-                    deactivatedAt: new Date().toISOString(),
-                    deactivationReason: reason,
-                    isLive: false,
-                    updatedAt: new Date().toISOString()
+                    content: JSON.stringify(signupContent),
+                    message: `Account deactivated: ${reason}`
                 }
             );
 
             // Update member
-            if (signup.memberId && signup.portalType) {
-                const collectionId = this.getCollectionId(signup.portalType);
+            if (memberId && portalType) {
+                const collectionId = this.getCollectionId(portalType);
                 await databases.updateDocument(
                     SIGNUP_CONFIG.DATABASE_ID,
                     collectionId,
-                    signup.memberId,
+                    memberId,
                     {
                         isLive: false,
                         status: 'deactivated',
@@ -634,7 +853,7 @@ class MembershipSignupService {
             }
 
             // Notify admin
-            await this.notifyAdmin('account_deactivated', signup.memberId, signup.portalType);
+            await this.notifyAdmin('account_deactivated', memberId, portalType);
 
             console.log('🔒 Account deactivated:', signupId, reason);
         } catch (error) {
@@ -699,32 +918,42 @@ class MembershipSignupService {
     // Helper methods
     
     private getCollectionId(portalType: PortalType): string {
-        switch (portalType) {
-            case 'therapist':
-                return SIGNUP_CONFIG.COLLECTIONS.THERAPISTS;
-            case 'massage_place':
-                return SIGNUP_CONFIG.COLLECTIONS.PLACES;
-            case 'facial_place':
-                return SIGNUP_CONFIG.COLLECTIONS.FACIAL_PLACES;
-            default:
-                throw new Error(`Invalid portal type: ${portalType}`);
-        }
+        // All membership data is stored in the messages collection during signup process
+        // Business profiles are created later in actual business collections after approval
+        return SIGNUP_CONFIG.COLLECTIONS.MEMBERSHIP_SIGNUPS; // This is 'messages' collection
     }
 
     private async notifyAdmin(type: string, memberId: string, memberType: PortalType): Promise<void> {
         try {
+            const notificationId = ID.unique();
             await databases.createDocument(
                 SIGNUP_CONFIG.DATABASE_ID,
                 SIGNUP_CONFIG.COLLECTIONS.ADMIN_NOTIFICATIONS,
-                ID.unique(),
+                notificationId,
                 {
-                    type,
-                    memberId,
-                    memberType,
-                    title: this.getNotificationTitle(type),
-                    message: this.getNotificationMessage(type, memberType),
-                    read: false,
-                    createdAt: new Date().toISOString()
+                    messageId: notificationId,
+                    conversationId: 'admin_notification',
+                    senderId: 'system',
+                    senderName: 'Membership System',
+                    senderRole: 'system',
+                    senderType: 'system',
+                    recipientId: 'admin',
+                    receiverId: 'admin',
+                    receiverName: 'Admin',
+                    receiverRole: 'admin',
+                    message: this.getNotificationTitle(type),
+                    content: JSON.stringify({
+                        type: 'admin_notification',
+                        notificationType: type,
+                        memberId,
+                        memberType,
+                        title: this.getNotificationTitle(type),
+                        description: this.getNotificationMessage(type, memberType),
+                        read: false,
+                        createdAt: new Date().toISOString()
+                    }),
+                    messageType: 'admin_notification',
+                    sentAt: new Date().toISOString()
                 }
             );
         } catch (error) {
@@ -766,6 +995,103 @@ class MembershipSignupService {
                     console.error('Deadline check error:', error);
                 }
             }, timeUntilDeadline);
+        }
+    }
+
+    /**
+     * Add portal-specific required fields to member data
+     */
+    private addPortalSpecificFields(baseMemberData: any, portalType: PortalType, userId: string): any {
+        switch (portalType) {
+            case 'massage_therapist':
+                return {
+                    ...baseMemberData,
+                    // Required fields for therapists collection
+                    specialization: 'General Massage', // Default value, can be updated in profile
+                    yearsOfExperience: 0,
+                    isLicensed: false,
+                    location: 'Not specified',
+                    hourlyRate: 100000, // Default minimum rate
+                    id: userId, // Some collections expect 'id' field
+                    therapistId: userId,
+                    hotelId: '',
+                    whatsappNumber: '',
+                    phoneNumber: '',
+                    city: '',
+                    coordinates: [0, 0],
+                    countryCode: '',
+                    country: '',
+                    profilePicture: '',
+                    mainImage: '',
+                    description: '',
+                    massageTypes: [],
+                    languages: [],
+                    pricing: { hourly: 100000 },
+                    price60: 100000,
+                    price90: 150000,
+                    price120: 200000,
+                    bookingsEnabled: true
+                };
+            case 'massage_place':
+                return {
+                    ...baseMemberData,
+                    // Required fields for places collection
+                    hotelId: '',
+                    whatsappNumber: '',
+                    address: '',
+                    businessHours: '',
+                    services: [],
+                    mainImage: '',
+                    gallery: [],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    reviewCount: 0,
+                    bookingsEnabled: true
+                };
+            case 'facial_place':
+                return {
+                    ...baseMemberData,
+                    // Required fields for facial_places collection
+                    hotelId: '',
+                    facialPlaceId: userId,
+                    collectionName: 'facial_places',
+                    category: 'Facial Spa',
+                    address: '',
+                    websiteurl: '',
+                    facialservices: JSON.stringify([]),
+                    facialtypes: JSON.stringify([]),
+                    prices: JSON.stringify({}),
+                    facialtimes: JSON.stringify([]),
+                    statusonline: 'offline',
+                    discounted: false,
+                    starrate: '0',
+                    distancekm: '0',
+                    popularityScore: 0,
+                    averageSessionDuration: 60,
+                    equipmentList: JSON.stringify([]),
+                    lastUpdate: new Date().toISOString(),
+                    coordinates: [0, 0],
+                    city: '',
+                    country: '',
+                    bookingsEnabled: true
+                };
+            case 'hotel':
+                return {
+                    ...baseMemberData,
+                    // Required fields for hotels collection
+                    hotelId: userId,
+                    address: '',
+                    amenities: [],
+                    roomTypes: [],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    priceRange: { min: 0, max: 0 },
+                    bookingsEnabled: true
+                };
+            default:
+                return baseMemberData;
         }
     }
 }

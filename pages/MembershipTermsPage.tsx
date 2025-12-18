@@ -34,8 +34,19 @@ const MembershipTermsPage: React.FC<MembershipTermsPageProps> = () => {
   };
 
   const handleAcceptAgreement = async () => {
+    // Store terms acceptance in localStorage
+    try {
+      localStorage.setItem('membership_terms_accepted', 'true');
+      localStorage.setItem('membership_terms_date', new Date().toISOString());
+    } catch (err) {
+      console.error('Failed to save terms acceptance:', err);
+    }
+
     if (!memberId) {
-      setError('Member ID not found');
+      // No memberId - redirect to membership signup flow for portal selection
+      const urlParams = new URLSearchParams(location.search);
+      const plan = urlParams.get('plan') || localStorage.getItem('selected_membership_plan') || 'pro';
+      navigate(`/membership-signup?plan=${plan}&step=portal`);
       return;
     }
 
@@ -52,15 +63,11 @@ const MembershipTermsPage: React.FC<MembershipTermsPageProps> = () => {
         userAgent: navigator.userAgent
       });
 
-      // Navigate to dashboard
+      // Redirect to portal selection in membership signup flow
+      const urlParams = new URLSearchParams(location.search);
+      const plan = urlParams.get('plan') || localStorage.getItem('selected_membership_plan') || 'pro';
       setTimeout(() => {
-        navigate('/dashboard', { 
-          state: { 
-            message: 'Membership agreement accepted successfully!',
-            memberType,
-            memberId 
-          }
-        });
+        navigate(`/membership-signup?plan=${plan}&step=portal`);
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Failed to accept agreement');

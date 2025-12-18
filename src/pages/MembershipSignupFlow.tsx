@@ -29,11 +29,12 @@ const MembershipSignupFlow: React.FC = () => {
     const navigate = useNavigate();
     const [params] = useSearchParams();
     const initialPlan = params.get('plan') as PlanType || null;
+    const initialStep = (params.get('step') as Step) || 'plan';
 
-    const [currentStep, setCurrentStep] = useState<Step>('plan');
+    const [currentStep, setCurrentStep] = useState<Step>(initialStep);
     const [formData, setFormData] = useState<FormData>({
         planType: initialPlan,
-        termsAccepted: false,
+        termsAccepted: localStorage.getItem('membership_terms_accepted') === 'true',
         portalType: null,
         email: '',
         password: '',
@@ -47,6 +48,36 @@ const MembershipSignupFlow: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [paymentDeadline, setPaymentDeadline] = useState<string | null>(null);
     const [countdown, setCountdown] = useState({ hours: 5, minutes: 0, seconds: 0, expired: false });
+
+    // Initialize signup if coming from terms acceptance
+    useEffect(() => {
+        const initializeFromTerms = async () => {
+            if (initialStep === 'portal' && initialPlan && !signupId) {
+                try {
+                    setLoading(true);
+                    let ip = '0.0.0.0';
+                    try {
+                        const res = await fetch('https://api.ipify.org?format=json');
+                        const data = await res.json();
+                        ip = data.ip;
+                    } catch { /* ignore */ }
+
+                    const signup = await membershipSignupService.initializeSignup(initialPlan, ip, navigator.userAgent);
+                    setSignupId(signup.$id);
+                    
+                    // Accept terms automatically since they already accepted on previous page
+                    await membershipSignupService.acceptTerms(signup.$id);
+                } catch (err: any) {
+                    setError(err.message || 'Failed to initialize signup');
+                    setCurrentStep('plan');
+                } finally {
+                    setLoading(false);
+                }
+            }
+        };
+
+        initializeFromTerms();
+    }, [initialStep, initialPlan, signupId]);
 
     // Countdown timer for payment deadline
     useEffect(() => {
@@ -158,12 +189,17 @@ const MembershipSignupFlow: React.FC = () => {
             setLoading(true);
             await membershipSignupService.completeProfile(signupId, memberId);
             
-            // Submit go live - starts 5 hour timer
-            const signup = await membershipSignupService.submitGoLive(signupId);
-            if (signup.paymentDeadline) {
-                setPaymentDeadline(signup.paymentDeadline);
+            if (formData.planType === 'pro') {
+                // Pro users: Go directly to dashboard (30% commission, no payment needed)
+                navigate(`/${formData.portalType?.replace('_', '-')}/dashboard`);
+            } else {
+                // Plus users: Show payment page (Rp 250,000/month)
+                const signup = await membershipSignupService.submitGoLive(signupId);
+                if (signup.paymentDeadline) {
+                    setPaymentDeadline(signup.paymentDeadline);
+                }
+                setCurrentStep('payment');
             }
-            setCurrentStep('payment');
         } catch (err: any) {
             setError(err.message || 'Failed to complete profile');
         } finally {
@@ -203,42 +239,45 @@ const MembershipSignupFlow: React.FC = () => {
         <div className="min-h-screen bg-white">
             {/* Header */}
             <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+                    <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                         <span className="text-sm font-medium">Back</span>
                     </button>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold flex items-center justify-center text-sm">I</div>
-                        <span className="font-semibold text-sm">Inda<span className="text-orange-600">Street</span></span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-black text-white font-bold flex items-center justify-center text-sm">I</div>
+                        <span className="font-light text-lg">Inda<span className="text-orange-500 font-medium">Street</span></span>
                     </div>
                 </div>
             </header>
 
             {/* Progress Steps */}
-            <div className="border-b border-gray-100 bg-gray-50/50">
-                <div className="max-w-4xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        {STEPS.map((step, index) => (
-                            <div key={step.id} className="flex items-center">
-                                <div className={`flex items-center gap-2 ${index <= stepIndex ? 'text-gray-900' : 'text-gray-400'}`}>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                                        index < stepIndex ? 'bg-green-500 text-white' :
-                                        index === stepIndex ? 'bg-orange-500 text-white' :
-                                        'bg-gray-200 text-gray-500'
-                                    }`}>
-                                        {index < stepIndex ? <Check className="w-4 h-4" /> : index + 1}
+            <div className="bg-gray-50 border-b border-gray-100">
+                <div className="max-w-6xl mx-auto px-6 py-6">
+                    <div className="flex items-center justify-center">
+                        <div className="flex items-center space-x-8">
+                            {STEPS.map((step, index) => (
+                                <div key={step.id} className="flex items-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                                            index < stepIndex ? 'bg-orange-500 text-white' :
+                                            index === stepIndex ? 'bg-black text-white' :
+                                            'bg-gray-200 text-gray-400'
+                                        }`}>
+                                            {index < stepIndex ? <Check className="w-4 h-4" /> : index + 1}
+                                        </div>
+                                        <div className="mt-2 text-center">
+                                            <p className={`text-xs font-medium ${index <= stepIndex ? 'text-black' : 'text-gray-400'}`}>
+                                                {step.title}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="hidden sm:block">
-                                        <p className="text-xs font-medium">{step.title}</p>
-                                        <p className="text-xs text-gray-500">{step.description}</p>
-                                    </div>
+                                    {index < STEPS.length - 1 && (
+                                        <div className={`w-12 h-px mx-4 ${index < stepIndex ? 'bg-orange-300' : 'bg-gray-200'}`} />
+                                    )}
                                 </div>
-                                {index < STEPS.length - 1 && (
-                                    <div className={`w-8 sm:w-16 h-0.5 mx-2 ${index < stepIndex ? 'bg-green-500' : 'bg-gray-200'}`} />
-                                )}
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -269,7 +308,7 @@ const MembershipSignupFlow: React.FC = () => {
             )}
 
             {/* Main Content */}
-            <main className="max-w-4xl mx-auto px-4 py-8">
+            <main className="max-w-6xl mx-auto px-6 py-16">
                 {/* Step 1: Plan Selection */}
                 {currentStep === 'plan' && (
                     <PlanSelectionStep
@@ -344,68 +383,120 @@ const PlanSelectionStep: React.FC<{
     onSelect: (plan: PlanType) => void;
     loading: boolean;
 }> = ({ selectedPlan, onSelect, loading }) => (
-    <div className="space-y-8">
-        <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Plan</h1>
-            <p className="text-gray-600">Select the membership that fits your business</p>
+    <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+            <h1 className="text-4xl font-light text-black mb-3">Choose Your Plan</h1>
+            <p className="text-gray-500 text-lg">Simple pricing that grows with you</p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-            {/* Pro Plan */}
-            <button
-                onClick={() => onSelect('pro')}
-                disabled={loading}
-                className={`text-left p-6 rounded-2xl border-2 transition-all ${
+        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Pro Plan - Minimalistic */}
+            <div
+                className={`relative border rounded-xl transition-all cursor-pointer ${
                     selectedPlan === 'pro' 
-                        ? 'border-blue-500 bg-blue-50' 
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                        ? 'border-orange-500 bg-white shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-orange-200 hover:shadow-md'
                 }`}
+                onClick={() => onSelect('pro')}
             >
-                <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold uppercase tracking-wide text-blue-600 bg-blue-100 px-2 py-1 rounded">Pay Per Lead</span>
-                    {selectedPlan === 'pro' && <Check className="w-5 h-5 text-blue-600" />}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Pro</h3>
-                <p className="text-gray-600 text-sm mb-4">Zero upfront cost. Pay 30% commission per booking.</p>
-                <div className="mb-4">
-                    <span className="text-3xl font-bold text-gray-900">Rp 0</span>
-                    <span className="text-gray-500">/month</span>
-                </div>
-                <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Zero monthly fee</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> 30% commission per booking</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Full profile & booking system</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-500" /> Standard listing placement</li>
-                </ul>
-            </button>
+                <div className="p-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                            Pay Per Lead
+                        </div>
+                        {selectedPlan === 'pro' && (
+                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-white" />
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-black mb-2">Pro</h3>
+                        <p className="text-gray-500 text-sm">Perfect for getting started</p>
+                    </div>
 
-            {/* Plus Plan */}
-            <button
-                onClick={() => onSelect('plus')}
-                disabled={loading}
-                className={`text-left p-6 rounded-2xl border-2 transition-all ${
+                    <div className="mb-8">
+                        <div className="flex items-baseline">
+                            <span className="text-5xl font-light text-black">Rp 0</span>
+                            <span className="text-gray-400 ml-2">/month</span>
+                        </div>
+                        <div className="text-orange-600 font-medium mt-1">+ 30% commission per booking</div>
+                    </div>
+
+                    <div className="space-y-3 text-sm">
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <span>No upfront payment</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <span>Full booking system</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                            <span>Standard placement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Plus Plan - Minimalistic Premium */}
+            <div
+                className={`relative border rounded-xl transition-all cursor-pointer ${
                     selectedPlan === 'plus' 
-                        ? 'border-orange-500 bg-orange-50' 
-                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                        ? 'border-orange-500 bg-white shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-orange-200 hover:shadow-md'
                 }`}
+                onClick={() => onSelect('plus')}
             >
-                <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold uppercase tracking-wide text-orange-600 bg-orange-100 px-2 py-1 rounded">Most Popular</span>
-                    {selectedPlan === 'plus' && <Check className="w-5 h-5 text-orange-600" />}
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-black text-white px-4 py-1 rounded-full text-xs font-medium">
+                        Most Popular
+                    </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Plus</h3>
-                <p className="text-gray-600 text-sm mb-4">Keep 100% of your earnings. Zero commission.</p>
-                <div className="mb-4">
-                    <span className="text-3xl font-bold text-gray-900">Rp 250,000</span>
-                    <span className="text-gray-500">/month</span>
+                
+                <div className="p-8">
+                    <div className="flex items-center justify-between mb-6 mt-2">
+                        <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                            Monthly Fee
+                        </div>
+                        {selectedPlan === 'plus' && (
+                            <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                <Check className="w-4 h-4 text-white" />
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="mb-6">
+                        <h3 className="text-2xl font-bold text-black mb-2">Plus</h3>
+                        <p className="text-gray-500 text-sm">For serious professionals</p>
+                    </div>
+
+                    <div className="mb-8">
+                        <div className="flex items-baseline">
+                            <span className="text-5xl font-light text-black">Rp 250K</span>
+                            <span className="text-gray-400 ml-2">/month</span>
+                        </div>
+                        <div className="text-green-600 font-medium mt-1">0% commission - keep everything</div>
+                    </div>
+
+                    <div className="space-y-3 text-sm">
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <span>Zero commission fees</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <span>Priority hotel requests</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-gray-600">
+                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                            <span>Verified badge</span>
+                        </div>
+                    </div>
                 </div>
-                <ul className="space-y-2 text-sm text-gray-600">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> 0% commission - keep 100%</li>
-                    <li className="flex items-center gap-2 text-orange-700 font-medium"><span className="text-orange-600">★</span> Priority Hotel, Villa & Spa requests</li>
-                    <li className="flex items-center gap-2 text-orange-700 font-medium"><span className="text-orange-600">★</span> Full price menu on your card</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-orange-500" /> Verified badge & priority placement</li>
-                </ul>
-            </button>
+            </div>
         </div>
     </div>
 );

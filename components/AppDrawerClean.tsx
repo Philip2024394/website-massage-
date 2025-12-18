@@ -213,9 +213,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
                 </button>
                 <div className="space-y-2">
-                  <button onClick={() => handleItemClick(undefined, 'provider-portals')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <button onClick={() => { window.location.href = 'http://localhost:3001/signup'; onClose(); }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                    <span className="text-sm text-gray-700 font-medium">{dt.providerPortals}</span>
+                    <span className="text-sm text-gray-700 font-medium">Sign Up</span>
                   </button>
                   <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
@@ -226,15 +226,39 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Join Provider Section */}
                 <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider px-3 mb-2">{dt.joinAsProvider}</h3>
-                  <button onClick={() => handleItemClick(onTherapistPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-green-50 border border-green-200 transition-colors">
+                  <button onClick={() => {
+                    // Pre-select therapist portal type and redirect to auth-app
+                    if (typeof localStorage !== 'undefined') {
+                      localStorage.setItem('selectedPortalType', 'massage_therapist');
+                      localStorage.setItem('selected_membership_plan', 'pro');
+                    }
+                    onClose();
+                    window.location.href = 'http://localhost:3001/signup';
+                  }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-green-50 border border-green-200 transition-colors">
                     <UserPlus className="w-5 h-5 text-green-600 flex-shrink-0" />
                     <span className="text-sm text-green-700 font-medium">{dt.joinTherapist}</span>
                   </button>
-                  <button onClick={() => handleItemClick(onMassagePlacePortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-blue-50 border border-blue-200 transition-colors">
+                  <button onClick={() => {
+                    // Pre-select massage place portal type and redirect to auth-app
+                    if (typeof localStorage !== 'undefined') {
+                      localStorage.setItem('selectedPortalType', 'massage_place');
+                      localStorage.setItem('selected_membership_plan', 'pro');
+                    }
+                    onClose();
+                    window.location.href = 'http://localhost:3001/signup';
+                  }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-blue-50 border border-blue-200 transition-colors">
                     <Building className="w-5 h-5 text-blue-600 flex-shrink-0" />
                     <span className="text-sm text-blue-700 font-medium">{dt.joinMassageSpa}</span>
                   </button>
-                  <button onClick={() => handleItemClick(onFacialPortalClick)} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-purple-50 border border-purple-200 transition-colors">
+                  <button onClick={() => {
+                    // Pre-select facial place portal type and redirect to auth-app
+                    if (typeof localStorage !== 'undefined') {
+                      localStorage.setItem('selectedPortalType', 'facial_place');
+                      localStorage.setItem('selected_membership_plan', 'pro');
+                    }
+                    onClose();
+                    window.location.href = 'http://localhost:3001/signup';
+                  }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-purple-50 border border-purple-200 transition-colors">
                     <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0" />
                     <span className="text-sm text-purple-700 font-medium">{dt.joinSkinClinic}</span>
                   </button>
@@ -244,7 +268,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex flex-col items-center gap-3 px-4 py-2">
                   <button 
-                    onClick={() => handleItemClick(undefined, 'provider-portals')} 
+                    onClick={() => handleItemClick(undefined, 'home')} 
                     className="text-sm font-bold text-gray-700 hover:text-orange-600 transition-colors"
                   >
                     <span className="text-gray-800">Inda</span>

@@ -145,7 +145,7 @@ const PackagesPage: React.FC = () => {
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <button 
-                  onClick={() => navigate(`/membership-signup?plan=${selected}`)}
+                  onClick={() => navigate(`/signup?plan=${selected}`)}
                   className={`flex-1 py-4 px-6 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 ${selected === 'plus' ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                 >
                   Get Started with {content.name}

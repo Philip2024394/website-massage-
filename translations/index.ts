@@ -232,6 +232,10 @@ translations.id.contact = {
 translations.en.faq = {
   title: 'Frequently Asked Questions',
   subtitle: 'Everything you need to know about using IndaStreet',
+  stillHaveQuestions: 'Still Have Questions?',
+  contactSupport: 'Our support team is here to help you succeed on IndaStreet',
+  contactSupportButton: 'Contact Support',
+  whatsappButton: 'WhatsApp Us',
   categories: {
     booking: 'Bookings',
     therapist: 'For Therapists',
@@ -245,6 +249,10 @@ translations.en.faq = {
 translations.id.faq = {
   title: 'Pertanyaan yang Sering Diajukan',
   subtitle: 'Semua yang perlu Anda ketahui tentang menggunakan IndaStreet',
+  stillHaveQuestions: 'Masih Ada Pertanyaan?',
+  contactSupport: 'Tim dukungan kami siap membantu Anda sukses di IndaStreet',
+  contactSupportButton: 'Hubungi Dukungan',
+  whatsappButton: 'WhatsApp Kami',
   categories: {
     booking: 'Pemesanan',
     therapist: 'Untuk Terapis',

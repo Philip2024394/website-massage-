@@ -20,7 +20,8 @@ const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage
 const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
 const FacialTypesPage = React.lazy(() => import('./pages/FacialTypesPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
-const ProviderPortalsPage = React.lazy(() => import('./pages/ProviderPortalsPage'));
+// ProviderPortalsPage removed - using direct simpleSignup flow
+// PortalSelectionPage removed - using direct simpleSignup flow
 const PackageTermsPage = React.lazy(() => import('./pages/PackageTermsPage'));
 const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
@@ -47,6 +48,7 @@ const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
 const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
 const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
 const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
+const SimpleSignupFlow = React.lazy(() => import('./src/pages/SimpleSignupFlow'));
 const MembershipTermsPage = React.lazy(() => import('./pages/MembershipTermsPage'));
 const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
 // FacialMemberDashboard removed - now redirects to separate dashboard app
@@ -146,7 +148,7 @@ interface AppRouterProps {
     handleNavigateToServiceTerms: () => void;
     handleNavigateToPrivacyPolicy: () => void;
     handleBackToHome: () => void;
-    handleSelectRegistration: (type: 'therapist' | 'place') => void;
+    handleSelectRegistration: (type: 'therapist' | 'place' | 'facial') => void;
     handleTherapistStatusChange: (status: string) => Promise<void>;
     handleSaveTherapist: (therapistData: any) => Promise<void>;
     handleSavePlace: (placeData: any) => Promise<void>;
@@ -621,7 +623,25 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const navToEmployerJobPosting = () => setPage('employerJobPosting');
     const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
     const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
-    const commonNavigateHandler = (page: string) => setPage(page as Page);
+
+    const normalizePage = (rawPage: string): Page => {
+        switch (rawPage) {
+            // Legacy portal routes that no longer exist in the switch-case
+            // Map them to the correct entry points (login/portal screens).
+            case 'therapistPortal':
+                return 'therapistLogin';
+            case 'massagePlacePortal':
+            case 'placeLogin':
+            case 'placePortal':
+                return 'massagePlaceLogin';
+            case 'facialPlacePortal':
+                return 'facialPortal';
+            default:
+                return rawPage as Page;
+        }
+    };
+
+    const commonNavigateHandler = (nextPage: string) => setPage(normalizePage(nextPage));
     const navToBlog = () => setPage('blog');
     
     // Helper for blog pages with consistent props
@@ -672,7 +692,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             onAdminPortalClick={portalHandlers.onAdminPortalClick}
             onTermsClick={portalHandlers.onTermsClick}
             onPrivacyClick={handleNavigateToPrivacyPolicy}
-            onNavigate={setPage}
+            onNavigate={commonNavigateHandler}
             {...extraProps} 
         />
     );
@@ -916,12 +936,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
 
         case 'joinIndastreet':
-            return <ProviderPortalsPage 
-                onBack={handleBackToHome}
-                onNavigate={commonNavigateHandler}
-                t={t}
-                language={language}
-            />;
+            // ProviderPortalsPage removed - redirect to simpleSignup
+            setPage('simpleSignup');
+            return null;
+
+        // portalSelection case removed - now using direct simpleSignup flow
 
         case 'therapistProfile':
             return selectedTherapist && <TherapistProfilePage 
@@ -1023,8 +1042,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onHotelPortalClick={() => setPage('hotelDashboard')}
                         onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistPortal')}
-                        onMassagePlacePortalClick={() => setPage('massagePlacePortal')}
+                        onTherapistPortalClick={() => setPage('therapistLogin')}
+                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
                         onFacialPortalClick={portalHandlers.onFacialPortalClick}
                         onAgentPortalClick={() => setPage('agentPortal')}
                         onCustomerPortalClick={() => setPage('customerPortal')}
@@ -1055,7 +1074,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onTherapistJobsClick={() => setPage('therapistJobs')}
                         onTherapistPortalClick={handleNavigateToTherapistLogin}
-                        onFacialPlacePortalClick={handleNavigateToMassagePlaceLogin}
+                        onFacialPlacePortalClick={portalHandlers.onFacialPortalClick}
                         onNavigate={commonNavigateHandler}
                         onTermsClick={handleNavigateToServiceTerms}
                         onPrivacyClick={handleNavigateToPrivacyPolicy}
@@ -1067,8 +1086,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'facialPlaceDashboard':
             // Redirect to separate facial dashboard app
-            window.open('http://localhost:3006', '_blank');
-            setPage('home');
+            window.location.href = 'http://localhost:3006';
             return null;
 
         case 'facialPortal':
@@ -1100,25 +1118,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'facialMemberDashboard':
             // Redirect to separate facial dashboard app
-            window.open('http://localhost:3006', '_blank');
-            setPage('home');
+            window.location.href = 'http://localhost:3006';
             return null;
 
         case 'therapistLogin': 
-            return <TherapistLoginPage 
-                onSuccess={(therapistId) => {
-                    console.log('🚀 AppRouter: TherapistLogin onSuccess called with ID:', therapistId);
-                    setLoggedInProvider({ id: therapistId, type: 'therapist' });
-                    // Redirect directly to new therapist dashboard
-                    window.open('http://localhost:3005', '_blank');
-                    setPage('home');
-                }} 
-                onBack={handleBackToHome} 
-            />;
-        case 'therapistPortal':
-            // Redirect to separate therapist dashboard app
-            window.open('http://localhost:3005', '_blank');
-            setPage('home');
+            // Redirect to auth-app for therapist login
+            window.location.href = 'http://localhost:3001/therapist-login';
             return null;
             
         case 'providerAuth': 
@@ -1129,8 +1134,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'placeDashboard':
             // Redirect to separate place dashboard app
-            window.open('http://localhost:3002', '_blank');
-            setPage('home');
+            window.location.href = 'http://localhost:3002';
             return null;
 
         // 🔐 Admin Routes - Login & Dashboard
@@ -1160,8 +1164,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'adminDashboard':
             // Redirect to separate admin dashboard app
-            window.open('http://localhost:3004', '_blank');
-            setPage('home');
+            window.location.href = 'http://localhost:3004';
             return null;
         
         case 'serviceTerms': 
@@ -1210,6 +1213,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderBackPage(PrivacyPolicyPage, (t as any)?.privacyPolicy || t);
         case 'cookies-policy':
             return renderBackPage(CookiesPolicyPage);
+            
+        case 'simpleSignup':
+            // Redirect to auth-app for signup
+            window.location.href = 'http://localhost:3001/signup';
+            return null;
             
         case 'membership-select':
             // Translation object for membership selection page (NO BANK DETAILS HERE)
@@ -1368,42 +1376,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         }
             
         case 'massageTypes':
-            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
+            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={commonNavigateHandler} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
         case 'facialTypes':
-            return <FacialTypesPage _onBack={handleBackToHome} onNavigate={setPage} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
+            return <FacialTypesPage _onBack={handleBackToHome} onNavigate={commonNavigateHandler} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
             
         // 'hotelLogin' and 'villaLogin' routes removed
 
         case 'massagePlaceLogin': 
-            return <MassagePlaceLoginPage 
-                onSuccess={(placeId) => {
-                    console.log('🚀 MassagePlaceLogin success callback received placeId:', placeId);
-                    
-                    // localStorage disabled - using Appwrite session only
-                    const providerData = { id: placeId, type: 'place' as const };
-                    console.log('✅ Provider data ready (localStorage disabled):', providerData);
-                    
-                    // Update React state
-                    console.log('📦 Setting loggedInProvider with:', providerData);
-                    setLoggedInProvider(providerData);
-                    
-                    // Persist to sessionStorage for page refresh
-                    sessionStorage.setItem('logged_in_provider', JSON.stringify(providerData));
-                    
-                    // Mark that user has entered the app
-                    sessionStorage.setItem('has_entered_app', 'true');
-                    sessionStorage.setItem('current_page', 'placeDashboard');
-                    
-                    // Defer page change to ensure all state commits
-                    setTimeout(() => {
-                        console.log('🔄 Navigating to placeDashboard after provider set');
-                        setPage('placeDashboard');
-                    }, 50); // Increased delay for reliability
-                }} 
-                onBack={handleBackToHome}
-                t={t}
-            />;
+            // Redirect to auth-app for massage place login
+            window.location.href = 'http://localhost:3001/place-login';
+            return null;
             
         case 'employerJobPosting':
             return <EmployerJobPostingPage 
@@ -1475,17 +1458,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'indastreet-partners':
             return <IndastreetPartnersPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
             
-        case 'provider-portals':
-            return <ProviderPortalsPage 
-                onBack={() => setPage('home' as Page)} 
-                onNavigate={(page: string) => {
-                    console.log('🎯 AppRouter provider-portals: onNavigate called with:', page);
-                    console.log('🎯 AppRouter provider-portals: Setting page to:', page);
-                    setPage(page as Page);
-                }}
-                t={t}
-                language={language}
-            />;
+        // provider-portals route removed - now using direct simpleSignup flow
             
         case 'partnership-application': 
             return <PartnershipApplicationPage 
@@ -1591,8 +1564,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onHotelPortalClick={() => setPage('villaDashboard')}
                         onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistPortal')}
-                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onTherapistPortalClick={() => setPage('therapistLogin')}
+                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
                         onAgentPortalClick={() => setPage('villaDashboard')}
                         onCustomerPortalClick={() => setPage('customerDashboard')}
                         onAdminPortalClick={() => setPage('adminDashboard')}
@@ -1616,8 +1589,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onHotelPortalClick={() => setPage('villaDashboard')}
                         onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistPortal')}
-                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onTherapistPortalClick={() => setPage('therapistLogin')}
+                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
                         onAgentPortalClick={() => setPage('villaDashboard')}
                         onCustomerPortalClick={() => setPage('customerDashboard')}
                         onAdminPortalClick={() => setPage('adminDashboard')}
@@ -1638,8 +1611,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onHotelPortalClick={() => setPage('villaDashboard')}
                         onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistPortal')}
-                        onMassagePlacePortalClick={() => setPage('placeLogin')}
+                        onTherapistPortalClick={() => setPage('therapistLogin')}
+                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
                         onAgentPortalClick={() => setPage('villaDashboard')}
                         onCustomerPortalClick={() => setPage('customerDashboard')}
                         onAdminPortalClick={() => setPage('adminDashboard')}
@@ -1691,7 +1664,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.error('🚨 AppRouter: Unknown page case reached!', {
                 page,
                 loggedInProvider,
-                expectedCases: ['therapistPortal', 'therapistLogin', 'home', 'landing'],
+                expectedCases: ['therapistLogin', 'massagePlaceLogin', 'facialPortal', 'home', 'landing'],
                 allProps: Object.keys(props)
             });
             return null;

@@ -489,6 +489,20 @@ const App = () => {
                 state.setPage('accept-booking');
             } else if (path === '/join' || path.startsWith('/join/')) {
                 state.setPage('membership-select');
+            } else if (path === '/signup' || path.startsWith('/signup')) {
+                // Redirect to auth-app for signup
+                const urlParams = new URLSearchParams(window.location.search);
+                const plan = urlParams.get('plan');
+                const portal = urlParams.get('portal');
+                
+                if (plan && portal) {
+                    localStorage.setItem('selected_membership_plan', plan);
+                    localStorage.setItem('selectedPortalType', portal);
+                }
+                
+                // Redirect to auth-app
+                window.location.href = 'http://localhost:3001/signup';
+                return;
             }
         } catch (e) {
             console.warn('Path detection failed:', e);

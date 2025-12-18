@@ -11,53 +11,71 @@ const PackageTermsPage: React.FC = () => {
   const isPro = plan === 'pro';
 
   const handleAccept = () => {
-    // Navigate to the next step (e.g., payment or registration)
-    navigate(`/packages?plan=${plan}&accepted=true`);
+    // Store the acceptance in localStorage and navigate back to signup
+    const acceptedTerms = JSON.parse(localStorage.getItem('acceptedTerms') || '{}');
+    acceptedTerms[plan] = true;
+    localStorage.setItem('acceptedTerms', JSON.stringify(acceptedTerms));
+    localStorage.setItem('membership_terms_accepted', 'true');
+    localStorage.setItem('membership_terms_date', new Date().toISOString());
+    
+    // Navigate back to the previous page (likely the signup form)
+    navigate(-1);
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold flex items-center justify-center text-sm">I</div>
-            <span className="font-semibold text-sm">Inda<span className="text-orange-600">Street</span></span>
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-2xl font-bold">
+                <span className="text-black">Inda</span>
+                <span className="text-orange-500">Street</span>
+              </h1>
+            </div>
+            <button
+              onClick={() => navigate('/')}
+              className="px-4 py-2 text-black hover:bg-gray-100 rounded-lg transition-colors font-medium"
+            >
+              Home
+            </button>
           </div>
         </div>
-      </header>
-
-      {/* Hero */}
-      <div className="max-w-3xl mx-auto px-4 pt-12 pb-8 text-center">
-        <p className="text-sm text-gray-500 mb-2">
-          {isPro ? 'Pro Plan' : 'Plus Plan'}
-          <span className="mx-2">•</span>
-          <span className="text-orange-600 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
-        </p>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Terms &amp; Conditions</h1>
-        <p className="text-gray-600 text-sm max-w-md mx-auto">
-          {isPro 
-            ? 'Pro membership connects you to IndaStreet customers. Earn 70% of every confirmed booking.'
-            : 'Plus membership gives you full control. Fixed monthly fee, keep 100% of bookings, premium placement.'
-          }
-        </p>
       </div>
 
-      {/* Content */}
-      <main className="max-w-3xl mx-auto px-4 pb-32">
-        {isPro ? <ProTerms /> : <PlusTerms />}
-      </main>
+      {/* Hero */}
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        <div className="text-center mb-12">
+          <p className="text-sm text-gray-500 mb-2">
+            {isPro ? 'Pro Plan' : 'Plus Plan'}
+            <span className="mx-2">•</span>
+            <span className="text-orange-500 font-medium">{isPro ? 'Pay Per Lead' : '0% Commission'}</span>
+          </p>
+          <h1 className="text-4xl font-light text-black mb-3">Terms &amp; Conditions</h1>
+          <p className="text-gray-500 text-lg max-w-md mx-auto">
+            {isPro 
+              ? 'Pro membership connects you to IndaStreet customers. Earn 70% of every confirmed booking.'
+              : 'Plus membership gives you full control. Fixed monthly fee, keep 100% of bookings, premium placement.'
+            }
+          </p>
+        </div>
+
+        {/* Content */}
+        <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm mb-32">
+          {isPro ? <ProTerms /> : <PlusTerms />}
+        </div>
+      </div>
 
       {/* Fixed Footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <p className="text-xs text-gray-500 hidden sm:block">
             By accepting, you agree to these terms
           </p>
@@ -70,7 +88,7 @@ const PackageTermsPage: React.FC = () => {
             </button>
             <button
               onClick={handleAccept}
-              className="flex-1 sm:flex-none px-8 py-3 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 sm:flex-none px-8 py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
             >
               <Check className="w-4 h-4" />
               I Accept

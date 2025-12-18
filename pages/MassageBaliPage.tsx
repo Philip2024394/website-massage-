@@ -165,7 +165,7 @@ const MassageBaliPage: React.FC<MassageBaliPageProps> = ({
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
-                    <div className="flex items-center gap-4 pb-20 text-gray-600">
+                    <div className="flex items-center gap-4 text-gray-600">
                         {/* Home Button */}
                         <button
                             onClick={() => onNavigate?.('home')}

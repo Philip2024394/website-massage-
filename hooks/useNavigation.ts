@@ -87,10 +87,25 @@ export const useNavigation = ({
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('registrationChoice'), [setPage]);
     
     // Registration selection handler
-    const handleSelectRegistration = useCallback((type: 'therapist' | 'place') => {
+    const handleSelectRegistration = useCallback((type: 'therapist' | 'place' | 'facial') => {
         console.log('🎯 HANDLER: Registration type selected:', type);
-        setProviderAuthInfo({ type, mode: 'register' });
-        setPage('registrationChoice');
+        setProviderAuthInfo({ type: type as 'therapist' | 'place', mode: 'register' });
+        
+        // Route to the appropriate login page based on provider type
+        switch (type) {
+            case 'therapist':
+                setPage('therapistLogin');
+                break;
+            case 'place':
+                setPage('massagePlaceLogin');
+                break;
+            case 'facial':
+                // For facial clinics, redirect to facial dashboard login
+                window.location.href = 'http://localhost:3006';
+                break;
+            default:
+                setPage('registrationChoice');
+        }
     }, [setProviderAuthInfo, setPage]);
     
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
