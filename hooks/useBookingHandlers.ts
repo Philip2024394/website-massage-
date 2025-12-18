@@ -123,29 +123,7 @@ export const useBookingHandlers = ({
             console.log('📱 WhatsApp notifications disabled - using in-app notifications only');
             
             // WhatsApp functionality removed - numbers for admin purposes only
-            const whatsappDisabled = true;
-            
-            if (!whatsappDisabled) {
-                // This block is disabled - WhatsApp not used for notifications
-                    providerLanguage,
-                    getChatLanguage(language),
-                    {
-                        customerName: currentUserName,
-                        service: `${newBooking.service} minute massage`,
-                        datetime: new Date(newBooking.startTime).toLocaleString(language === 'id' ? 'id-ID' : 'en-US'),
-                        duration: `${newBooking.service} minutes`,
-                        location: (newBooking as any).location || 'Customer Location'
-                    }
-                );
-
-                if (whatsappResult.success) {
-                    console.log('✅ WhatsApp notification sent successfully!', whatsappResult.messageId);
-                } else {
-                    console.warn('⚠️ WhatsApp notification failed:', whatsappResult.error);
-                }
-            } else {
-                console.warn('⚠️ No WhatsApp number found for provider');
-            }
+            console.log('ℹ️ WhatsApp notifications disabled - using in-app notifications only');
 
             // 💬 STEP 2: Create multilingual chat room with auto-translation  
             // Updated: 10-minute response window instead of 25 minutes

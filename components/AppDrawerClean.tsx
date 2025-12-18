@@ -278,6 +278,17 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={() => handleItemClick(() => onNavigate?.('admin-login'))} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
                     {dt.admin}
                   </button>
+                  <button 
+                    onClick={() => {
+                      handleItemClick();
+                      // PWA Install functionality
+                      const event = new CustomEvent('request-pwa-install');
+                      window.dispatchEvent(event);
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-bold flex items-center gap-1"
+                  >
+                    📱 Download App
+                  </button>
                 </div>
               </div>
             </div>

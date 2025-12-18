@@ -1,9 +1,16 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown } from "lucide-react";
+import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone } from "lucide-react";
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
+
+// PWA Install interface
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  prompt(): Promise<void>;
+  readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
+}
 
 interface TherapistOnlineStatusProps {
   therapist: any;
@@ -17,6 +24,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
   const [isPremium] = useState(therapist?.membershipTier === 'premium' || false);
+  
+  // PWA Install states
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
 
   useEffect(() => {
     devLog('🔍 TherapistOnlineStatus loaded with therapist:', {
@@ -137,6 +148,42 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     return () => clearInterval(interval);
   }, [autoOfflineTime, status]);
 
+  // PWA Install functionality
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+    
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      localStorage.setItem('pwa-installed', 'true');
+      setDeferredPrompt(null);
+    };
+    
+    const handleRequestInstall = () => {
+      handleInstallApp();
+    };
+    
+    // Check if app is already installed
+    const checkIfInstalled = () => {
+      const isInstalled = localStorage.getItem('pwa-installed') === 'true' || 
+                         window.matchMedia('(display-mode: standalone)').matches;
+      setIsAppInstalled(isInstalled);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+    window.addEventListener('request-pwa-install', handleRequestInstall);
+    checkIfInstalled();
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      window.removeEventListener('request-pwa-install', handleRequestInstall);
+    };
+  }, []);
+
   const handleStatusChange = async (newStatus: OnlineStatus) => {
     setSaving(true);
     try {
@@ -242,6 +289,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     } catch (error) {
       console.error('❌ Failed to save auto-offline time:', error);
       alert('Failed to save auto-offline time. Please try again.');
+    }
+  };
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          setIsAppInstalled(true);
+          localStorage.setItem('pwa-installed', 'true');
+        }
+        setDeferredPrompt(null);
+      } catch (error) {
+        console.error('Error installing app:', error);
+      }
     }
   };
 
@@ -475,6 +538,48 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </button>
           </div>
         )}
+        
+        {/* Download App Button */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+          <div className="flex items-center gap-4 mb-4">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              isAppInstalled ? 'bg-gray-100' : 'bg-gradient-to-br from-orange-500 to-amber-500'
+            }`}>
+              <Smartphone className={`w-6 h-6 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-800">
+                {isAppInstalled ? 'App Installed' : 'Download Mobile App'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {isAppInstalled 
+                  ? 'IndaStreet app is installed on your device' 
+                  : 'Install for better notifications and offline access'
+                }
+              </p>
+            </div>
+          </div>
+          
+          <button
+            onClick={handleInstallApp}
+            disabled={isAppInstalled || !deferredPrompt}
+            className={`w-full py-3 font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 ${
+              isAppInstalled 
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : deferredPrompt
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:shadow-lg'
+                  : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <Download className="w-5 h-5" />
+            {isAppInstalled 
+              ? 'App Installed ✓' 
+              : deferredPrompt 
+                ? 'Download App'
+                : 'Install Available in Browser'
+            }
+          </button>
+        </div>
       </div>
     </div>
   );
