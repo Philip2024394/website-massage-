@@ -80,7 +80,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
                 'hotel': 'http://localhost:3007'
             };
 
-            const dashboardUrl = portalToDashboardUrl[formData.portalType];
+            const dashboardUrl = dashboardUrls[formData.portalType];
             
             console.log(`✅ Sign-in successful! Redirecting to ${formData.portalType} dashboard`);
             window.location.href = dashboardUrl;

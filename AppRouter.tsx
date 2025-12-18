@@ -1266,9 +1266,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderBackPage(CookiesPolicyPage);
             
         case 'simpleSignup':
-            // Redirect to auth-app for signup
-            window.location.href = `${getAuthAppUrl()}/signup`;
-            return null;
+            // Render the signup flow component
+            return <SimpleSignupFlow 
+                onBack={handleBackToHome}
+                onNavigate={commonNavigateHandler}
+                t={t}
+            />;
             
         case 'membership-select':
             // Translation object for membership selection page (NO BANK DETAILS HERE)
