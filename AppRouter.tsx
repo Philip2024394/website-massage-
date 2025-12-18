@@ -1178,8 +1178,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return null;
             
         case 'providerAuth': 
-            // Route provider auth to registration choice to avoid removed UnifiedLoginPage
-            return <RegistrationChoicePage onSelect={handleSelectRegistration} onBack={handleBackToHome} t={t} />;
+            // Redirect to simpleSignup instead of redundant registrationChoice page
+            return <SimpleSignupFlow onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
         
         // unifiedLogin removed
             
@@ -1376,8 +1376,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'membership': {
             // Membership page for therapists, massage places, and facial places
             if (!loggedInProvider) {
-                // Redirect to login if not authenticated
-                setPage('registrationChoice');
+                // Redirect to simpleSignup instead of redundant registrationChoice
+                setPage('simpleSignup');
                 return null;
             }
 

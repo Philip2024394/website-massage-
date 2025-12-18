@@ -84,29 +84,24 @@ export const useNavigation = ({
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
     const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
-    const handleNavigateToRegistrationChoice = useCallback(() => setPage('registrationChoice'), [setPage]);
+    // Redirect to simpleSignup instead of redundant registrationChoice page
+    const handleNavigateToRegistrationChoice = useCallback(() => setPage('simpleSignup'), [setPage]);
     
-    // Registration selection handler
+    // Registration selection handler - now redirects to simpleSignup
     const handleSelectRegistration = useCallback((type: 'therapist' | 'place' | 'facial') => {
         console.log('🎯 HANDLER: Registration type selected:', type);
-        setProviderAuthInfo({ type: type as 'therapist' | 'place', mode: 'register' });
         
-        // Route to the appropriate login page based on provider type
-        switch (type) {
-            case 'therapist':
-                setPage('therapistLogin');
-                break;
-            case 'place':
-                setPage('massagePlaceLogin');
-                break;
-            case 'facial':
-                // For facial clinics, redirect to facial dashboard login
-                window.location.href = 'http://localhost:3006';
-                break;
-            default:
-                setPage('registrationChoice');
-        }
-    }, [setProviderAuthInfo, setPage]);
+        // Store portal type in localStorage
+        const portalTypeMap = {
+            'therapist': 'massage_therapist',
+            'place': 'massage_place',
+            'facial': 'facial_place'
+        };
+        localStorage.setItem('selectedPortalType', portalTypeMap[type]);
+        
+        // Go to simpleSignup page (portal type is already pre-selected)
+        setPage('simpleSignup');
+    }, [setPage]);
     
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);

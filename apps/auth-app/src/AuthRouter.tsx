@@ -24,7 +24,8 @@ type AuthPage =
   | 'home';
 
 const AuthRouter: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<AuthPage>('registrationChoice');
+  // Default to signup page instead of redundant registration choice
+  const [currentPage, setCurrentPage] = useState<AuthPage>('membershipSignup');
 
   // Handle URL-based routing
   useEffect(() => {
@@ -48,14 +49,15 @@ const AuthRouter: React.FC = () => {
     } else if (path.includes('/privacy')) {
       setCurrentPage('privacy');
     } else {
-      setCurrentPage('registrationChoice');
+      // Default to signup page (portal type selection is in SimpleSignupFlow)
+      setCurrentPage('membershipSignup');
     }
   }, []);
 
   const handleNavigate = (page: string) => {
     // Update URL for better UX
     const pageRoutes: Record<string, string> = {
-      'registrationChoice': '/',
+      'registrationChoice': '/signup', // Redirect to signup (no longer used)
       'membershipSignup': '/signup',
       'packageTerms': '/terms',
       'signIn': '/signin',
