@@ -936,11 +936,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
 
         case 'joinIndastreet':
-            return <JoinIndastreetPartnersPage
-                onSelectPackage={handleSelectMembershipPackage}
-                onBack={handleBackToHome}
-                onNavigate={commonNavigateHandler}
-                t={t}
+            return <MembershipPackagesPage 
+                onNavigateBack={handleBackToHome}
+                userType="therapist"
+                currentMembership={user?.membership || 'free'}
+                userId={user?.id}
+                userEmail={user?.email}
+                userName={user?.name}
+                onPurchase={(packageType: string, paymentScreenshot: File, bankDetails: any) => {
+                    // Convert to expected signature for backward compatibility
+                    handleSelectMembershipPackage(packageType, '');
+                }}
             />;
 
         // portalSelection case removed - now using direct simpleSignup flow
