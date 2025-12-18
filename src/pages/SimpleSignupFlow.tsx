@@ -174,7 +174,13 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack,
             localStorage.setItem('selected_membership_plan', formData.planType);
 
             // Map portal type to correct dashboard URL (separate apps on different ports)
-            const portalToDashboardUrl: Record<PortalType, string> = {
+            const isProduction = !window.location.origin.includes('localhost');
+            const portalToDashboardUrl: Record<PortalType, string> = isProduction ? {
+                'massage_therapist': window.location.origin, // All on same domain in production
+                'massage_place': window.location.origin,
+                'facial_place': window.location.origin,
+                'hotel': window.location.origin
+            } : {
                 'massage_therapist': 'http://localhost:3005', // Therapist Dashboard
                 'massage_place': 'http://localhost:3002',      // Place Dashboard
                 'facial_place': 'http://localhost:3006',       // Facial Dashboard

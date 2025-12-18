@@ -64,12 +64,13 @@ const AuthRouter: React.FC = () => {
       'therapistLogin': '/therapist-login',
       'massagePlaceLogin': '/place-login',
       'privacy': '/privacy',
-      'home': 'http://localhost:3000'  // Main app
+      'home': window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin
     };
 
     if (page === 'home') {
       // Redirect to main app
-      window.location.href = 'http://localhost:3000';
+      const homeUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+      window.location.href = homeUrl;
       return;
     }
 
@@ -93,7 +94,8 @@ const AuthRouter: React.FC = () => {
         break;
       case 'facial':
         // Redirect to facial dashboard
-        window.location.href = 'http://localhost:3006';
+        const facialUrl = window.location.origin.includes('localhost') ? 'http://localhost:3006' : window.location.origin;
+        window.location.href = facialUrl;
         break;
       default:
         handleNavigate('registrationChoice');
@@ -108,7 +110,11 @@ const AuthRouter: React.FC = () => {
     }));
 
     // Redirect to appropriate dashboard
-    const dashboardUrls = {
+    const isProduction = !window.location.origin.includes('localhost');
+    const dashboardUrls = isProduction ? {
+      therapist: window.location.origin,
+      place: window.location.origin
+    } : {
       therapist: 'http://localhost:3005',
       place: 'http://localhost:3002'
     };
@@ -121,7 +127,8 @@ const AuthRouter: React.FC = () => {
   };
 
   const handleBackToHome = () => {
-    window.location.href = 'http://localhost:3000';
+    const homeUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+    window.location.href = homeUrl;
   };
 
   // Render current page

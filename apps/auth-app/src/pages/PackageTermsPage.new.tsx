@@ -32,7 +32,10 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack }) => {
               </h1>
             </div>
             <button
-              onClick={() => window.location.href = 'http://localhost:3000'}
+              onClick={() => {
+                const homeUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+                window.location.href = homeUrl;
+              }}
               className="px-4 py-2 text-black hover:bg-gray-100 rounded-lg transition-colors font-medium"
             >
               Home

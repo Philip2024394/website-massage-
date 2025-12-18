@@ -67,7 +67,13 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
             localStorage.setItem('selectedPortalType', formData.portalType);
             localStorage.setItem('session_id', session.$id);
 
-            const portalToDashboardUrl: Record<PortalType, string> = {
+            const isProduction = !window.location.origin.includes('localhost');
+            const dashboardUrls: Record<string, string> = isProduction ? {
+                'massage_therapist': window.location.origin,
+                'massage_place': window.location.origin,
+                'facial_place': window.location.origin,
+                'hotel': window.location.origin
+            } : {
                 'massage_therapist': 'http://localhost:3002',
                 'massage_place': 'http://localhost:3005',
                 'facial_place': 'http://localhost:3006',
