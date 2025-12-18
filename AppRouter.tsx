@@ -290,8 +290,18 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         const initSession = async () => {
             try {
                 const { authService } = await import('./lib/appwrite/auth.service');
-                await authService.createAnonymousSession();
-                console.log('✅ [AppRouter] Anonymous session initialized');
+                const session = await authService.createAnonymousSession();
+                
+                // Clean up stale signup data if anonymous (not logged in)
+                if (session && !session.userId) {
+                    // Clear incomplete signup flow data
+                    localStorage.removeItem('pendingTermsPlan');
+                    localStorage.removeItem('selected_membership_plan');
+                    localStorage.removeItem('selectedPortalType');
+                    console.log('✅ [AppRouter] Anonymous session initialized, signup data cleared');
+                } else {
+                    console.log('✅ [AppRouter] Authenticated session active');
+                }
             } catch (error) {
                 console.log('⚠️ [AppRouter] Anonymous session initialization deferred:', error);
             }
