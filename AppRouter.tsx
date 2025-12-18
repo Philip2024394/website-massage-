@@ -285,6 +285,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const [facialMemberId, setFacialMemberId] = useState<string | null>(null);
     const [facialMemberEmail, setFacialMemberEmail] = useState<string | null>(null);
 
+    // 🚀 Initialize anonymous session on app mount to prevent 401 errors
+    useEffect(() => {
+        const initSession = async () => {
+            try {
+                const { authService } = await import('./lib/appwrite/auth.service');
+                await authService.createAnonymousSession();
+                console.log('✅ [AppRouter] Anonymous session initialized');
+            } catch (error) {
+                console.log('⚠️ [AppRouter] Anonymous session initialization deferred:', error);
+            }
+        };
+        initSession();
+    }, []); // Run only once on mount
+
     // Fetch therapist document after successful login when navigating to portal
     useEffect(() => {
         const shouldLoad = page === 'therapistPortal' && loggedInProvider?.type === 'therapist';
