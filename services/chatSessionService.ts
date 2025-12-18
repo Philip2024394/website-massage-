@@ -344,7 +344,7 @@ export const chatSessionService = {
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.chatSessions,
                     [
-                        Query.equal('isActive', true),
+                        Query.equal('isActive', [true]),
                         Query.orderDesc('updatedAt'),
                         Query.limit(limit)
                     ]
@@ -367,7 +367,7 @@ export const chatSessionService = {
                 APPWRITE_CONFIG.collections.chatSessions,
                 [
                     Query.lessThan('expiresAt', now),
-                    Query.equal('isActive', true)
+                    Query.equal('isActive', [true])
                 ]
             );
 

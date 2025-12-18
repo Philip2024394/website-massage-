@@ -58,9 +58,9 @@ export default function SystemHealthMonitor() {
             
             // Get all active members from different collections
             const [therapists, places, hotels] = await Promise.all([
-                databases.listDocuments(DATABASE_ID, 'therapists', [Query.equal('isActive', true)]),
-                databases.listDocuments(DATABASE_ID, 'places', [Query.equal('isActive', true)]),
-                databases.listDocuments(DATABASE_ID, 'hotels', [Query.equal('isActive', true)])
+                databases.listDocuments(DATABASE_ID, 'therapists', [Query.equal('isActive', [true])]),
+                databases.listDocuments(DATABASE_ID, 'places', [Query.equal('isActive', [true])]),
+                databases.listDocuments(DATABASE_ID, 'hotels', [Query.equal('isActive', [true])])
             ]);
 
             const healthStatuses: MemberHealthStatus[] = [];
