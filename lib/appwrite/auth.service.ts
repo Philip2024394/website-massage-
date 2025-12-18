@@ -92,14 +92,20 @@ export const authService = {
             
             return await appwriteAccount.get();
         } catch (error: any) {
-            if (error.message?.includes('429')) {
+            const errorCode = error?.code || error?.status;
+            const errorMsg = error?.message || '';
+            
+            if (errorCode === 429 || errorMsg.includes('429')) {
                 console.log('⚠️ Anonymous session rate limited - will retry later');
                 return null;
-            } else if (error.message?.includes('already exists')) {
+            } else if (errorCode === 501 || errorMsg.includes('501')) {
+                console.warn('⚠️ Anonymous sessions not enabled in Appwrite project - continuing without auth');
+                return null;
+            } else if (errorMsg.includes('already exists')) {
                 console.log('✅ Anonymous session already exists');
                 return await appwriteAccount.get().catch(() => null);
             } else {
-                console.log('Anonymous session creation deferred:', error.message);
+                console.log('ℹ️ Anonymous session creation deferred:', errorMsg || errorCode);
                 return null;
             }
         }

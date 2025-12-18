@@ -523,23 +523,17 @@
                 console.log('✅ PWA Service Worker registered:', registration.scope);
 
                 // Enable install prompt for "Add to Home Screen"
-                let deferredPrompt;
+                // Store prompt for user-triggered install (e.g., via button click)
+                window.deferredPrompt = null;
                 window.addEventListener('beforeinstallprompt', (e) => {
                   e.preventDefault();
-                  deferredPrompt = e;
-                  console.log('📱 PWA install prompt ready');
+                  window.deferredPrompt = e;
+                  console.log('📱 PWA install prompt ready - call window.deferredPrompt.prompt() on user action');
                 });
 
-                // Auto-show install prompt after 3 seconds if available
-                setTimeout(() => {
-                  if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                      console.log('PWA install choice:', choiceResult.outcome);
-                      deferredPrompt = null;
-                    });
-                  }
-                }, 3000);
+                // Note: Install prompt must be triggered by user gesture (button click)
+                // To show install UI, create a button that calls:
+                // window.deferredPrompt?.prompt()
               })
               .catch(function(error) {
                 console.log('❌ PWA Service Worker registration failed:', error);

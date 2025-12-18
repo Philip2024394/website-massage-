@@ -292,18 +292,29 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 const { authService } = await import('./lib/appwrite/auth.service');
                 const session = await authService.createAnonymousSession();
                 
-                // Clean up stale signup data if anonymous (not logged in)
-                if (session && !session.userId) {
-                    // Clear incomplete signup flow data
+                if (session) {
+                    // Clean up stale signup data if anonymous (not logged in)
+                    if (!session.userId || session.userId === 'anonymous') {
+                        localStorage.removeItem('pendingTermsPlan');
+                        localStorage.removeItem('selected_membership_plan');
+                        localStorage.removeItem('selectedPortalType');
+                        console.log('✅ [AppRouter] Anonymous session initialized, signup data cleared');
+                    } else {
+                        console.log('✅ [AppRouter] Authenticated session active');
+                    }
+                } else {
+                    // No session - clear stale signup data anyway
                     localStorage.removeItem('pendingTermsPlan');
                     localStorage.removeItem('selected_membership_plan');
                     localStorage.removeItem('selectedPortalType');
-                    console.log('✅ [AppRouter] Anonymous session initialized, signup data cleared');
-                } else {
-                    console.log('✅ [AppRouter] Authenticated session active');
+                    console.log('ℹ️ [AppRouter] No session available, cleared signup data');
                 }
             } catch (error) {
-                console.log('⚠️ [AppRouter] Anonymous session initialization deferred:', error);
+                // Even on error, clear stale data
+                localStorage.removeItem('pendingTermsPlan');
+                localStorage.removeItem('selected_membership_plan');
+                localStorage.removeItem('selectedPortalType');
+                console.log('⚠️ [AppRouter] Session initialization failed, cleared signup data:', error);
             }
         };
         initSession();
