@@ -94,7 +94,7 @@ const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
 const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
-const JoinIndastreetPartnersPage = React.lazy(() => import('./pages/JoinIndastreetPartnersPage'));
+// Removed - JoinIndastreetPartnersPage moved to deleted folder (all signup flows use auth-app)
 const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
 import { APP_CONFIG } from './config/appConfig';
 
@@ -936,18 +936,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
 
         case 'joinIndastreet':
-            return <MembershipPackagesPage 
-                onNavigateBack={handleBackToHome}
-                userType="therapist"
-                currentMembership={user?.membership || 'free'}
-                userId={user?.id}
-                userEmail={user?.email}
-                userName={user?.name}
-                onPurchase={(packageType: string, paymentScreenshot: File, bankDetails: any) => {
-                    // Convert to expected signature for backward compatibility
-                    handleSelectMembershipPackage(packageType, '');
-                }}
-            />;
+            // Redirect to auth-app signup page for consistent provider onboarding
+            window.location.href = 'http://localhost:3001/signup';
+            return null;
 
         // portalSelection case removed - now using direct simpleSignup flow
 

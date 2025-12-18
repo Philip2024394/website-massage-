@@ -91,7 +91,11 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate 
         {isPro ? <ProTerms /> : <PlusTerms />}
       </main>
 
-      {/* Fi{language === 'id' 
+      {/* Footer Notice */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-xs text-gray-600 mb-4">
+            {language === 'id' 
               ? 'Silakan baca syarat dengan cermat. Gunakan checkbox di halaman Buat Akun untuk mengonfirmasi persetujuan.'
               : 'Please read the terms carefully. Use the checkbox on the Create Account page to confirm agreement.'
             }
@@ -101,11 +105,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate 
             className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            {language === 'id' ? 'Kembali ke Buat Akun' : 'Back to Create Account'}history.back()}
-            className="px-8 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-medium rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Create Account
+            {language === 'id' ? 'Kembali ke Buat Akun' : 'Back to Create Account'}
           </button>
         </div>
       </div>
