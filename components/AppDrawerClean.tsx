@@ -6,24 +6,14 @@ import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, 
 const getAuthAppUrl = (): string => {
     // Check for environment variable first
     const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
-    if (envUrl) return envUrl;
+    if (envUrl && envUrl !== 'http://localhost:3001') return envUrl;
     
     // Development mode
     if (window.location.origin.includes('localhost')) {
         return 'http://localhost:3001';
     }
     
-    // Production mode - check if auth-app is deployed separately
-    // For now, redirect to a signup page on the same domain
-    // This needs to be updated when auth-app is deployed to a separate URL
-    if (window.location.origin.includes('indastreetmassage.com')) {
-        // If there's a dedicated auth subdomain, use it
-        // return 'https://auth.indastreetmassage.com';
-        
-        // For now, redirect to main site signup (temporary solution)
-        return window.location.origin;
-    }
-    
+    // Production mode - use same domain (auth pages are part of main app)
     return window.location.origin;
 };
 
