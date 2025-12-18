@@ -293,7 +293,8 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                         // Redirect to auth-app for facial place signup
                         localStorage.setItem('selectedPortalType', 'facial_place');
                         localStorage.setItem('selected_membership_plan', 'pro');
-                        window.location.href = 'http://localhost:3001/signup';
+                        const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                        window.location.href = `${authUrl}/signup`;
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >

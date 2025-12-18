@@ -30,7 +30,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBack }) => {
             // Send password recovery email via Appwrite
             await account.createRecovery(
                 email,
-                'http://localhost:3001/reset-password'
+                `${window.location.origin}/reset-password`
             );
             
             setSuccess(true);

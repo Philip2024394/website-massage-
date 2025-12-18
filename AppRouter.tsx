@@ -8,6 +8,12 @@ import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent
 import { BookingStatus } from './types';
 import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
 import { therapistService } from './lib/appwriteService';
+
+// Helper function to get auth app URL for development and production
+const getAuthAppUrl = () => {
+    return (import.meta as any).env?.VITE_AUTH_APP_URL || 
+           (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+};
 import LoadingSpinner from './components/LoadingSpinner';
 
 // Page imports - Lazy load everything except critical landing pages
@@ -937,7 +943,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'joinIndastreet':
             // Redirect to auth-app signup page for consistent provider onboarding
-            window.location.href = 'http://localhost:3001/signup';
+            window.location.href = `${getAuthAppUrl()}/signup`;
             return null;
 
         // portalSelection case removed - now using direct simpleSignup flow
@@ -1123,7 +1129,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'therapistLogin': 
             // Redirect to auth-app for therapist login
-            window.location.href = 'http://localhost:3001/therapist-login';
+            window.location.href = `${getAuthAppUrl()}/therapist-login`;
             return null;
             
         case 'providerAuth': 
@@ -1216,7 +1222,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'simpleSignup':
             // Redirect to auth-app for signup
-            window.location.href = 'http://localhost:3001/signup';
+            window.location.href = `${getAuthAppUrl()}/signup`;
             return null;
             
         case 'membership-select':
@@ -1385,7 +1391,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         case 'massagePlaceLogin': 
             // Redirect to auth-app for massage place login
-            window.location.href = 'http://localhost:3001/place-login';
+            window.location.href = `${getAuthAppUrl()}/place-login`;
             return null;
             
         case 'employerJobPosting':

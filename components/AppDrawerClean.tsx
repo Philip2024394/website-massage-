@@ -213,7 +213,11 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
                 </button>
                 <div className="space-y-2">
-                  <button onClick={() => { window.location.href = 'http://localhost:3001/signup'; onClose(); }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <button onClick={() => { 
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com';
+                    window.location.href = `${authUrl}/signup`; 
+                    onClose(); 
+                  }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">Sign Up</span>
                   </button>
@@ -233,7 +237,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = 'http://localhost:3001/signup';
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
@@ -245,7 +250,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = 'http://localhost:3001/signup';
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
@@ -257,7 +263,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    window.location.href = 'http://localhost:3001/signup';
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>
