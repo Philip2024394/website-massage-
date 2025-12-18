@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Building2, User, Sparkles, Hotel } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, Building2, User, Sparkles, Hotel, Mail, Lock } from 'lucide-react';
+import { account } from '../lib/appwrite';
+import { translations, getStoredLanguage } from '../translations';
 
 type PortalType = 'massage_therapist' | 'massage_place' | 'facial_place' | 'hotel';
 
@@ -12,6 +14,17 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [language, setLanguage] = useState<'en' | 'id'>(getStoredLanguage());
+    const t = translations[language].auth;
+    
+    // Listen for language changes
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setLanguage(getStoredLanguage());
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
     
     const [formData, setFormData] = useState({
         portalType: null as PortalType | null,
@@ -31,25 +44,28 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
         setError(null);
 
         if (!formData.portalType) {
-            setError('Please select your account type');
+            setError(t.pleaseSelectPortalType);
             return;
         }
         if (!formData.email.trim() || !formData.email.includes('@')) {
-            setError('Please enter a valid email');
+            setError(t.pleaseEnterValidEmail);
             return;
         }
         if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters');
+            setError(t.passwordMinLength);
             return;
         }
 
         try {
             setLoading(true);
 
-            // TODO: Implement actual authentication with Appwrite
-            // For now, simulate authentication
+            // Authenticate with Appwrite
+            const session = await account.createEmailPasswordSession(formData.email, formData.password);
+            
+            // Store user info and portal type
             localStorage.setItem('user_email', formData.email);
             localStorage.setItem('selectedPortalType', formData.portalType);
+            localStorage.setItem('session_id', session.$id);
 
             const portalToDashboardUrl: Record<PortalType, string> = {
                 'massage_therapist': 'http://localhost:3002',
@@ -64,7 +80,14 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
             window.location.href = dashboardUrl;
 
         } catch (err: any) {
-            setError(err.message || 'Failed to sign in');
+            console.error('Sign-in error:', err);
+            if (err.code === 401) {
+                setError('Invalid email or password');
+            } else if (err.message.includes('user_not_found')) {
+                setError('No account found with this email');
+            } else {
+                setError(err.message || 'Failed to sign in');
+            }
         } finally {
             setLoading(false);
         }
@@ -96,24 +119,27 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
 
             <div className="max-w-2xl mx-auto px-6 py-16">
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                    <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 font-medium">
                         {error}
                     </div>
                 )}
 
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl font-light text-black mb-3">Welcome Back</h2>
-                    <p className="text-gray-500 text-lg">Sign in to your account to continue</p>
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold mb-3">
+                        <span className="text-black">{t.welcomeBack} </span>
+                        <span className="text-orange-500">{t.back}</span>
+                    </h2>
+                    <p className="text-gray-500 text-lg font-medium">{t.signInToYourAccount}</p>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-                    <form onSubmit={handleSignIn} className="space-y-6">
+                <div className="bg-white rounded-2xl border-2 border-gray-200 p-10 shadow-xl hover:shadow-2xl transition-all">
+                    <form onSubmit={handleSignIn} className="space-y-7">
                         {/* Account Type */}
                         <div>
-                            <label className="block text-sm font-medium text-black mb-4">
-                                I am a... <span className="text-orange-500">*</span>
+                            <label className="block text-sm font-semibold text-black mb-4">
+                                {t.selectPortalType} <span className="text-orange-500">*</span>
                             </label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-2 gap-4">
                                 {portals.map((portal) => {
                                     const Icon = portal.icon;
                                     return (
@@ -121,17 +147,15 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                                             key={portal.id}
                                             type="button"
                                             onClick={() => setFormData(prev => ({ ...prev, portalType: portal.id }))}
-                                            className={`p-4 rounded-lg border transition-all text-left ${
+                                            className={`p-5 rounded-xl border-2 transition-all transform hover:scale-105 text-left ${
                                                 formData.portalType === portal.id
-                                                    ? 'border-green-600 bg-green-500 shadow-lg'
-                                                    : 'border-orange-600 bg-orange-500 hover:border-orange-700 hover:bg-orange-600 shadow-md hover:shadow-lg'
+                                                    ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 shadow-xl'
+                                                    : 'border-orange-300 bg-gradient-to-br from-orange-400 to-orange-500 hover:border-orange-500 shadow-md hover:shadow-xl'
                                             }`}
                                         >
-                                            <Icon className="w-6 h-6 mb-2 text-white" />
-                                            <div className="font-medium text-sm text-white">{portal.name}</div>
-                                            <div className={`text-xs mt-1 ${
-                                                formData.portalType === portal.id ? 'text-green-100' : 'text-orange-100'
-                                            }`}>{portal.description}</div>
+                                            <Icon className="w-7 h-7 mb-2 text-white" />
+                                            <div className="font-semibold text-sm text-white">{portal.name}</div>
+                                            <div className="text-xs mt-1 text-orange-50">{portal.description}</div>
                                         </button>
                                     );
                                 })}
@@ -140,37 +164,41 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
 
                         {/* Email */}
                         <div>
-                            <label className="block text-sm font-medium text-black mb-2">
-                                Email Address <span className="text-orange-500">*</span>
+                            <label className="block text-sm font-semibold text-black mb-2">
+                                {t.email} <span className="text-orange-500">*</span>
                             </label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
-                                placeholder="you@example.com"
-                                required
-                            />
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <input
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    className="w-full pl-12 pr-5 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all font-medium"
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="block text-sm font-medium text-black mb-2">
+                            <label className="block text-sm font-semibold text-black mb-2">
                                 Password <span className="text-orange-500">*</span>
                             </label>
                             <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={formData.password}
                                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors pr-12"
+                                    className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all font-medium"
                                     placeholder="Enter your password"
                                     required
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -181,7 +209,8 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                         <div className="text-right">
                             <button
                                 type="button"
-                                className="text-sm text-orange-500 hover:text-orange-600 underline bg-transparent border-none p-0 cursor-pointer"
+                                onClick={() => onNavigate?.('forgotPassword')}
+                                className="text-sm text-orange-500 hover:text-orange-600 underline font-semibold bg-transparent border-none p-0 cursor-pointer"
                             >
                                 Forgot password?
                             </button>
@@ -191,17 +220,17 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-lg font-medium text-lg transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                         >
                             {loading ? 'Signing in...' : 'Sign In'}
                         </button>
 
-                        <p className="text-center text-sm text-gray-500">
+                        <p className="text-center text-sm text-gray-600 font-medium pt-2">
                             Don't have an account?{' '}
                             <button
                                 type="button"
                                 onClick={() => onNavigate?.('membershipSignup')}
-                                className="text-orange-500 hover:text-orange-600 underline font-medium bg-transparent border-none p-0 cursor-pointer"
+                                className="text-orange-500 hover:text-orange-600 underline font-semibold bg-transparent border-none p-0 cursor-pointer"
                             >
                                 Create account
                             </button>

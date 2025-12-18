@@ -8,12 +8,16 @@ import TherapistLoginPage from './pages/TherapistLoginPage';
 import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import SignInPage from './pages/SignInPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 type AuthPage = 
   | 'registrationChoice'
   | 'membershipSignup' 
   | 'packageTerms'
   | 'signIn'
+  | 'forgotPassword'
+  | 'resetPassword'
   | 'therapistLogin'
   | 'massagePlaceLogin'
   | 'privacy'
@@ -33,6 +37,10 @@ const AuthRouter: React.FC = () => {
       setCurrentPage('packageTerms');
     } else if (path.includes('/signin') || path.includes('/login')) {
       setCurrentPage('signIn');
+    } else if (path.includes('/forgot-password')) {
+      setCurrentPage('forgotPassword');
+    } else if (path.includes('/reset-password')) {
+      setCurrentPage('resetPassword');
     } else if (path.includes('/therapist-login')) {
       setCurrentPage('therapistLogin');
     } else if (path.includes('/place-login')) {
@@ -51,6 +59,8 @@ const AuthRouter: React.FC = () => {
       'membershipSignup': '/signup',
       'packageTerms': '/terms',
       'signIn': '/signin',
+      'forgotPassword': '/forgot-password',
+      'resetPassword': '/reset-password',
       'therapistLogin': '/therapist-login',
       'massagePlaceLogin': '/place-login',
       'privacy': '/privacy',
@@ -138,6 +148,20 @@ const AuthRouter: React.FC = () => {
           <SignInPage 
             onNavigate={commonNavigateHandler}
             onBack={handleBackToHome}
+          />
+        );
+
+      case 'forgotPassword':
+        return (
+          <ForgotPasswordPage 
+            onBack={() => handleNavigate('signIn')}
+          />
+        );
+
+      case 'resetPassword':
+        return (
+          <ResetPasswordPage 
+            onNavigate={commonNavigateHandler}
           />
         );
 

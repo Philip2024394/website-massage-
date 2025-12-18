@@ -581,8 +581,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // });
 
       // Profile is already LIVE from handlePlusActivation
-      // Just confirm payment submission
-      showToast('✅ Payment proof submitted! Your profile will remain LIVE. Admin will verify soon.', 'success');
+      // Confirm payment submission
+      showToast('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
       
       // Mark payment as no longer pending
       setPaymentPending(false);
@@ -1103,15 +1103,29 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 </ul>
               </div>
 
+              {/* Payment & Verification Process */}
+              <div className="bg-blue-50 border-2 border-blue-400 rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-2xl">📋</span>
+                  <h3 className="font-bold text-blue-900 text-lg">Payment & Verification Process</h3>
+                </div>
+                <div className="space-y-2 text-sm text-blue-900">
+                  <p>✅ <strong>Step 1:</strong> Your profile is now LIVE - customers can see you</p>
+                  <p>✅ <strong>Step 2:</strong> Complete payment and upload proof below</p>
+                  <p>⏰ <strong>Step 3:</strong> You have 5 hours to edit your profile after submission</p>
+                  <p>🔍 <strong>Step 4:</strong> Admin reviews payment within 48 hours</p>
+                  <p>⭐ <strong>Step 5:</strong> Verified badge activated after approval</p>
+                </div>
+              </div>
+              
               {/* Payment Deadline Warning */}
-              <div className="bg-red-50 border-2 border-red-500 rounded-xl p-4">
+              <div className="bg-orange-50 border-2 border-orange-400 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-2xl">⏰</span>
-                  <h3 className="font-bold text-red-900 text-lg">Payment Deadline: 12:00 AM Tonight</h3>
+                  <h3 className="font-bold text-orange-900 text-base">Submit Payment Proof Today</h3>
                 </div>
-                <p className="text-red-800 text-sm font-semibold">
-                  ⚠️ You must complete payment before midnight (12:00 AM) to keep your profile active. 
-                  Upload proof of payment below.
+                <p className="text-orange-800 text-sm font-semibold">
+                  💡 Upload your payment proof below. After submission, you can edit your profile for 5 hours before it locks for admin review.
                 </p>
               </div>
 

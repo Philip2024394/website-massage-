@@ -150,7 +150,6 @@ function App() {
         return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'chat':
         return <TherapistChat therapist={user} onBack={() => setCurrentPage('status')} />;
-        />;
       case 'package-terms':
         return <PackageTermsPage
           onBack={() => setCurrentPage('packages')}
