@@ -7,7 +7,7 @@ interface PackageTermsPageProps {
   onBack: () => void;
   onNavigate?: (page: string) => void;
   t?: any; // translations
-  language?: 'en' | 'id';
+  language?: 'en' | 'id' | 'gb';
 }
 
 const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate, t, language = 'en' }) => {
@@ -61,9 +61,9 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
               <span className="text-orange-500">Street</span>
             </h1>
             <button
-              onClick={onBack}
+              onClick={() => onNavigate?.('home')}
               className="hover:bg-orange-50 rounded-full transition-colors text-gray-600 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 flex items-center justify-center"
-              title="Back to Home"
+              title="Go to Home"
             >
               <Home className="w-5 h-5" />
             </button>

@@ -149,13 +149,21 @@ class ChatTranslationService {
             return;
         }
 
+        // Check if the collection is disabled (empty string)
+        if (!APPWRITE_CONFIG.collections.chatTranslations) {
+            console.log('🌍 Chat translations collection is disabled, using default translations...');
+            this.loadDefaultTranslations();
+            this.isLoaded = true;
+            return;
+        }
+
         try {
             console.log('🌍 Loading chat translations from Appwrite...');
             
             // Try to fetch existing translations
             const result = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.chatTranslations || 'chat_translations',
+                APPWRITE_CONFIG.collections.chatTranslations,
                 []
             );
 
@@ -181,11 +189,18 @@ class ChatTranslationService {
 
     // Create default translations in Appwrite
     private async createDefaultTranslations(): Promise<void> {
+        // Check if the collection is disabled
+        if (!APPWRITE_CONFIG.collections.chatTranslations) {
+            console.log('🌍 Chat translations collection is disabled, skipping creation');
+            this.loadDefaultTranslations();
+            return;
+        }
+
         try {
             for (const translation of defaultChatTranslations) {
                 const doc = await databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.chatTranslations || 'chat_translations',
+                    APPWRITE_CONFIG.collections.chatTranslations,
                     ID.unique(),
                     {
                         ...translation,
@@ -239,6 +254,20 @@ class ChatTranslationService {
 
     // Add or update translation
     async setTranslation(key: string, en: string, id: string, category: ChatTranslation['category']): Promise<void> {
+        // Check if the collection is disabled
+        if (!APPWRITE_CONFIG.collections.chatTranslations) {
+            console.log('🌍 Chat translations collection is disabled, updating local translations only');
+            // Store locally only
+            const localTranslation: ChatTranslation = {
+                $id: `local-${key}`,
+                key, en, id, category,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            this.translations.set(key, localTranslation);
+            return;
+        }
+
         try {
             const existing = this.translations.get(key);
             
@@ -246,7 +275,7 @@ class ChatTranslationService {
                 // Update existing in Appwrite
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.chatTranslations || 'chat_translations',
+                    APPWRITE_CONFIG.collections.chatTranslations,
                     existing.$id,
                     { en, id, category, updatedAt: new Date().toISOString() }
                 );
@@ -254,7 +283,7 @@ class ChatTranslationService {
                 // Create new in Appwrite
                 const doc = await databases.createDocument(
                     APPWRITE_CONFIG.databaseId,
-                    APPWRITE_CONFIG.collections.chatTranslations || 'chat_translations',
+                    APPWRITE_CONFIG.collections.chatTranslations,
                     ID.unique(),
                     {
                         key, en, id, category,

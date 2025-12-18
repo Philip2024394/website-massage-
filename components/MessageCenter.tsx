@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { messagingService } from '../../lib/appwriteService';
+import { messagingService } from '../lib/appwriteService';
 
 interface Message {
     $id: string;

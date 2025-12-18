@@ -8,7 +8,7 @@ interface PackageTermsPageProps {
   onBack?: () => void;
 }
 
-const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onNavigate, onBack }) => {
+const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack }) => {
   const pendingPlan = localStorage.getItem('pendingTermsPlan') as Plan || 'pro';
   const isPro = pendingPlan === 'pro';
 
@@ -23,7 +23,8 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onNavigate, onBack 
                 onClick={onBack}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5" />
+                {/* @ts-ignore */}
+                <ArrowLeft size={20} />
               </button>
               <h1 className="text-2xl font-bold">
                 <span className="text-black">Inda</span>

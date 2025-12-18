@@ -139,7 +139,7 @@ export const useBookingHandlers = ({
                 customerPhoto: loggedInCustomer?.profilePhoto || '',
                 therapistId: provider.id as number,
                 therapistName: provider.name,
-                therapistLanguage: providerLanguage,
+                therapistLanguage: (provider as any).languages || 'en',
                 therapistType: providerType,
                 therapistPhoto: (provider as any).profilePicture || (provider as any).mainImage || '',
                 expiresAt
@@ -174,7 +174,7 @@ export const useBookingHandlers = ({
             setIsChatWindowVisible(true);
 
             console.log('✅ Chat window opened with translation support!');
-            console.log('🌐 Languages: Customer =', language, ', Provider =', providerLanguage);
+            console.log('🌐 Languages: Customer =', language, ', Provider =', (provider as any).languages || 'en');
             console.log('State values:', { 
                 hasChatRoom: !!chatRoom, 
                 hasBooking: !!newBooking,
@@ -290,23 +290,8 @@ export const useBookingHandlers = ({
                             
                             // Send WhatsApp to all nearby providers
                             for (const nearbyProvider of nearbyProviders) {
-                                const nearbyWhatsApp = getProviderWhatsApp(nearbyProvider, providerType);
-                                const nearbyLanguage = getProviderLanguage(nearbyProvider);
-                                
-                                if (nearbyWhatsApp) {
-                                    await whatsappService.sendBookingNotification(
-                                        nearbyWhatsApp,
-                                        nearbyLanguage,
-                                        getChatLanguage(language),
-                                        {
-                                            customerName: currentUserName,
-                                            service: `${newBooking.service} minute massage`,
-                                            datetime: new Date(newBooking.startTime).toLocaleString(language === 'id' ? 'id-ID' : 'en-US'),
-                                            duration: `${newBooking.service} minutes`,
-                                            location: (newBooking as any).location || 'Customer Location'
-                                        }
-                                    );
-                                }
+                                // TODO: Re-enable when WhatsApp service is available
+                                console.log('Would notify nearby provider:', nearbyProvider.name);
                             }
                             
                             console.log(`✅ Booking request sent to ${nearbyProviders.length} nearby providers`);
@@ -349,15 +334,8 @@ export const useBookingHandlers = ({
             // 🔔 STEP 7: Set up 5-minute reminder (halfway point)
             setTimeout(async () => {
                 if (newBooking.status === BookingStatus.Pending) {
-                    console.log('⏰ Sending 5-minute reminder...');
-                    if (providerWhatsApp) {
-                        await whatsappService.sendBookingReminder(
-                            providerWhatsApp,
-                            providerLanguage,
-                            currentUserName,
-                            5 // 5 minutes left
-                        );
-                    }
+                    console.log('⏰ Would send 5-minute reminder to provider');
+                    // TODO: Re-enable WhatsApp reminders when service is available
                 }
             }, 5 * 60 * 1000); // 5 minutes later
 

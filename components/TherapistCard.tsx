@@ -18,6 +18,22 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 
+// Helper function to get auth app URL for development and production
+const getAuthAppUrl = (): string => {
+    // Check for environment variable first
+    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
+    if (envUrl) return envUrl;
+    
+    // Development mode
+    if (window.location.origin.includes('localhost')) {
+        return 'http://localhost:3001';
+    }
+    
+    // Production mode - for now redirect to main site
+    // This needs to be updated when auth-app is deployed separately
+    return window.location.origin;
+};
+
 interface TherapistCardProps {
     therapist: Therapist;
     userLocation?: { lat: number; lng: number } | null; // User's current location for distance calculation
@@ -755,8 +771,7 @@ ${locationInfo}${coordinatesInfo}
                         // Redirect to auth-app for therapist signup
                         localStorage.setItem('selectedPortalType', 'massage_therapist');
                         localStorage.setItem('selected_membership_plan', 'pro');
-                        const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
-                        window.location.href = `${authUrl}/signup`;
+                        window.location.href = `${getAuthAppUrl()}/signup`;
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >

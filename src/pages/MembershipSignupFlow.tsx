@@ -610,15 +610,15 @@ const PortalSelectionStep: React.FC<{
 
         <div className="grid md:grid-cols-3 gap-4">
             <button
-                onClick={() => onSelect('therapist')}
+                onClick={() => onSelect('massage_therapist')}
                 disabled={loading}
                 className={`p-6 rounded-2xl border-2 text-left transition-all ${
-                    selectedPortal === 'therapist' 
+                    selectedPortal === 'massage_therapist' 
                         ? 'border-orange-500 bg-orange-50' 
                         : 'border-gray-200 hover:border-gray-300'
                 }`}
             >
-                <User className={`w-10 h-10 mb-4 ${selectedPortal === 'therapist' ? 'text-orange-600' : 'text-gray-400'}`} />
+                <User className={`w-10 h-10 mb-4 ${selectedPortal === 'massage_therapist' ? 'text-orange-600' : 'text-gray-400'}`} />
                 <h3 className="font-bold text-gray-900 mb-1">Therapist</h3>
                 <p className="text-sm text-gray-600">Individual massage therapist providing mobile or home services</p>
             </button>
@@ -775,7 +775,7 @@ const ProfileUploadStep: React.FC<{
         }
     };
 
-    const portalLabel = portalType === 'therapist' ? 'Therapist' : 
+    const portalLabel = portalType === 'massage_therapist' ? 'Therapist' : 
                         portalType === 'massage_place' ? 'Massage Place' : 'Facial Place';
 
     return (

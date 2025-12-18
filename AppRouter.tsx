@@ -10,9 +10,19 @@ import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRende
 import { therapistService } from './lib/appwriteService';
 
 // Helper function to get auth app URL for development and production
-const getAuthAppUrl = () => {
-    return (import.meta as any).env?.VITE_AUTH_APP_URL || 
-           (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
+const getAuthAppUrl = (): string => {
+    // Check for environment variable first
+    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
+    if (envUrl) return envUrl;
+    
+    // Development mode
+    if (window.location.origin.includes('localhost')) {
+        return 'http://localhost:3001';
+    }
+    
+    // Production mode - for now redirect to main site
+    // This needs to be updated when auth-app is deployed separately
+    return window.location.origin;
 };
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -1612,7 +1622,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'join-indastreet-partners':
             return (
                 <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                    <JoinIndastreetPartnersPage
+                    <IndastreetPartnersPage
                         onNavigate={(page: Page) => setPage(page)}
                         onMassageJobsClick={() => setPage('massageJobs')}
                         onHotelPortalClick={() => setPage('villaDashboard')}

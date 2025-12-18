@@ -7,7 +7,7 @@ interface RegistrationChoicePageProps {
     t: any;
 }
 
-const RegistrationChoicePage: React.FC<RegistrationChoicePageProps> = ({ onSelect, onBack, t }) => {
+const RegistrationChoicePage: React.FC<RegistrationChoicePageProps> = ({ onSelect, onBack }) => {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}

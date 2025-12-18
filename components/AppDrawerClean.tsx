@@ -2,12 +2,37 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles } from 'lucide-react';
 
+// Helper function to get auth app URL for development and production
+const getAuthAppUrl = (): string => {
+    // Check for environment variable first
+    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
+    if (envUrl) return envUrl;
+    
+    // Development mode
+    if (window.location.origin.includes('localhost')) {
+        return 'http://localhost:3001';
+    }
+    
+    // Production mode - check if auth-app is deployed separately
+    // For now, redirect to a signup page on the same domain
+    // This needs to be updated when auth-app is deployed to a separate URL
+    if (window.location.origin.includes('indastreetmassage.com')) {
+        // If there's a dedicated auth subdomain, use it
+        // return 'https://auth.indastreetmassage.com';
+        
+        // For now, redirect to main site signup (temporary solution)
+        return window.location.origin;
+    }
+    
+    return window.location.origin;
+};
+
 interface AppDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   isHome?: boolean;
   t?: any;
-  language?: 'en' | 'id';
+  language?: 'en' | 'id' | 'gb';
   onMassageJobsClick?: () => void;
   onHotelPortalClick?: () => void;
   onVillaPortalClick?: () => void;
@@ -230,15 +255,16 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Join Provider Section */}
                 <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
                   <h3 className="text-xs font-bold text-orange-600 uppercase tracking-wider px-3 mb-3">{dt.joinAsProvider}</h3>
-                  <button onClick={() => {
+                  <button onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     // Pre-select therapist portal type and redirect to auth-app signup
                     if (typeof localStorage !== 'undefined') {
                       localStorage.setItem('selectedPortalType', 'massage_therapist');
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
-                    window.location.href = `${authUrl}/signup`;
+                    window.location.href = `${getAuthAppUrl()}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
@@ -250,8 +276,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
-                    window.location.href = `${authUrl}/signup`;
+                    window.location.href = `${getAuthAppUrl()}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
@@ -263,8 +288,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
-                    window.location.href = `${authUrl}/signup`;
+                    window.location.href = `${getAuthAppUrl()}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>

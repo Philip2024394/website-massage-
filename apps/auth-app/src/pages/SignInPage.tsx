@@ -10,7 +10,7 @@ interface SignInPageProps {
     onBack?: () => void;
 }
 
-const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
+const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -60,7 +60,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
             setLoading(true);
 
             // Authenticate with Appwrite
-            const session = await account.createEmailPasswordSession(formData.email, formData.password);
+            const session = await account.createEmailSession(formData.email, formData.password);
             
             // Store user info and portal type
             localStorage.setItem('user_email', formData.email);
@@ -153,7 +153,8 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                                                     : 'border-orange-300 bg-gradient-to-br from-orange-400 to-orange-500 hover:border-orange-500 shadow-md hover:shadow-xl'
                                             }`}
                                         >
-                                            <Icon className="w-7 h-7 mb-2 text-white" />
+                                            {/* @ts-ignore */}
+                                            <Icon size={28} className="mb-2 text-white" />
                                             <div className="font-semibold text-sm text-white">{portal.name}</div>
                                             <div className="text-xs mt-1 text-orange-50">{portal.description}</div>
                                         </button>
@@ -168,7 +169,8 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                                 {t.email} <span className="text-orange-500">*</span>
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                {/* @ts-ignore */}
+                                <Mail size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="email"
                                     value={formData.email}
@@ -186,7 +188,8 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                                 Password <span className="text-orange-500">*</span>
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                {/* @ts-ignore */}
+                                <Lock size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={formData.password}
@@ -200,7 +203,8 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate, onBack }) => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors"
                                 >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    {/* @ts-ignore */}
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </button>
                             </div>
                         </div>
