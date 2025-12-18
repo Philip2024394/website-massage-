@@ -490,7 +490,7 @@ const App = () => {
             } else if (path === '/join' || path.startsWith('/join/')) {
                 state.setPage('membership-select');
             } else if (path === '/signup' || path.startsWith('/signup')) {
-                // Redirect to auth-app for signup
+                // Handle signup - set page state to trigger redirect or render SimpleSignupFlow
                 const urlParams = new URLSearchParams(window.location.search);
                 const plan = urlParams.get('plan');
                 const portal = urlParams.get('portal');
@@ -500,8 +500,8 @@ const App = () => {
                     localStorage.setItem('selectedPortalType', portal);
                 }
                 
-                // Redirect to auth-app
-                window.location.href = 'http://localhost:3001/signup';
+                // Set page to simpleSignup which will render SimpleSignupFlow or redirect if needed
+                state.setPage('simpleSignup');
                 return;
             }
         } catch (e) {
