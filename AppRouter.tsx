@@ -936,9 +936,12 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             />;
 
         case 'joinIndastreet':
-            // ProviderPortalsPage removed - redirect to simpleSignup
-            setPage('simpleSignup');
-            return null;
+            return <JoinIndastreetPartnersPage
+                onSelectPackage={handleSelectMembershipPackage}
+                onBack={handleBackToHome}
+                onNavigate={commonNavigateHandler}
+                t={t}
+            />;
 
         // portalSelection case removed - now using direct simpleSignup flow
 
