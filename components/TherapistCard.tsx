@@ -755,7 +755,7 @@ ${locationInfo}${coordinatesInfo}
                         // Redirect to auth-app for therapist signup
                         localStorage.setItem('selectedPortalType', 'massage_therapist');
                         localStorage.setItem('selected_membership_plan', 'pro');
-                        const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                        const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
                         window.location.href = `${authUrl}/signup`;
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"

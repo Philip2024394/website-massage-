@@ -214,7 +214,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 </button>
                 <div className="space-y-2">
                   <button onClick={() => { 
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com';
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
                     window.location.href = `${authUrl}/signup`; 
                     onClose(); 
                   }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
@@ -237,7 +237,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
                     window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
@@ -250,7 +250,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
                     window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
@@ -263,7 +263,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                       localStorage.setItem('selected_membership_plan', 'pro');
                     }
                     onClose();
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
                     window.location.href = `${authUrl}/signup`;
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />

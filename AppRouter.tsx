@@ -12,7 +12,7 @@ import { therapistService } from './lib/appwriteService';
 // Helper function to get auth app URL for development and production
 const getAuthAppUrl = () => {
     return (import.meta as any).env?.VITE_AUTH_APP_URL || 
-           (window.location.origin.includes('localhost') ? 'http://localhost:3001' : 'https://auth.indastreetmassage.com');
+           (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
 };
 import LoadingSpinner from './components/LoadingSpinner';
 
