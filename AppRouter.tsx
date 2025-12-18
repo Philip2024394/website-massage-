@@ -47,7 +47,7 @@ const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
 
 const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
 const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
-const RegistrationChoicePage = React.lazy(() => import('./pages/RegistrationChoicePage'));
+// RegistrationChoicePage removed - redundant with SimpleSignupFlow portal selection
 const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
 
 // Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes

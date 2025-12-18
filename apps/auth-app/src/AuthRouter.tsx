@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // Import auth pages
 import SimpleSignupFlow from './pages/SimpleSignupFlow';
 import PackageTermsPage from './pages/PackageTermsPage';
-import RegistrationChoicePage from './pages/RegistrationChoicePage';
+// RegistrationChoicePage removed - redundant with SimpleSignupFlow portal selection
 import TherapistLoginPage from './pages/TherapistLoginPage';
 import MassagePlaceLoginPage from './pages/MassagePlaceLoginPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -200,11 +200,11 @@ const AuthRouter: React.FC = () => {
 
       case 'registrationChoice':
       default:
+        // Redirect to signup page (RegistrationChoicePage removed - redundant)
         return (
-          <RegistrationChoicePage 
-            onSelect={handleSelectRegistration}
+          <SimpleSignupFlow 
+            onNavigate={commonNavigateHandler}
             onBack={handleBackToHome}
-            t={{}} // Empty translations object for now
           />
         );
     }
