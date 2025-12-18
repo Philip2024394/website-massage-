@@ -88,17 +88,17 @@ export const useBookingHandlers = ({
             })
             .catch(err => console.error('Booking persistence error:', err));
 
-        // � PROFESSIONAL DUAL MESSAGING SYSTEM:
-        // 1. WhatsApp notification to provider (private, instant backup)
-        // 2. Chat window for customer (visible, interactive, with translation)
+        // � PROFESSIONAL NOTIFICATION SYSTEM:
+        // 1. In-app chat notifications (instant, interactive)
+        // 2. Audio notifications with MP3 sounds
+        // Note: WhatsApp numbers collected for admin purposes only
         
         console.log('🚀 Starting professional booking notification system...');
         
         try {
-            // Import all required services
+            // Import required services (WhatsApp service removed)
             const { createChatRoom, sendSystemMessage } = await import('../lib/chatService');
             const { playBookingNotificationSequence } = await import('../lib/soundService');
-            const { whatsappService, getProviderWhatsApp, getProviderLanguage } = await import('../lib/whatsappService');
             
             console.log('✅ All services imported successfully');
             
@@ -119,15 +119,14 @@ export const useBookingHandlers = ({
                 type: providerType 
             });
 
-            // 📱 STEP 1: Send WhatsApp notification to provider (backup/instant notification)
-            const providerWhatsApp = getProviderWhatsApp(provider, providerType);
-            const providerLanguage = getProviderLanguage(provider);
+            // 📱 STEP 1: WhatsApp notifications disabled - admin use only
+            console.log('📱 WhatsApp notifications disabled - using in-app notifications only');
             
-            if (providerWhatsApp) {
-                console.log('📱 Sending WhatsApp notification to provider...');
-                
-                const whatsappResult = await whatsappService.sendBookingNotification(
-                    providerWhatsApp,
+            // WhatsApp functionality removed - numbers for admin purposes only
+            const whatsappDisabled = true;
+            
+            if (!whatsappDisabled) {
+                // This block is disabled - WhatsApp not used for notifications
                     providerLanguage,
                     getChatLanguage(language),
                     {

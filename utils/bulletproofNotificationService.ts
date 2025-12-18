@@ -5,9 +5,10 @@
  * - PWA Push Notifications (works when app closed)
  * - Browser Notifications 
  * - Service Worker Background Sync
- * - WhatsApp Integration
  * - SMS Backup (future)
  * - Retry Logic with Persistence
+ * 
+ * NOTE: WhatsApp numbers collected for admin purposes only, no notifications sent
  */
 
 export interface NotificationChannel {
@@ -162,7 +163,7 @@ export class BulletproofNotificationService {
         providerId: string;
         providerType: 'therapist' | 'place';
         bookingId?: string;
-        whatsappNumber?: string;
+        // whatsappNumber removed - collected for admin purposes only
     }): Promise<void> {
         console.log('🚨 SENDING CRITICAL NOTIFICATION:', data);
 
@@ -199,14 +200,8 @@ export class BulletproofNotificationService {
             console.warn('Service worker message failed:', error);
         }
 
-        // Channel 4: WhatsApp Integration (always works)
-        if (data.whatsappNumber) {
-            try {
-                this.sendWhatsAppNotification(notificationData);
-            } catch (error) {
-                console.warn('WhatsApp notification failed:', error);
-            }
-        }
+        // Channel 4: Reserved for future SMS integration
+        // WhatsApp numbers are collected for admin purposes only
 
         // Channel 5: Visual/Audio Alert in Dashboard
         try {
@@ -272,14 +267,14 @@ export class BulletproofNotificationService {
     /**
      * Send WhatsApp notification
      */
+    /**
+     * WhatsApp integration removed - numbers collected for admin purposes only
+     * Future SMS integration can be added here
+     */
     private sendWhatsAppNotification(data: any): void {
-        // Format message for WhatsApp
-        const message = `🚨 CRITICAL: ${data.title}\n\n${data.body}\n\nTime: ${new Date().toLocaleString()}\n\nOpen IndaStreet app immediately to respond!`;
-        
-        const whatsappUrl = `https://wa.me/${data.whatsappNumber}?text=${encodeURIComponent(message)}`;
-        
-        // Open WhatsApp (this ensures the message is ready to send)
-        window.open(whatsappUrl, '_blank');
+        console.log('WhatsApp notifications disabled - numbers for admin use only');
+        // WhatsApp functionality intentionally disabled
+        // Numbers are collected for admin contact purposes only
     }
 
     /**
