@@ -57,7 +57,6 @@ export const authTranslations = {
       
       // Forgot Password
       resetYourPassword: 'Reset Your',
-      password: 'Password',
       enterEmailForReset: 'Enter your email address and we\'ll send you a link to reset your password',
       sendResetLink: 'Send Reset Link',
       backToSignIn: '← Back to Sign In',
@@ -94,7 +93,6 @@ export const authTranslations = {
       nameLabel: 'Name',
       namePlaceholder: 'Your Name',
       emailLabel: 'Email',
-      emailPlaceholder: 'you@example.com',
       passwordLabel: 'Password',
       signUpButton: 'Sign Up',
       activationTitle: 'Account Activation',
@@ -207,7 +205,6 @@ export const authTranslations = {
       
       // Forgot Password
       resetYourPassword: 'Reset',
-      password: 'Kata Sandi Anda',
       enterEmailForReset: 'Masukkan alamat email Anda dan kami akan mengirimkan link untuk reset kata sandi',
       sendResetLink: 'Kirim Link Reset',
       backToSignIn: '← Kembali ke Masuk',
@@ -244,7 +241,6 @@ export const authTranslations = {
       nameLabel: 'Nama',
       namePlaceholder: 'Nama Anda',
       emailLabel: 'Email',
-      emailPlaceholder: 'anda@contoh.com',
       passwordLabel: 'Kata Sandi',
       signUpButton: 'Daftar',
       activationTitle: 'Aktivasi Akun',
