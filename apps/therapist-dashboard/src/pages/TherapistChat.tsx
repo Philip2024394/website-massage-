@@ -127,10 +127,10 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="w-full bg-white border-b shadow-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-sm mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={onBack}
@@ -158,7 +158,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 max-w-4xl mx-auto w-full p-4">
+      <div className="flex-1 max-w-sm mx-auto w-full p-4">
         {!isPremium ? (
           /* Upgrade Prompt for Non-Premium */
           <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
@@ -179,7 +179,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">Upgrade to Premium</h3>
-                  <p className="text-sm text-gray-600">200k IDR/month</p>
+                  <p className="text-sm text-gray-600">Rp 250.000/MONTH</p>
                 </div>
               </div>
               

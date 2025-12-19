@@ -112,7 +112,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
           <p className="text-lg text-gray-600">
             {isPro 
               ? (language === 'id' ? 'Paket Pro - Sistem Komisi' : 'Pro Package - Commission System')
-              : (language === 'id' ? 'Paket Plus - Langganan Premium' : 'Plus Package - Premium Subscription')
+              : (language === 'id' ? 'Paket Premium - Langganan Premium' : 'Premium Package - Premium Subscription')
             }
           </p>
         </div>
@@ -135,7 +135,7 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
               <h4 className="font-semibold text-gray-900">
                 {isPro 
                   ? (language === 'id' ? '1. Paket Pro (Sistem Komisi)' : '1. Pro Package (Commission System)')
-                  : (language === 'id' ? '1. Paket Plus (Langganan Bulanan)' : '1. Plus Package (Monthly Subscription)')
+                  : (language === 'id' ? '1. Paket Premium (Langganan Bulanan)' : '1. Premium Package (Monthly Subscription)')
                 }
               </h4>
               
@@ -151,6 +151,8 @@ const PackageTermsPage: React.FC<PackageTermsPageProps> = ({ onBack, onNavigate,
                   <li>{language === 'id' ? 'Biaya bulanan: Rp 250.000' : 'Monthly fee: Rp 250,000'}</li>
                   <li>{language === 'id' ? 'Komisi: 0% - Anda menyimpan semua pendapatan' : 'Commission: 0% - You keep all earnings'}</li>
                   <li>{language === 'id' ? 'Akses premium ke semua fitur' : 'Premium access to all features'}</li>
+                  <li>{language === 'id' ? 'Akses nomor WhatsApp pelanggan' : 'Access to customer WhatsApp numbers'}</li>
+                  <li>{language === 'id' ? 'Status Busy tanpa batas waktu' : 'Unlimited Busy status time'}</li>
                   <li>{language === 'id' ? 'Dukungan pelanggan VIP' : 'VIP customer support'}</li>
                 </ul>
               )}

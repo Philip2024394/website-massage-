@@ -285,37 +285,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const [facialMemberId, setFacialMemberId] = useState<string | null>(null);
     const [facialMemberEmail, setFacialMemberEmail] = useState<string | null>(null);
 
-    // 🚀 Initialize anonymous session on app mount to prevent 401 errors
+    // 🚀 Initialize app and clean up stale data
+    // DISABLED: Anonymous sessions create empty user entries in Appwrite
     useEffect(() => {
         const initSession = async () => {
-            try {
-                const { authService } = await import('./lib/appwrite/auth.service');
-                const session = await authService.createAnonymousSession();
-                
-                if (session) {
-                    // Clean up stale signup data if anonymous (not logged in)
-                    if (!session.userId || session.userId === 'anonymous') {
-                        localStorage.removeItem('pendingTermsPlan');
-                        localStorage.removeItem('selected_membership_plan');
-                        localStorage.removeItem('selectedPortalType');
-                        console.log('✅ [AppRouter] Anonymous session initialized, signup data cleared');
-                    } else {
-                        console.log('✅ [AppRouter] Authenticated session active');
-                    }
-                } else {
-                    // No session - clear stale signup data anyway
-                    localStorage.removeItem('pendingTermsPlan');
-                    localStorage.removeItem('selected_membership_plan');
-                    localStorage.removeItem('selectedPortalType');
-                    console.log('ℹ️ [AppRouter] No session available, cleared signup data');
-                }
-            } catch (error) {
-                // Even on error, clear stale data
-                localStorage.removeItem('pendingTermsPlan');
-                localStorage.removeItem('selected_membership_plan');
-                localStorage.removeItem('selectedPortalType');
-                console.log('⚠️ [AppRouter] Session initialization failed, cleared signup data:', error);
-            }
+            // Clean up stale signup data on app mount
+            localStorage.removeItem('pendingTermsPlan');
+            localStorage.removeItem('selected_membership_plan');
+            localStorage.removeItem('selectedPortalType');
+            console.log('✅ [AppRouter] App initialized, signup data cleared');
         };
         initSession();
     }, []); // Run only once on mount

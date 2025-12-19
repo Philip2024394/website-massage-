@@ -6,6 +6,7 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { detectPhoneNumber, getBlockedMessage } from '../utils/phoneBlocker';
 
 // Avatar options for customer profile
 const AVATAR_OPTIONS = [
@@ -835,12 +836,30 @@ export default function ChatWindow({
         setSending(true);
 
         try {
+            // Check for phone numbers/WhatsApp in message
+            const phoneCheck = detectPhoneNumber(newMessage.trim());
+            if (phoneCheck.isBlocked) {
+                setSending(false);
+                alert(getBlockedMessage(chatLang));
+                console.warn('🚫 Message blocked:', phoneCheck.detectedPattern);
+                return;
+            }
+
             // Translate message to Indonesian (member's language) before sending
             let messageContent = newMessage.trim();
             if (chatLang !== 'id') {
                 const translated = await translationService.translate(messageContent, 'id', chatLang);
                 console.log('🌐 Message translated:', { original: messageContent, translated: translated.translatedText });
                 messageContent = translated.translatedText;
+                
+                // Double-check translated message for phone numbers (in case translation reveals numbers)
+                const translatedCheck = detectPhoneNumber(messageContent);
+                if (translatedCheck.isBlocked) {
+                    setSending(false);
+                    alert(getBlockedMessage(chatLang));
+                    console.warn('🚫 Translated message blocked:', translatedCheck.detectedPattern);
+                    return;
+                }
             }
 
             await messagingService.sendMessage({
@@ -1651,38 +1670,82 @@ export default function ChatWindow({
 
             {/* Input Area */}
             <div className="border-t border-gray-200 p-3 bg-white rounded-b-lg">
-                {waitingForResponse && bookingStatus === 'pending' ? (
-                    <div className="text-center text-gray-500 py-2">
-                        <div className="flex items-center justify-center gap-2 text-sm">
-                            <div className="animate-spin w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full"></div>
-                            <span>Chat will be enabled after {providerName} accepts your booking</span>
+                {bookingStatus === 'pending' || waitingForResponse ? (
+                    /* Blocked state - Waiting for therapist to accept booking */
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-200 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center animate-pulse">
+                                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-gray-900 mb-1">🔒 Waiting for {providerName} to Accept</p>
+                                <p className="text-sm text-gray-700">
+                                    {waitingForResponse ? (
+                                        <>
+                                            Your booking request has been sent. Chat will be enabled once {providerName} accepts your booking.
+                                            <br />
+                                            <span className="text-xs text-orange-600 mt-1 inline-block">⏳ Please wait for response...</span>
+                                        </>
+                                    ) : (
+                                        'Please send a booking request first to start chatting.'
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : bookingStatus === 'rejected' ? (
+                    /* Rejected state */
+                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold text-red-900 mb-1">❌ Booking Declined</p>
+                                <p className="text-sm text-red-700">
+                                    {providerName} was unable to accept this booking. We are searching for an alternative therapist for you.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="flex space-x-2">
-                        <input
-                            type="text"
-                            value={newMessage}
-                            onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                            placeholder={bookingStatus === 'rejected' ? 'Booking was declined...' : 'Type your message...'}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
-                            disabled={sending || bookingStatus === 'rejected'}
-                        />
-                        <button
-                            onClick={sendMessage}
-                            disabled={!newMessage.trim() || sending || bookingStatus === 'rejected'}
-                            className="bg-orange-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
-                        >
-                            {sending ? (
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                            ) : (
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
+                    /* Enabled state - Can chat after booking accepted */
+                    <>
+                        <div className="flex space-x-2">
+                            <input
+                                type="text"
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                                placeholder="Type your message..."
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"
+                                disabled={sending}
+                            />
+                            <button
+                                onClick={sendMessage}
+                                disabled={!newMessage.trim() || sending}
+                                className="bg-orange-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+                            >
+                                {sending ? (
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2 px-1">
+                            Press Enter to send • Shift+Enter for new line
+                        </p>
+                        <p className="text-xs text-amber-600 mt-1 px-1">
+                            ⚠️ Sharing phone numbers or WhatsApp is not allowed
+                        </p>
+                    </>
                 )}
             </div>
         </div>

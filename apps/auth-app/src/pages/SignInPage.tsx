@@ -59,40 +59,63 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
         try {
             setLoading(true);
 
+            // Trim email and password to remove any whitespace
+            const email = formData.email.trim().toLowerCase();
+            const password = formData.password.trim();
+
+            console.log('🔐 Attempting sign-in with email:', email);
+            console.log('🔐 Portal type:', formData.portalType);
+
+            // Delete any existing session first to avoid "session already exists" error
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Deleted existing session');
+            } catch (sessionError) {
+                console.log('ℹ️ No existing session to delete (this is normal)');
+            }
+
             // Authenticate with Appwrite
-            const session = await account.createEmailSession(formData.email, formData.password);
+            const session = await account.createEmailSession(email, password);
+            
+            console.log('✅ Session created:', session);
             
             // Store user info and portal type
-            localStorage.setItem('user_email', formData.email);
+            localStorage.setItem('user_email', email);
             localStorage.setItem('selectedPortalType', formData.portalType);
             localStorage.setItem('session_id', session.$id);
 
             const isProduction = !window.location.origin.includes('localhost');
             const dashboardUrls: Record<string, string> = isProduction ? {
-                'massage_therapist': window.location.origin,
-                'massage_place': window.location.origin,
-                'facial_place': window.location.origin,
-                'hotel': window.location.origin
+                'massage_therapist': 'https://therapist.indastreet.com',
+                'massage_place': 'https://place.indastreet.com',
+                'facial_place': 'https://facial.indastreet.com',
+                'hotel': 'https://hotel.indastreet.com'
             } : {
-                'massage_therapist': 'http://localhost:3002',
-                'massage_place': 'http://localhost:3005',
+                'massage_therapist': 'http://localhost:3005',
+                'massage_place': 'http://localhost:3002',
                 'facial_place': 'http://localhost:3006',
                 'hotel': 'http://localhost:3007'
             };
 
             const dashboardUrl = dashboardUrls[formData.portalType];
             
-            console.log(`✅ Sign-in successful! Redirecting to ${formData.portalType} dashboard`);
+            console.log(`✅ Sign-in successful! Redirecting to ${formData.portalType} dashboard at ${dashboardUrl}`);
             window.location.href = dashboardUrl;
 
         } catch (err: any) {
-            console.error('Sign-in error:', err);
-            if (err.code === 401) {
-                setError('Invalid email or password');
+            console.error('❌ Sign-in error details:', err);
+            console.error('❌ Error code:', err.code);
+            console.error('❌ Error type:', err.type);
+            console.error('❌ Error message:', err.message);
+            
+            if (err.code === 401 || err.type === 'user_invalid_credentials') {
+                setError('Invalid email or password. Please check your credentials and try again.');
+            } else if (err.type === 'user_blocked') {
+                setError('Your account has been blocked. Please contact support.');
             } else if (err.message.includes('user_not_found')) {
-                setError('No account found with this email');
+                setError('No account found with this email. Please sign up first.');
             } else {
-                setError(err.message || 'Failed to sign in');
+                setError(err.message || 'Failed to sign in. Please try again.');
             }
         } finally {
             setLoading(false);
@@ -155,7 +178,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
                                             onClick={() => setFormData(prev => ({ ...prev, portalType: portal.id }))}
                                             className={`p-5 rounded-xl border-2 transition-all transform hover:scale-105 text-left ${
                                                 formData.portalType === portal.id
-                                                    ? 'border-orange-500 bg-gradient-to-br from-orange-500 to-orange-600 shadow-xl'
+                                                    ? 'border-green-500 bg-gradient-to-br from-green-500 to-green-600 shadow-xl'
                                                     : 'border-orange-300 bg-gradient-to-br from-orange-400 to-orange-500 hover:border-orange-500 shadow-md hover:shadow-xl'
                                             }`}
                                         >

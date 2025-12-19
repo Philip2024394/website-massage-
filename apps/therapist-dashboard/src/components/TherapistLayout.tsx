@@ -70,8 +70,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
     { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
-    { id: 'membership', label: labels.membership, icon: Crown, color: 'text-yellow-600' },
-    { id: 'packages', label: language === 'id' ? 'Paket Membership' : 'Membership Packages', icon: Crown, color: 'text-amber-600' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
     { id: 'calendar', label: labels.calendar, icon: Calendar, color: 'text-indigo-600' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-gray-600' },
@@ -87,23 +85,27 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       {/* Top Bar with Burger Menu */}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3">
+          {/* Left side - Therapist Profile Name */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="Toggle menu"
-            >
-              {isSidebarOpen ? (
-                <X className="w-6 h-6 text-gray-700" />
-              ) : (
-                <Menu className="w-6 h-6 text-gray-700" />
-              )}
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">
-              {menuItems.find(item => item.id === currentPage)?.label || 'Dashboard'}
-            </h1>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-gray-900">
+                  {therapist?.name || 'Therapist'}
+                </span>
+                {therapist?.membershipTier && (
+                  <span className="text-xs text-gray-500">
+                  {therapist.membershipTier === 'free' || therapist.membershipTier === 'commission' ? 'Pro - Pay As You Go' : 
+                   therapist.membershipTier === 'plus' || therapist.membershipTier === 'monthly' ? 'Plus - Everything For Success' : 'Pro Plan'}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           
+          {/* Right side - Language, Membership Badge, and Burger Menu */}
           <div className="flex items-center gap-3">
             {/* Language Toggle */}
             <button
@@ -119,14 +121,18 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 <span className="text-xs font-semibold text-yellow-700">Premium</span>
               </div>
             )}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-700 hidden sm:inline">
-                {therapist?.name || 'Therapist'}
-              </span>
-            </div>
+            {/* Burger Menu */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isSidebarOpen ? (
+                <X className="w-6 h-6 text-gray-700" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-700" />
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -141,8 +147,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
@@ -160,9 +166,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             
             {/* Therapist Info */}
             <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <User className="w-7 h-7 text-white" />
-              </div>
+              {therapist?.profilePicture ? (
+                <img 
+                  src={therapist.profilePicture} 
+                  alt={therapist?.name || 'Therapist'} 
+                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-7 h-7 text-white" />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">
                   {therapist?.name || 'Therapist'}

@@ -24,8 +24,17 @@ type AuthPage =
   | 'home';
 
 const AuthRouter: React.FC = () => {
-  // Default to signup page instead of redundant registration choice
-  const [currentPage, setCurrentPage] = useState<AuthPage>('membershipSignup');
+  // Redirect to main app if accessing root - auth app shouldn't be accessed directly
+  const [currentPage, setCurrentPage] = useState<AuthPage>(() => {
+    // If user lands on root, they should go to main app
+    const path = window.location.pathname;
+    if (path === '/' || path === '') {
+      const mainAppUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
+      window.location.href = mainAppUrl;
+      return 'signIn'; // Temporary while redirecting
+    }
+    return 'signIn';
+  });
 
   // Handle URL-based routing
   useEffect(() => {
@@ -48,9 +57,12 @@ const AuthRouter: React.FC = () => {
       setCurrentPage('massagePlaceLogin');
     } else if (path.includes('/privacy')) {
       setCurrentPage('privacy');
+    } else if (path === '/' || path === '') {
+      // Default to sign-in page for returning users
+      setCurrentPage('signIn');
     } else {
-      // Default to signup page (portal type selection is in SimpleSignupFlow)
-      setCurrentPage('membershipSignup');
+      // Fallback to sign-in
+      setCurrentPage('signIn');
     }
   }, []);
 
@@ -83,26 +95,7 @@ const AuthRouter: React.FC = () => {
     }
   };
 
-  const handleSelectRegistration = (type: 'therapist' | 'place' | 'facial') => {
-    console.log('🎯 Registration type selected:', type);
-    
-    // Route to appropriate login page
-    switch (type) {
-      case 'therapist':
-        handleNavigate('therapistLogin');
-        break;
-      case 'place':
-        handleNavigate('massagePlaceLogin');
-        break;
-      case 'facial':
-        // Redirect to facial dashboard
-        const facialUrl = window.location.origin.includes('localhost') ? 'http://localhost:3006' : window.location.origin;
-        window.location.href = facialUrl;
-        break;
-      default:
-        handleNavigate('registrationChoice');
-    }
-  };
+  // Removed unused registration type handler functions
 
   const handleAuthSuccess = (userId: string, userType: 'therapist' | 'place') => {
     // Store auth info

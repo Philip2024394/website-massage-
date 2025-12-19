@@ -460,8 +460,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       // Pro members: Instant activation
       handleProActivation();
     } else {
-      // Plus members: Activate profile FIRST, then show payment modal
-      await handlePlusActivation();
+      // Premium members: Activate profile FIRST, then show payment modal
+      await handlePremiumActivation();
     }
   };
 
@@ -478,7 +478,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         isOnline: true,
       });
 
-      showToast('✅ Your profile is now LIVE! You\'ll earn 30% commission on bookings.', 'success');
+      showToast('✅ Your profile is now LIVE! You\'ll pay 30% commission on bookings.', 'success');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-activated' }));
       
       // Navigate to status page after short delay
@@ -494,7 +494,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   // Plus member activation - Profile goes LIVE first, then show payment modal
-  const handlePlusActivation = async () => {
+  const handlePremiumActivation = async () => {
     if (!therapist) return;
     
     setSaving(true);
@@ -580,7 +580,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       //   submittedAt: new Date().toISOString()
       // });
 
-      // Profile is already LIVE from handlePlusActivation
+      // Profile is already LIVE from handlePremiumActivation
       // Confirm payment submission
       showToast('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
       
@@ -612,85 +612,44 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
-      {/* Simple Header */}
-      <div className="w-full bg-white border-b shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">I</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                Upload Your Profile
-                {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (
-                  <img 
-                    src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                    alt="Verified"
-                    className="w-6 h-6"
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
-                  />
-                )}
-              </h1>
-              <p className="text-xs text-gray-500">Complete all fields to publish</p>
-            </div>
-          </div>
-          {/* TEST: Membership Page Button */}
-          <button 
-            onClick={onNavigateToMembership}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600 transition-colors shadow-md"
-          >
-            👑 View Membership
-          </button>
-          
-          {/* Payment Pending Button - Show when payment not submitted yet */}
-          {paymentPending && !showPaymentModal && (
-            <button 
-              onClick={() => setShowPaymentModal(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors shadow-lg animate-pulse"
-            >
-              ⏰ Submit Payment (Due 12 AM)
-            </button>
-          )}
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
-        <div className="bg-red-600 text-white px-6 py-3 shadow-lg">
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 shadow-lg">
+          <div className="max-w-sm mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-2xl animate-pulse">⏰</span>
               <div>
                 <p className="font-bold text-lg">Payment Due Tonight at 12:00 AM</p>
-                <p className="text-sm text-red-100">Your profile is LIVE but payment proof required to keep it active</p>
+                <p className="text-sm text-red-100">Submit payment proof to keep profile active</p>
               </div>
             </div>
             <button
               onClick={() => setShowPaymentModal(true)}
-              className="px-6 py-3 bg-white text-red-600 rounded-lg font-bold hover:bg-red-50 transition-colors shadow-lg"
+              className="px-6 py-3 bg-white text-red-600 rounded-xl font-bold hover:bg-red-50 transition-all shadow-lg"
             >
-              Submit Payment Now →
+              Submit Payment →
             </button>
           </div>
         </div>
       )}
 
-      {/* Upload Form Card */}
-      <main className="flex items-center justify-center p-4 py-8">
-        <div className="w-full max-w-2xl space-y-6">
+      {/* Main Content */}
+      <main className="max-w-sm mx-auto px-4 py-6">
           
-          {/* Booking Request Cards - Always visible at top */}
+          {/* Booking Request Cards */}
           {therapist?.$id && (
-            <BookingRequestCard 
-              therapistId={therapist.$id}
-              membershipTier={therapist.membershipTier === 'plus' ? 'plus' : 'free'}
-            />
+            <div className="mb-6">
+              <BookingRequestCard 
+                therapistId={therapist.$id}
+                membershipTier={therapist.membershipTier === 'plus' ? 'plus' : 'free'}
+              />
+            </div>
           )}
 
-          {/* Pro Plan Warnings - Show for free tier members */}
+          {/* Pro Plan Warnings */}
           {therapist?.membershipTier === 'free' && (
-            <div className="bg-white rounded-2xl shadow-xl border-2 border-red-500 overflow-hidden">
+            <div className="mb-6 rounded-2xl shadow-sm border-2 border-red-200 overflow-hidden">
               <ProPlanWarnings 
                 therapistName={therapist?.name || therapist?.fullName || 'Member'}
                 showFullTerms={false}
@@ -698,31 +657,44 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
           )}
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-          {/* Header Banner */}
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4">
-            <h2 className="text-white text-lg font-bold">📝 Profile Information</h2>
-            <p className="text-orange-100 text-sm">Fill in your details to appear on the live site</p>
+          {/* Profile Form Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-white text-2xl font-bold mb-1">Profile Information</h2>
+                <p className="text-orange-50 text-sm">Complete your profile to start receiving bookings</p>
+              </div>
+              {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (
+                <img 
+                  src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                  alt="Verified"
+                  className="w-12 h-12"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                />
+              )}
+            </div>
           </div>
 
           {/* Form Content */}
-          <div className="p-6 space-y-5">
+          <div className="p-8 space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
                 placeholder="Enter your full name"
               />
             </div>
 
             {/* WhatsApp */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">📱 WhatsApp Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number *</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 font-medium pointer-events-none">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium pointer-events-none">
                   +62
                 </span>
                 <input
@@ -732,7 +704,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     const digits = e.target.value.replace(/\D/g, '');
                     setWhatsappNumber('+62' + digits);
                   }}
-                  className="w-full border-2 border-gray-300 rounded-lg pl-14 pr-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-200 rounded-xl pl-14 pr-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
                   placeholder="812345678"
                 />
               </div>
@@ -741,70 +713,49 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Profile Picture */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">🖼️ Profile Picture</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="profile-upload"
-                />
-                <label htmlFor="profile-upload" className="cursor-pointer">
-                  <div className="relative inline-block">
-                    {/* Verified Badge on Profile Picture */}
-                    {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
-                      <div className="absolute -top-2 -left-2 z-10 w-10 h-10">
-                        <img 
-                          src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                          alt="Verified"
-                          className="w-full h-full object-contain drop-shadow-lg"
-                          style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
-                        />
-                      </div>
-                    )}
-                    {(profileImageDataUrl || therapist?.profilePicture) ? (
-                      <img
-                        src={profileImageDataUrl || therapist?.profilePicture}
-                        alt="Preview"
-                        className="w-28 h-28 rounded-full object-cover border-4 border-orange-200"
+              <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  {/* Verified Badge */}
+                  {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
+                    <div className="absolute -top-2 -left-2 z-10 w-10 h-10">
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                        alt="Verified"
+                        className="w-full h-full object-contain drop-shadow-lg"
+                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
                       />
-                    ) : (
-                      <div className="w-28 h-28 rounded-full bg-gray-100 flex items-center justify-center">
-                        <span className="text-4xl">📷</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-orange-600 font-medium mt-2">{uploadingImage ? 'Uploading...' : 'Click to upload'}</p>
-                  <p className="text-xs text-gray-500">Max 5MB</p>
-                </label>
+                    </div>
+                  )}
+                  {(profileImageDataUrl || therapist?.profilePicture) ? (
+                    <img
+                      src={profileImageDataUrl || therapist?.profilePicture}
+                      alt="Preview"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-4 border-gray-50">
+                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="profile-upload"
+                  />
+                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 cursor-pointer transition-all shadow-sm">
+                    <Upload className="w-4 h-4" />
+                    {uploadingImage ? 'Uploading...' : 'Upload Photo'}
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">Maximum file size: 5MB</p>
+                </div>
               </div>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">📍 Location (optional)</label>
-              <button
-                onClick={handleSetLocation}
-                className="w-full px-4 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 font-semibold shadow-md hover:shadow-lg transition-all"
-              >
-                {locationSet ? '✅ Location Set - Click to Update' : '📍 Set My Location (optional)'}
-              </button>
-              <div 
-                className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-lg"
-                style={{ display: (locationSet && coordinates) ? 'block' : 'none' }}
-              >
-                {coordinates && (
-                  <p className="text-sm text-green-800 font-medium">
-                    ✅ Location captured: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
-                  </p>
-                )}
-              </div>
-              <div 
-                ref={mapRef} 
-                className="mt-3 w-full h-48 rounded-lg border-2 border-gray-300"
-                style={{ display: coordinates ? 'block' : 'none' }}
-              ></div>
             </div>
 
             {/* City/Tourist Location */}
@@ -813,53 +764,73 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 selectedCity={selectedCity}
                 onCityChange={setSelectedCity}
                 placeholder="Select Your City/Location"
-                label="🏙️ City / Tourist Location *"
+                label="City / Tourist Location *"
                 showLabel={true}
                 includeAll={false}
                 className="w-full"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Select the city or tourist area where you provide services. This helps customers find you easily.
+                Select where you provide services
               </p>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">GPS Location (optional)</label>
+              <button
+                onClick={handleSetLocation}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-all shadow-sm"
+              >
+                {locationSet ? '✓ Location Set - Click to Update' : 'Set My GPS Location'}
+              </button>
+              {locationSet && coordinates && (
+                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-xl">
+                  <p className="text-sm text-green-800">
+                    ✓ Location: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                  </p>
+                </div>
+              )}
+              {coordinates && (
+                <div ref={mapRef} className="mt-3 w-full h-48 rounded-xl border border-gray-200" />
+              )}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">📄 Description</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">About Your Services</label>
               <textarea
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={5}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all resize-none"
                 placeholder="Describe your massage services, experience, and specialties..."
               />
-              <p className={`text-xs mt-1 ${countWords(description) > 350 ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+              <p className={`text-xs mt-1 ${countWords(description) > 350 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
                 {countWords(description)} / 350 words
               </p>
             </div>
 
             {/* Years of Experience */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">🎯 Years of Experience</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
               <input
                 type="number"
                 min="1"
                 max="50"
                 value={yearsOfExperience}
                 onChange={e => setYearsOfExperience(e.target.value)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
                 placeholder="5"
               />
-              <p className="text-xs text-gray-500 mt-1">Enter your years of professional massage experience (1-50)</p>
             </div>
 
             {/* Client Preferences */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">👥 Client Preferences</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Client Preferences</label>
               <select
                 value={clientPreferences}
                 onChange={e => setClientPreferences(e.target.value as ClientPreference)}
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
               >
                 {CLIENT_PREFERENCE_OPTIONS.map(preference => (
                   <option key={preference} value={preference}>
@@ -874,74 +845,75 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Languages */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">🌍 Languages (up to 3)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-3">Languages (select up to 3)</label>
               <div className="flex flex-wrap gap-2">
                 {languageOptions.map(opt => (
                   <button
                     key={opt.code}
                     onClick={() => handleToggleLanguage(opt.code)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       selectedLanguages.includes(opt.code)
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                        : 'bg-white hover:bg-orange-50 border-gray-300 hover:border-orange-300'
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                     }`}
                   >
                     {opt.label}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">{selectedLanguages.length} / 3 selected</p>
+              <p className="text-xs text-gray-500 mt-2">{selectedLanguages.length} of 3 selected</p>
             </div>
 
             {/* Massage Types */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">💆 Massage Types (up to 5)</label>
-              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Massage Types (select up to 5)</label>
+              <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-1">
                 {MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types).map(type => (
                   <button
                     key={type}
                     onClick={() => handleToggleMassageType(type)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       selectedMassageTypes.includes(type)
-                        ? 'bg-orange-500 text-white border-orange-500 shadow-md'
-                        : 'bg-white hover:bg-orange-50 border-gray-300 hover:border-orange-300'
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                     }`}
                   >
                     {type}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">{selectedMassageTypes.length} / 5 selected</p>
+              <p className="text-xs text-gray-500 mt-2">{selectedMassageTypes.length} of 5 selected</p>
             </div>
 
             {/* Pricing */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">💰 Pricing (IDR in thousands, e.g., 100 = Rp 100,000)</label>
-              <div className="grid grid-cols-3 gap-3">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Session Pricing (in thousands IDR)</label>
+              <p className="text-xs text-gray-500 mb-3">Example: 100 = Rp 100,000</p>
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">60 min (IDR '000)</label>
+                  <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
                   <input
                     value={price60}
                     onChange={e => setPrice60(e.target.value)}
-                    className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-orange-500 focus:outline-none transition-colors text-center font-semibold"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="100"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">90 min (IDR '000)</label>
+                  <label className="block text-xs text-gray-600 mb-2 font-medium">90 minutes</label>
                   <input
                     value={price90}
                     onChange={e => setPrice90(e.target.value)}
-                    className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-orange-500 focus:outline-none transition-colors text-center font-semibold"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="150"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1 font-medium">120 min (IDR '000)</label>
+                  <label className="block text-xs text-gray-600 mb-2 font-medium">120 minutes</label>
                   <input
                     value={price120}
                     onChange={e => setPrice120(e.target.value)}
-                    className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-orange-500 focus:outline-none transition-colors text-center font-semibold"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="200"
                   />
                 </div>
@@ -949,37 +921,35 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             </div>
 
             {/* Validation Warning */}
-              <div 
-              className="bg-red-50 border-2 border-red-200 rounded-lg p-4"
-              style={{ display: !canSave ? 'block' : 'none' }}
-            >
-              <p className="text-sm text-red-700 font-semibold">⚠️ Missing Required Fields:</p>
-              <ul className="text-xs text-red-600 mt-2 space-y-1 list-disc list-inside">
-                <li style={{ display: !name.trim() ? 'list-item' : 'none' }}>Name is required</li>
-                <li style={{ display: !/^\+62\d{6,15}$/.test(whatsappNumber.trim()) ? 'list-item' : 'none' }}>Valid WhatsApp number is required</li>
-                <li style={{ display: selectedCity === 'all' ? 'list-item' : 'none' }}>City/Location must be selected</li>
-              </ul>
-            </div>
+            {!canSave && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-sm text-red-700 font-medium mb-2">Complete these required fields:</p>
+                <ul className="text-sm text-red-600 space-y-1">
+                  {!name.trim() && <li>• Full name</li>}
+                  {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
+                  {selectedCity === 'all' && <li>• City/Location</li>}
+                </ul>
+              </div>
+            )}
 
             {/* Go Live Section - Show if profile is NOT live yet */}
             {!therapist.isLive && selectedPackage && (
-              <div className="pt-4 border-t-2 border-gray-200">
-                <div className={`p-4 rounded-xl mb-4 ${selectedPackage.plan === 'pro' ? 'bg-orange-50 border-2 border-orange-200' : 'bg-purple-50 border-2 border-purple-200'}`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    {selectedPackage.plan === 'pro' ? '🎯' : '👑'} 
-                    <h3 className="font-bold text-gray-800">
-                      {selectedPackage.plan === 'pro' ? 'Pro Plan (30% Commission)' : 'Plus Plan (Rp 250K/month)'}
+              <div className="pt-6 mt-6 border-t border-gray-100">
+                <div className={`p-5 rounded-xl mb-4 ${selectedPackage.plan === 'pro' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200' : 'bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-gray-900">
+                      {selectedPackage.plan === 'pro' ? 'Pro - Pay As You Go' : 'Plus - Everything For Success'}
                     </h3>
-                  </div>
-                  <div className="flex items-center gap-1 mb-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          selectedPackage.plan === 'plus' || i < 3 ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300'
-                        }`}
-                      />
-                    ))}
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            selectedPackage.plan === 'plus' || i < 3 ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-300 text-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
                   <p className="text-sm text-gray-700">
                     {selectedPackage.plan === 'pro' 
@@ -991,92 +961,61 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 <button
                   onClick={handleGoLive}
                   disabled={!canSave || saving}
-                  className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
+                  className={`w-full px-6 py-4 rounded-xl text-white font-bold text-base transition-all ${
                     !canSave || saving
-                      ? 'bg-gray-400 cursor-not-allowed' 
+                      ? 'bg-gray-300 cursor-not-allowed' 
                       : selectedPackage.plan === 'pro'
-                        ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
-                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:scale-[1.02] hover:shadow-xl'
+                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg'
+                        : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg'
                   }`}
                 >
-                  {!canSave ? (
-                    <span className="flex items-center justify-center gap-2">
-                      ⚠️ Complete Required Fields First
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      🚀 Activate Profile {selectedPackage.plan === 'pro' ? '(Free)' : '& See Payment Details'}
-                    </span>
-                  )}
+                  {!canSave ? 'Complete Required Fields First' : `Activate Profile ${selectedPackage.plan === 'pro' ? '(Free)' : ''}`}
                 </button>
               </div>
             )}
 
-            {/* Publish Button - Only show when profile is already live (for updates) */}
-            {therapist.isLive && (
-              <div className="pt-4">
-                <button
-                  onClick={(e) => {
-                    if (!canSave) {
-                      e.preventDefault();
-                      const missingFields: string[] = [];
-                      if (!name.trim()) missingFields.push('Name');
-                      if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
-                      if (selectedCity === 'all') missingFields.push('City/Location');
-                      showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
-                      return;
-                    }
-                    handleSaveProfile();
-                  }}
-                  disabled={saving}
-                  className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all transform ${
-                    saving 
-                      ? 'bg-gray-400 cursor-wait' 
-                      : !canSave 
-                        ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 cursor-pointer animate-pulse' 
-                        : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 hover:scale-[1.02] hover:shadow-xl'
-                  }`}
-                >
-                  {saving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                      </svg>
-                      Updating...
-                    </span>
-                  ) : !canSave ? (
-                    <span className="flex items-center justify-center gap-2">
-                      ⚠️ Complete Required Fields
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      💾 Update Profile
-                    </span>
-                  )}
-                </button>
-              </div>
-            )}
+            {/* Save Profile Button */}
+            <div className={!therapist.isLive && selectedPackage ? 'mt-3' : 'pt-6 mt-6 border-t border-gray-100'}>
+              <button
+                onClick={(e) => {
+                  if (!canSave) {
+                    e.preventDefault();
+                    const missingFields: string[] = [];
+                    if (!name.trim()) missingFields.push('Name');
+                    if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
+                    if (selectedCity === 'all') missingFields.push('City/Location');
+                    showToast(`Complete: ${missingFields.join(', ')}`, 'error');
+                    return;
+                  }
+                  handleSaveProfile();
+                }}
+                disabled={saving}
+                className={`w-full px-6 py-4 rounded-xl font-bold text-base transition-all ${
+                  saving 
+                    ? 'bg-gray-300 text-gray-500 cursor-wait' 
+                    : !canSave 
+                      ? 'bg-white text-gray-700 border-2 border-gray-300 cursor-pointer' 
+                      : 'bg-white text-orange-600 border-2 border-orange-500 hover:bg-orange-50 shadow-sm hover:shadow-md'
+                }`}
+              >
+                {saving ? 'Saving...' : !canSave ? 'Complete Required Fields' : therapist.isLive ? 'Update Profile' : 'Save Profile'}
+              </button>
+            </div>
           </div>
           </div>
-        </div>
       </main>
 
       {/* Payment Modal for Plus Members */}
       {showPaymentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-5 rounded-t-2xl">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                  <h2 className="text-white text-lg font-bold">Submit Payment & Go Live</h2>
-                </div>
+                <h2 className="text-white text-xl font-bold">Submit Payment</h2>
                 <button
                   onClick={() => setShowPaymentModal(false)}
-                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
-                  title="Close modal (you can edit profile and come back)"
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1156,10 +1095,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
               {/* Upload Section */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  📸 Upload Payment Proof *
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Upload Payment Proof *
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-purple-400 transition-colors">
+                <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-purple-300 transition-colors">
                   <input
                     type="file"
                     accept="image/*"
@@ -1170,15 +1109,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   <label htmlFor="payment-proof-upload" className="cursor-pointer">
                     {paymentProofPreview ? (
                       <div className="space-y-2">
-                        <img src={paymentProofPreview} alt="Payment proof" className="max-h-48 mx-auto rounded-lg" />
-                        <p className="text-sm text-green-600 font-semibold">✅ Image uploaded</p>
+                        <img src={paymentProofPreview} alt="Payment proof" className="max-h-48 mx-auto rounded-xl" />
+                        <p className="text-sm text-green-600 font-medium">✓ Image uploaded</p>
                         <p className="text-xs text-gray-500">Click to change</p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
-                        <Upload className="w-12 h-12 mx-auto text-gray-400" />
-                        <p className="text-sm text-gray-600">Click to upload payment proof</p>
-                        <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
+                      <div className="space-y-3">
+                        <Upload className="w-12 h-12 mx-auto text-gray-300" />
+                        <p className="text-sm text-gray-600 font-medium">Click to upload payment proof</p>
+                        <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
                       </div>
                     )}
                   </label>
@@ -1189,25 +1128,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <button
                 onClick={handlePaymentSubmit}
                 disabled={!paymentProof || uploadingPayment}
-                className={`w-full px-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg transition-all ${
+                className={`w-full px-6 py-4 rounded-xl text-white font-bold text-base transition-all ${
                   !paymentProof || uploadingPayment
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-xl'
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md hover:shadow-lg'
                 }`}
               >
-                {uploadingPayment ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                    </svg>
-                    Submitting...
-                  </span>
-                ) : !paymentProof ? (
-                  '⚠️ Please Upload Payment Proof'
-                ) : (
-                  '🚀 Submit Payment & Go LIVE!'
-                )}
+                {uploadingPayment ? 'Submitting...' : !paymentProof ? 'Please Upload Payment Proof' : 'Submit Payment & Go LIVE!'}
               </button>
 
               {/* Info Message */}

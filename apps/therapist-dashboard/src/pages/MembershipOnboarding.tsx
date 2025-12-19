@@ -30,9 +30,32 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
 
   const packages: PackageOption[] = [
     {
+      id: 'commission',
+      title: 'Pro - Pay As You Go',
+      description: 'Start earning with no upfront costs',
+      pricing: '30% commission per completed booking',
+      benefits: [
+        '✅ No monthly fees or upfront costs',
+        '✅ Pay only when you earn money',
+        '✅ Professional profile listing',
+        '✅ Complete booking management',
+        '✅ Customer messaging system',
+        '✅ Performance analytics',
+        '✅ Standard customer support',
+        '✅ Access to all booking features'
+      ],
+      warnings: [
+        '⚠️ 30% commission deducted from each booking',
+        '⚠️ Upgrade to Plus Plan available anytime for 0% commission'
+      ],
+      icon: <Zap className="w-8 h-8" />,
+      color: 'orange',
+      gradient: 'from-orange-500 to-red-500'
+    },
+    {
       id: 'monthly',
-      title: 'Plus Plan',
-      description: 'Premium monthly subscription with maximum earnings',
+      title: 'Plus - Everything For Success',
+      description: 'Maximum earnings + Premium features',
       pricing: 'Monthly subscription - Keep 100% of earnings',
       benefits: [
         '✅ Keep 100% of all booking earnings',
@@ -42,44 +65,18 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
         '✅ Advanced analytics & insights',
         '✅ 24/7 priority customer support',
         '✅ Marketing boost features',
-        '✅ Exclusive discount badge system'
+        '✅ Exclusive discount badge system',
+        '✅ Featured therapist status'
       ],
       icon: <Crown className="w-8 h-8" />,
       color: 'purple',
       gradient: 'from-purple-600 to-indigo-700',
       popular: true
-    },
-    {
-      id: 'commission',
-      title: 'Pro Plan',
-      description: 'Pay-per-booking model with flexible growth',
-      pricing: '30% commission per successful booking',
-      benefits: [
-        '✅ No monthly fees or upfront costs',
-        '✅ Pay only when you earn money',
-        '✅ Professional profile listing',
-        '✅ Complete booking management',
-        '✅ Customer messaging system',
-        '✅ Performance analytics',
-        '✅ Standard customer support'
-      ],
-      warnings: [
-        '⚠️ 30% commission deducted from each booking',
-        '⚠️ Upgrade to Plus Plan available anytime',
-        '⚠️ Processing fees apply to payments'
-      ],
-      icon: <Zap className="w-8 h-8" />,
-      color: 'orange',
-      gradient: 'from-orange-500 to-red-500'
     }
   ];
 
   const monthlyPricingDetails = [
-    { month: 1, price: 'FREE', description: 'Complete trial month - experience all Plus features' },
-    { month: 2, price: 'Rp 150,000', description: 'Introductory rate - build your presence' },
-    { month: 3, price: 'Rp 200,000', description: 'Growing rate - expand your client base' },
-    { month: 4, price: 'Rp 250,000', description: 'Professional rate - optimize your earnings' },
-    { month: 5, price: 'Rp 300,000', description: 'Full Plus Plan rate (ongoing monthly)' }
+    { month: 1, price: 'Rp 300,000', description: 'Monthly subscription - Keep 100% earnings, zero commission' }
   ];
 
   const handlePackageSelect = (packageId: 'monthly' | 'commission') => {
@@ -116,12 +113,12 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-orange-50">
+    <div className="min-h-screen bg-white">
       {/* Safe-area padding for notch devices */}
       <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
         {/* Mobile Header */}
         <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b shadow-sm">
-          <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-sm mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-purple-600 flex items-center justify-center shadow-md">
                 <Crown className="w-6 h-6 text-white" />
@@ -141,7 +138,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
         </header>
 
       {/* Content - Mobile-first container */}
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-sm mx-auto px-4 py-6">
         {/* Package Selection - Single column on mobile */}
         <div className="grid grid-cols-1 gap-5 mb-24">
           {packages.map((pkg) => (
@@ -232,7 +229,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
               <h3 className="text-3xl font-bold text-purple-900 mb-3">
                 Plus Plan Pricing Structure
               </h3>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 max-w-sm mx-auto">
                 Gradual pricing increase to support your business growth journey
               </p>
             </div>
@@ -322,7 +319,7 @@ const MembershipOnboarding: React.FC<MembershipOnboardingProps> = ({
 
         {/* Sticky Bottom Action Bar for mobile */}
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t shadow-lg px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
-          <div className="max-w-md mx-auto">
+          <div className="max-w-sm mx-auto">
             {/* Helper text */}
             <div className="flex items-center justify-between mb-2">
               <p className="text-[12px] text-gray-600">{selectedPackage ? (selectedPackage === 'monthly' ? 'Plus Plan selected' : 'Pro Plan selected') : 'Select a plan above'}</p>

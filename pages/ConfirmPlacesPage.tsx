@@ -62,7 +62,8 @@ const ConfirmPlacesPage: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
-      await authService.createAnonymousSession().catch(console.error);
+      // DISABLED: Anonymous session - use public collection permissions
+      // await authService.createAnonymousSession().catch(console.error);
       fetchPlaces();
     };
     init();

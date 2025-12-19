@@ -23,7 +23,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const membershipTier = therapist?.membershipTier || 'free'; // 'free' or 'plus'
-  const commissionRate = membershipTier === 'plus' ? 0 : 0.25; // Plus: 0%, Free: 25%
+  const commissionRate = membershipTier === 'plus' ? 0 : 0.30; // Premium: 0%, Pro: 30%
 
   useEffect(() => {
     fetchPayments();
@@ -124,44 +124,44 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="w-full bg-white border-b shadow-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-sm mx-auto px-4 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-3 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
             >
               ←
             </button>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg">
-              <Banknote className="w-6 h-6 text-white" />
-            </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">Earnings & Payments</h1>
-              <p className="text-xs text-gray-500">Track your income</p>
+              <h1 className="text-2xl font-bold text-gray-900">Earnings & Payments</h1>
+              <p className="text-sm text-gray-600">Track your income and payment history</p>
             </div>
           </div>
           {membershipTier === 'plus' && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full">
-              <Crown className="w-4 h-4 text-white" />
-              <span className="text-xs font-bold text-white">PLUS</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
+              <Crown className="w-4 h-4" />
+              <span className="text-sm font-medium">PREMIUM</span>
             </div>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto p-4 space-y-6">
+      <main className="max-w-sm mx-auto px-4 py-6">
+        <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-600">Your Earnings</span>
-              <Banknote className="w-5 h-5 text-green-500" />
+        <div className="grid grid-cols-1 gap-4">
+          <div className="border border-gray-200 rounded-lg p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Banknote className="w-5 h-5 text-orange-600" />
+              </div>
+              <span className="text-sm font-medium text-gray-700">Your Earnings</span>
             </div>
-            <p className="text-2xl font-bold text-green-600">
-              {(stats.totalDue / 1000).toFixed(0)}k
+            <p className="text-2xl font-bold text-gray-900 mb-1">
+              Rp {stats.totalDue.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gray-500">Pending payment</p>
           </div>
@@ -172,10 +172,10 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               <AlertCircle className="w-5 h-5 text-orange-500" />
             </div>
             <p className="text-2xl font-bold text-orange-600">
-              {(stats.adminDue / 1000).toFixed(0)}k
+              Rp {stats.adminDue.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gray-500">
-              {membershipTier === 'plus' ? '0%' : '25%'} commission
+              {membershipTier === 'plus' ? '0%' : '30%'} commission
             </p>
           </div>
 
@@ -185,7 +185,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               <CheckCircle className="w-5 h-5 text-blue-500" />
             </div>
             <p className="text-2xl font-bold text-blue-600">
-              {(stats.totalPaid / 1000).toFixed(0)}k
+              Rp {stats.totalPaid.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gray-500">Total received</p>
           </div>
@@ -196,114 +196,110 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               <Calendar className="w-5 h-5 text-purple-500" />
             </div>
             <p className="text-2xl font-bold text-purple-600">
-              {(stats.monthlyEarnings / 1000).toFixed(0)}k
+              Rp {stats.monthlyEarnings.toLocaleString('id-ID')}
             </p>
             <p className="text-xs text-gray-500">Monthly total</p>
           </div>
         </div>
 
         {/* Payment Info Banner */}
-        <div className={`rounded-xl shadow-lg p-6 text-white ${
-          membershipTier === 'elite' ? 'bg-gradient-to-r from-purple-600 to-pink-600' :
-          membershipTier === 'premium' ? 'bg-gradient-to-r from-blue-500 to-indigo-600' :
-          'bg-gradient-to-r from-orange-500 to-amber-500'
-        }`}>
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-lg font-bold mb-2">💰 Payment Schedule</h3>
-              <p className={`text-sm mb-4 ${
-                membershipTier === 'elite' ? 'text-purple-100' :
-                membershipTier === 'premium' ? 'text-blue-100' :
-                'text-orange-100'
-              }`}>
-                {membershipTier === 'elite' ? '🎉 Elite Member: Lowest 5% commission!' :
-                 membershipTier === 'premium' ? '⭐ Premium Member: Only 10% commission - Save 20%!' :
+        <div className="border border-gray-200 rounded-lg p-6">
+          <div className="flex items-start gap-4">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Banknote className="w-6 h-6 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Payment Schedule</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                {membershipTier === 'elite' ? 'Elite Member: Lowest 5% commission!' :
+                 membershipTier === 'premium' ? 'Premium Member: Only 10% commission - Save 20%!' :
                  'Payments processed weekly. Upgrade to save on commission!'}
               </p>
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 gap-3">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">You receive: <strong>
-                    {membershipTier === 'elite' ? '95%' : membershipTier === 'premium' ? '90%' : '70%'} of booking amount
-                  </strong></span>
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                  <span className="text-xs text-gray-500">You receive: <span className="font-medium">
+                    {membershipTier === 'elite' ? '95%' : membershipTier === 'premium' ? '90%' : '70%'}
+                  </span></span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">Admin commission: <strong>
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                  <span className="text-xs text-gray-500">Commission: <span className="font-medium">
                     {membershipTier === 'elite' ? '5%' : membershipTier === 'premium' ? '10%' : '30%'}
-                  </strong></span>
+                  </span></span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm">Payment method: <strong>Bank transfer or cash</strong></span>
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                  <span className="text-xs text-gray-500">Bank transfer or cash</span>
                 </div>
               </div>
             </div>
-            <TrendingUp className="w-12 h-12 opacity-20" />
           </div>
         </div>
 
-        {/* Premium/Elite Upsell (for free tier) */}
+        {/* Premium Analytics Upsell */}
         {membershipTier === 'free' && (
-          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-2xl shadow-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-white" />
+          <div className="border border-gray-200 rounded-lg p-6">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <BarChart3 className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Unlock Best Times Analytics</h3>
+                <p className="text-sm text-gray-600">Premium Feature - Rp 250.000/MONTH</p>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4 mb-4">
+              <h4 className="font-medium text-gray-900 mb-3">What You'll Get:</h4>
+              <div className="grid gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                  <span className="text-sm text-gray-600"><span className="font-medium">Peak Hours Chart:</span> Know exactly when customers book most</span>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">Unlock Best Times Analytics</h3>
-                  <p className="text-sm text-gray-600">Premium Feature - 200k IDR/month</p>
+                <div className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                  <span className="text-sm text-gray-600"><span className="font-medium">Busy Days Heatmap:</span> See which weekdays bring the most bookings</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                  <span className="text-sm text-gray-600"><span className="font-medium">Optimal Schedule:</span> Recommended times for max earnings</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                  <span className="text-sm text-gray-600"><span className="font-medium">Customer Demographics:</span> Location and booking patterns</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mt-2"></div>
+                  <span className="text-sm text-gray-600"><span className="font-medium">Premium Benefits:</span> Verified badge and priority placement</span>
                 </div>
               </div>
-              <Crown className="w-8 h-8 text-yellow-500" />
-            </div>
-            <div className="bg-white rounded-lg p-4 mb-4">
-              <h4 className="font-semibold text-gray-800 mb-3">📊 What You'll Get:</h4>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span><strong>Peak Hours Chart:</strong> Know exactly when customers book most (9am-11am, 2pm-4pm, etc.)</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span><strong>Busy Days Heatmap:</strong> See which weekdays bring the most bookings</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span><strong>Optimal Schedule:</strong> Recommended times to be available for max earnings</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span><strong>Customer Demographics:</strong> Location, service preferences, booking patterns</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span><strong>Plus:</strong> Verified badge, discount badges, priority search placement</span>
-                </li>
-              </ul>
             </div>
             <button className="w-full py-3 bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all">
-              Upgrade to Premium - 200k/month
+              Upgrade to Premium - 250k/MONTH
             </button>
           </div>
         )}
 
         {/* Premium/Elite Analytics */}
         {(membershipTier === 'premium' || membershipTier === 'elite') && (
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+          <div className="border border-gray-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-gray-800">📊 Best Times Analytics</h2>
-              <div className="flex items-center gap-2 px-3 py-1 bg-yellow-100 rounded-full">
-                <Crown className="w-4 h-4 text-yellow-600" />
-                <span className="text-xs font-bold text-yellow-700">PREMIUM</span>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-orange-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">Best Times Analytics</h2>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
+                <Crown className="w-4 h-4" />
+                <span className="text-sm font-medium">PREMIUM</span>
               </div>
             </div>
 
             {/* Peak Hours Chart */}
             <div className="mb-6">
-              <h3 className="font-semibold text-gray-700 mb-3">🕐 Peak Booking Hours</h3>
-              <div className="space-y-2">
+              <h3 className="font-medium text-gray-900 mb-4">Peak Booking Hours</h3>
+              <div className="space-y-3">
                 {[
                   { hour: '9:00 - 11:00 AM', bookings: 12, percentage: 85 },
                   { hour: '2:00 - 4:00 PM', bookings: 10, percentage: 70 },
@@ -311,13 +307,13 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
                   { hour: '11:00 - 1:00 PM', bookings: 5, percentage: 35 },
                 ].map((slot, index) => (
                   <div key={index}>
-                    <div className="flex items-center justify-between text-sm mb-1">
+                    <div className="flex items-center justify-between text-sm mb-2">
                       <span className="font-medium text-gray-700">{slot.hour}</span>
-                      <span className="text-gray-600">{slot.bookings} bookings</span>
+                      <span className="text-gray-500">{slot.bookings} bookings</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full"
+                        className="bg-orange-500 h-2 rounded-full"
                         style={{ width: `${slot.percentage}%` }}
                       ></div>
                     </div>
@@ -386,7 +382,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
                       {payment.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                  <div className="grid grid-cols-1 gap-3 text-sm">
                     <div>
                       <span className="text-gray-600">Total Amount:</span>
                       <p className="font-bold text-gray-800">Rp {payment.amount.toLocaleString()}</p>
@@ -410,6 +406,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           )}
         </div>
       </div>
+      </main>
     </div>
   );
 };

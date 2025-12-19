@@ -69,7 +69,7 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
 - You set your own pricing for 60min, 90min, and 120min sessions
 - Commission structure: 
   * Free tier: 25% to Indastreet, 75% to you
-  * Premium tier (Rp 200k/month): 0% commission - you keep 100%!
+  * Premium tier (Rp 250k/MONTH): 0% commission - you keep 100%!
 - Prices must be competitive and reasonable
 - You may not charge customers additional fees beyond agreed booking price`
     },
@@ -410,10 +410,10 @@ Last Updated: December 11, 2024`
   const content = activeTab === 'terms' ? termsContent : privacyContent;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-sm mx-auto">
           <button 
             onClick={onBack}
             className="text-white hover:bg-white/20 rounded-lg px-3 py-2 transition-colors mb-4"
@@ -430,7 +430,7 @@ Last Updated: December 11, 2024`
 
       {/* Tab Navigation */}
       <div className="bg-white border-b">
-        <div className="max-w-4xl mx-auto px-6">
+        <div className="max-w-sm mx-auto px-4">
           <div className="flex gap-4">
             <button
               onClick={() => setActiveTab('terms')}
@@ -463,7 +463,7 @@ Last Updated: December 11, 2024`
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-sm mx-auto p-4">
         <div className="bg-white rounded-lg shadow-sm border">
           {content.map((section, index) => (
             <div key={section.id} className={index !== 0 ? 'border-t' : ''}>

@@ -298,26 +298,14 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex flex-col items-center gap-3 px-4 py-2">
                   <button 
-                    onClick={() => handleItemClick(undefined, 'home')} 
-                    className="text-sm font-bold text-gray-700 hover:text-orange-600 transition-colors"
-                  >
-                    <span className="text-gray-800">Inda</span>
-                    <span className="text-orange-500">Street</span>
-                    <span className="text-gray-600 text-xs ml-1">2026</span>
-                  </button>
-                  <button onClick={() => handleItemClick(() => onNavigate?.('admin-login'))} className="text-xs text-orange-600 hover:text-orange-700 transition-colors font-bold">
-                    {dt.admin}
-                  </button>
-                  <button 
                     onClick={() => {
-                      handleItemClick();
-                      // PWA Install functionality
-                      const event = new CustomEvent('request-pwa-install');
-                      window.dispatchEvent(event);
+                      const authUrl = getAuthAppUrl();
+                      window.location.href = `${authUrl}/signin`;
+                      onClose();
                     }}
-                    className="text-xs text-blue-600 hover:text-blue-700 transition-colors font-bold flex items-center gap-1"
+                    className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
                   >
-                    📱 Download App
+                    Sign In
                   </button>
                 </div>
               </div>

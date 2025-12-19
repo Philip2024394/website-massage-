@@ -274,7 +274,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                             <div className="flex items-center gap-2">
                                 <span className="font-semibold text-gray-700">💰 Price:</span>
                                 <span className="text-gray-900 font-bold">
-                                    IDR {Math.round(booking.servicePrice / 1000)}K
+                                    Rp {booking.servicePrice.toLocaleString('id-ID')}
                                 </span>
                             </div>
                         </div>

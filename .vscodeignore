@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+.vite/
+.cache/
+coverage/
+.turbo/
+out/
+.next/
+esbuild/
+*.log
+.pnpm/
+.git/
+*.map
+*.tsbuildinfo
+.DS_Store
+Thumbs.db

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { authService } from '@shared/appwriteService';
 import AdminDashboard from './pages/AdminDashboard';
-import LoginPage from './pages/LoginPage';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -59,7 +58,17 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
+    // Redirect to auth app for unified sign in/create account flow
+    const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+    window.location.href = `${authUrl}/signin`;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting to sign in...</p>
+        </div>
+      </div>
+    );
   }
 
   return <AdminDashboard user={user} onLogout={handleLogout} />;

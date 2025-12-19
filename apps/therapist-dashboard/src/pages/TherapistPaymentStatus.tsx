@@ -82,7 +82,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+            <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
                     <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading payment history...</p>
@@ -92,8 +92,8 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-white py-8 px-4">
+            <div className="max-w-sm mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
@@ -167,7 +167,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                                     </div>
 
                                     {/* Payment Details */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div className="grid grid-cols-1 gap-4 mb-4">
                                         <div className="flex items-center gap-3">
                                             <CreditCard className="w-5 h-5 text-blue-600" />
                                             <div>
@@ -273,7 +273,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                         className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                         onClick={() => setSelectedProof(null)}
                     >
-                        <div className="relative max-w-4xl w-full">
+                        <div className="relative max-w-sm w-full">
                             <button
                                 onClick={() => setSelectedProof(null)}
                                 className="absolute -top-12 right-0 text-white hover:text-gray-300 text-xl font-bold"

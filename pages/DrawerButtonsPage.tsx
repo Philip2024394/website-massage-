@@ -44,9 +44,9 @@ const DrawerButtonsPage: React.FC = () => {
             setAuthError(null);
             setIsLoading(true);
             
-            // Ensure we have a session before fetching data
-            const user = await authService.createAnonymousSession();
-            console.log('Session created:', user);
+            // DISABLED: Anonymous session creation - use public permissions instead
+            // const user = await authService.createAnonymousSession();
+            // console.log('Session created:', user);
             
             // Small delay to ensure session is fully established
             await new Promise(resolve => setTimeout(resolve, 500));

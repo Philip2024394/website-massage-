@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ArrowLeft, Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
+import PaymentCard from '../../../../components/PaymentCard';
 import type { Therapist } from '../../../../types';
 
 interface TherapistPaymentInfoProps {
@@ -107,94 +108,119 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
   }, [accountName, therapist?.name]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onBack}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-gray-700" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">💳 Payment Information</h1>
-                <p className="text-sm text-gray-600">Manage your bank details for receiving payments</p>
-              </div>
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-sm mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onBack}
+              className="p-3 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Payment Information</h1>
+              <p className="text-sm text-gray-600">Manage your bank details for receiving payments</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Info Banner */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mb-8">
+      <main className="max-w-sm mx-auto px-4 py-6">
+        <div className="space-y-6">
+          {/* Info Section */}
+          <div className="border border-gray-200 rounded-lg p-6">
             <div className="flex items-start gap-4">
-              <CreditCard className="w-8 h-8 text-blue-600 flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-lg font-bold text-blue-900 mb-2">Direct P2P Payment System</h2>
-                <p className="text-sm text-blue-700 mb-3">
-                  Our platform facilitates connections between you and customers, but <strong>does not process payments</strong>.
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <CreditCard className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">Direct P2P Payment System</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Our platform facilitates connections between you and customers, but does not process payments.
                   All payments are made directly from the customer to you after service completion.
                 </p>
-                <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-                  <li>Your bank details will only be shared with customers <strong>after</strong> the massage is completed</li>
-                  <li>You receive 100% of the payment directly into your account</li>
-                  <li>No platform fees or commission on payments</li>
-                  <li>Update your bank details anytime</li>
-                </ul>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Shared after service completion</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">100% payment directly to you</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">No platform fees</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Update anytime</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* KTP ID Card Upload Section */}
-          <div className="mb-8 p-6 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
-            <div className="flex items-start gap-4 mb-4">
-              <FileCheck className="w-8 h-8 text-yellow-600 flex-shrink-0 mt-1" />
-              <div>
-                <h2 className="text-lg font-bold text-yellow-900 mb-2">🆔 KTP Verification Required</h2>
-                <p className="text-sm text-yellow-800 mb-2">
-                  For your security and customer trust, please upload a clear photo of your <strong>Indonesian ID Card (KTP)</strong>.
+          <div className="border border-gray-200 rounded-lg p-6">
+            <div className="flex items-start gap-4 mb-6">
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <FileCheck className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">KTP Verification Required</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  For your security and customer trust, please upload a clear photo of your Indonesian ID Card (KTP).
                 </p>
-                <ul className="text-sm text-yellow-800 space-y-1 list-disc list-inside">
-                  <li>Ensures your bank account name matches your legal identity</li>
-                  <li>Builds customer confidence in booking your services</li>
-                  <li>Protects against fraud and identity theft</li>
-                  <li>Required for payment processing verification</li>
-                </ul>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Matches bank account identity</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Builds customer confidence</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Protects against fraud</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                    <span className="text-xs text-gray-500">Required for verification</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Upload Area */}
-            <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Upload KTP Photo <span className="text-red-500">*</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Upload KTP Photo <span className="text-orange-600">*</span>
               </label>
               
               {ktpPreview ? (
-                <div className="relative">
+                <div className="space-y-4">
                   <img 
                     src={ktpPreview} 
                     alt="KTP Preview" 
-                    className="w-full max-w-md rounded-lg border-2 border-gray-300"
+                    className="w-full max-w-md rounded-lg border border-gray-300"
                   />
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     {therapist?.ktpVerified ? (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 rounded-lg">
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span className="text-sm font-semibold">Verified by Admin</span>
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg border border-green-200">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span className="text-sm">Verified</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-orange-100 text-orange-800 rounded-lg">
-                        <AlertCircle className="w-5 h-5" />
-                        <span className="text-sm font-semibold">Pending Verification</span>
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg border border-orange-200">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-sm">Pending</span>
                       </div>
                     )}
-                    <label className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold">
+                    <label className="cursor-pointer px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm border border-gray-300">
                       Change Photo
                       <input
                         type="file"
@@ -206,9 +232,9 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                   </div>
                 </div>
               ) : (
-                <label className="block w-full border-2 border-dashed border-gray-400 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors">
-                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm font-semibold text-gray-700 mb-1">Click to upload KTP photo</p>
+                <label className="block w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-colors">
+                  <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-gray-700 mb-1">Click to upload KTP photo</p>
                   <p className="text-xs text-gray-500">PNG, JPG up to 5MB</p>
                   <input
                     type="file"
@@ -220,81 +246,137 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
               )}
               
               {uploading && (
-                <div className="mt-3 flex items-center gap-2 text-blue-600">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                <div className="mt-3 flex items-center gap-2 text-orange-600">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
-                  <span className="text-sm font-semibold">Uploading KTP...</span>
+                  <span className="text-sm">Uploading KTP...</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Bank Details Form */}
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Bank Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="e.g., Bank Central Asia, Bank Mandiri, BRI, BNI"
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors text-base"
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter the name of your bank</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Account Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={accountName}
-                onChange={(e) => setAccountName(e.target.value)}
-                placeholder="e.g., John Doe"
-                className={`w-full border-2 rounded-lg px-4 py-3 focus:outline-none transition-colors text-base ${
-                  nameMatchWarning ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
-                }`}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter the name registered on your bank account (must match your KTP)
-              </p>
-              {nameMatchWarning && (
-                <div className="mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-red-700">
-                    <strong>Warning:</strong> Account name should match the name on your KTP ID card ({therapist?.name}).
-                    Mismatched names may delay verification.
+          {/* Live Preview Section */}
+          {(bankName.trim() || accountName.trim() || accountNumber.trim()) && (
+            <div className="border border-gray-200 rounded-lg p-6">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Preview</h3>
+                <p className="text-gray-600 text-sm">This is how your payment card will appear to customers</p>
+              </div>
+              
+              <div className="flex justify-center mb-6">
+                <PaymentCard
+                  bankName={bankName || 'Your Bank Name'}
+                  accountHolderName={accountName || 'YOUR ACCOUNT NAME'}
+                  accountNumber={accountNumber || '0000000000000000'}
+                  size="medium"
+                />
+              </div>
+              
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-1 bg-orange-100 rounded">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-gray-900 mb-3">Payment Card Features</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <span className="text-xs text-gray-500">Auto-shared on booking acceptance</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <span className="text-xs text-gray-500">Manual sharing in chat</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <span className="text-xs text-gray-500">Professional appearance</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+                        <span className="text-xs text-gray-500">Required for bookings</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Account Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="e.g., 1234567890"
-                className="w-full border-2 border-gray-300 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none transition-colors text-base font-mono"
-              />
-              <p className="text-xs text-gray-500 mt-1">Enter your bank account number</p>
+          {/* Bank Details Form */}
+          <div className="border border-gray-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Bank Account Details</h3>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Bank Name <span className="text-orange-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  placeholder="e.g., Bank Central Asia, Bank Mandiri, BRI, BNI"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors"
+                />
+                <p className="text-xs text-gray-500 mt-2">Enter the name of your bank - updates live preview above</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Account Name <span className="text-orange-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value.toUpperCase())}
+                  placeholder="e.g., JOHN DOE"
+                  className={`w-full bg-white border rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:outline-none transition-colors uppercase ${
+                    nameMatchWarning ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-orange-500'
+                  }`}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Enter name as it appears on your bank account - updates card preview above
+                </p>
+                {nameMatchWarning && (
+                    <div className="mt-3 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-red-600">
+                      <span className="font-medium">Warning:</span> Account name should match the name on your KTP ID card ({therapist?.name}).
+                      Mismatched names may delay verification.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Account Number <span className="text-orange-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={accountNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d\s]/g, '');
+                    setAccountNumber(value);
+                  }}
+                  placeholder="e.g., 1234567890123456"
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-500 focus:border-orange-500 focus:outline-none transition-colors font-mono"
+                  maxLength={20}
+                />
+                <p className="text-xs text-gray-500 mt-2">Enter account number - see live format on card above</p>
+              </div>
             </div>
           </div>
 
           {/* Save Button */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="pt-2">
             <button
               onClick={handleSave}
               disabled={saving || !bankName.trim() || !accountName.trim() || !accountNumber.trim()}
-              className="w-full px-6 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-lg hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02] disabled:transform-none flex items-center justify-center gap-3"
+              className="w-full px-6 py-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold text-lg hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] disabled:transform-none flex items-center justify-center gap-3 border border-orange-500/20"
             >
               {saving ? (
                 <>
@@ -306,39 +388,18 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
                 </>
               ) : (
                 <>
-                  <Save className="w-6 h-6" />
+                  <Save className="w-5 h-5" />
                   Save Payment Information
                 </>
               )}
             </button>
             
             {(!bankName.trim() || !accountName.trim() || !accountNumber.trim()) && (
-              <p className="text-sm text-red-600 text-center mt-3">
-                ⚠️ Please fill in all fields to save your payment information
+              <p className="text-sm text-orange-600 text-center mt-3">
+                Please fill in all fields to save your payment information
               </p>
             )}
           </div>
-
-          {/* Preview Section */}
-          {bankName.trim() && accountName.trim() && accountNumber.trim() && (
-            <div className="mt-8 p-6 bg-gray-50 rounded-xl border-2 border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Preview (How customers will see it):</h3>
-              <div className="bg-white rounded-lg p-4 space-y-2 border border-gray-300">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Bank Name:</span>
-                  <span className="text-sm font-semibold text-gray-900">{bankName}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Account Name:</span>
-                  <span className="text-sm font-semibold text-gray-900">{accountName}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Account Number:</span>
-                  <span className="text-sm font-mono font-semibold text-gray-900">{accountNumber}</span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>

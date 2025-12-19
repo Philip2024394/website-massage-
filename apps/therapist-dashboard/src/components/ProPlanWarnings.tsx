@@ -28,7 +28,7 @@ export const ProPlanWarnings: React.FC<ProPlanWarningsProps> = ({
                             ⚠️ CRITICAL: Pro Member Operating Rules
                         </h2>
                         <p className="text-red-800 font-semibold mb-4">
-                            Hello {therapistName}, you are currently on the <span className="bg-red-200 px-2 py-1 rounded">PRO PLAN (30% Commission)</span>
+                            Hello {therapistName}, you are currently on the <span className="bg-orange-200 px-2 py-1 rounded">PRO - Pay As You Go (30% Commission)</span>
                         </p>
                         <div className="bg-red-100 border border-red-300 rounded-lg p-4 mb-4">
                             <p className="text-red-900 font-bold text-lg mb-2">

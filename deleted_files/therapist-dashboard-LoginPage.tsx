@@ -81,19 +81,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             />
 
             {/* Right Side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-8">
+            <div className="w-full lg:w-1/2 flex items-center justify-center bg-white px-4 py-8">
                 <div className="max-w-md w-full">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <h1 className="text-5xl font-bold mb-3">
-                            <span className="text-black">Inda</span><span className="text-orange-500">Street</span>
+                            <span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span>
                         </h1>
-                        <h2 className="text-3xl font-bold mb-2 text-gray-800">Therapist</h2>
+                        <h2 className="text-3xl font-bold mb-2 text-gray-900">Therapist</h2>
                         <p className="text-gray-600">Manage your massage services and bookings</p>
                     </div>
 
                     {/* Card */}
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+                    <div className="border border-gray-200 rounded-lg p-8 space-y-6">
                     {/* Toggle Buttons */}
                     <div className="flex gap-2 bg-gray-100 rounded-lg p-1">
                         <button
@@ -105,7 +105,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                             }}
                             className={`flex-1 py-2 rounded-md font-medium transition-all ${
                                 viewMode === 'login'
-                                    ? 'bg-orange-500 text-white shadow-md'
+                                    ? 'bg-orange-500 text-white'
                                     : 'text-gray-600 hover:text-gray-900'
                             }`}
                         >

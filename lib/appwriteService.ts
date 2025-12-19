@@ -536,6 +536,9 @@ export const therapistService = {
                 status: currentDocument.status || 'Available',
                 availability: currentDocument.availability || 'Available',
                 
+                // Required booking field - preserve from current document
+                bookingsEnabled: currentDocument.bookingsEnabled !== undefined ? currentDocument.bookingsEnabled : true,
+                
                 // Required pricing fields - preserve from current document (convert to strings)
                 price60: String(currentDocument.price60 || 100),
                 price90: String(currentDocument.price90 || 150),
@@ -621,6 +624,7 @@ export const therapistService = {
             if (data.specialization) mappedData.specialization = data.specialization;
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
+            if (data.bookingsEnabled !== undefined) mappedData.bookingsEnabled = data.bookingsEnabled;
             
             // Handle discount fields - preserve from current document if not provided
             if (data.discountPercentage !== undefined) {

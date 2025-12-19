@@ -15,7 +15,6 @@ import TherapistCalendar from './pages/TherapistCalendar';
 import TherapistPaymentInfo from './pages/TherapistPaymentInfo';
 import TherapistPaymentStatus from './pages/TherapistPaymentStatus';
 import TherapistLayout from './components/TherapistLayout';
-import LoginPage from './pages/LoginPage';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
 import { LanguageProvider } from '../../../context/LanguageContext';
@@ -36,11 +35,35 @@ function App() {
   });
   const { t } = useTranslations(language);
 
+  // Function to refresh user data from Appwrite
+  const refreshUser = async () => {
+    if (!user?.$id) return;
+    try {
+      console.log('🔄 Refreshing therapist data from Appwrite...');
+      const updatedTherapist = await therapistService.getById(user.$id);
+      console.log('✅ Therapist data refreshed:', {
+        status: updatedTherapist.status,
+        availability: updatedTherapist.availability,
+        isLive: updatedTherapist.isLive
+      });
+      setUser(updatedTherapist);
+    } catch (error) {
+      console.error('❌ Failed to refresh therapist data:', error);
+    }
+  };
+
   // Persist language changes
   const handleLanguageChange = (lang: 'en' | 'id') => {
     setLanguage(lang);
     localStorage.setItem('indastreet_language', lang);
   };
+
+  // Refresh user data when page changes (to keep status in sync)
+  useEffect(() => {
+    if (user?.$id) {
+      refreshUser();
+    }
+  }, [currentPage]);
 
   useEffect(() => {
     // Always rely on server state to decide onboarding
@@ -104,11 +127,7 @@ function App() {
     }
   };
 
-  const handleLogin = async () => {
-    // LoginPage handles authentication internally
-    // This just refreshes the auth state after successful login
-    await checkAuth();
-  };
+
 
   const handleLogout = async () => {
     try {
@@ -136,16 +155,26 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
+    // Redirect to auth app for unified sign in/create account flow
+    const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+    window.location.href = `${authUrl}/signin`;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecting to sign in...</p>
+        </div>
+      </div>
+    );
   }
 
   // Render page content
   const renderPage = () => {
     switch (currentPage) {
       case 'status':
-        return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} onRefresh={refreshUser} onNavigate={setCurrentPage} />;
       case 'bookings':
-        return <TherapistBookings therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistBookings therapist={user} onBack={() => setCurrentPage('status')} onNavigate={setCurrentPage} />;
       case 'earnings':
         return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'chat':

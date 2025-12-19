@@ -231,10 +231,10 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
   const filteredNotifications = getFilteredNotifications();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-sm mx-auto">
           <div className="flex items-center justify-between mb-4">
             <button 
               onClick={onBack}
@@ -286,7 +286,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
       </div>
 
       {/* Notifications List */}
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-sm mx-auto p-4">
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
