@@ -496,7 +496,7 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist }) => {
 
               {/* Upload Payment Proof */}
               <div className="border border-gray-200 rounded-lg p-5">
-                <label className="block text-sm font-bold text-black mb-3 flex items-center gap-2">
+                <label className="text-sm font-bold text-black mb-3 flex items-center gap-2">
                   <Upload className="w-5 h-5 text-orange-500" />
                   Upload Payment Proof *
                 </label>

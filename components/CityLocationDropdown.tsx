@@ -14,7 +14,7 @@ interface CityLocationDropdownProps {
   includeAll?: boolean;
 }
 
-const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
+const CityLocationDropdown = ({
   selectedCity,
   onCityChange,
   placeholder = 'Select City / Location',
@@ -23,7 +23,7 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
   showLabel = false,
   disabled = false,
   includeAll = true
-}) => {
+}: CityLocationDropdownProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState(INDONESIAN_CITIES_CATEGORIZED); // Start with static fallback
   const [loading, setLoading] = useState(true);

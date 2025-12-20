@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Receipt, Star } from 'lucide-react';
+import { ArrowLeft, Star, FileText } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import type { Therapist } from '../types';
@@ -59,7 +59,7 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
     };
 
     const displayRating = getDisplayRating(therapist.rating || 0);
-    const reviewCount = getDisplayReviewCount(therapist);
+    const reviewCount = getDisplayReviewCount(therapist.reviewCount || 0);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -161,7 +161,7 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
                 ) : menuData.length > 0 ? (
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 mb-6">
-                            <Receipt size={24} className="text-purple-600" />
+                            <FileText size={24} className="text-purple-600" />
                             <h3 className="text-2xl font-bold text-gray-900">
                                 {chatLang === 'id' ? 'Daftar Layanan & Harga' : 'Services & Pricing'}
                             </h3>
@@ -207,7 +207,7 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
                     </div>
                 ) : (
                     <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-                        <Receipt size={64} className="mx-auto mb-4 text-gray-300" />
+                        <FileText size={64} className="mx-auto mb-4 text-gray-300" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">
                             {chatLang === 'id' ? 'Belum Ada Daftar Harga' : 'No Price List Available'}
                         </h3>

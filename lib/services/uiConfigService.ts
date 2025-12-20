@@ -1,6 +1,7 @@
 // lib/services/uiConfigService.ts
 import { Client, Databases } from 'appwrite';
 import { APP_CONFIG } from '../../config';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 
 const client = new Client()
     .setEndpoint(APP_CONFIG.APPWRITE.ENDPOINT)
@@ -63,10 +64,23 @@ class UIConfigService {
         }
 
         try {
+            // Check if uiConfig collection is disabled
+            const uiConfigCollection = APPWRITE_CONFIG.collections.uiConfig;
+            if (!uiConfigCollection) {
+                // Collection disabled - use defaults silently
+                const defaultSettings = DEFAULT_CONFIGS[key] || {};
+                return {
+                    configKey: key,
+                    enabled: true,
+                    settings: defaultSettings,
+                    priority: 50
+                };
+            }
+            
             console.log(`🔍 Fetching config from Appwrite: ${key}`);
             const response = await databases.getDocument(
                 APP_CONFIG.APPWRITE.DATABASE_ID,
-                'ui_config',
+                uiConfigCollection,
                 key
             );
 
@@ -105,9 +119,16 @@ class UIConfigService {
 
     async getAllConfigs(): Promise<UIConfig[]> {
         try {
+            // Check if uiConfig collection is disabled
+            const uiConfigCollection = APPWRITE_CONFIG.collections.uiConfig;
+            if (!uiConfigCollection) {
+                // Collection disabled - return empty array
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APP_CONFIG.APPWRITE.DATABASE_ID,
-                'ui_config'
+                uiConfigCollection
             );
 
             return response.documents

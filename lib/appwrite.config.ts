@@ -14,24 +14,24 @@ export const APPWRITE_CONFIG = {
         admins: '', // Disabled - collection doesn't exist
         therapists: 'THERAPISTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         places: 'PLACES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        facial_places: 'facial places collection', // ✅ CORRECT - Facial salons/spas collection
+        facial_places: 'FACIAL_PLACES_COLLECTION_ID', // Facial salons/spas collection
         agents: 'AGENTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         bookings: 'BOOKINGS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        reviews: 'REVIEWS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        reviews: '693e1a5d001d8cc58e16', // Reviews collection
         notifications: 'NOTIFICATIONS_COLLECTION_ID', // ✅ CORRECT - Therapist notification system
         users: 'USERS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',
         hotels: 'HOTELS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        cities: 'cities collection id', // ✅ CORRECT - Cities for location dropdown
+        cities: 'CITIES_COLLECTION_ID', // Cities for location dropdown
         villas: '', // Disabled - collection doesn't exist
         massageTypes: 'MASSAGE_TYPES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
         customLinks: 'CUSTOM_LINKS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        translations: 'translations collection', // ✅ CORRECT - Live from Appwrite
+        translations: '', // Disabled - collection doesn't exist (causes 404 errors)
         commissionRecords: 'commission_records',
         attributes: 'ATTRIBUTES',
         analyticsEvents: 'Analytics Events',
@@ -69,7 +69,7 @@ export const APPWRITE_CONFIG = {
         affiliateClicks: 'affiliate_clicks',
         affiliateAttributions: 'affiliate_attributions',
         memberships: 'memberships_collection_id', // NEW: Membership packages (Bronze, Silver, Gold)
-        uiConfig: 'ui_config', // NEW: UI configuration (book now behavior, schedule behavior)
+        uiConfig: '', // Disabled - collection doesn't exist (causes 404 errors)
     },
     
     // Storage bucket IDs

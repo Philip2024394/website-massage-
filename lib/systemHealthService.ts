@@ -51,8 +51,13 @@ class SystemHealthService {
 
     /**
      * Send health check to admin dashboard
+     * DISABLED: Collection doesn't exist in Appwrite
      */
     private async sendHealthCheck() {
+        // Collection system_health_checks doesn't exist - skip health checks
+        return;
+        
+        /* Disabled code - uncomment when collection is created
         if (!this.memberId) return;
 
         try {
@@ -85,6 +90,7 @@ class SystemHealthService {
             }
             console.warn('⚠️ Health check skipped:', error instanceof Error ? error.message : 'Unknown error');
         }
+        */
     }
 
     /**

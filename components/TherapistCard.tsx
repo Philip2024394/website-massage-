@@ -13,7 +13,7 @@ import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { useUIConfig } from '../hooks/useUIConfig';
-import { MessageCircle, Receipt, Clock, X } from 'lucide-react';
+import { MessageCircle, Clock, X, FileText } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
@@ -44,6 +44,7 @@ interface TherapistCardProps {
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     onShowRegisterPrompt?: () => void; // Show registration popup
     onNavigate?: (page: string) => void;
+    onViewPriceList?: (therapist: Therapist) => void; // View price list for premium therapists
     isCustomerLoggedIn?: boolean; // Check if customer is logged in
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     t: any;
@@ -1390,7 +1391,7 @@ ${locationInfo}${coordinatesInfo}
                 {/* 60 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
+                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
@@ -1418,7 +1419,7 @@ ${locationInfo}${coordinatesInfo}
                 {/* 90 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
+                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
@@ -1442,7 +1443,7 @@ ${locationInfo}${coordinatesInfo}
                 {/* 120 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
-                        ? 'bg-red-50 border-orange-300 shadow-orange-400/50 ring-2 ring-orange-400/30 price-rim-fade' 
+                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
@@ -1971,8 +1972,12 @@ ${locationInfo}${coordinatesInfo}
                             }
                         `}</style>
                         
-                        {/* Orange Header with Profile */}
-                        <div className="bg-orange-500 px-4 py-2.5 flex items-center justify-between">
+                        {/* Header with Profile - Orange for Surtiningsih, Yellow for others */}
+                        <div className={`px-4 py-2.5 flex items-center justify-between ${
+                            therapist.name?.toLowerCase().includes('surtiningsih') 
+                                ? 'bg-orange-500' 
+                                : 'bg-yellow-500'
+                        }`}>
                             <div className="flex items-center gap-2.5 flex-1">
                                 <img
                                     src={therapist.profilePicture || therapist.mainImage || '/default-avatar.jpg'}
@@ -2042,7 +2047,11 @@ ${locationInfo}${coordinatesInfo}
                                             const isRowSelected = selectedServiceIndex === index;
                                             
                                             return (
-                                                <div key={index} className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-purple-50 transition-colors items-center">
+                                                <div key={index} className={`grid grid-cols-12 gap-2 px-3 py-3 transition-colors items-center ${
+                                                    therapist.name?.toLowerCase().includes('surtiningsih') 
+                                                        ? 'hover:bg-orange-50' 
+                                                        : 'hover:bg-gray-50'
+                                                }`}>
                                                     {/* Service Name */}
                                                     <div className="col-span-4">
                                                         <div className="font-medium text-gray-900 text-sm">{service.serviceName}</div>
@@ -2058,9 +2067,11 @@ ${locationInfo}${coordinatesInfo}
                                                                 }}
                                                                 className={`px-2 py-1 rounded text-xs transition-all border-2 ${
                                                                     isRowSelected && selectedDuration === '60'
-                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
+                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
                                                                         : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '60'
-                                                                        ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                        ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
                                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                                                                 }`}
                                                             >
@@ -2081,9 +2092,11 @@ ${locationInfo}${coordinatesInfo}
                                                                 }}
                                                                 className={`px-2 py-1 rounded text-xs transition-all border-2 ${
                                                                     isRowSelected && selectedDuration === '90'
-                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
+                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
                                                                             : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '90'
-                                                                            ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                            ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
                                                                             : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                                                                     }`}
                                                                 >
@@ -2104,9 +2117,11 @@ ${locationInfo}${coordinatesInfo}
                                                                 }}
                                                                 className={`px-2 py-1 rounded text-xs transition-all border-2 ${
                                                                     isRowSelected && selectedDuration === '120'
-                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
+                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
                                                                         : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '120'
-                                                                        ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                        ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
                                                                         : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
                                                                 }`}
                                                             >
@@ -2120,7 +2135,7 @@ ${locationInfo}${coordinatesInfo}
                                                     {/* Book Now Button */}
                                                     <div className="col-span-2 flex justify-center">
                                                         <button
-                                                            onClick={() => {
+                                                            onClick={(e) => {
                                                                 // Check if a duration is selected for this row
                                                                 if (!isRowSelected || !selectedDuration) {
                                                                     alert(chatLang === 'id' 
@@ -2129,13 +2144,19 @@ ${locationInfo}${coordinatesInfo}
                                                                     return;
                                                                 }
                                                                 
+                                                                // Change button to orange when clicked
+                                                                const button = e.currentTarget as HTMLButtonElement;
+                                                                button.className = button.className.replace('bg-green-500', 'bg-orange-500').replace('hover:bg-green-600', 'hover:bg-orange-600');
+                                                                
                                                                 // Get selected price
                                                                 const selectedPrice = selectedDuration === '60' ? service.price60 
                                                                     : selectedDuration === '90' ? service.price90 
                                                                     : service.price120;
                                                                 
-                                                                // Close the price list modal
-                                                                setShowPriceListModal(false);
+                                                                // Close the price list modal after a brief delay to show orange state
+                                                                setTimeout(() => {
+                                                                    setShowPriceListModal(false);
+                                                                }, 200);
                                                                 
                                                                 // Get pricing info
                                                                 const pricing = getPricing();
@@ -2180,10 +2201,21 @@ ${locationInfo}${coordinatesInfo}
                                 </div>
                             ) : (
                                 <div className="text-center py-12">
-                                    <Receipt size={48} className="mx-auto mb-3 text-purple-300" />
+                                    <FileText size={48} className="mx-auto mb-3 text-purple-300" />
                                     <p className="text-gray-600">{chatLang === 'id' ? 'Memuat menu harga...' : 'Loading price menu...'}</p>
                                 </div>
                             )}
+                        </div>
+                        
+                        {/* Footer with Oil Bottle Image - Right Side */}
+                        <div className="relative w-full">
+                            <div className="absolute bottom-0 right-4 z-10">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/oil_bottle-removebg-preview.png" 
+                                    alt="Oil Bottle"
+                                    className="w-16 h-20 object-contain"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

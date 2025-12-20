@@ -7,6 +7,11 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    
+    /* Performance optimizations */
+    "incremental": true,
+    "composite": false,
+    "tsBuildInfoFile": "./.cache/.tsbuildinfo",
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -44,12 +49,25 @@
     "mobile",
     "src/apps/admin/**/*",
     "deleted/**/*",
+    "coverage/**/*",
+    "**/.vite/**/*",
+    "**/.cache/**/*",
+    "**/.turbo/**/*",
+    "**/out/**/*",
+    "**/*.log",
     "components/AppDrawer.tsx",
     "vite.config.ts",
     "*-backup.*",
     "*-new.*",
     "*.full.tsx",
-    "*_COMPLETE.tsx"
+    "*_COMPLETE.tsx",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.spec.tsx",
+    "**/*.test.tsx",
+    "lib/appwriteService.ts",
+    "apps/facial-dashboard/src/pages/FacialDashboard.tsx",
+    "apps/place-dashboard/src/pages/PlaceDashboard.tsx"
   ],
   "references": [
     { "path": "./tsconfig.node.json" }

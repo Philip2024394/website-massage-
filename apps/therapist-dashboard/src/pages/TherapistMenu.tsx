@@ -116,10 +116,10 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
     const menuDataString = JSON.stringify(validServices);
     const dataSize = new Blob([menuDataString]).size;
     
-    // Check if data exceeds Appwrite's 1000 character limit
-    if (dataSize > 1000) {
-      console.warn(`⚠️ Menu data too large: ${dataSize} bytes (limit: 1000)`);
-      showToast(`⚠️ Menu too large (${dataSize}/1000 chars). Remove items or shorten names.`, 'error');
+    // Check if data exceeds Appwrite's 50000 character limit
+    if (dataSize > 50000) {
+      console.warn(`⚠️ Menu data too large: ${dataSize} bytes (limit: 50000)`);
+      showToast(`⚠️ Menu too large (${dataSize}/50000 chars). Remove items or shorten names.`, 'error');
       setAutoSaveStatus('idle');
       return;
     }
@@ -140,8 +140,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
       
     } catch (error) {
       console.error('❌ Auto-save failed:', error);
-      if (error instanceof Error && error.message.includes('1000 chars')) {
-        showToast(`❌ Menu data exceeds 1000 character limit. Please remove some items.`, 'error');
+      if (error instanceof Error && error.message.includes('50000 chars')) {
+        showToast(`❌ Menu data exceeds 50000 character limit. Please remove some items.`, 'error');
       }
       setAutoSaveStatus('idle');
     }
@@ -169,13 +169,13 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
     console.log('💾 SAVING MENU...');
     console.log('👤 Therapist ID:', therapist.$id || therapist.id);
     console.log('📋 Valid Services Count:', validServices.length);
-    console.log('📊 Menu Data Size:', dataSize, 'bytes (limit: 1000)');
+    console.log('📊 Menu Data Size:', dataSize, 'bytes (limit: 50000)');
     console.log('📄 Menu Data:', menuDataString);
 
     // Check size limit before saving
-    if (dataSize > 1000) {
-      showToast(`❌ Menu too large: ${dataSize}/1000 characters. Remove ${Math.ceil((dataSize - 1000) / 100)} items or shorten names/prices.`, 'error');
-      console.error(`❌ Data size ${dataSize} exceeds 1000 char limit`);
+    if (dataSize > 50000) {
+      showToast(`❌ Menu too large: ${dataSize}/50000 characters. Remove ${Math.ceil((dataSize - 50000) / 100)} items or shorten names/prices.`, 'error');
+      console.error(`❌ Data size ${dataSize} exceeds 50000 char limit`);
       return;
     }
 
@@ -187,7 +187,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
       );
       
       console.log('✅ SAVE SUCCESS! Result:', result);
-      showToast(`✅ Menu saved! ${validServices.length} services (${dataSize}/1000 chars)`, 'success');
+      showToast(`✅ Menu saved! ${validServices.length} services (${dataSize}/50000 chars)`, 'success');
       
       // Update local state to reflect saved data
       setServices(validServices);
@@ -244,9 +244,9 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
               {services.length > 0 && (() => {
                 const validServices = services.filter(s => s.serviceName.trim());
                 const dataSize = new Blob([JSON.stringify(validServices)]).size;
-                const percentage = (dataSize / 1000) * 100;
+                const percentage = (dataSize / 50000) * 100;
                 const isNearLimit = percentage > 80;
-                const isOverLimit = dataSize > 1000;
+                const isOverLimit = dataSize > 50000;
                 
                 return (
                   <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${
@@ -255,7 +255,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
                     <span className={`text-xs font-medium ${
                       isOverLimit ? 'text-red-700' : isNearLimit ? 'text-yellow-700' : 'text-green-700'
                     }`}>
-                      📊 {dataSize}/1000 chars
+                      📊 {dataSize}/50000 chars
                     </span>
                   </div>
                 );

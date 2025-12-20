@@ -6,6 +6,82 @@
 import { generateInitialReviewData, updateRatingWithNewReview, removeReviewRating } from './reviewInitializationService';
 import type { Therapist, Place } from '../types';
 
+// Import Surtiningsih mock reviews
+const surtiningsihMockReviews = [
+    {
+        id: 'review_surtiningsih_001',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_james_mitchell',
+        userName: 'James Mitchell',
+        rating: 5,
+        comment: 'Absolutely phenomenal experience! Surtiningsih was incredibly professional and skilled. Had a 90-minute session at my hotel and it was exactly what I needed after long flights. Her technique for my leg injury was spot on - the pain is significantly reduced. Cannot recommend her more highly!',
+        createdAt: '2025-12-01T14:30:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_001'
+    },
+    {
+        id: 'review_surtiningsih_002',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_sari_dewi',
+        userName: 'Sari Dewi',
+        rating: 5,
+        comment: 'Terapis yang sangat profesional dan berpengalaman! Surtiningsih datang ke hotel saya dan memberikan pijat yang luar biasa. Tekniknya sangat baik, terutama untuk mengatasi nyeri punggung saya. Sangat direkomendasikan untuk siapa saja yang membutuhkan terapi pijat berkualitas tinggi.',
+        createdAt: '2025-12-05T16:45:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_002'
+    },
+    {
+        id: 'review_surtiningsih_003',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_michael_thompson',
+        userName: 'Michael Thompson',
+        rating: 4,
+        comment: 'Very professional therapist with excellent skills. Surtiningsih arrived on time at my hotel and provided a fantastic 60-minute deep tissue massage. Really helped with my shoulder tension from work stress. The only minor thing was she was about 10 minutes late, but the massage quality more than made up for it.',
+        createdAt: '2025-12-08T19:20:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_003'
+    },
+    {
+        id: 'review_surtiningsih_004',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_budi_santoso',
+        userName: 'Budi Santoso',
+        rating: 5,
+        comment: 'Pelayanan yang sangat memuaskan! Surtiningsih adalah terapis pijat yang benar-benar ahli. Saya memiliki masalah dengan lutut yang sakit dan setelah sesi pijat 120 menit, rasa sakitnya berkurang drastis. Tekniknya sangat tepat dan profesional. Pasti akan menggunakan jasanya lagi!',
+        createdAt: '2025-12-12T10:15:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_004'
+    },
+    {
+        id: 'review_surtiningsih_005',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_emma_rodriguez',
+        userName: 'Emma Rodriguez',
+        rating: 5,
+        comment: 'Outstanding massage therapist! Surtiningsih came to my villa and provided the most relaxing and therapeutic massage I\'ve ever had. Her technique is exceptional and she really knows how to work out muscle knots. The 90-minute session was perfect after my hiking activities. Highly professional and friendly!',
+        createdAt: '2025-12-15T17:30:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_005'
+    },
+    {
+        id: 'review_surtiningsih_006',
+        providerId: '693cfadf003d16b9896a',
+        providerType: 'therapist' as const,
+        userId: 'user_david_chen',
+        userName: 'David Chen',
+        rating: 4,
+        comment: 'Excellent professional massage service. Surtiningsih is very skilled and experienced. Had a 60-minute session at my hotel for my back pain and it helped tremendously. She was punctual, brought all her equipment, and created a very relaxing atmosphere. Would definitely book again when I return to Bali.',
+        createdAt: '2025-12-19T13:45:00.000Z',
+        isVerified: true,
+        bookingId: 'booking_006'
+    }
+];
+
 export interface Review {
     id: string;
     providerId: string | number;
@@ -37,6 +113,24 @@ class ReviewService {
 
     constructor() {
         this.loadReviews();
+        
+        // Add Surtiningsih mock reviews if they don't exist
+        this.initializeSurtiningsihReviews();
+    }
+
+    /**
+     * Initialize Surtiningsih's mock reviews
+     */
+    private initializeSurtiningsihReviews(): void {
+        const surtiningsihId = '693cfadf003d16b9896a';
+        const existingReviews = this.reviews.filter(r => r.providerId === surtiningsihId);
+        
+        if (existingReviews.length === 0) {
+            // Add all mock reviews for Surtiningsih
+            this.reviews.push(...surtiningsihMockReviews);
+            this.saveReviews();
+            console.log('✅ Added 6 mock reviews for Surtiningsih');
+        }
     }
 
     /**

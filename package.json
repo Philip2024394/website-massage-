@@ -11,8 +11,8 @@
     "dev:admin": "cd apps/admin-dashboard && pnpm run dev",
     "dev:place": "cd apps/place-dashboard && pnpm run dev",
     "dev:facial": "cd apps/facial-dashboard && pnpm run dev",
-    "dev:auth": "cd apps/auth-app && pnpm run dev",
-    "dev:all": "concurrently \"pnpm run dev:app\" \"pnpm run dev:auth\" \"pnpm run dev:therapist\" \"pnpm run dev:admin\" \"pnpm run dev:place\" \"pnpm run dev:facial\"",
+    "dev:auth": "cd apps/auth-app && npm run dev",
+    "dev:all": "concurrently \"npm run dev:app\" \"npm run dev:auth\" \"npm run dev:therapist\" \"npm run dev:admin\" \"npm run dev:place\" \"npm run dev:facial\"",
     "open:main": "pwsh -NoProfile -Command Start-Process http://localhost:3000/",
     "open:therapist": "pwsh -NoProfile -Command Start-Process http://localhost:3005/",
     "open:admin": "pwsh -NoProfile -Command Start-Process http://localhost:3004/",
@@ -52,7 +52,20 @@
     "schema:export:hotels": "node scripts/exportHotelsSchema.cjs",
     "schema:validate:hotels": "node scripts/validateHotelsPayloads.cjs",
     "analyze": "vite build --mode analyze",
-    "analyze:bundle": "vite-bundle-visualizer"
+    "analyze:bundle": "vite-bundle-visualizer",
+    "monitor:files": "node scripts/file-size-monitor.mjs",
+    "monitor:watch": "nodemon --watch . --ext ts,tsx,js,jsx --ignore node_modules --exec 'npm run monitor:files'",
+    "size:check": "npm run monitor:files",
+    "size:report": "npm run monitor:files > file-size-report.txt",
+    "precheck": "npm run monitor:files",
+    
+    "migrate:services": "node scripts/appwrite-migration.cjs report",
+    "migrate:extract": "node scripts/appwrite-migration.cjs extract",
+    "migrate:all": "node scripts/appwrite-migration.cjs extract-all",
+    
+    "refactor:check": "npm run monitor:files && npm run lint",
+    "refactor:plan": "echo 'See docs/COMPONENT_REFACTORING_GUIDE.md for guidelines'",
+    "refactor:verify": "npm run type-check && npm run test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",
@@ -98,6 +111,7 @@
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.12",
+    "glob": "^13.0.0",
     "globals": "^16.5.0",
     "jsdom": "^25.0.0",
     "postcss": "^8.4.32",

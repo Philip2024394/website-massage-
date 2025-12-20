@@ -1947,9 +1947,16 @@ export { authService } from './appwrite/auth.service';
 export const translationsService = {
     async getAll(): Promise<any> {
         try {
+            // Check if translations collection is disabled
+            const translationsCollection = APPWRITE_CONFIG.collections.translations;
+            if (!translationsCollection) {
+                console.log('🔄 Translations collection disabled, using fallback translations');
+                return null; // Will trigger fallback in useTranslations
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.translations
+                translationsCollection
             );
             
             // Convert array of documents to translations object
@@ -2269,9 +2276,16 @@ export const reviewService = {
 
     async getAll(): Promise<any[]> {
         try {
+            // Check if reviews collection is disabled
+            const reviewsCollection = APPWRITE_CONFIG.collections.reviews;
+            if (!reviewsCollection) {
+                console.log('🔄 Reviews collection disabled, returning empty array');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.reviews
+                reviewsCollection
             );
             return response.documents;
         } catch (error) {
@@ -2282,9 +2296,22 @@ export const reviewService = {
 
     async getByProvider(providerId: number, providerType: 'therapist' | 'place'): Promise<any[]> {
         try {
+            // Check if reviews collection is disabled
+            const reviewsCollection = APPWRITE_CONFIG.collections.reviews;
+            if (!reviewsCollection) {
+                console.log('🔄 Reviews collection disabled, returning empty array');
+                return [];
+            }
+            
+            // Validate providerId is not null
+            if (!providerId) {
+                console.error('❌ Invalid providerId (null/undefined), cannot fetch reviews');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.reviews,
+                reviewsCollection,
                 [
                     Query.equal('providerId', providerId),
                     Query.equal('providerType', providerType),

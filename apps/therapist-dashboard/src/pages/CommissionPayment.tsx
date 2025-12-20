@@ -262,7 +262,7 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
 
         {/* Upload Payment Proof */}
         <div className="bg-white border border-gray-300 rounded-lg p-3 sm:p-4">
-          <label className="block text-xs sm:text-sm font-bold text-black mb-3 flex items-center gap-2">
+          <label className="text-xs sm:text-sm font-bold text-black mb-3 flex items-center gap-2">
             <Upload className="w-4 h-4 text-orange-500" />
             Upload Payment Proof *
           </label>

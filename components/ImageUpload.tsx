@@ -12,19 +12,19 @@ interface ImageUploadProps {
     variant?: 'default' | 'profile'; // Add variant prop for profile pictures
 }
 
-const UploadIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+const UploadIcon = ({ className = "w-6 h-6" }: { className?: string }): JSX.Element => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
     </svg>
 );
 
-const UserIcon: React.FC<{ className?: string }> = ({ className = "w-16 h-16" }) => (
+const UserIcon = ({ className = "w-16 h-16" }: { className?: string }): JSX.Element => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="currentColor" viewBox="0 0 24 24">
         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
     </svg>
 );
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48', imageClassName, variant = 'default' }) => {
+const ImageUpload = ({ id, label, currentImage, onImageChange, className, heightClass = 'h-48', imageClassName, variant = 'default' }: ImageUploadProps): JSX.Element => {
     const [preview, setPreview] = useState<string | null>(currentImage);
     const fileInputRef = useRef<HTMLInputElement>(null);
     

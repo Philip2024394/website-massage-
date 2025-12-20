@@ -8,7 +8,7 @@ interface MainImageCropperProps {
 }
 
 // Simple image positioner - drag to move image within fixed frame
-const MainImageCropper: React.FC<MainImageCropperProps> = ({ imageUrl, aspect = 16 / 9, onConfirm, onCancel }) => {
+const MainImageCropper = ({ imageUrl, aspect = 16 / 9, onConfirm, onCancel }: MainImageCropperProps): JSX.Element => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });

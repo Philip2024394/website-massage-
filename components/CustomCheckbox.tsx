@@ -8,7 +8,7 @@ interface CustomCheckboxProps {
     disabled?: boolean;
 }
 
-const CustomCheckbox: React.FC<CustomCheckboxProps> = ({ label, checked, onChange, disabled = false }) => (
+const CustomCheckbox = ({ label, checked, onChange, disabled = false }: CustomCheckboxProps): JSX.Element => (
     <label className={`flex items-center space-x-3 ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} group`}>
         <div className="relative">
             <input 

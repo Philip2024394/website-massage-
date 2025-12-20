@@ -88,6 +88,11 @@ const App = () => {
         profilePicture?: string;
         providerRating?: number;
         mode?: 'immediate' | 'scheduled';
+        selectedService?: {
+            name: string;
+            duration: string;
+            price: number;
+        };
     } | null>(null);
 
     // Listen for openChat events from booking creation

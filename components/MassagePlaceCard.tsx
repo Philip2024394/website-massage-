@@ -615,11 +615,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 w-full">
                 {/* 60 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
                 }`} 
                 style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                    animation: 'priceRimFade 3s ease-in-out infinite'
                 } : {}}>
                     <p className="text-gray-600 text-xs">120 min</p>
                     {isDiscountActive(place) ? (
@@ -638,11 +637,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     
                 {/* 90 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
                 }`} 
                 style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                    animation: 'priceRimFade 3s ease-in-out infinite'
                 } : {}}>
                     <p className="text-gray-600 text-xs">60 min</p>
                     {isDiscountActive(place) ? (
@@ -661,11 +659,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     
                 {/* 120 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300' : 'bg-gray-50 border-gray-200'
+                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
                 }`} 
                 style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite',
-                    boxShadow: '0 0 20px rgba(249, 115, 22, 0.6)'
+                    animation: 'priceRimFade 3s ease-in-out infinite'
                 } : {}}>
                     <p className="text-gray-600 text-xs">90 min</p>
                     {isDiscountActive(place) ? (

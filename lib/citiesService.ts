@@ -12,11 +12,22 @@ export const citiesService = {
    */
   async getAllCities(): Promise<CityLocation[]> {
     try {
+      // Check if cities collection is disabled
+      const citiesCollection = APPWRITE_CONFIG.collections.cities;
+      if (!citiesCollection) {
+        console.log('🔄 Cities collection disabled, using static fallback data');
+        const allCities: CityLocation[] = [];
+        INDONESIAN_CITIES_CATEGORIZED.forEach(category => {
+          allCities.push(...category.cities);
+        });
+        return allCities;
+      }
+      
       console.log('🏙️ Fetching cities from Appwrite...');
       
       const response = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.cities
+        citiesCollection
       );
       
       console.log('✅ Fetched cities from Appwrite:', response.documents.length);

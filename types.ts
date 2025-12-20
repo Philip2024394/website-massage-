@@ -319,6 +319,8 @@ export interface Therapist {
     ktpVerifiedBy?: string; // Admin ID who verified the KTP
     
     // Premium membership upgrade fields
+    isPremium?: boolean; // Whether therapist has premium membership
+    membershipTier?: 'free' | 'premium' | 'trial'; // Membership tier level
     premiumPaymentProof?: string; // URL to uploaded payment proof image
     premiumPaymentStatus?: 'pending' | 'approved' | 'rejected'; // Payment verification status
     premiumPaymentSubmittedAt?: string; // When payment proof was submitted

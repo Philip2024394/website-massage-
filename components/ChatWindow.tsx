@@ -1004,7 +1004,7 @@ export default function ChatWindow({
                 <span className="text-xs text-red-600 line-through font-normal">
                     Rp {base.toLocaleString()}
                 </span>
-                <span className="text-sm font-bold text-green-600">
+                <span className="text-sm font-bold text-black">
                     Rp {discounted.toLocaleString()}
                 </span>
             </div>
@@ -1101,12 +1101,14 @@ export default function ChatWindow({
                                                     onClick={() => setSelectedDuration(duration as 60 | 90 | 120)}
                                                     className={`p-3 rounded-lg border transition-all relative ${
                                                         selectedDuration === duration
-                                                            ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                                                            : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200'
+                                                            ? 'border-green-500 bg-green-500 text-black shadow-sm'
+                                                            : 'bg-gray-100 border-gray-200 text-black hover:bg-gray-200'
                                                     }`}
                                                 >
                                                     <div className="text-xs">{duration} min</div>
-                                                    <div className="font-bold mt-1">{getPriceLabel(duration.toString() as '60' | '90' | '120')}</div>
+                                                    <div className={`mt-1 ${selectedDuration === duration ? 'font-bold' : 'font-semibold'}`}>
+                                                        {getPriceLabel(duration.toString() as '60' | '90' | '120')}
+                                                    </div>
                                                     {/* Star Rating - Top Right */}
                                                     {typeof providerRating === 'number' && providerRating > 0 && (
                                                         <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
@@ -1502,8 +1504,8 @@ export default function ChatWindow({
                                                     disabled={registering}
                                                     className={`p-3 sm:p-4 rounded-lg border transition-all relative touch-manipulation min-h-[64px] sm:min-h-[72px] ${
                                                         serviceDuration === duration
-                                                            ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                                                            : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
+                                                            ? 'border-green-500 bg-green-500 text-black shadow-sm'
+                                                            : 'bg-gray-100 border-gray-200 text-black hover:bg-gray-200 active:bg-gray-300'
                                                     } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     style={{ minWidth: '80px', minHeight: '64px' }}
                                                 >
@@ -1514,7 +1516,9 @@ export default function ChatWindow({
                                                         </div>
                                                     )}
                                                     <div className="text-xs">{duration} min</div>
-                                                    <div className="font-bold mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
+                                                    <div className={`mt-1 ${serviceDuration === duration ? 'font-bold' : 'font-semibold'}`}>
+                                                        {getPriceLabel(duration as '60' | '90' | '120')}
+                                                    </div>
                                                 </button>
                                             ))}
                                         </div>
