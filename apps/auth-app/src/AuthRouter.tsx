@@ -110,7 +110,7 @@ const AuthRouter: React.FC = () => {
       therapist: window.location.origin,
       place: window.location.origin
     } : {
-      therapist: 'http://localhost:3005',
+      therapist: 'http://localhost:3003',
       place: 'http://localhost:3002'
     };
     

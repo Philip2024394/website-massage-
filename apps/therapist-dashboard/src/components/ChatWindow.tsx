@@ -411,6 +411,25 @@ export default function ChatWindow({
                     await sharePaymentCard();
                 }, 1000); // Small delay after acceptance message
             }
+
+            // Send commission payment reminder for Pro/Commission tier members
+            if (providerRole === 'therapist' && (therapist?.membershipTier === 'free' || therapist?.membershipTier === 'commission')) {
+                const bookingPrice = bookingDetails?.price || 500000;
+                const commissionAmount = bookingPrice * 0.30;
+                
+                await simpleChatService.sendMessage({
+                    conversationId,
+                    senderId: 'system',
+                    senderName: 'IndaStreet',
+                    senderRole: 'admin',
+                    receiverId: providerId,
+                    receiverName: providerName,
+                    receiverRole: 'therapist',
+                    message: `💳 Commission Payment Due\n\n📊 Booking Amount: IDR ${bookingPrice.toLocaleString()}\n💰 Commission (30%): IDR ${commissionAmount.toLocaleString()}\n\n⚠️ Please transfer commission within 3 hours after booking completion to maintain account status.\n\nGo to "Payments 30%" page to submit payment proof.`,
+                    messageType: 'system',
+                    bookingId
+                });
+            }
             
             // Notify admin
             await simpleBookingService.notifyAdmin(

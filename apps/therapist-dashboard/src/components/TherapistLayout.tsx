@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { 
   Menu, X, Power, User, Calendar, DollarSign, MessageCircle, 
-  Crown, Bell, FileText, Clock, CreditCard
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet
 } from 'lucide-react';
 
 interface TherapistLayoutProps {
@@ -30,6 +30,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const menuLabels = {
     en: {
       status: 'Online Status',
+      schedule: 'My Schedule',
       dashboard: 'Profile',
       bookings: 'Bookings',
       earnings: 'Earnings',
@@ -40,11 +41,15 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       notifications: 'Notifications',
       calendar: 'Calendar',
       legal: 'Legal',
+      'custom-menu': 'Menu Prices',
+      'premium-upgrade': 'Upgrade Premium',
+      'commission-payment': 'Payments 30%',
       menu: 'Menu',
       logout: 'Logout',
     },
     id: {
       status: 'Status Online',
+      schedule: 'Jadwal Saya',
       dashboard: 'Profil',
       bookings: 'Booking',
       earnings: 'Pendapatan',
@@ -55,6 +60,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       notifications: 'Notifikasi',
       calendar: 'Kalender',
       legal: 'Hukum',
+      'premium-upgrade': 'Upgrade Premium',
+      'custom-menu': 'Harga Menu',
+      'commission-payment': 'Pembayaran 30%',
       menu: 'Menu',
       logout: 'Keluar',
     },
@@ -62,13 +70,43 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
   const labels = menuLabels[language] || menuLabels.id;
 
+  const isPremium = therapist?.membershipTier === 'premium';
+  const isPending = therapist?.premiumPaymentStatus === 'pending' && isPremium;
+  const isDeclined = therapist?.premiumPaymentStatus === 'declined';
+  
+  // Determine premium menu label and color
+  let premiumLabel = labels['premium-upgrade'];
+  let premiumColor = 'text-orange-600';
+  
+  if (isPremium && !isPending) {
+    // Fully approved premium
+    premiumLabel = language === 'id' ? 'Premium Aktif' : 'Premium Active';
+    premiumColor = 'text-green-600';
+  } else if (isPending) {
+    // Premium active but under review
+    premiumLabel = language === 'id' ? 'Premium (Ditinjau)' : 'Premium (Reviewing)';
+    premiumColor = 'text-green-600'; // Green because features are active
+  } else if (isDeclined) {
+    premiumLabel = language === 'id' ? 'Ditolak - Coba Lagi' : 'Declined - Retry';
+    premiumColor = 'text-red-600';
+  }
+  
   const menuItems = [
     { id: 'status', label: labels.status, icon: Clock, color: 'text-green-600' },
+    { id: 'schedule', label: labels.schedule, icon: Calendar, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-600' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-blue-600' },
     { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-purple-600' },
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
+    { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
+    { 
+      id: 'premium-upgrade', 
+      label: premiumLabel, 
+      icon: Crown, 
+      color: premiumColor 
+    },
+    { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-600' },
     { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
     { id: 'calendar', label: labels.calendar, icon: Calendar, color: 'text-indigo-600' },
@@ -115,12 +153,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             >
               <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
             </button>
-            {therapist?.membershipTier === 'premium' && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 rounded-lg">
-                <Crown className="w-4 h-4 text-yellow-600" />
-                <span className="text-xs font-semibold text-yellow-700">Premium</span>
-              </div>
-            )}
+            
             {/* Burger Menu */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -147,20 +180,24 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-bold text-gray-900">{labels.menu}</h2>
+          <div className="p-6 border-b border-black">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">
+                <span className="text-black">Inda</span>
+                <span className="text-orange-500">Street</span>
+              </h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 rounded-full transition-colors"
+                aria-label="Close menu"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <X className="w-6 h-6 text-black" />
               </button>
             </div>
             
@@ -190,38 +227,39 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
           {/* Navigation Menu */}
           <nav className="flex-1 overflow-y-auto p-4">
-            <ul className="space-y-1">
+            <div className="space-y-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
                 
                 return (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => handleNavigate(item.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                        isActive
-                          ? 'bg-orange-100 text-orange-700 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      <Icon className={`w-5 h-5 ${isActive ? 'text-orange-600' : item.color}`} />
-                      <span className="text-sm">{item.label}</span>
-                    </button>
-                  </li>
+                  <button
+                    key={item.id}
+                    onClick={() => handleNavigate(item.id)}
+                    className={`flex items-center gap-3 w-full py-2 px-3 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-orange-100 font-semibold'
+                        : 'hover:bg-orange-50'
+                    }`}
+                  >
+                    <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                    <span className={`text-sm font-medium ${item.id === 'premium-upgrade' && isPremium ? 'text-green-700' : 'text-gray-700'}`}>
+                      {item.label}
+                    </span>
+                  </button>
                 );
               })}
-            </ul>
+            </div>
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-300">
             <button
               onClick={onLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors"
             >
-              <Power className="w-5 h-5" />
-              <span className="text-sm font-medium">{labels.logout}</span>
+              <Power className="w-5 h-5 text-orange-500 flex-shrink-0" />
+              <span className="text-sm text-gray-700 font-medium">{labels.logout}</span>
             </button>
           </div>
         </div>

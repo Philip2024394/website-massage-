@@ -5,7 +5,7 @@
   "description": "IndaStreet Therapist Dashboard PWA",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3005",
+    "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

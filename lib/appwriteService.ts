@@ -55,6 +55,47 @@ Registration Date: ${new Date(data.registrationDate).toLocaleString()}
 
 // --- Image Upload Service ---
 export const imageUploadService = {
+    /**
+     * Upload a file (payment proof, commission proof, etc.) to Appwrite Storage
+     * @param file - The file to upload
+     * @param folder - Optional folder name for organization
+     * @returns URL of the uploaded file
+     */
+    async uploadImage(file: File, folder?: string): Promise<string> {
+        try {
+            console.log('📤 uploadImage started, file:', file.name, 'Size:', file.size, 'Folder:', folder);
+            
+            // Generate unique filename with optional folder prefix
+            const fileName = folder ? `${folder}/${Date.now()}_${file.name}` : `${Date.now()}_${file.name}`;
+            
+            console.log('📁 Uploading file:', fileName);
+            console.log('☁️ Uploading to Appwrite Storage...');
+            console.log('Bucket ID:', APPWRITE_CONFIG.bucketId);
+            
+            // Upload to Appwrite Storage
+            const response = await storage.createFile(
+                APPWRITE_CONFIG.bucketId,
+                ID.unique(),
+                file
+            );
+            
+            console.log('✅ File uploaded successfully! File ID:', response.$id);
+            
+            // Return the file view URL
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            console.log('🔗 Generated URL:', fileUrl);
+            
+            return fileUrl;
+        } catch (error) {
+            console.error('❌ Error uploading image:', error);
+            if (error instanceof Error) {
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+            }
+            throw error;
+        }
+    },
+
     async uploadProfileImage(base64Image: string): Promise<string> {
         try {
             console.log('📤 uploadProfileImage started, base64 length:', base64Image.length);
@@ -625,6 +666,15 @@ export const therapistService = {
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
             if (data.bookingsEnabled !== undefined) mappedData.bookingsEnabled = data.bookingsEnabled;
+            
+            // Handle premium membership fields (only fields that exist in DB)
+            if (data.membershipTier !== undefined) mappedData.membershipTier = data.membershipTier;
+            if (data.premiumPaymentStatus !== undefined) mappedData.premiumPaymentStatus = data.premiumPaymentStatus;
+            if (data.premiumPaymentSubmittedAt !== undefined) mappedData.premiumPaymentSubmittedAt = data.premiumPaymentSubmittedAt;
+            // premiumPaymentProof, premiumActivatedAt, premiumDeclineReason stored in payment_transactions collection
+            
+            // Handle custom menu field
+            if (data.customMenu !== undefined) mappedData.customMenu = data.customMenu;
             
             // Handle discount fields - preserve from current document if not provided
             if (data.discountPercentage !== undefined) {
@@ -2283,6 +2333,31 @@ export const reviewService = {
 // BOOKING SERVICE - Real-time booking with Appwrite backend
 // ============================================================================
 export const bookingService = {
+    /**
+     * Validate booking time - must be at least 1 hour from now
+     */
+    validateBookingTime(startTime: string): { valid: boolean; message?: string } {
+        try {
+            const bookingTime = new Date(startTime);
+            const now = new Date();
+            const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+            if (bookingTime < oneHourFromNow) {
+                return {
+                    valid: false,
+                    message: 'Bookings require minimum 1 hour advance notice for preparation and travel time'
+                };
+            }
+
+            return { valid: true };
+        } catch (error) {
+            return {
+                valid: false,
+                message: 'Invalid booking time format'
+            };
+        }
+    },
+
     async create(booking: {
         providerId: string;  // Changed to string to match Appwrite
         providerType: 'therapist' | 'place';
@@ -2291,6 +2366,7 @@ export const bookingService = {
         userName?: string;
         service: '60' | '90' | '120';
         startTime: string;
+        bookingDate?: string; // Optional explicit booking date
         duration?: number;  // Duration in minutes
         totalCost?: number;
         paymentMethod?: string;
@@ -2299,12 +2375,21 @@ export const bookingService = {
         hotelRoomNumber?: string;
     }): Promise<any> {
         try {
+            // Validate 1-hour minimum if startTime is provided
+            if (booking.startTime && booking.bookingDate) {
+                const bookingDateTime = `${booking.bookingDate}T${booking.startTime}`;
+                const validation = this.validateBookingTime(bookingDateTime);
+                if (!validation.valid) {
+                    throw new Error(validation.message);
+                }
+            }
+
             if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
                 console.warn('⚠️ Bookings collection disabled - simulating booking creation');
                 const mockBooking = {
                     $id: `mock_booking_${Date.now()}`,
                     bookingId: `mock_booking_${Date.now()}`,
-                    bookingDate: new Date().toISOString(),
+                    bookingDate: booking.bookingDate || new Date().toISOString(),
                     providerId: booking.providerId,
                     providerType: booking.providerType,
                     providerName: booking.providerName,
@@ -2320,7 +2405,8 @@ export const bookingService = {
                     totalCost: booking.totalCost || 0,
                     paymentMethod: booking.paymentMethod || 'Unpaid',
                     price: Math.round((booking.totalCost || 0) / 1000), // Add required price field
-                    createdAt: new Date().toISOString() // Add required createdAt field
+                    createdAt: new Date().toISOString(), // Add required createdAt field
+                    oneHourNotice: true // Flag indicating 1-hour requirement acknowledged
                 };
                 console.log('✅ Mock booking created:', mockBooking.$id);
                 return mockBooking;
@@ -2333,7 +2419,7 @@ export const bookingService = {
                 bookingId,
                 {
                     bookingId: bookingId,
-                    bookingDate: new Date().toISOString(),
+                    bookingDate: booking.bookingDate || new Date().toISOString(),
                     providerId: booking.providerId,
                     providerType: booking.providerType,
                     providerName: booking.providerName,
@@ -2350,18 +2436,39 @@ export const bookingService = {
                     paymentMethod: booking.paymentMethod || 'Unpaid',
                     price: Math.round((booking.totalCost || 0) / 1000), // Add required price field (in K format)
                     createdAt: new Date().toISOString(), // Add required createdAt field
-                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString() // 10 minute response deadline
+                    responseDeadline: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minute response deadline
+                    oneHourNotice: true, // Customer acknowledged 1-hour requirement
+                    source: 'platform' // Mark as platform booking
                 }
             );
             console.log('✅ Booking created successfully:', response.$id);
+            console.log('⏰ 1-hour minimum requirement enforced');
             
             // Create notification for provider
             await notificationService.create({
                 providerId: parseInt(booking.providerId),
-                message: `New booking request from ${booking.userName || booking.hotelGuestName || 'Guest'} for ${booking.service} minutes`,
+                message: `New booking request from ${booking.userName || booking.hotelGuestName || 'Guest'} for ${booking.service} minutes. Customer has been notified of 1-hour minimum preparation time.`,
                 type: 'booking_request',
                 bookingId: response.$id
             });
+
+            // Create payment record for therapist earnings
+            if (booking.providerType === 'therapist' && booking.totalCost) {
+                try {
+                    await paymentService.createPayment({
+                        bookingId: response.$id,
+                        therapistId: booking.providerId,
+                        customerName: booking.userName || booking.hotelGuestName || 'Guest',
+                        amount: booking.totalCost,
+                        serviceDuration: booking.service,
+                        paymentMethod: booking.paymentMethod
+                    });
+                    console.log('✅ Payment record created for therapist');
+                } catch (paymentError) {
+                    console.error('⚠️ Failed to create payment record:', paymentError);
+                    // Don't throw - booking was successful, payment tracking failed
+                }
+            }
             
             return response;
         } catch (error) {
@@ -4350,29 +4457,69 @@ export const subscriptionService = {
 // --- Payment Service ---
 export const paymentService = {
     /**
-     * Create a payment record
+     * Create a payment record for therapist earnings from booking
      */
     async createPayment(data: {
-        memberId: string;
-        subscriptionId: string;
-        monthNumber: number;
+        bookingId: string;
+        therapistId: string;
+        customerName: string;
         amount: number;
-        dueDate: string;
+        serviceDuration: string;
+        paymentMethod?: string;
     }): Promise<any> {
         try {
+            const commissionRate = 0.30; // 30% admin commission
+            const adminCommission = Math.round(data.amount * commissionRate);
+            const netEarning = data.amount - adminCommission;
+
+            const paymentId = ID.unique();
+            const now = new Date().toISOString();
+
             return await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                'payment_records',
-                ID.unique(),
+                APPWRITE_CONFIG.collections.payments,
+                paymentId,
                 {
-                    ...data,
-                    paymentStatus: 'pending',
-                    notes: ''
+                    paymentId: paymentId,
+                    bookingId: data.bookingId,
+                    transactionDate: now,
+                    paymentAmount: data.amount,
+                    paymentMethod: data.paymentMethod || 'Cash',
+                    currency: 'IDR',
+                    status: 'pending',
+                    therapistId: data.therapistId,
+                    customerName: data.customerName,
+                    amount: Math.round(data.amount / 1000), // Amount in thousands for display
+                    adminCommission: Math.round(adminCommission / 1000),
+                    netEarning: Math.round(netEarning / 1000),
+                    serviceDuration: data.serviceDuration,
+                    date: now
                 }
             );
         } catch (error) {
             console.error('Error creating payment:', error);
             throw error;
+        }
+    },
+
+    /**
+     * Get payments by therapist ID
+     */
+    async getPaymentsByTherapist(therapistId: string): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.payments,
+                [
+                    Query.equal('therapistId', therapistId),
+                    Query.orderDesc('date'),
+                    Query.limit(100)
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching payments by therapist:', error);
+            return [];
         }
     },
 
@@ -6402,6 +6549,224 @@ Please review and approve/decline within 7 days.
         } catch (error) {
             console.error('❌ Failed to send admin notification:', error);
             // Don't throw - payment is still submitted
+        }
+    },
+};
+
+// ===========================
+// Premium Payments Service
+// ===========================
+export const premiumPaymentsService = {
+    /**
+     * Create premium payment record
+     */
+    async create(data: {
+        userId: string;
+        therapistId: string;
+        paymentAmount: number;
+        currency: string;
+        paymentProofUrl: string;
+        paymentStatus: string;
+        submittedAt: string;
+    }): Promise<any> {
+        try {
+            console.log('📝 Creating premium payment record...');
+            
+            const payment = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.premiumPayments,
+                ID.unique(),
+                {
+                    paymentId: Date.now(), // Generate unique integer ID
+                    userId: parseInt(data.userId) || 0, // Convert to integer
+                    therapistId: parseInt(data.therapistId) || 0, // Convert to integer
+                    paymentAmount: data.paymentAmount,
+                    currency: data.currency,
+                    paymentProofUrl: data.paymentProofUrl,
+                    paymentStatus: data.paymentStatus,
+                    submittedAt: data.submittedAt,
+                    placeId: null,
+                    bookingId: null,
+                    activatedAt: null,
+                    declineReason: null,
+                }
+            );
+            
+            console.log('✅ Premium payment record created:', payment.$id);
+            return payment;
+        } catch (error) {
+            console.error('❌ Failed to create premium payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update premium payment status
+     */
+    async update(paymentId: string, data: {
+        paymentStatus?: string;
+        activatedAt?: string;
+        declineReason?: string;
+    }): Promise<any> {
+        try {
+            const updates: any = {};
+            if (data.paymentStatus) updates.paymentStatus = data.paymentStatus;
+            if (data.activatedAt) updates.activatedAt = data.activatedAt;
+            if (data.declineReason) updates.declineReason = data.declineReason;
+
+            const payment = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.premiumPayments,
+                paymentId,
+                updates
+            );
+
+            console.log('✅ Premium payment updated:', paymentId);
+            return payment;
+        } catch (error) {
+            console.error('❌ Failed to update premium payment:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Get payment by therapist ID
+     */
+    async getByTherapistId(therapistId: string): Promise<any | null> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.premiumPayments,
+                [
+                    Query.equal('therapistId', parseInt(therapistId) || 0),
+                    Query.orderDesc('$createdAt'),
+                    Query.limit(1)
+                ]
+            );
+
+            return response.documents[0] || null;
+        } catch (error) {
+            console.error('❌ Failed to get premium payment:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Get all pending payments for admin
+     */
+    async getPendingPayments(): Promise<any[]> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.premiumPayments,
+                [
+                    Query.equal('paymentStatus', 'pending'),
+                    Query.orderDesc('$createdAt')
+                ]
+            );
+
+            return response.documents;
+        } catch (error) {
+            console.error('❌ Failed to get pending payments:', error);
+            return [];
+        }
+    },
+};
+
+// ===========================
+// Therapist Menus Service
+// ===========================
+export const therapistMenusService = {
+    /**
+     * Get menu for therapist
+     */
+    async getByTherapistId(therapistId: string): Promise<any | null> {
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapistMenus,
+                [
+                    Query.equal('therapistId', therapistId),
+                    Query.limit(1)
+                ]
+            );
+
+            return response.documents[0] || null;
+        } catch (error) {
+            console.error('❌ Failed to get therapist menu:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Save or update menu
+     */
+    async saveMenu(therapistId: string, menuData: string): Promise<any> {
+        try {
+            // Check if menu exists
+            const existing = await this.getByTherapistId(therapistId);
+
+            if (existing) {
+                // Update existing menu
+                const updated = await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapistMenus,
+                    existing.$id,
+                    { 
+                        menuData,
+                        updatedDate: new Date().toISOString()
+                    }
+                );
+                console.log('✅ Menu updated');
+                return updated;
+            } else {
+                // Create new menu with permissions
+                const menuId = ID.unique();
+                const now = new Date().toISOString();
+                const created = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapistMenus,
+                    menuId,
+                    {
+                        menuId: menuId,
+                        therapistId,
+                        menuData,
+                        isActive: true,
+                        createdDate: now,
+                        updatedDate: now
+                    },
+                    [
+                        Permission.read(Role.any()),
+                        Permission.update(Role.users()),
+                        Permission.delete(Role.users())
+                    ]
+                );
+                console.log('✅ Menu created');
+                return created;
+            }
+        } catch (error) {
+            console.error('❌ Failed to save menu:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Delete menu
+     */
+    async deleteMenu(therapistId: string): Promise<void> {
+        try {
+            const existing = await this.getByTherapistId(therapistId);
+            if (existing) {
+                await databases.deleteDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapistMenus,
+                    existing.$id
+                );
+                console.log('✅ Menu deleted');
+            }
+        } catch (error) {
+            console.error('❌ Failed to delete menu:', error);
+            throw error;
         }
     },
 };

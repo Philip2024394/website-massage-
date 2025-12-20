@@ -78,7 +78,12 @@ class SystemHealthService {
 
             console.log('📊 Health check sent successfully');
         } catch (error) {
-            console.error('❌ Failed to send health check:', error);
+            // Silently handle missing collection - not critical for app functionality
+            if (error instanceof Error && (error.message.includes('system_health_checks') || error.message.includes('404'))) {
+                // Collection doesn't exist - skip silently without logging
+                return;
+            }
+            console.warn('⚠️ Health check skipped:', error instanceof Error ? error.message : 'Unknown error');
         }
     }
 

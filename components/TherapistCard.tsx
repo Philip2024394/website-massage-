@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
-import { notificationService, bookingService, reviewService } from '../lib/appwriteService';
+import { notificationService, bookingService, reviewService, therapistMenusService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
@@ -13,7 +13,7 @@ import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { useUIConfig } from '../hooks/useUIConfig';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Receipt, Clock, X } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
@@ -157,6 +157,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     onIncrementAnalytics,
     onShowRegisterPrompt,
     onNavigate,
+    onViewPriceList,
     isCustomerLoggedIn = false,
     activeDiscount,
     t: _t,
@@ -176,7 +177,89 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showBookingForm, setShowBookingForm] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showSharePopup, setShowSharePopup] = useState(false);
+    const [showPriceListModal, setShowPriceListModal] = useState(false);
+    const [menuData, setMenuData] = useState<any[]>([]);
     const [userReferralCode, setUserReferralCode] = useState<string>('');
+    const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
+    const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
+    const [highlightedCell, setHighlightedCell] = useState<{serviceIndex: number, duration: '60' | '90' | '120'} | null>(null);
+    const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
+    
+    // Debug modal state changes
+    useEffect(() => {
+        console.log('🔄 MODAL STATE CHANGED:', showPriceListModal);
+        if (showPriceListModal) {
+            console.log('✅ Modal is now OPEN');
+            console.log('🔍 Current location:', window.location.href);
+            console.log('🔍 Session storage:', sessionStorage.getItem('has_entered_app'));
+        }
+    }, [showPriceListModal]);
+    
+    // Animated glowing effect - moves between random price cells every 2 seconds
+    useEffect(() => {
+        if (!showPriceListModal || menuData.length === 0 || selectedServiceIndex !== null) {
+            setHighlightedCell(null);
+            return;
+        }
+        
+        // Get all available price cells
+        const availableCells: {serviceIndex: number, duration: '60' | '90' | '120'}[] = [];
+        menuData.forEach((service, index) => {
+            if (service.price60) availableCells.push({serviceIndex: index, duration: '60'});
+            if (service.price90) availableCells.push({serviceIndex: index, duration: '90'});
+            if (service.price120) availableCells.push({serviceIndex: index, duration: '120'});
+        });
+        
+        if (availableCells.length === 0) return;
+        
+        // Set initial random cell
+        setHighlightedCell(availableCells[Math.floor(Math.random() * availableCells.length)]);
+        
+        // Change highlighted cell every 2 seconds
+        const interval = setInterval(() => {
+            setHighlightedCell(availableCells[Math.floor(Math.random() * availableCells.length)]);
+        }, 2000);
+        
+        return () => clearInterval(interval);
+    }, [showPriceListModal, menuData, selectedServiceIndex]);
+    
+    // Countdown timer for booking arrival time (1 hour)
+    useEffect(() => {
+        if (!showPriceListModal) {
+            setArrivalCountdown(3600); // Reset when modal closes
+            return;
+        }
+        
+        const interval = setInterval(() => {
+            setArrivalCountdown(prev => {
+                if (prev <= 0) return 3600; // Reset to 1 hour when it reaches 0
+                return prev - 1;
+            });
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [showPriceListModal]);
+    
+    // Listen for openPriceMenu event to reopen menu from chat
+    useEffect(() => {
+        const handleOpenPriceMenu = (event: CustomEvent) => {
+            const therapistId = String(therapist.$id || therapist.id);
+            if (event.detail?.therapistId === therapistId) {
+                setShowPriceListModal(true);
+            }
+        };
+        
+        window.addEventListener('openPriceMenu', handleOpenPriceMenu as EventListener);
+        return () => window.removeEventListener('openPriceMenu', handleOpenPriceMenu as EventListener);
+    }, [therapist]);
+    
+    // Format countdown as HH:MM:SS
+    const formatCountdown = (seconds: number): string => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
     const [countdown, setCountdown] = useState<string>('');
     const [isOvertime, setIsOvertime] = useState(false);
     const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
@@ -396,6 +479,42 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             // Referral code functionality removed
         }
     }, [showReferModal, isCustomerLoggedIn]);
+
+    // Load menu data when price list modal opens
+    useEffect(() => {
+        const loadMenu = async () => {
+            try {
+                if (showPriceListModal && therapist.membershipTier === 'premium') {
+                    const therapistId = String(therapist.$id || therapist.id);
+                    console.log('🍽️ Loading menu for therapist:', therapistId);
+                    
+                    try {
+                        const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
+                        console.log('📄 Menu document received:', menuDoc);
+                        
+                        if (menuDoc?.menuData) {
+                            const parsed = JSON.parse(menuDoc.menuData);
+                            setMenuData(Array.isArray(parsed) ? parsed : []);
+                            console.log('✅ Menu items loaded:', parsed.length);
+                        } else {
+                            console.log('ℹ️ No menu data found for this therapist');
+                            setMenuData([]);
+                        }
+                    } catch (error) {
+                        console.error('❌ Failed to load menu:', error);
+                        setMenuData([]);
+                    }
+                }
+            } catch (outerError) {
+                console.error('❌ Outer error in useEffect:', outerError);
+            }
+        };
+        
+        loadMenu().catch(error => {
+            console.error('❌ Unhandled promise rejection:', error);
+            console.error('❌ Promise error stack:', error instanceof Error ? error.stack : 'No stack');
+        });
+    }, [showPriceListModal, therapist]);
 
     // Handle anonymous review submission
     const handleAnonymousReviewSubmit = async (reviewData: {
@@ -814,13 +933,13 @@ ${locationInfo}${coordinatesInfo}
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner - Only for Premium + KTP Verified */}
-                    {(therapist as any).membershipTier === 'premium' && (therapist as any).ktpVerified && (
+                    {/* Verified Badge - Top Left Corner - Premium Members */}
+                    {(therapist as any).membershipTier === 'premium' && (
                         <div className="absolute top-2 left-2 z-30">
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
                                 alt="Verified Member"
-                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
+                                className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg"
                                 style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
                             />
                         </div>
@@ -866,17 +985,6 @@ ${locationInfo}${coordinatesInfo}
                 {/* Profile Image - 50% on banner, 50% on card overlay */}
                 <div className="absolute top-36 left-4 z-20 overflow-visible">
                     <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
-                        {/* Verified Badge - Top Left Corner - Premium + KTP Verified */}
-                        {(therapist as any).membershipTier === 'premium' && (therapist as any).ktpVerified && (
-                            <div className="absolute -top-2 -left-2 z-30 w-10 h-10">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                                    alt="Verified Member"
-                                    className="w-full h-full object-contain drop-shadow-lg"
-                                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
-                                />
-                            </div>
-                        )}
                         
                         {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                             <img 
@@ -943,7 +1051,7 @@ ${locationInfo}${coordinatesInfo}
                             aria-label={`Rate ${therapist.name}`}
                             role="button"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="#eab308">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
                             <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
@@ -1026,15 +1134,15 @@ ${locationInfo}${coordinatesInfo}
                                 
                                 {/* Star Rating Badge */}
                                 <div 
-                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 cursor-pointer z-30"
+                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1 cursor-pointer z-30"
                                     onClick={() => onRate(therapist)}
                                     aria-label={`Rate ${therapist.name}`}
                                     role="button"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="#eab308">
+                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="#eab308">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
-                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
                                 </div>
                             </div>
                         </div>
@@ -1101,10 +1209,46 @@ ${locationInfo}${coordinatesInfo}
             </div>
             
             {/* Client Preference Display - Left aligned */}
-            <div className="mx-4 mb-2">
+            <div className="mx-4 mb-2 flex items-center justify-between">
                 <p className="text-xs text-gray-600 text-left">
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
+                {therapist.membershipTier === 'premium' && (
+                    <button
+                        onClick={(e) => {
+                            console.log('🔴 BUTTON CLICKED - Starting...');
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('🍽️ Opening price list modal for:', therapist.name);
+                            console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
+                            console.log('🔍 Current URL:', window.location.href);
+                            console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
+                            try {
+                                setShowPriceListModal(true);
+                                console.log('✅ Modal state set to true');
+                            } catch (error) {
+                                console.error('❌ Error setting modal state:', error);
+                            }
+                        }}
+                        className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
+                    >
+                        <style>{`
+                            @keyframes flash-subtle {
+                                0%, 100% { opacity: 1; }
+                                50% { opacity: 0.6; }
+                            }
+                            .animate-flash-subtle {
+                                animation: flash-subtle 2s ease-in-out infinite;
+                            }
+                        `}</style>
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
+                            alt="Menu"
+                            className="w-10 h-10 object-contain"
+                        />
+                        <span className="font-bold text-black">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
+                    </button>
+                )}
             </div>
 
             {/* Therapist Bio - Natural flow with proper margin */}
@@ -1320,7 +1464,7 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             </div>
 
-            <div className={`flex gap-2 ${getDynamicSpacing('mt-2', 'mt-1', 'mt-1')}`}>
+            <div className={`flex gap-2 ${getDynamicSpacing('mt-6', 'mt-4', 'mt-4')}`}>
                 <button
                     onClick={(e) => {
                         e.preventDefault();
@@ -1794,6 +1938,256 @@ ${locationInfo}${coordinatesInfo}
             }
         `}</style>
             </div>
+
+            {/* Price List Bottom Sheet Slider */}
+            {showPriceListModal && (
+                <div 
+                    className="fixed inset-0 z-[9999] bg-black bg-opacity-50 transition-opacity duration-300"
+                    onClick={() => setShowPriceListModal(false)}
+                >
+                    <div 
+                        className="absolute bottom-0 left-0 right-0 h-full w-full bg-white transform transition-transform duration-300 ease-out"
+                        style={{
+                            animation: 'slideUp 0.3s ease-out forwards'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <style>{`
+                            @keyframes slideUp {
+                                from {
+                                    transform: translateY(100%);
+                                }
+                                to {
+                                    transform: translateY(0);
+                                }
+                            }
+                            @keyframes slideDown {
+                                from {
+                                    transform: translateY(0);
+                                }
+                                to {
+                                    transform: translateY(100%);
+                                }
+                            }
+                        `}</style>
+                        
+                        {/* Orange Header with Profile */}
+                        <div className="bg-orange-500 px-4 py-2.5 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5 flex-1">
+                                <img
+                                    src={therapist.profilePicture || therapist.mainImage || '/default-avatar.jpg'}
+                                    alt={therapist.name}
+                                    className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                                    onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}
+                                />
+                                <div>
+                                    <h4 className="font-bold text-sm text-white">{therapist.name}</h4>
+                                    <div className="flex items-center gap-1 text-xs">
+                                        <StarIcon className="w-3 h-3 text-yellow-300" />
+                                        <span className="font-semibold text-white">{getDisplayRating(therapist.rating, therapist.reviewCount)}</span>
+                                        <span className="text-orange-100">({getDisplayReviewCount(therapist.reviewCount)})</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowPriceListModal(false)}
+                                className="flex items-center justify-center w-8 h-8 bg-black hover:bg-gray-800 rounded-full transition-colors"
+                                aria-label="Close"
+                            >
+                                <X className="h-5 w-5 text-white" />
+                            </button>
+                        </div>
+
+                        {/* Services Provided Text */}
+                        <div className="bg-white px-4 pt-3 pb-2">
+                            <h3 className="text-left text-gray-700 font-semibold text-sm">
+                                {chatLang === 'id' ? 'Layanan Yang Disediakan' : 'Services Provided'}
+                            </h3>
+                        </div>
+
+                        {/* Booking Arrival Time */}
+                        <div className="px-4 py-2">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-4 h-4 text-orange-600" />
+                                    <span className="text-xs text-gray-700 font-medium">
+                                        {chatLang === 'id' ? 'Pesan Sekarang Waktu Kedatangan' : 'Book Now Arrival Time'} 
+                                        <span className="text-orange-600 font-semibold ml-1">1 {chatLang === 'id' ? 'Jam' : 'Hour'}</span>
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <span className="text-sm font-bold text-orange-600 tabular-nums">
+                                        {formatCountdown(arrivalCountdown)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Price List Content - Scrollable */}
+                        <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 180px)' }}>
+                            {menuData.length > 0 ? (
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    {/* Table Header */}
+                                    <div className="grid grid-cols-12 gap-2 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 border-b border-gray-200">
+                                        <div className="col-span-4">Service</div>
+                                        <div className="col-span-2 text-center">60 Min</div>
+                                        <div className="col-span-2 text-center">90 Min</div>
+                                        <div className="col-span-2 text-center">120 Min</div>
+                                        <div className="col-span-2 text-center">Action</div>
+                                    </div>
+                                    
+                                    {/* Table Rows */}
+                                    <div className="divide-y divide-gray-200">
+                                        {menuData.map((service: any, index: number) => {
+                                            const isRowSelected = selectedServiceIndex === index;
+                                            
+                                            return (
+                                                <div key={index} className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-purple-50 transition-colors items-center">
+                                                    {/* Service Name */}
+                                                    <div className="col-span-4">
+                                                        <div className="font-medium text-gray-900 text-sm">{service.serviceName}</div>
+                                                    </div>
+                                                    
+                                                    {/* 60 Min Price - Clickable */}
+                                                    <div className="col-span-2 flex flex-col items-center gap-1">
+                                                        {service.price60 ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedServiceIndex(index);
+                                                                    setSelectedDuration('60');
+                                                                }}
+                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                    isRowSelected && selectedDuration === '60'
+                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                        : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '60'
+                                                                        ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                                                }`}
+                                                            >
+                                                                Rp {(Number(service.price60) * 1000).toLocaleString('id-ID')}
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">-</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* 90 Min Price - Clickable */}
+                                                    <div className="col-span-2 flex flex-col items-center gap-1">
+                                                        {service.price90 ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedServiceIndex(index);
+                                                                    setSelectedDuration('90');
+                                                                }}
+                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                    isRowSelected && selectedDuration === '90'
+                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                            : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '90'
+                                                                            ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                                                    }`}
+                                                                >
+                                                                    Rp {(Number(service.price90) * 1000).toLocaleString('id-ID')}
+                                                                </button>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">-</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* 120 Min Price - Clickable */}
+                                                    <div className="col-span-2 flex flex-col items-center gap-1">
+                                                        {service.price120 ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedServiceIndex(index);
+                                                                    setSelectedDuration('120');
+                                                                }}
+                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                    isRowSelected && selectedDuration === '120'
+                                                                        ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
+                                                                        : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '120'
+                                                                        ? 'bg-gray-200 text-gray-900 border-gray-400 animate-pulse'
+                                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                                                                }`}
+                                                            >
+                                                                Rp {(Number(service.price120) * 1000).toLocaleString('id-ID')}
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">-</span>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Book Now Button */}
+                                                    <div className="col-span-2 flex justify-center">
+                                                        <button
+                                                            onClick={() => {
+                                                                // Check if a duration is selected for this row
+                                                                if (!isRowSelected || !selectedDuration) {
+                                                                    alert(chatLang === 'id' 
+                                                                        ? 'Silakan pilih durasi terlebih dahulu' 
+                                                                        : 'Please select a duration first');
+                                                                    return;
+                                                                }
+                                                                
+                                                                // Get selected price
+                                                                const selectedPrice = selectedDuration === '60' ? service.price60 
+                                                                    : selectedDuration === '90' ? service.price90 
+                                                                    : service.price120;
+                                                                
+                                                                // Close the price list modal
+                                                                setShowPriceListModal(false);
+                                                                
+                                                                // Get pricing info
+                                                                const pricing = getPricing();
+                                                                const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                                
+                                                                // Dispatch chat event with service details
+                                                                window.dispatchEvent(new CustomEvent('openChat', {
+                                                                    detail: {
+                                                                        therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
+                                                                        therapistName: therapist.name,
+                                                                        therapistType: 'therapist',
+                                                                        therapistStatus: normalizedStatus,
+                                                                        pricing: pricing,
+                                                                        profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
+                                                                        providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
+                                                                        discountPercentage: therapist.discountPercentage || 0,
+                                                                        discountActive: isDiscountActive(therapist),
+                                                                        mode: 'immediate',
+                                                                        // Add selected service info
+                                                                        selectedService: {
+                                                                            name: service.serviceName,
+                                                                            duration: selectedDuration,
+                                                                            price: Number(selectedPrice) * 1000
+                                                                        }
+                                                                    }
+                                                                }));
+                                                            }}
+                                                            disabled={!isRowSelected || !selectedDuration}
+                                                            className={`px-3 py-1 text-xs rounded transition-colors ${
+                                                                isRowSelected && selectedDuration
+                                                                    ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
+                                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                            }`}
+                                                        >
+                                                            {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-12">
+                                    <Receipt size={48} className="mx-auto mb-3 text-purple-300" />
+                                    <p className="text-gray-600">{chatLang === 'id' ? 'Memuat menu harga...' : 'Loading price menu...'}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Social Share Popup */}
             <SocialSharePopup

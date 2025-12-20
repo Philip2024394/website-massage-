@@ -31,7 +31,8 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPremium] = useState(therapist?.membershipTier === 'premium' || false);
+  // Calculate isPremium dynamically from therapist prop - recalculates on therapist update
+  const isPremium = therapist?.membershipTier === 'premium' || false;
 
   useEffect(() => {
     if (isPremium) {

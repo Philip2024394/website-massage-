@@ -317,6 +317,50 @@ export interface Therapist {
     ktpVerified?: boolean; // Admin verification status
     ktpVerifiedAt?: string; // Date when KTP was verified by admin
     ktpVerifiedBy?: string; // Admin ID who verified the KTP
+    
+    // Premium membership upgrade fields
+    premiumPaymentProof?: string; // URL to uploaded payment proof image
+    premiumPaymentStatus?: 'pending' | 'approved' | 'rejected'; // Payment verification status
+    premiumPaymentSubmittedAt?: string; // When payment proof was submitted
+    premiumPaymentVerifiedAt?: string; // When admin verified the payment
+    premiumPaymentVerifiedBy?: string; // Admin ID who verified the payment
+    premiumPaymentRejectionReason?: string; // Reason if payment was rejected
+    
+    // Custom service menu (premium feature)
+    customMenu?: string; // JSON string of custom services array
+    
+    // Account status for commission payment enforcement
+    accountStatus?: 'active' | 'frozen' | 'suspended'; // Account status
+    accountFrozenAt?: string; // When account was frozen
+    accountFrozenReason?: string; // Reason for freeze (e.g., "Unpaid commission")
+    pendingCommissionPayments?: string; // JSON string of pending commission booking IDs
+    
+    // Schedule and availability management
+    operationalHours?: string; // JSON string of daily hours { monday: { start: '09:00', end: '17:00', enabled: true }, ... }
+    workingDays?: string; // JSON string of working days array ['monday', 'tuesday', ...]
+    manualBookings?: string; // JSON string of manual bookings (non-system bookings)
+}
+
+// Commission payment record
+export interface CommissionPayment {
+    id?: string;
+    $id?: string;
+    bookingId: string;
+    therapistId: string;
+    bookingAmount: number;
+    commissionRate: number; // 0.30 for 30%
+    commissionAmount: number;
+    proofUrl?: string;
+    status: 'pending' | 'submitted' | 'verified' | 'rejected';
+    submittedAt?: string;
+    verifiedAt?: string;
+    verifiedBy?: string;
+    rejectionReason?: string;
+    bookingTime: string;
+    paymentDeadline: string; // 3 hours after booking time
+    remindersSent?: number; // Count of reminders sent
+    lastReminderAt?: string;
+    createdAt?: string;
 }
 
 export interface Place {
@@ -492,6 +536,20 @@ export interface Booking {
     confirmedAt?: string;
     completedAt?: string;
     cancelledAt?: string;
+    
+    // Payment and confirmation (all payments are manual bank transfers to therapist)
+    paymentType?: 'bank_transfer' | 'manual'; // Customer transfers directly to therapist's account
+    paymentProofUrl?: string; // Upload proof of bank transfer
+    paymentStatus?: 'pending' | 'verified' | 'rejected'; // Therapist verifies payment
+    customerPhoneNumber?: string; // Customer contact for notifications
+    therapistAccepted?: boolean; // Whether therapist accepted the booking
+    therapistAcceptedAt?: string; // When therapist accepted
+    notificationSent?: boolean; // Whether 3-hour notification was sent
+    notificationSentAt?: string; // When notification was sent
+    
+    // Booking terms
+    depositNonRefundable?: boolean; // Always true - deposits cannot be refunded
+    reschedulingAllowed?: boolean; // Always false - must create new booking for changes
 }
 
 export interface Notification {

@@ -3,7 +3,7 @@ import {
     BarChart, Users, MessageSquare, Edit3, Save, X, Upload,
     DollarSign, Calendar, Activity, Search, Filter, Eye, EyeOff,
     LogOut, RefreshCw, AlertCircle, UserCheck, CheckCircle, Star,
-    MapPin, Image as ImageIcon, Settings, FileCheck
+    MapPin, Image as ImageIcon, Settings, FileCheck, Award, Database
 } from 'lucide-react';
 import { 
     therapistService, 
@@ -21,6 +21,8 @@ import ReviewsManagement from './ReviewsManagement';
 import SystemSettings from './SystemSettings';
 import AdminKtpVerification from './AdminKtpVerification';
 import SystemHealthMonitor from './SystemHealthMonitor';
+import UpgradeSurtiningsih from './UpgradeSurtiningsih';
+import DatabaseDiagnostics from './DatabaseDiagnostics';
 
 // Add custom styles for better mobile experience
 const mobileStyles = `
@@ -124,7 +126,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'analytics' | 'email' | 'payments' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'analytics' | 'email' | 'payments' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics'>('dashboard');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -551,6 +553,62 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                     </button>
                 </div>
                 <AdminKtpVerification />
+            </div>
+        );
+    }
+
+    if (activeView === 'db-diagnostics') {
+        return (
+            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <button
+                            onClick={() => setActiveView('dashboard')}
+                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                        >
+                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="hidden sm:inline">Back to Dashboard</span>
+                            <span className="sm:hidden">Back</span>
+                        </button>
+                        <h1 className="text-lg sm:text-xl font-bold text-gray-800">Database Diagnostics</h1>
+                    </div>
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                    </button>
+                </div>
+                <DatabaseDiagnostics />
+            </div>
+        );
+    }
+
+    if (activeView === 'premium-upgrade') {
+        return (
+            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <button
+                            onClick={() => setActiveView('dashboard')}
+                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                        >
+                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="hidden sm:inline">Back to Dashboard</span>
+                            <span className="sm:hidden">Back</span>
+                        </button>
+                        <h1 className="text-lg sm:text-xl font-bold text-gray-800">Premium Upgrade (30% Commission)</h1>
+                    </div>
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                    </button>
+                </div>
+                <UpgradeSurtiningsih />
             </div>
         );
     }
@@ -1137,6 +1195,26 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 <FileCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span className="hidden sm:inline">KTP Verification</span>
                                 <span className="sm:hidden">KTP</span>
+                            </button>
+
+                            {/* Premium Upgrade button */}
+                            <button
+                                onClick={() => setActiveView('premium-upgrade')}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-xs sm:text-sm"
+                            >
+                                <Award className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Premium Upgrade</span>
+                                <span className="sm:hidden">Premium</span>
+                            </button>
+
+                            {/* Database Diagnostics button */}
+                            <button
+                                onClick={() => setActiveView('db-diagnostics')}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 text-xs sm:text-sm"
+                            >
+                                <Database className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">DB Diagnostics</span>
+                                <span className="sm:hidden">DB</span>
                             </button>
 
                             {/* System Health Monitor button */}

@@ -334,9 +334,12 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
               <div className="flex items-start gap-2">
                 <Clock className="text-orange-600 flex-shrink-0 mt-0.5" size={20} />
                 <div>
-                  <h3 className="font-bold text-gray-800 mb-1 text-sm">5-Minute Response Window</h3>
+                  <h3 className="font-bold text-gray-800 mb-1 text-sm">Booking Requirements</h3>
                   <p className="text-gray-700 text-xs leading-relaxed">
-                    When you book, the therapist has <span className="font-bold text-orange-600">5 minutes</span> to accept your booking.
+                    <span className="font-bold text-orange-600">⏰ 1-Hour Advance Notice:</span> All bookings must be made at least 1 hour in advance to allow the therapist time for preparation and travel.
+                  </p>
+                  <p className="text-gray-700 text-xs leading-relaxed mt-2">
+                    <span className="font-bold text-orange-600">⏱️ 5-Minute Response:</span> The therapist has 5 minutes to accept your booking.
                   </p>
                   <p className="text-gray-700 text-xs leading-relaxed mt-1">
                     If they don't respond within 5 minutes, your booking will be automatically sent to all available therapists.

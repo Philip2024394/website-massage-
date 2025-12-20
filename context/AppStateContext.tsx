@@ -139,6 +139,13 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     const setPage = useCallback((newPage: string) => {
         console.log('📍 setPage called:', newPage, 'Current page:', page);
         
+        // Prevent going back to landing if user has entered app
+        const hasEntered = sessionStorage.getItem('has_entered_app');
+        if (newPage === 'landing' && hasEntered === 'true') {
+            console.log('🚫 Blocked navigation to landing - user already in app');
+            return;
+        }
+        
         // Prevent infinite loops by checking if we're already on that page
         if (newPage === page) {
             console.log('📍 Already on page:', newPage, 'skipping...');
@@ -160,11 +167,32 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         }, 0);
     }, [page]);
 
+    // Check on mount if we should redirect from landing to home
+    useEffect(() => {
+        const hasEntered = sessionStorage.getItem('has_entered_app');
+        if (page === 'landing' && hasEntered === 'true') {
+            console.log('🔄 Initial check: User already entered app, redirecting to home');
+            window.location.hash = '#home';
+            _setPage('home');
+        }
+    }, []); // Run only once on mount
+
     // Listen for hash changes to handle browser back/forward buttons
     useEffect(() => {
         const handleHashChange = () => {
             const hash = window.location.hash.replace('#', '');
-            const newPage = hash || 'landing';
+            let newPage = hash || 'landing';
+            
+            // Prevent going back to landing if user has already entered app
+            const hasEntered = sessionStorage.getItem('has_entered_app');
+            if (newPage === 'landing' && hasEntered === 'true') {
+                console.log('🚫 Prevented return to landing - user already entered app, forcing home');
+                // Force navigate to home instead
+                window.location.hash = '#home';
+                _setPage('home');
+                return;
+            }
+            
             if (newPage !== page) {
                 console.log('🔗 Hash changed, updating page to:', newPage);
                 _setPage(newPage);

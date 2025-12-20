@@ -26,7 +26,7 @@ interface TherapistBookingsProps {
 }
 
 const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate }) => {
-  const isPremium = therapist?.isPremium || therapist?.membershipTier === 'plus';
+  const isPremium = therapist?.membershipTier === 'premium';
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'received' | 'scheduled' | 'completed'>('all');
@@ -483,7 +483,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                         <button
                           onClick={() => {
                             if (onNavigate) {
-                              onNavigate('payment');
+                              onNavigate('premium-upgrade');
                             } else {
                               alert('⭐ WhatsApp access is a Premium feature! Upgrade to Premium to contact customers directly via WhatsApp.');
                             }
@@ -516,7 +516,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                       <button
                         onClick={() => {
                           if (onNavigate) {
-                            onNavigate('payment');
+                            onNavigate('premium-upgrade');
                           } else {
                             alert('⭐ WhatsApp access is a Premium feature! Upgrade to Premium for direct customer contact.');
                           }

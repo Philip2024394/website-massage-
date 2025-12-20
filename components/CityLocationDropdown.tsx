@@ -138,7 +138,7 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
 
   const ChevronDownIcon = () => (
     <svg 
-      className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 transition-transform duration-200 pointer-events-none z-30 ${isOpen ? 'rotate-180' : ''}`}
+      className={`absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-black transition-transform duration-200 pointer-events-none z-30 ${isOpen ? 'rotate-180' : ''}`}
       fill="none" 
       stroke="currentColor" 
       viewBox="0 0 24 24"
@@ -150,22 +150,16 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
   return (
     <div className={className} ref={rootRef}>
       {showLabel && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
           {label}
         </label>
       )}
       
       <div className="relative">
-        <svg 
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        
         {/* Custom Dropdown Button */}
         <button
           type="button"
@@ -178,8 +172,8 @@ const CityLocationDropdown: React.FC<CityLocationDropdownProps> = ({
           disabled={disabled}
           ref={buttonRef}
           className={`
-            w-full pl-10 pr-10 py-2.5 bg-white border-2 rounded-lg 
-            text-sm text-left cursor-pointer focus:outline-none 
+            w-full px-4 py-2.5 bg-white border-2 rounded-lg 
+            text-sm text-center cursor-pointer focus:outline-none 
             disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900
             transition-all duration-200
             ${disabled ? 'opacity-50 border-gray-200' : ''}

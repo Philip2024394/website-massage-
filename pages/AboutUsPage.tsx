@@ -104,7 +104,6 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                             {t('about.missionTitle') || 'Our IndaStreet Mission'}
                         </h2>
                         <p className="text-lg text-gray-700 mb-4">
-                            {t('about.missionText') || 'Connecting customers with quality massage therapists while empowering local wellness professionals'}
                             We're igniting the future for Indonesia's youth. IndaStreet is the SuperApp that puts everything at your fingertips: from sizzling food delivery and seamless rides to unforgettable local destinations, exciting motor rentals, and genuine connections through dating.
                         </p>
                         <p className="text-lg text-gray-700">
@@ -153,51 +152,58 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 {/* About Us Story Section */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-20">
                     <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                        Inda<span className="text-orange-500">street</span> Team
+                        About Inda<span className="text-orange-500">StreetMassage.com</span>
                     </h2>
+                    <h3 className="text-2xl font-bold text-orange-600 mb-6">
+                        The Global Massage Hub Built on Trust, Skill, and Culture
+                    </h3>
                     <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                        <p className="text-2xl font-bold text-orange-600">
-                            Yo, IndaStreet Fam!
+                        <p>
+                            IndaStreetMassage.com—affectionately known to our community as The Hub—is a premium online directory connecting users with thousands of massage professionals from all walks of life and countries around the world. Right here at your fingertips, we bring together experience, technique, and passion, ensuring that relaxation starts before the massage even begins. Our platform is more than just a directory; it's a curated wellness ecosystem where trust and quality meet accessibility.
                         </p>
                         
-                        <p className="text-xl font-semibold text-gray-900">
-                            Welcome to IndaStreet – it's more than just an app, it's a whole vibe, a movement, and guess what? You're right at the heart of it all. We're the new wave, the game-changers, a vibrant, 100% Indonesian-owned crew dedicated to leveling up your everyday life across the archipelago.
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">A Modern Massage Directory Rooted in Ancient Healing Traditions</h4>
+                        
+                        <p>
+                            Massage therapy is one of the oldest wellness practices in human history, with roots stretching back over 5,000 years to ancient China, Egypt, and Greece. For centuries, skilled practitioners have used the power of touch to promote relaxation, recovery, and balance in the body and mind. At IndaStreetMassage.com, we honor these historic foundations while creating a modern, trusted, and accessible massage platform for today's world. We understand that massage is not just a luxury—it's a time-honored tradition of healing and self-care that deserves to be celebrated and made available to everyone.
+                        </p>
+                        
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">From the Massage IndaStreet Experience to a Premium Global Hub</h4>
+                        
+                        <p>
+                            What began as the Massage IndaStreet experience—a grassroots, hands-on connection between people and quality bodywork—has evolved into IndaStreetMassage.com, a premium massage directory used and loved by millions around the world. Our journey was driven by one clear goal: to create the most powerful, trusted, and inclusive massage platform in the industry. We started small, focusing on building genuine relationships between massage professionals and their clients, and we've grown into a global hub that celebrates diversity, skill, and authentic wellness connections.
                         </p>
                         
                         <p>
-                            Forget the old-school, clunky ways. We're here crafting the most advanced, ridiculously user-friendly SuperApp that's already becoming the absolute go-to for Indonesia's youth. Need to grab some killer food delivery? Score a seamless ride across town? Hook up with someone cool on dating? Rent a motor for that epic road trip? Discover all the hottest local destinations? Or maybe just chill out with a top-notch wellness massage? Yeah, we got you. All of Indonesia, right in your pocket.
+                            Today, IndaStreetMassage Hub connects users with licensed and experienced massage therapists, independent providers, studio professionals, and specialists in multiple massage techniques. We bring together providers from diverse cultures, backgrounds, and countries, creating a truly global wellness community. This diversity is our greatest strength—it's what makes the Hub truly international and allows clients to find exactly the right therapist for their unique needs and preferences.
                         </p>
+                        
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">Thousands of Massage Professionals. One Trusted Platform.</h4>
                         
                         <p>
-                            Who are we, really? We're the cool cats behind the screen, fueled by endless creativity and a serious passion for growth. You might find us kicking back and brainstorming in our "playroom," but trust us, we're relentlessly pushing boundaries to keep the IndaStreet SuperApp thriving, always. We're on it, 24/7 – listening, evolving, and totally committed to making your life easier, more exciting, and seriously lit.
+                            IndaStreetMassage.com is more than just a directory—it's a curated wellness ecosystem designed with intention and care. We focus on connecting users with high-quality service providers who maintain professional standards and accountability. We emphasize ethical massage practices, continuous education, refined technique, and ongoing growth within the industry. Our commitment to quality means that when users trust our platform, they can fully relax and enjoy their experience, often feeling at ease even before the massage begins. We believe that trust is the foundation of great wellness experiences, and we work tirelessly to earn and maintain that trust every single day.
                         </p>
                         
-                        <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">For Our Crew – The Local Legends, Merchants & Partners:</h3>
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">Why Users Trust IndaStreetMassage Hub</h4>
                         
                         <p>
-                            IndaStreet sparked from a clear vision: to empower the backbone of Indonesia's local economy. We saw the grind firsthand: small businesses struggling with reach, talented folks (from therapists to drivers) getting tangled in commission traps, and a whole scene operating on whispers. We knew it was time to drop the mic on the old system.
+                            Trust is everything in wellness, and people choose IndaStreetMassage.com because they want confidence in who they're booking. They seek access to skilled massage professionals and desire a safe, stress-free experience from start to finish. Our platform respects both clients and therapists equally, creating an environment where everyone feels valued and supported. We're building an industry where professionalism meets accessibility, and where massage is treated with the respect and dignity it truly deserves. When you book through The Hub, you're not just scheduling an appointment—you're joining a community that values quality, integrity, and authentic human connection.
                         </p>
+                        
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">Our Community & Culture</h4>
                         
                         <p>
-                            Our mission is simple, powerful, and kinda revolutionary: we're kicking commission-based fees to the curb! No joke. We're 100% behind your success, making sure you keep every single Rupiah you earn. We're all about transparency, professionalism, and unlocking insane opportunities for thousands of amazing people and businesses across Indonesia. When you thrive, we all thrive.
+                            We are an urban-style collective with a professional mindset—not corporate, not outdated, just real people who love massage, bodywork, and the transformative power of skilled hands. Our community includes massage therapists, bodywork specialists, wellness professionals, and clients who value quality and genuine care. From the streets to studios, from local providers to international professionals, this is the Hub where everyone connects. We celebrate the individuality of each practitioner while fostering a sense of belonging and shared purpose. Whether you're a therapist looking to grow your practice or a client seeking the perfect massage experience, you'll find your place in our vibrant, inclusive community.
                         </p>
                         
-                        <h3 className="text-2xl font-bold text-gray-900 mt-8 mb-4">For You, The User – The Heartbeat of IndaStreet:</h3>
-                        
-                        <p>
-                            Your energy, your trust, your epic adventures, and those chill moments you find through our SuperApp? That's what transforms our wildest ideas into pure, vibrant reality. Every tap, every discovery, every connection you make on IndaStreet fuels our fire. Seriously, you're not just a user; you're the main character in the IndaStreet story, part of our actual fam.
-                        </p>
+                        <h4 className="text-xl font-bold text-gray-900 mt-8 mb-4">We Love What We Do—So You Can Too</h4>
                         
                         <p className="text-lg font-semibold text-gray-900">
-                            So, before we log off from this "About Us" page, a massive THANK YOU! We promise to keep pushing boundaries, dropping fresh features, and working tirelessly to keep the IndaStreet SuperApp the ultimate, most essential tool in your digital arsenal.
+                            IndaStreetMassage.com exists to elevate the massage industry while making high-level wellness accessible to everyone, everywhere. From ancient techniques passed down through generations to modern practice and innovation, from a local experience rooted in community to a global platform connecting continents, IndaStreetMassage Hub is redefining what a massage directory can be. We're not just connecting therapists with clients—we're building bridges between cultures, traditions, and healing modalities. We're creating a space where massage is honored as both an art and a science, where practitioners can thrive, and where clients can find exactly what they need to relax, recover, and rejuvenate.
                         </p>
                         
-                        <p className="text-lg font-bold text-orange-600">
-                            Stay Connected. Stay Awesome. Keep Thriving with IndaStreet.
-                        </p>
-                        
-                        <p className="text-right text-orange-600 font-semibold text-xl">
-                            IndaStreet Team
+                        <p className="text-xl font-bold text-orange-600 text-center mt-8">
+                            Welcome to the Hub. Welcome to the future of massage. Welcome to IndaStreetMassage.com. 🌍💆‍♀️
                         </p>
                     </div>
                 </div>

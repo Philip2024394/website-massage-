@@ -25,7 +25,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [status, setStatus] = useState<OnlineStatus>('offline');
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
-  const [isPremium] = useState(therapist?.membershipTier === 'premium' || false);
+  // Calculate isPremium dynamically from therapist prop - recalculates on therapist update
+  const isPremium = therapist?.membershipTier === 'premium' || false;
   const [onlineHoursThisMonth, setOnlineHoursThisMonth] = useState<number>(0);
   const [busyStartTime, setBusyStartTime] = useState<string | null>(therapist?.busyStartTime || null);
   const [busyTimeRemaining, setBusyTimeRemaining] = useState<number | null>(null);
@@ -313,7 +314,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       const updateData = {
         status: properStatusValue,
         availability: properStatusValue, // Use same proper enum value
-        isLive: newStatus === 'available',
+        isLive: newStatus !== 'offline', // Show Available and Busy on home page, hide only Offline
         isOnline: newStatus !== 'offline',
         // Track busy start time for 3-hour limit on Pro accounts
         busyStartTime: busyStartTimeValue,
@@ -521,27 +522,79 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     }
   };
 
+  // Account health calculation
+  const getAccountHealth = () => {
+    if (therapist?.accountStatus === 'frozen' || therapist?.accountStatus === 'suspended') {
+      return 'poor';
+    }
+    if (therapist?.pendingCommissionPayments && therapist.pendingCommissionPayments !== '0') {
+      return 'fair';
+    }
+    return 'good';
+  };
+
+  const accountHealth = getAccountHealth();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-sm mx-auto px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-orange-500 flex items-center justify-center">
-              <Power className="w-6 h-6 text-white" />
+        <div className="max-w-sm mx-auto px-4 py-5">
+          {/* Top Row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-orange-500 flex items-center justify-center">
+                <Power className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <h1 className="text-xl font-bold text-gray-900">Online Status</h1>
+                <p className="text-sm text-gray-500">Manage your availability</p>
+              </div>
+              {isPremium && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl">
+                  <Crown className="w-4 h-4 text-white" />
+                  <span className="text-xs font-bold text-white">PREMIUM</span>
+                </div>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <h1 className="text-xl font-bold text-gray-900">Online Status</h1>
-              <p className="text-sm text-gray-500">Manage your availability</p>
-            </div>
-            {isPremium && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl">
-                <Crown className="w-4 h-4 text-white" />
-                <span className="text-xs font-bold text-white">PREMIUM</span>
+
+          {/* Account Health Indicator */}
+          <div className="flex items-center justify-end gap-2">
+            <div className="flex items-center gap-2">
+              {/* Health Dot */}
+              <div className="relative">
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    accountHealth === 'good'
+                      ? 'bg-green-500'
+                      : accountHealth === 'fair'
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                  } ${
+                    accountHealth === 'poor' ? 'animate-pulse' : ''
+                  }`}
+                />
+                {accountHealth === 'poor' && (
+                  <div className="absolute inset-0 w-3 h-3 rounded-full bg-red-500 animate-ping opacity-75" />
+                )}
               </div>
-            )}
+              
+              {/* Health Text */}
+              <span
+                className={`text-xs font-semibold ${
+                  accountHealth === 'good'
+                    ? 'text-green-600'
+                    : accountHealth === 'fair'
+                    ? 'text-yellow-600'
+                    : 'text-red-600'
+                }`}
+              >
+                Account Health: {accountHealth.charAt(0).toUpperCase() + accountHealth.slice(1)}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -641,7 +694,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 </div>
                 <div className="mt-3 text-center">
                   <button
-                    onClick={() => onNavigate?.('payment')}
+                    onClick={() => onNavigate?.('premium-upgrade')}
                     className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm font-bold rounded-lg hover:from-yellow-500 hover:to-amber-600 transition-all shadow-sm flex items-center gap-2 mx-auto"
                   >
                     <Crown className="w-4 h-4" />
@@ -683,7 +736,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <p className="text-sm text-yellow-900 font-semibold mb-2">⭐ Premium Feature</p>
               <p className="text-xs text-yellow-900 mb-3">Upgrade to Premium to schedule automatic offline time daily. Never worry about manually changing your status!</p>
               <button
-                onClick={() => onNavigate?.('payment')}
+                onClick={() => onNavigate?.('premium-upgrade')}
                 className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm font-bold rounded-lg hover:from-yellow-500 hover:to-amber-600 transition-all shadow-sm flex items-center gap-2"
               >
                 <Crown className="w-4 h-4" />
@@ -813,7 +866,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
-              onClick={isPremium ? handleSaveDiscount : () => onNavigate?.('payment')}
+              onClick={isPremium ? handleSaveDiscount : () => onNavigate?.('premium-upgrade')}
               disabled={isPremium && (discountPercentage === 0 || discountDuration === 0)}
               className={`flex-1 py-3 rounded-xl font-semibold transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed ${
                 isPremium 

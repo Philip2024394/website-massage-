@@ -747,7 +747,8 @@ const HomePage: React.FC<HomePageProps> = ({
             const isOwner = loggedInProvider && loggedInProvider.type === 'therapist' && (
                 String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
             );
-            return t.isLive === true || isOwner; // Always include own profile preview
+            // Show Available and Busy therapists, hide only Offline (status !== 'offline')
+            return t.isLive === true || isOwner; // isLive is now true for both available and busy
         });
         const filteredTherapists = liveTherapists.filter((t: any) => {
             // Always show featured sample therapists (like Budi) in ALL cities
@@ -1130,9 +1131,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                 )
                             );
 
-                            // Show all therapists (live) plus include owner even if not live
+                            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
                             let baseList = therapists
-                                .filter((t: any) => t.isLive === true || isOwner(t))
                                 .filter((t: any) => {
                                     // Always show featured sample therapists (Budi) in all cities
                                     if (isFeaturedSample(t, 'therapist')) {
@@ -1228,6 +1228,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                     onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
                                     onChatWithBusyTherapist={onChatWithBusyTherapist}
                                     onShowRegisterPrompt={onShowRegisterPrompt}
+
                                     isCustomerLoggedIn={!!loggedInCustomer}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                     loggedInProviderId={loggedInProvider?.id}

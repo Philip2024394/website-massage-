@@ -14,13 +14,17 @@ import TherapistLegal from './pages/TherapistLegal';
 import TherapistCalendar from './pages/TherapistCalendar';
 import TherapistPaymentInfo from './pages/TherapistPaymentInfo';
 import TherapistPaymentStatus from './pages/TherapistPaymentStatus';
+import TherapistMenu from './pages/TherapistMenu';
+import PremiumUpgrade from './pages/PremiumUpgrade';
+import CommissionPayment from './pages/CommissionPayment';
+import TherapistSchedule from './pages/TherapistSchedule';
 import TherapistLayout from './components/TherapistLayout';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
 import { LanguageProvider } from '../../../context/LanguageContext';
 import { useTranslations } from '../../../lib/useTranslations';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -138,6 +142,9 @@ function App() {
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
+      
+      // Redirect to home page (main app)
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -207,6 +214,14 @@ function App() {
         return <TherapistPaymentInfo therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'payment-status':
         return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'custom-menu':
+        return <TherapistMenu therapist={user} onNavigateToPayment={() => setCurrentPage('premium-upgrade')} />;
+      case 'premium-upgrade':
+        return <PremiumUpgrade therapist={user} />;
+      case 'commission-payment':
+        return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
+      case 'schedule':
+        return <TherapistSchedule therapist={user} />;
       case 'dashboard':
       default:
         return (
@@ -221,7 +236,8 @@ function App() {
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}
-            onNavigateToPayment={() => setCurrentPage('payment')}
+            onNavigateToPayment={() => setCurrentPage('premium-upgrade')}
+            onNavigateToMenu={() => setCurrentPage('custom-menu')}
           />
         );
     }

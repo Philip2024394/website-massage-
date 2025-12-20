@@ -56,22 +56,22 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
         switch (status) {
             case 'pending':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                        <Clock className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs sm:text-sm font-bold">
+                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                         Pending Review
                     </span>
                 );
             case 'approved':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                        <CheckCircle className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-black rounded-lg text-xs sm:text-sm font-bold">
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                         Approved
                     </span>
                 );
             case 'declined':
                 return (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                        <XCircle className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-200 text-black rounded-lg text-xs sm:text-sm font-bold">
+                        <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                         Declined
                     </span>
                 );
@@ -84,7 +84,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
         return (
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
-                    <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+                    <RefreshCw className="w-12 h-12 text-orange-500 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600">Loading payment history...</p>
                 </div>
             </div>
@@ -92,51 +92,56 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
     }
 
     return (
-        <div className="min-h-screen bg-white py-8 px-4">
-            <div className="max-w-sm mx-auto">
-                {/* Header */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900 mb-2">💳 Payment History</h1>
-                            <p className="text-gray-600">Track your membership payment submissions and status</p>
+        <div className="min-h-screen bg-white">
+            {/* Header */}
+            <div className="w-full bg-white sticky top-0 z-10">
+                <div className="flex items-center gap-3 py-4 px-5">
+                    <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                            <CreditCard className="w-5 h-5 text-white" />
                         </div>
-                        <button
-                            onClick={loadPayments}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="Refresh"
-                        >
-                            <RefreshCw className="w-5 h-5 text-gray-600" />
-                        </button>
+                        <div>
+                            <h1 className="text-base font-bold text-black">Payment History</h1>
+                            <p className="text-xs text-gray-600">Track payment submissions</p>
+                        </div>
                     </div>
+                    <button
+                        onClick={loadPayments}
+                        className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                        title="Refresh"
+                    >
+                        <RefreshCw className="w-5 h-5 text-black" />
+                    </button>
+                </div>
+            </div>
 
-                    {/* Info Banner */}
-                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                            <div className="text-sm text-blue-800">
-                                <p className="font-semibold mb-1">Payment Review Process</p>
-                                <ul className="space-y-1 list-disc list-inside">
-                                    <li>Admin reviews all payments within 7 days</li>
-                                    <li>Approved payments activate your membership immediately</li>
-                                    <li>Declined payments can be resubmitted with correct proof</li>
-                                </ul>
-                            </div>
+            <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
+                {/* Info Banner */}
+                <div className="bg-white border border-gray-300 rounded-lg p-3 sm:p-4">
+                    <div className="flex gap-2 sm:gap-3">
+                        <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-xs sm:text-sm text-gray-700">
+                            <p className="font-bold text-black mb-1">Payment Review Process</p>
+                            <ul className="space-y-1">
+                                <li>• Admin reviews all payments within 7 days</li>
+                                <li>• Approved payments activate your membership immediately</li>
+                                <li>• Declined payments can be resubmitted with correct proof</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
 
                 {/* Payment List */}
                 {payments.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-                        <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Payment History</h3>
-                        <p className="text-gray-600 mb-6">
+                    <div className="bg-white border border-gray-300 rounded-lg p-8 sm:p-12 text-center">
+                        <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-base sm:text-lg font-bold text-black mb-2">No Payment History</h3>
+                        <p className="text-sm text-gray-600 mb-6">
                             You haven't submitted any payment proofs yet.
                         </p>
                         <button
                             onClick={() => onBack()}
-                            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm"
                         >
                             Go to Membership
                         </button>
@@ -150,14 +155,14 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                             return (
                                 <div
                                     key={payment.$id}
-                                    className={`bg-white rounded-xl shadow-lg p-6 ${
-                                        isExpiringSoon ? 'border-2 border-orange-300' : ''
+                                    className={`bg-white border rounded-lg p-4 sm:p-6 ${
+                                        isExpiringSoon ? 'border-orange-500 border-2' : 'border-gray-300'
                                     }`}
                                 >
                                     {/* Status and Date */}
                                     <div className="flex items-center justify-between mb-4">
                                         {getStatusBadge(payment.status)}
-                                        <span className="text-sm text-gray-500">
+                                        <span className="text-xs sm:text-sm text-gray-600">
                                             {new Date(payment.submittedAt).toLocaleDateString('en-US', {
                                                 day: 'numeric',
                                                 month: 'short',
@@ -167,22 +172,22 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                                     </div>
 
                                     {/* Payment Details */}
-                                    <div className="grid grid-cols-1 gap-4 mb-4">
+                                    <div className="grid grid-cols-1 gap-3 mb-4">
                                         <div className="flex items-center gap-3">
-                                            <CreditCard className="w-5 h-5 text-blue-600" />
+                                            <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Package</p>
-                                                <p className="text-sm font-semibold text-gray-900">
+                                                <p className="text-xs text-gray-600">Package</p>
+                                                <p className="text-sm font-bold text-black">
                                                     {payment.packageType || 'Membership'}
                                                 </p>
                                             </div>
                                         </div>
 
                                         <div className="flex items-center gap-3">
-                                            <DollarSign className="w-5 h-5 text-green-600" />
+                                            <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Amount</p>
-                                                <p className="text-sm font-semibold text-gray-900">
+                                                <p className="text-xs text-gray-600">Amount</p>
+                                                <p className="text-sm font-bold text-black">
                                                     IDR {payment.amount.toLocaleString()}
                                                 </p>
                                             </div>
@@ -190,10 +195,10 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
 
                                         {payment.packageDuration && (
                                             <div className="flex items-center gap-3">
-                                                <Calendar className="w-5 h-5 text-purple-600" />
+                                                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                                                 <div>
-                                                    <p className="text-xs text-gray-500">Duration</p>
-                                                    <p className="text-sm font-semibold text-gray-900">
+                                                    <p className="text-xs text-gray-600">Duration</p>
+                                                    <p className="text-sm font-bold text-black">
                                                         {payment.packageDuration.replace('_', ' ')}
                                                     </p>
                                                 </div>
@@ -203,16 +208,16 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
 
                                     {/* Status-specific content */}
                                     {payment.status === 'pending' && (
-                                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Clock className="w-4 h-4 text-yellow-600" />
-                                                <p className="text-sm font-semibold text-yellow-900">
+                                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Clock className="w-4 h-4 text-orange-600" />
+                                                <p className="text-xs sm:text-sm font-bold text-black">
                                                     {isExpiringSoon
                                                         ? '⚠️ Review Expiring Soon!'
                                                         : 'Under Review'}
                                                 </p>
                                             </div>
-                                            <p className="text-sm text-yellow-800">
+                                            <p className="text-xs sm:text-sm text-gray-700">
                                                 Admin will review within {daysRemaining} day{daysRemaining !== 1 ? 's' : ''}.
                                                 {isExpiringSoon && ' Please be patient, admin will respond soon.'}
                                             </p>
@@ -220,14 +225,14 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                                     )}
 
                                     {payment.status === 'approved' && payment.reviewedAt && (
-                                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <CheckCircle className="w-4 h-4 text-green-600" />
-                                                <p className="text-sm font-semibold text-green-900">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <CheckCircle className="w-4 h-4 text-black" />
+                                                <p className="text-xs sm:text-sm font-bold text-black">
                                                     Payment Confirmed ✅
                                                 </p>
                                             </div>
-                                            <p className="text-sm text-green-800">
+                                            <p className="text-xs sm:text-sm text-gray-700">
                                                 Approved on {new Date(payment.reviewedAt).toLocaleDateString()}
                                                 {' • '}Your membership is now active!
                                             </p>
@@ -235,19 +240,19 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                                     )}
 
                                     {payment.status === 'declined' && (
-                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <XCircle className="w-4 h-4 text-red-600" />
-                                                <p className="text-sm font-semibold text-red-900">
+                                        <div className="bg-gray-100 border border-gray-300 rounded-lg p-3 mb-4">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <XCircle className="w-4 h-4 text-black" />
+                                                <p className="text-xs sm:text-sm font-bold text-black">
                                                     Payment Not Received
                                                 </p>
                                             </div>
-                                            <p className="text-sm text-red-800 mb-2">
+                                            <p className="text-xs sm:text-sm text-gray-700 mb-2">
                                                 {payment.declineReason || 'Please check your payment proof and resubmit.'}
                                             </p>
                                             <button
                                                 onClick={() => onBack()}
-                                                className="text-sm text-red-600 hover:text-red-700 font-medium underline"
+                                                className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 font-bold underline"
                                             >
                                                 Submit New Payment Proof
                                             </button>
@@ -257,7 +262,7 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                                     {/* View Proof Button */}
                                     <button
                                         onClick={() => setSelectedProof(payment.paymentProofUrl)}
-                                        className="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+                                        className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors text-sm font-semibold"
                                     >
                                         📄 View Payment Proof
                                     </button>

@@ -80,18 +80,35 @@ const AdminPaymentReview: React.FC = () => {
     };
 
     const handleApprove = async (payment: PaymentConfirmation) => {
-        if (!confirm(`Approve payment from ${payment.userName}?\n\nAmount: IDR ${payment.amount.toLocaleString()}\n\nThis will activate their membership.`)) {
+        if (!confirm(`Approve payment from ${payment.userName}?\n\nAmount: IDR ${payment.amount.toLocaleString()}\n\nThis confirms their premium payment is valid.`)) {
             return;
         }
 
         setProcessing(true);
         try {
+            console.log('✅ Approving premium payment for:', payment.userName);
+            
+            // Step 1: Approve payment record
             await paymentConfirmationService.approvePayment(payment.$id, 'admin');
-            alert('✅ Payment approved! Membership activated.');
+            console.log('✅ Payment record approved');
+            
+            // Step 2: Confirm premium status (already active, just update status)
+            if (payment.memberType === 'therapist' && payment.paymentType === 'membership') {
+                const { therapistService } = await import('../lib/appwriteService');
+                
+                await therapistService.update(payment.userId, {
+                    premiumPaymentStatus: 'approved', // Confirm payment is valid
+                    premiumActivatedAt: new Date().toISOString()
+                    // membershipTier already set to 'premium' on upload
+                });
+                console.log('✅ Premium payment confirmed for therapist:', payment.userId);
+            }
+            
+            alert('✅ Payment approved! Premium membership confirmed.');
             loadPayments();
             setSelectedPayment(null);
         } catch (error) {
-            console.error('Failed to approve payment:', error);
+            console.error('❌ Failed to approve payment:', error);
             alert('❌ Failed to approve payment. Please try again.');
         } finally {
             setProcessing(false);
@@ -113,18 +130,36 @@ const AdminPaymentReview: React.FC = () => {
 
         setProcessing(true);
         try {
+            console.log('❌ Declining payment and REVOKING premium access for:', selectedPayment.userName);
+            
+            // Step 1: Decline payment record
             await paymentConfirmationService.declinePayment(
                 selectedPayment.$id,
                 'admin',
                 declineReason.trim()
             );
-            alert('❌ Payment declined. User has been notified.');
+            console.log('✅ Payment record declined');
+            
+            // Step 2: REVOKE premium access immediately
+            if (selectedPayment.memberType === 'therapist' && selectedPayment.paymentType === 'membership') {
+                const { therapistService } = await import('../lib/appwriteService');
+                
+                await therapistService.update(selectedPayment.userId, {
+                    membershipTier: 'free', // REVOKE PREMIUM ACCESS
+                    premiumPaymentStatus: 'declined',
+                    premiumDeclineReason: declineReason.trim(),
+                    premiumPaymentProof: null // Clear proof
+                });
+                console.log('✅ Premium access REVOKED for therapist:', selectedPayment.userId);
+            }
+            
+            alert('❌ Payment declined. Premium access has been revoked. User can resubmit correct payment.');
             setShowDeclineModal(false);
             setSelectedPayment(null);
             setDeclineReason('');
             loadPayments();
         } catch (error) {
-            console.error('Failed to decline payment:', error);
+            console.error('❌ Failed to decline payment:', error);
             alert('❌ Failed to decline payment. Please try again.');
         } finally {
             setProcessing(false);

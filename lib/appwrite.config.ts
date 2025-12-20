@@ -12,26 +12,26 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'therapists_collection_id', // Correct collection ID - WORKING
-        places: 'places_collection_id', // REVERTED: Back to original ID
-        facial_places: 'facial_places_collection', // Facial salons/spas collection
-        agents: 'agents_collection_id', // REVERTED: Back to original ID
-        bookings: 'bookings_collection_id', // REVERTED: Back to original ID  
-        reviews: 'reviews_collection_id', // REVERTED: Back to original ID
-        notifications: 'notifications', // Therapist notification system
-        users: 'users_collection_id', // REVERTED: Back to original ID
+        therapists: 'THERAPISTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        places: 'PLACES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        facial_places: 'facial places collection', // ✅ CORRECT - Facial salons/spas collection
+        agents: 'AGENTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        bookings: 'BOOKINGS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        reviews: 'REVIEWS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        notifications: 'NOTIFICATIONS_COLLECTION_ID', // ✅ CORRECT - Therapist notification system
+        users: 'USERS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         // Keep the rest as-is
         agentVisits: 'agent_visits_collection_id',
         hotelBookings: 'hotel_bookings',
-        hotels: 'hotels_collection_id',
-        cities: 'cities_collection_id', // NEW: Cities for location dropdown
+        hotels: 'HOTELS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        cities: 'cities collection id', // ✅ CORRECT - Cities for location dropdown
         villas: '', // Disabled - collection doesn't exist
-        massageTypes: 'massage_types_collection_id',
-        membershipPricing: 'membership_pricing_collection_id',
+        massageTypes: 'MASSAGE_TYPES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-        customLinks: 'custom_links_collection_id',
-        translations: 'translations_collection_id',
+        customLinks: 'CUSTOM_LINKS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        translations: 'translations collection', // ✅ CORRECT - Live from Appwrite
         commissionRecords: 'commission_records',
         attributes: 'ATTRIBUTES',
         analyticsEvents: 'Analytics Events',
@@ -39,17 +39,20 @@ export const APPWRITE_CONFIG = {
         employerJobPostings: 'employer_job_postings',
         bankDetails: 'bank_details',
         paymentTransactions: 'payment_transactions',
-        messages: 'messages', // Therapist-customer chat messages
-        packages: 'packages_collection_id', // NEW: Pricing packages
-        pushSubscriptions: 'push_subscriptions', // NEW: Push notification subscriptions
-        loyaltyWallets: 'loyalty_wallets', // NEW: Customer loyalty coins
-        providerLoyaltySettings: 'provider_loyalty_settings', // NEW: Provider discount tiers
-        coinTransactions: 'coin_transactions', // NEW: Coin transaction history
-        userRegistrations: 'user_registrations', // NEW: Device tracking for welcome bonus
+        premiumPayments: 'premium_payments',
+        therapistMenus: 'therapist_menus',
+        messages: 'messages',
+        packages: 'packages_collection_id',
+        pushSubscriptions: 'push_subscriptions',
+        loyaltyWallets: 'loyalty_wallets',
+        providerLoyaltySettings: 'provider_loyalty_settings',
+        coinTransactions: 'coinTransactions', // ✅ CORRECT - Live from Appwrite
+        userRegistrations: 'user_registrations',
         chatRooms: 'chat_rooms', // NEW: Booking chat rooms
         chatMessages: 'chat_messages', // NEW: Chat messages with translations
         chatSessions: 'chat_sessions', // NEW: Persistent chat session management
         chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
+        payments: 'payments', // NEW: Therapist payment/earnings tracking
         // Lead Generation System
         leads: '', // Disabled - collection doesn't exist (causes 404 errors)
         leadGenerations: 'lead_generations', // NEW: Pay-per-lead tracking

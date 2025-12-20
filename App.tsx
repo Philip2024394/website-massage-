@@ -96,7 +96,7 @@ const App = () => {
         
         const handleOpenChat = async (event: CustomEvent) => {
             console.log('📨 App.tsx: Received openChat event!', event.detail);
-            const { therapistId, therapistName, therapistType, bookingId, chatRoomId, therapistStatus, pricing, discountPercentage, discountActive, profilePicture, providerRating, mode } = event.detail;
+            const { therapistId, therapistName, therapistType, bookingId, chatRoomId, therapistStatus, pricing, discountPercentage, discountActive, profilePicture, providerRating, mode, selectedService } = event.detail;
             
             console.log('💬 Opening chat window for booking:', bookingId);
             console.log('📋 Chat info:', { therapistId, therapistName, therapistType, chatRoomId, therapistStatus, pricing });
@@ -116,7 +116,8 @@ const App = () => {
                 chatRoomId,
                 customerName: '',
                 customerWhatsApp: '',
-                mode: mode || 'immediate'
+                mode: mode || 'immediate',
+                selectedService
             };
             
             // Open chat immediately
@@ -882,6 +883,7 @@ const App = () => {
                             customerName={chatInfo.customerName}
                             customerWhatsApp={chatInfo.customerWhatsApp}
                             mode={chatInfo.mode}
+                            selectedService={chatInfo.selectedService}
                         />
                     </ChatErrorBoundary>
                 );

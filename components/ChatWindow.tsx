@@ -61,6 +61,13 @@ interface ChatWindowProps {
     // Booking mode
     mode?: 'immediate' | 'scheduled';
     
+    // Selected service from price menu
+    selectedService?: {
+        name: string;
+        duration: string;
+        price: number;
+    };
+    
     // UI props
     isOpen: boolean;
     onClose: () => void;
@@ -91,10 +98,12 @@ export default function ChatWindow({
     customerName: initialCustomerName,
     customerWhatsApp: initialCustomerWhatsApp,
     mode = 'immediate',
+    selectedService,
     isOpen,
     onClose
 }: ChatWindowProps) {
     console.log('🟢 ChatWindow received status:', { providerName, providerStatus });
+    console.log('🎯 ChatWindow received selectedService:', selectedService);
     
     // Get language context
     const { language } = useLanguageContext();
@@ -149,7 +158,9 @@ export default function ChatWindow({
     const [customerLocation, setCustomerLocation] = useState('');
     const [customerCoordinates, setCustomerCoordinates] = useState<{lat: number, lng: number} | null>(null);
     const [gettingLocation, setGettingLocation] = useState(false);
-    const [serviceDuration, setServiceDuration] = useState<'60' | '90' | '120'>('60');
+    const [serviceDuration, setServiceDuration] = useState<'60' | '90' | '120'>(
+        selectedService?.duration as '60' | '90' | '120' || '60'
+    );
     const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_OPTIONS[0].imageUrl);
     const [registering, setRegistering] = useState(false);
     
@@ -987,7 +998,17 @@ export default function ChatWindow({
             return `Rp ${base.toLocaleString()}`;
         }
         const discounted = Math.max(0, Math.round(base * (1 - (discountPercentage as number) / 100)));
-        return `Rp ${base.toLocaleString()} → Rp ${discounted.toLocaleString()}`;
+        // Return JSX with strikethrough for original price
+        return (
+            <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xs text-red-600 line-through font-normal">
+                    Rp {base.toLocaleString()}
+                </span>
+                <span className="text-sm font-bold text-green-600">
+                    Rp {discounted.toLocaleString()}
+                </span>
+            </div>
+        );
     };
 
     // REGISTRATION SCREEN
@@ -1227,7 +1248,10 @@ export default function ChatWindow({
                                     </div>
                                     <div className="bg-gray-50 p-3 rounded-lg">
                                         <h4 className="font-semibold text-sm text-gray-800 mb-1">Booking Summary:</h4>
-                                        <p className="text-sm text-gray-600 mb-2">📅 {selectedTime?.label} • ⏱️ {selectedDuration} min • 💰 {getPriceLabel((selectedDuration?.toString() || '60') as '60' | '90' | '120')}</p>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <p className="text-sm text-gray-600">📅 {selectedTime?.label} • ⏱️ {selectedDuration} min • 💰</p>
+                                            <div className="inline-flex">{getPriceLabel((selectedDuration?.toString() || '60') as '60' | '90' | '120')}</div>
+                                        </div>
                                         <p className="text-xs text-gray-500 italic">{t.depositNotice}</p>
                                     </div>
                                     <button
@@ -1424,36 +1448,78 @@ export default function ChatWindow({
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Select Massage Duration
-                                    </label>
-                                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                                        {['60', '90', '120'].map((duration) => (
+                                {/* Selected Service or Duration Selection */}
+                                {selectedService ? (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            {language === 'id' ? 'Layanan Terpilih' : 'Selected Service'}
+                                        </label>
+                                        <div className="flex gap-2">
+                                            {/* Change Service Button */}
                                             <button
-                                                key={duration}
                                                 type="button"
-                                                onClick={() => setServiceDuration(duration as '60' | '90' | '120')}
-                                                disabled={registering}
-                                                className={`p-3 sm:p-4 rounded-lg border transition-all relative touch-manipulation min-h-[64px] sm:min-h-[72px] ${
-                                                    serviceDuration === duration
-                                                        ? 'border-green-500 bg-green-500 text-white shadow-sm'
-                                                        : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
-                                                } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                style={{ minWidth: '80px', minHeight: '64px' }}
+                                                onClick={() => {
+                                                    // Close chat window
+                                                    onClose();
+                                                    // Open price menu modal for this therapist
+                                                    setTimeout(() => {
+                                                        window.dispatchEvent(new CustomEvent('openPriceMenu', {
+                                                            detail: { therapistId: providerId }
+                                                        }));
+                                                    }, 100);
+                                                }}
+                                                className="flex-shrink-0 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium text-sm transition-all"
                                             >
-                                                {/* Star Rating - Top Right */}
-                                                {typeof providerRating === 'number' && providerRating > 0 && (
-                                                    <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
-                                                        ★{providerRating.toFixed(1)}
-                                                    </div>
-                                                )}
-                                                <div className="text-xs">{duration} min</div>
-                                                <div className="font-bold mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
+                                                {language === 'id' ? 'Ubah' : 'Change'}
                                             </button>
-                                        ))}
+                                            {/* Selected Service Container */}
+                                            <div className="flex-1 bg-gray-100 border border-gray-300 rounded-lg p-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="font-bold text-gray-900">{selectedService.name}</div>
+                                                    {typeof providerRating === 'number' && providerRating > 0 && (
+                                                        <div className="text-yellow-400 text-sm font-bold">
+                                                            ★{providerRating.toFixed(1)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-gray-600 mt-1">
+                                                    {selectedService.duration} {language === 'id' ? 'menit' : 'minutes'} • Rp. {selectedService.price.toLocaleString('id-ID')}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            {language === 'id' ? 'Pilih Durasi Pijatan' : 'Select Massage Duration'}
+                                        </label>
+                                        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                            {['60', '90', '120'].map((duration) => (
+                                                <button
+                                                    key={duration}
+                                                    type="button"
+                                                    onClick={() => setServiceDuration(duration as '60' | '90' | '120')}
+                                                    disabled={registering}
+                                                    className={`p-3 sm:p-4 rounded-lg border transition-all relative touch-manipulation min-h-[64px] sm:min-h-[72px] ${
+                                                        serviceDuration === duration
+                                                            ? 'border-green-500 bg-green-500 text-white shadow-sm'
+                                                            : 'bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
+                                                    } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                    style={{ minWidth: '80px', minHeight: '64px' }}
+                                                >
+                                                    {/* Star Rating - Top Right */}
+                                                    {typeof providerRating === 'number' && providerRating > 0 && (
+                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
+                                                            ★{providerRating.toFixed(1)}
+                                                        </div>
+                                                    )}
+                                                    <div className="text-xs">{duration} min</div>
+                                                    <div className="font-bold mt-1">{getPriceLabel(duration as '60' | '90' | '120')}</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <button

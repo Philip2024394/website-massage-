@@ -10,7 +10,7 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
-import { Star, Upload, X, CheckCircle } from 'lucide-react';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -23,6 +23,7 @@ interface TherapistPortalPageProps {
   onNavigateToLegal?: () => void;
   onNavigateToCalendar?: () => void;
   onNavigateToPayment?: () => void;
+  onNavigateToMenu?: () => void;
   onLogout?: () => void;
   onNavigateHome?: () => void;
   onProfileSaved?: () => void;
@@ -39,6 +40,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToNotifications,
   onNavigateToLegal,
   onNavigateToCalendar,
+  onNavigateToMenu,
   onLogout,
   onNavigateHome,
   onProfileSaved
@@ -47,6 +49,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   
   const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>(null);
@@ -126,11 +129,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
 
   const languageOptions = [
-    { code: 'en', label: 'English' },
-    { code: 'id', label: 'Indonesian' },
-    { code: 'zh', label: 'Chinese' },
-    { code: 'ja', label: 'Japanese' },
-    { code: 'ko', label: 'Korean' },
+    { code: 'en', label: '🇬🇧 English' },
+    { code: 'id', label: '🇮🇩 Indonesian' },
+    { code: 'zh', label: '🇨🇳 Chinese' },
+    { code: 'ja', label: '🇯🇵 Japanese' },
+    { code: 'ko', label: '🇰🇷 Korean' },
+    { code: 'ar', label: '🇸🇦 Arabic' },
+    { code: 'ru', label: '🇷🇺 Russian' },
+    { code: 'fr', label: '🇫🇷 French' },
+    { code: 'de', label: '🇩🇪 German' },
+    { code: 'es', label: '🇪🇸 Spanish' },
   ];
 
   // Detect package from localStorage
@@ -188,6 +196,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       initializeMap(coordinates);
     }
   }, [coordinates, mapsApiLoaded]);
+
+  // Reset profileSaved when any form field changes
+  useEffect(() => {
+    setProfileSaved(false);
+  }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedLanguages, price60, price90, price120, yearsOfExperience, clientPreferences]);
 
   const initializeMap = (coords: {lat: number, lng: number}) => {
     try {
@@ -323,6 +336,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       if (missingFields.length > 0) {
         showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
         setSaving(false);
+        setProfileSaved(false);
         return;
       }
       
@@ -426,6 +440,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       console.log('🎉 About to show success toast...');
       showToast('✅ Profile saved and LIVE!', 'success');
+      setProfileSaved(true);
       console.log('✅ Toast dispatched - Profile saved successfully');
       console.log('✅ Check HomePage for your therapist card!');
       
@@ -660,39 +675,32 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           {/* Profile Form Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-white text-2xl font-bold mb-1">Profile Information</h2>
-                <p className="text-orange-50 text-sm">Complete your profile to start receiving bookings</p>
-              </div>
-              {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (
-                <img 
-                  src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                  alt="Verified"
-                  className="w-12 h-12"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
-                />
-              )}
-            </div>
+          <div className="px-8 py-6">
+            <h2 className="text-gray-900 text-2xl font-bold">Profile page</h2>
           </div>
 
           {/* Form Content */}
           <div className="p-8 space-y-6">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <User className="w-5 h-5 text-orange-500" />
+                First Name *
+              </label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
-                placeholder="Enter your full name"
+                placeholder="Enter your first name"
               />
             </div>
 
             {/* WhatsApp */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number *</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <MessageCircle className="w-5 h-5 text-orange-500" />
+                WhatsApp Number *
+              </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium pointer-events-none">
                   +62
@@ -708,12 +716,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   placeholder="812345678"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Enter your WhatsApp number (numbers only after +62)</p>
+              <p className="text-xs text-gray-500 mt-1">Enter Your Whats App Number</p>
             </div>
 
             {/* Profile Picture */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <Image className="w-5 h-5 text-orange-500" />
+                Profile Picture
+              </label>
               <div className="flex items-center gap-6">
                 <div className="relative">
                   {/* Verified Badge */}
@@ -749,7 +760,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     className="hidden"
                     id="profile-upload"
                   />
-                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 cursor-pointer transition-all shadow-sm">
+                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 cursor-pointer transition-all shadow-sm">
                     <Upload className="w-4 h-4" />
                     {uploadingImage ? 'Uploading...' : 'Upload Photo'}
                   </label>
@@ -763,8 +774,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <CityLocationDropdown
                 selectedCity={selectedCity}
                 onCityChange={setSelectedCity}
-                placeholder="Select Your City/Location"
-                label="City / Tourist Location *"
+                placeholder="Select Location"
+                label="Select Location *"
                 showLabel={true}
                 includeAll={false}
                 className="w-full"
@@ -779,7 +790,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">GPS Location (optional)</label>
               <button
                 onClick={handleSetLocation}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-all shadow-sm"
+                className="w-full px-4 py-3 rounded-xl bg-green-500 text-white hover:bg-green-600 font-medium transition-all shadow-sm"
               >
                 {locationSet ? '✓ Location Set - Click to Update' : 'Set My GPS Location'}
               </button>
@@ -797,14 +808,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">About Your Services</label>
-              <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                rows={5}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all resize-none"
-                placeholder="Describe your massage services, experience, and specialties..."
-              />
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <FileText className="w-5 h-5 text-orange-500" />
+                About Your Services
+              </label>
+              <div className="border border-gray-200 rounded-xl p-4">
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  rows={10}
+                  className="w-full focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all resize-none border-0 p-0"
+                  placeholder="Describe your massage services, experience, and specialties..."
+                />
+              </div>
               <p className={`text-xs mt-1 ${countWords(description) > 350 ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
                 {countWords(description)} / 350 words
               </p>
@@ -812,7 +828,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Years of Experience */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-5 h-5 text-orange-500" />
+                Years of Experience
+              </label>
               <input
                 type="number"
                 min="1"
@@ -826,7 +845,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Client Preferences */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Client Preferences</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                <Users className="w-5 h-5 text-orange-500" />
+                Client Preferences
+              </label>
               <select
                 value={clientPreferences}
                 onChange={e => setClientPreferences(e.target.value as ClientPreference)}
@@ -845,7 +867,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Languages */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Languages (select up to 3)</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <Languages className="w-5 h-5 text-orange-500" />
+                Languages You Speak (select up to 3)
+              </label>
               <div className="flex flex-wrap gap-2">
                 {languageOptions.map(opt => (
                   <button
@@ -866,19 +891,25 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Massage Types */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Massage Types (select up to 5)</label>
-              <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-1">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <Hand className="w-5 h-5 text-orange-500" />
+                Massage Types (select up to 5)
+              </label>
+              <div className="flex flex-wrap gap-2 p-1">
                 {MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types).map(type => (
                   <button
                     key={type}
                     onClick={() => handleToggleMassageType(type)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
                       selectedMassageTypes.includes(type)
-                        ? 'bg-orange-500 text-white shadow-sm'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                        ? 'bg-green-500 text-white shadow-sm'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:bg-green-50'
                     }`}
                   >
-                    {type}
+                    {selectedMassageTypes.includes(type) && (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                    {type.replace(/\s+Massage$/i, '')}
                   </button>
                 ))}
               </div>
@@ -887,37 +918,85 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Pricing */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Session Pricing (in thousands IDR)</label>
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                <Banknote className="w-5 h-5 text-orange-500" />
+                Massage Price's
+              </label>
               <p className="text-xs text-gray-500 mb-3">Example: 100 = Rp 100,000</p>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-6">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
                   <input
+                    type="text"
                     value={price60}
-                    onChange={e => setPrice60(e.target.value)}
+                    onChange={e => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                      setPrice60(value);
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="100"
+                    maxLength={3}
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">90 minutes</label>
                   <input
+                    type="text"
                     value={price90}
-                    onChange={e => setPrice90(e.target.value)}
+                    onChange={e => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                      setPrice90(value);
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="150"
+                    maxLength={3}
                   />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">120 minutes</label>
                   <input
+                    type="text"
                     value={price120}
-                    onChange={e => setPrice120(e.target.value)}
+                    onChange={e => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                      setPrice120(value);
+                    }}
                     className="w-full border border-gray-200 rounded-xl px-3 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all text-center font-semibold"
                     placeholder="200"
+                    maxLength={3}
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Premium Custom Menu Feature */}
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <MenuIcon className="w-5 h-5 text-orange-600" />
+                  <h3 className="font-bold text-gray-900">Custom Service Menu</h3>
+                  {therapist?.membershipTier === 'premium' && (
+                    <span className="text-xs px-2 py-0.5 bg-orange-500 text-white rounded-full">Premium</span>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 mb-4">
+                {therapist?.membershipTier === 'premium' 
+                  ? '📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.'
+                  : '📋 Upgrade to Premium to create a custom service menu. List unlimited services with custom names and prices to attract more bookings.'}
+              </p>
+              <button
+                onClick={() => {
+                  if (therapist?.membershipTier === 'premium' && onNavigateToMenu) {
+                    onNavigateToMenu();
+                  } else if (onNavigateToPayment) {
+                    onNavigateToPayment();
+                  }
+                }}
+                className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-sm"
+              >
+                {therapist?.membershipTier === 'premium' ? '→ Manage My Menu' : '👑 Upgrade to Premium'}
+              </button>
             </div>
 
             {/* Validation Warning */}
@@ -981,10 +1060,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   if (!canSave) {
                     e.preventDefault();
                     const missingFields: string[] = [];
-                    if (!name.trim()) missingFields.push('Name');
+                    if (!name.trim()) missingFields.push('First Name');
                     if (!/^\+62\d{6,15}$/.test(whatsappNumber.trim())) missingFields.push('WhatsApp Number');
-                    if (selectedCity === 'all') missingFields.push('City/Location');
-                    showToast(`Complete: ${missingFields.join(', ')}`, 'error');
+                    if (selectedCity === 'all') missingFields.push('Location');
+                    showToast(`⚠️ Please complete all required fields: ${missingFields.join(', ')}`, 'error');
                     return;
                   }
                   handleSaveProfile();
@@ -992,13 +1071,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 disabled={saving}
                 className={`w-full px-6 py-4 rounded-xl font-bold text-base transition-all ${
                   saving 
-                    ? 'bg-gray-300 text-gray-500 cursor-wait' 
+                    ? 'bg-green-500 text-white cursor-wait shadow-sm' 
                     : !canSave 
-                      ? 'bg-white text-gray-700 border-2 border-gray-300 cursor-pointer' 
-                      : 'bg-white text-orange-600 border-2 border-orange-500 hover:bg-orange-50 shadow-sm hover:shadow-md'
+                      ? 'bg-red-500 text-white hover:bg-red-600 shadow-sm' 
+                      : profileSaved
+                        ? 'bg-green-500 text-white hover:bg-green-600 shadow-sm hover:shadow-md'
+                        : 'bg-green-500 text-white hover:bg-green-600 shadow-sm hover:shadow-md'
                 }`}
               >
-                {saving ? 'Saving...' : !canSave ? 'Complete Required Fields' : therapist.isLive ? 'Update Profile' : 'Save Profile'}
+                <div className="flex items-center justify-center gap-2">
+                  <Save className="w-5 h-5" />
+                  {saving ? 'Saving...' : 'Save Profile'}
+                </div>
               </button>
             </div>
           </div>
