@@ -179,6 +179,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         };
         loadBookingsCount();
     }, [therapist]);
+
+    // Generate consistent fake booking count for new therapists (18-26)
+    const getInitialBookingCount = (therapistId: string): number => {
+        // Create a simple hash from therapist ID for consistent random number
+        let hash = 0;
+        for (let i = 0; i < therapistId.length; i++) {
+            hash = ((hash << 5) - hash) + therapistId.charCodeAt(i);
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        // Generate number between 18-26 based on hash
+        return 18 + (Math.abs(hash) % 9);
+    };
+
     const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
     const joinedDisplay = (() => {
         if (!joinedDateRaw) return '—';
@@ -665,6 +678,9 @@ ${locationInfo}${coordinatesInfo}
             
             devLog('🔒 Booking locked until:', deadline.toISOString());
 
+            // Increment bookings count for UI display
+            setBookingsCount(prev => prev + 1);
+
             // Send notification to therapist
             await notificationService.create({
                 providerId: therapistIdNum,
@@ -849,7 +865,7 @@ ${locationInfo}${coordinatesInfo}
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                     </svg>
-                    Orders: {bookingsCount}
+                    Orders: {bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
                 </span>
             </div>
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
@@ -1319,6 +1335,8 @@ ${locationInfo}${coordinatesInfo}
                             }
                         }));
                         onIncrementAnalytics('bookings');
+                        // Increment bookings count for UI display
+                        setBookingsCount(prev => prev + 1);
                     }} 
                     className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-4 px-3 rounded-lg hover:bg-orange-600 active:bg-orange-700 active:scale-95 transition-all duration-100 transform touch-manipulation min-h-[48px]"
                 >
