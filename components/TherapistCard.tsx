@@ -923,7 +923,15 @@ ${locationInfo}${coordinatesInfo}
                                 {/* Star Rating Badge */}
                                 <div 
                                     className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1 cursor-pointer z-30 border border-orange-100"
-                                    onClick={() => onRate(therapist)}
+                                    onClick={() => {
+                                        // If customer is logged in, use parent's onRate (opens authenticated review)
+                                        // If not logged in, open anonymous review modal
+                                        if (isCustomerLoggedIn) {
+                                            onRate(therapist);
+                                        } else {
+                                            setShowReviewModal(true);
+                                        }
+                                    }}
                                     aria-label={`Rate ${therapist.name}`}
                                     role="button"
                                 >
