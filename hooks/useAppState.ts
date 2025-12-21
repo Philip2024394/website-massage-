@@ -26,6 +26,12 @@ export const useAppState = () => {
       // Handle shared profile deep links
       const pathname = window.location.pathname;
       
+      // Handle mobile terms and conditions page FIRST (before any session logic)
+      if (pathname === '/mobile-terms-and-conditions') {
+        console.log('📄 Mobile terms page detected:', pathname);
+        return 'mobile-terms-and-conditions';
+      }
+      
       // Short URL format: /share/12345 or /share/slug-name
       if (pathname.startsWith('/share/') && !pathname.startsWith('/share/therapist/') && !pathname.startsWith('/share/place/') && !pathname.startsWith('/share/facial/')) {
         console.log('🔗 SHORT SHARE URL DETECTED:', pathname);

@@ -1259,13 +1259,14 @@ ${locationInfo}${coordinatesInfo}
                             e.stopPropagation();
                             // Check if we're on a shared profile page
                             const isSharedProfile = window.location.pathname.includes('/share/');
+                            const baseUrl = window.location.origin;
                             if (isSharedProfile) {
                                 // Open terms in new tab but with referrer info to come back to shared profile
                                 const currentUrl = window.location.href;
-                                window.open(`/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
+                                window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
                             } else {
                                 // Normal navigation for regular pages
-                                window.open('/mobile-terms-and-conditions', '_blank');
+                                window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
                             }
                         }}
                         className="text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0 inline"
