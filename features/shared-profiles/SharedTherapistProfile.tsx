@@ -13,6 +13,16 @@ import { generateTherapistShareURL, generateShareText } from './utils/shareUrlBu
 import { analyticsService } from '../../services/analyticsService';
 import { PREVIEW_IMAGES } from '../../config/previewImages';
 
+// 📱 WHATSAPP PREVIEW TEXT CUSTOMIZATION
+// Edit these templates to change how your links appear in WhatsApp
+const PREVIEW_TEMPLATES = {
+    title: (name: string, city: string) => `${name} • ${city} Massage Therapist`,
+    description: (name: string, city: string) => `🌿 Professional massage by ${name} • ${city} ⭐ Verified & Trusted 💬 Instant Booking 🔒 Secure Payment 📱 Book Now!`,
+    // Alternative templates (uncomment to use):
+    // title: (name: string, city: string) => `Book ${name} - Premium Massage in ${city}`,
+    // description: (name: string, city: string) => `⭐ ${name} offers authentic Balinese massage in ${city}. Verified therapist, instant booking, secure payment. Book your wellness session now! 🌺`,
+};
+
 interface SharedTherapistProfileProps {
     therapists: Therapist[];
     selectedTherapist?: Therapist | null;
@@ -112,8 +122,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     useEffect(() => {
         if (!therapist) return;
 
-        const title = `${therapist.name} | Professional Massage in ${therapist.city || 'Bali'}`;
-        const description = `✨ Book ${therapist.name} for professional massage therapy${therapist.city ? ` in ${therapist.city}` : ''}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking • 📱 IndaStreet`;
+        const title = PREVIEW_TEMPLATES.title(therapist.name, therapist.city || 'Bali');
+        const description = PREVIEW_TEMPLATES.description(therapist.name, therapist.city || 'Bali');
         const shareUrl = generateTherapistShareURL(therapist);
         const previewImage = getPreviewImage(therapist);
 
