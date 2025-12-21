@@ -12,19 +12,19 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: '676703b40009b9dd33de', // ✅ Real production collection ID
-        places: '6767038a003b7bdff200', // ✅ Real production collection ID  
-        facial_places: '67670371000c0bef1447', // ✅ Real production collection ID
+        therapists: 'therapists_collection_id', // ✅ Actual collection ID
+        places: 'places_collection_id', // ✅ Actual collection ID  
+        facial_places: 'facial_places_collection_id', // ✅ Actual collection ID
         agents: 'Agents', // ✅ Actual collection name
         bookings: 'Bookings', // ✅ Actual collection name
         reviews: 'Reviews', // Reviews collection
         notifications: 'Notifications', // ✅ Therapist notification system
-        users: '67670355000b2bc99d43', // ✅ Real production collection ID
+        users: 'Users', // ✅ Actual collection name
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'Agent Visits',
         hotelBookings: 'Hotel Bookings',
-        hotels: '676701f9001e6dc8b278', // ✅ Real production collection ID
+        hotels: 'hotels_collection_id', // ✅ Actual collection ID
         cities: 'Cities',
         villas: '', // Disabled - collection doesn't exist
         massageTypes: 'Massage Types',
