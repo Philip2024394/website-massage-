@@ -1149,7 +1149,7 @@ ${locationInfo}${coordinatesInfo}
                     onClick={() => {
                         const isSharedProfile = window.location.pathname.includes('/share/');
                         if (isSharedProfile) {
-                            // On shared profiles: go to mobile terms with shared profile context
+                            // On shared profiles: directly open mobile terms with custom context
                             const baseUrl = window.location.origin;
                             const currentUrl = window.location.href;
                             window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}&context=sharedProfile`, '_blank');
