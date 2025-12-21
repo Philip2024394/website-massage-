@@ -83,6 +83,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [showPriceListModal, setShowPriceListModal] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
     const [menuData, setMenuData] = useState<any[]>([]);
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
@@ -1240,11 +1241,35 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             </div>
 
-            <div className={`flex gap-2 ${getDynamicSpacing('mt-6', 'mt-4', 'mt-4')}`}>
+            {/* Terms and Conditions Checkbox */}
+            <div className="flex items-start gap-2 mt-4 px-1">
+                <input 
+                    type="checkbox" 
+                    id={`terms-${therapist.id}`}
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                />
+                <label htmlFor={`terms-${therapist.id}`} className="text-xs text-gray-600 leading-relaxed">
+                    I agree to the{' '}
+                    <a 
+                        href="/mobile-terms-and-conditions" 
+                        target="_blank"
+                        className="text-orange-600 hover:text-orange-700 underline font-medium"
+                    >
+                        Booking Terms And Conditions
+                    </a>
+                </label>
+            </div>
+
+            <div className={`flex gap-2 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3')}`}>
                 <button
+                    disabled={!termsAccepted}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        if (!termsAccepted) return;
                         
                         // Prevent multiple rapid clicks
                         if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
@@ -1297,7 +1322,11 @@ ${locationInfo}${coordinatesInfo}
                             }
                         }));
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-green-500 text-white font-bold py-4 px-3 rounded-lg hover:bg-green-600 active:bg-green-700 active:scale-95 transition-all duration-100 transform touch-manipulation min-h-[48px]"
+                    className={`w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] ${
+                        termsAccepted 
+                            ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95' 
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1306,6 +1335,11 @@ ${locationInfo}${coordinatesInfo}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        
+                        if (!termsAccepted) {
+                            alert('Please accept the Terms and Conditions before booking.');
+                            return;
+                        }
                         
                         // Prevent multiple rapid clicks
                         if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
@@ -1338,7 +1372,11 @@ ${locationInfo}${coordinatesInfo}
                         // Increment bookings count for UI display
                         setBookingsCount(prev => prev + 1);
                     }} 
-                    className="w-1/2 flex items-center justify-center gap-1.5 bg-orange-500 text-white font-bold py-4 px-3 rounded-lg hover:bg-orange-600 active:bg-orange-700 active:scale-95 transition-all duration-100 transform touch-manipulation min-h-[48px]"
+                    className={`w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] ${
+                        termsAccepted 
+                            ? 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95' 
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
                 >
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
