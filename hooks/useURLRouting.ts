@@ -47,6 +47,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'placeTerms': '/place-terms',
         'privacyPolicy': '/privacy',
         'membership': '/membership',
+        'mobile-terms-and-conditions': '/mobile-terms-and-conditions',
         'adminDashboard': '/admin',
         'hotelDashboard': '/hotel-dashboard',
         'villaDashboard': '/villa-dashboard',

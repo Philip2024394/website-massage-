@@ -30,6 +30,7 @@ export type Page =
     | 'lead-accept'
     | 'lead-decline'
     | 'membership-terms'
+    | 'mobile-terms-and-conditions'
     | 'placeDashboard' 
     | 'therapist-dashboard'
     | 'place-dashboard' 
