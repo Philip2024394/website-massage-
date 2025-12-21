@@ -99,8 +99,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         });
     }, [therapist, providerId, loading, error, therapists]);
 
-    // Show loading state if therapists array is still loading from Appwrite
-    const isDataLoading = loading || (therapists?.length === 0 && !error);
+    // Show loading state if therapists array is still loading from Appwrite OR if we're still looking for the therapist
+    const isDataLoading = loading || (therapists?.length === 0 && !error) || (!therapist && !error && therapists?.length > 0);
 
     // Track analytics when profile loads
     useEffect(() => {
@@ -212,8 +212,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         canonical.setAttribute('href', shareUrl);
     }, [therapist]);
 
-    // Show loading state
-    if (isDataLoading) {
+    // Show loading state first priority
+    if (isDataLoading || loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md">
@@ -229,8 +229,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         );
     }
 
-    // Show error or not found
-    if (error || !therapist) {
+    // Show error or not found - only after loading is complete
+    if (!loading && !isDataLoading && (error || !therapist)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md">
