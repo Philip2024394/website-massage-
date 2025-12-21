@@ -238,11 +238,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
                 </button>
                 <div className="space-y-2">
-                  <button onClick={() => { 
-                    const authUrl = (import.meta as any).env?.VITE_AUTH_APP_URL || (window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin);
-                    window.location.href = `${authUrl}/signup`; 
-                    onClose(); 
-                  }} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <button onClick={() => handleItemClick(undefined, 'simple-signup')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">Sign Up</span>
                   </button>
@@ -255,30 +251,15 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 {/* Join Provider Section */}
                 <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
                   <h3 className="text-xs font-bold text-orange-600 uppercase tracking-wider px-3 mb-3">{dt.joinAsProvider}</h3>
-                  <button onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const authUrl = getAuthAppUrl();
-                    // Send user to unified create-account page with therapist portal preselected
-                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=massage_therapist`;
-                    onClose();
-                  }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
+                  <button onClick={() => handleItemClick(onTherapistPortalClick, 'therapist-portal')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
                   </button>
-                  <button onClick={() => {
-                    const authUrl = getAuthAppUrl();
-                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=massage_place`;
-                    onClose();
-                  }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
+                  <button onClick={() => handleItemClick(onMassagePlacePortalClick, 'massage-place-portal')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
                   </button>
-                  <button onClick={() => {
-                    const authUrl = getAuthAppUrl();
-                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=facial_place`;
-                    onClose();
-                  }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
+                  <button onClick={() => handleItemClick(onFacialPortalClick, 'facial-portal')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>
                   </button>
@@ -288,12 +269,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex flex-col items-center gap-3 px-4 py-2">
                   <button 
-                    onClick={() => {
-                      const authUrl = getAuthAppUrl();
-                      // Unified sign-in page showing all portal dashboards
-                      window.location.href = `${authUrl}/?portals=all&action=signin`;
-                      onClose();
-                    }}
+                    onClick={() => handleItemClick(undefined, 'landing')}
                     className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
                   >
                     Sign In
