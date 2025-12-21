@@ -330,6 +330,20 @@ const App = () => {
                     console.log('✅ Session already active:', currentUser.email);
                 } catch (sessionError: any) {
                     sessionCache.setNoSession();
+                    
+                    // Create anonymous session for data access if no user session exists
+                    try {
+                        console.log('🔑 Creating anonymous session for data access...');
+                        await account.createAnonymousSession();
+                        const anonymousUser = await account.get();
+                        sessionCache.set(true, anonymousUser);
+                        console.log('✅ Anonymous session created for data access');
+                    } catch (anonError: any) {
+                        if (!anonError.message?.includes('already exists') && !anonError.message?.includes('429')) {
+                            console.log('⚠️ Could not create anonymous session:', anonError.message);
+                        }
+                    }
+                    
                     if (sessionError?.code !== 401 && sessionError?.message !== 'timeout') {
                         console.log('ℹ️ Session check:', sessionError.message || 'No active session');
                     }
