@@ -4,6 +4,20 @@ import { useNavigate } from 'react-router-dom';
 
 const MobileTermsAndConditionsPage: React.FC = () => {
     const navigate = useNavigate();
+    
+    // Get the returnTo URL from query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnToUrl = urlParams.get('returnTo');
+
+    const handleBackNavigation = () => {
+        if (returnToUrl) {
+            // If we have a return URL (from shared profile), go back to it
+            window.location.href = returnToUrl;
+        } else {
+            // Normal back navigation
+            navigate(-1);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -11,7 +25,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
             <div className="bg-white shadow-sm border-b sticky top-0 z-10">
                 <div className="flex items-center justify-between p-4">
                     <button 
-                        onClick={() => navigate(-1)}
+                        onClick={handleBackNavigation}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                     >
                         <ArrowLeft className="w-5 h-5" />
@@ -25,6 +39,13 @@ const MobileTermsAndConditionsPage: React.FC = () => {
             {/* Content */}
             <div className="max-w-4xl mx-auto p-4 space-y-6">
                 {/* Last Updated */}
+                {returnToUrl && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                        <p className="text-sm text-orange-800">
+                            <strong>Note:</strong> You're viewing this from a shared therapist profile. Closing this tab will return you to the profile page.
+                        </p>
+                    </div>
+                )}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <p className="text-sm text-blue-800">
                         <strong>Last Updated:</strong> December 21, 2025
