@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appwrite Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Appwrite Connection Diagnostic</h1>
+    
+    <div class="test-section">
+        <h2>Configuration Check</h2>
+        <div id="config-check"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Environment Variables</h2>
+        <div id="env-check"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Appwrite Connection Test</h2>
+        <div id="connection-test"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Collections Test</h2>
+        <div id="collections-test"></div>
+    </div>
+
+    <script type="module">
+        // Import Appwrite
+        import { Client, Databases } from 'https://cdn.skypack.dev/appwrite@13.0.0';
+        
+        // Configuration
+        const config = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05'
+        };
+
+        const log = (elementId, message, type = 'info') => {
+            const element = document.getElementById(elementId);
+            const className = type;
+            element.innerHTML += `<div class="${className}">${message}</div>`;
+        };
+
+        // Check configuration
+        log('config-check', '📋 Configuration:', 'info');
+        log('config-check', `Endpoint: ${config.endpoint}`, 'info');
+        log('config-check', `Project ID: ${config.projectId}`, 'info');
+        log('config-check', `Database ID: ${config.databaseId}`, 'info');
+
+        // Check environment variables (would be undefined in browser, but let's check)
+        log('env-check', '🌍 Environment Variables (browser context):', 'info');
+        log('env-check', `import.meta.env available: ${typeof import.meta !== 'undefined' && typeof import.meta.env !== 'undefined'}`, 'info');
+
+        // Initialize Appwrite client
+        const client = new Client()
+            .setEndpoint(config.endpoint)
+            .setProject(config.projectId);
+
+        const databases = new Databases(client);
+
+        // Test connection
+        log('connection-test', '🔌 Testing Appwrite connection...', 'info');
+        
+        try {
+            // Test database access
+            const result = await databases.listCollections(config.databaseId);
+            log('connection-test', '✅ Connected successfully!', 'success');
+            log('connection-test', `Found ${result.collections.length} collections`, 'success');
+            
+            // Show collections
+            log('collections-test', '📊 Available Collections:', 'info');
+            result.collections.forEach(collection => {
+                log('collections-test', `- ${collection.name} (ID: ${collection.$id})`, 'info');
+            });
+            
+            // Test specific collections that are failing
+            const testCollections = [
+                'therapists_collection_id',
+                'places_collection_id', 
+                'translations_collection_id',
+                'facial_places_collection_id',
+                'hotels_collection_id',
+                'custom_links_collection_id'
+            ];
+            
+            log('collections-test', '🧪 Testing specific collections:', 'info');
+            
+            for (const collectionId of testCollections) {
+                try {
+                    const docs = await databases.listDocuments(config.databaseId, collectionId, []);
+                    log('collections-test', `✅ ${collectionId}: ${docs.documents.length} documents`, 'success');
+                } catch (error) {
+                    log('collections-test', `❌ ${collectionId}: ${error.message}`, 'error');
+                }
+            }
+            
+        } catch (error) {
+            log('connection-test', `❌ Connection failed: ${error.message}`, 'error');
+            console.error('Appwrite connection error:', error);
+        }
+    </script>
+</body>
+</html>

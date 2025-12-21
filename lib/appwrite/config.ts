@@ -7,19 +7,19 @@ import { Client, Databases, Account, Storage, Functions } from 'appwrite';
 
 // Appwrite configuration
 export const APPWRITE_CONFIG = {
-  endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1',
-  projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID || 'your-project-id',
-  databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID || 'your-database-id',
-  bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || 'your-bucket-id',
+  endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1',
+  projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID || '68f23b11000d25eb3664',
+  databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05',
+  bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
-    // Core collections - Using actual collection IDs from Appwrite
-    therapists: 'therapists_collection_id',
-    places: 'places_collection_id',
-    facial_places: 'FACIAL_PLACES_COLLECTION_ID',
-    users: 'USERS_COLLECTION_ID',
-    agents: 'AGENTS_COLLECTION_ID',
-    bookings: 'bookings_collection_id',
-    reviews: 'reviews_collection_id',
+    // Core collections - Using environment variables with database fallbacks
+    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || '676703b40009b9dd33de',
+    places: import.meta.env.VITE_PLACES_COLLECTION_ID || '6767038a003b7bdff200', 
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447',
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || '67670355000b2bc99d43',
+    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || '67670345000d944b9c39',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || '676703310021e8b17560',
+    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || '6767031d002a0b3bfd56',
     
     // Analytics
     analytics: 'analytics_collection_id',
@@ -34,16 +34,16 @@ export const APPWRITE_CONFIG = {
     chatSessions: 'chat_sessions_collection_id',
     chatTranslations: 'chat_translations_collection_id',
     
-    // Business
-    hotels: 'hotels_collection_id',
-    partners: 'partners_collection_id',
+    // Business  
+    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || '676701f9001e6dc8b278',
+    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || '676701e5000f4a7fb167',
     
     // Content
-    massageTypes: 'massage_types_collection_id',
-    customLinks: 'custom_links_collection_id',
-    imageAssets: 'image_assets',
-    loginBackgrounds: 'login_backgrounds',
-    translations: 'translations_collection_id',
+    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || '6767025e00093a8fd152',
+    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || '67670249000b8becb947', 
+    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || '67670235002d4cfb1356',
+    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || '67670221002cf5e4f389',
+    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || '6767020d001f6bafeea2',
     
     // Pricing & Payments
     membershipPricing: 'membership_pricing_collection_id',
