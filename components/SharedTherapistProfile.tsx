@@ -81,13 +81,24 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     };
 
     const getPricing = () => {
+        console.log('💰 [SharedProfile Pricing Debug]', {
+            therapistName: therapist.name,
+            price60: therapist.price60,
+            price90: therapist.price90,
+            price120: therapist.price120,
+            pricing: therapist.pricing,
+            pricingType: typeof therapist.pricing
+        });
+
         // Try new separate fields first
         if (therapist.price60 !== undefined || therapist.price90 !== undefined || therapist.price120 !== undefined) {
-            return {
+            const result = {
                 '60': therapist.price60 ? parseInt(therapist.price60) * 1000 : 0,
                 '90': therapist.price90 ? parseInt(therapist.price90) * 1000 : 0,
                 '120': therapist.price120 ? parseInt(therapist.price120) * 1000 : 0,
             };
+            console.log('💰 Using separate price fields:', result);
+            return result;
         }
 
         // Fallback to old JSON format
@@ -95,12 +106,15 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             const parsed = typeof therapist.pricing === 'string' 
                 ? JSON.parse(therapist.pricing) 
                 : therapist.pricing;
-            return {
+            const result = {
                 '60': (parsed?.['60'] || 0) * 1000,
                 '90': (parsed?.['90'] || 0) * 1000,
                 '120': (parsed?.['120'] || 0) * 1000,
             };
-        } catch {
+            console.log('💰 Using pricing JSON:', { parsed, result });
+            return result;
+        } catch (error) {
+            console.warn('💰 Failed to parse pricing, using defaults:', error);
             return { '60': 200000, '90': 300000, '120': 400000 };
         }
     };
