@@ -35,13 +35,19 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 />
             </div>
                 
-            {/* Verified Badge - Top Left Corner - Custom or Premium - Outside overflow container */}
+            {/* Verified Badge - Top Left Corner - Custom or Premium - Properly positioned within image */}
             {customVerifiedBadge ? (
-                <div className="absolute left-1 z-30" style={{top: '-42px'}}>
+                <div className="absolute top-2 left-2 z-30 max-w-[25%] max-h-[25%]">
                     <img 
                         src={customVerifiedBadge}
                         alt="Verified Therapist"
-                        className="w-32 h-32 sm:w-36 sm:h-36 object-contain"
+                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain"
+                        style={{
+                            maxWidth: '100%',
+                            maxHeight: '100%',
+                            width: 'auto',
+                            height: 'auto'
+                        }}
                     />
                 </div>
             ) : (therapist as any).membershipTier === 'premium' && (
