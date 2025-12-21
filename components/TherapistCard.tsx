@@ -857,7 +857,7 @@ ${locationInfo}${coordinatesInfo}
                         localStorage.setItem('selected_membership_plan', 'pro');
                         // Use client-side navigation instead of full page reload
                         if (onNavigate) {
-                            onNavigate('simpleSignup');
+                            onNavigate('therapist-portal');
                         }
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
