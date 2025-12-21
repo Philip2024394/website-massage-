@@ -2,9 +2,11 @@ import React from 'react';
 import { ArrowLeft, Shield, Clock, CreditCard, MapPin, Phone } from 'lucide-react';
 
 const MobileTermsAndConditionsPage: React.FC = () => {
-    // Get the returnTo URL from query params
+    // Get the returnTo URL and context from query params
     const urlParams = new URLSearchParams(window.location.search);
     const returnToUrl = urlParams.get('returnTo');
+    const context = urlParams.get('context');
+    const isSharedProfileContext = context === 'sharedProfile';
 
     const handleBackNavigation = () => {
         if (returnToUrl) {
@@ -51,7 +53,9 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         <ArrowLeft className="w-5 h-5" />
                         <span className="text-sm font-medium">Back</span>
                     </button>
-                    <h1 className="text-lg font-bold text-gray-800">Terms & Conditions</h1>
+                    <h1 className="text-lg font-bold text-gray-800">
+                        {isSharedProfileContext ? 'Massage Therapist Standards' : 'Terms & Conditions'}
+                    </h1>
                     <div className="w-12"></div> {/* Spacer for center alignment */}
                 </div>
             </div>
@@ -76,34 +80,53 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 <div className="bg-white rounded-lg shadow-sm border p-6">
                     <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-orange-500" />
-                        Booking Terms and Conditions
+                        {isSharedProfileContext ? 'Professional Massage Therapist Standards' : 'Booking Terms and Conditions'}
                     </h2>
-                    <p className="text-gray-600 leading-relaxed">
-                        By using IndaStreet Massage Platform and booking massage services through our platform, you agree to these terms and conditions. Please read them carefully before making any booking.
-                    </p>
+                    {isSharedProfileContext ? (
+                        <div className="prose prose-gray max-w-none">
+                            <p className="text-gray-800 leading-relaxed mb-4">
+                                As a professional massage therapist, I am fully committed to maintaining the highest standards of cleanliness, hygiene, and professional practice. All techniques I offer are performed within industry guidelines and are supported by years of formal training and experience.
+                            </p>
+                            
+                            <p className="text-gray-800 leading-relaxed mb-4">
+                                Massage is more than a service to me—it is a passion rooted in wellness, care, and helping others feel their best. I continuously apply my knowledge and skills to ensure every session is safe, effective, and tailored to each client's individual needs.
+                            </p>
+                            
+                            <p className="text-gray-800 leading-relaxed">
+                                I welcome you to experience my services and trust that you will feel the same level of care and satisfaction that many of my clients have already enjoyed. Your comfort, wellbeing, and relaxation are always my top priorities.
+                            </p>
+                        </div>
+                    ) : (
+                        <p className="text-gray-600 leading-relaxed">
+                            By using IndaStreet Massage Platform and booking massage services through our platform, you agree to these terms and conditions. Please read them carefully before making any booking.
+                        </p>
+                    )}
                 </div>
 
-                {/* Booking Policy */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-orange-500" />
-                        Booking Policy
-                    </h3>
-                    <ul className="space-y-3 text-gray-600">
-                        <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span><strong>Booking Confirmation:</strong> All bookings require confirmation from the massage therapist. You will receive notification via WhatsApp or in-app chat.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span><strong>Response Time:</strong> Therapists have up to 15 minutes to respond to immediate booking requests.</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
-                            <span><strong>Scheduling:</strong> Scheduled bookings can be made up to 7 days in advance, subject to therapist availability.</span>
-                        </li>
-                    </ul>
-                </div>
+                {/* Only show terms sections when NOT in shared profile context */}
+                {!isSharedProfileContext && (
+                    <>
+                        {/* Booking Policy */}
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-orange-500" />
+                                Booking Policy
+                            </h3>
+                            <ul className="space-y-3 text-gray-600">
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Booking Confirmation:</strong> All bookings require confirmation from the massage therapist. You will receive notification via WhatsApp or in-app chat.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Response Time:</strong> Therapists have up to 15 minutes to respond to immediate booking requests.</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Scheduling:</strong> Scheduled bookings can be made up to 7 days in advance, subject to therapist availability.</span>
+                                </li>
+                            </ul>
+                        </div>
 
                 {/* Payment Terms */}
                 <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -213,6 +236,20 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         By checking the terms and conditions checkbox and proceeding with your booking, you acknowledge that you have read, understood, and agree to be bound by these terms and conditions. These terms may be updated periodically, and continued use of the platform constitutes acceptance of any changes.
                     </p>
                 </div>
+                </>
+                )}
+
+                {/* Contact Support - Show for both contexts */}
+                {isSharedProfileContext && (
+                    <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        <h3 className="font-bold text-gray-800 text-lg mb-4">Contact & Support</h3>
+                        <div className="space-y-2 text-sm text-gray-700">
+                            <p><strong>Platform Support:</strong> Available 24/7 for booking assistance</p>
+                            <p><strong>Quality Concerns:</strong> Report any issues through our support channel</p>
+                            <p><strong>Emergency Contact:</strong> +62-813-9200-0050</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Bottom Spacing */}
                 <div className="h-8"></div>
