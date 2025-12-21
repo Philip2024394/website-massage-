@@ -73,7 +73,7 @@ window.fetch = async (...args: Parameters<typeof fetch>) => {
         
         // Don't log errors for suppressed endpoints
         if (!response.ok) {
-            const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+            const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
             if (shouldSuppress(url)) {
                 // Silently handle the error
                 return response;
@@ -82,7 +82,7 @@ window.fetch = async (...args: Parameters<typeof fetch>) => {
         
         return response;
     } catch (error) {
-        const url = typeof args[0] === 'string' ? args[0] : args[0].url;
+        const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request).url;
         if (shouldSuppress(url)) {
             // Return a mock failed response
             return new Response(null, { status: 404, statusText: 'Not Found (Suppressed)' });

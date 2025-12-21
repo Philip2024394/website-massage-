@@ -31,6 +31,13 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     onNavigate,
     language = 'en'
 }) => {
+    // Wrapper for TherapistCard compatibility
+    const handleCardQuickBook = (therapist: Therapist) => {
+        if (handleQuickBookWithChat) {
+            handleQuickBookWithChat(therapist, 'therapist');
+        }
+    };
+
     // Debug logging
     useEffect(() => {
         console.log('🔍 [SharedTherapistProfile] Component mounted');
@@ -94,7 +101,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             { property: 'og:description', content: description },
             { property: 'og:url', content: shareUrl },
             { property: 'og:type', content: 'profile' },
-            { property: 'og:image', content: therapist.profileImage || 'https://www.indastreetmassage.com/og-image.jpg' },
+            { property: 'og:image', content: therapist.profilePicture || 'https://www.indastreetmassage.com/og-image.jpg' },
             { name: 'twitter:card', content: 'summary_large_image' },
             { name: 'twitter:title', content: title },
             { name: 'twitter:description', content: description },
@@ -175,15 +182,14 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 <TherapistCard
                     therapist={therapist}
                     userLocation={userLocation}
-                    loggedInCustomer={loggedInCustomer}
+                    isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     onRate={() => {}}
                     onBook={() => {}}
-                    onQuickBookWithChat={handleQuickBookWithChat}
+                    onQuickBookWithChat={handleCardQuickBook}
                     onIncrementAnalytics={() => {}}
                     onShowRegisterPrompt={() => {}}
                     onNavigate={onNavigate}
                     onViewPriceList={() => {}}
-                    isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     t={() => ''}
                     hideJoinButton={true}
                     customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png"

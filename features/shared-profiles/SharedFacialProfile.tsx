@@ -98,9 +98,11 @@ export const SharedFacialProfile: React.FC<SharedFacialProfileProps> = ({
                         place={place}
                         userLocation={userLocation}
                         onSelectPlace={() => {}}
-                        handleQuickBookWithChat={handleQuickBookWithChat}
+                        onRate={() => {}}
+                        onIncrementAnalytics={() => {}}
                         onNavigate={onNavigate}
-                        language={language}
+                        isCustomerLoggedIn={Boolean(loggedInCustomer)}
+                        t={() => ''}
                     />
 
                     {/* Share section */}

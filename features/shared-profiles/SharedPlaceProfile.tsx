@@ -98,9 +98,11 @@ export const SharedPlaceProfile: React.FC<SharedPlaceProfileProps> = ({
                         place={place}
                         userLocation={userLocation}
                         onSelectPlace={() => {}}
-                        handleQuickBookWithChat={handleQuickBookWithChat}
+                        onRate={() => {}}
+                        onIncrementAnalytics={() => {}}
                         onNavigate={onNavigate}
-                        language={language}
+                        isCustomerLoggedIn={Boolean(loggedInCustomer)}
+                        t={() => ''}
                     />
 
                     {/* Share section */}
