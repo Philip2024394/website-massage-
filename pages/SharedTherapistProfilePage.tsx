@@ -95,8 +95,9 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     useEffect(() => {
         if (!therapist) return; // Guard clause
 
-        const title = `${therapist.name} | Pijat Panggilan ${therapist.city || 'Indonesia'} | IndaStreet`;
-        const description = `Pijat panggilan profesional di ${therapist.city || 'Indonesia'} bersama ${therapist.name}. Booking mudah, chat cepat, terapis terpercaya.`;
+        const city = therapist.city || 'Indonesia';
+        const title = `${therapist.name} - Terapis Pijat Panggilan Profesional ${city}`;
+        const description = `Terapis pijat profesional ${therapist.name} di ${city}. Layanan pijat panggilan ke hotel, villa, dan rumah. Booking online mudah, harga transparan, terapis berpengalaman dan terpercaya.`;
         const url = generateShareableURL(therapist);
         const image = (therapist as any).profilePicture || (therapist as any).mainImage || 'https://www.indastreetmassage.com/og-default.jpg';
 
