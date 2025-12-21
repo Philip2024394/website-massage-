@@ -311,9 +311,9 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
 
     const handleViewAllTherapists = () => {
         if (onNavigate) {
-            onNavigate('providers');
+            onNavigate('massage-types');
         } else {
-            window.location.href = '/';
+            window.location.href = '/#massage-types';
         }
     };
 
