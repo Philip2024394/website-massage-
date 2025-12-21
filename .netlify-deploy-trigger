@@ -1,0 +1,5 @@
+# Netlify Deployment Trigger
+
+This file triggers a new Netlify deployment to use the latest commit (112a57b) with fixed TypeScript errors.
+
+Timestamp: December 21, 2025 - 21:00
