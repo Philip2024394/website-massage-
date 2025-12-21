@@ -12,14 +12,14 @@ export const APPWRITE_CONFIG = {
   databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05',
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
-    // Core collections - Using environment variables with database fallbacks
-    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || '676703b40009b9dd33de',
-    places: import.meta.env.VITE_PLACES_COLLECTION_ID || '6767038a003b7bdff200', 
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447',
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || '67670355000b2bc99d43',
-    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || '67670345000d944b9c39',
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || '676703310021e8b17560',
-    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || '6767031d002a0b3bfd56',
+    // Core collections - Using actual collection IDs from Appwrite database
+    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id',
+    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id', 
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'facial_places_collection_id',
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'users_collection_id',
+    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'agents_collection_id',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
+    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'reviews_collection_id',
     
     // Analytics
     analytics: 'analytics_collection_id',
@@ -35,15 +35,15 @@ export const APPWRITE_CONFIG = {
     chatTranslations: 'chat_translations_collection_id',
     
     // Business  
-    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || '676701f9001e6dc8b278',
-    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || '676701e5000f4a7fb167',
+    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || 'hotels_collection_id',
+    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'partners_collection_id',
     
     // Content
-    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || '6767025e00093a8fd152',
-    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || '67670249000b8becb947', 
-    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || '67670235002d4cfb1356',
-    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || '67670221002cf5e4f389',
-    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || '6767020d001f6bafeea2',
+    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'massage_types_collection_id',
+    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'custom_links_collection_id', 
+    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'image_assets_collection_id',
+    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'login_backgrounds_collection_id',
+    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'translations_collection_id',
     
     // Pricing & Payments
     membershipPricing: 'membership_pricing_collection_id',

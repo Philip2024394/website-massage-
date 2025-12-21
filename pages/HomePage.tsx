@@ -1159,13 +1159,34 @@ const HomePage: React.FC<HomePageProps> = ({
                                 )
                             );
 
-                            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
-                            let baseList = therapists
-                                .filter((t: any) => {
-                                    // CRITICAL: First check if therapist should be treated as live
-                                    const treatedAsLive = shouldTreatTherapistAsLive(t);
-                                    const isOwnerTherapist = isOwner(t);
-                                    const isFeatured = isFeaturedSample(t, 'therapist');
+console.log('🔧 [DEBUG] Therapist filtering analysis:', {
+                totalTherapists: therapists?.length || 0,
+                therapistsArray: therapists?.slice(0, 3).map((t: any) => ({
+                    name: t.name,
+                    isLive: t.isLive,
+                    status: t.status,
+                    id: t.$id || t.id
+                })) || [],
+                selectedCity: selectedCity,
+                autoDetectedLocation: !!autoDetectedLocation,
+                userLocation: !!userLocation
+            });
+
+            // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
+            let baseList = therapists
+                .filter((t: any) => {
+                    // CRITICAL: First check if therapist should be treated as live
+                    const treatedAsLive = shouldTreatTherapistAsLive(t);
+                    const isOwnerTherapist = isOwner(t);
+                    const isFeatured = isFeaturedSample(t, 'therapist');
+                    
+                    console.log('🔧 [DEBUG] Therapist filter check:', {
+                        name: t.name,
+                        treatedAsLive,
+                        isOwnerTherapist,
+                        isFeatured,
+                        willShow: treatedAsLive || isOwnerTherapist || isFeatured
+                    });
                                     
                                     // Always show if: live, owner, or featured
                                     if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
@@ -1231,6 +1252,14 @@ const HomePage: React.FC<HomePageProps> = ({
                                         : undefined; // undefined triggers fallback logic inside TherapistCard
                                     return { ...therapist, mainImage: assignedImage || therapist.mainImage };
                                 });
+
+                            console.log('🔧 [DEBUG] Final therapist list:', {
+                                originalCount: therapists?.length || 0,
+                                afterFiltering: baseList.length,
+                                finalCount: preparedTherapists.length,
+                                sampleNames: baseList.slice(0, 3).map(t => t.name)
+                            });
+
                             return preparedTherapists.map((therapist: any, index: number) => {
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 // Parse languages safely - handle both JSON arrays and comma-separated strings

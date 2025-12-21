@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Data Debug - Live Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Therapist Data Debug - Live Test</h1>
+    <p>This will test the exact same Appwrite configuration that your app uses</p>
+
+    <div class="debug-section">
+        <h2>Configuration Test</h2>
+        <div id="config-test"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Anonymous Session Test</h2>
+        <div id="session-test"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Therapist Data Test</h2>
+        <div id="therapist-test"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Collection Permissions Check</h2>
+        <div id="permissions-test"></div>
+    </div>
+
+    <script type="module">
+        // Import Appwrite using the same CDN as your app
+        import { Client, Databases, Account } from 'https://cdn.skypack.dev/appwrite@13.0.0';
+        
+        const log = (elementId, message, type = 'info') => {
+            const element = document.getElementById(elementId);
+            const className = type;
+            element.innerHTML += `<div class="${className}">${message}</div>`;
+        };
+
+        // Use the same configuration as your app
+        const APPWRITE_CONFIG = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                // Try multiple collection ID formats
+                therapists_new: '676703b40009b9dd33de', // From env vars
+                therapists_old: 'therapists_collection_id', // Placeholder
+            }
+        };
+
+        log('config-test', `🔧 Testing Configuration:`, 'info');
+        log('config-test', `Endpoint: ${APPWRITE_CONFIG.endpoint}`, 'info');
+        log('config-test', `Project: ${APPWRITE_CONFIG.projectId}`, 'info');
+        log('config-test', `Database: ${APPWRITE_CONFIG.databaseId}`, 'info');
+
+        // Initialize Appwrite client
+        const client = new Client()
+            .setEndpoint(APPWRITE_CONFIG.endpoint)
+            .setProject(APPWRITE_CONFIG.projectId);
+
+        const databases = new Databases(client);
+        const account = new Account(client);
+
+        async function testAnonymousSession() {
+            log('session-test', '🔄 Testing anonymous session creation...', 'info');
+            
+            try {
+                // Try to create anonymous session like your app does
+                const session = await account.createAnonymousSession();
+                log('session-test', `✅ Anonymous session created: ${session.$id}`, 'success');
+                return true;
+            } catch (error) {
+                log('session-test', `❌ Anonymous session failed: ${error.message}`, 'error');
+                log('session-test', `This might be okay if session already exists`, 'warning');
+                return false;
+            }
+        }
+
+        async function testTherapistCollection(collectionId, collectionName) {
+            log('therapist-test', `🔄 Testing collection: ${collectionName} (${collectionId})`, 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    collectionId,
+                    [] // No queries, just list all
+                );
+                
+                log('therapist-test', `✅ ${collectionName}: Found ${response.documents.length} therapists`, 'success');
+                
+                if (response.documents.length > 0) {
+                    const sample = response.documents[0];
+                    log('therapist-test', `📋 Sample therapist data:`, 'info');
+                    log('therapist-test', `- Name: ${sample.name || 'No name'}`, 'info');
+                    log('therapist-test', `- IsLive: ${sample.isLive}`, 'info');
+                    log('therapist-test', `- Status: ${sample.status || 'No status'}`, 'info');
+                    log('therapist-test', `- ID: ${sample.$id}`, 'info');
+                }
+                
+                return response.documents;
+            } catch (error) {
+                log('therapist-test', `❌ ${collectionName} failed: ${error.message}`, 'error');
+                if (error.message.includes('not authorized')) {
+                    log('permissions-test', `❌ Collection ${collectionName} has permission issues`, 'error');
+                    log('permissions-test', `This collection needs public read permissions set in Appwrite console`, 'warning');
+                }
+                return null;
+            }
+        }
+
+        async function runFullTest() {
+            // Test anonymous session
+            await testAnonymousSession();
+            
+            // Test both collection ID formats
+            const newResults = await testTherapistCollection(APPWRITE_CONFIG.collections.therapists_new, 'New Collection ID');
+            const oldResults = await testTherapistCollection(APPWRITE_CONFIG.collections.therapists_old, 'Old Collection ID'); 
+
+            // Summary
+            if (newResults && newResults.length > 0) {
+                log('permissions-test', `✅ Solution: Use collection ID ${APPWRITE_CONFIG.collections.therapists_new}`, 'success');
+                log('permissions-test', `✅ This collection has proper permissions and contains data`, 'success');
+            } else if (oldResults && oldResults.length > 0) {
+                log('permissions-test', `⚠️ Old collection ID still works but should be updated`, 'warning');
+            } else {
+                log('permissions-test', `❌ CRITICAL: No accessible therapist collections found`, 'error');
+                log('permissions-test', `🔧 Fix needed:`, 'error');
+                log('permissions-test', `1. Go to Appwrite Console → Database → Collections`, 'error');
+                log('permissions-test', `2. Find your therapist collection`, 'error');
+                log('permissions-test', `3. Go to Settings → Permissions`, 'error');
+                log('permissions-test', `4. Add "Any" role with Read permission`, 'error');
+            }
+        }
+
+        // Run the test
+        runFullTest().catch(error => {
+            log('permissions-test', `❌ Test failed: ${error.message}`, 'error');
+            console.error('Full test error:', error);
+        });
+    </script>
+</body>
+</html>

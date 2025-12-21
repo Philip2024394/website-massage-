@@ -11,7 +11,7 @@ const client = new Client()
 
 const databases = new Databases(client);
 const databaseId = '68f76ee1000e64ca8d05';
-const therapistsCollectionId = 'therapists_collection_id';
+const therapistsCollectionId = 'therapists_collection_id'; // Actual collection ID
 
 async function listTherapists() {
     try {
