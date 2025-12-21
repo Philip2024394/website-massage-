@@ -15,10 +15,10 @@ export const APPWRITE_CONFIG = {
     // Core collections - Using actual collection IDs from Appwrite database
     therapists: 'therapists_collection_id',
     places: 'places_collection_id', 
-    facial_places: 'facial_places_collection_id',
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447',
     users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'Bookings',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || '6767038a003b7bdff201',
     reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'Reviews',
     
     // Analytics
@@ -31,7 +31,7 @@ export const APPWRITE_CONFIG = {
     notifications: 'Notifications',
     chatMessages: 'Chat Messages',
     chatRooms: 'Chat Rooms',
-    chatSessions: import.meta.env.VITE_CHAT_SESSIONS_COLLECTION_ID || 'Chat Sessions',
+    chatSessions: import.meta.env.VITE_CHAT_SESSIONS_COLLECTION_ID || 'chat_sessions',
     chatTranslations: 'Chat Translations',
     
     // Business  
@@ -52,11 +52,11 @@ export const APPWRITE_CONFIG = {
     payments: 'Payments',
     
     // Membership & Leads
-    leadGenerations: 'Lead Generations',
-    membershipAgreements: 'Membership Agreements',
-    membershipUpgrades: 'Membership Upgrades',
-    deactivationRequests: 'Deactivation Requests',
-    leads: 'Leads',
+    leadGenerations: import.meta.env.VITE_LEAD_GENERATIONS_COLLECTION_ID || 'Lead Generations',
+    membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
+    membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
+    deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
+    leads: import.meta.env.VITE_LEADS_COLLECTION_ID || '676703b40009b9dd33de',
     
     // Jobs
     employerJobPostings: 'Employer Job Postings',
