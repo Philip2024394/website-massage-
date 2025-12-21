@@ -72,7 +72,8 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         if (page === 'shared-therapist-profile' || 
             page === 'share-therapist' || 
             page === 'share-place' || 
-            page === 'share-facial') {
+            page === 'share-facial' ||
+            page === 'mobile-terms-and-conditions') {
             return;
         }
         

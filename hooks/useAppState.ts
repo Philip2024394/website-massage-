@@ -151,6 +151,12 @@ export const useAppState = () => {
   const setPage = (newPage: Page) => {
     console.log('📍 Page change request:', newPage, '(from:', page, ')');
     
+    // Prevent overriding mobile terms page once it's loaded
+    if (page === 'mobile-terms-and-conditions' && newPage !== 'mobile-terms-and-conditions') {
+      console.log('🔒 Blocking page change from mobile-terms - staying on terms page');
+      return;
+    }
+    
     // Prevent unnecessary state updates
     if (page === newPage) {
       console.log('📍 Page already set to:', newPage, '- skipping update');
