@@ -16,6 +16,7 @@ export const PREVIEW_IMAGES = {
     'kuta': 'https://ik.imagekit.io/7grri5v7d/kuta-massage-preview.jpg',
     'nusa dua': 'https://ik.imagekit.io/7grri5v7d/nusa-dua-massage-preview.jpg',
     'jimbaran': 'https://ik.imagekit.io/7grri5v7d/jimbaran-massage-preview.jpg',
+    'yogyakarta': 'https://ik.imagekit.io/7grri5v7d/yogarkatya.png',
   },
 
   // Default fallback image
