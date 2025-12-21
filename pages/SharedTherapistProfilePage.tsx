@@ -310,6 +310,10 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     }, [therapist]);
 
     const handleViewAllTherapists = () => {
+        // Store navigation context so massage types page can navigate back
+        sessionStorage.setItem('massageTypes_source', 'shared_therapist_profile');
+        sessionStorage.setItem('massageTypes_return_url', window.location.href);
+        
         if (onNavigate) {
             onNavigate('massage-types');
         } else {
