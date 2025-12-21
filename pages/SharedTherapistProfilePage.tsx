@@ -91,53 +91,10 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         return null;
     }, [selectedTherapist, therapists, therapistId]);
 
-    const handleViewAllTherapists = () => {
-        if (onNavigate) {
-            onNavigate('providers');
-        } else {
-            window.location.href = '/';
-        }
-    };
-
-    const noop = () => {};
-    const handleQuickBook = (provider: Therapist) => {
-        if (handleQuickBookWithChat) {
-            handleQuickBookWithChat(provider, 'therapist');
-        }
-    };
-
-    if (!therapist) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center max-w-md">
-                    <div className="mb-4">
-                        <svg className="w-12 h-12 mx-auto text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </div>
-                    <p className="text-lg font-semibold text-gray-800 mb-2">Loading therapist profile...</p>
-                    <p className="text-sm text-gray-600 mb-4">
-                        Requested ID: {therapistId || 'Unknown'}
-                    </p>
-                    <div className="space-y-2">
-                        <p className="text-xs text-gray-500">
-                            {therapists?.length ? `Searching ${therapists.length} therapists...` : 'Loading therapist data...'}
-                        </p>
-                        <button 
-                            onClick={() => window.location.href = '/'}
-                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
-                        >
-                            Return to Home
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // SEO/meta: title, description, OG, canonical, JSON-LD
+    // SEO/meta: title, description, OG, canonical, JSON-LD (MUST be before early return)
     useEffect(() => {
+        if (!therapist) return; // Guard clause
+
         const title = `${therapist.name} | Pijat Panggilan ${therapist.city || 'Indonesia'} | IndaStreet`;
         const description = `Pijat panggilan profesional di ${therapist.city || 'Indonesia'} bersama ${therapist.name}. Booking mudah, chat cepat, terapis terpercaya.`;
         const url = generateShareableURL(therapist);
@@ -208,20 +165,20 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         script.type = 'application/ld+json';
         script.id = 'therapist-json-ld';
         script.text = JSON.stringify(ld);
-        // Remove existing
         const existing = document.getElementById('therapist-json-ld');
         if (existing) existing.remove();
         document.head.appendChild(script);
 
         return () => {
-            // Leave title/description as-is; remove JSON-LD to avoid duplication when navigating
             const current = document.getElementById('therapist-json-ld');
             if (current) current.remove();
         };
     }, [therapist]);
 
-    // Lightweight analytics for shared views (fire-and-forget, once per session)
+    // Lightweight analytics for shared views (MUST be before early return)
     useEffect(() => {
+        if (!therapist) return; // Guard clause
+
         try {
             const therapistId = (therapist as any).id || (therapist as any).$id;
             if (!therapistId) return;
@@ -247,23 +204,69 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
 
             if (!sessionStorage.getItem(viewKey)) {
                 sessionStorage.setItem(viewKey, '1');
-                const send = () => analyticsService.trackSharedLinkView(therapistId, sessionId).catch(() => null);
-                if ('requestIdleCallback' in window) {
-                    (window as any).requestIdleCallback(send, { timeout: 1500 });
-                } else {
-                    setTimeout(send, 0);
-                }
+                analyticsService.trackSharedLinkView(therapistId, sessionId).catch(() => null);
             }
         } catch (err) {
-            console.warn('Shared link analytics failed:', err);
+            console.log('[SharedTherapistProfile] Analytics skip:', err);
         }
     }, [therapist]);
+
+    const handleViewAllTherapists = () => {
+        if (onNavigate) {
+            onNavigate('providers');
+        } else {
+            window.location.href = '/';
+        }
+    };
+
+    const noop = () => {};
+    const handleQuickBook = (provider: Therapist) => {
+        if (handleQuickBookWithChat) {
+            handleQuickBookWithChat(provider, 'therapist');
+        }
+    };
+
+    if (!therapist) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="text-center max-w-md">
+                    <div className="mb-4">
+                        <svg className="w-12 h-12 mx-auto text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800 mb-2">Loading therapist profile...</p>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Requested ID: {therapistId || 'Unknown'}
+                    </p>
+                    <div className="space-y-2">
+                        <p className="text-xs text-gray-500">
+                            {therapists?.length ? `Searching ${therapists.length} therapists...` : 'Loading therapist data...'}
+                        </p>
+                        <button 
+                            onClick={() => window.location.href = '/'}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                        >
+                            Return to Home
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
-                {/* Optional top space for custom messaging */}
-                <div className="min-h-[24px]" />
+                {/* Hero Image */}
+                <div className="flex justify-center mb-4">
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
+                        alt="Logo" 
+                        className="h-48 w-auto object-contain"
+                    />
+                </div>
 
                 <TherapistCard
                     therapist={therapist}
@@ -277,6 +280,8 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     onViewPriceList={noop}
                     isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     t={t}
+                    hideJoinButton={true}
+                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png"
                 />
 
                 {/* Optional bottom space for custom messaging */}

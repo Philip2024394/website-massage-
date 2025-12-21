@@ -512,7 +512,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 {massageTypesDisplay.length > 0 && (
                     <div className="mt-4">
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Massage Specializations</h4>
+                            <h4 className="text-xs font-semibold text-gray-700 whitespace-nowrap">Areas of Expertise</h4>
                             {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' && (
                                 <span className="text-xs font-medium text-orange-600 flex items-center gap-1 whitespace-nowrap">
                                     <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">

@@ -578,132 +578,6 @@ export interface AdminMessage {
     isRead: boolean;
 }
 
-// ============================================
-// LOYALTY SYSTEM TYPES
-// ============================================
-
-export enum LoyaltyWalletStatus {
-    Active = 'active',
-    Inactive = 'inactive',
-    Dormant = 'dormant'
-}
-
-export enum CoinTransactionType {
-    Earned = 'earned',
-    Redeemed = 'redeemed',
-    Decayed = 'decayed',
-    Bonus = 'bonus',
-    Expired = 'expired',
-    StreakBonus = 'streak_bonus',
-    BirthdayBonus = 'birthday_bonus'
-}
-
-export interface LoyaltyTier {
-    visits: number;
-    discount: number;
-    coinsRequired: number;
-}
-
-export interface ProviderLoyaltySettings {
-    $id?: string;
-    providerId: number;
-    providerType: 'therapist' | 'place';
-    providerName: string;
-    providerCoinId: string; // e.g., "T001-COINS" or "P042-COINS"
-    
-    // Tier configuration
-    tier1: LoyaltyTier; // Default: 3 visits, 5% discount, 15 coins
-    tier2: LoyaltyTier; // Default: 5 visits, 10% discount, 25 coins
-    tier3: LoyaltyTier; // Default: 10 visits, 15% discount, 50 coins
-    tier4: LoyaltyTier; // Default: 20 visits, 20% discount, 100 coins
-    
-    // Earning configuration
-    coinsPerVisit: number; // Default: 5
-    
-    // Decay configuration
-    enableDecay: boolean;
-    decayGracePeriod: number; // Days before decay starts (default: 14)
-    
-    // Bonuses
-    streakBonus: boolean; // Award bonus coins for consecutive bookings
-    birthdayBonus: number; // Bonus coins on customer birthday
-    
-    // Status
-    isActive: boolean;
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface LoyaltyWallet {
-    $id?: string;
-    userId: string; // Appwrite user ID
-    providerId: number;
-    providerType: 'therapist' | 'place';
-    providerName: string;
-    providerCoinId: string; // e.g., "T001-COINS"
-    
-    // Coin balances
-    totalCoins: number; // Current balance
-    coinsEarned: number; // Lifetime earned
-    coinsRedeemed: number; // Lifetime redeemed
-    
-    // Visit tracking
-    totalVisits: number;
-    lastVisitDate?: string;
-    firstVisitDate?: string;
-    
-    // Decay tracking
-    lastDecayDate?: string;
-    decayRate: number; // Coins decayed per period
-    
-    // Current tier and discount
-    currentTier: number; // 0-4 (0 = no tier)
-    currentDiscount: number; // Percentage discount earned
-    
-    // Status
-    status: LoyaltyWalletStatus;
-    streak: number; // Consecutive bookings
-    
-    createdAt?: string;
-    updatedAt?: string;
-}
-
-export interface CoinTransaction {
-    $id?: string;
-    userId: string;
-    walletId: string;
-    providerId: number;
-    providerType: 'therapist' | 'place';
-    
-    // Transaction details
-    type: CoinTransactionType;
-    amount: number; // Positive for earned, negative for redeemed/decayed
-    
-    // Related entities
-    bookingId?: number;
-    reason: string; // Description of transaction
-    
-    // Balance tracking
-    balanceBefore: number;
-    balanceAfter: number;
-    
-    createdAt?: string;
-}
-
-export interface LoyaltyEarnedEvent {
-    userId: string;
-    providerId: number;
-    providerType: 'therapist' | 'place';
-    providerName: string;
-    providerCoinId: string;
-    coinsEarned: number;
-    totalCoins: number;
-    totalVisits: number;
-    tierUnlocked?: number;
-    discountUnlocked?: number;
-    streakCount?: number;
-}
-
 // ==========================================
 // 💬 CHAT SYSTEM TYPES
 // ==========================================
@@ -814,77 +688,11 @@ export interface AgentVisit {
     updatedAt?: string;
 }
 
-export interface ShopItem {
-    id?: number;
-    $id?: string; // Appwrite document ID
-    name: string;
-    description: string;
-    coinPrice: number; // Coin value required to redeem
-    imageUrl: string;
-    category: 'electronics' | 'fashion' | 'wellness' | 'home' | 'gift_cards' | 'lighter' | 'other';
-    stockQuantity: number;
-    isActive: boolean; // Admin can enable/disable items
-    estimatedDelivery: string; // e.g., "6-10 days"
-    disclaimer: string; // "Design may vary from image shown"
-    createdAt?: string;
-    updatedAt?: string;
-}
 
-export interface ShopCoinTransaction {
-    id?: number;
-    $id?: string; // Appwrite document ID
-    userId: string; // Appwrite user ID
-    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
-    userName: string;
-    transactionType: 'earn' | 'spend' | 'bonus' | 'refund';
-    amount: number; // Positive for earn, negative for spend
-    description: string;
-    relatedId?: string; // Booking ID, order ID, etc.
-    balanceBefore: number;
-    balanceAfter: number;
-    createdAt?: string;
-}
 
-export interface ShopOrder {
-    id?: number;
-    $id?: string; // Appwrite document ID
-    orderNumber: string; // Unique order number
-    userId: string;
-    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
-    userName: string;
-    userEmail?: string;
-    userPhone?: string;
-    
-    // Delivery address (stored as JSON string in Appwrite)
-    shippingAddress: string;
-    
-    // Order items (stored as JSON string array in Appwrite)
-    items: string; // JSON array string
-    
-    totalCoins: number;
-    status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-    
-    // Tracking
-    trackingNumber?: string;
-    shippedAt?: string;
-    deliveredAt?: string;
-    estimatedDelivery: string;
-    
-    notes?: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
 
-export interface UserCoins {
-    $id?: string;
-    userId: string;
-    userType: 'customer' | 'therapist' | 'place' | 'hotel' | 'villa' | 'agent';
-    userName: string;
-    totalCoins: number;
-    lifetimeEarned: number;
-    lifetimeSpent: number;
-    updatedAt?: string;
-}
+
+
 
 // Monthly aggregated agent performance metrics
 export interface MonthlyAgentMetrics {
@@ -898,4 +706,108 @@ export interface MonthlyAgentMetrics {
     streakCount: number;
     commissionRateApplied: number; // 20 or 23
     calculatedAt: string; // ISO timestamp of snapshot generation
+}
+
+// ==========================================
+// 🪙 LOYALTY & COINS SYSTEM TYPES
+// ==========================================
+
+export enum LoyaltyWalletStatus {
+    Active = 'active',
+    Inactive = 'inactive',
+    Suspended = 'suspended',
+    Dormant = 'dormant'
+}
+
+export enum CoinTransactionType {
+    Earned = 'earned',
+    Redeemed = 'redeemed',
+    Expired = 'expired',
+    Decayed = 'decayed',
+    BirthdayBonus = 'birthday_bonus',
+    ReferralBonus = 'referral_bonus'
+}
+
+export interface LoyaltyTier {
+    visits: number;
+    discount: number;
+    coinsRequired: number;
+}
+
+export interface ProviderLoyaltySettings {
+    $id?: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string; // Unique coin identifier (e.g., "T001-COINS")
+    tier1: LoyaltyTier;
+    tier2: LoyaltyTier;
+    tier3: LoyaltyTier;
+    tier4: LoyaltyTier;
+    coinsPerVisit: number;
+    enableDecay: boolean;
+    decayGracePeriod: number; // Days before decay starts
+    streakBonus: boolean;
+    birthdayBonus: number;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface LoyaltyWallet {
+    $id?: string;
+    userId: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string;
+    totalCoins: number;
+    coinsEarned: number;
+    coinsRedeemed: number;
+    totalVisits: number;
+    firstVisitDate: string;
+    lastVisitDate?: string;
+    decayRate: number;
+    currentTier: number;
+    currentDiscount: number;
+    status: LoyaltyWalletStatus;
+    streak: number; // Consecutive visits within 7 days
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface CoinTransaction {
+    $id?: string;
+    userId: string;
+    walletId: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    type: CoinTransactionType;
+    amount: number;
+    reason: string;
+    balanceBefore: number;
+    balanceAfter: number;
+    bookingId?: number;
+    createdAt: string;
+}
+
+export interface LoyaltyEarnedEvent {
+    userId: string;
+    providerId: number;
+    providerType: 'therapist' | 'place';
+    providerName: string;
+    providerCoinId: string;
+    coinsEarned: number;
+    totalCoins: number;
+    totalVisits: number;
+    tierUnlocked?: boolean;
+    discountUnlocked?: boolean;
+    streakCount?: number;
+}
+
+export interface UserCoins {
+    totalCoins: number;
+    activeWallets: number;
+    topProvider?: string;
+    topProviderCoins?: number;
 }

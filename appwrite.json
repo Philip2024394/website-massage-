@@ -34,7 +34,7 @@
       "enabled": true,
       "collections": [
         {
-          "collectionId": "agents_collection_id",
+          "collectionId": "677a5d1b002097c0b5d6",
           "name": "Agents",
           "enabled": true,
           "documentSecurity": true,
@@ -67,7 +67,7 @@
           ]
         },
         {
-          "collectionId": "agent_visits_collection_id",
+          "collectionId": "677a5d28002b8d2b8c9f",
           "name": "Agent Visits",
           "enabled": true,
           "documentSecurity": true,
@@ -98,7 +98,7 @@
           ]
         },
         {
-          "collectionId": "monthly_agent_metrics_collection_id",
+          "collectionId": "677a5d32001c8708c2a4",
           "name": "Monthly Agent Metrics",
           "enabled": true,
           "documentSecurity": true,
@@ -163,7 +163,7 @@
           ]
         },
         {
-          "collectionId": "bookings_collection_id",
+          "collectionId": "677a5d0d0035b0f8a1e2",
           "name": "Bookings",
           "enabled": true,
           "documentSecurity": true,

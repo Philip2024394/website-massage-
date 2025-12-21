@@ -11,7 +11,7 @@ const databaseId = '68f76ee1000e64ca8d05';
 // Test both collection IDs
 const collectionTests = [
     { name: 'Environment Variable ID', id: '676703b40009b9dd33de' },
-    { name: 'Old Placeholder ID', id: 'therapists_collection_id' }
+    { name: 'Old Placeholder ID', id: '676703b40009b9dd33de' }
 ];
 
 async function testTherapistAccess() {

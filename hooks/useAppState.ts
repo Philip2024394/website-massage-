@@ -23,8 +23,31 @@ export const useAppState = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
 
-      // Handle shared therapist profile deep link
+      // Handle shared profile deep links
       const pathname = window.location.pathname;
+      
+      // Short URL format: /share/12345 or /share/slug-name
+      if (pathname.startsWith('/share/') && !pathname.startsWith('/share/therapist/') && !pathname.startsWith('/share/place/') && !pathname.startsWith('/share/facial/')) {
+        console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
+        console.log('🔗 Returning: share-therapist');
+        return 'share-therapist'; // Default to therapist for short links
+      }
+      
+      // New share URLs with explicit type
+      if (pathname.startsWith('/share/therapist/')) {
+        console.log('🔗 EXPLICIT THERAPIST SHARE URL');
+        return 'share-therapist';
+      }
+      if (pathname.startsWith('/share/place/')) {
+        console.log('🔗 EXPLICIT PLACE SHARE URL');
+        return 'share-place';
+      }
+      if (pathname.startsWith('/share/facial/')) {
+        console.log('🔗 EXPLICIT FACIAL SHARE URL');
+        return 'share-facial';
+      }
+      
+      // Legacy therapist profile URL
       if (pathname.startsWith('/therapist-profile/')) {
         const parts = pathname.split('/').filter(Boolean);
         const slugPart = parts[1] || '';

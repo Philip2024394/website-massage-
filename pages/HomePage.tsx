@@ -1195,13 +1195,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         willShow: treatedAsLive || isOwnerTherapist || isFeatured
                     });
                     
-                    // TEMPORARY: Show all therapists for debugging
-                    if (process.env.NODE_ENV === 'development') {
-                        return true; // Show all therapists in development
+                    // Show live therapists, owner's profile, or featured samples
+                    if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
+                        return false;
                     }
-                                    if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
-                                        return false;
-                                    }
                                     
                                     // Always show featured sample therapists (Budi) in all cities
                                     if (isFeatured) {

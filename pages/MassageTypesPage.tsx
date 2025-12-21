@@ -80,6 +80,36 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
     const t = propT || hookT; // Use prop t if provided, otherwise use hook
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
+    // Check if we came from shared therapist profile
+    const [showBackButton, setShowBackButton] = useState(false);
+    const [returnUrl, setReturnUrl] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const source = sessionStorage.getItem('massageTypes_source');
+        const returnUrl = sessionStorage.getItem('massageTypes_return_url');
+        
+        if (source === 'shared_therapist_profile' && returnUrl) {
+            setShowBackButton(true);
+            setReturnUrl(returnUrl);
+        } else {
+            setShowBackButton(false);
+            setReturnUrl(null);
+        }
+    }, []);
+    
+    const handleBackClick = () => {
+        if (returnUrl) {
+            // Clear the session storage
+            sessionStorage.removeItem('massageTypes_source');
+            sessionStorage.removeItem('massageTypes_return_url');
+            // Navigate back to shared profile
+            window.location.href = returnUrl;
+        } else {
+            // Fallback to home
+            onNavigate?.('home');
+        }
+    };
+    
     // Flatten all massage types from categories
     const allMassageTypes: string[] = MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types);
     
@@ -206,15 +236,27 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-4 text-gray-600">
-                        <button 
-                            onClick={() => onNavigate?.('home')} 
-                            title="Home"
-                            className="hover:text-orange-500 transition-colors"
-                        >
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
+                        {showBackButton ? (
+                            <button 
+                                onClick={handleBackClick} 
+                                title="Back to Therapist Profile"
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                        ) : (
+                            <button 
+                                onClick={() => onNavigate?.('home')} 
+                                title="Home"
+                                className="hover:text-orange-500 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                            </button>
+                        )}
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">
                            <BurgerMenuIcon className="w-6 h-6" />
                         </button>

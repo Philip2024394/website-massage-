@@ -344,8 +344,8 @@ export const awardCoins = async (
             coinsEarned: coinsToAward,
             totalCoins: newTotalCoins,
             totalVisits: newTotalVisits,
-            tierUnlocked,
-            discountUnlocked,
+            tierUnlocked: tierUnlocked > 0,
+            discountUnlocked: discountUnlocked > 0,
             streakCount: newStreak >= 3 ? newStreak : undefined
         };
     } catch (error) {

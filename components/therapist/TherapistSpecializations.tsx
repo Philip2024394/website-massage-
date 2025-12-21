@@ -53,7 +53,7 @@ const TherapistSpecializations = ({ massageTypes, therapist, t }: TherapistSpeci
       <div className="border-t border-gray-100 pt-4">
         <div className="mb-2">
           <h4 className="text-xs font-semibold text-gray-700">
-            {t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
+            {t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
           </h4>
         </div>
         <div className="flex flex-wrap gap-1">

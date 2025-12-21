@@ -8,12 +8,14 @@ interface TherapistCardHeaderProps {
     therapist: Therapist;
     displayImage: string;
     onShareClick: () => void;
+    customVerifiedBadge?: string;
 }
 
 const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     therapist,
     displayImage,
-    onShareClick
+    onShareClick,
+    customVerifiedBadge
 }) => {
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
@@ -31,18 +33,26 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                         devLog('✅ Main image loaded successfully:', displayImage);
                     }}
                 />
-                
-                {/* Verified Badge - Top Left Corner - Premium Members */}
-                {(therapist as any).membershipTier === 'premium' && (
-                    <div className="absolute top-2 left-2 z-30">
-                        <img 
-                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
-                            alt="Verified Member"
-                            className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
-                        />
-                    </div>
-                )}
             </div>
+                
+            {/* Verified Badge - Top Left Corner - Custom or Premium - Outside overflow container */}
+            {customVerifiedBadge ? (
+                <div className="absolute left-1 z-30" style={{top: '-42px'}}>
+                    <img 
+                        src={customVerifiedBadge}
+                        alt="Verified Therapist"
+                        className="w-32 h-32 sm:w-36 sm:h-36 object-contain"
+                    />
+                </div>
+            ) : (therapist as any).membershipTier === 'premium' && (
+                <div className="absolute top-2 left-2 z-30">
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
+                        alt="Verified Member"
+                        className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+                    />
+                </div>
+            )}
 
             {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
             {isDiscountActive(therapist) && (

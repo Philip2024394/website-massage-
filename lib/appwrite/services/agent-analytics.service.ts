@@ -180,7 +180,7 @@ export const adminAgentOverviewService = {
         try {
             const docs = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                'monthly_agent_metrics_collection_id',
+                '677a5d32001c8708c2a4',
                 [
                     Query.equal('agentId', agentId),
                     Query.orderDesc('month'),
@@ -491,7 +491,7 @@ export const monthlyAgentMetricsService = {
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                'monthly_agent_metrics_collection_id',
+                '677a5d32001c8708c2a4',
                 [Query.equal('agentId', agentId), Query.orderDesc('month'), Query.limit(limit)]
             );
             return response.documents.map((doc: any) => ({

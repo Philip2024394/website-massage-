@@ -309,7 +309,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             <div className="mb-4">
                                 <div className="mb-2">
                                     <h4 className="text-xs font-semibold text-gray-700">
-                                        Massage Specializations
+                                        Areas of Expertise
                                     </h4>
                                 </div>
                                 <div className="flex flex-wrap gap-1">

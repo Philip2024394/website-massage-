@@ -142,10 +142,10 @@ export const CoinEarnedCelebration = ({ event, onClose }: CoinEarnedCelebrationP
                                 className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 mb-6 text-center"
                             >
                                 <div className="text-3xl mb-2">
-                                    {tierMessages[event.tierUnlocked]}
+                                    🎉 New Tier Unlocked!
                                 </div>
                                 <p className="text-white text-xl font-bold">
-                                    {event.discountUnlocked}% Discount Unlocked!
+                                    Discount Available!
                                 </p>
                                 <p className="text-white text-sm mt-1">
                                     Your next booking will be discounted

@@ -266,6 +266,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist-profile':
             return renderRoute(profileRoutes.therapist.component);
         
+        // NEW: Simple share routes
+        case 'share-therapist':
+            console.log('🔧 [ShareTherapist] Rendering new share page');
+            console.log('  - Therapists available:', props.therapists?.length || 0);
+            console.log('  - URL:', window.location.href);
+            return renderRoute(profileRoutes.shareTherapist.component);
+        
+        case 'share-place':
+            console.log('🔧 [SharePlace] Rendering share page');
+            return renderRoute(profileRoutes.sharePlace.component);
+        
+        case 'share-facial':
+            console.log('🔧 [ShareFacial] Rendering share page');
+            return renderRoute(profileRoutes.shareFacial.component);
+        
+        // LEGACY: Keep old shared-therapist-profile working
         case 'shared-therapist-profile':
             // Debug logging for therapist private link issues
             console.log('🔧 [SharedTherapistProfile] Rendering with props:', {

@@ -222,7 +222,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     return Array.isArray(massageTypes) && massageTypes.length > 0 ? (
                         <div className="mt-3">
                             <div className="flex items-center justify-between mb-1.5">
-                                <h4 className="text-xs font-semibold text-gray-700">Massage Specializations</h4>
+                                <h4 className="text-xs font-semibold text-gray-700">Areas of Expertise</h4>
                                 {place.yearsEstablished && (
                                     <span className="px-2 py-0.5 bg-green-50 border border-green-200 text-green-800 text-xs font-semibold rounded-full">
                                         {place.yearsEstablished} {place.yearsEstablished === 1 ? 'Year' : 'Years'} Est.

@@ -20,7 +20,7 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
         const homePages = ['home', 'landing'];
         const searchPages = ['search', 'therapists', 'places', 'massageTypes'];
         const notificationPages = ['notifications'];
-        const shopPages = ['shop', 'membership'];
+        const membershipPages = ['membership'];
                 const profilePages = ['profile', 'therapistPortal', 'agentDashboard'];
 
         switch (buttonType) {
@@ -30,8 +30,8 @@ const GlobalFooter: React.FC<GlobalFooterProps> = ({
                 return searchPages.includes(currentPage);
             case 'notifications':
                 return notificationPages.includes(currentPage);
-            case 'shop':
-                return shopPages.includes(currentPage);
+            case 'membership':
+                return membershipPages.includes(currentPage);
             case 'profile':
                 return profilePages.includes(currentPage);
             default:

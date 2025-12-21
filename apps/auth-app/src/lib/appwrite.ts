@@ -14,10 +14,10 @@ export { client, ID };
 // Database and Collection IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: 'therapists_collection_id',
-    PLACES: 'places_collection_id',
-    USERS: 'users_collection_id',
-    AGENTS: 'agents_collection_id',
-    HOTELS: 'hotels_collection_id',
-    PARTNERS: 'partners_collection_id',
+    THERAPISTS: '676703b40009b9dd33de',
+    PLACES: '6767038a003b7bdff200',
+    USERS: '67670355000b2bc99d43',
+    AGENTS: '677a5d1b002097c0b5d6',
+    HOTELS: '676701f9001e6dc8b278',
+    PARTNERS: '677a5d3f003c4d7e9c1a',
 };

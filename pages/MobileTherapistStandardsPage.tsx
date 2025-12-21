@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ShieldCheck, CheckCircle2, Sparkles, Droplet, Clock, Shield, Sprout } from 'lucide-react';
+import { Home, ShieldCheck, CheckCircle2, Sparkles, Droplet, Clock, Shield, Star } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
 
 interface MobileTherapistStandardsPageProps {
@@ -129,7 +129,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
           {/* Booking and safety reminders */}
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl shadow-md p-6 text-white space-y-3">
             <div className="flex items-center gap-2 text-white">
-              <Sprout className="w-5 h-5" />
+              <Star className="w-5 h-5" />
               <h3 className="text-lg font-semibold">Safety-first booking</h3>
             </div>
             <ul className="space-y-2 text-sm">

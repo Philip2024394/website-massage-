@@ -20,6 +20,7 @@ export const APPWRITE_CONFIG = {
         reviews: 'Reviews', // Reviews collection
         notifications: 'Notifications', // ✅ Therapist notification system
         users: 'Users', // ✅ Actual collection name
+        share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'Agent Visits',
         hotelBookings: 'Hotel Bookings',

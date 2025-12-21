@@ -486,7 +486,7 @@ const App = () => {
         }
 
         // Do not redirect when they intentionally visit public/marketing pages
-        const publicPages = ['landing', 'home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massageTypes', 'facialTypes', 'providers', 'facialProviders', 'discounts', 'shared-therapist-profile'];
+        const publicPages = ['landing', 'home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massageTypes', 'facialTypes', 'providers', 'facialProviders', 'discounts', 'shared-therapist-profile', 'share-therapist', 'share-place', 'share-facial'];
         if (publicPages.includes(state.page as string)) {
             return;
         }

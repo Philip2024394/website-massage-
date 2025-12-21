@@ -8,6 +8,7 @@ import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
+import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
 import DistanceDisplay from './DistanceDisplay';
@@ -38,6 +39,8 @@ interface TherapistCardProps {
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     t: any;
     loggedInProviderId?: number | string; // To prevent self-notification
+    hideJoinButton?: boolean; // Hide "Therapist Join Free" button (for shared profile pages)
+    customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
 }
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
@@ -53,10 +56,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     isCustomerLoggedIn = false,
     activeDiscount,
     t: _t,
+    hideJoinButton = false,
+    customVerifiedBadge,
     loggedInProviderId
 }) => {
     // Use the translations prop
     const t = _t;
+    
+    // Debug custom verified badge
+    console.log('🔍 TherapistCard Debug:', {
+        therapistName: therapist.name,
+        isVerified: therapist.isVerified,
+        customVerifiedBadge: customVerifiedBadge,
+        hasCustomBadge: !!customVerifiedBadge
+    });
     
     // Load UI configuration from Appwrite
     const { settings: bookNowConfig } = useUIConfig('book_now_behavior');
@@ -76,6 +89,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
     const [highlightedCell, setHighlightedCell] = useState<{serviceIndex: number, duration: '60' | '90' | '120'} | null>(null);
     const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
+    const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
     
     // Debug modal state changes
     useEffect(() => {
@@ -199,6 +213,32 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     
     // Use language from context instead of detecting from translations
     const currentLanguage: 'en' | 'id' = language as 'en' | 'id';
+
+    // Fetch short share link from Appwrite (if exists)
+    useEffect(() => {
+        const fetchShortLink = async () => {
+            try {
+                const therapistId = String(therapist.$id || therapist.id);
+                console.log('🔍 Fetching short link for therapist:', therapistId, therapist.name);
+                const shareLink = await shareLinkService.getByEntity('therapist', therapistId);
+                console.log('📦 Share link result:', shareLink);
+                if (shareLink) {
+                    const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
+                    console.log('✅ Setting short URL:', shortUrl);
+                    setShortShareUrl(shortUrl);
+                } else {
+                    console.log('⚠️ No share link found, using fallback');
+                    setShortShareUrl(generateShareableURL(therapist));
+                }
+            } catch (error) {
+                console.error('❌ Failed to fetch short link:', error);
+                devWarn('Failed to fetch short link:', error);
+                // Fall back to old URL if short link not found
+                setShortShareUrl(generateShareableURL(therapist));
+            }
+        };
+        fetchShortLink();
+    }, [therapist]);
 
     // Get translated description based on current language
     const getTranslatedDescription = () => {
@@ -782,6 +822,7 @@ ${locationInfo}${coordinatesInfo}
                     </svg>
                     {joinedDisplay}
                 </span>
+                {!hideJoinButton && (
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -800,6 +841,7 @@ ${locationInfo}${coordinatesInfo}
                     </svg>
                     Therapist Join Free
                 </button>
+                )}
                 <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -816,6 +858,7 @@ ${locationInfo}${coordinatesInfo}
                         // Always open the share popup first
                         setShowSharePopup(true);
                     }}
+                    customVerifiedBadge={customVerifiedBadge}
                 />
 
             {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
@@ -850,30 +893,6 @@ ${locationInfo}${coordinatesInfo}
                                 >
                                     {therapist.name ? therapist.name.charAt(0).toUpperCase() : '👤'}
                                 </div>
-                                
-                                {/* Qualified Therapist Badge */}
-                                {((() => {
-                                    const hasTimeRequirement = therapist.membershipStartDate ? 
-                                        new Date().getTime() - new Date(therapist.membershipStartDate).getTime() >= (3 * 30 * 24 * 60 * 60 * 1000) : false;
-                                    const hasPerformanceRequirement = (therapist.reviewCount ?? 0) >= 30 || (therapist.analytics && JSON.parse(therapist.analytics).bookings >= 90);
-                                    const hasRatingRequirement = effectiveRating >= 4.0;
-                                    return hasTimeRequirement && hasPerformanceRequirement && hasRatingRequirement;
-                                })()) && (
-                                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                                        </svg>
-                                    </div>
-                                )}
-
-                                {/* Verified Pro Rosette */}
-                                {therapist.isVerified && (
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
-                                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
-                                        </svg>
-                                    </div>
-                                )}
                                 
                                 {/* Star Rating Badge */}
                                 <div 
@@ -1008,7 +1027,7 @@ ${locationInfo}${coordinatesInfo}
             <div className="border-t border-gray-100 pt-3">
                 <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-700">
-                        {_t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
+                        {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
                     </h4>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -1589,9 +1608,9 @@ ${locationInfo}${coordinatesInfo}
                     onClose={() => setShowSharePopup(false)}
                     title={`Book ${therapist.name} - IndaStreet Massage`}
                     description={`${therapist.name} - Professional massage therapist in ${therapist.city || therapist.location}. Book now on IndaStreet!`}
-                    url={userReferralCode ? 
-                        `${generateShareableURL(therapist)}?ref=${userReferralCode}` : 
-                        generateShareableURL(therapist)
+                    url={userReferralCode && shortShareUrl ? 
+                        `${shortShareUrl}?ref=${userReferralCode}` : 
+                        (shortShareUrl || generateShareableURL(therapist))
                     }
                     type="therapist"
                 />

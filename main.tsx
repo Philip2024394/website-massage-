@@ -7,6 +7,9 @@ import './index.css';
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
 
+// Suppress non-critical Appwrite collection errors in console
+import './utils/suppressNonCriticalErrors';
+
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 

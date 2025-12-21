@@ -31,6 +31,8 @@ export type Page =
     | 'lead-decline'
     | 'membership-terms'
     | 'placeDashboard' 
+    | 'therapist-dashboard'
+    | 'place-dashboard' 
     | 'serviceTerms' 
     | 'placeTerms' 
     | 'placeDiscountBadge' 
@@ -109,11 +111,9 @@ export type Page =
     | 'therapist-info' 
     | 'hotel-info' 
     | 'employer-info' 
-    | 'payment-info' 
-    | 'adminShopManagement'
+    | 'payment-info'
     | 'coin-history' 
     | 'coinHistory' // Added camelCase variant used in navigation handlers
-    | 'coin-shop' // Added hyphenated coin shop page id
     | 'hotelVillaMenu' // Added live hotel/villa menu page id
     | 'coinSystemTest'
     | 'coin-test' 
@@ -155,7 +155,10 @@ export type Page =
     | 'place-login'
     | 'facial-portal'
     | 'simple-signup'
-    | 'shared-therapist-profile'
+    | 'shared-therapist-profile'  // Legacy shared profile URL
+    | 'share-therapist'            // New simple share URL for therapists
+    | 'share-place'                // New simple share URL for places
+    | 'share-facial'               // New simple share URL for facial places
     | 'massage-place-profile'
     | 'place-detail'
     | 'privacy-policy'

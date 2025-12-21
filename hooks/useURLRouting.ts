@@ -27,6 +27,9 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'placeDashboard': '/place-dashboard',
         'massagePlacePortal': '/place-portal',
         'shared-therapist-profile': '/therapist-profile',
+        'share-therapist': '/share/therapist',
+        'share-place': '/share/place',
+        'share-facial': '/share/facial',
         'customerProviders': '/providers',
         'customerReviews': '/reviews',
         'customerSupport': '/support',
@@ -64,7 +67,15 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
 
     // Update URL when page changes
     useEffect(() => {
-        const path = pageToPath[page] || (page === 'shared-therapist-profile' ? window.location.pathname : '/');
+        // Don't modify URL for shared therapist profiles - preserve the full path with ID and slug
+        if (page === 'shared-therapist-profile' || 
+            page === 'share-therapist' || 
+            page === 'share-place' || 
+            page === 'share-facial') {
+            return;
+        }
+        
+        const path = pageToPath[page] || '/';
         const currentPath = window.location.pathname;
         
         if (currentPath !== path) {
@@ -82,10 +93,27 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             } else {
                 // Handle direct URL navigation
                 const path = window.location.pathname;
+                
+                // Handle new share URLs
+                if (path.startsWith('/share/therapist/')) {
+                    setPage('share-therapist');
+                    return;
+                }
+                if (path.startsWith('/share/place/')) {
+                    setPage('share-place');
+                    return;
+                }
+                if (path.startsWith('/share/facial/')) {
+                    setPage('share-facial');
+                    return;
+                }
+                
+                // Handle legacy therapist profile URL
                 if (path.startsWith('/therapist-profile/')) {
                     setPage('shared-therapist-profile');
                     return;
                 }
+                
                 const targetPage = pathToPage[path] || 'landing';
                 console.log(`🔗 Direct URL: ${path} → ${targetPage}`);
                 setPage(targetPage);
@@ -96,10 +124,27 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         
         // Set initial page based on URL on mount
         const initialPath = window.location.pathname;
+        
+        // Handle new share URLs
+        if (initialPath.startsWith('/share/therapist/')) {
+            setPage('share-therapist');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        if (initialPath.startsWith('/share/place/')) {
+            setPage('share-place');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        if (initialPath.startsWith('/share/facial/')) {
+            setPage('share-facial');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+        
+        // Handle legacy therapist profile URL
         if (initialPath.startsWith('/therapist-profile/')) {
             setPage('shared-therapist-profile');
             return () => window.removeEventListener('popstate', handlePopState);
         }
+        
         if (initialPath !== '/' && initialPath !== '/home') {
             const targetPage = pathToPage[initialPath];
             if (targetPage && targetPage !== page) {

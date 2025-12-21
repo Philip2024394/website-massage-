@@ -846,7 +846,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
     );
     
     // Helper for hotel/villa secure navigation
-    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
+    const hotelVillaAllowedPages = ['coinHistory', 'hotelVillaMenu'];
     const createSecureNavHandler = (type: string) => (page: string | Page) => {
         if (hotelVillaAllowedPages.includes(page as string)) {
             setPage(page as Page);

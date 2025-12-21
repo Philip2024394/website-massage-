@@ -309,9 +309,9 @@ export const appwriteAccount = account;
 export const therapistService = {
     async create(therapist: any): Promise<any> {
         try {
-            // Seed analytics with initial bookings (32-50) if not provided
+            // Seed analytics with initial bookings (25-50) if not provided
             if (!therapist.analytics) {
-                const seedBookings = 32 + Math.floor(Math.random() * 19); // 32-50 inclusive
+                const seedBookings = 25 + Math.floor(Math.random() * 26); // 25-50 inclusive
                 therapist.analytics = JSON.stringify({
                     impressions: 0,
                     views: 0,
@@ -327,7 +327,7 @@ export const therapistService = {
                 try {
                     const parsed = JSON.parse(therapist.analytics);
                     if (parsed && typeof parsed.bookings !== 'number') {
-                        parsed.bookings = 32 + Math.floor(Math.random() * 19);
+                        parsed.bookings = 25 + Math.floor(Math.random() * 26);
                         therapist.analytics = JSON.stringify(parsed);
                     }
                 } catch {
