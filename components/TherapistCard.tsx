@@ -1149,8 +1149,10 @@ ${locationInfo}${coordinatesInfo}
                     onClick={() => {
                         const isSharedProfile = window.location.pathname.includes('/share/');
                         if (isSharedProfile) {
-                            // On shared profiles: go to shared profile standards page with custom content
-                            onNavigate?.('sharedProfileStandards');
+                            // On shared profiles: directly navigate to shared profile standards page
+                            const baseUrl = window.location.origin;
+                            const currentUrl = window.location.href;
+                            window.open(`${baseUrl}/shared-profile-standards?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
                         } else {
                             // On home page: go to verification standards page  
                             onNavigate?.('verifiedProBadge');
