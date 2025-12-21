@@ -1161,7 +1161,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
 console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 totalTherapists: therapists?.length || 0,
-                therapistsArray: therapists?.slice(0, 3).map((t: any) => ({
+                therapistsArray: therapists?.slice(0, 5).map((t: any) => ({
                     name: t.name,
                     isLive: t.isLive,
                     status: t.status,
@@ -1171,6 +1171,11 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 autoDetectedLocation: !!autoDetectedLocation,
                 userLocation: !!userLocation
             });
+
+            // TEMPORARY DEBUG: Show first therapist regardless of live status
+            if (therapists && therapists.length > 0) {
+                console.log('🔧 [DEBUG] First therapist raw data:', therapists[0]);
+            }
 
             // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
             let baseList = therapists
@@ -1185,10 +1190,15 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         treatedAsLive,
                         isOwnerTherapist,
                         isFeatured,
+                        isLive: t.isLive,
+                        status: t.status,
                         willShow: treatedAsLive || isOwnerTherapist || isFeatured
                     });
-                                    
-                                    // Always show if: live, owner, or featured
+                    
+                    // TEMPORARY: Show all therapists for debugging
+                    if (process.env.NODE_ENV === 'development') {
+                        return true; // Show all therapists in development
+                    }
                                     if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
                                         return false;
                                     }

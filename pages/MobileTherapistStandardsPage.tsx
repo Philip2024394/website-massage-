@@ -3,7 +3,8 @@ import { Home, ShieldCheck, CheckCircle2, Sparkles, Droplet, Clock, Shield, Leaf
 import PageContainer from '../components/layout/PageContainer';
 
 interface MobileTherapistStandardsPageProps {
-  onBack: () => void;
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
 }
 
 const standards = [
@@ -63,7 +64,7 @@ const standards = [
   }
 ];
 
-const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> = ({ onBack }) => {
+const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> = ({ onBack, onNavigate }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,7 +78,7 @@ const MobileTherapistStandardsPage: React.FC<MobileTherapistStandardsPageProps> 
             </h1>
             <div className="flex items-center gap-2">
               <button 
-                onClick={onBack} 
+                onClick={() => onNavigate ? onNavigate('home') : onBack?.()} 
                 className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 <Home className="w-5 h-5 text-orange-600" />

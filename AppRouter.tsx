@@ -443,9 +443,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'place-discount-badge':
             return renderRoute(PlaceDiscountBadgePage);
         
+        case 'verifiedProBadge':
         case 'verified-pro-badge':
             return renderRoute(VerifiedProBadgePage);
         
+        case 'mobileTherapistStandards':
         case 'mobile-therapist-standards':
             return renderRoute(MobileTherapistStandardsPage);
         

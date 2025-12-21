@@ -826,13 +826,13 @@ ${locationInfo}${coordinatesInfo}
                 />
 
             {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
-            <div className="px-4 -mt-8 sm:-mt-12 pb-6 relative z-10 overflow-visible">
+            <div className="px-6 -mt-10 sm:-mt-16 pb-6 relative z-10 overflow-visible">
                 <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Profile Image */}
-                        <div className="flex-shrink-0 relative z-20">
-                            <div className="w-24 h-24 bg-white rounded-full p-1 shadow-2xl relative aspect-square overflow-visible ring-2 ring-orange-100">
+                        <div className="flex-shrink-0 relative z-20 p-2">
+                            <div className="w-24 h-24 bg-white rounded-full p-1 shadow-sm relative aspect-square overflow-visible ring-2 ring-orange-100">
                                 {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                                     <img 
                                         className="w-full h-full rounded-full object-cover aspect-square" 
@@ -899,8 +899,8 @@ ${locationInfo}${coordinatesInfo}
                         </div>
                         
                         {/* Name and Status Column */}
-                        <div className="flex-1 pt-14 sm:pt-16 pb-4 overflow-visible">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-2">{therapist.name}</h3>
+                        <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
                     <span className="relative mr-1.5">
@@ -946,7 +946,7 @@ ${locationInfo}${coordinatesInfo}
                     </div>
                     
                     {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-4 pt-14 sm:pt-16">
+                    <div className="flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
@@ -1003,23 +1003,16 @@ ${locationInfo}${coordinatesInfo}
             </div>
 
             {/* Therapist Bio - Natural flow with proper margin */}
-            <div className="therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4">
+            <div className="therapist-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4 mb-3">
                 <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
                     {translatedDescription}
                 </p>
             </div>
 
-            
-            {/* Content Section - Natural flow layout */}
-            <div className="p-4 flex flex-col gap-4">
-                <div className="flex items-start gap-4">
-                    <div className="flex-grow">
-                        {/* Content starts below the positioned elements */}
-                    </div>
-                </div>
-
-            {/* Massage Specializations - Above languages section - Dynamic spacing based on description length */}
-            <div className={`border-t border-gray-100 pt-4 ${getDynamicSpacing('mt-6', 'mt-4', 'mt-2')}`}>
+            {/* Content Section - Compact layout */}
+            <div className="px-4">
+            {/* Massage Specializations - Above languages section */}
+            <div className="border-t border-gray-100 pt-3">
                 <div className="mb-2">
                     <h4 className="text-xs font-semibold text-gray-700">
                         {_t.home?.therapistCard?.experiencedArea || 'Massage Specializations'}
@@ -1121,10 +1114,10 @@ ${locationInfo}${coordinatesInfo}
             {/* Indastreet Therapist Standards Link */}
             <div className="text-center mb-2 mt-2">
                 <button
-                    onClick={() => onNavigate?.('mobileTherapistStandards')}
+                    onClick={() => onNavigate?.('verifiedProBadge')}
                     className="text-sm font-medium hover:underline"
                 >
-                    Massage Standards To Expect
+                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
                 </button>
             </div>
 
@@ -1147,23 +1140,7 @@ ${locationInfo}${coordinatesInfo}
                     {/* Star Rating - Top Right */}
                     {displayRating && (
                         <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            {displayRating ? (
-                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white text-gray-800 shadow-lg rounded-full px-3 py-1 flex items-center gap-1 border border-orange-200 z-30">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-yellow-400 drop-shadow-sm fill-current">
-                                        <path d="M12 2l2.39 6.94H22l-5.68 4.12 2.18 6.93L12 16.98 5.5 19.99l2.18-6.93L2 8.94h7.61z"/>
-                                    </svg>
-                                    <span className="font-semibold text-sm text-gray-900">{displayRating}</span>
-                                    <span className="text-xs text-gray-500">({displayReviewCount})</span>
-                                </div>
-                            ) : (
-                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white text-gray-800 shadow-lg rounded-full px-3 py-1 flex items-center gap-1 border border-orange-200 z-30">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-yellow-400 drop-shadow-sm fill-current">
-                                        <path d="M12 2l2.39 6.94H22l-5.68 4.12 2.18 6.93L12 16.98 5.5 19.99l2.18-6.93L2 8.94h7.61z"/>
-                                    </svg>
-                                    <span className="font-semibold text-sm text-gray-900">{displayRatingFallback}</span>
-                                    <span className="text-xs text-gray-500">({displayReviewCount})</span>
-                                </div>
-                            )}
+                            ★{displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
@@ -1370,7 +1347,7 @@ ${locationInfo}${coordinatesInfo}
             )}
 
             {/* Share, Directory, and Reviews Links - Match MassagePlaceCard style */}
-            <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1 pt-3">
+            <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-4 pt-3">
                 <button
                     onClick={(event) => {
                         event.preventDefault();

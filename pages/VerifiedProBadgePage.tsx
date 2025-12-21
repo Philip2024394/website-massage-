@@ -4,9 +4,10 @@ import { verificationService } from '../lib/appwriteService';
 import PageContainer from '../components/layout/PageContainer';
 
 interface VerifiedProBadgePageProps {
-  onBack: () => void;
-  providerId: number;
-  providerType: 'therapist' | 'place';
+  onBack?: () => void;
+  onNavigate?: (page: string) => void;
+  providerId?: number;
+  providerType?: 'therapist' | 'place';
   providerName?: string;
 }
 
@@ -19,7 +20,7 @@ interface Eligibility {
   status?: string;
 }
 
-const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, providerId, providerType, providerName }) => {
+const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, onNavigate, providerId, providerType, providerName }) => {
   const [eligibility, setEligibility] = useState<Eligibility | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +87,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
         <PageContainer className="py-3">
           <div className="flex justify-between items-center">
             <h1 className="text-xl sm:text-2xl font-bold"><span className="text-gray-900">Inda</span><span className="text-orange-500">Street</span></h1>
-            <button onClick={onBack} className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
+            <button onClick={() => onNavigate ? onNavigate('home') : onBack?.()} className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
               <Home className="w-5 h-5 text-orange-600" />
             </button>
           </div>
