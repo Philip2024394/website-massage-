@@ -813,15 +813,8 @@ ${locationInfo}${coordinatesInfo}
                     therapist={therapist}
                     displayImage={displayImage}
                     onShareClick={() => {
-                        // Always open the share popup first; run optional analytics without blocking UX
+                        // Always open the share popup first
                         setShowSharePopup(true);
-                        try {
-                            if (typeof props.onShareClick === 'function') {
-                                props.onShareClick();
-                            }
-                        } catch (err) {
-                            console.warn('Share analytics failed (non-blocking):', err);
-                        }
                     }}
                 />
 
@@ -1353,13 +1346,6 @@ ${locationInfo}${coordinatesInfo}
                         event.preventDefault();
                         event.stopPropagation();
                         setShowSharePopup(true);
-                        try {
-                            if (typeof props.onShareClick === 'function') {
-                                props.onShareClick();
-                            }
-                        } catch (err) {
-                            console.warn('Share analytics failed (non-blocking):', err);
-                        }
                     }}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                 >

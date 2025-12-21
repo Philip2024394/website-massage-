@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { FacialPlace, Analytics, Place } from '../types';
+import type { Place, Analytics } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';

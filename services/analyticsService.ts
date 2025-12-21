@@ -19,6 +19,7 @@ export enum AnalyticsEventType {
     
     // Interaction Events
     WHATSAPP_CLICK = 'whatsapp_click',
+    SHARE_CLICK = 'share_click',
     QR_SCAN = 'qr_scan',
     BOOKING_INITIATED = 'booking_initiated',
     BOOKING_COMPLETED = 'booking_completed',
