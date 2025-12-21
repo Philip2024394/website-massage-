@@ -51,107 +51,31 @@ const SharedProfileStandardsPage: React.FC<SharedProfileStandardsPageProps> = ({
       {/* Content for Shared Profile Standards */}
       <div className="p-4 space-y-6">
         
-        {/* Professional Standards for Shared Profiles */}
+        {/* Professional Standards Header */}
         <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-200">
           <div className="flex items-center mb-4">
             <ShieldCheck className="w-8 h-8 text-orange-600 mr-3" />
             <div>
               <h2 className="text-xl font-bold text-orange-800">Professional Massage Therapist Standards</h2>
-              <p className="text-orange-700 text-sm">Quality assurance for shared profile services</p>
+              <p className="text-orange-700 text-sm">Personal commitment to excellence and care</p>
             </div>
           </div>
         </div>
 
-        {/* Qualifications Section */}
+        {/* Personal Commitment Message */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center">
-            <Award className="w-5 h-5 text-green-600 mr-2" />
-            Therapist Qualifications
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Certified Professional Training</p>
-                <p className="text-sm text-gray-600">Minimum 200-hour massage therapy certification from accredited institutions</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Licensed & Insured</p>
-                <p className="text-sm text-gray-600">Valid massage therapy license and professional liability insurance</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Specialized Techniques</p>
-                <p className="text-sm text-gray-600">Expertise in traditional Indonesian massage and modern therapeutic methods</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Service Standards */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center">
-            <Star className="w-5 h-5 text-blue-600 mr-2" />
-            Service Excellence Standards
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Professional Conduct</p>
-                <p className="text-sm text-gray-600">Maintains highest ethical standards and professional boundaries</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Hygiene & Safety</p>
-                <p className="text-sm text-gray-600">Strict adherence to sanitation protocols and safety measures</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Client-Centered Approach</p>
-                <p className="text-sm text-gray-600">Customized treatments based on individual client needs and preferences</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quality Assurance */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="font-bold text-gray-800 text-lg mb-4 flex items-center">
-            <Info className="w-5 h-5 text-purple-600 mr-2" />
-            Quality Assurance
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Regular Training Updates</p>
-                <p className="text-sm text-gray-600">Continuous professional development and skill enhancement</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Client Feedback Monitoring</p>
-                <p className="text-sm text-gray-600">Regular review of client satisfaction and service improvement</p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <CheckCircle2 className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-gray-800">Performance Standards</p>
-                <p className="text-sm text-gray-600">Maintains minimum 4.0-star rating and positive client reviews</p>
-              </div>
-            </div>
+          <div className="prose prose-gray max-w-none">
+            <p className="text-gray-800 leading-relaxed mb-4">
+              As a professional massage therapist, I am fully committed to maintaining the highest standards of cleanliness, hygiene, and professional practice. All techniques I offer are performed within industry guidelines and are supported by years of formal training and experience.
+            </p>
+            
+            <p className="text-gray-800 leading-relaxed mb-4">
+              Massage is more than a service to me—it is a passion rooted in wellness, care, and helping others feel their best. I continuously apply my knowledge and skills to ensure every session is safe, effective, and tailored to each client's individual needs.
+            </p>
+            
+            <p className="text-gray-800 leading-relaxed">
+              I welcome you to experience my services and trust that you will feel the same level of care and satisfaction that many of my clients have already enjoyed. Your comfort, wellbeing, and relaxation are always my top priorities.
+            </p>
           </div>
         </div>
 
