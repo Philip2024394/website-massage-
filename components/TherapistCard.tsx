@@ -1149,7 +1149,7 @@ ${locationInfo}${coordinatesInfo}
                     onClick={() => onNavigate?.('verifiedProBadge')}
                     className="text-sm font-medium hover:underline"
                 >
-                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
+                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
                 </button>
             </div>
 

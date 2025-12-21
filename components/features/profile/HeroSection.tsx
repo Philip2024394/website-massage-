@@ -388,7 +388,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         href="#verification-standards"
                         className="text-sm font-medium hover:underline inline-block"
                     >
-                        <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Verification Standards</span>
+                        <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
                     </a>
                 </div>
 
