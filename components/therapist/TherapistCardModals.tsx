@@ -216,7 +216,6 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                 <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
                                     {formatCountdown(arrivalCountdown)}
                                 </span>
-                                <span className="text-orange-600/80 font-medium hidden sm:inline">• 56m | 1:05 | 53m</span>
                             </div>
                         </div>
 
