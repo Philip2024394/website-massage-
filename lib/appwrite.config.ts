@@ -12,8 +12,8 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'Therapists', // ✅ Actual collection name
-        places: 'Places', // ✅ Actual collection name
+        therapists: '676703b40009b9dd33de', // ✅ Real production collection ID
+        places: '676703d4000f3b424bf0', // ✅ Real production collection ID  
         facial_places: 'Facial Places', // Facial salons/spas collection
         agents: 'Agents', // ✅ Actual collection name
         bookings: 'Bookings', // ✅ Actual collection name
