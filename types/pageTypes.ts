@@ -142,6 +142,7 @@ export type Page =
     | 'accept-booking'
     | 'decline-booking'
     | 'verifiedProBadge'
+    | 'sharedProfileStandards'
     | 'mobileTherapistStandards'
     | 'customerProviders'
     | 'customerReviews'

@@ -50,6 +50,7 @@ const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage
 const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
 const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
+const SharedProfileStandardsPage = React.lazy(() => import('./pages/SharedProfileStandardsPage'));
 const MobileTherapistStandardsPage = React.lazy(() => import('./pages/MobileTherapistStandardsPage'));
 const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
 const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
@@ -413,6 +414,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'verified-pro-badge':
             return renderRoute(VerifiedProBadgePage);
+        
+        case 'shared-profile-standards':
+            return renderRoute(SharedProfileStandardsPage);
         
         case 'mobile-therapist-standards':
             return renderRoute(MobileTherapistStandardsPage);
