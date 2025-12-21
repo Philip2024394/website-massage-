@@ -1,10 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Shield, Clock, CreditCard, MapPin, Phone } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 const MobileTermsAndConditionsPage: React.FC = () => {
-    const navigate = useNavigate();
-    
     // Get the returnTo URL from query params
     const urlParams = new URLSearchParams(window.location.search);
     const returnToUrl = urlParams.get('returnTo');
@@ -15,7 +12,7 @@ const MobileTermsAndConditionsPage: React.FC = () => {
             window.location.href = returnToUrl;
         } else {
             // Normal back navigation
-            navigate(-1);
+            window.history.back();
         }
     };
 
