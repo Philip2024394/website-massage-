@@ -99,7 +99,27 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         const title = `${therapist.name} - Terapis Pijat Panggilan Profesional ${city}`;
         const description = `Terapis pijat profesional ${therapist.name} di ${city}. Layanan pijat panggilan ke hotel, villa, dan rumah. Booking online mudah, harga transparan, terapis berpengalaman dan terpercaya.`;
         const url = generateShareableURL(therapist);
-        const image = (therapist as any).profilePicture || (therapist as any).mainImage || 'https://www.indastreetmassage.com/og-default.jpg';
+        
+        // Yogyakarta/Jogja image pool - randomly select for variety
+        const yogyakartaImages = [
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%2010.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%209.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%208.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%207.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%206.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%205.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%204.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%203.png',
+            'https://ik.imagekit.io/7grri5v7d/massage%20service%202.png'
+        ];
+        
+        // Check if therapist is from Yogyakarta/Jogja
+        const isYogyakarta = city.toLowerCase().includes('yogyakarta') || city.toLowerCase().includes('jogja');
+        
+        // Select image: random from pool for Yogyakarta, profile picture for others
+        const image = isYogyakarta 
+            ? yogyakartaImages[Math.floor(Math.random() * yogyakartaImages.length)]
+            : ((therapist as any).profilePicture || (therapist as any).mainImage || 'https://www.indastreetmassage.com/og-default.jpg');
 
         const setTag = (name: string, content: string) => {
             if (!content) return;
@@ -136,36 +156,113 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
 
         document.title = title;
         setTag('description', description);
+        
+        // Open Graph tags (Facebook, WhatsApp)
         setOg('og:title', title);
         setOg('og:description', description);
         setOg('og:type', 'website');
         setOg('og:url', url);
         setOg('og:image', image);
+        setOg('og:image:width', '1200');
+        setOg('og:image:height', '630');
+        setOg('og:site_name', 'IndaStreet Massage');
+        setOg('og:locale', 'id_ID');
+        
+        // Twitter Card tags
+        setTag('twitter:card', 'summary_large_image');
+        setTag('twitter:title', title);
+        setTag('twitter:description', description);
+        setTag('twitter:image', image);
+        setTag('twitter:site', '@indastreet');
+        
         setLink('canonical', url);
 
-        // JSON-LD structured data
-        const ld = {
+        // Enhanced JSON-LD structured data with Organization link
+        const organizationSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'IndaStreet Massage',
+            url: 'https://www.indastreetmassage.com',
+            logo: 'https://www.indastreetmassage.com/logo.png',
+            sameAs: [
+                'https://www.facebook.com/indastreet',
+                'https://www.instagram.com/indastreet'
+            ]
+        };
+
+        const breadcrumbSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                {
+                    '@type': 'ListItem',
+                    position: 1,
+                    name: 'Home',
+                    item: 'https://www.indastreetmassage.com'
+                },
+                {
+                    '@type': 'ListItem',
+                    position: 2,
+                    name: city,
+                    item: `https://www.indastreetmassage.com/${city.toLowerCase()}`
+                },
+                {
+                    '@type': 'ListItem',
+                    position: 3,
+                    name: therapist.name,
+                    item: url
+                }
+            ]
+        };
+
+        const localBusinessSchema = {
             '@context': 'https://schema.org',
             '@type': 'LocalBusiness',
+            '@id': url,
             name: therapist.name,
             description,
             image,
             url,
-            areaServed: therapist.city || 'Indonesia',
-            serviceType: 'Pijat panggilan',
+            telephone: therapist.whatsappNumber,
+            areaServed: {
+                '@type': 'City',
+                name: city,
+                containedIn: {
+                    '@type': 'Country',
+                    name: 'Indonesia'
+                }
+            },
+            serviceType: 'Pijat panggilan profesional',
             priceRange: 'Rp200K - Rp700K',
-            aggregateRating: therapist.rating ? { '@type': 'AggregateRating', ratingValue: therapist.rating, reviewCount: therapist.reviewCount || 10 } : undefined,
+            aggregateRating: therapist.rating ? { 
+                '@type': 'AggregateRating', 
+                ratingValue: therapist.rating, 
+                reviewCount: therapist.reviewCount || 10,
+                bestRating: 5,
+                worstRating: 1
+            } : undefined,
             address: {
                 '@type': 'PostalAddress',
-                addressLocality: therapist.city || 'Indonesia',
+                addressLocality: city,
                 addressCountry: 'ID'
+            },
+            parentOrganization: {
+                '@type': 'Organization',
+                name: 'IndaStreet Massage',
+                url: 'https://www.indastreetmassage.com'
             }
+        };
+
+        // Combine all schemas
+        const combinedSchema = {
+            '@context': 'https://schema.org',
+            '@graph': [organizationSchema, breadcrumbSchema, localBusinessSchema]
         };
 
         const script = document.createElement('script');
         script.type = 'application/ld+json';
         script.id = 'therapist-json-ld';
-        script.text = JSON.stringify(ld);
+        script.text = JSON.stringify(combinedSchema);
         const existing = document.getElementById('therapist-json-ld');
         if (existing) existing.remove();
         document.head.appendChild(script);
