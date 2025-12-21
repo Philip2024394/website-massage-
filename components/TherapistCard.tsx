@@ -399,11 +399,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     useEffect(() => {
         const loadMenu = async () => {
             try {
-                    if (showPriceListModal) {
+                if (showPriceListModal) {
                     const therapistId = String(therapist.$id || therapist.id);
                     console.log('🍽️ Loading menu for therapist:', therapistId);
                     
                     try {
+                        // Check if therapist menus collection exists by trying to load menu
                         const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
                         console.log('📄 Menu document received:', menuDoc);
                         
@@ -412,16 +413,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             setMenuData(Array.isArray(parsed) ? parsed : []);
                             console.log('✅ Menu items loaded:', parsed.length);
                         } else {
-                            console.log('ℹ️ No menu data found for this therapist');
+                            console.log('ℹ️ No menu data found - using fallback pricing');
                             setMenuData([]);
                         }
-                    } catch (error) {
-                        console.error('❌ Failed to load menu:', error);
+                    } catch (error: any) {
+                        console.log('ℹ️ Menu collection not available - using fallback pricing:', error.message);
+                        // Don't treat this as an error - just use fallback pricing
                         setMenuData([]);
                     }
                 }
             } catch (outerError) {
-                console.error('❌ Outer error in useEffect:', outerError);
+                console.error('❌ Outer error in loadMenu:', outerError);
+                setMenuData([]);
             }
         };
         
@@ -1761,11 +1764,81 @@ ${locationInfo}${coordinatesInfo}
                                     </div>
                                 </div>
                             ) : (
-                                <div className="text-center py-12">
-                                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <span className="text-2xl">📋</span>
+                                // Fallback pricing when menu data fails to load - use therapist's built-in pricing
+                                <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
+                                    {/* Table Header */}
+                                    <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
+                                        <div className="col-span-4">Service</div>
+                                        <div className="col-span-2 text-center">60 Min</div>
+                                        <div className="col-span-2 text-center">90 Min</div>
+                                        <div className="col-span-2 text-center">120 Min</div>
+                                        <div className="col-span-2 text-center">Action</div>
                                     </div>
-                                    <p className="text-gray-600">{chatLang === 'id' ? 'Memuat menu harga...' : 'Loading price menu...'}</p>
+
+                                    {/* Fallback Service Row */}
+                                    <div className="divide-y divide-orange-100">
+                                        <div className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-orange-50 items-center">
+                                            {/* Service Name */}
+                                            <div className="col-span-4">
+                                                <div className="font-medium text-sm text-gray-900">Professional Massage</div>
+                                                <div className="text-xs text-gray-500 mt-1">Traditional therapeutic massage</div>
+                                            </div>
+
+                                            {/* Price buttons using therapist's pricing */}
+                                            {['60', '90', '120'].map((duration) => {
+                                                const priceKey = `price${duration}` as keyof typeof therapist;
+                                                const price = therapist[priceKey];
+                                                return (
+                                                    <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
+                                                        {price ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setSelectedServiceIndex(0);
+                                                                    setSelectedDuration(duration as '60' | '90' | '120');
+                                                                }}
+                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                    selectedServiceIndex === 0 && selectedDuration === duration
+                                                                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                        : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                }`}
+                                                            >
+                                                                Rp {(Number(price) * 1000).toLocaleString('id-ID')}
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">-</span>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* Action Button */}
+                                            <div className="col-span-2 text-center">
+                                                <button
+                                                    className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                                                        selectedServiceIndex === 0 && selectedDuration
+                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
+                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                    }`}
+                                                    onClick={(e) => {
+                                                        if (selectedServiceIndex === 0 && selectedDuration) {
+                                                            // Close the price list modal
+                                                            setShowPriceListModal(false);
+
+                                                            // Get pricing info
+                                                            const pricing = getPricing();
+                                                            const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                            
+                                                            // Handle booking
+                                                            handleBookingClick(e, normalizedStatus, pricing);
+                                                        }
+                                                    }}
+                                                    disabled={selectedServiceIndex !== 0 || !selectedDuration}
+                                                >
+                                                    {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
