@@ -93,118 +93,18 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         </h2>
                     )}
                     {isSharedProfileContext ? (
-                        <div className="prose prose-gray max-w-none space-y-6">
+                        <div className="prose prose-gray max-w-none space-y-4">
                             <p className="text-gray-800 leading-relaxed">
                                 As a professional massage therapist, I am fully committed to maintaining the highest standards of cleanliness, hygiene, and professional practice. All techniques I offer are performed within industry guidelines and are supported by years of formal training and experience.
                             </p>
                             
                             <p className="text-gray-800 leading-relaxed">
-                                By booking or receiving my massage services, you agree to the following terms and conditions:
+                                My passion is wellness and helping my clients achieve physical and mental relaxation through therapeutic massage. I take pride in creating a safe, comfortable, and professional environment for every session.
                             </p>
 
-                            <div className="space-y-5">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">1. Services & Pricing</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        My massage services are offered at the rates listed on my profile. From time to time, I may offer discretionary discounts to regular clients who continue to support my professional practice. First-time or trial sessions are charged at listed prices unless otherwise stated.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">2. Communication & Booking Policy</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
-                                        All communication regarding massage services, bookings, scheduling, and expectations must be discussed and confirmed through the chat window provided on my profile page prior to my arrival. This ensures accurate records are maintained for quality assurance and to uphold my professional standards.
-                                    </p>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        Failure to communicate through the approved chat system may result in the booking being declined or cancelled.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">3. Arrival & Punctuality</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        I aim to arrive within the agreed booking time, typically within one hour. Delays may occur due to circumstances beyond my control, such as traffic, festivals, or emergencies. Where possible, I will communicate any delays in advance.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">4. Health Disclosure & Consultation</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
-                                        Before the massage begins, I will discuss any relevant medical conditions, injuries, sensitivities, or areas requiring attention. It is your responsibility to provide accurate information to ensure the service is safe and suitable.
-                                    </p>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        During the session, you may request adjustments to pressure or technique to ensure your comfort.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">5. Professional Boundaries & Safety</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
-                                        I reserve the right to refuse or discontinue a session if I feel uncomfortable, unsafe, or if professional boundaries are not respected.
-                                    </p>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">Massage will not be provided if:</p>
-                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 text-sm">
-                                        <li>Alcohol or illegal substances are present</li>
-                                        <li>Additional people are present without prior agreement</li>
-                                        <li>The environment is unsafe or misrepresented</li>
-                                    </ul>
-                                    <p className="text-gray-700 text-sm leading-relaxed mt-2">
-                                        Any request for services outside my professional scope will be declined. If such requests continue, the session will be terminated immediately.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">6. Mobile, Hotel & Villa Service</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">For mobile, hotel, or villa bookings:</p>
-                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 text-sm">
-                                        <li>Full service address and room number must be provided in advance</li>
-                                        <li>Location cannot be changed once my journey has started</li>
-                                    </ul>
-                                    <p className="text-gray-700 text-sm leading-relaxed mt-2">
-                                        Providing incorrect or incomplete location details may result in cancellation with applicable charges.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">7. Cancellations</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        You may cancel your booking at any time. However, if cancellation occurs after I have started my journey, the session will be charged based on time and travel costs, calculated as if the massage session had commenced.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">8. Payment Terms</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">Payment must be made in full via:</p>
-                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 text-sm">
-                                        <li>Cash, or</li>
-                                        <li>Bank transfer</li>
-                                    </ul>
-                                    <p className="text-gray-700 text-sm leading-relaxed mt-2">
-                                        For bank transfers, proof of payment may be requested before or immediately after the session.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">9. Hygiene & Equipment</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        All massage oils, towels, sheets, and equipment used are clean, freshly prepared, and sanitized to professional hygiene standards. Fresh linens are used for every client to ensure safety, comfort, and cleanliness.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">10. Right to Refuse Service</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        I reserve the right to refuse or end a service at any time if these terms are breached or if professional, ethical, or safety standards cannot be maintained.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-base mb-2">11. Client Feedback & Ratings</h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed">
-                                        If you feel that my service met your expectations and professional standards, I kindly invite you to support my profile by leaving a premium star rating. Your feedback is greatly appreciated and helps maintain service quality and trust for future clients.
-                                    </p>
-                                </div>
-                            </div>
+                            <p className="text-gray-800 leading-relaxed">
+                                Every massage I provide is tailored to your individual needs, whether you're seeking relief from muscle tension, stress reduction, or simply a moment of tranquility in your busy life. I look forward to welcoming you and providing you with an exceptional massage experience.
+                            </p>
                         </div>
                     ) : (
                         <p className="text-gray-600 leading-relaxed">
@@ -216,6 +116,98 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 {/* Only show terms sections when NOT in shared profile context */}
                 {!isSharedProfileContext && (
                     <>
+                        {/* Therapist Professional Standards */}
+                        <div className="bg-white rounded-lg shadow-sm border p-6">
+                            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-orange-500" />
+                                Massage Therapist Professional Standards
+                            </h3>
+                            <div className="space-y-5">
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">1. Services & Pricing</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        Massage services are offered at the rates listed on therapist profiles. From time to time, therapists may offer discretionary discounts to regular clients who continue to support their professional practice. First-time or trial sessions are charged at listed prices unless otherwise stated.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">2. Communication & Booking Policy</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                                        All communication regarding massage services, bookings, scheduling, and expectations must be discussed and confirmed through the chat window provided on the therapist profile page prior to arrival. This ensures accurate records are maintained for quality assurance and to uphold professional standards.
+                                    </p>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        Failure to communicate through the approved chat system may result in the booking being declined or cancelled.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">3. Arrival & Punctuality</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        Therapists aim to arrive within the agreed booking time, typically within one hour. Delays may occur due to circumstances beyond their control, such as traffic, festivals, or emergencies. Where possible, therapists will communicate any delays in advance.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">4. Health Disclosure & Consultation</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                                        Before the massage begins, therapists will discuss any relevant medical conditions, injuries, sensitivities, or areas requiring attention. It is your responsibility to provide accurate information to ensure the service is safe and suitable.
+                                    </p>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        During the session, you may request adjustments to pressure or technique to ensure your comfort.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">5. Professional Boundaries & Safety</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">
+                                        Therapists reserve the right to refuse or discontinue a session if they feel uncomfortable, unsafe, or if professional boundaries are not respected.
+                                    </p>
+                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">Massage will not be provided if:</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 text-sm">
+                                        <li>Alcohol or illegal substances are present</li>
+                                        <li>Additional people are present without prior agreement</li>
+                                        <li>The environment is unsafe or misrepresented</li>
+                                    </ul>
+                                    <p className="text-gray-700 text-sm leading-relaxed mt-2">
+                                        Any request for services outside the therapist's professional scope will be declined. If such requests continue, the session will be terminated immediately.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">6. Mobile, Hotel & Villa Service</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed mb-2">For mobile, hotel, or villa bookings:</p>
+                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 text-sm">
+                                        <li>Full service address and room number must be provided in advance</li>
+                                        <li>Location cannot be changed once the therapist's journey has started</li>
+                                    </ul>
+                                    <p className="text-gray-700 text-sm leading-relaxed mt-2">
+                                        Providing incorrect or incomplete location details may result in cancellation with applicable charges.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">7. Hygiene & Equipment</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        All massage oils, towels, sheets, and equipment used are clean, freshly prepared, and sanitized to professional hygiene standards. Fresh linens are used for every client to ensure safety, comfort, and cleanliness.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">8. Right to Refuse Service</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        Therapists reserve the right to refuse or end a service at any time if these terms are breached or if professional, ethical, or safety standards cannot be maintained.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <h4 className="font-bold text-gray-900 text-base mb-2">9. Client Feedback & Ratings</h4>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        If you feel that the service met your expectations and professional standards, therapists kindly invite you to support their profile by leaving a premium star rating. Your feedback is greatly appreciated and helps maintain service quality and trust for future clients.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Booking Policy */}
                         <div className="bg-white rounded-lg shadow-sm border p-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
