@@ -1143,15 +1143,17 @@ ${locationInfo}${coordinatesInfo}
             })()}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
-            {/* Indastreet Therapist Standards Link */}
-            <div className="text-center mb-2 mt-2">
-                <button
-                    onClick={() => onNavigate?.('verifiedProBadge')}
-                    className="text-sm font-medium hover:underline"
-                >
-                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
-                </button>
-            </div>
+            {/* Indastreet Therapist Standards Link - Hide on shared profiles */}
+            {!window.location.pathname.includes('/share/') && (
+                <div className="text-center mb-2 mt-2">
+                    <button
+                        onClick={() => onNavigate?.('verifiedProBadge')}
+                        className="text-sm font-medium hover:underline"
+                    >
+                        <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
+                    </button>
+                </div>
+            )}
 
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
