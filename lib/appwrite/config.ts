@@ -13,8 +13,8 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || 'your-bucket-id',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite
-    therapists: 'THERAPISTS_COLLECTION_ID',
-    places: 'PLACES_COLLECTION_ID',
+    therapists: 'therapists_collection_id',
+    places: 'places_collection_id',
     facial_places: 'FACIAL_PLACES_COLLECTION_ID',
     users: 'USERS_COLLECTION_ID',
     agents: 'AGENTS_COLLECTION_ID',
