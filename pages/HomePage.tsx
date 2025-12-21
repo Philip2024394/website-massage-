@@ -1162,8 +1162,18 @@ const HomePage: React.FC<HomePageProps> = ({
                             // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
                             let baseList = therapists
                                 .filter((t: any) => {
+                                    // CRITICAL: First check if therapist should be treated as live
+                                    const treatedAsLive = shouldTreatTherapistAsLive(t);
+                                    const isOwnerTherapist = isOwner(t);
+                                    const isFeatured = isFeaturedSample(t, 'therapist');
+                                    
+                                    // Always show if: live, owner, or featured
+                                    if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
+                                        return false;
+                                    }
+                                    
                                     // Always show featured sample therapists (Budi) in all cities
-                                    if (isFeaturedSample(t, 'therapist')) {
+                                    if (isFeatured) {
                                         return true;
                                     }
                                     

@@ -96,7 +96,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     onNavigate,
     t
 }) => {
-    console.log('🔥 MassageJobsPage RENDERED - VERSION 2025-01-11-17:00:00');
+    console.log('🔥 MassageJobsPage RENDERED - VERSION 2025-12-21-14:07:00 - TEST UPDATE');
     console.log('🔥 Props received:', {
         hasOnBack: typeof onBack === 'function',
         hasOnPostJob: typeof onPostJob === 'function',
@@ -114,6 +114,36 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     const [selectedType] = useState<string>('all');
     const [selectedLocation] = useState<string>('all');
     // const [selectedMassageSkill, setSelectedMassageSkill] = useState<string>('all'); // Reserved for future filtering
+    
+    // Mock job posting data for display
+    const mockJobPosting: EmployerJobPosting = {
+        $id: 'mock-job-001',
+        employerId: 'mock-employer-001',
+        jobTitle: 'Senior Balinese Massage Therapist',
+        jobDescription: 'Join our luxury resort spa team in beautiful Ubud, Bali. We are seeking an experienced massage therapist specialized in traditional Balinese healing techniques. Perfect for those who want to work in a serene environment with international guests.',
+        employmentType: 'full-time',
+        location: 'Ubud, Bali',
+        salaryRangeMin: 8000000,
+        salaryRangeMax: 12000000,
+        applicationDeadline: undefined,
+        cvRequired: true,
+        businessName: 'Sanctuary Spa Resort Bali',
+        businessType: 'resort',
+        numberOfPositions: 2,
+        accommodationProvided: true,
+        transportationProvided: 'flight',
+        requirements: ['Certified massage therapist', 'Balinese massage expertise', 'English speaking', 'Minimum 3 years experience'],
+        benefits: ['Accommodation provided', 'Meals included', 'Flight tickets paid', 'Health insurance', 'Professional development'],
+        massageTypes: ['Traditional Balinese', 'Deep Tissue', 'Hot Stone', 'Aromatherapy'],
+        requiredLanguages: ['English', 'Indonesian (Bahasa Indonesia)'],
+        contactWhatsApp: '6281234567890',
+        isActive: true,
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/bali%20massage%20indonisea.png?updatedAt=1761591108161',
+        country: 'Indonesia',
+        flightsPaidByEmployer: true,
+        visaArrangedByEmployer: false,
+        $createdAt: new Date().toISOString()
+    };
     
     useEffect(() => {
         fetchJobPostings();
@@ -169,7 +199,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         }
     };
 
-    const filteredPostings = jobPostings.filter(posting => {
+    const filteredPostings = [mockJobPosting, ...jobPostings.filter(posting => {
         const matchesSearch = 
             posting.businessName.toLowerCase().includes(searchQuery.toLowerCase()) ||
             posting.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -180,7 +210,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
         const matchesLocation = selectedLocation === 'all' || posting.location.toLowerCase().includes(selectedLocation.toLowerCase());
         
         return matchesSearch && matchesType && matchesLocation;
-    });
+    })];
 
     const formatSalary = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -222,19 +252,19 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
     // const businessTypes = ['all', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service', 'other'];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             {/* Header - Same as Home Page */}
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
+            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm border-b border-gray-200">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
                     </h1>
                     <button 
                         onClick={() => onNavigate && onNavigate('home')}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        className="p-2 hover:bg-orange-100 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                         title="Home"
                     >
-                        <Home className="w-6 h-6 text-gray-600" />
+                        <Home className="w-6 h-6 text-orange-600" />
                     </button>
                 </div>
             </header>
@@ -249,43 +279,38 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                 />
             </React19SafeWrapper>
 
-            <main className="p-4">
+            <main className="p-4 bg-white min-h-screen">
                 <div className="max-w-7xl mx-auto">
+
+                    {/* Test Marker - SYSTEM WORKING */}
+                    <div className="text-center mb-2">
+                        <span className="text-xl text-red-600 font-bold bg-yellow-300 px-4 py-2 rounded border-4 border-red-500">🚨 URGENT TEST - IF YOU SEE THIS THE SYSTEM IS WORKING</span>
+                    </div>
 
                     {/* Description Text */}
                     <div className="text-center mb-6">
-                        <p className="text-sm sm:text-base text-gray-700 max-w-3xl mx-auto">
+                        <p className="text-sm sm:text-base text-gray-600 max-w-3xl mx-auto">
                             {t?.jobs?.description || 'Showcase your availability for employment or offer your massage services to be discovered by local and international massage spas'}
                         </p>
                     </div>
 
-                    {/* Toggle Button - Jobs vs Therapists */}
-                    <div className="flex justify-center mb-6">
-                        <div className="inline-flex bg-gray-100 rounded-full p-1 shadow-inner">
-                            <button
-                                onClick={() => setActiveTab('employers')}
-                                className={`px-4 sm:px-6 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 ${
-                                    activeTab === 'employers'
-                                        ? 'bg-orange-500 text-white shadow-lg'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                }`}
-                            >
-                                {t?.jobs?.jobsForOffer || '💼 Jobs for Offer'}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    console.log('🔵 THERAPIST TAB CLICKED - Setting activeTab to therapists');
-                                    setActiveTab('therapists');
-                                }}
-                                className={`px-4 sm:px-6 py-2.5 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 ${
-                                    activeTab === 'therapists'
-                                        ? 'bg-orange-500 text-white shadow-lg'
-                                        : 'text-gray-600 hover:text-gray-800'
-                                }`}
-                            >
-                                {t?.jobs?.therapistSeeking || '👨‍⚕️ Therapist Seeking Jobs'}
-                            </button>
-                        </div>
+                    {/* Main Tab Navigation */}
+                    <div className="flex bg-gray-200 p-2 rounded-xl mb-6 gap-2">
+                        <button
+                            onClick={() => setActiveTab('employers')}
+                            className={`flex-1 py-3 px-6 rounded-lg text-sm font-bold transition-all ${activeTab === 'employers' ? 'bg-white text-orange-600 shadow-sm border-2 border-orange-200' : 'text-gray-700 hover:text-black hover:bg-gray-100'}`}
+                        >
+                            {t?.jobs?.jobsForOffer || '💼 Jobs for Offer'}
+                        </button>
+                        <button
+                            onClick={() => {
+                                console.log('🔵 THERAPIST TAB CLICKED - Setting activeTab to therapists');
+                                setActiveTab('therapists');
+                            }}
+                            className={`flex-1 py-3 px-6 rounded-lg text-sm font-bold transition-all ${activeTab === 'therapists' ? 'bg-white text-orange-600 shadow-sm border-2 border-orange-200' : 'text-gray-700 hover:text-black hover:bg-gray-100'}`}
+                        >
+                            {t?.jobs?.therapistSeeking || '👨‍⚕️ Therapist Seeking Jobs'}
+                        </button>
                     </div>
 
                     {/* Hero Action - moved from header under the tabs */}
@@ -300,7 +325,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     onCreateTherapistProfile();
                                 }
                             }}
-                            className="flex items-center gap-2 py-2 px-5 bg-orange-500 text-white shadow-lg rounded-full transition-all duration-200 text-sm font-semibold whitespace-nowrap hover:bg-orange-600"
+                            className="flex items-center gap-2 py-3 px-6 bg-orange-600 text-white shadow-lg rounded-full transition-all duration-200 text-sm font-bold whitespace-nowrap hover:bg-orange-700 hover:shadow-xl transform hover:scale-105"
                         >
                             <span>{activeTab === 'employers' ? (t?.jobs?.postJob || 'Post Job') : (t?.jobs?.createProfile || 'Create Profile')}</span>
                         </button>
@@ -308,25 +333,25 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
 
             {/* Job Count */}
             <div className="py-4">
-                <p className="text-gray-600 text-sm sm:text-base">
-                    <span className="font-bold text-orange-600">{filteredPostings.length}</span> {filteredPostings.length !== 1 ? (t?.jobs?.jobsFoundPlural || 'jobs') : (t?.jobs?.jobsFound || 'job')} {t?.jobs?.found || 'found'}
+                <p className="text-gray-700 text-sm sm:text-base font-medium">
+                    <span className="font-bold text-orange-600 text-lg">{filteredPostings.length}</span> {filteredPostings.length !== 1 ? (t?.jobs?.jobsFoundPlural || 'jobs') : (t?.jobs?.jobsFound || 'job')} {t?.jobs?.found || 'found'}
                 </p>
             </div>
 
             {/* Content */}
             <div className="pb-8">
                 {isLoading ? (
-                    <div className="text-center py-12">
+                    <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
                         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-600 mx-auto"></div>
-                        <p className="text-gray-600 mt-4 font-medium">{t?.jobs?.loadingJobs || 'Loading job opportunities...'}</p>
+                        <p className="text-gray-700 mt-4 font-medium">{t?.jobs?.loadingJobs || 'Loading job opportunities...'}</p>
                     </div>
                 ) : filteredPostings.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                        <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <svg className="w-20 h-20 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-gray-500 text-lg">{t?.jobs?.noJobsFound || 'No job postings found'}</p>
-                        <p className="text-gray-400 text-sm mt-2">{t?.jobs?.noJobsDesc || 'Try adjusting your search or filters'}</p>
+                        <p className="text-gray-600 text-lg font-medium">{t?.jobs?.noJobsFound || 'No job postings found'}</p>
+                        <p className="text-gray-500 text-sm mt-2">{t?.jobs?.noJobsDesc || 'Try adjusting your search or filters'}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -335,7 +360,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                             const jobImageUrl = (posting as any).imageurl || 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188';
                             
                             return (
-                            <div key={posting.$id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 border-orange-500">
+                            <div key={posting.$id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 border-orange-600 hover:border-l-6">
                                 {/* Main Image - Full Width */}
                                 <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
                                     <img 
@@ -401,7 +426,7 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                                     navigator.clipboard.writeText(text);
                                                     alert('Link copied! You can now paste it in TikTok.');
                                                 }}
-                                                className="w-8 h-8 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all"
+                                                className="w-8 h-8 bg-gray-800 hover:bg-gray-900 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition-all"
                                                 title="Share on TikTok"
                                             >
                                                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -412,14 +437,14 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
 
                                     {/* Employment Type Badge - Top Right */}
                                     <div className="absolute top-4 pb-20 right-4">
-                                        <span className="px-4 py-2 bg-black/70 backdrop-blur-md text-yellow-400 text-sm font-bold rounded-lg shadow-2xl border border-white/20">
+                                        <span className="px-4 py-2 bg-black/80 backdrop-blur-md text-orange-400 text-sm font-bold rounded-lg shadow-2xl border border-orange-300/30">
                                             {posting.employmentType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                         </span>
                                     </div>
 
                                     {/* Location - Bottom Right */}
                                     <div className="absolute bottom-4 right-4 flex items-center gap-2 text-white drop-shadow-lg">
-                                        <svg className="w-5 h-5 text-red-500 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-5 h-5 text-orange-500 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
                                             <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
                                         </svg>
                                         <span className="font-semibold text-sm drop-shadow-md">{posting.location}</span>
@@ -430,61 +455,61 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     {/* Header */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
-                                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                            <h3 className="text-xl font-bold text-black mb-2">
                                                 {posting.businessName.length > 23 ? posting.businessName.substring(0, 23) : posting.businessName}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 {/* Business Type Icon */}
                                                 {posting.businessType === 'clinic' && (
-                                                    <svg className="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                                     </svg>
                                                 )}
                                                 {posting.businessType === 'hotel' && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                                     </svg>
                                                 )}
                                                 {posting.businessType === 'spa' && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 )}
                                                 {posting.businessType === 'wellness-center' && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                                     </svg>
                                                 )}
                                                 {posting.businessType === 'resort' && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 )}
                                                 {posting.businessType === 'home-service' && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                                                     </svg>
                                                 )}
                                                 {!['clinic', 'hotel', 'spa', 'wellness-center', 'resort', 'home-service'].includes(posting.businessType) && (
-                                                    <svg className="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg className="w-4 h-4 text-orange-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                                     </svg>
                                                 )}
-                                                <p className="text-sm font-semibold text-gray-700">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
-                                                <span className="text-gray-400">•</span>
-                                                <p className="text-sm text-gray-600">{posting.numberOfPositions} {posting.numberOfPositions > 1 ? (t?.jobs?.positionsPlural || 'Positions') : (t?.jobs?.positions || 'Position')} {t?.jobs?.available || 'Available'}</p>
+                                                <p className="text-sm font-semibold text-black">{posting.businessType.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</p>
+                                                <span className="text-gray-500">•</span>
+                                                <p className="text-sm text-gray-600 font-medium">{posting.numberOfPositions} {posting.numberOfPositions > 1 ? (t?.jobs?.positionsPlural || 'Positions') : (t?.jobs?.positions || 'Position')} {t?.jobs?.available || 'Available'}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Description */}
-                                    <p className="text-gray-700 mb-4 line-clamp-3">{posting.jobDescription}</p>
+                                    <p className="text-gray-700 mb-4 line-clamp-3 leading-relaxed">{posting.jobDescription}</p>
 
                                     {/* Details Grid */}
                                     <div className="grid grid-cols-1 gap-3 mb-4">
                                         <div className="text-sm">
                                             <p className="text-sm font-bold text-black mb-1">{t?.jobs?.salaryRange || 'SALARY RANGE'}</p>
-                                            <span className="text-gray-700 font-medium">
+                                            <span className="text-black font-semibold text-base">
                                                 {formatSalary(posting.salaryRangeMin)} - {formatSalary(posting.salaryRangeMax)}
                                             </span>
                                         </div>
@@ -598,9 +623,9 @@ const MassageJobsPage: React.FC<MassageJobsPageProps> = ({
                                     {/* Apply Button - Unlock with Upgrade */}
                                     <button
                                         onClick={onNavigateToPayment}
-                                        className="relative w-full py-3 px-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-green-500/50 hover:shadow-2xl animate-pulse-glow"
+                                        className="relative w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:shadow-orange-500/50 hover:shadow-2xl animate-pulse-glow"
                                         style={{
-                                            boxShadow: '0 0 20px rgba(34, 197, 94, 0.4), 0 0 40px rgba(34, 197, 94, 0.2)'
+                                            boxShadow: '0 0 20px rgba(234, 88, 12, 0.4), 0 0 40px rgba(234, 88, 12, 0.2)'
                                         }}
                                     >
                                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

@@ -205,18 +205,6 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     onViewPriceList={noop}
                     isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     t={t}
-                    onShareClick={async () => {
-                        try {
-                            const therapistId = (therapist as any).id || (therapist as any).$id;
-                            const visit = sessionStorage.getItem('shared_link_visit');
-                            const sessionId = visit
-                                ? (JSON.parse(visit || '{}').sessionId as string)
-                                : sessionStorage.getItem('shared_link_session_id') || undefined;
-                            await analyticsService.trackSharedLinkShare(therapistId, sessionId);
-                        } catch (err) {
-                            console.warn('Shared link share tracking failed:', err);
-                        }
-                    }}
                 />
 
                 {/* Optional bottom space for custom messaging */}

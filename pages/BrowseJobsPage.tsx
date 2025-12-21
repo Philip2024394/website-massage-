@@ -451,27 +451,27 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
         : 'Therapists who are ready to work can spotlight themselves and upload proof within 3 hours.';
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            <header className="bg-white border-b border-slate-100">
+        <div className="min-h-screen bg-white">
+            <header className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <div className="flex flex-wrap items-center gap-4">
                         <button
                             onClick={onBack}
-                            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                            className="p-2 rounded-xl border border-orange-200 hover:bg-orange-50 transition-colors"
                         >
-                            <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
                         <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Lowongan Pijat</p>
-                            <h1 className="text-3xl font-bold text-slate-900">Massage Jobs Exchange</h1>
-                            <p className="text-sm text-slate-500">{heroSubtitle}</p>
+                            <p className="text-xs uppercase tracking-[0.2em] text-gray-600">Lowongan Pijat</p>
+                            <h1 className="text-3xl font-bold text-black">Massage Jobs Exchange</h1>
+                            <p className="text-sm text-gray-600">{heroSubtitle}</p>
                         </div>
                         <div className="ml-auto">
                             <button
                                 onClick={onPostJob}
-                                className="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                                className="px-4 py-2 rounded-xl border border-orange-200 text-sm font-semibold text-orange-600 hover:bg-orange-50"
                             >
                                 Open Advanced Posting Form
                             </button>
@@ -483,8 +483,8 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                             onClick={() => setViewMode('jobOffers')}
                             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
                                 isJobOfferMode
-                                    ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
-                                    : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20'
+                                    : 'bg-gray-100 text-gray-600 hover:text-black'
                             }`}
                         >
                             Job Offers
@@ -493,8 +493,8 @@ const BrowseJobsPage: React.FC<BrowseJobsPageProps> = ({ onBack, onPostJob }) =>
                             onClick={() => setViewMode('jobWanted')}
                             className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${
                                 !isJobOfferMode
-                                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
-                                    : 'bg-slate-100 text-slate-600 hover:text-slate-900'
+                                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-600/20'
+                                    : 'bg-gray-100 text-gray-600 hover:text-black'
                             }`}
                         >
                             Job Wanted

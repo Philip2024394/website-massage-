@@ -782,7 +782,7 @@ const App = () => {
                     onAdminPortalClick={() => state.setPage('adminDashboard')}
                     onBrowseJobsClick={() => state.setPage('browseJobs')}
                     onEmployerJobPostingClick={() => state.setPage('employerJobPosting')}
-                    onMassageJobsClick={() => state.setPage('browseJobs')}
+                    onMassageJobsClick={() => state.setPage('massageJobs')}
                     onTherapistJobsClick={() => state.setPage('therapistJobs')}
                     onTermsClick={navigation?.handleNavigateToServiceTerms || (() => {})}
                     onPrivacyClick={navigation?.handleNavigateToPrivacyPolicy || (() => {})}

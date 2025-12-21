@@ -408,6 +408,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(BrowseJobsPage);
         
         case 'massage-jobs':
+        case 'massageJobs':
             return renderRoute(MassageJobsPage);
         
         case 'partnership-application':
