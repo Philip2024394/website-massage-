@@ -101,6 +101,7 @@ export default function ChatWindow({
     );
     const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_OPTIONS[0].imageUrl);
     const [registering, setRegistering] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
     
     // Chat state
     const [messages, setMessages] = useState<Message[]>([]);
@@ -2045,9 +2046,35 @@ export default function ChatWindow({
                                 )}
                             </div>
 
+                            {/* Terms and Conditions Checkbox */}
+                            <div className="flex items-start gap-2 px-1">
+                                <input 
+                                    type="checkbox" 
+                                    id="chat-terms-checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                                />
+                                <label htmlFor="chat-terms-checkbox" className="text-xs text-gray-600 leading-relaxed">
+                                    I agree to the{' '}
+                                    <button 
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const baseUrl = window.location.origin;
+                                            window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
+                                        }}
+                                        className="text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0 inline"
+                                    >
+                                        Terms and Conditions
+                                    </button>
+                                </label>
+                            </div>
+
                             <button
                                 onClick={handleActivateChat}
-                                disabled={registering || !customerName.trim() || !customerWhatsApp.trim() || !customerLocation.trim()}
+                                disabled={registering || !customerName.trim() || !customerWhatsApp.trim() || !customerLocation.trim() || !termsAccepted}
                                 className="w-full bg-orange-600 text-white py-3 sm:py-2 rounded-lg font-bold hover:bg-orange-700 active:bg-orange-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg touch-manipulation"
                                 style={{ minHeight: '48px' }}
                             >

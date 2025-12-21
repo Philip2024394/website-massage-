@@ -1258,49 +1258,36 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             </div>
 
-            {/* Terms and Conditions Checkbox */}
-            <div className="flex items-start gap-2 mt-4 px-1">
-                <input 
-                    type="checkbox" 
-                    id={`terms-${therapist.id}`}
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
-                />
-                <label htmlFor={`terms-${therapist.id}`} className="text-xs text-gray-600 leading-relaxed">
-                    I agree to the{' '}
-                    <button 
-                        type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Check if we're on a shared profile page
-                            const isSharedProfile = window.location.pathname.includes('/share/');
-                            const baseUrl = window.location.origin;
-                            if (isSharedProfile) {
-                                // Open terms in new tab but with referrer info to come back to shared profile
-                                const currentUrl = window.location.href;
-                                window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
-                            } else {
-                                // Normal navigation for regular pages
-                                window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
-                            }
-                        }}
-                        className="text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0 inline"
-                    >
-                        Booking Terms And Conditions
-                    </button>
-                </label>
+            {/* Terms and Conditions Link */}
+            <div className="text-center mt-4 px-1">
+                <button 
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Check if we're on a shared profile page
+                        const isSharedProfile = window.location.pathname.includes('/share/');
+                        const baseUrl = window.location.origin;
+                        if (isSharedProfile) {
+                            // Open terms in new tab but with referrer info to come back to shared profile
+                            const currentUrl = window.location.href;
+                            window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
+                        } else {
+                            // Normal navigation for regular pages
+                            window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
+                        }
+                    }}
+                    className="text-sm text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
+                >
+                    Terms and Conditions
+                </button>
             </div>
 
             <div className={`flex gap-2 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3')}`}>
                 <button
-                    disabled={!termsAccepted}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
-                        if (!termsAccepted) return;
                         
                         // Prevent multiple rapid clicks
                         if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
@@ -1353,11 +1340,7 @@ ${locationInfo}${coordinatesInfo}
                             }
                         }));
                     }}
-                    className={`w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] ${
-                        termsAccepted 
-                            ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95' 
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
+                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1366,11 +1349,6 @@ ${locationInfo}${coordinatesInfo}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
-                        if (!termsAccepted) {
-                            alert('Please accept the Terms and Conditions before booking.');
-                            return;
-                        }
                         
                         // Prevent multiple rapid clicks
                         if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
@@ -1403,11 +1381,7 @@ ${locationInfo}${coordinatesInfo}
                         // Increment bookings count for UI display
                         setBookingsCount(prev => prev + 1);
                     }} 
-                    className={`w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] ${
-                        termsAccepted 
-                            ? 'bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95' 
-                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
+                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
                 >
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
