@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapist Private Link Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border-left: 4px solid #007bff;
+        }
+        .test-link {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #1976d2;
+        }
+        .test-link:hover {
+            background: #bbdefb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Therapist Private Link Debug</h1>
+    
+    <div class="debug-section">
+        <h2>URL Pattern Analysis</h2>
+        <div id="url-analysis"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Current URL Test</h2>
+        <div id="current-url-test"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Sample Private Links</h2>
+        <div id="sample-links">
+            <p>Test these sample therapist private link patterns:</p>
+            <a href="/therapist-profile/676703b40009b9dd33de" class="test-link">
+                /therapist-profile/676703b40009b9dd33de (with collection ID)
+            </a>
+            <a href="/therapist-profile/1-sarah-relaxation-specialist" class="test-link">
+                /therapist-profile/1-sarah-relaxation-specialist (with SEO slug)
+            </a>
+            <a href="/therapist-profile/2" class="test-link">
+                /therapist-profile/2 (simple ID)
+            </a>
+            <a href="/therapist-profile/test-therapist" class="test-link">
+                /therapist-profile/test-therapist (name slug)
+            </a>
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Router Analysis</h2>
+        <div id="router-analysis"></div>
+    </div>
+
+    <script>
+        const log = (elementId, message, type = 'info') => {
+            const element = document.getElementById(elementId);
+            const className = type;
+            element.innerHTML += `<div class="${className}">${message}</div>`;
+        };
+
+        // Analyze URL pattern
+        const currentPath = window.location.pathname;
+        log('url-analysis', `Current Path: ${currentPath}`, 'info');
+        log('url-analysis', `Expected Pattern: /therapist-profile/[id or slug]`, 'info');
+        
+        if (currentPath.startsWith('/therapist-profile/')) {
+            const segments = currentPath.split('/').filter(Boolean);
+            const idSegment = segments[1] || '';
+            log('url-analysis', `✅ Matches therapist profile pattern`, 'success');
+            log('url-analysis', `ID/Slug segment: "${idSegment}"`, 'info');
+            
+            // Test ID extraction logic (same as SharedTherapistProfilePage)
+            const therapistId = idSegment.split('-')[0];
+            log('url-analysis', `Extracted ID: "${therapistId}"`, 'info');
+        } else {
+            log('url-analysis', `❌ Does not match /therapist-profile/ pattern`, 'error');
+        }
+
+        // Current URL test
+        log('current-url-test', `Testing current URL: ${window.location.href}`, 'info');
+        
+        // Check if we're in the right context
+        if (currentPath.includes('therapist-private-link-debug')) {
+            log('current-url-test', `🔧 You're on the debug page - try the sample links above`, 'warning');
+        } else if (currentPath.startsWith('/therapist-profile/')) {
+            log('current-url-test', `✅ You're on a therapist profile page!`, 'success');
+            log('current-url-test', `If you see an error, it's likely:`, 'info');
+            log('current-url-test', `1. Therapist data not loading from Appwrite`, 'warning');
+            log('current-url-test', `2. ID not found in therapists array`, 'warning');
+            log('current-url-test', `3. Component rendering error`, 'warning');
+        } else {
+            log('current-url-test', `Navigate to a therapist profile to test`, 'info');
+        }
+
+        // Router analysis
+        log('router-analysis', `🔍 Router should handle:`, 'info');
+        log('router-analysis', `- URL detection in useURLRouting.ts`, 'info');
+        log('router-analysis', `- Page set to 'shared-therapist-profile'`, 'info');
+        log('router-analysis', `- SharedTherapistProfilePage component loaded`, 'info');
+        log('router-analysis', `- Therapist data fetched from props.therapists`, 'info');
+
+        // Add error checking
+        window.addEventListener('error', (event) => {
+            log('current-url-test', `❌ JavaScript Error: ${event.message}`, 'error');
+            log('current-url-test', `File: ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        console.log('🔧 Therapist Private Link Debug loaded');
+        console.log('Current pathname:', window.location.pathname);
+        console.log('Expected: /therapist-profile/[id]');
+    </script>
+</body>
+</html>

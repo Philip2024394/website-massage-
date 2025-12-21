@@ -267,6 +267,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.therapist.component);
         
         case 'shared-therapist-profile':
+            // Debug logging for therapist private link issues
+            console.log('🔧 [SharedTherapistProfile] Rendering with props:', {
+                therapistsCount: props.therapists?.length || 0,
+                selectedTherapist: props.selectedTherapist ? 'Present' : 'None',
+                userLocation: props.userLocation ? 'Present' : 'None',
+                currentPath: window.location.pathname
+            });
             return renderRoute(profileRoutes.sharedTherapist.component);
         
         case 'massage-place-profile':

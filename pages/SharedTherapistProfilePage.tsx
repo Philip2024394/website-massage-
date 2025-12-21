@@ -30,12 +30,65 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     const therapistId = useMemo(() => {
         const segments = window.location.pathname.split('/').filter(Boolean);
         const slugPart = segments[1] || '';
-        return slugPart.split('-')[0];
+        const extractedId = slugPart.split('-')[0];
+        
+        // Debug logging
+        console.log('🔧 [SharedTherapistProfile] ID extraction:', {
+            fullPath: window.location.pathname,
+            segments: segments,
+            slugPart: slugPart,
+            extractedId: extractedId
+        });
+        
+        return extractedId;
     }, []);
 
     const therapist = useMemo(() => {
+        console.log('🔧 [SharedTherapistProfile] Finding therapist:', {
+            selectedTherapist: selectedTherapist ? 'Present' : 'None',
+            therapistId: therapistId,
+            therapistsCount: therapists?.length || 0,
+            therapistsAvailable: therapists ? 'Yes' : 'No'
+        });
+        
         if (selectedTherapist) return selectedTherapist;
-        return therapists.find((th) => ((th as any).id ?? (th as any).$id ?? '').toString() === therapistId) || null;
+        
+        // Try multiple ID formats to find the therapist
+        if (therapistId && therapists && therapists.length > 0) {
+            // Try exact ID match first
+            let found = therapists.find((th) => {
+                const thId = (th as any).id ?? (th as any).$id ?? '';
+                return thId.toString() === therapistId;
+            });
+            
+            console.log('🔧 [SharedTherapistProfile] Exact ID match:', found ? 'Found' : 'Not found');
+            
+            // If not found, try matching the full slug segment
+            if (!found) {
+                const fullSlug = window.location.pathname.split('/')[2] || '';
+                found = therapists.find((th) => {
+                    const thId = (th as any).id ?? (th as any).$id ?? '';
+                    return thId.toString() === fullSlug || fullSlug.startsWith(thId.toString());
+                });
+                
+                console.log('🔧 [SharedTherapistProfile] Full slug match:', found ? 'Found' : 'Not found', { fullSlug });
+            }
+            
+            if (found) {
+                console.log('🔧 [SharedTherapistProfile] Therapist found:', found.name);
+            } else {
+                console.warn('🔧 [SharedTherapistProfile] No therapist found for ID:', therapistId);
+                console.log('Available therapist IDs:', therapists.map(th => ({
+                    id: (th as any).id ?? (th as any).$id,
+                    name: th.name
+                })));
+            }
+            
+            return found || null;
+        }
+        
+        console.warn('🔧 [SharedTherapistProfile] No therapistId or therapists array');
+        return null;
     }, [selectedTherapist, therapists, therapistId]);
 
     const handleViewAllTherapists = () => {
@@ -56,9 +109,28 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     if (!therapist) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <p className="text-lg font-semibold text-gray-800 mb-2">Loading profile…</p>
-                    <p className="text-sm text-gray-600">If this takes long, refresh the page.</p>
+                <div className="text-center max-w-md">
+                    <div className="mb-4">
+                        <svg className="w-12 h-12 mx-auto text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-800 mb-2">Loading therapist profile...</p>
+                    <p className="text-sm text-gray-600 mb-4">
+                        Requested ID: {therapistId || 'Unknown'}
+                    </p>
+                    <div className="space-y-2">
+                        <p className="text-xs text-gray-500">
+                            {therapists?.length ? `Searching ${therapists.length} therapists...` : 'Loading therapist data...'}
+                        </p>
+                        <button 
+                            onClick={() => window.location.href = '/'}
+                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                        >
+                            Return to Home
+                        </button>
+                    </div>
                 </div>
             </div>
         );
