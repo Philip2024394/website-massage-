@@ -9,13 +9,9 @@ const originalWarn = console.warn;
 
 // List of known non-critical Appwrite errors to suppress
 const SUPPRESSED_ERRORS = [
-    'Chat Sessions',
-    'Facial Places', 
-    'Hotels',
-    'Places',
-    'Bookings',
+    // Only suppress collections that truly don't exist
     'Cities',
-    'Custom Links',
+    'Custom Links', 
     '404 (Not Found)',
     '400 (Bad Request)',
     'Collection could not be found',

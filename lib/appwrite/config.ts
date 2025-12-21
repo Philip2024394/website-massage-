@@ -13,9 +13,9 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite database
-    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'Therapists',
-    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'Places', 
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'Facial Places',
+    therapists: 'therapists_collection_id',
+    places: 'places_collection_id', 
+    facial_places: 'facial_places_collection_id',
     users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
     bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'Bookings',
@@ -31,11 +31,11 @@ export const APPWRITE_CONFIG = {
     notifications: 'Notifications',
     chatMessages: 'Chat Messages',
     chatRooms: 'Chat Rooms',
-    chatSessions: 'Chat Sessions',
+    chatSessions: import.meta.env.VITE_CHAT_SESSIONS_COLLECTION_ID || 'Chat Sessions',
     chatTranslations: 'Chat Translations',
     
     // Business  
-    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || 'Hotels',
+    hotels: 'hotels_collection_id',
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content
