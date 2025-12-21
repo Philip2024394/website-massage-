@@ -257,15 +257,16 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             loading={loading}
             onNavigate={onNavigate}
         >
-            <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
-                {/* Hero Logo */}
-                <div className="flex justify-center mb-4">
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
-                        alt="Logo" 
-                        className="h-48 w-auto object-contain"
-                    />
-                </div>
+            {/* Hero Logo */}
+            <div className="flex justify-center mb-4 pt-4">
+                <img 
+                    src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
+                    alt="Logo" 
+                    className="h-48 w-auto object-contain"
+                />
+            </div>
+
+            <div className="px-4 space-y-4">
 
                 <TherapistCard
                     therapist={therapist}

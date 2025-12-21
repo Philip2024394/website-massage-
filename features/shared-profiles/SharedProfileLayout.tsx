@@ -87,33 +87,9 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
                 t={(key: string) => key}
             />
 
-            {/* Shared link indicator banner */}
-            <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2 text-center text-sm">
-                ✨ Viewing shared profile • {providerType === 'therapist' ? 'Therapist' : providerType === 'facial' ? 'Facial Place' : 'Massage Place'}
-                {city && ` • ${city}`}
-            </div>
-
-            {/* Main content */}
-            <div className="container mx-auto px-4 py-6">
+            {/* Main content - full screen */}
+            <div className="w-full">
                 {children}
-            </div>
-
-            {/* Call to action footer */}
-            <div className="bg-white border-t border-gray-200 py-6 mt-8">
-                <div className="container mx-auto px-4 text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Book {providerName} Now
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                        Fast booking, instant chat, verified professionals
-                    </p>
-                    <a 
-                        href="/"
-                        className="inline-block bg-orange-500 text-white px-8 py-3 rounded-lg hover:bg-orange-600 transition font-semibold"
-                    >
-                        📱 Open IndaStreet App
-                    </a>
-                </div>
             </div>
         </div>
     );
