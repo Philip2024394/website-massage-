@@ -14,9 +14,9 @@ export const APPWRITE_CONFIG = {
         admins: '', // Disabled - collection doesn't exist
         therapists: 'therapists_collection_id', // ✅ Actual collection ID
         places: 'places_collection_id', // ✅ Actual collection ID  
-        facial_places: '67670371000c0bef1447', // ✅ Actual collection ID
+        facial_places: 'facial_places_collection', // ✅ Actual collection ID
         agents: 'Agents', // ✅ Actual collection name
-        bookings: '6767038a003b7bdff201', // ✅ Actual collection ID
+        bookings: 'bookings_collection_id', // ✅ Actual collection ID
         reviews: 'Reviews', // Reviews collection
         notifications: 'Notifications', // ✅ Therapist notification system
         users: 'Users', // ✅ Actual collection name
@@ -55,7 +55,7 @@ export const APPWRITE_CONFIG = {
         chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
         payments: 'Payments',
         // Lead Generation System
-        leads: '676703b40009b9dd33de',
+        leads: 'leads', // ✅ Lead generation collection // TODO: Create collection with attributes
         leadGenerations: 'Lead Generations',
         leadBillingSummary: 'Lead Billing Summary',
         // Membership Agreement System

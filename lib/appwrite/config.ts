@@ -15,10 +15,10 @@ export const APPWRITE_CONFIG = {
     // Core collections - Using actual collection IDs from Appwrite database
     therapists: 'therapists_collection_id',
     places: 'places_collection_id', 
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447',
+    facial_places: 'facial_places_collection',
     users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || '6767038a003b7bdff201',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
     reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'Reviews',
     
     // Analytics
@@ -56,7 +56,7 @@ export const APPWRITE_CONFIG = {
     membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
     membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
     deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
-    leads: import.meta.env.VITE_LEADS_COLLECTION_ID || '676703b40009b9dd33de',
+    leads: 'leads', // ✅ Lead generation collection // TODO: Create collection with attributes
     
     // Jobs
     employerJobPostings: 'Employer Job Postings',

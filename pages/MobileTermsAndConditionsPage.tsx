@@ -12,40 +12,29 @@ const MobileTermsAndConditionsPage: React.FC = () => {
         if (returnToUrl) {
             // If we have a return URL (from shared profile), go back to it
             console.log('🔙 Returning to shared profile:', returnToUrl);
-            window.location.href = returnToUrl;
+            // Close the current tab/window since it was opened with window.open
+            window.close();
+            // If close fails (not allowed), navigate to the return URL
+            setTimeout(() => {
+                window.location.href = returnToUrl;
+            }, 100);
         } else {
-            // Check if we can close the tab (opened in new tab)
-            try {
-                // Try to close if it's a popup/new tab
-                window.close();
-                
-                // If close doesn't work (not a popup), use back navigation
-                setTimeout(() => {
-                    if (window.history.length > 1) {
-                        console.log('🔙 Using browser back navigation');
-                        window.history.back();
-                    } else {
-                        console.log('🔙 No history, navigating to home');
-                        window.location.href = '/';
-                    }
-                }, 100);
-            } catch (e) {
-                // Fallback to normal navigation
-                console.log('🔙 Fallback to browser back');
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = '/';
-                }
+            // Check if we can go back in history
+            if (window.history.length > 1) {
+                console.log('🔙 Using browser back navigation');
+                window.history.back();
+            } else {
+                console.log('🔙 No history, navigating to home');
+                window.location.href = '/';
             }
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className={isSharedProfileContext ? "min-h-screen bg-white" : "min-h-screen bg-gray-50"}>
             {/* Header */}
-            <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-                <div className="flex items-center justify-between p-4">
+            <div className={isSharedProfileContext ? "bg-white p-4" : "bg-white shadow-sm border-b sticky top-0 z-10"}>
+                <div className="flex items-center justify-between">
                     <button 
                         onClick={handleBackNavigation}
                         className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
@@ -53,12 +42,27 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                         <ArrowLeft className="w-5 h-5" />
                         <span className="text-sm font-medium">Back</span>
                     </button>
-                    <h1 className="text-lg font-bold text-gray-800">
-                        {isSharedProfileContext ? 'Massage Therapist Standards' : 'Terms & Conditions'}
-                    </h1>
-                    <div className="w-12"></div> {/* Spacer for center alignment */}
+                    {!isSharedProfileContext && (
+                        <>
+                            <h1 className="text-lg font-bold text-gray-800">
+                                Terms & Conditions
+                            </h1>
+                            <div className="w-12"></div> {/* Spacer for center alignment */}
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Hero Image for Shared Profile Context */}
+            {isSharedProfileContext && (
+                <div className="flex justify-center mb-4 pt-4">
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
+                        alt="Logo" 
+                        className="h-32 w-auto object-contain"
+                    />
+                </div>
+            )}
 
             {/* Content */}
             <div className="max-w-4xl mx-auto p-4 space-y-6">
@@ -81,11 +85,13 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 )}
 
                 {/* Introduction */}
-                <div className="bg-white rounded-lg shadow-sm border p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-orange-500" />
-                        {isSharedProfileContext ? 'Professional Massage Therapist Standards' : 'Booking Terms and Conditions'}
-                    </h2>
+                <div className={isSharedProfileContext ? "bg-white p-6" : "bg-white rounded-lg shadow-sm border p-6"}>
+                    {!isSharedProfileContext && (
+                        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-orange-500" />
+                            Booking Terms and Conditions
+                        </h2>
+                    )}
                     {isSharedProfileContext ? (
                         <div className="prose prose-gray max-w-none">
                             <p className="text-gray-800 leading-relaxed mb-4">
@@ -243,15 +249,14 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                 </>
                 )}
 
-                {/* Contact Support - Show for both contexts */}
+                {/* Bottom corner image for shared profile context */}
                 {isSharedProfileContext && (
-                    <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                        <h3 className="font-bold text-gray-800 text-lg mb-4">Contact & Support</h3>
-                        <div className="space-y-2 text-sm text-gray-700">
-                            <p><strong>Platform Support:</strong> Available 24/7 for booking assistance</p>
-                            <p><strong>Quality Concerns:</strong> Report any issues through our support channel</p>
-                            <p><strong>Emergency Contact:</strong> +62-813-9200-0050</p>
-                        </div>
+                    <div className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 z-0 pointer-events-none">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/green%20leaf.png" 
+                            alt="Leaf decoration" 
+                            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain opacity-70"
+                        />
                     </div>
                 )}
 

@@ -11,6 +11,7 @@ const ServiceTermsPage = React.lazy(() => import('../../pages/ServiceTermsPage')
 const PlaceTermsPage = React.lazy(() => import('../../pages/PlaceTermsPage'));
 const PackageTermsPage = React.lazy(() => import('../../pages/PackageTermsPage'));
 const MembershipTermsPage = React.lazy(() => import('../../pages/MembershipTermsPage'));
+const MobileTermsAndConditionsPage = React.lazy(() => import('../../pages/MobileTermsAndConditionsPage'));
 
 export const legalRoutes = {
   privacy: {
@@ -42,6 +43,11 @@ export const legalRoutes = {
     path: '/membership-terms',
     component: MembershipTermsPage,
     name: 'membershipTerms'
+  },
+  mobileTerms: {
+    path: '/mobile-terms-and-conditions',
+    component: MobileTermsAndConditionsPage,
+    name: 'mobileTerms'
   }
 };
 
