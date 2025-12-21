@@ -609,6 +609,33 @@ const HomePage: React.FC<HomePageProps> = ({
         
         return isFeatured;
     };
+    const normalizeBooleanFlag = (value: any): boolean | null => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') {
+            const normalized = value.trim().toLowerCase();
+            if (normalized === 'true') return true;
+            if (normalized === 'false') return false;
+        }
+        return null;
+    };
+
+    const shouldTreatTherapistAsLive = (therapist: any): boolean => {
+        const normalizedLiveFlag = normalizeBooleanFlag(therapist.isLive);
+        const normalizedStatus = (therapist.status || therapist.availability || '')
+            .toString()
+            .trim()
+            .toLowerCase();
+        const statusImpliesLive = normalizedStatus === 'available' || normalizedStatus === 'busy' || normalizedStatus === 'online';
+        const explicitOffline = normalizedStatus === 'offline' || normalizedLiveFlag === false;
+
+        if (explicitOffline) return false;
+        if (normalizedLiveFlag === true) return true;
+        if (normalizedLiveFlag === null) {
+            if (statusImpliesLive) return true;
+            return normalizedStatus.length === 0; // Default to visible when legacy records lack status
+        }
+        return statusImpliesLive;
+    };
 
     // Filter therapists and places by location automatically
     useEffect(() => {
@@ -747,8 +774,9 @@ const HomePage: React.FC<HomePageProps> = ({
             const isOwner = loggedInProvider && loggedInProvider.type === 'therapist' && (
                 String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
             );
-            // Show Available and Busy therapists, hide only Offline (status !== 'offline')
-            return t.isLive === true || isOwner; // isLive is now true for both available and busy
+            const featuredTherapist = isFeaturedSample(t, 'therapist');
+            const treatedAsLive = shouldTreatTherapistAsLive(t);
+            return treatedAsLive || isOwner || featuredTherapist;
         });
         const filteredTherapists = liveTherapists.filter((t: any) => {
             // Always show featured sample therapists (like Budi) in ALL cities

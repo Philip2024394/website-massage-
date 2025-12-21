@@ -146,6 +146,20 @@ interface AppRouterProps {
     handleAdminLogout: () => Promise<void>;
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onFacialPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onBrowseJobsClick?: () => void;
+    onEmployerJobPostingClick?: () => void;
+    onMassageJobsClick?: () => void;
+    onTherapistJobsClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
     setPage: (page: Page) => void;
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
@@ -235,9 +249,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== AUTH ROUTES =====
         case 'therapist-login':
+        case 'therapistLogin':
             return renderRoute(authRoutes.therapistLogin.component);
         
         case 'place-login':
+        case 'massagePlaceLogin':
             return renderRoute(authRoutes.placeLogin.component);
         
         case 'facial-portal':
@@ -388,6 +404,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(JobPostingPaymentPage);
         
         case 'browse-jobs':
+        case 'browseJobs':
             return renderRoute(BrowseJobsPage);
         
         case 'massage-jobs':
@@ -444,6 +461,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'payment-info':
             return renderRoute(PaymentInfoPage);
+
+        // ===== DASHBOARD ROUTES =====
+        case 'therapistDashboard':
+        case 'therapist-dashboard':
+            return renderRoute(authRoutes.therapistLogin.component, {
+                redirectToDashboard: true
+            });
+        
+        case 'placeDashboard':
+        case 'place-dashboard':
+            return renderRoute(authRoutes.placeLogin.component, {
+                redirectToDashboard: true
+            });
 
         // ===== FALLBACK =====
         default:

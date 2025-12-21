@@ -772,6 +772,20 @@ const App = () => {
                     handleMarkNotificationAsRead={() => {}}
                     handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
                     handleNavigateToAgentAuth={navigation?.handleNavigateToAuth || (() => {})}
+                    onTherapistPortalClick={navigation?.handleNavigateToTherapistPortal || (() => {})}
+                    onMassagePlacePortalClick={navigation?.handleNavigateToMassagePlacePortal || (() => {})}
+                    onAgentPortalClick={() => state.setPage('agentPortal')}
+                    onCustomerPortalClick={() => state.setPage('customerPortal')}
+                    onHotelPortalClick={() => state.setPage('hotelDashboard')}
+                    onVillaPortalClick={() => state.setPage('villaDashboard')}
+                    onFacialPortalClick={() => state.setPage('facialPortal')}
+                    onAdminPortalClick={() => state.setPage('adminDashboard')}
+                    onBrowseJobsClick={() => state.setPage('browseJobs')}
+                    onEmployerJobPostingClick={() => state.setPage('employerJobPosting')}
+                    onMassageJobsClick={() => state.setPage('browseJobs')}
+                    onTherapistJobsClick={() => state.setPage('therapistJobs')}
+                    onTermsClick={navigation?.handleNavigateToServiceTerms || (() => {})}
+                    onPrivacyClick={navigation?.handleNavigateToPrivacyPolicy || (() => {})}
 
 
                     setPage={state.setPage}

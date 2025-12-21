@@ -106,7 +106,22 @@ export const useNavigation = ({
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
-    const handleNavigateToTherapistPortal = useCallback(() => setPage('therapistPortal'), [setPage]);
+    const handleNavigateToTherapistPortal = useCallback(() => {
+        // Check if provider is logged in, route to dashboard, otherwise to login
+        if (loggedInProvider?.type === 'therapist') {
+            setPage('therapistDashboard');
+        } else {
+            setPage('therapistLogin');
+        }
+    }, [setPage, loggedInProvider]);
+    const handleNavigateToMassagePlacePortal = useCallback(() => {
+        // Check if provider is logged in, route to dashboard, otherwise to login
+        if (loggedInProvider?.type === 'place') {
+            setPage('placeDashboard');
+        } else {
+            setPage('massagePlaceLogin');
+        }
+    }, [setPage, loggedInProvider]);
     const handleNavigateToTherapistProfileCreation = useCallback(() => {
         console.log('🎯 HANDLER: Navigating to therapist job registration');
         alert('🎯 APP.TSX CALLBACK EXECUTING!');
@@ -243,6 +258,7 @@ export const useNavigation = ({
         handleNavigateToPrivacyPolicy,
         handleNavigateToNotifications,
         handleNavigateToTherapistPortal,
+        handleNavigateToMassagePlacePortal,
         handleNavigateToTherapistProfileCreation,
         
         // Booking navigation

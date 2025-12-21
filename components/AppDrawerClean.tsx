@@ -186,7 +186,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.joinIndaStreet}</span>
                 </button>
-                <button onClick={() => handleItemClick(onMassageJobsClick, 'massage-jobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(onMassageJobsClick, 'browseJobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Briefcase className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.massageJobs}</span>
                 </button>
