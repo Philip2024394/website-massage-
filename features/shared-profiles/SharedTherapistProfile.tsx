@@ -11,6 +11,7 @@ import TherapistCard from '../../components/TherapistCard';
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL, generateShareText } from './utils/shareUrlBuilder';
 import { analyticsService } from '../../services/analyticsService';
+import { PREVIEW_IMAGES } from '../../config/previewImages';
 
 interface SharedTherapistProfileProps {
     therapists: Therapist[];
@@ -31,6 +32,29 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     onNavigate,
     language = 'en'
 }) => {
+    // Get optimized preview image for WhatsApp/social media
+    const getPreviewImage = (therapist: Therapist) => {
+        // 1. Check for therapist-specific image first
+        const therapistId = therapist.$id || therapist.id;
+        if (therapistId && PREVIEW_IMAGES.therapists[therapistId?.toString()]) {
+            return PREVIEW_IMAGES.therapists[therapistId.toString()];
+        }
+
+        // 2. Use therapist's profile picture if available and high quality
+        if (therapist.profilePicture && therapist.profilePicture !== '') {
+            return therapist.profilePicture;
+        }
+
+        // 3. City-specific images for local appeal
+        const cityKey = therapist.city?.toLowerCase();
+        if (cityKey && PREVIEW_IMAGES.cities[cityKey]) {
+            return PREVIEW_IMAGES.cities[cityKey];
+        }
+
+        // 4. Default fallback image
+        return PREVIEW_IMAGES.default;
+    };
+
     // Wrapper for TherapistCard compatibility
     const handleCardQuickBook = (therapist: Therapist) => {
         if (handleQuickBookWithChat) {
@@ -84,27 +108,44 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         }
     }, [therapist, providerId]);
 
-    // Update page metadata
+    // Update page metadata for WhatsApp and social media
     useEffect(() => {
         if (!therapist) return;
 
-        const title = `${therapist.name} | Professional Massage Therapist | IndaStreet`;
-        const description = `Book ${therapist.name} for professional massage services${therapist.city ? ` in ${therapist.city}` : ''}. Instant booking, verified therapist, secure payment.`;
+        const title = `${therapist.name} | Professional Massage in ${therapist.city || 'Bali'}`;
+        const description = `✨ Book ${therapist.name} for professional massage therapy${therapist.city ? ` in ${therapist.city}` : ''}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking • 📱 IndaStreet`;
         const shareUrl = generateTherapistShareURL(therapist);
+        const previewImage = getPreviewImage(therapist);
 
         document.title = title;
 
-        // Update meta tags
+        // Comprehensive meta tags for WhatsApp, Facebook, Twitter, etc.
         const metaTags = [
+            // Basic meta
             { name: 'description', content: description },
+            
+            // Open Graph (WhatsApp, Facebook, LinkedIn)
             { property: 'og:title', content: title },
             { property: 'og:description', content: description },
             { property: 'og:url', content: shareUrl },
             { property: 'og:type', content: 'profile' },
-            { property: 'og:image', content: therapist.profilePicture || 'https://www.indastreetmassage.com/og-image.jpg' },
+            { property: 'og:image', content: previewImage },
+            { property: 'og:image:width', content: '1200' },
+            { property: 'og:image:height', content: '630' },
+            { property: 'og:site_name', content: 'IndaStreet Massage' },
+            { property: 'og:locale', content: 'en_US' },
+            
+            // Twitter Cards
             { name: 'twitter:card', content: 'summary_large_image' },
             { name: 'twitter:title', content: title },
             { name: 'twitter:description', content: description },
+            { name: 'twitter:image', content: previewImage },
+            { name: 'twitter:site', content: '@IndaStreet' },
+            
+            // WhatsApp specific (uses og: tags but these help)
+            { property: 'whatsapp:title', content: title },
+            { property: 'whatsapp:description', content: description },
+            { property: 'whatsapp:image', content: previewImage },
         ];
 
         metaTags.forEach(({ name, property, content }) => {
@@ -120,6 +161,36 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             
             meta.setAttribute('content', content);
         });
+
+        // Add structured data for better search and social media integration
+        const structuredData = {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": therapist.name,
+            "jobTitle": "Professional Massage Therapist",
+            "description": description,
+            "image": previewImage,
+            "url": shareUrl,
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": therapist.city || "Bali",
+                "addressCountry": "Indonesia"
+            },
+            "offers": {
+                "@type": "Offer",
+                "category": "Massage Therapy Services",
+                "availability": "https://schema.org/InStock"
+            }
+        };
+
+        // Add or update structured data script
+        let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+        if (!structuredDataScript) {
+            structuredDataScript = document.createElement('script');
+            structuredDataScript.type = 'application/ld+json';
+            document.head.appendChild(structuredDataScript);
+        }
+        structuredDataScript.textContent = JSON.stringify(structuredData);
 
         // Canonical URL
         let canonical = document.querySelector('link[rel="canonical"]');
