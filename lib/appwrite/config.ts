@@ -13,9 +13,9 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite database
-    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id',
-    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id', 
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'facial_places_collection_id',
+    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'Therapists',
+    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'Places', 
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'Facial Places',
     users: import.meta.env.VITE_USERS_COLLECTION_ID || 'users_collection_id',
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'agents_collection_id',
     bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
@@ -52,11 +52,11 @@ export const APPWRITE_CONFIG = {
     payments: 'payments_collection_id',
     
     // Membership & Leads
-    leadGenerations: 'lead_generations_collection_id',
-    membershipAgreements: 'membership_agreements_collection_id',
-    membershipUpgrades: 'membership_upgrades_collection_id',
-    deactivationRequests: 'deactivation_requests_collection_id',
-    leads: 'leads_collection_id',
+    leadGenerations: 'Lead Generations',
+    membershipAgreements: 'Membership Agreements',
+    membershipUpgrades: 'Membership Upgrades',
+    deactivationRequests: 'Deactivation Requests',
+    leads: 'Leads',
     
     // Jobs
     employerJobPostings: 'employer_job_postings_collection_id',
