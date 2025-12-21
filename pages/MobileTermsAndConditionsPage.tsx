@@ -9,10 +9,33 @@ const MobileTermsAndConditionsPage: React.FC = () => {
     const handleBackNavigation = () => {
         if (returnToUrl) {
             // If we have a return URL (from shared profile), go back to it
+            console.log('🔙 Returning to shared profile:', returnToUrl);
             window.location.href = returnToUrl;
         } else {
-            // Normal back navigation
-            window.history.back();
+            // Check if we can close the tab (opened in new tab)
+            try {
+                // Try to close if it's a popup/new tab
+                window.close();
+                
+                // If close doesn't work (not a popup), use back navigation
+                setTimeout(() => {
+                    if (window.history.length > 1) {
+                        console.log('🔙 Using browser back navigation');
+                        window.history.back();
+                    } else {
+                        console.log('🔙 No history, navigating to home');
+                        window.location.href = '/';
+                    }
+                }, 100);
+            } catch (e) {
+                // Fallback to normal navigation
+                console.log('🔙 Fallback to browser back');
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = '/';
+                }
+            }
         }
     };
 

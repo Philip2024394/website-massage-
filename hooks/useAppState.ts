@@ -151,9 +151,11 @@ export const useAppState = () => {
   const setPage = (newPage: Page) => {
     console.log('📍 Page change request:', newPage, '(from:', page, ')');
     
-    // Prevent overriding mobile terms page once it's loaded
-    if (page === 'mobile-terms-and-conditions' && newPage !== 'mobile-terms-and-conditions') {
-      console.log('🔒 Blocking page change from mobile-terms - staying on terms page');
+    // Prevent overriding mobile terms page once it's loaded (except for intentional navigation)
+    if (page === 'mobile-terms-and-conditions' && 
+        newPage !== 'mobile-terms-and-conditions' && 
+        !['landing', 'home', 'share-therapist'].includes(newPage)) {
+      console.log('🔒 Blocking unwanted page change from mobile-terms - staying on terms page');
       return;
     }
     
