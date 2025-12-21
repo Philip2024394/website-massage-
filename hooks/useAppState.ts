@@ -22,9 +22,20 @@ export const useAppState = () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const pageParam = urlParams.get('page');
+
+      // Handle shared therapist profile deep link
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/therapist-profile/')) {
+        const parts = pathname.split('/').filter(Boolean);
+        const slugPart = parts[1] || '';
+        const therapistId = slugPart.split('-')[0];
+        if (therapistId) {
+          sessionStorage.setItem('pending_deeplink', JSON.stringify({ provider: `therapist-${therapistId}` , targetPage: 'shared-therapist-profile' }));
+        }
+        return 'shared-therapist-profile';
+      }
       
       // Check for hotel/villa menu URL pattern: /hotel/:id/menu or /villa/:id/menu
-      const pathname = window.location.pathname;
       const hotelMenuMatch = pathname.match(/\/hotel\/([^/]+)\/menu/);
       const villaMenuMatch = pathname.match(/\/villa\/([^/]+)\/menu/);
       

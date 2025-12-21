@@ -25,6 +25,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapistStatus': '/therapist-status',
         'massagePlaceLogin': '/place-login',
         'massagePlacePortal': '/place-portal',
+        'shared-therapist-profile': '/therapist-profile',
         'customerProviders': '/providers',
         'customerReviews': '/reviews',
         'customerSupport': '/support',
@@ -61,7 +62,7 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
 
     // Update URL when page changes
     useEffect(() => {
-        const path = pageToPath[page] || '/';
+        const path = pageToPath[page] || (page === 'shared-therapist-profile' ? window.location.pathname : '/');
         const currentPath = window.location.pathname;
         
         if (currentPath !== path) {
@@ -79,6 +80,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             } else {
                 // Handle direct URL navigation
                 const path = window.location.pathname;
+                if (path.startsWith('/therapist-profile/')) {
+                    setPage('shared-therapist-profile');
+                    return;
+                }
                 const targetPage = pathToPage[path] || 'landing';
                 console.log(`🔗 Direct URL: ${path} → ${targetPage}`);
                 setPage(targetPage);
@@ -89,6 +94,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         
         // Set initial page based on URL on mount
         const initialPath = window.location.pathname;
+        if (initialPath.startsWith('/therapist-profile/')) {
+            setPage('shared-therapist-profile');
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
         if (initialPath !== '/' && initialPath !== '/home') {
             const targetPage = pathToPage[initialPath];
             if (targetPage && targetPage !== page) {

@@ -20,8 +20,8 @@ if (isAdminMode) {
   // Main customer app
   console.log('🏠 Loading Main App...');
   
-  // Register Service Worker for notifications
-  if ('serviceWorker' in navigator) {
+  // Register Service Worker only in production (avoid dev cache issues)
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {

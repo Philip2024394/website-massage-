@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { 
-  Menu, X, Power, User, Calendar, DollarSign, MessageCircle, 
+  Menu, X, User, Calendar, DollarSign, MessageCircle, 
   Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet
 } from 'lucide-react';
 
@@ -10,7 +10,6 @@ interface TherapistLayoutProps {
   therapist: any;
   currentPage: string;
   onNavigate: (page: string) => void;
-  onLogout: () => void;
   language?: 'en' | 'id';
   onLanguageChange?: (lang: 'en' | 'id') => void;
 }
@@ -20,7 +19,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   therapist,
   currentPage,
   onNavigate,
-  onLogout,
   language = 'id',
   onLanguageChange
 }) => {
@@ -252,16 +250,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             </div>
           </nav>
 
-          {/* Sidebar Footer */}
-          <div className="p-4 border-t border-gray-300">
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors"
-            >
-              <Power className="w-5 h-5 text-orange-500 flex-shrink-0" />
-              <span className="text-sm text-gray-700 font-medium">{labels.logout}</span>
-            </button>
-          </div>
+            <div className="p-4 border-t border-gray-300" />
         </div>
       </aside>
 

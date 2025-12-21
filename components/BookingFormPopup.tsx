@@ -20,12 +20,17 @@ interface BookingFormPopupProps {
 
 export interface BookingData {
     customerName: string;
+    phoneNumber?: string;
     locationType: 'home' | 'hotel';
     address: string;
     roomNumber?: string;
     coordinates?: { lat: number; lng: number };
     duration: 60 | 90 | 120;
     price: string;
+    selectedDate?: string;
+    selectedTime?: string;
+    massageType?: string;
+    specialRequests?: string;
 }
 
 const BookingFormPopup: React.FC<BookingFormPopupProps> = ({

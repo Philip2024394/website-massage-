@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { simpleChatService, simpleBookingService } from '../../../../lib/appwriteService';
+import { commissionTrackingService } from '../../../../lib/services/commissionTrackingService';
 import { detectPhoneNumber, getBlockedMessage } from '../../../../utils/phoneBlocker';
 import PaymentCard from '../../../../components/PaymentCard';
 
@@ -121,6 +122,7 @@ export default function ChatWindow({
     const [processingAction, setProcessingAction] = useState(false);
     const [showPaymentCard, setShowPaymentCard] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const alertAudioRef = useRef<HTMLAudioElement | null>(null);
     // Language is now managed globally - therapist dashboard uses Indonesian by default
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -132,6 +134,27 @@ export default function ChatWindow({
             loadMessages();
         }
     }, [isOpen, bookingId]);
+
+    // Loud looping alert while booking is pending
+    useEffect(() => {
+        if (!alertAudioRef.current) {
+            const audio = new Audio('/sounds/booking-notification.mp3');
+            audio.loop = true;
+            audio.volume = 1;
+            alertAudioRef.current = audio;
+        }
+
+        if (isOpen && bookingStatus === 'pending') {
+            alertAudioRef.current?.play().catch(() => {});
+        } else {
+            alertAudioRef.current?.pause();
+            if (alertAudioRef.current) alertAudioRef.current.currentTime = 0;
+        }
+
+        return () => {
+            alertAudioRef.current?.pause();
+        };
+    }, [isOpen, bookingStatus]);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -213,6 +236,11 @@ export default function ChatWindow({
                     countdown: msg.messageType === 'auto-reply' ? 300 : undefined
                 }));
                 setMessages(formatted);
+            }
+
+            // Default to pending until an explicit accept/reject is recorded
+            if (!bookingStatus) {
+                setBookingStatus('pending');
             }
 
             // Subscribe to real-time updates
@@ -412,6 +440,39 @@ export default function ChatWindow({
                 }, 1000); // Small delay after acceptance message
             }
 
+            // Create commission record for Pro/Commission tiers (30%) and notify therapist with deadline
+            if (bookingId && bookingDetails?.price) {
+                try {
+                    const commissionRecord = await commissionTrackingService.createCommissionRecord(
+                        providerId,
+                        providerName,
+                        bookingId,
+                        new Date().toISOString(),
+                        bookingDetails?.date,
+                        bookingDetails.price
+                    );
+
+                    const due = new Date(commissionRecord.paymentDeadline || new Date());
+                    const dueText = due.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const amountText = commissionRecord.commissionAmount?.toLocaleString('en-US');
+
+                    await simpleChatService.sendMessage({
+                        conversationId,
+                        senderId: 'system',
+                        senderName: 'IndaStreet Billing',
+                        senderRole: 'admin',
+                        receiverId: providerId,
+                        receiverName: providerName,
+                        receiverRole: 'therapist',
+                        message: `💳 Commission Due (Pro 30%)\n\nBooking: ${bookingId}\nAmount: IDR ${amountText}\nDeadline: ${dueText} (within 3 hours)\n\nPlease upload payment proof in Payments 30% to avoid penalties.`,
+                        messageType: 'system',
+                        bookingId
+                    });
+                } catch (err) {
+                    console.error('Error creating commission record on accept:', err);
+                }
+            }
+
             // Send commission payment reminder for Pro/Commission tier members
             if (providerRole === 'therapist' && (therapist?.membershipTier === 'free' || therapist?.membershipTier === 'commission')) {
                 const bookingPrice = bookingDetails?.price || 500000;
@@ -456,8 +517,8 @@ export default function ChatWindow({
         // Show warning about ranking impact
         const confirmed = window.confirm(
             '⚠️ Warning: Rejecting Orders Affects Your Ranking\n\n' +
-            'Rejecting bookings will lower your position in search results, ' +
-            'making it harder for customers to find you.\n\n' +
+            'Rejecting bookings will lower your position in search results and a repeated pattern harms your account.\n' +
+            '3 rejections/cancels in 24 hours will pause new bookings for 48 hours.\n\n' +
             'Are you sure you want to reject this booking?'
         );
         
@@ -596,6 +657,11 @@ export default function ChatWindow({
         if (!newMessage.trim() || sending) return;
 
         setSending(true);
+
+        if (bookingStatus !== 'accepted') {
+            alert('Chat unlocks after you accept the booking. Please accept or reject first.');
+            return;
+        }
 
         try {
             const originalText = newMessage.trim();

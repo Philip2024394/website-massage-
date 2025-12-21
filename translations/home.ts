@@ -28,7 +28,7 @@ export const homeTranslations = {
       locationError: 'Could not get location. Please enable permissions and try again.',
       gettingLocation: 'Getting location...',
       therapistCard: {
-        orderNow: 'Order Now',
+        orderNow: 'Estimated Arrival',
         schedule: 'Schedule',
         massageTypes: 'Massage Types',
         experiencedArea: 'Experienced Area',
@@ -156,7 +156,7 @@ export const homeTranslations = {
     },
     detail: {
       pricingTitle: 'Pricing',
-      contactButton: 'Order Now',
+      contactButton: 'Estimated Arrival',
       bookButton: 'Schedule',
       // Place/Clinic detail page
       backButton: 'Back',

@@ -146,6 +146,21 @@ const ProTerms: React.FC = () => (
       </ul>
     </section>
 
+    {/* Included Features */}
+    <section className="py-5 border-b border-gray-100">
+      <h2 className="font-semibold text-gray-900 text-base mb-4">Included Features</h2>
+      <ul className="space-y-3 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Full profile with photos, services, chat, and booking</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <span className="text-orange-500 mt-0.5">✓</span>
+          <span>Price menu slider displayed on your card (also included in Plus)</span>
+        </li>
+      </ul>
+    </section>
+
     {/* Platform Rules */}
     <section className="py-5 border-b border-gray-100">
       <p className="text-red-600 font-semibold text-sm mb-4">Platform Exclusivity Rules</p>
@@ -264,7 +279,7 @@ const PlusTerms: React.FC = () => (
         </li>
         <li className="flex items-start gap-3">
           <span className="text-orange-600 mt-0.5 font-bold">★</span>
-          <span className="text-orange-700 font-medium">Add your full price menu with unlimited services</span>
+          <span className="text-orange-700 font-medium">Add your full price menu slider with unlimited services</span>
         </li>
       </ul>
     </section>

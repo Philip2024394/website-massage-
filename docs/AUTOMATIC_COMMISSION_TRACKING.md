@@ -1,7 +1,7 @@
 # Automatic Commission Tracking Implementation
 
 ## Overview
-Automatic commission record creation has been integrated into the booking flow. When a **Pro member** (30% commission) completes a booking, the system automatically creates a commission payment record with a **3-hour payment deadline**.
+Automatic commission record creation has been integrated into the booking flow. When a **Pro member** (30% commission) completes a booking, the system automatically creates a commission payment record with a **4-hour payment deadline**.
 
 ## How It Works
 
@@ -9,7 +9,7 @@ Automatic commission record creation has been integrated into the booking flow. 
 - **Pro Plan** (`membershipTier: 'free'`):
   - Rp 0 per month
   - **30% commission** per booking
-  - **3-hour payment deadline** after booking
+   - **4-hour payment deadline** after booking
   - Commission tracking **ENABLED**
 
 - **Plus Plan** (`membershipTier: 'plus'`):
@@ -25,7 +25,7 @@ When a customer clicks "Book Now" and activates chat:
 2. ✅ System checks therapist's `membershipTier`
 3. ✅ If `membershipTier === 'free'` (Pro):
    - Creates commission record with 30% rate
-   - Sets 3-hour payment deadline
+   - Sets 4-hour payment deadline
    - Records booking details
    - Account will auto-deactivate if payment not submitted within 3 hours
 4. ℹ️ If `membershipTier === 'plus'` (Plus):
@@ -41,7 +41,7 @@ When a customer schedules a booking:
 2. ✅ System checks therapist's `membershipTier`
 3. ✅ If `membershipTier === 'free'` (Pro):
    - Creates commission record with 30% rate
-   - Sets 3-hour payment deadline (from booking creation time)
+   - Sets 4-hour payment deadline (from booking creation time)
    - Records scheduled date/time for reference
    - Account will auto-deactivate if payment not submitted within 3 hours
 4. ℹ️ If `membershipTier === 'plus'` (Plus):
@@ -64,7 +64,7 @@ Each commission record contains:
   serviceAmount: number;        // Total booking amount
   commissionRate: 30;           // Always 30% for Pro members
   commissionAmount: number;     // Calculated as serviceAmount * 0.30
-  paymentDeadline: string;      // bookingDate + 3 hours
+   paymentDeadline: string;      // bookingDate + 4 hours
   status: 'pending';            // Initial status
   createdAt: string;            // Record creation timestamp
   updatedAt: string;            // Last update timestamp
@@ -73,11 +73,11 @@ Each commission record contains:
 
 ## Payment Enforcement
 
-### 3-Hour Deadline System
+### 4-Hour Deadline System
 - Commission record is created **immediately** after booking
-- Deadline is set to **3 hours** from booking creation time
+- Deadline is set to **4 hours** from booking creation time
 - System monitors deadline automatically
-- If member doesn't upload payment proof within 3 hours:
+- If member doesn't upload payment proof within 4 hours:
   - Account status changes to **'busy'**
   - `bookingEnabled` and `scheduleEnabled` set to **false**
   - Member cannot receive new bookings until payment is submitted
@@ -140,8 +140,8 @@ Each commission record contains:
 - [ ] Pro member schedules booking → Commission record with scheduled date
 - [ ] Plus member schedules booking → No commission record
 - [ ] Commission record has correct 30% calculation
-- [ ] Payment deadline is exactly 3 hours from booking creation
-- [ ] Account auto-deactivates after 3 hours without payment
+- [ ] Payment deadline is exactly 4 hours from booking creation
+- [ ] Account auto-deactivates after 4 hours without payment
 - [ ] Account auto-reactivates immediately after proof upload
 - [ ] Admin can verify/reject payments
 - [ ] Failed commission creation doesn't block booking
@@ -151,7 +151,7 @@ Each commission record contains:
 ✅ **Automatic commission tracking is now fully integrated**
 - Pro members (30% commission) are automatically tracked
 - Plus members (0% commission) are exempt
-- 3-hour payment deadline enforced with auto-deactivation
+- 4-hour payment deadline enforced with auto-deactivation
 - Immediate reactivation after proof upload
 - Admin verification workflow complete
 - Both "Book Now" and "Schedule" booking flows covered

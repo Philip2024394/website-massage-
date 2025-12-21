@@ -203,8 +203,6 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
     }
   };
 
-  const isPremium = therapist?.membershipTier === 'premium';
-
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
@@ -328,140 +326,209 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
                             }}
                             onBlur={e => {
                               if (!e.target.value) {
-                                updateService(service.id, 'min60', '60');
-                              }
-                            }}
-                            className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
-                            placeholder="60"
-                            maxLength={3}
-                          />
-                          <span className="text-[10px] text-gray-600">min</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={service.price60}
-                          onChange={e => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            updateService(service.id, 'price60', value);
-                          }}
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
-                          placeholder="150"
-                          maxLength={3}
-                        />
-                        <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
-                      </div>
-
-                      {/* 90 Minutes Container */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
-                          <input
+                                {services.length > 0 && (() => {
+                                  const validServices = services.filter(s => s.serviceName.trim());
+                                  const dataSize = new Blob([JSON.stringify(validServices)]).size;
+                                  const percentage = (dataSize / 50000) * 100;
+                                  const isNearLimit = percentage > 80;
+                                  const isOverLimit = dataSize > 50000;
+            
+                                  return (
+                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${
+                                      isOverLimit ? 'bg-red-100' : isNearLimit ? 'bg-yellow-100' : 'bg-green-100'
+                                    }`}>
+                                      <span className={`text-xs font-medium ${
+                                        isOverLimit ? 'text-red-700' : isNearLimit ? 'text-yellow-700' : 'text-green-700'
+                                      }`}>
+                                        📊 {dataSize}/50000 chars
+                                      </span>
+                                    </div>
+                                  );
+                                })()}
                             type="text"
                             value={service.min90 || ''}
                             onChange={e => {
                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                              updateService(service.id, 'min90', value);
-                            }}
-                            onBlur={e => {
-                              if (!e.target.value) {
-                                updateService(service.id, 'min90', '90');
-                              }
-                            }}
-                            className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
-                            placeholder="90"
-                            maxLength={3}
-                          />
-                          <span className="text-[10px] text-gray-600">min</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={service.price90}
-                          onChange={e => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            updateService(service.id, 'price90', value);
-                          }}
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
-                          placeholder="200"
-                          maxLength={3}
-                        />
-                        <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
-                      </div>
+                                {/* Info Box */}
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                  <p className="text-sm text-blue-700 mb-2">
+                                    📋 <strong>Auto-Save Enabled:</strong> Your changes save automatically after 2 seconds. No need to click save!
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    💡 <strong>Tip:</strong> Leave price empty to hide that duration. Edit Min values to set custom minimum booking times.
+                                  </p>
+                                </div>
 
-                      {/* 120 Minutes Container */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-center gap-1 mb-1">
-                          <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
-                          <input
-                            type="text"
-                            value={service.min120 || ''}
-                            onChange={e => {
-                              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                              updateService(service.id, 'min120', value);
-                            }}
-                            onBlur={e => {
-                              if (!e.target.value) {
-                                updateService(service.id, 'min120', '120');
-                              }
-                            }}
-                            className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
-                            placeholder="120"
-                            maxLength={3}
-                          />
-                          <span className="text-[10px] text-gray-600">min</span>
-                        </div>
-                        <input
-                          type="text"
-                          value={service.price120}
-                          onChange={e => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            updateService(service.id, 'price120', value);
-                          }}
-                          className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
-                          placeholder="250"
-                          maxLength={3}
-                        />
-                        <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
-                      </div>
+                                {/* Services List - One Line Per Service */}
+                                <div className="space-y-3">
+                                  {services.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">
+                                      No services added yet. Click "+ Add New Service" to start.
+                                    </div>
+                                  )}
+            
+                                  {services.map((service, index) => (
+                                    <div key={service.id} className="bg-white border-2 border-orange-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+                                      {/* Service Name - Full Width on Top */}
+                                      <div className="mb-3">
+                                        <input
+                                          type="text"
+                                          value={service.serviceName}
+                                          onChange={e => updateService(service.id, 'serviceName', e.target.value)}
+                                          className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:border-orange-500 outline-none"
+                                          placeholder="Service name"
+                                        />
+                                      </div>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => removeService(service.id)}
-                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
-                        title="Delete Service"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                                      {/* Duration Containers + Delete Button Row */}
+                                      <div className="flex items-start gap-2">
+                                        {/* 60 Minutes Container */}
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-center gap-1 mb-1">
+                                            <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
+                                            <input
+                                              type="text"
+                                              value={service.min60 || ''}
+                                              onChange={e => {
+                                                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                                updateService(service.id, 'min60', value);
+                                              }}
+                                              onBlur={e => {
+                                                if (!e.target.value) {
+                                                  updateService(service.id, 'min60', '60');
+                                                }
+                                              }}
+                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              placeholder="60"
+                                              maxLength={3}
+                                            />
+                                            <span className="text-[10px] text-gray-600">min</span>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={service.price60}
+                                            onChange={e => {
+                                              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                              updateService(service.id, 'price60', value);
+                                            }}
+                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            placeholder="150"
+                                            maxLength={3}
+                                          />
+                                          <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
+                                        </div>
 
-              {/* Add Service Button */}
-              <div className="mt-4">
-                <button
-                  onClick={addNewService}
-                  className="w-full py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all flex items-center justify-center gap-2 text-sm font-medium"
-                >
-                  <Plus className="w-4 h-4" />
-                  Add New Service
-                </button>
-              </div>
+                                        {/* 90 Minutes Container */}
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-center gap-1 mb-1">
+                                            <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
+                                            <input
+                                              type="text"
+                                              value={service.min90 || ''}
+                                              onChange={e => {
+                                                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                                updateService(service.id, 'min90', value);
+                                              }}
+                                              onBlur={e => {
+                                                if (!e.target.value) {
+                                                  updateService(service.id, 'min90', '90');
+                                                }
+                                              }}
+                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              placeholder="90"
+                                              maxLength={3}
+                                            />
+                                            <span className="text-[10px] text-gray-600">min</span>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={service.price90}
+                                            onChange={e => {
+                                              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                              updateService(service.id, 'price90', value);
+                                            }}
+                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            placeholder="200"
+                                            maxLength={3}
+                                          />
+                                          <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
+                                        </div>
 
-              {/* Save Button */}
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full mt-4 px-6 py-4 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-all flex items-center justify-center gap-2 disabled:bg-gray-300"
-              >
-                <Save className="w-5 h-5" />
-                {saving ? 'Saving...' : 'Save Menu'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </main>
-  );
-};
+                                        {/* 120 Minutes Container */}
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-center gap-1 mb-1">
+                                            <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
+                                            <input
+                                              type="text"
+                                              value={service.min120 || ''}
+                                              onChange={e => {
+                                                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                                updateService(service.id, 'min120', value);
+                                              }}
+                                              onBlur={e => {
+                                                if (!e.target.value) {
+                                                  updateService(service.id, 'min120', '120');
+                                                }
+                                              }}
+                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              placeholder="120"
+                                              maxLength={3}
+                                            />
+                                            <span className="text-[10px] text-gray-600">min</span>
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={service.price120}
+                                            onChange={e => {
+                                              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
+                                              updateService(service.id, 'price120', value);
+                                            }}
+                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            placeholder="250"
+                                            maxLength={3}
+                                          />
+                                          <div className="text-[9px] text-gray-500 text-center mt-0.5">×1000</div>
+                                        </div>
 
-export default TherapistMenu;
+                                        {/* Delete Button */}
+                                        <button
+                                          onClick={() => removeService(service.id)}
+                                          className="flex items-center justify-center p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                                          aria-label="Delete service"
+                                        >
+                                          <Trash2 className="w-5 h-5" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Add Service Button */}
+                                <button
+                                  onClick={addNewService}
+                                  className="w-full py-3 px-4 bg-white border-2 border-dashed border-orange-300 text-orange-600 rounded-xl font-semibold hover:bg-orange-50 flex items-center justify-center gap-2"
+                                >
+                                  <Plus className="w-5 h-5" />
+                                  Add New Service
+                                </button>
+
+                                {/* Save Button */}
+                                <button
+                                  onClick={handleSave}
+                                  disabled={saving}
+                                  className={`w-full py-3 px-4 rounded-xl font-bold text-white mt-3 flex items-center justify-center gap-2 transition-all ${
+                                    saving ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-500 hover:bg-orange-600'
+                                  }`}
+                                >
+                                  {saving ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                      Saving...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Save className="w-5 h-5" />
+                                      Save Menu
+                                    </>
+                                  )}
+                                </button>

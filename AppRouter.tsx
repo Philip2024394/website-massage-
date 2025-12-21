@@ -1,78 +1,43 @@
-import React, { useState, useEffect } from 'react';
+/**
+ * AppRouter - Enterprise-grade routing architecture
+ * 
+ * Architecture:
+ * - Modular route configuration
+ * - Lazy-loaded components
+ * - Type-safe navigation
+ * - Centralized state management
+ * - Performance optimized
+ */
+
+import React, { Suspense } from 'react';
 import { useTranslations } from './lib/useTranslations';
-import { translationsService } from './lib/appwriteService';
-import { translations } from './translations';
 import { useLanguage } from './hooks/useLanguage';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
-import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage, AvailabilityStatus } from './types';
+import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './types';
 import { BookingStatus } from './types';
-import { validateDashboardAccess, clearAllAuthStates, createSecureDashboardRenderer, type AuthenticationState } from './utils/dashboardGuards';
-import { therapistService } from './lib/appwriteService';
-
-// Helper function to get auth app URL for development and production
-const getAuthAppUrl = (): string => {
-    // Check for environment variable first
-    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
-    if (envUrl) return envUrl;
-    
-    // Development mode
-    if (window.location.origin.includes('localhost')) {
-        return 'http://localhost:3001';
-    }
-    
-    // Production mode - for now redirect to main site
-    // This needs to be updated when auth-app is deployed separately
-    return window.location.origin;
-};
 import LoadingSpinner from './components/LoadingSpinner';
 
-// Page imports - Lazy load everything except critical landing pages
-const LandingPage = React.lazy(() => import('./pages/LandingPage'));
-const TherapistLoginPage = React.lazy(() => import('./pages/TherapistLoginPage'));
-const HomePage = React.lazy(() => import('./pages/HomePage'));
-const CustomerProvidersPage = React.lazy(() => import('./pages/CustomerProvidersPage'));
-const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
-const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
-const MassageTypesPage = React.lazy(() => import('./pages/MassageTypesPage'));
-const FacialTypesPage = React.lazy(() => import('./pages/FacialTypesPage'));
+// Route configurations
+import { publicRoutes } from './router/routes/publicRoutes';
+import { authRoutes } from './router/routes/authRoutes';
+import { profileRoutes } from './router/routes/profileRoutes';
+import { legalRoutes } from './router/routes/legalRoutes';
+import { blogRoutes } from './router/routes/blogRoutes';
+
+// Specialized pages not in route modules
+const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
+const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
-// ProviderPortalsPage removed - using direct simpleSignup flow
-// PortalSelectionPage removed - using direct simpleSignup flow
-const PackageTermsPage = React.lazy(() => import('./pages/PackageTermsPage'));
-const FAQPage = React.lazy(() => import('./pages/FAQPage'));
 const WebsiteManagementPage = React.lazy(() => import('./pages/WebsiteManagementPage'));
-const TodaysDiscountsPage = React.lazy(() => import('./pages/TodaysDiscountsPage'));
 const GuestProfilePage = React.lazy(() => import('./pages/GuestProfilePage'));
 const QRCodePage = React.lazy(() => import('./pages/QRCodePage'));
-
-const PlaceDetailPage = React.lazy(() => import('./pages/PlaceDetailPage'));
-const MassagePlaceProfilePage = React.lazy(() => import('./pages/MassagePlaceProfilePage'));
-// RegistrationChoicePage removed - redundant with SimpleSignupFlow portal selection
-const TherapistProfilePage = React.lazy(() => import('./pages/TherapistProfilePage'));
-
-// Agent pages deprecated: routes now redirect to Indastreet Partner (villa) routes
-const ServiceTermsPage = React.lazy(() => import('./pages/ServiceTermsPage'));
-const PlaceTermsPage = React.lazy(() => import('./pages/PlaceTermsPage'));
-const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
-const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
-const MobileTherapistStandardsPage = React.lazy(() => import('./pages/MobileTherapistStandardsPage'));
-const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
-const CookiesPolicyPage = React.lazy(() => import('./pages/CookiesPolicyPage'));
-const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
-const BookingPage = React.lazy(() => import('./pages/BookingPage'));
 const NotificationsPage = React.lazy(() => import('./pages/NotificationsPage'));
-const MassagePlaceLoginPage = React.lazy(() => import('./pages/MassagePlaceLoginPage'));
-const FacialProvidersPage = React.lazy(() => import('./pages/FacialProvidersPage'));
-const FacialPlaceProfilePage = React.lazy(() => import('./pages/FacialPlaceProfilePage'));
-const SimpleSignupFlow = React.lazy(() => import('./src/pages/SimpleSignupFlow'));
-const MembershipTermsPage = React.lazy(() => import('./pages/MembershipTermsPage'));
-const FacialPortalPage = React.lazy(() => import('./pages/FacialPortalPage'));
-// FacialMemberDashboard removed - now redirects to separate dashboard app
+const BookingPage = React.lazy(() => import('./pages/BookingPage'));
+const MembershipPage = React.lazy(() => import('./pages/MembershipPage'));
 const AcceptBookingPage = React.lazy(() => import('./pages/AcceptBookingPage'));
 const DeclineBookingPage = React.lazy(() => import('./pages/DeclineBookingPage'));
 const LeadAcceptPage = React.lazy(() => import('./pages/LeadAcceptPage'));
 const LeadDeclinePage = React.lazy(() => import('./pages/LeadDeclinePage'));
-const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const JobPostingPaymentPage = React.lazy(() => import('./pages/JobPostingPaymentPage'));
 const BrowseJobsPage = React.lazy(() => import('./pages/BrowseJobsPage'));
 const MassageJobsPage = React.lazy(() => import('./pages/MassageJobsPage'));
@@ -80,22 +45,21 @@ const PartnershipApplicationPage = React.lazy(() => import('./pages/PartnershipA
 const TherapistJobRegistrationPage = React.lazy(() => import('./pages/TherapistJobRegistrationPage'));
 const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
-// Customer auth unified into UnifiedLoginPage; legacy CustomerAuthPage removed
-// Eager-load pages to avoid dynamic import fetch issues during dev
-const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
-const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
-const CompanyProfilePage = React.lazy(() => import('./pages/CompanyProfilePage'));
-const HowItWorksPage = React.lazy(() => import('./pages/HowItWorksPage'));
-const MassageBaliPage = React.lazy(() => import('./pages/MassageBaliPage'));
-const BlogIndexPage = React.lazy(() => import('./pages/BlogIndexPage'));
-const BalineseMassagePage = React.lazy(() => import('./pages/BalineseMassagePage'));
-const DeepTissueMassagePage = React.lazy(() => import('./pages/DeepTissueMassagePage'));
-const PressMediaPage = React.lazy(() => import('./pages/PressMediaPage'));
+const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
+const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
+const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
+const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
+const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
+const MobileTherapistStandardsPage = React.lazy(() => import('./pages/MobileTherapistStandardsPage'));
+const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
+const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
+const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
 const CareerOpportunitiesPage = React.lazy(() => import('./pages/CareerOpportunitiesPage'));
 const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
-// HotelInfoPage removed - hotel/villa dashboards deprecated
 const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
+
+// Blog posts
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
 const Top10MassageTechniquesPage = React.lazy(() => import('./pages/blog/Top10MassageTechniquesPage'));
 const MassageCareerIndonesiaPage = React.lazy(() => import('./pages/blog/MassageCareerIndonesiaPage'));
@@ -108,11 +72,6 @@ const PricingGuideMassageTherapistsPage = React.lazy(() => import('./pages/blog/
 const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/DeepTissueVsSwedishMassagePage'));
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
-const GuestAlertsPage = React.lazy(() => import('./pages/GuestAlertsPage'));
-const PartnerSettingsPage = React.lazy(() => import('./pages/PartnerSettingsPage'));
-// Removed - JoinIndastreetPartnersPage moved to deleted folder (all signup flows use auth-app)
-const AdminLoginPage = React.lazy(() => import('./pages/AdminLoginPage'));
-import { APP_CONFIG } from './config/appConfig';
 
 interface AppRouterProps {
     page: Page;
@@ -129,28 +88,26 @@ interface AppRouterProps {
     userLocation: UserLocation | null;
     selectedMassageType: string | null;
     selectedPlace: Place | null;
-    selectedTherapist: Therapist | null; // 🎯 NEW: Selected therapist for profile view
-
+    selectedTherapist: Therapist | null;
     isAdminLoggedIn: boolean;
     isHotelLoggedIn: boolean;
     isVillaLoggedIn: boolean;
-
     bookings: Booking[];
     notifications: Notification[];
     impersonatedAgent: Agent | null;
     adminMessages: AdminMessage[];
     providerForBooking: { provider: Therapist | Place; type: 'therapist' | 'place' } | null;
     providerAuthInfo: { type: 'therapist' | 'place'; mode: 'login' | 'register' } | null;
-
     selectedJobId: string | null;
     venueMenuId: string | null;
     hotelVillaLogo: string | null;
+    
     // Handlers
     handleLanguageSelect: (lang: Language) => Promise<void>;
     handleEnterApp: (lang: Language, location: UserLocation) => Promise<void>;
     handleSetUserLocation: (location: UserLocation) => void;
     handleSetSelectedPlace: (place: Place) => void;
-    handleSetSelectedTherapist: (therapist: Therapist) => void; // 🎯 NEW: Set selected therapist
+    handleSetSelectedTherapist: (therapist: Therapist) => void;
     handleLogout: () => Promise<void>;
     handleNavigateToTherapistLogin: () => void;
     handleNavigateToRegistrationChoice: () => void;
@@ -158,7 +115,7 @@ interface AppRouterProps {
     handleQuickBookWithChat: (provider: Therapist | Place, type: 'therapist' | 'place') => Promise<void>;
     handleChatWithBusyTherapist: (therapist: Therapist) => Promise<void>;
     handleShowRegisterPromptForChat: () => void;
-    handleIncrementAnalytics: (providerId: string | number, providerType: 'therapist' | 'place', metric: 'whatsapp_clicks' | 'phone_clicks' | 'directions_clicks' | 'views' | 'bookings') => Promise<void>;
+    handleIncrementAnalytics: (providerId: string | number, providerType: 'therapist' | 'place', metric: string) => Promise<void>;
     handleNavigateToHotelLogin: () => void;
     handleNavigateToMassagePlaceLogin: () => void;
     handleNavigateToServiceTerms: () => void;
@@ -176,8 +133,6 @@ interface AppRouterProps {
     handleSendAdminMessage: (message: string) => Promise<void>;
     handleMarkMessagesAsRead: () => Promise<void>;
     handleSelectMembershipPackage: (packageName: string, price: string) => void;
-
-
     handleCreateBooking: (bookingData: any) => Promise<void>;
     handleUpdateBookingStatus: (bookingId: number, newStatus: BookingStatus) => Promise<void>;
     handleMarkNotificationAsRead: (notificationId: number) => void;
@@ -186,1524 +141,314 @@ interface AppRouterProps {
     handleHotelLogout: () => Promise<void>;
     handleCustomerLogout: () => Promise<void>;
     handleAgentLogout: () => Promise<void>;
-    handleHotelLogin: (hotelId?: string) => void; // Add hotel login handler
-    handleAdminLogin: () => void; // Admin login handler
-    handleAdminLogout: () => Promise<void>; // Admin logout handler
+    handleHotelLogin: (hotelId?: string) => void;
+    handleAdminLogin: () => void;
+    handleAdminLogout: () => Promise<void>;
     handleNavigateToNotifications: () => void;
     handleNavigateToAgentAuth: () => void;
-
-
     setPage: (page: Page) => void;
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
-
-
-
     setSelectedJobId: (id: string | null) => void;
 }
 
+/**
+ * Enterprise Router Component
+ * Uses modular route configuration for maintainability
+ */
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
+    const { page, language, handleLanguageSelect } = props;
+    const { t } = useTranslations();
 
-    const {
-        page,
-        isLoading,
-        user,
-        language,
-        loggedInAgent,
-        loggedInProvider,
-        loggedInCustomer,
-        therapists,
-        places,
-        facialPlaces,
-        hotels,
-        userLocation,
-        selectedMassageType,
-        selectedPlace,
-        selectedTherapist, // 🎯 NEW: Selected therapist
-        // language, // Unused variable
-        isAdminLoggedIn,
-        isHotelLoggedIn,
-        isVillaLoggedIn,
-        bookings,
-        notifications,
-        impersonatedAgent,
-        adminMessages,
-        providerForBooking,
-        providerAuthInfo,
-        selectedJobId,
-        venueMenuId,
-        handleLanguageSelect,
-        handleEnterApp,
-        handleSetUserLocation,
-        handleSetSelectedPlace,
-        // _handleSetSelectedTherapist, // 🎯 NEW: Handler for selecting therapist (unused)
-        handleLogout,
-        handleNavigateToTherapistLogin,
-        handleNavigateToRegistrationChoice,
-        handleNavigateToBooking,
-        handleQuickBookWithChat,
-        handleChatWithBusyTherapist,
-        handleShowRegisterPromptForChat,
-        handleIncrementAnalytics,
-        handleNavigateToMassagePlaceLogin,
-        handleNavigateToServiceTerms,
-        handleNavigateToPrivacyPolicy,
-        handleBackToHome,
-        handleSelectRegistration,
-        handleTherapistStatusChange,
-        handleSaveTherapist,
-        handleSavePlace,
-        handleAgentRegister,
-        handleAgentLogin,
-        handleAgentAcceptTerms,
-        handleSaveAgentProfile,
-        handleStopImpersonating,
-        handleSendAdminMessage,
-        handleMarkMessagesAsRead,
-        handleSelectMembershipPackage,
-        handleCreateBooking,
-        handleUpdateBookingStatus,
-        handleMarkNotificationAsRead,
-        handleCustomerAuthSuccess,
-        handleProviderLogout,
-        handleHotelLogout,
-        handleCustomerLogout,
-        handleAgentLogout,
-        handleHotelLogin, // Add hotel login handler
-        handleNavigateToNotifications,
-        setPage,
-        setLoggedInProvider,
-        setSelectedJobId
-    } = props;
-
-    // Industry-standard portal loading state separate from public list
-    const [portalTherapist, setPortalTherapist] = useState<Therapist | null>(null);
-    const [portalLoading, setPortalLoading] = useState(false);
-    const [portalError, setPortalError] = useState<string | null>(null);
-    
-    // Facial member authentication state
-    const [facialMemberId, setFacialMemberId] = useState<string | null>(null);
-    const [facialMemberEmail, setFacialMemberEmail] = useState<string | null>(null);
-
-    // 🚀 Initialize app and clean up stale data
-    // DISABLED: Anonymous sessions create empty user entries in Appwrite
-    useEffect(() => {
-        const initSession = async () => {
-            // Clean up stale signup data on app mount
-            localStorage.removeItem('pendingTermsPlan');
-            localStorage.removeItem('selected_membership_plan');
-            localStorage.removeItem('selectedPortalType');
-            console.log('✅ [AppRouter] App initialized, signup data cleared');
-        };
-        initSession();
-    }, []); // Run only once on mount
-
-    // Fetch therapist document after successful login when navigating to portal
-    useEffect(() => {
-        const shouldLoad = page === 'therapistPortal' && loggedInProvider?.type === 'therapist';
-        if (!shouldLoad) return;
-        // If already loaded or currently loading, skip
-        if (portalTherapist || portalLoading) return;
-        const load = async () => {
-            setPortalLoading(true);
-            setPortalError(null);
-            try {
-                console.log('🔄 [PortalFetch] Starting therapist portal fetch for id:', loggedInProvider.id);
-                let doc: Therapist | null = null;
-                // Primary: direct getById
-                if (loggedInProvider.id) {
-                    const byId = await therapistService.getById(String(loggedInProvider.id));
-                    if (byId) {
-                        console.log('✅ [PortalFetch] Loaded via getById:', byId.name);
-                        doc = byId;
-                    }
-                }
-                // Fallback: email lookup via existing user or account
-                if (!doc) {
-                    let email: string | undefined = user?.email;
-                    if (!email) {
-                        const currentUser = await therapistService.getCurrentUser();
-                        email = currentUser?.email;
-                        console.log('🔍 [PortalFetch] Using currentUser email fallback:', email);
-                    }
-                    if (email) {
-                        const matches = await therapistService.getByEmail(email);
-                        if (matches && matches.length > 0) {
-                            const first = matches[0];
-                            if (first) {
-                                console.log('✅ [PortalFetch] Loaded via email fallback:', first.name);
-                                doc = first;
-                            }
-                        } else {
-                            console.warn('⚠️ [PortalFetch] No document found by email');
-                        }
-                    }
-                }
-                if (!doc) {
-                    setPortalError('Unable to load therapist profile. Please refresh or retry login.');
-                }
-                setPortalTherapist(doc);
-            } catch (e: any) {
-                console.error('❌ [PortalFetch] Error:', e);
-                setPortalError(e?.message || 'Unexpected portal load error');
-            } finally {
-                setPortalLoading(false);
-            }
-        };
-        load();
-    }, [page, loggedInProvider, portalTherapist, portalLoading, user]);
-
-    // 🔄 Refresh portal therapist data when profile updates
-    useEffect(() => {
-        if (page !== 'therapistPortal' || loggedInProvider?.type !== 'therapist') return;
-        
-        const handlePortalRefresh = async () => {
-            console.log('🔄 [PortalRefresh] Refreshing therapist portal data after profile update');
-            try {
-                if (loggedInProvider.id) {
-                    const updated = await therapistService.getById(String(loggedInProvider.id));
-                    if (updated) {
-                        console.log('✅ [PortalRefresh] Updated portal therapist:', updated.name);
-                        setPortalTherapist(updated);
-                    }
-                }
-            } catch (e) {
-                console.error('❌ [PortalRefresh] Failed to refresh portal data:', e);
-            }
-        };
-        
-        window.addEventListener('refreshTherapistData', handlePortalRefresh);
-        
-        return () => {
-            window.removeEventListener('refreshTherapistData', handlePortalRefresh);
-        };
-    }, [page, loggedInProvider]);
-    
-
-
-    // Restore provider from sessionStorage on mount (since localStorage is disabled)
-    React.useEffect(() => {
-        const storedProvider = sessionStorage.getItem('logged_in_provider');
-        if (storedProvider && !loggedInProvider) {
-            try {
-                const providerData = JSON.parse(storedProvider);
-                console.log('🔄 Restoring provider from sessionStorage:', providerData);
-                setLoggedInProvider(providerData);
-            } catch (e) {
-                console.error('Failed to restore provider from sessionStorage:', e);
-            }
-        }
-    }, []);
-    
-    // Build a translation adapter from the active language dictionary
-    const { language: ctxLanguage } = useLanguage();
-    const activeLanguage = (language as any) || ctxLanguage;
-    console.log('🌍 AppRouter: Props language:', language);
-    console.log('🌍 AppRouter: Context language:', ctxLanguage); 
-    console.log('🌍 AppRouter: Active language resolved:', activeLanguage);
-    console.log(`🌍 AppRouter: Using ${activeLanguage === 'id' ? 'INDONESIAN 🇮🇩' : 'ENGLISH 🇬🇧'} translations`);
-    const { t: tFn, dict } = useTranslations(activeLanguage as any);
-    console.log('🌍 AppRouter: Dict received from useTranslations:', dict ? Object.keys(dict) : 'null');
-    console.log('🌍 AppRouter: Sample home translation (homeServiceTab):', dict?.home?.homeServiceTab);
-
-    // DISABLED: One-time sync of core translation keys to Appwrite
-    // This was causing rate limit errors (429) - translations now loaded from Appwrite only
-    React.useEffect(() => {
-        // Translation sync disabled to prevent rate limiting
-        return;
-        
-        const KEY = 'coreTranslationsSynced_v2';
-        try {
-            const already = localStorage.getItem(KEY);
-            if (already) return;
-        } catch {}
-
-        (async () => {
-            try {
-                // EN values
-                await translationsService.set('en', 'home.accommodationMassageService', 'Accommodation With Massage Service');
-                await translationsService.set('en', 'home.menu.accommodationMassageService', 'Accommodation With Massage Service');
-                await translationsService.set('en', 'home.menu.traditionalBalineseMassage', 'Traditional Balinese Massage');
-                await translationsService.set('en', 'home.menu.deepTissueMassage', 'Deep Tissue Massage');
-                await translationsService.set('en', 'home.menu.joinIndastreet', 'Join Indastreet');
-                await translationsService.set('en', 'home.menu.massageJobs', 'Massage Jobs');
-                await translationsService.set('en', 'home.menu.howItWorks', 'How It Works');
-                await translationsService.set('en', 'home.menu.companyProfile', 'Company Profile');
-                await translationsService.set('en', 'home.menu.blog', 'Blog');
-                await translationsService.set('en', 'home.menu.sections.locations', 'Locations');
-                await translationsService.set('en', 'home.menu.massageInBali', 'Massage in Bali');
-                await translationsService.set('en', 'home.menu.sections.massageServices', 'Massage Services');
-                await translationsService.set('en', 'home.menu.sections.helpSupport', 'Help & Support');
-                await translationsService.set('en', 'home.menu.faq', 'FAQ');
-                await translationsService.set('en', 'home.menu.therapistPortal', 'Therapist Portal');
-                await translationsService.set('en', 'home.menu.massageSpaPortal', 'Massage Spa Portal');
-                await translationsService.set('en', 'home.menu.websitePartnersPortal', 'Website Partners Portal');
-                await translationsService.set('en', 'home.menu.qrCode', 'QR Code');
-                await translationsService.set('en', 'home.menu.terms', 'Terms');
-                await translationsService.set('en', 'home.menu.privacy', 'Privacy');
-                await translationsService.set('en', 'about.subtitle', "Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers");
-                await translationsService.set('en', 'about.missionTitle', 'Our IndaStreet Mission');
-                await translationsService.set('en', 'about.missionText', 'Connecting customers with quality massage therapists while empowering local wellness professionals');
-                await translationsService.set('en', 'about.cta.getStarted', 'Get Started Today');
-                await translationsService.set('en', 'about.cta.viewCompanyProfile', 'View Company Profile');
-                await translationsService.set('en', 'about.cta.contactTeam', 'Contact Our Team');
-                await translationsService.set('en', 'contact.title', 'Contact IndaStreet');
-                await translationsService.set('en', 'contact.subtitle', "We're here to help. Get in touch with our team for support, partnerships, or inquiries.");
-                await translationsService.set('en', 'contact.form.title', "Let's Connect");
-                await translationsService.set('en', 'contact.form.nameLabel', 'Your Name *');
-                await translationsService.set('en', 'contact.form.namePlaceholder', 'Enter your full name');
-                await translationsService.set('en', 'contact.form.emailLabel', 'Email Address *');
-                await translationsService.set('en', 'contact.form.emailPlaceholder', 'your.email@example.com');
-                await translationsService.set('en', 'contact.form.phoneLabel', 'Phone Number');
-                await translationsService.set('en', 'contact.form.phonePlaceholder', '+62 812 3456 7890');
-                await translationsService.set('en', 'contact.form.userTypeLabel', 'I am a... *');
-                await translationsService.set('en', 'contact.form.userTypeSelect', 'Select user type');
-                await translationsService.set('en', 'contact.form.userTypes.therapist', 'Massage Therapist');
-                await translationsService.set('en', 'contact.form.userTypes.hotel', 'Hotel/Villa Owner');
-                await translationsService.set('en', 'contact.form.userTypes.employer', 'Employer/Spa Manager');
-                await translationsService.set('en', 'contact.form.userTypes.agent', 'Agent');
-                await translationsService.set('en', 'contact.form.userTypes.client', 'Client/Customer');
-                await translationsService.set('en', 'contact.form.userTypes.other', 'Other');
-                await translationsService.set('en', 'contact.form.subjectLabel', 'Subject *');
-                await translationsService.set('en', 'contact.form.subjectPlaceholder', 'What is your inquiry about?');
-                await translationsService.set('en', 'contact.form.messageLabel', 'Message *');
-                await translationsService.set('en', 'contact.form.messagePlaceholder', 'Tell us how we can help you...');
-                await translationsService.set('en', 'contact.form.sendButton', 'Send Message');
-                await translationsService.set('en', 'contact.support.title', 'Support Resources');
-                await translationsService.set('en', 'contact.support.quickSupport.title', 'Quick Support');
-                await translationsService.set('en', 'contact.support.quickSupport.button', 'Visit FAQ →');
-                await translationsService.set('en', 'contact.support.partnerships.title', 'Partnership Inquiries');
-                await translationsService.set('en', 'contact.support.partnerships.button', 'Learn More →');
-                await translationsService.set('en', 'contact.support.pressMedia.title', 'Press & Media');
-                await translationsService.set('en', 'contact.support.pressMedia.button', 'Press Kit →');
-                await translationsService.set('en', 'contact.support.careers.title', 'Career Opportunities');
-                await translationsService.set('en', 'contact.support.careers.button', 'View Jobs →');
-
-                // Blog Popular Topics (EN)
-                await translationsService.set('en', 'blog.topics.balineseMassage', 'Balinese Massage');
-                await translationsService.set('en', 'blog.topics.hotelSpaManagement', 'Hotel Spa Management');
-                await translationsService.set('en', 'blog.topics.therapistCertification', 'Therapist Certification');
-                await translationsService.set('en', 'blog.topics.wellnessTourism', 'Wellness Tourism');
-                await translationsService.set('en', 'blog.topics.deepTissueTechniques', 'Deep Tissue Techniques');
-                await translationsService.set('en', 'blog.topics.careerGrowth', 'Career Growth');
-                await translationsService.set('en', 'blog.topics.clientRetention', 'Client Retention');
-                await translationsService.set('en', 'blog.topics.aromatherapy', 'Aromatherapy');
-
-                // ID values
-                await translationsService.set('id', 'home.accommodationMassageService', 'Akomodasi dengan Layanan Pijat');
-                await translationsService.set('id', 'home.menu.accommodationMassageService', 'Akomodasi dengan Layanan Pijat');
-                await translationsService.set('id', 'home.menu.traditionalBalineseMassage', 'Pijat Bali Tradisional');
-                await translationsService.set('id', 'home.menu.deepTissueMassage', 'Pijat Jaringan Dalam');
-                await translationsService.set('id', 'home.menu.joinIndastreet', 'Bergabung dengan IndaStreet');
-                await translationsService.set('id', 'home.menu.massageJobs', 'Lowongan Pijat');
-                await translationsService.set('id', 'home.menu.howItWorks', 'Cara Kerja');
-                await translationsService.set('id', 'home.menu.companyProfile', 'Profil Perusahaan');
-                await translationsService.set('id', 'home.menu.blog', 'Blog');
-                await translationsService.set('id', 'home.menu.sections.locations', 'Lokasi');
-                await translationsService.set('id', 'home.menu.massageInBali', 'Pijat di Bali');
-                await translationsService.set('id', 'home.menu.sections.massageServices', 'Layanan Pijat');
-                await translationsService.set('id', 'home.menu.sections.helpSupport', 'Bantuan & Dukungan');
-                await translationsService.set('id', 'home.menu.faq', 'FAQ');
-                await translationsService.set('id', 'home.menu.therapistPortal', 'Portal Terapis');
-                await translationsService.set('id', 'home.menu.massageSpaPortal', 'Portal Spa Pijat');
-                await translationsService.set('id', 'home.menu.websitePartnersPortal', 'Portal Mitra Website');
-                await translationsService.set('id', 'home.menu.qrCode', 'Kode QR');
-                await translationsService.set('id', 'home.menu.terms', 'Syarat');
-                await translationsService.set('id', 'home.menu.privacy', 'Privasi');
-                await translationsService.set('id', 'about.subtitle', 'Marketplace Kesehatan Terlengkap Pertama di Indonesia yang Menghubungkan Terapis, Hotel, dan Pemberi Kerja');
-                await translationsService.set('id', 'about.missionTitle', 'Misi IndaStreet Kami');
-                await translationsService.set('id', 'about.missionText', 'Menghubungkan pelanggan dengan terapis pijat berkualitas sambil memberdayakan profesional kesehatan lokal');
-                await translationsService.set('id', 'about.cta.getStarted', 'Mulai Hari Ini');
-                await translationsService.set('id', 'about.cta.viewCompanyProfile', 'Lihat Profil Perusahaan');
-                await translationsService.set('id', 'about.cta.contactTeam', 'Hubungi Tim Kami');
-                await translationsService.set('id', 'contact.title', 'Hubungi IndaStreet');
-                await translationsService.set('id', 'contact.subtitle', 'Kami siap membantu. Hubungi tim kami untuk dukungan, kemitraan, atau pertanyaan.');
-                await translationsService.set('id', 'contact.form.title', 'Mari Terhubung');
-                await translationsService.set('id', 'contact.form.nameLabel', 'Nama Anda *');
-                await translationsService.set('id', 'contact.form.namePlaceholder', 'Masukkan nama lengkap Anda');
-                await translationsService.set('id', 'contact.form.emailLabel', 'Alamat Email *');
-                await translationsService.set('id', 'contact.form.emailPlaceholder', 'email.anda@contoh.com');
-                await translationsService.set('id', 'contact.form.phoneLabel', 'Nomor Telepon');
-                await translationsService.set('id', 'contact.form.phonePlaceholder', '+62 812 3456 7890');
-                await translationsService.set('id', 'contact.form.userTypeLabel', 'Saya adalah... *');
-                await translationsService.set('id', 'contact.form.userTypeSelect', 'Pilih jenis pengguna');
-                await translationsService.set('id', 'contact.form.userTypes.therapist', 'Terapis Pijat');
-                await translationsService.set('id', 'contact.form.userTypes.hotel', 'Pemilik Hotel/Vila');
-                await translationsService.set('id', 'contact.form.userTypes.employer', 'Pemberi Kerja/Manajer Spa');
-                await translationsService.set('id', 'contact.form.userTypes.agent', 'Agen');
-                await translationsService.set('id', 'contact.form.userTypes.client', 'Klien/Pelanggan');
-                await translationsService.set('id', 'contact.form.userTypes.other', 'Lainnya');
-                await translationsService.set('id', 'contact.form.subjectLabel', 'Subjek *');
-                await translationsService.set('id', 'contact.form.subjectPlaceholder', 'Tentang apa pertanyaan Anda?');
-                await translationsService.set('id', 'contact.form.messageLabel', 'Pesan *');
-                await translationsService.set('id', 'contact.form.messagePlaceholder', 'Beritahu kami bagaimana kami dapat membantu Anda...');
-                await translationsService.set('id', 'contact.form.sendButton', 'Kirim Pesan');
-                await translationsService.set('id', 'contact.support.title', 'Sumber Dukungan');
-                await translationsService.set('id', 'contact.support.quickSupport.title', 'Dukungan Cepat');
-                await translationsService.set('id', 'contact.support.quickSupport.button', 'Kunjungi FAQ →');
-                await translationsService.set('id', 'contact.support.partnerships.title', 'Permintaan Kemitraan');
-                await translationsService.set('id', 'contact.support.partnerships.button', 'Pelajari Lebih Lanjut →');
-                await translationsService.set('id', 'contact.support.pressMedia.title', 'Pers & Media');
-                await translationsService.set('id', 'contact.support.pressMedia.button', 'Kit Pers →');
-                await translationsService.set('id', 'contact.support.careers.title', 'Lowongan Kerja');
-                await translationsService.set('id', 'contact.support.careers.button', 'Lihat Pekerjaan →');
-
-                // Generic: seed ALL translation keys from local dictionaries (EN/ID)
-                const flatten = (obj: any, prefix = ''): Record<string, string> => {
-                    const out: Record<string, string> = {};
-                    if (!obj || typeof obj !== 'object') return out;
-                    for (const key of Object.keys(obj)) {
-                        const val = (obj as any)[key];
-                        const path = prefix ? `${prefix}.${key}` : key;
-                        if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
-                            out[path] = String(val);
-                        } else if (val && typeof val === 'object' && !Array.isArray(val)) {
-                            Object.assign(out, flatten(val, path));
-                        }
-                    }
-                    return out;
-                };
-
-                const enFlat = flatten((translations as any).en);
-                const idFlat = flatten((translations as any).id);
-
-                for (const [k, v] of Object.entries(enFlat)) {
-                    try { await translationsService.set('en', k, v); } catch {}
-                }
-                for (const [k, v] of Object.entries(idFlat)) {
-                    try { await translationsService.set('id', k, v); } catch {}
-                }
-
-                // Blog Popular Topics (ID)
-                await translationsService.set('id', 'blog.topics.balineseMassage', 'Pijat Bali');
-                await translationsService.set('id', 'blog.topics.hotelSpaManagement', 'Manajemen Spa Hotel');
-                await translationsService.set('id', 'blog.topics.therapistCertification', 'Sertifikasi Terapis');
-                await translationsService.set('id', 'blog.topics.wellnessTourism', 'Pariwisata Kesehatan');
-                await translationsService.set('id', 'blog.topics.deepTissueTechniques', 'Teknik Deep Tissue');
-                await translationsService.set('id', 'blog.topics.careerGrowth', 'Pengembangan Karier');
-                await translationsService.set('id', 'blog.topics.clientRetention', 'Retensi Klien');
-                await translationsService.set('id', 'blog.topics.aromatherapy', 'Aromaterapi');
-
-                try { localStorage.setItem(KEY, '1'); } catch {}
-                console.log('✅ Core translations synced to Appwrite');
-            } catch (e) {
-                console.warn('⚠️ Core translations sync skipped/failed:', e);
-            }
-        })();
-    }, []);
-    console.log('🌍 AppRouter: Sample translation home.therapistsTitle:', dict?.[activeLanguage]?.home?.therapistsTitle);
-    const t: any = ((key: string) => tFn(key)) as any;
-    // Spread all top-level namespaces for object-style access (e.g., t.home, t.common)
-    if (dict && typeof dict === 'object') {
-        Object.keys(dict).forEach(ns => {
-            const val = (dict as any)[ns];
-            if (val && typeof val === 'object') {
-                t[ns] = val;
-            }
-        });
-    }
-    // Provide commonly used generic namespaces if missing, localized by language
-    const isId = (language === 'id');
-    t.tabs = t.tabs || {
-        clients: isId ? 'Klien' : 'Clients',
-        renewals: isId ? 'Perpanjangan' : 'Renewals',
-        earnings: isId ? 'Pendapatan' : 'Earnings',
-        messages: isId ? 'Pesan' : 'Messages',
-        profile: isId ? 'Profil' : 'Profile',
-        visits: isId ? 'Kunjungan' : 'Visits',
-        stats: isId ? 'Statistik' : 'Stats'
-    };
-    t.messages = t.messages || {
-        impersonationBanner: isId ? 'Anda melihat sebagai {agentName}' : 'You are viewing as {agentName}',
-        returnToAdmin: isId ? 'Kembali ke Admin' : 'Return to Admin',
-        adminMessageTitle: isId ? 'Pesan Admin' : 'Admin Messages',
-        unreadMessages: isId ? 'Anda memiliki pesan belum dibaca' : 'You have unread messages',
-        noMessages: isId ? 'Belum ada pesan' : 'No messages yet',
-        adminChatPlaceholder: isId ? 'Ketik pesan ke admin...' : 'Type a message to admin...',
-        sendButton: isId ? 'Kirim' : 'Send'
-    };
-    t.clients = t.clients || {
-        membershipExpires: isId ? 'Keanggotaan berakhir pada {date}' : 'Membership expires on {date}',
-        therapists: isId ? 'Terapis' : 'Therapists',
-        places: isId ? 'Tempat' : 'Places',
-        noClients: isId ? 'Belum ada klien' : 'No clients yet'
-    };
-    t.renewals = t.renewals || {
-        contact: isId ? 'Kontak' : 'Contact'
-    };
-    t.earnings = t.earnings || {
-        toptierTier: isId ? 'Tingkat atas' : 'Top tier',
-        standardTier: isId ? 'Standar' : 'Standard'
-    };
-    // Ensure Agent Profile translations exist to prevent runtime errors on Profile tab
-    t.profile = t.profile || {
-        title: isId ? 'Profil Mitra Indastreet' : 'Indastreet Partner Profile',
-        bankName: isId ? 'Nama Bank' : 'Bank Name',
-        accountNumber: isId ? 'Nomor Rekening' : 'Account Number',
-        accountName: isId ? 'Nama Pemilik Rekening' : 'Account Name',
-        contactNumber: isId ? 'Nomor Kontak' : 'Contact Number',
-        homeAddress: isId ? 'Alamat Rumah' : 'Home Address',
-        idCard: isId ? 'Kartu Identitas' : 'ID Card',
-        saveButton: isId ? 'Simpan Perubahan' : 'Save Changes'
+    const resolveTherapistProfile = () => {
+        if (props.loggedInProvider?.type !== 'therapist') return null;
+        const providerId = ((props.loggedInProvider as any).$id || props.loggedInProvider.id || '').toString();
+        const match = props.therapists.find((th: any) => ((th.$id || th.id || '').toString() === providerId));
+        return match || (props.loggedInProvider as any);
     };
 
-    // 🚀 OPTIMIZATION: Common handlers to reduce repetition
-    const navToMassageJobs = () => setPage('massageJobs');
-    const navToEmployerJobPosting = () => setPage('employerJobPosting');
-    const navToJobUnlockPayment = () => setPage('jobUnlockPayment');
-    const navToTherapistJobRegistration = () => setPage('therapistJobRegistration');
-
-    const normalizePage = (rawPage: string): Page => {
-        switch (rawPage) {
-            // Legacy portal routes that no longer exist in the switch-case
-            // Map them to the correct entry points (login/portal screens).
-            case 'therapistPortal':
-                return 'therapistLogin';
-            case 'massagePlacePortal':
-            case 'placeLogin':
-            case 'placePortal':
-                return 'massagePlaceLogin';
-            case 'facialPlacePortal':
-                return 'facialPortal';
-            default:
-                return rawPage as Page;
-        }
-    };
-
-    const commonNavigateHandler = (nextPage: string) => setPage(normalizePage(nextPage));
-    const navToBlog = () => setPage('blog');
-    
-    // Helper for blog pages with consistent props
-    const renderBlogPage = (Component: any) => (
-        <Component onBack={navToBlog} onNavigate={commonNavigateHandler} t={t} />
-    );
-    
-    // Helper for content pages with handleBackToHome pattern (unused)
-    // const _renderContentPage = (Component: any) => (
-    //     <Component onBack={handleBackToHome} setPage={setPage} />
-    // );
-    
-    // Helper for "Coming Soon" pages
-    const renderComingSoon = (title: string) => (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">{title}</h2>
-                <button onClick={handleBackToHome} className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                    Back to Home
-                </button>
-            </div>
-        </div>
-    );
-    
-    // Helper for simple pages with just onNavigate
-    const renderSimplePage = (Component: React.ComponentType<any>, extraProps: any = {}) => (
-        <Component 
-            onNavigate={commonNavigateHandler} 
-            t={t} 
-            language={activeLanguage}
-            {...portalHandlers}
-            therapists={therapists}
-            places={places}
-            {...extraProps} 
-        />
-    );
-    
-    // Helper for pages with onBack and t props
-    const renderBackPage = (Component: React.ComponentType<any>, tKey?: any, extraProps: any = {}) => (
-        <Component 
-            onBack={handleBackToHome} 
-            t={tKey || t} 
-            // Navigation handlers for AppDrawer
-            onMassageJobsClick={portalHandlers.onMassageJobsClick}
-            onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-            onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-            onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-            onAdminPortalClick={portalHandlers.onAdminPortalClick}
-            onTermsClick={portalHandlers.onTermsClick}
-            onPrivacyClick={handleNavigateToPrivacyPolicy}
-            onNavigate={commonNavigateHandler}
-            {...extraProps} 
-        />
-    );
-    
-    // Helper for guest notifications (sign-in required)
-    const renderGuestNotifications = () => (
-        <div className="min-h-screen bg-gray-50 pb-16">
-            <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center">
-                <button onClick={handleBackToHome} className="mr-4">
-                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-                <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
-            </div>
-            <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-                <div className="w-24 h-24 mb-6 rounded-full bg-orange-100 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Account Required</h2>
-                <p className="text-gray-600 mb-8 max-w-sm">Notifications are available for registered users. Guest access is currently limited.</p>
-                <div className="space-y-4 w-full max-w-xs">
-                    <button onClick={handleBackToHome} className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-lg">Back to Home</button>
-                </div>
-                <div className="mt-8 bg-blue-50 rounded-lg p-4 max-w-sm">
-                    <h3 className="font-semibold text-blue-900 mb-2">With an account, you'll get:</h3>
-                    <ul className="text-sm text-blue-700 space-y-1 text-left">
-                        <li>• Booking confirmations & updates</li>
-                        <li>• Special offers & promotions</li>
-                        <li>• Therapist availability alerts</li>
-                        <li>• Payment & loyalty updates</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    );
-    
-    // Helper for hotel/villa secure navigation
-    const hotelVillaAllowedPages = ['coinHistory', 'coin-shop', 'hotelVillaMenu'];
-    const createSecureNavHandler = (type: string) => (page: string | Page) => {
-        if (hotelVillaAllowedPages.includes(page as string)) {
-            setPage(page as Page);
-        } else {
-            console.error(`🚨 SECURITY: ${type} dashboard attempted to navigate to unauthorized page:`, page);
-        }
-    };
-
-    // Common portal handlers
-    const portalHandlers = {
-        onMassageJobsClick: () => {
-            console.log('🔥 Navigating to massageJobs');
-            setPage('massageJobs');
-        },
-        onHotelPortalClick: () => {
-            console.log('🔥 Navigating to hotelDashboard');
-            setPage('hotelDashboard');
-        },
-        onVillaPortalClick: () => {
-            console.log('🔥 Navigating to villaDashboard');
-            setPage('villaDashboard');
-        },
-        onTherapistPortalClick: () => {
-            console.log('🔥 Navigating to therapistLogin');
-            setPage('therapistLogin');
-        },
-        onMassagePlacePortalClick: () => {
-            console.log('🔥 Navigating to massagePlaceLogin');
-            setPage('massagePlaceLogin');
-        },
-        onFacialPortalClick: () => {
-            console.log('🔥 Navigating to facialPortal');
-            setPage('facialPortal');
-        },
-        onAgentPortalClick: () => {
-            console.log('🔥 Navigating to agentPortal');
-            setPage('agentPortal');
-        },
-        onCustomerPortalClick: () => {
-            console.log('🔥 Customer portal disabled → redirecting to profile');
-            setPage('customerPortal');
-        },
-        onAdminPortalClick: () => {
-            console.log('🔥 Admin portal clicked');
-            // Check if admin is logged in, if not go to login page
-            if (isAdminLoggedIn) {
-                console.log('✅ Admin already logged in, navigating to dashboard');
-                setPage('adminDashboard');
-            } else {
-                console.log('⚠️ Admin not logged in, navigating to login');
-                setPage('adminLogin');
-            }
-        },
-        onTermsClick: () => {
-            console.log('🔥 Navigating to serviceTerms');
-            setPage('serviceTerms');
-        }
-    };
-    
-    // Common data props
-    const commonDataProps = { therapists, places, t };
-    
-    // Common dashboard props
-    const commonDashboardProps = {
-        onNavigateToNotifications: handleNavigateToNotifications,
-        onUpdateBookingStatus: handleUpdateBookingStatus,
-        bookings,
-        notifications
-    };
-
-    if (isLoading && page !== 'landing') {
-        return <LoadingSpinner message="Loading IndaStreet..." />;
-    }
-
-    // 🛡️ SECURITY: Validate authentication states and prevent dashboard cross-contamination
-    // Safely derive a minimal loggedInUser shape for guard checks
-    const derivedLoggedInUser: AuthenticationState['loggedInUser'] = (
-        isAdminLoggedIn ? { id: (user as any)?.id || 'admin', type: 'admin' } :
-        isHotelLoggedIn ? { id: (user as any)?.id || 'hotel', type: 'hotel' } :
-        isVillaLoggedIn ? { id: (user as any)?.id || 'villa', type: 'villa' } :
-        loggedInAgent ? { id: (loggedInAgent as any)?.id || 'agent', type: 'agent' } :
-        null
-    );
-
-    const authState: AuthenticationState = {
-        isHotelLoggedIn,
-        isVillaLoggedIn, 
-        isAdminLoggedIn,
-        loggedInProvider,
-        loggedInAgent,
-        loggedInCustomer,
-        loggedInUser: derivedLoggedInUser
-    };
-
-    const dashboardAccess = validateDashboardAccess(authState);
-    
-    // Handle security errors
-    if (dashboardAccess.errorMessage) {
-        console.error('🚨 DASHBOARD SECURITY ERROR:', dashboardAccess.errorMessage);
-        
-        // Clear all auth states to prevent contamination
-        clearAllAuthStates({
-            setIsHotelLoggedIn: (_value: boolean) => {
-                props.handleHotelLogout?.();
-            },
-            setLoggedInProvider,
-            setLoggedInAgent: (_agent: any) => {
-                props.handleAgentLogout?.();
-            },
-            setLoggedInCustomer: (_customer: any) => {
-                props.handleCustomerLogout?.();
-            }
-        });
-        
-        // Redirect to home with error message
-        setPage('home');
-        
-        // Show security error message
+    // Loading state
+    if (props.isLoading) {
         return (
-            <div className="flex flex-col justify-center items-center h-screen bg-red-50 p-4">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md text-center">
-                    <div className="text-6xl mb-4">🚨</div>
-                    <h2 className="text-xl font-bold text-red-600 mb-2">Security Alert</h2>
-                    <p className="text-gray-700 mb-4">{dashboardAccess.errorMessage}</p>
-                    <button 
-                        onClick={() => setPage('home')}
-                        className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
-                    >
-                        Return to Home
-                    </button>
-                </div>
+            <div className="flex items-center justify-center min-h-screen">
+                <LoadingSpinner />
             </div>
         );
     }
 
-    // Create secure dashboard renderer
-    const secureRenderer = createSecureDashboardRenderer(authState, (message, redirectTo) => {
-        console.error('🚨 Dashboard access denied:', message);
-        if (redirectTo) setPage(redirectTo as Page);
-    });
-
-    // If renderer is null (security error already handled above), don't continue
-    if (!secureRenderer) {
-        return null;
-    }
-
-    console.log('🎯 AppRouter: Current page state is:', page);
-    
-    switch (page) {
-        // ========================
-        // 🏠 CORE APPLICATION ROUTES  
-        // ========================
-        case 'landing':
-            console.log('🎬 AppRouter: Rendering LandingPage component');
-            return <LandingPage 
-                onLanguageSelect={handleLanguageSelect} 
-                onEnterApp={handleEnterApp} 
-            />;
-        
-        case 'home':
-            console.log('🏠 AppRouter: Rendering HomePage component');
-            return <HomePage 
-                user={user} 
-                language={activeLanguage as 'en' | 'id'}
-                loggedInAgent={loggedInAgent}
-                loggedInProvider={loggedInProvider ? {
-                    id: loggedInProvider.id,
-                    type: loggedInProvider.type
-                } : null}
-                loggedInCustomer={loggedInCustomer}
-                therapists={therapists}
-                places={places}
-                facialPlaces={facialPlaces}
-                hotels={hotels}
-                userLocation={userLocation}
-                onSetUserLocation={handleSetUserLocation}
-                onSelectPlace={handleSetSelectedPlace}
-                onLogout={handleLogout}
-                onLoginClick={handleNavigateToTherapistLogin}
-                onCreateProfileClick={handleNavigateToRegistrationChoice}
-                onBook={handleNavigateToBooking}
-                onQuickBookWithChat={handleQuickBookWithChat}
-                onChatWithBusyTherapist={handleChatWithBusyTherapist}
-                onShowRegisterPrompt={handleShowRegisterPromptForChat}
-                onIncrementAnalytics={(id: any, type: any, metric: any) => handleIncrementAnalytics(id, type, metric)}
-                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                onFacialPortalClick={portalHandlers.onFacialPortalClick}
-                onAdminPortalClick={portalHandlers.onAdminPortalClick}
-                onBrowseJobsClick={() => setPage('browseJobs')}
-                onEmployerJobPostingClick={() => setPage('employerJobPosting')}
-                onMassageJobsClick={portalHandlers.onMassageJobsClick}
-                onTherapistJobsClick={() => setPage('therapistJobs')}
-                onTermsClick={handleNavigateToServiceTerms}
-                onPrivacyClick={handleNavigateToPrivacyPolicy}
-                onNavigate={commonNavigateHandler}
-                onLanguageChange={(lang) => handleLanguageSelect(lang)}
-                isLoading={isLoading}
-                t={t} 
-            />;
-
-        case 'joinIndastreet':
-            // Redirect to auth-app signup page for consistent provider onboarding
-            window.location.href = `${getAuthAppUrl()}/signup`;
-            return null;
-
-        // portalSelection case removed - now using direct simpleSignup flow
-
-        case 'therapistProfile':
-            return selectedTherapist && <TherapistProfilePage 
-                therapist={selectedTherapist}
-                onBack={() => setPage('home')}
-                onQuickBookWithChat={(therapist: Therapist) => handleQuickBookWithChat(therapist, 'therapist')}
-                userLocation={userLocation}
-                loggedInCustomer={loggedInCustomer}
-                onMassageJobsClick={portalHandlers.onMassageJobsClick}
-                onTherapistJobsClick={() => setPage('therapistJobs')}
-                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-                onNavigate={commonNavigateHandler}
-                onTermsClick={handleNavigateToServiceTerms}
-                onPrivacyClick={handleNavigateToPrivacyPolicy}
-                therapists={therapists}
-                places={places}
-            /> || null;
-
-        case 'profile': // 🎯 NEW: Guest profile page for non-registered users
-            return <GuestProfilePage 
-                onBack={handleBackToHome}
-                onRegisterClick={handleNavigateToRegistrationChoice} // 🎯 Opens registration drawer
-                t={t}
-                // AppDrawer navigation props
-                onMassageJobsClick={portalHandlers.onMassageJobsClick}
-                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-                onAdminPortalClick={portalHandlers.onAdminPortalClick}
-                onNavigate={commonNavigateHandler}
-                onTermsClick={portalHandlers.onTermsClick}
-                onPrivacyClick={handleNavigateToPrivacyPolicy}
-                therapists={therapists}
-                places={places}
-            />;
-
-        case 'qr-code': // QR Code sharing page
-            return <QRCodePage 
-                onNavigate={commonNavigateHandler}
-            />;
-            
-        case 'detail': 
-            return selectedPlace && <PlaceDetailPage 
-                place={selectedPlace} 
-                onBack={handleBackToHome} 
-                onBook={(place) => handleNavigateToBooking(place, 'place')} 
-                onIncrementAnalytics={(metric: any) => handleIncrementAnalytics(selectedPlace.id, 'place', metric)} 
-                loggedInProviderId={loggedInProvider?.id} 
-                t={t} 
-                agentCode={loggedInAgent?.agentCode}
-            />;
-            
-        case 'massagePlaceProfile': 
-            if (!selectedPlace) {
-                setPage('home');
-                return null;
-            }
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading massage place..." />}>
-                    <MassagePlaceProfilePage 
-                        place={selectedPlace}
-                        userLocation={userLocation}
-                        loggedInCustomer={loggedInCustomer}
-                        onBack={handleBackToHome}
-                        onBook={() => handleNavigateToBooking(selectedPlace, 'place')}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onTherapistJobsClick={() => setPage('therapistJobs')}
-                        onTherapistPortalClick={handleNavigateToTherapistLogin}
-                        onMassagePlacePortalClick={handleNavigateToMassagePlaceLogin}
-                        onNavigate={commonNavigateHandler}
-                        onTermsClick={handleNavigateToServiceTerms}
-                        onPrivacyClick={handleNavigateToPrivacyPolicy}
-                        therapists={therapists}
-                        places={places}
-                    />
-                </React.Suspense>
-            );
-
-        case 'facialProviders':
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading facial spas..." />}>
-                    <FacialProvidersPage
-                        facialPlaces={facialPlaces}
-                        userLocation={userLocation}
-                        onSetUserLocation={() => {}}
-                        onSelectPlace={(place) => {
-                            handleSetSelectedPlace(place);
-                            setPage('facialPlaceProfile');
-                        }}
-                        onIncrementAnalytics={handleIncrementAnalytics as any}
-                        onShowRegisterPrompt={handleShowRegisterPromptForChat}
-                        onNavigate={commonNavigateHandler}
-                        onBack={handleBackToHome}
-                        t={t}
-                        language={language as 'en' | 'id'}
-                        onLanguageChange={(lang) => handleLanguageSelect(lang as Language)}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onHotelPortalClick={() => setPage('hotelDashboard')}
-                        onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistLogin')}
-                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                        onFacialPortalClick={portalHandlers.onFacialPortalClick}
-                        onAgentPortalClick={() => setPage('agentPortal')}
-                        onCustomerPortalClick={() => setPage('customerPortal')}
-                        onAdminPortalClick={() => setPage('adminDashboard')}
-                        onTermsClick={() => setPage('serviceTerms')}
-                        onPrivacyClick={() => setPage('privacy')}
-                        therapists={therapists}
-                        places={places}
-                    />
-                </React.Suspense>
-            );
-
-        case 'facialPlaceProfile':
-            if (!selectedPlace) {
-                setPage('home');
-                return null;
-            }
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading facial spa..." />}>
-                    <FacialPlaceProfilePage
-                        place={selectedPlace}
-                        userLocation={userLocation}
-                        loggedInCustomer={loggedInCustomer}
-                        language={language as 'en' | 'id'}
-                        onLanguageChange={(lang) => handleLanguageSelect(lang as Language)}
-                        onBack={handleBackToHome}
-                        onBook={() => handleNavigateToBooking(selectedPlace, 'place')}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onTherapistJobsClick={() => setPage('therapistJobs')}
-                        onTherapistPortalClick={handleNavigateToTherapistLogin}
-                        onFacialPlacePortalClick={portalHandlers.onFacialPortalClick}
-                        onNavigate={commonNavigateHandler}
-                        onTermsClick={handleNavigateToServiceTerms}
-                        onPrivacyClick={handleNavigateToPrivacyPolicy}
-                        therapists={therapists}
-                        places={places}
-                    />
-                </React.Suspense>
-            );
-
-        case 'facialPlaceDashboard':
-            // Redirect to separate facial dashboard app
-            window.location.href = 'http://localhost:3006';
-            return null;
-
-        case 'facialPortal':
-            return (
-                <React.Suspense fallback={<LoadingSpinner />}>
-                    <FacialPortalPage
-                        onNavigateHome={handleBackToHome}
-                        onLoginSuccess={(userId, email) => {
-                            setFacialMemberId(userId);
-                            setFacialMemberEmail(email);
-                            setPage('facialMemberDashboard');
-                        }}
-                        t={t}
-                        onMassageJobsClick={portalHandlers.onMassageJobsClick}
-                        onHotelPortalClick={portalHandlers.onHotelPortalClick}
-                        onVillaPortalClick={portalHandlers.onVillaPortalClick}
-                        onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                        onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                        onFacialPortalClick={portalHandlers.onFacialPortalClick}
-                        onAgentPortalClick={portalHandlers.onAgentPortalClick}
-                        onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-                        onAdminPortalClick={portalHandlers.onAdminPortalClick}
-                        onNavigate={commonNavigateHandler}
-                        onTermsClick={handleNavigateToServiceTerms}
-                        onPrivacyClick={handleNavigateToPrivacyPolicy}
-                    />
-                </React.Suspense>
-            );
-
-        case 'facialMemberDashboard':
-            // Redirect to separate facial dashboard app
-            window.location.href = 'http://localhost:3006';
-            return null;
-
-        case 'therapistLogin': 
-            // Redirect to auth-app for therapist login
-            window.location.href = `${getAuthAppUrl()}/therapist-login`;
-            return null;
-            
-        case 'providerAuth': 
-            // Redirect to simpleSignup instead of redundant registrationChoice page
-            return <SimpleSignupFlow onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
-        
-        // unifiedLogin removed
-            
-        case 'placeDashboard':
-            // Redirect to separate place dashboard app
-            window.location.href = 'http://localhost:3002';
-            return null;
-
-        // 🔐 Admin Routes - Login & Dashboard
-        case 'adminLogin':
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading admin login..." />}>
-                    <AdminLoginPage
-                        onBack={handleBackToHome}
-                        onAdminLogin={async (email: string, password: string) => {
-                            // Simple demo admin credentials - replace with real auth
-                            if (email === 'admin@indastreet.com' && password === 'admin123') {
-                                console.log('✅ Admin login successful');
-                                // Call the handleAdminLogin from useAuthHandlers via props
-                                if ((props as any).handleAdminLogin) {
-                                    (props as any).handleAdminLogin();
-                                }
-                                setPage('adminDashboard');
-                                return true;
-                            }
-                            console.log('❌ Invalid admin credentials');
-                            return false;
-                        }}
-                        t={t}
-                    />
-                </React.Suspense>
-            );
-
-        case 'adminDashboard':
-            // Redirect to separate admin dashboard app
-            window.location.href = 'http://localhost:3004';
-            return null;
-        
-        case 'serviceTerms': 
-            return <ServiceTermsPage onBack={handleBackToHome} t={(t as any)?.serviceTerms || t} contactNumber={APP_CONFIG.CONTACT_NUMBER} />;
-
-        case 'packageTerms':
-            return <PackageTermsPage 
-                onBack={handleBackToHome} 
-                onNavigate={commonNavigateHandler}
+    /**
+     * Render route with suspense boundary and proper language props
+     */
+    const renderRoute = (Component: React.LazyExoticComponent<any>, componentProps: any = {}) => (
+        <Suspense fallback={<LoadingSpinner />}>
+            <Component 
+                {...props} 
+                {...componentProps} 
                 t={t}
                 language={language}
-            />;
-            
-        case 'placeTerms':
-            return renderBackPage(PlaceTermsPage, t);
-            
-        case 'placeDiscountBadge': 
-            return <PlaceDiscountBadgePage 
-                onBack={handleBackToHome} 
-                placeId={loggedInProvider?.id as number || 0}
-                placeName={loggedInProvider?.type === 'place' ? 'Massage Place' : 'Place'}
-                t={t} 
-            />;
-        case 'verifiedProBadge': {
-            const providerId = (loggedInProvider?.id as number) || 0;
-            const providerType = (loggedInProvider?.type as 'therapist' | 'place') || 'therapist';
-            return (
-                <VerifiedProBadgePage
-                    onBack={handleBackToHome}
-                    providerId={providerId}
-                    providerType={providerType}
-                    providerName={providerType === 'therapist' ? selectedTherapist?.name || 'Provider' : selectedPlace?.name || 'Provider'}
-                />
-            );
-        }
+                onLanguageChange={handleLanguageSelect}
+                onNavigate={props.setPage}
+            />
+        </Suspense>
+    );
 
-        case 'mobileTherapistStandards':
-            return (
-                <MobileTherapistStandardsPage
-                    onBack={handleBackToHome}
-                />
-            );
-            
-        case 'privacy':
-            // Pass only the privacyPolicy translation namespace to avoid runtime errors
-            return renderBackPage(PrivacyPolicyPage, (t as any)?.privacyPolicy || t);
-        case 'cookies-policy':
-            return renderBackPage(CookiesPolicyPage);
-            
-        case 'simpleSignup':
-            // Render the signup flow component
-            return <SimpleSignupFlow 
-                onBack={handleBackToHome}
-                onNavigate={commonNavigateHandler}
-                t={t}
-            />;
-            
-        case 'membership-select':
-            // Translation object for membership selection page (NO BANK DETAILS HERE)
-            const membershipSelectTranslations = {
-                title: 'Choose Your Membership Package',
-                subtitle: 'Select the plan that fits your business needs',
-                backToDashboard: '← Back to Home'
-            };
-            
-            return <MembershipPage 
-                onSelectPackage={handleSelectMembershipPackage}
-                onPackageSelect={handleSelectMembershipPackage}
-                onBack={handleBackToHome}
-                t={membershipSelectTranslations}
-            />;
-            
-        case 'booking': 
-            return providerForBooking && <BookingPage 
-                provider={providerForBooking.provider}
-                providerType={providerForBooking.type}
-                onBack={handleBackToHome}
-                onBook={(bookingData) => {
-                    // Convert booking data to the expected format
-                    handleCreateBooking(bookingData);
-                }}
-                onCreateBooking={handleCreateBooking}
-                bookings={[]} // Load actual bookings from state - implemented via bookings prop
-                t={t}
-                contactNumber={APP_CONFIG.CONTACT_NUMBER}
-            /> || null;
-
-        case 'accept-booking':
-            // Render accept booking flow when deep-linked or path-detected
-            return <AcceptBookingPage />;
-        case 'decline-booking':
-            return <DeclineBookingPage />;
-        case 'lead-accept':
-            // Render lead accept page when deep-linked
-            return <LeadAcceptPage />;
-        case 'lead-decline':
-            // Render lead decline page when deep-linked
-            return <LeadDeclinePage />;
-        case 'membership-terms':
-            // Render membership agreement page
-            return <MembershipTermsPage />;
-            
-        case 'bookings':
-            return (
-                <div className="p-4">
-                    <h1 className="text-2xl font-bold mb-4">{t('bookings.title')}</h1>
-                    {bookings.length === 0 ? (
-                        <p className="text-gray-500">{t('bookings.noBookings')}</p>
-                    ) : (
-                        <div className="space-y-4">
-                            {bookings.map(booking => (
-                                <div key={booking.id} className="bg-white p-4 rounded shadow">
-                                    <p className="font-bold">{booking.providerName}</p>
-                                    <p className="text-sm text-gray-600">{booking.status}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            );
-            
-        case 'notifications': {
-            if (!user && !loggedInProvider && !loggedInCustomer && !isAdminLoggedIn) {
-                return renderGuestNotifications();
-            }
-            
-            // Determine user role and dashboard context for header styling
-            let userRole: string | undefined;
-            let notificationsDashboardType: 'hotel' | 'villa' | 'therapist' | 'customer' | 'admin' | 'place' | 'standalone' = 'standalone';
-            
-            if (isHotelLoggedIn) {
-                userRole = 'hotel';
-                notificationsDashboardType = 'hotel';
-            } else if (loggedInProvider?.type === 'therapist') {
-                userRole = 'therapist';
-                notificationsDashboardType = 'therapist';
-            } else if (loggedInProvider?.type === 'place') {
-                userRole = 'place';
-                notificationsDashboardType = 'place';
-            } else if (loggedInCustomer) {
-                userRole = 'customer';
-                notificationsDashboardType = 'customer';
-            } else if (isAdminLoggedIn) {
-                userRole = 'admin';
-                notificationsDashboardType = 'admin';
-            }
-
-            return <NotificationsPage 
-                notifications={notifications || []}
-                onMarkAsRead={handleMarkNotificationAsRead}
-                onBack={handleBackToHome}
-                t={t}
-                userRole={userRole}
-                dashboardType={notificationsDashboardType}
-            />;
-        }
-
-        case 'membership': {
-            // Membership page for therapists, massage places, and facial places
-            if (!loggedInProvider) {
-                // Redirect to simpleSignup instead of redundant registrationChoice
-                setPage('simpleSignup');
-                return null;
-            }
-
-            // Default translation object for MembershipPage
-            const membershipTranslations = {
-                title: 'Choose Your Membership',
-                subtitle: 'Select the perfect plan for your business',
-                selectButton: 'Select Package',
-                backToDashboard: 'Back to Dashboard',
-                packages: {
-                    oneMonth: {
-                        title: '1 Month Plan',
-                        price: 'Rp 250,000',
-                        save: null,
-                        bestValue: 'Best Value'
-                    },
-                    threeMonths: {
-                        title: '3 Months Plan',
-                        price: 'Rp 650,000',
-                        save: 'Save Rp 100,000',
-                        bestValue: 'Popular'
-                    },
-                    sixMonths: {
-                        title: '6 Months Plan',
-                        price: 'Rp 1,200,000',
-                        save: 'Save Rp 300,000',
-                        bestValue: 'Great Value'
-                    },
-                    oneYear: {
-                        title: '1 Year Plan',
-                        price: 'Rp 2,000,000',
-                        save: 'Save Rp 1,000,000',
-                        bestValue: 'Best Value'
-                    }
-                }
-            };
-
-            return (
-                <React.Suspense fallback={<LoadingSpinner message="Loading membership plans..." />}>
-                    <MembershipPage 
-                        onPackageSelect={(packageName: string, price: string) => {
-                            console.log('Package selected:', packageName, price);
-                            setPage('membershipPayment');
-                        }} 
-                        onBack={() => commonNavigateHandler('landing')} 
-                        t={membershipTranslations} 
-                    />
-                </React.Suspense>
-            );
-        }
-            
-        case 'massageTypes':
-            return <MassageTypesPage _onBack={handleBackToHome} onNavigate={commonNavigateHandler} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
-            
-        case 'facialTypes':
-            return <FacialTypesPage _onBack={handleBackToHome} onNavigate={commonNavigateHandler} {...portalHandlers} onPrivacyClick={() => setPage('privacy')} therapists={therapists} places={places} t={t} />;
-            
-        // 'hotelLogin' and 'villaLogin' routes removed
-
-        case 'massagePlaceLogin': 
-            // Redirect to auth-app for massage place login
-            window.location.href = `${getAuthAppUrl()}/place-login`;
-            return null;
-            
-        case 'employerJobPosting':
-            return <EmployerJobPostingPage 
-                onBack={navToMassageJobs}
-                onNavigateToPayment={(jobId: string) => {
-                    setSelectedJobId(jobId);
-                    setPage('jobPostingPayment');
-                }}
-                onNavigate={(page: Page) => setPage(page)}
-                onMassageJobsClick={navToMassageJobs}
-                onTherapistPortalClick={portalHandlers.onTherapistPortalClick}
-                onMassagePlacePortalClick={portalHandlers.onMassagePlacePortalClick}
-                onCustomerPortalClick={portalHandlers.onCustomerPortalClick}
-                onAdminPortalClick={portalHandlers.onAdminPortalClick}
-                onTermsClick={portalHandlers.onTermsClick}
-                onPrivacyClick={() => setPage('privacy')}
-                therapists={therapists}
-                places={places}
-                t={t} 
-            />;
+    /**
+     * Route matcher - Enterprise pattern for clean routing
+     */
+    switch (page) {
+        // ===== PUBLIC ROUTES =====
+        case 'landing':
+            return renderRoute(publicRoutes.landing.component);
         
-        case 'therapistJobRegistration':
-            return <TherapistJobRegistrationPage 
-                onBack={navToMassageJobs}
-                onSuccess={() => {
-                    alert('Profile submitted successfully!');
-                    navToMassageJobs();
-                }}
-            />;
-            
-        case 'jobPostingPayment':
-            return <JobPostingPaymentPage jobId={selectedJobId || ''} onBack={handleBackToHome} onNavigate={commonNavigateHandler} />;
-            
-        case 'browseJobs':
-            return <BrowseJobsPage onBack={handleBackToHome} onPostJob={navToMassageJobs} t={t} />;
-            
-        case 'massageJobs': 
-            return <MassageJobsPage 
-                onBack={handleBackToHome} 
-                onPostJob={navToEmployerJobPosting}
-                onNavigateToPayment={navToJobUnlockPayment}
-                onCreateTherapistProfile={navToTherapistJobRegistration}
-                onNavigate={commonNavigateHandler}
-            />;
-            
-        case 'therapistJobs':
-            return <TherapistJobRegistrationPage 
-                jobId={selectedJobId || ''}
-                onBack={handleBackToHome} 
-                onNavigate={(page: Page) => setPage(page)} 
-                t={t} 
-            />;
-            
-        case 'jobUnlockPayment':
-            return <JobUnlockPaymentPage />;
-            
-        case 'chatList': 
-            return renderComingSoon('Chat Feature Coming Soon');
-            
-        case 'about-us' as any:
-            return <AboutUsPage onBack={handleBackToHome} onNavigate={commonNavigateHandler} t={t} />;
-            
-        case 'company-profile' as any:
-            return <CompanyProfilePage onBack={handleBackToHome} t={t} language={activeLanguage} />;
-            
-        case 'contact-us' as any:
-            return <ContactUsPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
-            
-        case 'indastreet-partners':
-            return <IndastreetPartnersPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
-            
-        // provider-portals route removed - now using direct simpleSignup flow
-            
-        case 'partnership-application': 
-            return <PartnershipApplicationPage 
-                onBack={() => setPage('indastreet-partners' as Page)} 
-                t={t} 
-            />;
-            
+        case 'home':
+            return renderRoute(publicRoutes.home.component);
+        
+        case 'about':
+            return renderRoute(publicRoutes.about.component);
+        
+        case 'contact':
+            return renderRoute(publicRoutes.contact.component);
+        
+        case 'company':
+            return renderRoute(publicRoutes.company.component);
+        
         case 'how-it-works':
-            return renderSimplePage(HowItWorksPage);
-        case 'massage-bali':
-            return <MassageBaliPage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
-        case 'blog':
-            return renderSimplePage(BlogIndexPage);
+            return renderRoute(publicRoutes.howItWorks.component);
+        
         case 'faq':
-            return renderSimplePage(FAQPage);
-            
-        case 'balinese-massage':
-            return <BalineseMassagePage onNavigate={commonNavigateHandler} t={t} />;
-            
-        case 'deep-tissue-massage':
-            return <DeepTissueMassagePage onNavigate={commonNavigateHandler} {...portalHandlers} {...commonDataProps} />;
-            
-        case 'press-media':
-            return renderSimplePage(PressMediaPage);
-        case 'career-opportunities':
-            return renderSimplePage(CareerOpportunitiesPage);
-        case 'therapist-info':
-            return renderSimplePage(TherapistInfoPage);
-        case 'hotel-info':
-            // Hotel info page removed - hotel/villa dashboards deprecated
-            setPage('home');
-            return null;
-        // Note: hotel-login and villa-login routes removed - no longer used
-        case 'employer-info':
-            return renderSimplePage(EmployerInfoPage);
-            
-        case 'payment-info':
-            return renderSimplePage(PaymentInfoPage);
-            
-        case 'blog-bali-spa-trends-2025' as any:
-            return renderBlogPage(BaliSpaIndustryTrends2025Page);
-            
-        case 'blog-top-10-massage-techniques' as any:
-            return renderBlogPage(Top10MassageTechniquesPage);
-            
-        case 'blog-massage-career-indonesia' as any:
-            return renderBlogPage(MassageCareerIndonesiaPage);
-            
-        case 'blog-benefits-regular-massage' as any:
-            return renderBlogPage(BenefitsRegularMassageTherapyPage);
-            
-        case 'blog-hiring-massage-therapists' as any:
-            return renderBlogPage(HiringMassageTherapistsGuidePage);
-            
-        case 'blog-traditional-balinese-massage' as any:
-            return renderBlogPage(TraditionalBalineseMassagePage);
-            
-        case 'blog-spa-tourism-indonesia': return renderBlogPage(SpaTourismIndonesiaPage);
-        case 'blog-aromatherapy-massage-oils': return renderBlogPage(AromatherapyMassageOilsPage);
-        case 'blog-pricing-guide-therapists': return renderBlogPage(PricingGuideMassageTherapistsPage);
-        case 'blog-deep-tissue-vs-swedish': return renderBlogPage(DeepTissueVsSwedishMassagePage);
-        case 'blog-online-presence-therapist': return renderBlogPage(OnlinePresenceMassageTherapistPage);
-            
-        case 'blog-wellness-tourism-ubud':
-            return renderBlogPage(WellnessTourismUbudPage);
-            
-        case 'guestAlerts': 
-            return <GuestAlertsPage onBack={handleBackToHome} t={t} />;
-            
-        case 'rewardBannersTest': 
-            // Reward banners removed - coin/reward system deprecated
-            setPage('home');
-            return null;
-            
-        case 'todaysDiscounts': 
-            return <TodaysDiscountsPage onBack={handleBackToHome} onNavigate={(page: Page) => setPage(page)} t={t} />;
-            
-        case 'website-management':
-            return <WebsiteManagementPage 
-                onBack={handleBackToHome}
-                currentUser={{
-                    id: loggedInProvider?.id?.toString() || '',
-                    name: 'User',
-                    type: loggedInProvider?.type || 'therapist'
-                }}
-                initialData={{
-                    websiteUrl: '',
-                    websiteTitle: '',
-                    websiteDescription: ''
-                }}
-                onSave={handleSavePlace}
-                t={t}
-            />;
-            
-        case 'partner-settings-hotel':
-            return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                    <PartnerSettingsPage
-                        partnerId={loggedInProvider?.id?.toString() || '1'}
-                        partnerType="hotel"
-                        onNavigate={(page: Page) => setPage(page)}
-                        onBack={() => setPage('website-management')}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onHotelPortalClick={() => setPage('villaDashboard')}
-                        onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistLogin')}
-                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                        onAgentPortalClick={() => setPage('villaDashboard')}
-                        onCustomerPortalClick={() => setPage('customerDashboard')}
-                        onAdminPortalClick={() => setPage('adminDashboard')}
-                        onTermsClick={() => setPage('termsOfService')}
-                        onPrivacyClick={() => setPage('privacyPolicy')}
-                        therapists={therapists}
-                        places={places}
-                        t={t}
-                    />
-                </React.Suspense>
-            );
-            
-        case 'partner-settings-villa':
-            return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                    <PartnerSettingsPage
-                        partnerId={loggedInProvider?.id?.toString() || '1'}
-                        partnerType="villa"
-                        onNavigate={(page: Page) => setPage(page)}
-                        onBack={() => setPage('website-management')}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onHotelPortalClick={() => setPage('villaDashboard')}
-                        onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistLogin')}
-                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                        onAgentPortalClick={() => setPage('villaDashboard')}
-                        onCustomerPortalClick={() => setPage('customerDashboard')}
-                        onAdminPortalClick={() => setPage('adminDashboard')}
-                        onTermsClick={() => setPage('termsOfService')}
-                        onPrivacyClick={() => setPage('privacyPolicy')}
-                        therapists={therapists}
-                        places={places}
-                        t={t}
-                    />
-                </React.Suspense>
-            );
-            
-        case 'join-indastreet-partners':
-            return (
-                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-                    <IndastreetPartnersPage
-                        onNavigate={(page: Page) => setPage(page)}
-                        onMassageJobsClick={() => setPage('massageJobs')}
-                        onHotelPortalClick={() => setPage('villaDashboard')}
-                        onVillaPortalClick={() => setPage('villaDashboard')}
-                        onTherapistPortalClick={() => setPage('therapistLogin')}
-                        onMassagePlacePortalClick={() => setPage('massagePlaceLogin')}
-                        onAgentPortalClick={() => setPage('villaDashboard')}
-                        onCustomerPortalClick={() => setPage('customerDashboard')}
-                        onAdminPortalClick={() => setPage('adminDashboard')}
-                        onTermsClick={() => setPage('termsOfService')}
-                        onPrivacyClick={() => setPage('privacyPolicy')}
-                        therapists={therapists}
-                        places={places}
-                        t={t}
-                    />
-                </React.Suspense>
-            );
-            
-        default: {
-            // Reviews page routes
-            if (page.startsWith('reviews-therapist-')) {
-                const therapistId = page.replace('reviews-therapist-', '');
-                const therapist = therapists.find(t => (t.$id || t.id?.toString()) === therapistId);
-                return (
-                    <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-gray-600">Loading...</div></div>}>
-                        <ReviewsPage
-                            providerId={therapistId}
-                            providerName={therapist?.name || 'Therapist'}
-                            providerType="therapist"
-                            providerImage={therapist?.profilePicture || (therapist as any)?.mainImage}
-                            ownerWhatsApp={(therapist as any)?.ownerWhatsApp}
-                            initialReviews={[]}
-                            onBack={handleBackToHome}
-                        />
-                    </React.Suspense>
-                );
-            }
-            if (page.startsWith('reviews-place-')) {
-                const placeId = page.replace('reviews-place-', '');
-                const place = places.find(p => (p.$id || p.id?.toString()) === placeId);
-                return (
-                    <React.Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-gray-600">Loading...</div></div>}>
-                        <ReviewsPage
-                            providerId={placeId}
-                            providerName={place?.name || 'Massage Place'}
-                            providerType="place"
-                            ownerWhatsApp={(place as any)?.ownerWhatsApp}
-                            initialReviews={[]}
-                            onBack={handleBackToHome}
-                        />
-                    </React.Suspense>
-                );
-            }
-            
-            console.error('🚨 AppRouter: Unknown page case reached!', {
-                page,
-                loggedInProvider,
-                expectedCases: ['therapistLogin', 'massagePlaceLogin', 'facialPortal', 'home', 'landing'],
-                allProps: Object.keys(props)
+            return renderRoute(publicRoutes.faq.component);
+        
+        case 'massage-types':
+            return renderRoute(publicRoutes.massageTypes.component);
+        
+        case 'facial-types':
+            return renderRoute(publicRoutes.facialTypes.component);
+        
+        case 'providers':
+            return renderRoute(publicRoutes.providers.component);
+        
+        case 'facial-providers':
+            return renderRoute(publicRoutes.facialProviders.component);
+        
+        case 'discounts':
+            return renderRoute(publicRoutes.discounts.component);
+
+        // ===== AUTH ROUTES =====
+        case 'therapist-login':
+            return renderRoute(authRoutes.therapistLogin.component);
+        
+        case 'place-login':
+            return renderRoute(authRoutes.placeLogin.component);
+        
+        case 'facial-portal':
+            return renderRoute(authRoutes.facialPortal.component);
+        
+        case 'simple-signup':
+            return renderRoute(authRoutes.simpleSignup.component);
+
+        // ===== PROFILE ROUTES =====
+        case 'therapist-profile':
+            return renderRoute(profileRoutes.therapist.component);
+        
+        case 'shared-therapist-profile':
+            return renderRoute(profileRoutes.sharedTherapist.component);
+        
+        case 'massage-place-profile':
+            return renderRoute(profileRoutes.massagePlace.component);
+        
+        case 'facial-place-profile':
+            return renderRoute(profileRoutes.facialPlace.component);
+        
+        case 'place-detail':
+            return renderRoute(profileRoutes.placeDetail.component);
+
+        case 'therapistStatus': {
+            const therapistProfile = resolveTherapistProfile();
+            return renderRoute(TherapistStatusPage, {
+                therapist: therapistProfile,
+                onStatusChange: props.handleTherapistStatusChange,
+                onNavigateToDashboard: () => props.setPage('therapistDashboard'),
+                onNavigateToHome: () => props.setPage('home')
             });
-            return null;
         }
+
+        // ===== LEGAL ROUTES =====
+        case 'privacy-policy':
+            return renderRoute(legalRoutes.privacy.component);
+        
+        case 'cookies-policy':
+            return renderRoute(legalRoutes.cookies.component);
+        
+        case 'service-terms':
+            return renderRoute(legalRoutes.serviceTerms.component);
+        
+        case 'place-terms':
+            return renderRoute(legalRoutes.placeTerms.component);
+        
+        case 'package-terms':
+            return renderRoute(legalRoutes.packageTerms.component);
+        
+        case 'membership-terms':
+            return renderRoute(legalRoutes.membershipTerms.component);
+
+        // ===== BLOG ROUTES =====
+        case 'blog':
+            return renderRoute(blogRoutes.index.component);
+        
+        case 'massage-bali':
+            return renderRoute(blogRoutes.massageBali.component);
+        
+        case 'balinese-massage':
+            return renderRoute(blogRoutes.balinese.component);
+        
+        case 'deep-tissue-massage':
+            return renderRoute(blogRoutes.deepTissue.component);
+        
+        case 'press':
+            return renderRoute(blogRoutes.press.component);
+
+        // ===== BLOG POSTS =====
+        case 'blog-bali-spa-trends-2025':
+            return renderRoute(BaliSpaIndustryTrends2025Page);
+        
+        case 'blog-top-10-massage-techniques':
+            return renderRoute(Top10MassageTechniquesPage);
+        
+        case 'blog-massage-career-indonesia':
+            return renderRoute(MassageCareerIndonesiaPage);
+        
+        case 'blog-benefits-regular-massage':
+            return renderRoute(BenefitsRegularMassageTherapyPage);
+        
+        case 'blog-hiring-massage-therapists':
+            return renderRoute(HiringMassageTherapistsGuidePage);
+        
+        case 'blog-traditional-balinese-massage':
+            return renderRoute(TraditionalBalineseMassagePage);
+        
+        case 'blog-spa-tourism-indonesia':
+            return renderRoute(SpaTourismIndonesiaPage);
+        
+        case 'blog-aromatherapy-massage-oils':
+            return renderRoute(AromatherapyMassageOilsPage);
+        
+        case 'blog-pricing-guide-massage':
+            return renderRoute(PricingGuideMassageTherapistsPage);
+        
+        case 'blog-deep-tissue-vs-swedish':
+            return renderRoute(DeepTissueVsSwedishMassagePage);
+        
+        case 'blog-online-presence-therapist':
+            return renderRoute(OnlinePresenceMassageTherapistPage);
+        
+        case 'blog-wellness-tourism-ubud':
+            return renderRoute(WellnessTourismUbudPage);
+
+        // ===== SPECIALIZED PAGES =====
+        case 'confirm-therapists':
+            return renderRoute(ConfirmTherapistsPage);
+        
+        case 'employer-job-posting':
+            return renderRoute(EmployerJobPostingPage);
+        
+        case 'indastreet-partners':
+            return renderRoute(IndastreetPartnersPage);
+        
+        case 'website-management':
+            return renderRoute(WebsiteManagementPage);
+        
+        case 'guest-profile':
+            return renderRoute(GuestProfilePage);
+        
+        case 'qr-code':
+            return renderRoute(QRCodePage);
+        
+        case 'notifications':
+            return renderRoute(NotificationsPage);
+        
+        case 'booking':
+            return renderRoute(BookingPage);
+        
+        case 'membership':
+            return renderRoute(MembershipPage);
+        
+        case 'accept-booking':
+            return renderRoute(AcceptBookingPage);
+        
+        case 'decline-booking':
+            return renderRoute(DeclineBookingPage);
+        
+        case 'lead-accept':
+            return renderRoute(LeadAcceptPage);
+        
+        case 'lead-decline':
+            return renderRoute(LeadDeclinePage);
+        
+        case 'job-posting-payment':
+            return renderRoute(JobPostingPaymentPage);
+        
+        case 'browse-jobs':
+            return renderRoute(BrowseJobsPage);
+        
+        case 'massage-jobs':
+            return renderRoute(MassageJobsPage);
+        
+        case 'partnership-application':
+            return renderRoute(PartnershipApplicationPage);
+        
+        case 'therapist-job-registration':
+            return renderRoute(TherapistJobRegistrationPage);
+        
+        case 'reviews':
+            return renderRoute(ReviewsPage, {
+                onBack: () => props.setPage('home')
+            });
+        
+        case 'job-unlock-payment':
+            return renderRoute(JobUnlockPaymentPage);
+        
+        case 'customer-reviews':
+            return renderRoute(CustomerReviewsPage, {
+                onBack: () => props.setPage('home')
+            });
+        
+        case 'customer-support':
+            return renderRoute(CustomerSupportPage);
+        
+        case 'place-discount-badge':
+            return renderRoute(PlaceDiscountBadgePage);
+        
+        case 'verified-pro-badge':
+            return renderRoute(VerifiedProBadgePage);
+        
+        case 'mobile-therapist-standards':
+            return renderRoute(MobileTherapistStandardsPage);
+        
+        case 'guest-alerts':
+            return renderRoute(GuestAlertsPage);
+        
+        case 'partner-settings':
+            return renderRoute(PartnerSettingsPage);
+        
+        case 'admin-login':
+            return renderRoute(AdminLoginPage);
+        
+        case 'career-opportunities':
+            return renderRoute(CareerOpportunitiesPage);
+        
+        case 'therapist-info':
+            return renderRoute(TherapistInfoPage);
+        
+        case 'employer-info':
+            return renderRoute(EmployerInfoPage);
+        
+        case 'payment-info':
+            return renderRoute(PaymentInfoPage);
+
+        // ===== FALLBACK =====
+        default:
+            return renderRoute(publicRoutes.home.component);
     }
 };
 
 export default AppRouter;
-
-

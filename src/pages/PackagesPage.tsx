@@ -24,6 +24,7 @@ const PLAN_CONTENT: Record<Plan, {
       'Zero monthly fee - start immediately',
       'Only pay 30% commission on bookings',
       'Full profile with photos & services',
+      'Price menu slider displayed on your card',
       'Customer chat & booking system',
       'Standard listing placement',
       'Lead generation included',
@@ -41,7 +42,7 @@ const PLAN_CONTENT: Record<Plan, {
     benefits: [
       'Zero commission - keep 100% of all earnings',
       '★ Priority Hotel, Villa & Private Spa requests',
-      '★ Full price menu displayed on your card',
+      '★ Full price menu slider displayed on your card',
       'Priority placement at top of search results',
       'Advanced analytics & performance insights',
       'Priority customer support',

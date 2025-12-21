@@ -213,11 +213,6 @@ const TherapistStatusPage: React.FC<TherapistStatusPageProps> = ({ therapist, on
                         <button onClick={onNavigateToDashboard} className="text-xs px-3 py-2 rounded-lg bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium">
                             Profile
                         </button>
-                        {onLogout && (
-                            <button onClick={onLogout} className="text-xs px-3 py-2 rounded-lg border hover:bg-gray-50">
-                                Logout
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>

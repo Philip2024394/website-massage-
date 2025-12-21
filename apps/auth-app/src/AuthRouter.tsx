@@ -24,15 +24,22 @@ type AuthPage =
   | 'home';
 
 const AuthRouter: React.FC = () => {
-  // Redirect to main app if accessing root - auth app shouldn't be accessed directly
+  // Choose initial page from URL instead of redirecting away from root
   const [currentPage, setCurrentPage] = useState<AuthPage>(() => {
-    // If user lands on root, they should go to main app
     const path = window.location.pathname;
-    if (path === '/' || path === '') {
-      const mainAppUrl = window.location.origin.includes('localhost') ? 'http://localhost:3000' : window.location.origin;
-      window.location.href = mainAppUrl;
-      return 'signIn'; // Temporary while redirecting
+    const searchParams = new URLSearchParams(window.location.search);
+    const action = searchParams.get('action');
+
+    if (path.includes('/signup') || searchParams.has('signup') || action === 'signup') {
+      return 'membershipSignup';
     }
+    if (path.includes('/terms')) return 'packageTerms';
+    if (path.includes('/signin') || path.includes('/login') || action === 'signin') return 'signIn';
+    if (path.includes('/forgot-password')) return 'forgotPassword';
+    if (path.includes('/reset-password')) return 'resetPassword';
+    if (path.includes('/therapist-login')) return 'therapistLogin';
+    if (path.includes('/place-login')) return 'massagePlaceLogin';
+    if (path.includes('/privacy')) return 'privacy';
     return 'signIn';
   });
 
@@ -40,12 +47,13 @@ const AuthRouter: React.FC = () => {
   useEffect(() => {
     const path = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
+    const action = searchParams.get('action');
     
-    if (path.includes('/signup') || searchParams.has('signup')) {
+    if (path.includes('/signup') || searchParams.has('signup') || action === 'signup') {
       setCurrentPage('membershipSignup');
     } else if (path.includes('/terms')) {
       setCurrentPage('packageTerms');
-    } else if (path.includes('/signin') || path.includes('/login')) {
+    } else if (path.includes('/signin') || path.includes('/login') || action === 'signin') {
       setCurrentPage('signIn');
     } else if (path.includes('/forgot-password')) {
       setCurrentPage('forgotPassword');
@@ -57,11 +65,8 @@ const AuthRouter: React.FC = () => {
       setCurrentPage('massagePlaceLogin');
     } else if (path.includes('/privacy')) {
       setCurrentPage('privacy');
-    } else if (path === '/' || path === '') {
-      // Default to sign-in page for returning users
-      setCurrentPage('signIn');
     } else {
-      // Fallback to sign-in
+      // Default to sign-in page for root/unknown paths
       setCurrentPage('signIn');
     }
   }, []);

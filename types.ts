@@ -257,6 +257,9 @@ export interface Therapist {
     isLive: boolean;
     location: string;
     coordinates: CoordinatesString; // JSON string for Appwrite
+    latitude?: string; // Individual latitude field for easier access
+    longitude?: string; // Individual longitude field for easier access
+    phoneNumber?: string; // Contact phone number
     city?: string; // Selected city/tourist destination
     activeMembershipDate: string;
     membershipStartDate?: string; // Date when therapist first became active
@@ -513,6 +516,7 @@ export interface Booking {
     service: '60' | '90' | '120';
     startTime: string; // ISO string
     status: BookingStatus;
+    totalPrice?: number; // Total price in Rupiah
     
     // Hotel/Villa guest booking fields
     guestName?: string;
@@ -558,6 +562,8 @@ export interface Notification {
     id: number;
     providerId: number;
     message: string;
+    title?: string;
+    body?: string;
     type: NotificationType;
     isRead: boolean;
     createdAt: string; // ISO string

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, X, User, Phone, Calendar } from 'lucide-react';
+import { Clock, X, User, Phone, Calendar, Star } from 'lucide-react';
 import { databases, ID, Query } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useLanguage } from '../hooks/useLanguage';
@@ -66,6 +66,7 @@ interface ScheduleBookingPopupProps {
   hotelVillaType?: 'hotel' | 'villa';
   isImmediateBooking?: boolean; // Skip time selection for immediate bookings
   pricing?: { [key: string]: number }; // Pricing object from therapist/place (e.g., {"60": 250, "90": 350, "120": 450})
+  providerRating?: number;
   discountPercentage?: number; // Discount percentage if applicable
   discountActive?: boolean; // Whether discount is currently active
 }
@@ -83,12 +84,15 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   hotelVillaType,
   isImmediateBooking = false,
   pricing,
+  providerRating,
   discountPercentage = 0,
   discountActive = false
 }) => {
   const { language } = useLanguage();
   const lang = language === 'gb' ? 'en' : language;
   const t = translations[lang] || translations['id'];
+
+  const ratingValue = typeof providerRating === 'number' && providerRating > 0 ? providerRating.toFixed(1) : null;
   
   const [step, setStep] = useState<'duration' | 'time' | 'details'>('duration');
   const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
@@ -642,8 +646,14 @@ You can contact the customer immediately!`;
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl max-w-md w-full shadow-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header - Orange Indastreet Branding */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 rounded-t-2xl sticky top-0 z-10">
           <div className="flex items-center justify-between">
@@ -667,6 +677,12 @@ You can contact the customer immediately!`;
                 <p className="text-orange-100 text-xs">Indastreet • {therapistName}</p>
               </div>
             </div>
+            {ratingValue && (
+              <div className="flex items-center gap-1 bg-white/90 rounded-full px-3 py-1 shadow-sm">
+                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                <span className="text-sm font-bold text-black">{ratingValue}</span>
+              </div>
+            )}
             <button onClick={onClose} className="text-white hover:bg-white/20 rounded-full p-2">
               <X size={20} />
             </button>
@@ -698,11 +714,15 @@ You can contact the customer immediately!`;
                       setStep('time');
                     }
                   }}
-                  className="w-full p-2 sm:p-2.5 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:bg-orange-50 transition-all"
+                  className={`w-full p-2 sm:p-2.5 rounded-xl border-2 transition-all ${
+                    selectedDuration === option.minutes
+                      ? 'border-transparent bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg animate-pulse'
+                      : 'border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 hover:border-orange-500 hover:from-orange-100 hover:to-amber-100'
+                  }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="text-left flex items-center gap-2">
-                      <Clock className="text-orange-500" size={18} />
+                      <Clock className="text-orange-600" size={18} />
                       <div>
                         <div className="font-bold text-gray-800 text-sm">{option.label}</div>
                         {therapistType === 'therapist' && (
@@ -710,7 +730,7 @@ You can contact the customer immediately!`;
                         )}
                       </div>
                     </div>
-                    <div className="text-lg sm:text-xl font-bold text-orange-600">IDR {Math.round(option.price / 1000)}K</div>
+                    <div className={`text-lg sm:text-xl font-bold ${selectedDuration === option.minutes ? 'text-white' : 'text-orange-700'}`}>IDR {Math.round(option.price / 1000)}K</div>
                   </div>
                 </button>
               ))}
@@ -899,11 +919,11 @@ You can contact the customer immediately!`;
                 disabled={!customerName || !customerWhatsApp || isCreating}
                 className={`w-full py-3 rounded-lg font-bold text-white ${
                   customerName && customerWhatsApp && !isCreating
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
                     : 'bg-gray-300 cursor-not-allowed'
                 }`}
               >
-                {isCreating ? 'Sending...' : '💬 Send Booking via Chat'}
+                {isCreating ? 'Sending...' : '✅ Book Now'}
               </button>
             </div>
           )}

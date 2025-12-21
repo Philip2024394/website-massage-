@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Collection IDs</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Find Appwrite Collection IDs</h1>
+    <button onclick="findCollections()">Find Collections</button>
+    <pre id="output"></pre>
+
+    <script>
+        const { Client, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        
+        async function findCollections() {
+            const output = document.getElementById('output');
+            output.textContent = 'Fetching collections...\n';
+            
+            try {
+                const response = await databases.listCollections('68f76ee1000e64ca8d05');
+                
+                output.textContent = `Found ${response.collections.length} collections:\n\n`;
+                
+                const collectionMap = {};
+                
+                response.collections.forEach(collection => {
+                    output.textContent += `${collection.name}:\n`;
+                    output.textContent += `  ID: ${collection.$id}\n\n`;
+                    
+                    // Build config object
+                    const key = collection.name.toLowerCase()
+                        .replace(/\s+/g, '_')
+                        .replace(/[^a-z0-9_]/g, '');
+                    collectionMap[key] = collection.$id;
+                });
+                
+                output.textContent += '\n\n=== COPY THIS TO config.ts ===\n\n';
+                output.textContent += 'collections: {\n';
+                Object.entries(collectionMap).forEach(([key, id]) => {
+                    output.textContent += `  ${key}: '${id}',\n`;
+                });
+                output.textContent += '}\n';
+                
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message + '\n\n';
+                output.textContent += 'Make sure you are logged into Appwrite in your browser';
+            }
+        }
+    </script>
+</body>
+</html>

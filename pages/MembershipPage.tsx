@@ -136,6 +136,10 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
                             </li>
                             <li className="flex items-start gap-3 text-gray-700">
                                 <span className="text-orange-500 mt-0.5">✔</span>
+                                <span>Price menu slider displayed on your card</span>
+                            </li>
+                            <li className="flex items-start gap-3 text-gray-700">
+                                <span className="text-orange-500 mt-0.5">✔</span>
                                 <span>Customer chat and booking system</span>
                             </li>
                             <li className="flex items-start gap-3 text-gray-700">
@@ -240,7 +244,7 @@ const MembershipPage: React.FC<MembershipPageProps> = ({ onPackageSelect, onBack
                             </li>
                             <li className="flex items-start gap-3 text-orange-700">
                                 <span className="text-orange-600 mt-0.5">★</span>
-                                <span><strong className="font-semibold">Full price menu</strong> displayed on your card</span>
+                                <span><strong className="font-semibold">Full price menu slider</strong> displayed on your card</span>
                             </li>
                             <li className="flex items-start gap-3 text-gray-700">
                                 <span className="text-orange-500 mt-0.5">✔</span>

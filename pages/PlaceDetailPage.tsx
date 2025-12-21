@@ -85,10 +85,11 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
 
         // Send notification to place ONLY if it's not them clicking their own button
         if (loggedInProviderId !== placeIdNumber) {
-            notificationService.createWhatsAppContactNotification(
-                placeIdNumber,
-                place.name
-            ).catch(err => console.log('Notification failed:', err));
+            notificationService.createWhatsAppContactNotification({
+                userId: String(placeIdNumber),
+                providerName: place.name,
+                customerName: 'Customer'
+            }).catch(err => console.log('Notification failed:', err));
         } else {
             console.log('🔇 Skipping self-notification (you clicked your own button)');
         }

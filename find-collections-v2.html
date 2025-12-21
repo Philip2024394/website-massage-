@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Collection IDs - Try Patterns</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Find Collection IDs by Testing</h1>
+    <button onclick="findCollections()">Test Collection Patterns</button>
+    <pre id="output"></pre>
+
+    <script>
+        const { Client, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const databaseId = '68f76ee1000e64ca8d05';
+        
+        // Collection ID patterns to try
+        const patterns = {
+            therapists: [
+                'therapists',
+                'Therapists', 
+                'therapists_collection_id',
+                'THERAPISTS_COLLECTION_ID',
+                'therapist',
+                'Therapist'
+            ],
+            places: [
+                'places',
+                'Places',
+                'places_collection_id',
+                'PLACES_COLLECTION_ID',
+                'place',
+                'Place'
+            ],
+            facial_places: [
+                'facial_places',
+                'Facial_Places',
+                'facial_places_collection_id',
+                'FACIAL_PLACES_COLLECTION_ID',
+                'FacialPlaces',
+                'facial-places'
+            ],
+            users: [
+                'users',
+                'Users',
+                'users_collection_id',
+                'USERS_COLLECTION_ID',
+                'user',
+                'User'
+            ]
+        };
+        
+        async function testCollectionId(name, id) {
+            try {
+                const response = await databases.listDocuments(databaseId, id, []);
+                return { success: true, count: response.total };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function findCollections() {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing collection ID patterns...\n\n';
+            
+            const results = {};
+            
+            for (const [collectionName, patterns] of Object.entries(patterns)) {
+                output.textContent += `\n=== Testing ${collectionName} ===\n`;
+                
+                for (const pattern of patterns) {
+                    const result = await testCollectionId(collectionName, pattern);
+                    
+                    if (result.success) {
+                        output.textContent += `✅ FOUND: '${pattern}' - ${result.count} documents\n`;
+                        results[collectionName] = pattern;
+                        break; // Found it, move to next collection
+                    } else {
+                        output.textContent += `❌ '${pattern}' - ${result.error}\n`;
+                    }
+                }
+            }
+            
+            output.textContent += '\n\n=== RESULTS ===\n';
+            output.textContent += 'Copy these to config.ts:\n\n';
+            output.textContent += 'collections: {\n';
+            
+            for (const [key, value] of Object.entries(results)) {
+                output.textContent += `  ${key}: '${value}',\n`;
+            }
+            
+            output.textContent += '}\n';
+        }
+    </script>
+</body>
+</html>

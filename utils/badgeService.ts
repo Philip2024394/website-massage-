@@ -80,7 +80,7 @@ export const badgeService = {
             }
 
             // Get unread notifications from Appwrite
-            const unread = await notificationService.getUnread(parseInt(providerId));
+            const unread = await notificationService.getUnread(providerId);
             console.log(`📊 Unread notifications: ${unread.length}`);
             
             return unread.length;

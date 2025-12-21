@@ -9,19 +9,25 @@ import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
 interface LandingPageProps {
-    onLanguageSelect: (lang: Language) => void;
-    onEnterApp: (language: Language, location: UserLocation) => void;
+    onLanguageSelect?: (lang: Language) => void;
+    onEnterApp?: (language: Language, location: UserLocation) => void;
+    handleEnterApp?: (lang: Language, location: UserLocation) => Promise<void>;
+    handleLanguageSelect?: (lang: Language) => Promise<void>;
 }
 
 const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
 
-const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, onLanguageSelect, handleLanguageSelect }) => {
     console.log('🎬 LandingPage component mounted');
     const [imageLoaded, setImageLoaded] = useState(false);
     const defaultLanguage: Language = 'id';
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
     const isMountedRef = React.useRef(true);
+    
+    // Use either prop name for backward compatibility
+    const enterAppCallback = handleEnterApp || onEnterApp;
+    const selectLanguage = handleLanguageSelect || onLanguageSelect;
 
     // Track component mount status
     useEffect(() => {
@@ -56,9 +62,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         img.onerror = () => setImageLoaded(true);
     }, []);
 
-    const handleEnterApp = async () => {
+    const handleEnterClick = async () => {
         if (isDetectingLocation) return;
         if (!isMountedRef.current) return;
+        
+        // Check if enterApp callback exists
+        if (!enterAppCallback) {
+            console.error('❌ No enterApp callback provided to LandingPage');
+            alert('Error: Navigation function not available. Please refresh the page.');
+            return;
+        }
         
         // Don't change button text during navigation to prevent removeChild errors
         // Just disable the button and navigate immediately
@@ -67,7 +80,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
         try {
             const userLocation = await locationService.requestLocationWithFallback();
             if (!isMountedRef.current) return;
-            await onEnterApp(defaultLanguage, userLocation);
+            await enterAppCallback(defaultLanguage, userLocation);
             try { 
                 await requestInstall(); 
             } catch {}
@@ -82,12 +95,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
             
             try {
                 if (!isMountedRef.current) return;
-                await onEnterApp(defaultLanguage, defaultLocation);
+                await enterAppCallback(defaultLanguage, defaultLocation);
                 try { 
                     await requestInstall(); 
                 } catch {}
             } catch (enterError) {
-                console.error('❌ Failed to call onEnterApp:', enterError);
+                console.error('❌ Failed to call enterApp:', enterError);
+                alert(`Error entering app: ${enterError instanceof Error ? enterError.message : 'Unknown error'}`);
+                setIsDetectingLocation(false);
             }
         }
         // Component will unmount during navigation, no need to reset state
@@ -117,7 +132,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4 mt-4">
                     <Button
                         type="button"
-                        onClick={handleEnterApp}
+                        onClick={handleEnterClick}
                         variant="primary"
                         disabled={isDetectingLocation}
                         className="!py-2.5 sm:!py-4 !text-base sm:!text-lg font-bold relative z-10"

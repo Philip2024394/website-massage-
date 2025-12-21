@@ -69,7 +69,7 @@ class PushNotificationManager {
 
       if (!subscription) {
         // Create new subscription (VAPID key optional for testing)
-        const vapidKey = process.env.VITE_VAPID_PUBLIC_KEY;
+        const vapidKey = (import.meta as any)?.env?.VITE_VAPID_PUBLIC_KEY;
         
         const options: PushSubscriptionOptionsInit = {
           userVisibleOnly: true
@@ -77,6 +77,8 @@ class PushNotificationManager {
         
         if (vapidKey) {
           options.applicationServerKey = this.urlBase64ToUint8Array(vapidKey);
+        } else {
+          console.warn('⚠️ VAPID key missing; subscribing without applicationServerKey');
         }
         
         subscription = await this.swRegistration.pushManager.subscribe(options);

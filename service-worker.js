@@ -1,6 +1,6 @@
 // 🔥 CACHE-BUSTING: Update version on every deployment
 // Change this version whenever you deploy new code
-const CACHE_VERSION = 'v2.0.1'; // INCREMENT THIS ON EVERY DEPLOYMENT!
+const CACHE_VERSION = 'v2.0.2'; // INCREMENT THIS ON EVERY DEPLOYMENT!
 const CACHE_NAME = `indostreet-massage-cache-${CACHE_VERSION}`;
 const urlsToCache = [
   '/',
@@ -37,6 +37,10 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // In development (localhost), do not intercept requests at all
+  if (self.location && self.location.hostname === 'localhost') {
+    return;
+  }
   // Skip caching for Vite dev server resources
   const url = new URL(event.request.url);
   if (url.pathname.includes('/@') || 

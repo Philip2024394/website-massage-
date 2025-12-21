@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Heart, Share2, MapPin, MessageCircle, Phone, Clock } from 'lucide-react';
+import { generateShareableURL } from '../utils/seoSlugGenerator';
 // Drawer is restricted to HomePage; not used here
 
 interface TherapistProfilePageProps {
@@ -102,18 +103,19 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     };
 
     const handleShareProfile = async () => {
+        const shareUrl = generateShareableURL(therapist);
         if (navigator.share) {
             try {
                 await navigator.share({
                     title: `${therapist.name} - Professional Massage Therapist`,
                     text: `Check out ${therapist.name}'s massage services`,
-                    url: window.location.href
+                    url: shareUrl
                 });
             } catch {
                 console.log('Share canceled');
             }
         } else {
-            navigator.clipboard.writeText(window.location.href);
+            navigator.clipboard.writeText(shareUrl);
             alert('Profile link copied to clipboard!');
         }
     };

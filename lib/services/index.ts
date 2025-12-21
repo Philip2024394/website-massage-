@@ -1,27 +1,31 @@
 /**
  * Service Layer - Central Export
  * 
- * This barrel file provides organized access to all services.
- * Future: Split appwriteService.ts into individual service files here.
+ * Modular service architecture with backwards compatibility.
+ * Services are being migrated from LEGACY file to individual modules.
  */
 
-// Re-export all services from the main appwriteService
-// TODO: Refactor appwriteService.ts into individual files under this directory
+// Core Appwrite Configuration
+export { appwriteClient, appwriteDatabases, appwriteAccount, APPWRITE_CONFIG } from './appwrite.base';
+
+// Migrated Services (from individual files)
+export { imageUploadService } from './image.service';
+
+// Membership Services (modular structure)
+export * from './membership/plans.config';
+export * from './membership/types';
+
+// Legacy Services (still from LEGACY file - will be migrated)
 export {
-  // Core
-  appwriteClient,
-  appwriteDatabases,
-  appwriteAccount,
-  
-  // Image & Media
-  imageUploadService,
   getRandomLiveMenuImage,
+  getNonRepeatingMainImage,
   
   // Business Logic Services
   therapistService,
   placesService as placeService,
+  facialPlaceService,
+  hotelService,
   userService,
-  authService,
   bookingService,
   notificationService,
   reviewService,
@@ -37,11 +41,18 @@ export {
   agentShareAnalyticsService,
   agentVisitService,
   monthlyAgentMetricsService,
+  memberStatsService,
   recruitLookupService,
   
   // Hotel/Villa
   hotelVillaBookingService,
   
+  // Membership & Payments (being migrated)
+  membershipService,
+  subscriptionService,
+  paymentService,
+  leadGenerationService,
+  
   // Utilities
   customLinksService,
-} from '../appwriteService';
+} from '../appwriteService.LEGACY';

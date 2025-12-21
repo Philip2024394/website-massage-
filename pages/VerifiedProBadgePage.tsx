@@ -11,11 +11,12 @@ interface VerifiedProBadgePageProps {
 }
 
 interface Eligibility {
-  isEligible: boolean;
-  reason: string;
-  accountAge: number;
-  completedBookings: number;
-  averageRating: number;
+  eligible?: boolean;
+  reason?: string;
+  accountAge?: number;
+  completedBookings?: number;
+  averageRating?: number;
+  status?: string;
 }
 
 const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, providerId, providerType, providerName }) => {
@@ -26,12 +27,13 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const title = useMemo(() => (providerType === 'therapist' ? 'Therapist' : 'Massage Place'), [providerType]);
+  const providerIdStr = String(providerId);
 
   const loadEligibility = async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await verificationService.checkEligibility(providerId, providerType);
+      const result = await verificationService.checkEligibility(providerIdStr, providerType);
       setEligibility(result);
     } catch (e: any) {
       setError(e?.message || 'Failed to check eligibility');
@@ -50,9 +52,9 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
     setError(null);
     setSuccess(null);
     try {
-      const res = await verificationService.applyForVerification(providerId, providerType);
+      const res = await verificationService.applyForVerification(providerIdStr, providerType, { providerName });
       setSuccess('Verification badge applied successfully. Congratulations!');
-      setEligibility(res);
+      setEligibility({ eligible: res?.status === 'approved', status: res?.status || 'pending', reason: res?.reason });
     } catch (e: any) {
       setError(e?.message || 'Failed to apply for verification');
     } finally {
@@ -67,7 +69,7 @@ const VerifiedProBadgePage: React.FC<VerifiedProBadgePageProps> = ({ onBack, pro
     setError(null);
     setSuccess(null);
     try {
-      await verificationService.revokeVerification(providerId, providerType, reason || '');
+      await verificationService.revokeVerification(providerIdStr, reason || '');
       setSuccess('Verification badge revoked.');
       await loadEligibility();
     } catch (e: any) {

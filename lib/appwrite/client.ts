@@ -24,3 +24,6 @@ export const appwriteClient = client;
 export const appwriteDatabases = databases;
 export const appwriteAccount = account;
 export const appwriteStorage = storage;
+
+// Also export individual instances for backward compatibility
+export { client, databases, account, storage };

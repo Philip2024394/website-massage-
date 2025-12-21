@@ -522,6 +522,7 @@ const TermsStep: React.FC<{
                     <>
                         <p className="text-red-600 font-semibold">⚠ Critical Compliance Notice</p>
                         <p>Violating platform rules results in immediate termination with no refund.</p>
+                        <p className="text-gray-700 font-medium">Price menu slider is included on your Pro profile (same as Plus).</p>
                         
                         <h4 className="font-semibold text-gray-900 mt-4">Commission Framework</h4>
                         <ul className="list-disc pl-5 space-y-1">
@@ -548,7 +549,7 @@ const TermsStep: React.FC<{
                             <li>Verified badge and premium placement</li>
                             <li>Advanced analytics and priority support</li>
                             <li className="font-medium text-orange-700">Priority access to Hotels, Villas & Private Spa Resort service requests</li>
-                            <li className="font-medium text-orange-700">Add your full price menu with unlimited services</li>
+                            <li className="font-medium text-orange-700">Add your full price menu slider with unlimited services</li>
                         </ul>
 
                         <h4 className="font-semibold text-gray-900 mt-4">Payment Schedule</h4>

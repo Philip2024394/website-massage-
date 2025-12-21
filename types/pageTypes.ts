@@ -11,6 +11,7 @@ export type Page =
     | 'detail' 
     | 'massagePlaceProfile' 
     | 'facialProviders'
+    | 'facial-providers'
     | 'facialPlaceProfile'
     | 'facialPlaceDashboard'
     | 'facialPortal'
@@ -21,6 +22,8 @@ export type Page =
     | 'therapistStatus' 
     | 'therapistPortal'
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
+    | 'therapist-profile' // Hyphenated variant for routing
+    | 'facial-place-profile' // Facial place profile page
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'qr-code' // QR Code sharing page
     | 'membership-select'
@@ -141,7 +144,43 @@ export type Page =
     | 'mobileTherapistStandards'
     | 'customerProviders'
     | 'customerReviews'
-    | 'customerSupport';
+    | 'customerSupport'
+    // Additional routes from optimized router
+    | 'company'
+    | 'massage-types'
+    | 'facial-types'
+    | 'providers'
+    | 'discounts'
+    | 'therapist-login'
+    | 'place-login'
+    | 'facial-portal'
+    | 'simple-signup'
+    | 'shared-therapist-profile'
+    | 'massage-place-profile'
+    | 'place-detail'
+    | 'privacy-policy'
+    | 'service-terms'
+    | 'place-terms'
+    | 'package-terms'
+    | 'press'
+    | 'blog-pricing-guide-massage'
+    | 'confirm-therapists'
+    | 'employer-job-posting'
+    | 'guest-profile'
+    | 'job-posting-payment'
+    | 'browse-jobs'
+    | 'massage-jobs'
+    | 'therapist-job-registration'
+    | 'reviews'
+    | 'job-unlock-payment'
+    | 'customer-reviews'
+    | 'customer-support'
+    | 'place-discount-badge'
+    | 'verified-pro-badge'
+    | 'mobile-therapist-standards'
+    | 'guest-alerts'
+    | 'partner-settings'
+    | 'admin-login';
 
 export type Language = 'en' | 'id' | 'gb';
 

@@ -252,6 +252,21 @@ export interface PlatformAnalytics {
 class AnalyticsService {
     private readonly EVENTS_COLLECTION = 'analytics_events';
 
+    private async runWithTimeout(promise: Promise<unknown>, timeoutMs = 2000): Promise<void> {
+        return new Promise((resolve) => {
+            const timer = setTimeout(() => resolve(), timeoutMs);
+            promise
+                .then(() => {
+                    clearTimeout(timer);
+                    resolve();
+                })
+                .catch(() => {
+                    clearTimeout(timer);
+                    resolve();
+                });
+        });
+    }
+
     /**
      * Track a single analytics event
      */
@@ -292,6 +307,42 @@ class AnalyticsService {
             userId,
             metadata: { providerType }
         });
+    }
+
+    /**
+     * Track shared link view for therapists
+     */
+    async trackSharedLinkView(
+        therapistId: number | string,
+        sessionId?: string,
+        metadata?: Record<string, any>
+    ): Promise<void> {
+        await this.runWithTimeout(
+            this.trackEvent({
+                eventType: AnalyticsEventType.PROFILE_VIEW,
+                therapistId,
+                metadata: { source: 'shared_link', ...(metadata || {}) },
+                sessionId
+            })
+        );
+    }
+
+    /**
+     * Track shared link share action for therapists
+     */
+    async trackSharedLinkShare(
+        therapistId: number | string,
+        sessionId?: string,
+        metadata?: Record<string, any>
+    ): Promise<void> {
+        await this.runWithTimeout(
+            this.trackEvent({
+                eventType: AnalyticsEventType.SHARE_CLICK,
+                therapistId,
+                metadata: { source: 'shared_link', ...(metadata || {}) },
+                sessionId
+            })
+        );
     }
 
     /**

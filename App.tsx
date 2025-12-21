@@ -263,21 +263,17 @@ const App = () => {
         };
     }, [isChatOpen, chatInfo]);
 
-    // Session restoration and cleanup on app startup
+    // Session restoration and app initialization on startup
     useEffect(() => {
         const restoreChatSession = async () => {
             try {
-                // Check if we have any active sessions that need to be restored
                 const allSessions = await chatSessionService.listActiveSessions();
-                
+
                 if (allSessions && allSessions.length > 0) {
-                    // Get the most recent active session
                     const latestSession = allSessions[0];
                     console.log('🔄 Restoring active chat session from previous visit:', latestSession.sessionId);
-                    
-                    // Restore the chat state
+
                     setChatInfo({
-                        // sessionId removed from type
                         therapistId: latestSession.providerId,
                         therapistName: latestSession.providerName,
                         therapistType: latestSession.providerType,
@@ -295,102 +291,27 @@ const App = () => {
                     });
                     setIsChatOpen(true);
                 }
-                
-                // Clean up expired sessions
+
                 await chatSessionService.cleanupExpiredSessions();
             } catch (error) {
                 console.warn('⚠️ Failed to restore chat session:', error);
-                // Continue normally if session restoration fails
             }
         };
 
-        restoreChatSession();
-        
-        // localStorage disabled: skip cleanupLocalStorage()
-        
-        // Play welcome music only once ever (not per session)
-        const hasPlayedMusic = localStorage.getItem('welcomeMusicPlayedEver');
-        if (hasPlayedMusic) {
-            console.log('🎵 Welcome music already played, skipping');
-            return; // Exit early if music was already played
-        }
-
-        const audio = new Audio('/sounds/booking-notification.mp3');
-        audio.volume = 0.5; // Set volume to 50%
-        
-        let cleanupListeners: (() => void) | null = null;
-
-        // Play with user interaction fallback
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise
-                .then(() => {
-                    console.log('🎵 Welcome music playing');
-                    localStorage.setItem('welcomeMusicPlayedEver', 'true');
-                })
-                .catch((error) => {
-                    // Autoplay was prevented, will try on first user interaction
-                    console.log('🎵 Welcome music autoplay prevented, will play on user interaction');
-                    const playOnInteraction = (e: Event) => {
-                        // Only play on non-functional clicks (not buttons, links, inputs, or interactive elements)
-                        const target = e.target as HTMLElement;
-                        if (
-                            target.closest('button') ||
-                            target.closest('a') ||
-                            target.closest('input') ||
-                            target.closest('select') ||
-                            target.closest('textarea') ||
-                            target.closest('[role="button"]') ||
-                            target.closest('.interactive')
-                        ) {
-                            // Skip music for functional elements
-                            return;
-                        }
-                        
-                        audio.play().then(() => {
-                            console.log('🎵 Welcome music playing after user interaction');
-                            localStorage.setItem('welcomeMusicPlayedEver', 'true');
-                            document.removeEventListener('click', playOnInteraction);
-                            document.removeEventListener('touchstart', playOnInteraction);
-                        }).catch(() => {});
-                    };
-                    
-                    document.addEventListener('click', playOnInteraction);
-                    document.addEventListener('touchstart', playOnInteraction);
-                    
-                    // Store cleanup function
-                    cleanupListeners = () => {
-                        document.removeEventListener('click', playOnInteraction);
-                        document.removeEventListener('touchstart', playOnInteraction);
-                    };
-                });
-        }
-
-        // Cleanup function to remove event listeners when component unmounts
-        return () => {
-            if (cleanupListeners) {
-                cleanupListeners();
-            }
-        };
-        
-        // 🔧 FIX: Initialize Appwrite SDK and make it globally available
         const initializeAppwriteSession = async () => {
             try {
-                // Check if Appwrite is already loaded from CDN
                 if (!(window as any).Appwrite) {
                     console.log('📦 CDN failed, loading Appwrite from npm...');
-                    // Import and expose Appwrite globally as fallback
                     const appwriteModule = await import('appwrite');
                     (window as any).Appwrite = appwriteModule;
                     console.log('✅ Appwrite SDK loaded from npm:', Object.keys(appwriteModule));
                 } else {
                     console.log('✅ Appwrite SDK already available from CDN');
                 }
-                
+
                 const { account } = await import('./lib/appwrite');
                 const { sessionCache } = await import('./lib/sessionCache');
-                
-                // Check cache first to avoid repeated 401 errors
+
                 const cached = sessionCache.get();
                 if (cached) {
                     if (cached.hasSession) {
@@ -398,41 +319,36 @@ const App = () => {
                     }
                     return;
                 }
-                
-                // Check for existing authenticated session only
-                // Anonymous sessions are disabled to prevent 401/501 error loops
+
                 try {
                     const currentUser = await Promise.race([
                         account.get(),
                         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                     ]) as any;
-                    
+
                     sessionCache.set(true, currentUser);
                     console.log('✅ Session already active:', currentUser.email);
                 } catch (sessionError: any) {
-                    // No session - cache this result to prevent repeated 401s
                     sessionCache.setNoSession();
-                    // Suppress 401 console noise - this is expected when not logged in
                     if (sessionError?.code !== 401 && sessionError?.message !== 'timeout') {
                         console.log('ℹ️ Session check:', sessionError.message || 'No active session');
                     }
                 }
             } catch (error: any) {
-                // Session might already exist, which is fine
                 if (!error.message?.includes('already exists')) {
                     console.log('Session initialization:', error.message);
                 }
             }
         };
 
-        initializeAppwriteSession();
+        void restoreChatSession();
+        void initializeAppwriteSession();
         bookingExpirationService.start();
-        
-        // Initialize push notifications for lock-screen alerts
+
         pushNotifications.initialize().catch(err => {
             console.log('Push notification initialization:', err.message);
         });
-        
+
         return () => {
             bookingExpirationService.stop();
         };
@@ -521,7 +437,8 @@ const App = () => {
         try {
             const pending = sessionStorage.getItem('pending_deeplink');
             if (!pending) return;
-            const { provider } = JSON.parse(pending) as { provider: string };
+            const parsed = JSON.parse(pending) as { provider?: string; targetPage?: string };
+            const { provider, targetPage } = parsed;
             if (!provider) return;
             const [ptype, pidRaw] = provider.split('-');
             const idStr = (pidRaw || '').toString();
@@ -529,7 +446,8 @@ const App = () => {
                 const found = state.therapists.find((th: any) => ((th.id ?? th.$id ?? '').toString() === idStr));
                 if (found) {
                     state.setSelectedTherapist(found);
-                    state.setPage('therapistProfile');
+                    const target = (targetPage === 'shared-therapist-profile') ? 'shared-therapist-profile' : 'therapistProfile';
+                    state.setPage(target as any);
                     sessionStorage.removeItem('pending_deeplink');
                 }
             } else if (ptype === 'place' && state.places && state.places.length) {
@@ -544,6 +462,100 @@ const App = () => {
             console.warn('Deeplink navigation failed:', e);
         }
     }, [state.therapists, state.places]);
+
+    // Force therapists to land on the status page first with chat minimized, but only when they're in provider flows (avoid hijacking public landing)
+    useEffect(() => {
+        const isTherapist = state.loggedInProvider?.type === 'therapist';
+        if (!isTherapist) {
+            sessionStorage.removeItem('therapist_status_landing_seen');
+            return;
+        }
+
+        // Do not redirect when they intentionally visit public/marketing pages
+        const publicPages = ['landing', 'home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massageTypes', 'facialTypes', 'providers', 'facialProviders', 'discounts'];
+        if (publicPages.includes(state.page as string)) {
+            return;
+        }
+
+        const alreadyLanded = sessionStorage.getItem('therapist_status_landing_seen') === 'true';
+        if (!alreadyLanded && state.page !== 'therapistStatus') {
+            sessionStorage.setItem('chat_minimized', 'true');
+            state.setPage('therapistStatus');
+            return;
+        }
+
+        if (state.page === 'therapistStatus') {
+            sessionStorage.setItem('therapist_status_landing_seen', 'true');
+        }
+    }, [state.loggedInProvider, state.page, state.setPage]);
+
+    // Play welcome music only for customers (never for members) and only once
+    useEffect(() => {
+        const isTherapist = state.loggedInProvider?.type === 'therapist';
+        const shouldPlayMusic = !isTherapist && !!state.loggedInCustomer && (state.page === 'landing' || state.page === 'home');
+
+        if (isTherapist || state.page === 'therapistStatus') {
+            localStorage.setItem('welcomeMusicPlayedEver', 'true');
+            return;
+        }
+
+        if (!shouldPlayMusic) return;
+
+        if (localStorage.getItem('welcomeMusicPlayedEver')) {
+            return;
+        }
+
+        const audio = new Audio('/sounds/booking-notification.mp3');
+        audio.volume = 0.5;
+        let cleanupListeners: (() => void) | null = null;
+
+        const clearListeners = () => {
+            if (cleanupListeners) {
+                cleanupListeners();
+                cleanupListeners = null;
+            }
+        };
+
+        const playAudio = () => audio.play().then(() => {
+            localStorage.setItem('welcomeMusicPlayedEver', 'true');
+            clearListeners();
+        }).catch(() => {
+            // Fallback to first non-interactive tap/click
+            const playOnInteraction = (e: Event) => {
+                const target = e.target as HTMLElement;
+                if (
+                    target.closest('button') ||
+                    target.closest('a') ||
+                    target.closest('input') ||
+                    target.closest('select') ||
+                    target.closest('textarea') ||
+                    target.closest('[role="button"]') ||
+                    target.closest('.interactive')
+                ) {
+                    return;
+                }
+
+                audio.play().then(() => {
+                    localStorage.setItem('welcomeMusicPlayedEver', 'true');
+                    clearListeners();
+                }).catch(() => undefined);
+            };
+
+            document.addEventListener('click', playOnInteraction, { passive: true });
+            document.addEventListener('touchstart', playOnInteraction, { passive: true });
+            cleanupListeners = () => {
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('touchstart', playOnInteraction);
+            };
+        });
+
+        playAudio();
+
+        return () => {
+            clearListeners();
+            audio.pause();
+        };
+    }, [state.loggedInProvider, state.loggedInCustomer, state.page]);
 
     // Use the actual language handler from hooks
     const handleLanguageSelect = async (lang: 'en' | 'id' | 'gb') => {

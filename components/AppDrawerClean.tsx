@@ -137,16 +137,26 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   };
 
   const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
+    console.log('🔍 Drawer navigation:', { hasCallback: !!callback, fallbackPage, hasOnNavigate: !!onNavigate });
+    
     if (callback) {
       try {
+        console.log('✅ Executing callback for navigation');
         callback();
-      } catch {}
+      } catch (error) {
+        console.error('❌ Callback error:', error);
+      }
       onClose();
     } else if (fallbackPage && onNavigate) {
       try {
+        console.log('✅ Navigating to page:', fallbackPage);
         onNavigate(fallbackPage);
-      } catch {}
+      } catch (error) {
+        console.error('❌ Navigation error:', error);
+      }
       onClose();
+    } else {
+      console.warn('⚠️ No navigation method available:', { callback, fallbackPage, onNavigate: !!onNavigate });
     }
   };
 
@@ -172,11 +182,11 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.partners}</span>
                 </button>
-                <button onClick={() => handleItemClick(undefined, 'joinIndastreet')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'partnership-application')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.joinIndaStreet}</span>
                 </button>
-                <button onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(onMassageJobsClick, 'massage-jobs')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Briefcase className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.massageJobs}</span>
                 </button>
@@ -184,15 +194,15 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.howItWorks}</span>
                 </button>
-                <button onClick={() => handleItemClick(undefined, 'about-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'about')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Info className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.aboutUs}</span>
                 </button>
-                <button onClick={() => handleItemClick(undefined, 'company-profile')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'company')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Building className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.companyProfile}</span>
                 </button>
-                <button onClick={() => handleItemClick(undefined, 'contact-us')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'contact')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.contact}</span>
                 </button>
@@ -207,23 +217,23 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.massageInBali}</span>
                 </button>
-                <button onClick={() => handleItemClick(() => onNavigate?.('massageTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'massage-types')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.massageDirectory}</span>
                 </button>
-                <button onClick={() => handleItemClick(() => onNavigate?.('facialTypes'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'facial-types')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.facialDirectory}</span>
                 </button>
-                <button onClick={() => handleItemClick(() => onNavigate?.('balinese-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'balinese-massage')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.balineseMassage}</span>
                 </button>
-                <button onClick={() => handleItemClick(() => onNavigate?.('deep-tissue-massage'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'deep-tissue-massage')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Heart className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.deepTissueMassage}</span>
                 </button>
-                <button onClick={() => handleItemClick(() => onNavigate?.('faq'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                <button onClick={() => handleItemClick(undefined, 'faq')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
                 </button>
@@ -236,7 +246,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">Sign Up</span>
                   </button>
-                  <button onClick={() => handleItemClick(() => onNavigate?.('website-management'))} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <button onClick={() => handleItemClick(undefined, 'website-management')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">{dt.websitePartners}</span>
                   </button>
@@ -248,46 +258,26 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    // Pre-select therapist portal type and navigate to signup
-                    if (typeof localStorage !== 'undefined') {
-                      localStorage.setItem('selectedPortalType', 'massage_therapist');
-                      localStorage.setItem('selected_membership_plan', 'pro');
-                    }
+                    const authUrl = getAuthAppUrl();
+                    // Send user to unified create-account page with therapist portal preselected
+                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=massage_therapist`;
                     onClose();
-                    // Use client-side navigation instead of full page reload
-                    if (onNavigate) {
-                      onNavigate('simpleSignup');
-                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
                   </button>
                   <button onClick={() => {
-                    // Pre-select massage place portal type and navigate to signup
-                    if (typeof localStorage !== 'undefined') {
-                      localStorage.setItem('selectedPortalType', 'massage_place');
-                      localStorage.setItem('selected_membership_plan', 'pro');
-                    }
+                    const authUrl = getAuthAppUrl();
+                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=massage_place`;
                     onClose();
-                    // Use client-side navigation instead of full page reload
-                    if (onNavigate) {
-                      onNavigate('simpleSignup');
-                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Building className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
                   </button>
                   <button onClick={() => {
-                    // Pre-select facial place portal type and navigate to signup
-                    if (typeof localStorage !== 'undefined') {
-                      localStorage.setItem('selectedPortalType', 'facial_place');
-                      localStorage.setItem('selected_membership_plan', 'pro');
-                    }
+                    const authUrl = getAuthAppUrl();
+                    window.location.href = `${authUrl}/?portals=all&action=signup&portal=facial_place`;
                     onClose();
-                    // Use client-side navigation instead of full page reload
-                    if (onNavigate) {
-                      onNavigate('simpleSignup');
-                    }
                   }} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
                     <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
                     <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>
@@ -300,7 +290,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button 
                     onClick={() => {
                       const authUrl = getAuthAppUrl();
-                      window.location.href = `${authUrl}/signin`;
+                      // Unified sign-in page showing all portal dashboards
+                      window.location.href = `${authUrl}/?portals=all&action=signin`;
                       onClose();
                     }}
                     className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"

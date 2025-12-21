@@ -6,22 +6,7 @@ import { bookingService, reviewService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
-
-// Helper function to get auth app URL for development and production
-const getAuthAppUrl = (): string => {
-    // Check for environment variable first
-    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
-    if (envUrl) return envUrl;
-    
-    // Development mode
-    if (window.location.origin.includes('localhost')) {
-        return 'http://localhost:3001';
-    }
-    
-    // Production mode - for now redirect to main site
-    // This needs to be updated when auth-app is deployed separately
-    return window.location.origin;
-};
+import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -314,7 +299,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     Orders: {bookingsCount}
                 </span>
             </div>
-            <div className="w-full bg-white rounded-xl shadow-md overflow-visible relative active:shadow-lg transition-shadow touch-manipulation pb-8">
+            <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8">
                 {/* Main Image Banner + Lazy Loading (full-width cover) */}
                 <div className="h-48 w-full overflow-visible relative rounded-t-xl">
                 <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
@@ -693,7 +678,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </button>
 
                 {/* Refer Friend, Massage Directory and Leave Review Links */}
-                <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1">
+                <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1 pt-3 border-t border-gray-200">
                     <button
                         onClick={(e) => {
                             e.preventDefault();

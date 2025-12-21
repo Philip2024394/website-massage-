@@ -254,7 +254,6 @@ function App() {
         therapist={user}
         currentPage={currentPage}
         onNavigate={(page) => setCurrentPage(page as Page)}
-        onLogout={handleLogout}
         language={language}
         onLanguageChange={handleLanguageChange}
       >

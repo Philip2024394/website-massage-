@@ -10,7 +10,12 @@ export const databases = new Databases(client);
 export const account = new Account(client);
 export const storage = new Storage(client);
 
+// Export both old and new names for backward compatibility
 export { client, ID, Permission, Role, Query };
+export { client as appwriteClient };
+export { databases as appwriteDatabases };
+export { account as appwriteAccount };
+export { storage as appwriteStorage };
 
 // Database and Collection IDs - REVERTED TO PRODUCTION DATABASE
 export const DATABASE_ID = '68f76ee1000e64ca8d05';

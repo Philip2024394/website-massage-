@@ -165,5 +165,91 @@ Thank you for your payment!
             console.error('❌ Failed to send payment confirmation email:', error);
             throw error;
         }
+    },
+
+    // Additional notification methods for database operations
+    async create(notification: any): Promise<any> {
+        const { databases, APPWRITE_CONFIG } = await import('../config');
+        const { ID } = await import('appwrite');
+        try {
+            const response = await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                ID.unique(),
+                notification
+            );
+            return response;
+        } catch (error) {
+            console.error('Error creating notification:', error);
+            throw error;
+        }
+    },
+
+    async getAll(userId?: string): Promise<any[]> {
+        const { databases, APPWRITE_CONFIG } = await import('../config');
+        const { Query } = await import('appwrite');
+        try {
+            const queries = userId ? 
+                [Query.equal('userId', userId), Query.orderDesc('createdAt'), Query.limit(100)] :
+                [Query.orderDesc('createdAt'), Query.limit(100)];
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                queries
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+            return [];
+        }
+    },
+
+    async getUnread(userId: string): Promise<any[]> {
+        const { databases, APPWRITE_CONFIG } = await import('../config');
+        const { Query } = await import('appwrite');
+        try {
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                [
+                    Query.equal('userId', userId),
+                    Query.equal('read', false),
+                    Query.orderDesc('createdAt')
+                ]
+            );
+            return response.documents;
+        } catch (error) {
+            console.error('Error fetching unread notifications:', error);
+            return [];
+        }
+    },
+
+    async update(id: string, data: any): Promise<any> {
+        const { databases, APPWRITE_CONFIG } = await import('../config');
+        try {
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.notifications,
+                id,
+                data
+            );
+            return response;
+        } catch (error) {
+            console.error('Error updating notification:', error);
+            throw error;
+        }
+    },
+
+    async createWhatsAppContactNotification(data: any): Promise<any> {
+        const notification = {
+            userId: data.userId,
+            type: 'whatsapp_contact',
+            title: 'WhatsApp Contact Request',
+            body: `${data.customerName} wants to contact you`,
+            read: false,
+            createdAt: new Date().toISOString(),
+            ...data
+        };
+        return await this.create(notification);
     }
 };

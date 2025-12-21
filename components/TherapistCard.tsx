@@ -6,6 +6,10 @@ import { notificationService, bookingService, reviewService, therapistMenusServi
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
+import { generateShareableURL } from '../utils/seoSlugGenerator';
+import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
+import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
+import { statusStyles } from '../constants/therapistCardConstants';
 import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BookingFormPopup, { BookingData } from './BookingFormPopup';
@@ -17,22 +21,7 @@ import { MessageCircle, Clock, X, FileText } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
-
-// Helper function to get auth app URL for development and production
-const getAuthAppUrl = (): string => {
-    // Check for environment variable first
-    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
-    if (envUrl) return envUrl;
-    
-    // Development mode
-    if (window.location.origin.includes('localhost')) {
-        return 'http://localhost:3001';
-    }
-    
-    // Production mode - for now redirect to main site
-    // This needs to be updated when auth-app is deployed separately
-    return window.location.origin;
-};
+import TherapistCardHeader from './therapist/TherapistCardHeader';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -50,104 +39,6 @@ interface TherapistCardProps {
     t: any;
     loggedInProviderId?: number | string; // To prevent self-notification
 }
-
-// Utility function to determine display status
-const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
-    // Check if therapist has a busyUntil timestamp and is still busy
-    if (therapist.busyUntil) {
-        const busyUntil = new Date(therapist.busyUntil);
-        if (!isNaN(busyUntil.getTime()) && busyUntil > new Date()) {
-            return AvailabilityStatus.Busy;
-        }
-    }
-    
-    // Legacy: If therapist has an explicit bookedUntil timestamp in the future, show Busy
-    try {
-        const bookedUntil: any = (therapist as any).bookedUntil;
-        if (bookedUntil) {
-            const until = new Date(bookedUntil);
-            if (!isNaN(until.getTime()) && until > new Date()) {
-                return AvailabilityStatus.Busy;
-            }
-        }
-    } catch {
-        // ignore parsing errors
-    }
-
-    // Use availability field (has proper default) or status as fallback
-    const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Offline;
-    
-    // Debug status in development mode (reduced verbosity)
-    if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {
-        devLog(`🔍 ${therapist.name} getDisplayStatus: ${currentStatus}`);
-    }
-    
-    return currentStatus;
-};
-
-// Helper function to check if discount is currently active
-const isDiscountActive = (therapist: Therapist): boolean => {
-    const hasDiscountData = !!(
-        therapist.discountPercentage && 
-        therapist.discountPercentage > 0 && 
-        therapist.discountEndTime &&
-        therapist.isDiscountActive === true // Check the boolean flag
-    );
-    
-    if (!hasDiscountData) return false;
-    
-    // Check if discount hasn't expired
-    const now = new Date();
-    const endTime = therapist.discountEndTime ? new Date(therapist.discountEndTime) : null;
-    const notExpired = endTime && !isNaN(endTime.getTime()) && endTime > now;
-    
-    const result = Boolean(hasDiscountData && notExpired);
-    
-    // Debug logging for phil10 specifically
-    if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
-        devLog('🔍 DISCOUNT DEBUG - isDiscountActive check:', {
-            therapistId: therapist.$id || therapist.id,
-            therapistName: therapist.name,
-            discountPercentage: therapist.discountPercentage,
-            discountEndTime: therapist.discountEndTime,
-            isDiscountActiveFlag: therapist.isDiscountActive,
-            hasDiscountData,
-            notExpired,
-            finalResult: result,
-            currentTime: now.toISOString(),
-            endTimeObj: endTime ? endTime.toISOString() : null
-        });
-    }
-    
-    return result;
-};
-
-const WhatsAppIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99 0-3.903-.52-5.614-1.486L.057 24zM6.591 17.419c.404.652.812 1.272 1.242 1.85 1.58 2.116 3.663 3.22 5.953 3.218 5.55-.006 10.038-4.488 10.043-10.038.005-5.55-4.488-10.038-10.038-10.043-5.55.005-10.038 4.488-10.043 10.038.002 2.13.642 4.148 1.822 5.898l-1.03 3.766 3.844-1.025z"/>
-    </svg>
-);
-
-const CalendarIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-    </svg>
-);
-
-
-
-const StarIcon: React.FC<{className?: string}> = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20">
-        <path fill="currentColor" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-    </svg>
-);
-
-
-const statusStyles: { [key in AvailabilityStatus]: { text: string; bg: string; dot: string } } = {
-    [AvailabilityStatus.Available]: { text: 'text-green-700', bg: 'bg-green-100', dot: 'bg-green-500' },
-    [AvailabilityStatus.Busy]: { text: 'text-yellow-700', bg: 'bg-yellow-100', dot: 'bg-yellow-500' },
-    [AvailabilityStatus.Offline]: { text: 'text-red-700', bg: 'bg-red-100', dot: 'bg-red-500' },
-};
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
     therapist, 
@@ -196,33 +87,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         }
     }, [showPriceListModal]);
     
-    // Animated glowing effect - moves between random price cells every 2 seconds
+    // Keep price cells stable (no auto-animating highlight)
     useEffect(() => {
-        if (!showPriceListModal || menuData.length === 0 || selectedServiceIndex !== null) {
-            setHighlightedCell(null);
-            return;
-        }
-        
-        // Get all available price cells
-        const availableCells: {serviceIndex: number, duration: '60' | '90' | '120'}[] = [];
-        menuData.forEach((service, index) => {
-            if (service.price60) availableCells.push({serviceIndex: index, duration: '60'});
-            if (service.price90) availableCells.push({serviceIndex: index, duration: '90'});
-            if (service.price120) availableCells.push({serviceIndex: index, duration: '120'});
-        });
-        
-        if (availableCells.length === 0) return;
-        
-        // Set initial random cell
-        setHighlightedCell(availableCells[Math.floor(Math.random() * availableCells.length)]);
-        
-        // Change highlighted cell every 2 seconds
-        const interval = setInterval(() => {
-            setHighlightedCell(availableCells[Math.floor(Math.random() * availableCells.length)]);
-        }, 2000);
-        
-        return () => clearInterval(interval);
-    }, [showPriceListModal, menuData, selectedServiceIndex]);
+        setHighlightedCell(null);
+    }, [showPriceListModal]);
+
+    const handleSelectService = (index: number, duration: '60' | '90' | '120') => {
+        setSelectedServiceIndex(index);
+        setSelectedDuration(duration);
+        setHighlightedCell(null);
+    };
     
     // Countdown timer for booking arrival time (1 hour)
     useEffect(() => {
@@ -485,7 +359,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     useEffect(() => {
         const loadMenu = async () => {
             try {
-                if (showPriceListModal && therapist.membershipTier === 'premium') {
+                    if (showPriceListModal) {
                     const therapistId = String(therapist.$id || therapist.id);
                     console.log('🍽️ Loading menu for therapist:', therapistId);
                     
@@ -567,6 +441,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     };
     
     const pricing = getPricing();
+
+    const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
+    const effectiveRating = rawRating > 0 ? rawRating : 4.8;
+    const displayRating = formatRating(effectiveRating);
+    const displayReviewCount = getDisplayReviewCount(therapist.reviewCount);
     
     // Debug pricing for this specific therapist
     devLog(`💰 TherapistCard pricing for ${therapist.name}:`, {
@@ -787,8 +666,7 @@ ${locationInfo}${coordinatesInfo}
         const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
         if (loggedInProviderId !== therapistIdNum) {
             notificationService.createWhatsAppContactNotification(
-                therapistIdNum,
-                therapist.name
+                therapistIdNum
             ).catch(err => devLog('Notification failed:', err));
         }
 
@@ -813,7 +691,7 @@ ${locationInfo}${coordinatesInfo}
 ⏰ Requested Time: ${currentTime}
 💼 Service: Professional Massage
 🏆 Provider: ${therapist.name}
-⭐ Rating: ${formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}/5
+⭐ Rating: ${displayRating}/5
 
 💬 NEXT STEP: Customer will confirm details in this chat.
 
@@ -827,6 +705,25 @@ ${locationInfo}${coordinatesInfo}
             setTimeout(() => {
                 onQuickBookWithChat(therapist);
             }, 500);
+        }
+    };
+
+    // Handle booking clicks from price list
+    const handleBookingClick = (e: React.MouseEvent, status: 'available' | 'busy' | 'offline', pricing: any) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (status === 'available') {
+            if (!isCustomerLoggedIn) {
+                onShowRegisterPrompt?.();
+                return;
+            }
+            setShowBookingConfirmation(true);
+        } else if (status === 'busy') {
+            setShowBusyModal(true);
+        } else {
+            // Offline - maybe show a different modal or message
+            alert('Therapist is currently offline. Please try again later.');
         }
     };
 
@@ -910,180 +807,32 @@ ${locationInfo}${coordinatesInfo}
                     Orders: {bookingsCount}
                 </span>
             </div>
-            <div className="bg-white rounded-xl shadow-md overflow-visible relative transition-all duration-300">
-                {/* Removed Portal/Status overlay buttons from main image per UX request. Status now only shown below therapist name. */}
-                
-                {/* Main Image Banner */}
-                <div className="h-48 w-full overflow-visible relative rounded-t-xl">
-                <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
-                    <img 
-                        src={displayImage} 
-                        alt={`${therapist.name} cover`} 
-                        className={`w-full h-full object-cover transition-all duration-500 ${
-                            isDiscountActive(therapist) 
-                                ? 'brightness-110 contrast-110 saturate-110' 
-                                : ''
-                        }`}
-                        onError={(e) => {
-                            console.error('🖼️ Main image failed to load:', displayImage);
-                            // Fallback to a working ImageKit URL
-                            (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
-                        }}
-                        onLoad={() => {
-                            devLog('✅ Main image loaded successfully:', displayImage);
-                        }}
-                    />
-                    
-                    {/* Verified Badge - Top Left Corner - Premium Members */}
-                    {(therapist as any).membershipTier === 'premium' && (
-                        <div className="absolute top-2 left-2 z-30">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
-                                alt="Verified Member"
-                                className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg"
-                                style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
-                {isDiscountActive(therapist) && (
-                    <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2">
-                        {/* Enhanced Orange Discount Badge with Subtle Fade Effect */}
-                        <div className="relative">
-                            {/* Main badge with subtle fade animation */}
-                            <div className="relative text-white font-bold text-lg px-5 py-2 rounded-full shadow-lg discount-fade">
-                                {therapist.discountPercentage}% OFF
-                            </div>
-                        </div>
-                        
-                        {/* Countdown Timer with Red Clock Icon */}
-                        <div className="bg-black/80 text-white text-xs px-3 py-1 rounded-lg font-mono shadow-lg flex items-center gap-1">
-                            {/* Red Clock Icon */}
-                            <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {(() => {
-                                if (!therapist.discountEndTime) return 'EXPIRED';
-                                const now = new Date();
-                                const endTime = new Date(therapist.discountEndTime);
-                                const timeLeft = endTime.getTime() - now.getTime();
-                                if (timeLeft <= 0) return 'EXPIRED';
-                                
-                                const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                                
-                                if (hours > 0) return `${hours}h ${minutes}m`;
-                                if (minutes > 0) return `${minutes}m ${seconds}s`;
-                                return `${seconds}s`;
-                            })()}
-                        </div>
-                    </div>
-                )}
-                
-                {/* Profile Image - 50% on banner, 50% on card overlay */}
-                <div className="absolute top-36 left-4 z-20 overflow-visible">
-                    <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
-                        
-                        {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
-                            <img 
-                                className="w-full h-full rounded-full object-cover aspect-square" 
-                                src={(therapist as any).profilePicture} 
-                                alt={`${therapist.name} profile`} 
-                                onError={(e) => {
-                                    console.error('👤 Profile image failed to load:', (therapist as any).profilePicture);
-                                    // Replace with placeholder that matches the design
-                                    const imgElement = e.target as HTMLImageElement;
-                                    imgElement.style.display = 'none';
-                                    const placeholder = imgElement.parentElement?.querySelector('.profile-placeholder') as HTMLElement;
-                                    if (placeholder) {
-                                        placeholder.style.display = 'flex';
-                                    }
-                                }}
-                                onLoad={() => {
-                                    devLog('✅ Profile image loaded successfully:', (therapist as any).profilePicture);
-                                }}
-                            />
-                        ) : null}
-                        
-                        {/* Placeholder for therapists without profile pictures */}
-                        <div 
-                            className="w-full h-full rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-orange-600"
-                            style={{ 
-                                display: (therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? 'none' : 'flex',
-                                fontSize: '1.5rem',
-                                fontWeight: 'bold'
-                            }}
-                        >
-                            {therapist.name ? therapist.name.charAt(0).toUpperCase() : '👤'}
-                        </div>
-                        
-                        {/* Qualified Therapist Badge - Small Icon on Profile Image Edge */}
-                        {((() => {
-                            const hasTimeRequirement = therapist.membershipStartDate ? 
-                                new Date().getTime() - new Date(therapist.membershipStartDate).getTime() >= (3 * 30 * 24 * 60 * 60 * 1000) : false;
-                            const hasPerformanceRequirement = (therapist.reviewCount ?? 0) >= 30 || (therapist.analytics && JSON.parse(therapist.analytics).bookings >= 90);
-                            const hasRatingRequirement = getDisplayRating(therapist.rating, therapist.reviewCount) >= 4.0;
-                            
-                            return hasTimeRequirement && hasPerformanceRequirement && hasRatingRequirement;
-                        })()) && (
-                            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                                </svg>
-                            </div>
-                        )}
-
-                        {/* Verified Pro Rosette - Small golden rosette at bottom-right when isVerified */}
-                        {therapist.isVerified && (
-                            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
-                                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
-                                </svg>
-                            </div>
-                        )}
-                        
-                        {/* Star Rating Badge on bottom edge of profile image */}
-                        <div 
-                            className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 cursor-pointer z-30"
-                            onClick={() => onRate(therapist)}
-                            aria-label={`Rate ${therapist.name}`}
-                            role="button"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="#eab308">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Share Button - Bottom Right Corner of image banner */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
+            {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
+            <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">
+                <TherapistCardHeader
+                    therapist={therapist}
+                    displayImage={displayImage}
+                    onShareClick={() => {
+                        // Always open the share popup first; run optional analytics without blocking UX
                         setShowSharePopup(true);
+                        try {
+                            if (typeof props.onShareClick === 'function') {
+                                props.onShareClick();
+                            }
+                        } catch (err) {
+                            console.warn('Share analytics failed (non-blocking):', err);
+                        }
                     }}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all duration-200 group z-30"
-                    title="Share this therapist"
-                    aria-label="Share this therapist"
-                >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </button>
-            </div>
+                />
 
-            {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-12 relative z-10">
+            {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
+            <div className="px-4 -mt-8 sm:-mt-12 pb-6 relative z-10 overflow-visible">
                 <div className="flex items-start justify-between gap-4">
                     {/* Left side: Profile + Name + Status */}
                     <div className="flex items-start gap-4 flex-1 min-w-0">
                         {/* Profile Image */}
-                        <div className="flex-shrink-0">
-                            <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
+                        <div className="flex-shrink-0 relative z-20">
+                            <div className="w-24 h-24 bg-white rounded-full p-1 shadow-2xl relative aspect-square overflow-visible ring-2 ring-orange-100">
                                 {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                                     <img 
                                         className="w-full h-full rounded-full object-cover aspect-square" 
@@ -1114,7 +863,7 @@ ${locationInfo}${coordinatesInfo}
                                     const hasTimeRequirement = therapist.membershipStartDate ? 
                                         new Date().getTime() - new Date(therapist.membershipStartDate).getTime() >= (3 * 30 * 24 * 60 * 60 * 1000) : false;
                                     const hasPerformanceRequirement = (therapist.reviewCount ?? 0) >= 30 || (therapist.analytics && JSON.parse(therapist.analytics).bookings >= 90);
-                                    const hasRatingRequirement = getDisplayRating(therapist.rating, therapist.reviewCount) >= 4.0;
+                                    const hasRatingRequirement = effectiveRating >= 4.0;
                                     return hasTimeRequirement && hasPerformanceRequirement && hasRatingRequirement;
                                 })()) && (
                                     <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
@@ -1135,15 +884,16 @@ ${locationInfo}${coordinatesInfo}
                                 
                                 {/* Star Rating Badge */}
                                 <div 
-                                    className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1 cursor-pointer z-30"
+                                    className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1 cursor-pointer z-30 border border-orange-100"
                                     onClick={() => onRate(therapist)}
                                     aria-label={`Rate ${therapist.name}`}
                                     role="button"
                                 >
-                                    <span className="font-bold text-gray-900 text-base">{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="#eab308">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
+                                    <span className="font-bold text-gray-900 text-base leading-none">{displayRating}</span>
+                                    <span className="text-xs text-gray-600 leading-none">({displayReviewCount})</span>
                                 </div>
                             </div>
                         </div>
@@ -1261,7 +1011,7 @@ ${locationInfo}${coordinatesInfo}
 
             
             {/* Content Section - Natural flow layout */}
-            <div className="p-4 flex flex-col gap-4\">
+            <div className="p-4 flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     <div className="flex-grow">
                         {/* Content starts below the positioned elements */}
@@ -1374,7 +1124,7 @@ ${locationInfo}${coordinatesInfo}
                     onClick={() => onNavigate?.('mobileTherapistStandards')}
                     className="text-sm font-medium hover:underline"
                 >
-                    <span className="text-black">Inda</span><span className="text-orange-500">street</span><span className="text-black"> Therapist Standards</span>
+                    Massage Standards To Expect
                 </button>
             </div>
 
@@ -1395,19 +1145,36 @@ ${locationInfo}${coordinatesInfo}
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
-                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                    {displayRating && (
                         <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                            {displayRating ? (
+                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white text-gray-800 shadow-lg rounded-full px-3 py-1 flex items-center gap-1 border border-orange-200 z-30">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-yellow-400 drop-shadow-sm fill-current">
+                                        <path d="M12 2l2.39 6.94H22l-5.68 4.12 2.18 6.93L12 16.98 5.5 19.99l2.18-6.93L2 8.94h7.61z"/>
+                                    </svg>
+                                    <span className="font-semibold text-sm text-gray-900">{displayRating}</span>
+                                    <span className="text-xs text-gray-500">({displayReviewCount})</span>
+                                </div>
+                            ) : (
+                                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white text-gray-800 shadow-lg rounded-full px-3 py-1 flex items-center gap-1 border border-orange-200 z-30">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 text-yellow-400 drop-shadow-sm fill-current">
+                                        <path d="M12 2l2.39 6.94H22l-5.68 4.12 2.18 6.93L12 16.98 5.5 19.99l2.18-6.93L2 8.94h7.61z"/>
+                                    </svg>
+                                    <span className="font-semibold text-sm text-gray-900">{displayRatingFallback}</span>
+                                    <span className="text-xs text-gray-500">({displayReviewCount})</span>
+                                </div>
+                            )}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
                     {isDiscountActive(therapist) ? (
                         <>
-                            {/* Discounted price - what customer will actually pay */}
                             <p className="font-bold text-gray-800 text-sm leading-tight">
                                 IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
-
+                            <p className="text-[11px] text-gray-500 line-through">
+                                IDR {formatPrice(Number(pricing["60"]))}
+                            </p>
                         </>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
@@ -1415,7 +1182,7 @@ ${locationInfo}${coordinatesInfo}
                         </p>
                     )}
                 </div>
-                
+
                 {/* 90 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
@@ -1423,9 +1190,9 @@ ${locationInfo}${coordinatesInfo}
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
-                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                    {displayRating && (
                         <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                            ★{displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
@@ -1447,9 +1214,9 @@ ${locationInfo}${coordinatesInfo}
                         : 'bg-gray-100 border-gray-200'
                 }`}>
                     {/* Star Rating - Top Right */}
-                    {getDisplayRating(therapist.rating, therapist.reviewCount) > 0 && (
+                    {displayRating && (
                         <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{formatRating(getDisplayRating(therapist.rating, therapist.reviewCount))}
+                            ★{displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
@@ -1515,7 +1282,7 @@ ${locationInfo}${coordinatesInfo}
                                 therapistStatus: normalizedStatus, // Use normalized lowercase status
                                 pricing: pricing,
                                 profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-                                providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
+                                providerRating: effectiveRating,
                                 discountPercentage: therapist.discountPercentage || 0,
                                 discountActive: isDiscountActive(therapist),
                                 mode: 'immediate'
@@ -1553,7 +1320,7 @@ ${locationInfo}${coordinatesInfo}
                                 therapistStatus: displayStatus.toLowerCase(),
                                 pricing: pricing,
                                 profilePicture: therapist.profilePicture || therapist.mainImage,
-                                providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
+                                providerRating: effectiveRating,
                                 discountPercentage: therapist.discountPercentage || 0,
                                 discountActive: isDiscountActive(therapist),
                                 mode: 'scheduled'
@@ -1566,6 +1333,9 @@ ${locationInfo}${coordinatesInfo}
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
                 </button>
+            </div>
+
+            {/* End Content Section wrapper */}
             </div>
 
             {/* Hotel/Villa Partner Link - Mobile optimized */}
@@ -1599,10 +1369,21 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             )}
 
-            {/* Refer Friend and Leave Review Links */}
-            <div className="flex flex-wrap justify-between items-center gap-2 mt-6 px-1">
+            {/* Share, Directory, and Reviews Links - Match MassagePlaceCard style */}
+            <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-1 pt-3">
                 <button
-                    onClick={() => setShowReferModal(true)}
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setShowSharePopup(true);
+                        try {
+                            if (typeof props.onShareClick === 'function') {
+                                props.onShareClick();
+                            }
+                        } catch (err) {
+                            console.warn('Share analytics failed (non-blocking):', err);
+                        }
+                    }}
                     className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
                 >
                     <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -1611,38 +1392,44 @@ ${locationInfo}${coordinatesInfo}
                     </svg>
                     <span>Share</span>
                 </button>
-                {onNavigate && (
-                    <button
-                        type="button"
-                        onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            onNavigate('massageTypes');
-                        }}
-                        title={t?.home?.massageDirectoryTitle || 'Go to Massage Directory'}
-                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                    >
-                        <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
-                        </svg>
-                        <span>{t?.home?.massageDirectory || 'Massage Directory'}</span>
-                    </button>
-                )}
-                {onNavigate && (
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onNavigate(`reviews-therapist-${therapist.$id || therapist.id}`);
-                        }}
-                        className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                    >
-                        <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                        <span>Reviews</span>
-                    </button>
-                )}
+                
+                <button
+                    type="button"
+                    onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (onNavigate) {
+                            onNavigate('massage-types');
+                        } else {
+                            window.location.href = '/massage-types';
+                        }
+                    }}
+                    title={t?.home?.massageDirectoryTitle || 'Go to Massage Directory'}
+                    className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                >
+                    <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
+                    </svg>
+                    <span>Directory</span>
+                </button>
+                
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (onNavigate) {
+                            onNavigate('reviews');
+                        } else {
+                            window.location.href = '/reviews';
+                        }
+                    }}
+                    className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
+                >
+                    <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span>Reviews</span>
+                </button>
             </div>
             </div>
             
@@ -1792,404 +1579,196 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             )}
 
-            {/* Anonymous Review Modal */}
+            {/* Modals */}
             {showReviewModal && (
                 <AnonymousReviewModal
                     providerName={therapist.name}
                     providerId={therapist.$id || therapist.id}
                     providerType="therapist"
-                    providerImage={therapist.profilePicture || (therapist as any).mainImage || getRandomTherapistImage(therapist.id.toString())}
+                    providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                     onClose={() => setShowReviewModal(false)}
                     onSubmit={handleAnonymousReviewSubmit}
                 />
             )}
 
-            {/* Login Required Modal */}
-            {showLoginRequiredModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setShowLoginRequiredModal(false)}>
-                    <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5 animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-                        <div className="text-center">
-                            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </div>
-                            
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Login Required</h3>
-                            <p className="text-sm text-gray-600 mb-4">You must be logged into a registered account to leave a review.</p>
-                            
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() => {
-                                        setShowLoginRequiredModal(false);
-                                        if (onShowRegisterPrompt) {
-                                            onShowRegisterPrompt();
-                                        }
-                                    }}
-                                    className="w-full px-4 py-2 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors text-sm"
-                                >
-                                    Login / Sign Up
-                                </button>
-                                <button
-                                    onClick={() => setShowLoginRequiredModal(false)}
-                                    className="w-full px-4 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors text-sm"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {showBookingConfirmation && (
+                <BookingConfirmationPopup
+                    isOpen={showBookingConfirmation}
+                    onClose={() => setShowBookingConfirmation(false)}
+                    onOpenChat={() => {
+                        setShowBookingConfirmation(false);
+                        handleConfirmedBooking();
+                    }}
+                    providerName={therapist.name}
+                    language={currentLanguage}
+                />
             )}
 
-            {/* Booking Confirmation Popup */}
-            <BookingConfirmationPopup
-                isOpen={showBookingConfirmation}
-                onClose={() => setShowBookingConfirmation(false)}
-                onOpenChat={() => {
-                setShowBookingConfirmation(false);
-                handleConfirmedBooking();
-            }}
-            providerName={therapist.name}
-            language={currentLanguage}
-            bookingAmount={typeof therapist.pricing?.[60] === 'string' ? parseInt(therapist.pricing[60]) : (therapist.pricing?.[60] || 300000)}
-            duration={60}
-            therapistBankDetails={{
-                bankName: (therapist as any).bankName,
-                bankAccountNumber: (therapist as any).bankAccountNumber,
-                bankAccountName: (therapist as any).bankAccountName,
-                mobilePaymentNumber: (therapist as any).mobilePaymentNumber,
-                mobilePaymentType: (therapist as any).mobilePaymentType
-            }}
-        />
+            {showBookingForm && (
+                <BookingFormPopup
+                    isOpen={showBookingForm}
+                    onClose={() => setShowBookingForm(false)}
+                    onSubmit={handleBookingSubmit}
+                    therapistName={therapist.name}
+                    therapistId={String(therapist.id)}
+                    pricing={{
+                        price60: String(pricing["60"]),
+                        price90: String(pricing["90"]),
+                        price120: String(pricing["120"])
+                    }}
+                    language={currentLanguage}
+                />
+            )}
 
-        {/* Booking Form Popup */}
-        <BookingFormPopup
-            isOpen={showBookingForm}
-            onClose={() => setShowBookingForm(false)}
-            onSubmit={handleBookingSubmit}
-            therapistName={therapist.name}
-            therapistId={String(therapist.id)}
-            pricing={{
-                price60: pricing['60'].toString(),
-                price90: pricing['90'].toString(),
-                price120: pricing['120'].toString()
-            }}
-            rating={therapist.rating}
-            reviewCount={therapist.reviewCount}
-            language={currentLanguage}
-        />
-        
-        <style>{`
-            @keyframes coin-fall-1 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(85px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(90px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-fall-2 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(88px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(93px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-fall-3 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(82px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(87px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-fall-4 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(86px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(91px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-fall-5 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(84px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(89px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-fall-6 {
-                0% { transform: translateY(-120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.8; }
-                90% { transform: translateY(87px) rotate(360deg); opacity: 0.8; }
-                100% { transform: translateY(92px) rotate(360deg); opacity: 0.6; }
-            }
-            @keyframes coin-float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-3px); }
-            }
-            .animate-coin-fall-1 { animation: coin-fall-1 4s ease-in forwards, coin-float 3s ease-in-out 4s infinite; }
-            .animate-coin-fall-2 { animation: coin-fall-2 4s ease-in forwards, coin-float 3s ease-in-out 4.5s infinite; }
-            .animate-coin-fall-3 { animation: coin-fall-3 4s ease-in forwards, coin-float 3s ease-in-out 5s infinite; }
-            .animate-coin-fall-4 { animation: coin-fall-4 4s ease-in forwards, coin-float 3s ease-in-out 5.5s infinite; }
-            .animate-coin-fall-5 { animation: coin-fall-5 4s ease-in forwards, coin-float 3s ease-in-out 6s infinite; }
-            .animate-coin-fall-6 { animation: coin-fall-6 4s ease-in forwards, coin-float 3s ease-in-out 6.5s infinite; }
-            
-            /* Mobile-specific slower animations */
-            @media (max-width: 768px) {
-                .animate-coin-fall-1 { animation: coin-fall-1 5s ease-in forwards, coin-float 4s ease-in-out 5s infinite; }
-                .animate-coin-fall-2 { animation: coin-fall-2 5s ease-in forwards, coin-float 4s ease-in-out 5.5s infinite; }
-                .animate-coin-fall-3 { animation: coin-fall-3 5s ease-in forwards, coin-float 4s ease-in-out 6s infinite; }
-                .animate-coin-fall-4 { animation: coin-fall-4 5s ease-in forwards, coin-float 4s ease-in-out 6.5s infinite; }
-                .animate-coin-fall-5 { animation: coin-fall-5 5s ease-in forwards, coin-float 4s ease-in-out 7s infinite; }
-                .animate-coin-fall-6 { animation: coin-fall-6 5s ease-in forwards, coin-float 4s ease-in-out 7.5s infinite; }
-            }
-        `}</style>
-            </div>
+            {showSharePopup && (
+                <SocialSharePopup
+                    isOpen={showSharePopup}
+                    onClose={() => setShowSharePopup(false)}
+                    title={`Book ${therapist.name} - IndaStreet Massage`}
+                    description={`${therapist.name} - Professional massage therapist in ${therapist.city || therapist.location}. Book now on IndaStreet!`}
+                    url={userReferralCode ? 
+                        `${generateShareableURL(therapist)}?ref=${userReferralCode}` : 
+                        generateShareableURL(therapist)
+                    }
+                    type="therapist"
+                />
+            )}
 
             {/* Price List Bottom Sheet Slider */}
             {showPriceListModal && (
-                <div 
+                <div
                     className="fixed inset-0 z-[9999] bg-black bg-opacity-50 transition-opacity duration-300"
                     onClick={() => setShowPriceListModal(false)}
                 >
-                    <div 
+                    <style>{`
+                        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+                    `}</style>
+                    <div
                         className="absolute bottom-0 left-0 right-0 h-full w-full bg-white transform transition-transform duration-300 ease-out"
-                        style={{
-                            animation: 'slideUp 0.3s ease-out forwards'
-                        }}
+                        style={{ animation: 'slideUp 0.3s ease-out forwards' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <style>{`
-                            @keyframes slideUp {
-                                from {
-                                    transform: translateY(100%);
-                                }
-                                to {
-                                    transform: translateY(0);
-                                }
-                            }
-                            @keyframes slideDown {
-                                from {
-                                    transform: translateY(0);
-                                }
-                                to {
-                                    transform: translateY(100%);
-                                }
-                            }
-                        `}</style>
-                        
-                        {/* Header with Profile - Orange for Surtiningsih, Yellow for others */}
-                        <div className={`px-4 py-2.5 flex items-center justify-between ${
-                            therapist.name?.toLowerCase().includes('surtiningsih') 
-                                ? 'bg-orange-500' 
-                                : 'bg-yellow-500'
-                        }`}>
-                            <div className="flex items-center gap-2.5 flex-1">
+                        {/* Header - Orange gradient with profile & rating */}
+                        <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0">
+                            <div className="flex items-center gap-3 flex-1">
                                 <img
-                                    src={therapist.profilePicture || therapist.mainImage || '/default-avatar.jpg'}
+                                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                     alt={therapist.name}
-                                    className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                                    className="w-11 h-11 rounded-full border-2 border-white object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}
                                 />
                                 <div>
-                                    <h4 className="font-bold text-sm text-white">{therapist.name}</h4>
-                                    <div className="flex items-center gap-1 text-xs">
-                                        <StarIcon className="w-3 h-3 text-yellow-300" />
-                                        <span className="font-semibold text-white">{getDisplayRating(therapist.rating, therapist.reviewCount)}</span>
-                                        <span className="text-orange-100">({getDisplayReviewCount(therapist.reviewCount)})</span>
+                                    <h2 className="text-lg font-bold text-white leading-tight">{therapist.name}</h2>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <StarIcon className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+                                        <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{displayRating}</span>
+                                        <span className="text-orange-100">({displayReviewCount})</span>
                                     </div>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setShowPriceListModal(false)}
-                                className="flex items-center justify-center w-8 h-8 bg-black hover:bg-gray-800 rounded-full transition-colors"
+                                className="flex items-center justify-center w-8 h-8 bg-black/70 hover:bg-black rounded-full transition-colors"
                                 aria-label="Close"
                             >
-                                <X className="h-5 w-5 text-white" />
+                                <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
 
-                        {/* Services Provided Text */}
-                        <div className="bg-white px-4 pt-3 pb-2">
-                            <h3 className="text-left text-gray-700 font-semibold text-sm">
-                                {chatLang === 'id' ? 'Layanan Yang Disediakan' : 'Services Provided'}
-                            </h3>
-                        </div>
-
-                        {/* Booking Arrival Time */}
-                        <div className="px-4 py-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-orange-600" />
-                                    <span className="text-xs text-gray-700 font-medium">
-                                        {chatLang === 'id' ? 'Pesan Sekarang Waktu Kedatangan' : 'Book Now Arrival Time'} 
-                                        <span className="text-orange-600 font-semibold ml-1">1 {chatLang === 'id' ? 'Jam' : 'Hour'}</span>
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-sm font-bold text-orange-600 tabular-nums">
-                                        {formatCountdown(arrivalCountdown)}
-                                    </span>
-                                </div>
+                        {/* Pricing Header Row */}
+                        <div className="px-4 py-2 flex items-center justify-between">
+                            <div className="text-sm sm:text-base font-bold text-gray-900">Service Prices</div>
+                            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-orange-800 font-semibold">
+                                <span className="hidden sm:inline">Estimated Arrival • ~1 hour</span>
+                                <span className="sm:hidden">Estimated Arrival • ~1h</span>
+                                <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                                    {formatCountdown(arrivalCountdown)}
+                                </span>
+                                <span className="text-orange-600/80 font-medium hidden sm:inline">• 56m | 1:05 | 53m</span>
                             </div>
                         </div>
 
                         {/* Price List Content - Scrollable */}
                         <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 180px)' }}>
                             {menuData.length > 0 ? (
-                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     {/* Table Header */}
-                                    <div className="grid grid-cols-12 gap-2 bg-gray-100 px-3 py-2 text-xs font-semibold text-gray-700 border-b border-gray-200">
+                                    <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
                                         <div className="col-span-4">Service</div>
                                         <div className="col-span-2 text-center">60 Min</div>
                                         <div className="col-span-2 text-center">90 Min</div>
                                         <div className="col-span-2 text-center">120 Min</div>
                                         <div className="col-span-2 text-center">Action</div>
                                     </div>
-                                    
+
                                     {/* Table Rows */}
-                                    <div className="divide-y divide-gray-200">
+                                    <div className="divide-y divide-orange-100">
                                         {menuData.map((service: any, index: number) => {
                                             const isRowSelected = selectedServiceIndex === index;
-                                            
+
                                             return (
                                                 <div key={index} className={`grid grid-cols-12 gap-2 px-3 py-3 transition-colors items-center ${
-                                                    therapist.name?.toLowerCase().includes('surtiningsih') 
-                                                        ? 'hover:bg-orange-50' 
-                                                        : 'hover:bg-gray-50'
+                                                    isRowSelected ? 'bg-orange-50 border-l-4 border-orange-500' : 'hover:bg-orange-50'
                                                 }`}>
                                                     {/* Service Name */}
                                                     <div className="col-span-4">
-                                                        <div className="font-medium text-gray-900 text-sm">{service.serviceName}</div>
-                                                    </div>
-                                                    
-                                                    {/* 60 Min Price - Clickable */}
-                                                    <div className="col-span-2 flex flex-col items-center gap-1">
-                                                        {service.price60 ? (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedServiceIndex(index);
-                                                                    setSelectedDuration('60');
-                                                                }}
-                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
-                                                                    isRowSelected && selectedDuration === '60'
-                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
-                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                        : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '60'
-                                                                        ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
-                                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                                                                }`}
-                                                            >
-                                                                Rp {(Number(service.price60) * 1000).toLocaleString('id-ID')}
-                                                            </button>
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">-</span>
+                                                        <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
+                                                        {service.description && (
+                                                            <div className="text-xs text-gray-500 mt-1 truncate">{service.description}</div>
                                                         )}
                                                     </div>
-                                                    
-                                                    {/* 90 Min Price - Clickable */}
-                                                    <div className="col-span-2 flex flex-col items-center gap-1">
-                                                        {service.price90 ? (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedServiceIndex(index);
-                                                                    setSelectedDuration('90');
-                                                                }}
-                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
-                                                                    isRowSelected && selectedDuration === '90'
-                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
-                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                            : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '90'
-                                                                            ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
-                                                                            : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+
+                                                    {/* Price buttons */}
+                                                    {['60', '90', '120'].map((duration) => (
+                                                        <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
+                                                            {service[`price${duration}`] ? (
+                                                                <button
+                                                                    onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                    className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                        isRowSelected && selectedDuration === duration
+                                                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                            : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
                                                                     }`}
                                                                 >
-                                                                    Rp {(Number(service.price90) * 1000).toLocaleString('id-ID')}
+                                                                    Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
                                                                 </button>
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">-</span>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    {/* 120 Min Price - Clickable */}
-                                                    <div className="col-span-2 flex flex-col items-center gap-1">
-                                                        {service.price120 ? (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedServiceIndex(index);
-                                                                    setSelectedDuration('120');
-                                                                }}
-                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
-                                                                    isRowSelected && selectedDuration === '120'
-                                                                        ? therapist.name?.toLowerCase().includes('surtiningsih')
-                                                                            ? 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                            : 'bg-white text-gray-900 font-semibold border-orange-500 shadow-md'
-                                                                        : highlightedCell?.serviceIndex === index && highlightedCell?.duration === '120'
-                                                                        ? 'bg-orange-100 text-orange-900 border-orange-400 animate-pulse'
-                                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                                                                }`}
-                                                            >
-                                                                Rp {(Number(service.price120) * 1000).toLocaleString('id-ID')}
-                                                            </button>
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">-</span>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    {/* Book Now Button */}
-                                                    <div className="col-span-2 flex justify-center">
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400">-</span>
+                                                            )}
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Action Buttons */}
+                                                    <div className="col-span-2 text-center">
                                                         <button
-                                                            onClick={(e) => {
-                                                                // Check if a duration is selected for this row
-                                                                if (!isRowSelected || !selectedDuration) {
-                                                                    alert(chatLang === 'id' 
-                                                                        ? 'Silakan pilih durasi terlebih dahulu' 
-                                                                        : 'Please select a duration first');
-                                                                    return;
-                                                                }
-                                                                
-                                                                // Change button to orange when clicked
-                                                                const button = e.currentTarget as HTMLButtonElement;
-                                                                button.className = button.className.replace('bg-green-500', 'bg-orange-500').replace('hover:bg-green-600', 'hover:bg-orange-600');
-                                                                
-                                                                // Get selected price
-                                                                const selectedPrice = selectedDuration === '60' ? service.price60 
-                                                                    : selectedDuration === '90' ? service.price90 
-                                                                    : service.price120;
-                                                                
-                                                                // Close the price list modal after a brief delay to show orange state
-                                                                setTimeout(() => {
-                                                                    setShowPriceListModal(false);
-                                                                }, 200);
-                                                                
-                                                                // Get pricing info
-                                                                const pricing = getPricing();
-                                                                const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-                                                                
-                                                                // Dispatch chat event with service details
-                                                                window.dispatchEvent(new CustomEvent('openChat', {
-                                                                    detail: {
-                                                                        therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                                                        therapistName: therapist.name,
-                                                                        therapistType: 'therapist',
-                                                                        therapistStatus: normalizedStatus,
-                                                                        pricing: pricing,
-                                                                        profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-                                                                        providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
-                                                                        discountPercentage: therapist.discountPercentage || 0,
-                                                                        discountActive: isDiscountActive(therapist),
-                                                                        mode: 'immediate',
-                                                                        // Add selected service info
-                                                                        selectedService: {
-                                                                            name: service.serviceName,
-                                                                            duration: selectedDuration,
-                                                                            price: Number(selectedPrice) * 1000
-                                                                        }
-                                                                    }
-                                                                }));
-                                                            }}
-                                                            disabled={!isRowSelected || !selectedDuration}
-                                                            className={`px-3 py-1 text-xs rounded transition-colors ${
+                                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
+                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
                                                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                             }`}
+                                                            onClick={(e) => {
+                                                                const availableDurations = [];
+                                                                if (service.price60) availableDurations.push('60');
+                                                                if (service.price90) availableDurations.push('90');
+                                                                if (service.price120) availableDurations.push('120');
+                                                                
+                                                                if (availableDurations.length > 0) {
+                                                                    handleSelectService(index, availableDurations[0] as '60' | '90' | '120');
+                                                                    
+                                                                    // Close the price list modal
+                                                                    setShowPriceListModal(false);
+
+                                                                    // Get pricing info
+                                                                    const pricing = getPricing();
+                                                                    const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                                    
+                                                                    // Handle booking based on status
+                                                                    handleBookingClick(e, normalizedStatus, pricing);
+                                                                }
+                                                            }}
+                                                            disabled={!isRowSelected || !selectedDuration}
                                                         >
                                                             {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}
                                                         </button>
@@ -2201,35 +1780,16 @@ ${locationInfo}${coordinatesInfo}
                                 </div>
                             ) : (
                                 <div className="text-center py-12">
-                                    <FileText size={48} className="mx-auto mb-3 text-purple-300" />
+                                    <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <span className="text-2xl">📋</span>
+                                    </div>
                                     <p className="text-gray-600">{chatLang === 'id' ? 'Memuat menu harga...' : 'Loading price menu...'}</p>
                                 </div>
                             )}
                         </div>
-                        
-                        {/* Footer with Oil Bottle Image - Right Side */}
-                        <div className="relative w-full">
-                            <div className="absolute bottom-0 right-4 z-10">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/oil_bottle-removebg-preview.png" 
-                                    alt="Oil Bottle"
-                                    className="w-16 h-20 object-contain"
-                                />
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}
-
-            {/* Social Share Popup */}
-            <SocialSharePopup
-                isOpen={showSharePopup}
-                onClose={() => setShowSharePopup(false)}
-                title={therapist.name}
-                description={`Check out ${therapist.name} on IndaStreet! Amazing massage therapist offering professional services.`}
-                url={window.location.href}
-                type="therapist"
-            />
         </>
     );
 };

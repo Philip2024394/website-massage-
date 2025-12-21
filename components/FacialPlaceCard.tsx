@@ -1,27 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import type { Place, Analytics } from '../types';
+import type { FacialPlace, Analytics, Place } from '../types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
 import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
-
-// Helper function to get auth app URL for development and production
-const getAuthAppUrl = (): string => {
-    // Check for environment variable first
-    const envUrl = (import.meta as any).env?.VITE_AUTH_APP_URL;
-    if (envUrl) return envUrl;
-    
-    // Development mode
-    if (window.location.origin.includes('localhost')) {
-        return 'http://localhost:3001';
-    }
-    
-    // Production mode - for now redirect to main site
-    // This needs to be updated when auth-app is deployed separately
-    return window.location.origin;
-};
+import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {

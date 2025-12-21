@@ -7,71 +7,9 @@ import { commissionTrackingService } from '../lib/services/commissionTrackingSer
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { detectPhoneNumber, getBlockedMessage } from '../utils/phoneBlocker';
-
-// Avatar options for customer profile
-const AVATAR_OPTIONS = [
-    { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
-    { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
-    { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
-    { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
-    { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
-    { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
-    { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
-    { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
-    { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
-    { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
-    { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
-    { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
-    { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
-    { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
-    { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' }
-];
-
-interface Message {
-    $id: string;
-    $createdAt: string;
-    senderId: string;
-    senderName: string;
-    senderAvatar?: string;
-    content?: string;
-    message?: string;
-    sentAt?: string;
-    messageType?: 'text' | 'system' | 'booking';
-    isRead: boolean;
-}
-
-interface ChatWindowProps {
-    // Provider info
-    providerId: string;
-    providerRole: 'therapist' | 'place';
-    providerName: string;
-    providerPhoto?: string;
-    providerStatus?: 'available' | 'busy' | 'offline';
-    providerRating?: number;
-    pricing?: { '60': number; '90': number; '120': number };
-    discountPercentage?: number;
-    discountActive?: boolean;
-    
-    // Booking details (for scheduled bookings)
-    bookingId?: string;
-    chatRoomId?: string;
-    customerName?: string;
-    customerWhatsApp?: string;
-    
-    // Booking mode
-    mode?: 'immediate' | 'scheduled';
-    
-    // Selected service from price menu
-    selectedService?: {
-        name: string;
-        duration: string;
-        price: number;
-    };
-    
-    // UI props
-    isOpen: boolean;
-    onClose: () => void;
-}
+import { AVATAR_OPTIONS, Message, ChatWindowProps } from '../constants/chatWindowConstants';
+import { createProximityTracker, metersBetween } from '../services/proximityTrackingService';
+import PaymentCard from './PaymentCard';
 
 /**
  * ChatWindow - Simple chat with registration flow
@@ -170,13 +108,42 @@ export default function ChatWindow({
     const [sending, setSending] = useState(false);
     const [chatRoomId, setChatRoomId] = useState(initialChatRoomId || '');
     const [customerId, setCustomerId] = useState('');
-    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMinimized, setIsMinimized] = useState<boolean>(() => {
+        const stored = typeof window !== 'undefined' ? sessionStorage.getItem('chat_minimized') : null;
+        if (stored === null) return true; // default minimized on fresh visits
+        return stored === 'true';
+    });
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
+    const [hasUnread, setHasUnread] = useState(false);
     
     // Booking status tracking
-    const [bookingStatus, setBookingStatus] = useState<'none' | 'pending' | 'accepted' | 'rejected'>('none');
+    type BookingStatus = 'none' | 'pending' | 'accepted' | 'rejected' | 'expired' | 'on_the_way' | 'arriving' | 'arrived';
+    const [bookingStatus, setBookingStatus] = useState<BookingStatus>('none');
     const [pendingBookingId, setPendingBookingId] = useState<string>('');
     const [waitingForResponse, setWaitingForResponse] = useState(false);
+    const ARRIVAL_RADIUS_METERS = 20;
+    const [therapistLocation, setTherapistLocation] = useState<{lat: number; lng: number} | null>(null);
+    const therapistLocationRef = useRef<{lat: number; lng: number} | null>(null);
+    const [therapistLocationAccuracy, setTherapistLocationAccuracy] = useState<number | null>(null);
+    const proximityTrackerRef = useRef<ReturnType<typeof createProximityTracker> | null>(null);
+    const lastCustomerSampleRef = useRef<{ coords: {lat: number; lng: number}; accuracy?: number | null } | null>(null);
+    const arrivalRecordedRef = useRef(false);
+    const [arrivalDistanceMeters, setArrivalDistanceMeters] = useState<number | null>(null);
+
+    // Payment/deposit handling
+    const [providerBankDetails, setProviderBankDetails] = useState<{ bankName: string; accountHolderName: string; accountNumber: string } | null>(null);
+    const [showPaymentDetailsCard, setShowPaymentDetailsCard] = useState(false);
+    const [paymentDeadline, setPaymentDeadline] = useState<Date | null>(null);
+    const [paymentReminderTick, setPaymentReminderTick] = useState(0);
+    const [depositUploading, setDepositUploading] = useState(false);
+    const [depositProofUrl, setDepositProofUrl] = useState<string | null>(null);
+    const [depositError, setDepositError] = useState<string | null>(null);
+    const [depositReference, setDepositReference] = useState('');
+    const reminderAudioRef = useRef<HTMLAudioElement | null>(null);
+    const DEFAULT_REMINDER_VOLUME = 0.8;
+    const [reminderVolume, setReminderVolume] = useState(DEFAULT_REMINDER_VOLUME);
+    const [isReminderPaused, setIsReminderPaused] = useState(false);
     
     // Scheduling state (for scheduled bookings)
     const [schedulingStep, setSchedulingStep] = useState<'duration' | 'time' | 'details'>('duration');
@@ -206,12 +173,50 @@ export default function ChatWindow({
         });
     }, [isOpen, isRegistered, isMinimized, providerId, providerName, providerStatus, customerName, chatRoomId, messages.length]);
 
+    // Persist minimized state across visits
+    useEffect(() => {
+        sessionStorage.setItem('chat_minimized', isMinimized ? 'true' : 'false');
+    }, [isMinimized]);
+
+    // Clear unread when expanded
+    useEffect(() => {
+        if (!isMinimized) {
+            setHasUnread(false);
+        }
+    }, [isMinimized]);
+
     // Language managed globally through context
 
-    // Initialize audio notification
+    // Initialize audio notifications (message + booking)
     useEffect(() => {
-        audioRef.current = new Audio('/notification.mp3');
+        const msgAudio = new Audio('/notification.mp3');
+        msgAudio.volume = 0.9;
+        audioRef.current = msgAudio;
     }, []);
+
+    const bookingAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        const bookingAudio = new Audio('/sounds/booking-notification.mp3');
+        bookingAudio.volume = 1;
+        bookingAudioRef.current = bookingAudio;
+    }, []);
+
+    useEffect(() => {
+        const reminderAudio = new Audio('/sounds/payment-reminder.mp3');
+        reminderAudio.volume = reminderVolume;
+        reminderAudioRef.current = reminderAudio;
+        return () => {
+            reminderAudio.pause();
+            reminderAudioRef.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (reminderAudioRef.current) {
+            reminderAudioRef.current.volume = reminderVolume;
+        }
+    }, [reminderVolume]);
 
     // Load messages after chat activation or when chat room is available
     useEffect(() => {
@@ -236,14 +241,20 @@ export default function ChatWindow({
     useEffect(() => {
         if (messages.length > lastMessageCount && messages.length > 0) {
             const latestMessage = messages[messages.length - 1];
-            
-            // If message is from therapist (not from customer), expand chat
-            if (latestMessage.senderId !== customerId && isMinimized && isRegistered) {
-                console.log('📬 New message from therapist - expanding chat');
-                setIsMinimized(false);
+            const isFromTherapist = latestMessage.senderId !== customerId;
+
+            // Always play a clear message notification for incoming therapist messages
+            if (isFromTherapist && isRegistered) {
                 audioRef.current?.play().catch(() => {});
+                // Auto-expand to full screen on incoming therapist messages
+                if (isMinimized) {
+                    console.log('📬 New message from therapist - expanding chat');
+                    setIsMinimized(false);
+                    setIsFullScreen(true);
+                }
+                setHasUnread(true);
             }
-            
+
             setLastMessageCount(messages.length);
         }
     }, [messages, lastMessageCount, customerId, isMinimized, isRegistered]);
@@ -252,6 +263,12 @@ export default function ChatWindow({
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // Load payout details when booking is accepted
+    useEffect(() => {
+        if (bookingStatus !== 'accepted') return;
+        fetchProviderBankDetails();
+    }, [bookingStatus, providerId, providerRole]);
 
     // Listen for scheduled booking events
     useEffect(() => {
@@ -266,9 +283,11 @@ export default function ChatWindow({
                 setBookingStatus('pending');
                 setPendingBookingId(bookingId);
                 setWaitingForResponse(true);
+                bookingAudioRef.current?.play().catch(() => {});
                 
                 // Ensure chat stays open and registered (can minimize but not close)
                 setIsRegistered(true);
+                setIsMinimized(false);
             }
         };
 
@@ -282,14 +301,21 @@ export default function ChatWindow({
                 
                 setBookingStatus(status === 'accepted' ? 'accepted' : 'rejected');
                 setWaitingForResponse(false);
+                bookingAudioRef.current?.play().catch(() => {});
                 
-                // Clear the pending booking lock from sessionStorage
+                // Update or clear the pending booking lock from sessionStorage
                 const pendingBooking = sessionStorage.getItem('pending_booking');
                 if (pendingBooking) {
                     const parsed = JSON.parse(pendingBooking);
                     if (parsed.bookingId === bookingId) {
-                        sessionStorage.removeItem('pending_booking');
-                        console.log('🔓 Pending booking lock cleared from sessionStorage');
+                        if (status === 'accepted') {
+                            parsed.status = 'accepted';
+                            sessionStorage.setItem('pending_booking', JSON.stringify(parsed));
+                            console.log('🔒 Booking lock kept (accepted).');
+                        } else {
+                            sessionStorage.removeItem('pending_booking');
+                            console.log('🔓 Pending booking lock cleared from sessionStorage');
+                        }
                     }
                 }
                 
@@ -304,12 +330,114 @@ export default function ChatWindow({
         // Listen for custom events
         window.addEventListener('scheduledBookingCreated', handleScheduledBooking as EventListener);
         window.addEventListener('bookingResponseReceived', handleBookingResponse as EventListener);
+        const handleBookingStatusUpdated = (event: Event) => {
+            const customEvent = event as CustomEvent;
+            const { bookingId: updatedId, status } = customEvent.detail || {};
+            if (!updatedId || updatedId !== pendingBookingId) return;
+            const normalized = (status || '').toLowerCase();
+            if (normalized === 'expired' || normalized === 'redispatched') {
+                setBookingStatus('expired');
+                setWaitingForResponse(false);
+                sessionStorage.removeItem('pending_booking');
+                return;
+            }
+
+            // Map live status updates to UI-friendly states
+            const statusMap: Record<string, BookingStatus> = {
+                'accepted': 'accepted',
+                'on_the_way': 'on_the_way',
+                'otw': 'on_the_way',
+                'enroute': 'on_the_way',
+                'en_route': 'on_the_way',
+                'arriving': 'arriving',
+                'nearby': 'arriving',
+                'arrived': 'arrived'
+            };
+
+            const mapped = statusMap[normalized as keyof typeof statusMap];
+            if (mapped) {
+                setBookingStatus(mapped);
+                if (normalized === 'accepted') {
+                    setWaitingForResponse(false);
+                }
+                const pending = sessionStorage.getItem('pending_booking');
+                if (pending) {
+                    try {
+                        const parsed = JSON.parse(pending);
+                        parsed.status = mapped;
+                        sessionStorage.setItem('pending_booking', JSON.stringify(parsed));
+                    } catch {
+                        // ignore
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('bookingStatusUpdated', handleBookingStatusUpdated as EventListener);
         
         return () => {
             window.removeEventListener('scheduledBookingCreated', handleScheduledBooking as EventListener);
             window.removeEventListener('bookingResponseReceived', handleBookingResponse as EventListener);
+            window.removeEventListener('bookingStatusUpdated', handleBookingStatusUpdated as EventListener);
         };
     }, [providerId, providerName, pendingBookingId, isMinimized]);
+
+    // Listen for live therapist GPS pings to verify arrival proximity
+    useEffect(() => {
+        const handleTherapistLocation = (event: Event) => {
+            const { detail } = event as CustomEvent;
+            if (!detail) return;
+
+            const relevantBookingId = pendingBookingId || bookingId;
+            if (detail.bookingId && relevantBookingId && detail.bookingId !== relevantBookingId) return;
+            if (typeof detail.lat !== 'number' || typeof detail.lng !== 'number') return;
+
+            const coords = { lat: detail.lat, lng: detail.lng };
+            setTherapistLocation(coords);
+            therapistLocationRef.current = coords;
+            setTherapistLocationAccuracy(typeof detail.accuracy === 'number' ? detail.accuracy : null);
+
+            const customerPoint = lastCustomerSampleRef.current?.coords || customerCoordinates;
+            maybeHandleProximity(coords, customerPoint || undefined, 'therapist_ping', detail.accuracy);
+        };
+
+        window.addEventListener('therapistLocationPing', handleTherapistLocation as EventListener);
+
+        return () => {
+            window.removeEventListener('therapistLocationPing', handleTherapistLocation as EventListener);
+        };
+    }, [bookingId, pendingBookingId, customerCoordinates]);
+
+    // Start proximity tracking after acceptance to auto-mark arrival within 20m
+    useEffect(() => {
+        const shouldTrack = isOpen && ['accepted', 'on_the_way', 'arriving'].includes(bookingStatus) && !!customerCoordinates;
+
+        if (!shouldTrack || arrivalRecordedRef.current) {
+            stopProximityTracking();
+            return;
+        }
+
+        const tracker = createProximityTracker({
+            role: 'customer',
+            target: customerCoordinates!,
+            radiusMeters: ARRIVAL_RADIUS_METERS,
+            onUpdate: (sample) => {
+                lastCustomerSampleRef.current = sample;
+                const therapistPoint = therapistLocationRef.current;
+                if (therapistPoint) {
+                    maybeHandleProximity(therapistPoint, sample.coords, 'customer_tracker', therapistLocationAccuracy);
+                }
+            },
+            onArrived: (sample) => recordArrival(sample.distanceToTarget ?? undefined, 'customer_tracker')
+        });
+
+        tracker.start();
+        proximityTrackerRef.current = tracker;
+
+        return () => {
+            stopProximityTracking();
+        };
+    }, [bookingStatus, customerCoordinates, isOpen, ARRIVAL_RADIUS_METERS]);
 
     // Generate time slots for scheduling
     const generateTimeSlots = async () => {
@@ -403,7 +531,138 @@ export default function ChatWindow({
         }
     };
 
+    const fetchProviderBankDetails = async () => {
+        try {
+            const collectionId = providerRole === 'place'
+                ? (APPWRITE_CONFIG.collections.places || 'places')
+                : (APPWRITE_CONFIG.collections.therapists || 'therapists');
+
+            const doc = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                collectionId,
+                providerId
+            );
+
+            const bankName = (doc as any).bankName || (doc as any).paymentBankName;
+            const accountNumber = (doc as any).accountNumber || (doc as any).bankAccountNumber;
+            const accountHolderName = (doc as any).accountHolderName || (doc as any).bankAccountName || providerName;
+
+            if (bankName && accountNumber) {
+                setProviderBankDetails({ bankName, accountHolderName, accountNumber });
+            }
+        } catch (error) {
+            console.error('Error fetching provider bank details:', error);
+        }
+    };
+
+    const handleUploadDepositProof = async (file?: File | null) => {
+        if (!file) return;
+
+        setDepositError(null);
+        setDepositUploading(true);
+
+        try {
+            const { storage, ID } = await import('../lib/appwrite');
+            const bucketId = (APPWRITE_CONFIG as any).buckets?.paymentProofs || 'payment_proofs';
+
+            const uploaded = await storage.createFile(bucketId, ID.unique(), file);
+            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${bucketId}/files/${uploaded.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+
+            setDepositProofUrl(proofUrl);
+
+            if (bookingId) {
+                try {
+                    await databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.bookings || 'bookings',
+                        bookingId,
+                        {
+                            depositProofUrl: proofUrl,
+                            depositStatus: 'uploaded',
+                            depositUploadedAt: new Date().toISOString(),
+                            depositReference: depositReference || null
+                        }
+                    );
+                } catch (bookingUpdateErr) {
+                    console.warn('Failed to update booking with deposit proof:', bookingUpdateErr);
+                }
+            }
+
+            if (chatRoomId && customerId) {
+                try {
+                    await messagingService.sendMessage({
+                        conversationId: chatRoomId,
+                        senderId: customerId,
+                        senderType: 'user',
+                        senderName: customerName || 'Customer',
+                        receiverId: providerId,
+                        receiverType: providerRole,
+                        receiverName: providerName,
+                        content: `📎 Deposit proof uploaded${depositReference ? ` (Ref: ${depositReference})` : ''}: ${proofUrl}`,
+                        metadata: { depositProofUrl: proofUrl, depositReference }
+                    } as any);
+                } catch (notifyErr) {
+                    console.warn('Failed to notify provider about deposit proof:', notifyErr);
+                }
+            }
+        } catch (error) {
+            console.error('Error uploading deposit proof:', error);
+            setDepositError('Failed to upload proof. Please try again.');
+        } finally {
+            setDepositUploading(false);
+        }
+    };
+
+    const handleRemoveDepositProof = async () => {
+        setDepositError(null);
+        setDepositUploading(true);
+        try {
+            setDepositProofUrl(null);
+            setDepositReference('');
+            if (bookingId) {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.bookings || 'bookings',
+                    bookingId,
+                    {
+                        depositProofUrl: null,
+                        depositStatus: 'awaiting_upload',
+                        depositUploadedAt: null,
+                        depositReference: null
+                    }
+                );
+            }
+        } catch (err) {
+            console.error('Failed to remove deposit proof:', err);
+            setDepositError('Could not delete the proof. Please try again.');
+        } finally {
+            setDepositUploading(false);
+        }
+    };
+
     const handleCreateScheduledBooking = async () => {
+        if (providerStatus === 'busy' || providerStatus === 'offline') {
+            alert('Sorry, this therapist/place is currently busy or closed. Please schedule for later or choose another available provider.');
+            return;
+        }
+
+        const pendingBooking = sessionStorage.getItem('pending_booking');
+        if (pendingBooking) {
+            try {
+                const parsed = JSON.parse(pendingBooking);
+                const expired = parsed.deadline && new Date(parsed.deadline).getTime() < Date.now();
+                if (!expired && parsed.status !== 'rejected') {
+                    alert('You already have a booking in progress. Please wait until it is accepted or rejected.');
+                    return;
+                }
+                if (expired) {
+                    sessionStorage.removeItem('pending_booking');
+                }
+            } catch {
+                sessionStorage.removeItem('pending_booking');
+            }
+        }
+
         if (!selectedDuration || !selectedTime || !customerName.trim() || !customerWhatsApp.trim()) {
             alert('Please fill in all fields');
             return;
@@ -446,7 +705,7 @@ export default function ChatWindow({
             const scheduledTime = new Date();
             scheduledTime.setHours(selectedTime.hour, selectedTime.minute, 0, 0);
             
-            const responseDeadline = new Date(Date.now() + 15 * 60 * 1000);
+            const responseDeadline = new Date(Date.now() + 5 * 60 * 1000);
             const numericBookingId = Date.now(); // Use numeric ID for chat room
             const bookingId = `booking_${numericBookingId}`; // String ID for booking document
             const finalPrice = pricing[selectedDuration.toString() as keyof typeof pricing] || 250000;
@@ -530,7 +789,7 @@ export default function ChatWindow({
 
 ✅ Please confirm availability.
 
-⏰ You have 15 minutes to respond.`;
+⏰ You have 5 minutes to respond.`;
 
             // Send system message
             await sendSystemMessage(chatRoom.$id || '', {
@@ -551,16 +810,17 @@ export default function ChatWindow({
             setPendingBookingId(bookingResponse.$id);
             setWaitingForResponse(true);
             
-            // Store booking lock
+            // Store booking lock to prevent duplicate bookings until resolved
             const deadline = new Date();
-            deadline.setMinutes(deadline.getMinutes() + 15);
+            deadline.setMinutes(deadline.getMinutes() + 5);
             sessionStorage.setItem('pending_booking', JSON.stringify({
                 bookingId: bookingResponse.$id,
                 therapistId: providerId,
                 therapistName: providerName,
                 customerWhatsApp: formattedWhatsApp,
                 deadline: deadline.toISOString(),
-                type: 'scheduled'
+                type: 'scheduled',
+                status: 'pending'
             }));
 
             loadMessages();
@@ -589,6 +849,28 @@ export default function ChatWindow({
     };
 
     const handleActivateChat = async () => {
+        if (providerStatus === 'busy' || providerStatus === 'offline') {
+            alert('Sorry, this therapist/place is currently busy or closed. Please schedule for later or pick another available provider.');
+            return;
+        }
+
+        const pendingBooking = sessionStorage.getItem('pending_booking');
+        if (pendingBooking) {
+            try {
+                const parsed = JSON.parse(pendingBooking);
+                const expired = parsed.deadline && new Date(parsed.deadline).getTime() < Date.now();
+                if (!expired && parsed.status !== 'rejected') {
+                    alert('You already have a booking in progress. Please wait until it is accepted or rejected.');
+                    return;
+                }
+                if (expired) {
+                    sessionStorage.removeItem('pending_booking');
+                }
+            } catch {
+                sessionStorage.removeItem('pending_booking');
+            }
+        }
+
         if (!customerName.trim() || !customerWhatsApp.trim() || !customerLocation.trim()) {
             alert(language === 'id' 
                 ? 'Mohon lengkapi nama, WhatsApp, dan lokasi Anda' 
@@ -654,31 +936,26 @@ export default function ChatWindow({
             
             // Send as first message in conversation with service metadata
             await messagingService.sendMessage({
-                conversationId: conversationId,
                 senderId: 'system',
-                senderType: 'user',
-                senderName: 'System',
-                receiverId: guestId,
-                receiverType: 'user',
-                receiverName: customerName.trim(),
+                recipientId: guestId,
                 content: welcomeMsg,
-                bookingId: `lead_${serviceDuration}min_${basePrice}`
+                type: 'text',
+                conversationId: conversationId
             });
+
+            // Keep chat expanded on activation
+            setIsMinimized(false);
 
             // If discount is active, send an explicit lock confirmation message
             if (discountActive && discountPercentage && discountPercentage > 0) {
                 const lockedPrice = Math.max(0, Math.round(basePrice * (1 - discountPercentage / 100)));
                 const lockMsg = `Offer confirmed and locked: ${discountPercentage}% OFF for ${serviceDuration} min. Locked price: Rp ${lockedPrice.toLocaleString()}. This discount was active at booking time and remains valid for this booking.`;
                 await messagingService.sendMessage({
-                    conversationId: conversationId,
                     senderId: 'system',
-                    senderType: 'user',
-                    senderName: 'System',
-                    receiverId: guestId,
-                    receiverType: 'user',
-                    receiverName: customerName.trim(),
+                    recipientId: guestId,
                     content: lockMsg,
-                    bookingId: `lead_${serviceDuration}min_${basePrice}`
+                    type: 'text',
+                    conversationId: conversationId
                 });
 
                 // Admin copy of lock confirmation
@@ -688,15 +965,11 @@ export default function ChatWindow({
                         { id: 'admin', role: 'admin' }
                     );
                     await messagingService.sendMessage({
-                        conversationId: adminConversationId,
                         senderId: 'system',
-                        senderType: 'user',
-                        senderName: 'System',
-                        receiverId: 'admin',
-                        receiverType: 'user',
-                        receiverName: 'Admin',
+                        recipientId: 'admin',
                         content: `[COPY] ${lockMsg}`,
-                        bookingId: `lead_${serviceDuration}min_${basePrice}`
+                        type: 'text',
+                        conversationId: adminConversationId
                     });
                 } catch (copyErr) {
                     console.warn('⚠️ Failed to send admin copy of lock confirmation:', copyErr);
@@ -758,7 +1031,7 @@ export default function ChatWindow({
                             commissionRate: 30
                         });
 
-                        await commissionTrackingService.createCommissionRecord(
+                        const commissionRecord = await commissionTrackingService.createCommissionRecord(
                             providerId,
                             providerName,
                             bookingId,
@@ -766,6 +1039,14 @@ export default function ChatWindow({
                             undefined, // scheduledDate (immediate booking)
                             finalPrice
                         );
+
+                        if (commissionRecord?.paymentDeadline) {
+                            try {
+                                setPaymentDeadline(new Date(commissionRecord.paymentDeadline));
+                            } catch (e) {
+                                console.warn('Failed to set payment deadline', e);
+                            }
+                        }
 
                         console.log('✅ Commission record created successfully');
                         
@@ -821,6 +1102,9 @@ export default function ChatWindow({
 
             // Mark as registered
             setIsRegistered(true);
+            setIsMinimized(true);
+            setIsFullScreen(false);
+            setHasUnread(false);
             setLastMessageCount(1); // Start with welcome message
             console.log('✅ Chat activated successfully with service:', serviceDuration);
 
@@ -843,6 +1127,12 @@ export default function ChatWindow({
 
     const sendMessage = async () => {
         if (!newMessage.trim() || sending || !chatRoomId) return;
+
+        // Prevent chatting before the booking is accepted
+        if (bookingStatus === 'pending' || waitingForResponse) {
+            alert('Chat unlocks after the therapist accepts your booking. Please wait for their response.');
+            return;
+        }
 
         setSending(true);
 
@@ -918,6 +1208,107 @@ export default function ChatWindow({
         }
     };
 
+    const stopProximityTracking = () => {
+        proximityTrackerRef.current?.stop?.();
+        proximityTrackerRef.current = null;
+    };
+
+    const recordArrival = async (
+        distanceMeters?: number,
+        source: 'customer_tracker' | 'therapist_ping' | 'manual' = 'customer_tracker'
+    ) => {
+        if (arrivalRecordedRef.current) return;
+        arrivalRecordedRef.current = true;
+        stopProximityTracking();
+        setBookingStatus('arrived');
+        setWaitingForResponse(false);
+        setArrivalDistanceMeters(typeof distanceMeters === 'number' ? distanceMeters : null);
+
+        // Persist arrival in booking lock if present
+        const pending = sessionStorage.getItem('pending_booking');
+        if (pending) {
+            try {
+                const parsed = JSON.parse(pending);
+                parsed.status = 'arrived';
+                sessionStorage.setItem('pending_booking', JSON.stringify(parsed));
+            } catch {
+                // ignore
+            }
+        }
+
+        // Notify chat participants about verified arrival
+        const arrivalNote = `📍 Arrival verified automatically${distanceMeters ? ` (~${Math.round(distanceMeters)} m)` : ''} via ${source === 'therapist_ping' ? 'therapist GPS' : 'customer GPS'}.`;
+        if (chatRoomId) {
+            try {
+                await messagingService.sendMessage({
+                    conversationId: chatRoomId,
+                    senderId: 'system',
+                    senderType: 'user',
+                    senderName: 'System',
+                    receiverId: providerId,
+                    receiverType: providerRole,
+                    receiverName: providerName,
+                    content: arrivalNote,
+                    metadata: { arrivalDistanceMeters: distanceMeters, arrivalSource: source }
+                } as any);
+
+                const adminConversationId = messagingService.generateConversationId(
+                    { id: customerId || 'guest', role: 'user' },
+                    { id: 'admin', role: 'admin' }
+                );
+
+                await messagingService.sendMessage({
+                    conversationId: adminConversationId,
+                    senderId: 'system',
+                    senderType: 'user',
+                    senderName: 'System',
+                    receiverId: 'admin',
+                    receiverType: 'user',
+                    receiverName: 'Admin',
+                    content: `[COPY] ${arrivalNote}`,
+                    metadata: { arrivalDistanceMeters: distanceMeters, arrivalSource: source }
+                } as any);
+            } catch (err) {
+                console.warn('⚠️ Failed to send arrival notice:', err);
+            }
+        }
+
+        if (bookingId) {
+            try {
+                await databases.updateDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.bookings || 'bookings',
+                    bookingId,
+                    {
+                        arrivalDetectedAt: new Date().toISOString(),
+                        arrivalDistanceMeters: distanceMeters ? Math.round(distanceMeters) : null,
+                        arrivalDetectedBy: source
+                    }
+                );
+            } catch (err) {
+                console.warn('⚠️ Failed to persist arrival detection:', err);
+            }
+        }
+    };
+
+    const maybeHandleProximity = (
+        therapistCoords?: { lat: number; lng: number },
+        customerCoords?: { lat: number; lng: number },
+        source: 'therapist_ping' | 'customer_tracker' = 'customer_tracker',
+        accuracy?: number | null
+    ) => {
+        if (arrivalRecordedRef.current) return;
+        const destination = customerCoords || customerCoordinates || null;
+        if (!therapistCoords || !destination) return;
+
+        const distance = metersBetween(therapistCoords, destination);
+        const accuracyOk = typeof accuracy !== 'number' || accuracy <= ARRIVAL_RADIUS_METERS * 4;
+
+        if (distance <= ARRIVAL_RADIUS_METERS && accuracyOk) {
+            recordArrival(distance, source);
+        }
+    };
+
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleTimeString('en-US', { 
@@ -947,13 +1338,114 @@ export default function ChatWindow({
         return result;
     };
 
+    const getBookingBannerClass = () => {
+        switch (bookingStatus) {
+            case 'pending':
+                return 'bg-yellow-50 border-2 border-yellow-200 text-yellow-800';
+            case 'accepted':
+                return 'bg-green-50 border-2 border-green-200 text-green-800';
+            case 'on_the_way':
+                return 'bg-blue-50 border-2 border-blue-200 text-blue-800';
+            case 'arriving':
+                return 'bg-sky-50 border-2 border-sky-200 text-sky-800';
+            case 'arrived':
+                return 'bg-emerald-50 border-2 border-emerald-200 text-emerald-800';
+            case 'expired':
+                return 'bg-orange-50 border-2 border-orange-200 text-orange-800';
+            case 'rejected':
+                return 'bg-red-50 border-2 border-red-200 text-red-800';
+            default:
+                return 'bg-gray-50 border-2 border-gray-200 text-gray-800';
+        }
+    };
+
     const handleClose = () => {
-        // Can only close if NOT registered AND no pending booking (still in registration screen)
-        if (!isRegistered && bookingStatus === 'none') {
-            onClose();
+        // Close the chat window completely when the user taps X
+        setIsFullScreen(false);
+        setIsMinimized(true);
+        setHasUnread(false);
+        onClose?.();
+    };
+
+    const resolvedPrice = selectedService?.price || pricing?.[serviceDuration as keyof typeof pricing] || 0;
+    const depositAmount = Math.round(resolvedPrice * 0.30);
+
+    useEffect(() => {
+        if (!paymentDeadline) return;
+
+        const playReminderSound = () => {
+            try {
+                if (!reminderAudioRef.current) return;
+                reminderAudioRef.current.pause();
+                reminderAudioRef.current.currentTime = 0;
+                reminderAudioRef.current.volume = DEFAULT_REMINDER_VOLUME;
+                setReminderVolume(DEFAULT_REMINDER_VOLUME);
+                setIsReminderPaused(false);
+                reminderAudioRef.current.play().catch(() => undefined);
+            } catch (err) {
+                console.warn('Payment reminder sound failed:', err);
+            }
+        };
+
+        // Fire immediately, then each hour until deadline
+        setPaymentReminderTick((t) => t + 1);
+        playReminderSound();
+
+        const interval = setInterval(() => {
+            if (Date.now() >= paymentDeadline.getTime()) {
+                clearInterval(interval);
+                return;
+            }
+            setPaymentReminderTick((t) => t + 1);
+            playReminderSound();
+        }, 60 * 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [paymentDeadline]);
+
+    const handleCreditCardClick = async () => {
+        try {
+            if (!providerBankDetails) {
+                await fetchProviderBankDetails();
+            }
+        } catch (err) {
+            console.warn('Failed to refresh bank details:', err);
+        }
+
+        if (!providerBankDetails) {
+            alert('Bank details are not available yet.');
+            return;
+        }
+
+        const confirmed = window.confirm('Show your bank details in chat?');
+        if (!confirmed) return;
+        setShowPaymentDetailsCard(true);
+    };
+
+    const toggleReminderAudio = (event?: { stopPropagation?: () => void }) => {
+        event?.stopPropagation?.();
+        const audio = reminderAudioRef.current;
+        if (!audio) return;
+        if (isReminderPaused) {
+            audio.play().catch(() => undefined);
+            setIsReminderPaused(false);
         } else {
-            // Once chat is active OR has pending booking, can only minimize
-            setIsMinimized(true);
+            audio.pause();
+            setIsReminderPaused(true);
+        }
+    };
+
+    const handleReminderVolumeChange = (value: number, event?: { stopPropagation?: () => void }) => {
+        event?.stopPropagation?.();
+        const normalized = Number.isFinite(value) ? value : 0;
+        const clamped = Math.max(0, Math.min(1, normalized));
+        setReminderVolume(clamped);
+        if (reminderAudioRef.current) {
+            reminderAudioRef.current.volume = clamped;
+            if (isReminderPaused && clamped > 0) {
+                reminderAudioRef.current.play().catch(() => undefined);
+                setIsReminderPaused(false);
+            }
         }
     };
 
@@ -963,14 +1455,14 @@ export default function ChatWindow({
     if (isMinimized && isRegistered) {
         return (
             <div 
-                onClick={() => setIsMinimized(false)}
+                onClick={() => { setIsMinimized(false); setIsFullScreen(true); setHasUnread(false); }}
                 className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-2xl cursor-pointer hover:shadow-xl transition-all z-50 flex items-center space-x-2 sm:space-x-3"
             >
                 <div className="relative">
                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">
                         {providerName.charAt(0).toUpperCase()}
                     </div>
-                    {messages.length > lastMessageCount && (
+                    {hasUnread && (
                         <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
                     )}
                 </div>
@@ -982,8 +1474,35 @@ export default function ChatWindow({
                     <div className="text-xs text-white/80">
                         {bookingStatus === 'pending' ? '⏳ Waiting for response...' : 
                          bookingStatus === 'accepted' ? '✅ Booking accepted' :
+                         bookingStatus === 'on_the_way' ? '🚗 Therapist is on the way' :
+                         bookingStatus === 'arriving' ? '🛎️ Arriving soon' :
+                         bookingStatus === 'arrived' ? '📍 Therapist has arrived' :
                          bookingStatus === 'rejected' ? '❌ Booking declined' :
+                         bookingStatus === 'expired' ? 'Session timed out' :
                          'Click to expand'}
+                    </div>
+                    <div className="mt-2 space-y-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 text-xs text-white/90">
+                            <button
+                                className="px-2 py-1 bg-white/15 rounded-full border border-white/20 text-white hover:bg-white/25 transition"
+                                onClick={(e) => toggleReminderAudio(e)}
+                            >
+                                {isReminderPaused ? 'Play music' : 'Pause music'}
+                            </button>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] uppercase tracking-wide text-white/70">Music</span>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value={reminderVolume}
+                                    onChange={(e) => handleReminderVolumeChange(parseFloat(e.target.value), e)}
+                                    className="w-24 accent-orange-200 cursor-pointer"
+                                />
+                            </div>
+                        </div>
+                        <div className="text-[11px] text-white/70">Next reminder will reset these settings.</div>
                     </div>
                 </div>
             </div>
@@ -1014,7 +1533,7 @@ export default function ChatWindow({
     // REGISTRATION SCREEN
     if (!isRegistered) {
         return (
-            <div className={`fixed bottom-0 sm:bottom-4 left-0 sm:left-auto right-0 sm:right-4 w-full sm:w-96 max-w-full bg-white rounded-t-lg sm:rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 max-h-[90vh] sm:max-h-[80vh] transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+            <div className={`fixed inset-x-0 bottom-0 sm:bottom-4 sm:left-auto sm:right-4 w-full sm:w-[480px] max-w-full bg-white rounded-t-xl sm:rounded-xl shadow-2xl flex flex-col z-50 border border-gray-200 max-h-[95vh] sm:max-h-[85vh] transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
                 {/* Header */}
                 <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -1553,8 +2072,12 @@ export default function ChatWindow({
     }
 
     // ACTIVE CHAT SCREEN
+    const containerClass = isFullScreen
+        ? `fixed inset-0 w-full h-full max-w-full bg-white rounded-none sm:rounded-none shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`
+        : `fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`;
+
     return (
-        <div className={`fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+        <div className={containerClass}>
             {/* Header */}
             <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -1574,6 +2097,18 @@ export default function ChatWindow({
                 </div>
                 <div className="flex items-center gap-2">
                     <button
+                        onClick={handleCreditCardClick}
+                        className="w-9 h-9 bg-white/15 hover:bg-white/25 rounded-full transition-colors flex items-center justify-center border border-white/25"
+                        title="Show payment details"
+                    >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="currentColor" opacity="0.2" />
+                            <path d="M2 10h20" />
+                            <path d="M7 15h2" />
+                            <path d="M11 15h6" />
+                        </svg>
+                    </button>
+                    <button
                         onClick={() => setIsMinimized(true)}
                         className="w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full transition-colors flex items-center justify-center border border-white/20"
                         title="Minimize"
@@ -1587,15 +2122,54 @@ export default function ChatWindow({
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+                {paymentDeadline && (
+                    <div className="sticky top-0 z-20 rounded-lg p-3 bg-orange-50 border border-orange-200 shadow-sm flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full overflow-hidden border border-orange-200 bg-white flex items-center justify-center text-orange-700 font-semibold text-sm">
+                            {providerPhoto ? (
+                                <img src={providerPhoto} alt={providerName} className="w-full h-full object-cover" />
+                            ) : (
+                                providerName.charAt(0).toUpperCase()
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold text-orange-900">Payment reminder</div>
+                            <div className="text-xs text-orange-800 truncate">Complete your commission payment. {(() => {
+                                const remaining = paymentDeadline ? Math.max(0, paymentDeadline.getTime() - Date.now()) : 0;
+                                const hrs = Math.floor(remaining / 3600000);
+                                const mins = Math.floor((remaining % 3600000) / 60000);
+                                return `${hrs}h ${mins}m left`;
+                            })()}</div>
+                        </div>
+                        <div className="w-9 h-9 rounded-full overflow-hidden border border-orange-200 bg-white flex items-center justify-center text-orange-700 font-semibold text-sm">
+                            {selectedAvatar ? (
+                                <img src={selectedAvatar} alt={customerName} className="w-full h-full object-cover" />
+                            ) : (
+                                customerName.charAt(0).toUpperCase()
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {showPaymentDetailsCard && providerBankDetails && (
+                    <div className="rounded-lg border-2 border-orange-200 bg-white shadow-sm p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 text-orange-700">
+                                💳
+                            </span>
+                            Payment details shared by member
+                        </div>
+                        <PaymentCard
+                            bankName={providerBankDetails.bankName}
+                            accountHolderName={providerBankDetails.accountHolderName}
+                            accountNumber={providerBankDetails.accountNumber}
+                            size="small"
+                        />
+                    </div>
+                )}
+
                 {/* Booking Status Banner */}
                 {bookingStatus !== 'none' && (
-                    <div className={`sticky top-0 z-10 rounded-lg p-3 text-center text-sm font-medium shadow-sm ${
-                        bookingStatus === 'pending' 
-                            ? 'bg-yellow-50 border-2 border-yellow-200 text-yellow-800'
-                            : bookingStatus === 'accepted'
-                            ? 'bg-green-50 border-2 border-green-200 text-green-800'
-                            : 'bg-red-50 border-2 border-red-200 text-red-800'
-                    }`}>
+                    <div className={`sticky top-0 z-10 rounded-lg p-3 text-center text-sm font-medium shadow-sm ${getBookingBannerClass()}`}>
                         {bookingStatus === 'pending' && waitingForResponse && (
                             <div>
                                 <div className="flex items-center justify-center gap-2 mb-3">
@@ -1632,7 +2206,25 @@ export default function ChatWindow({
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
-                                <span>✅ {providerName} accepted your booking! You can now chat freely.</span>
+                                <span>✅ {providerName} accepted your booking! Please keep your phone nearby. </span>
+                            </div>
+                        )}
+                        {bookingStatus === 'on_the_way' && (
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-lg">🚗</span>
+                                <span>{providerName} is on the way. Please be ready within ~1 hour — we will auto-verify arrival when both phones are within 20 m.</span>
+                            </div>
+                        )}
+                        {bookingStatus === 'arriving' && (
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-lg">🛎️</span>
+                                <span>{providerName} is arriving soon. Please prepare your space; arrival will be confirmed automatically when both devices are within 20 m.</span>
+                            </div>
+                        )}
+                        {bookingStatus === 'arrived' && (
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-lg">📍</span>
+                                <span>{providerName} has arrived{arrivalDistanceMeters ? ` (verified ~${Math.round(arrivalDistanceMeters)} m)` : ''}. Please welcome them in.</span>
                             </div>
                         )}
                         {bookingStatus === 'rejected' && (
@@ -1643,6 +2235,80 @@ export default function ChatWindow({
                                 <span>❌ {providerName} declined your booking. Please try another time or provider.</span>
                             </div>
                         )}
+                        {bookingStatus === 'expired' && (
+                            <div className="flex items-center justify-center gap-2">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Member is in a session; we’re finding the next best nearby therapist.</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {bookingStatus === 'accepted' && providerBankDetails && mode === 'scheduled' && (
+                    <div className="rounded-lg border-2 border-orange-200 bg-white shadow-sm p-3 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm font-semibold text-gray-900">Payment details for your booking</div>
+                            <span className="text-xs font-semibold text-orange-700 bg-orange-50 px-2 py-1 rounded-full">30% deposit</span>
+                        </div>
+                        <PaymentCard
+                            bankName={providerBankDetails.bankName}
+                            accountHolderName={providerBankDetails.accountHolderName}
+                            accountNumber={providerBankDetails.accountNumber}
+                            size="small"
+                        />
+                        <div className="text-xs text-gray-700 space-y-1">
+                            <div>Scheduled bookings require a 30% non-refundable deposit paid directly to the member after acceptance. Transfer IDR {depositAmount.toLocaleString('id-ID')} and upload your proof here.</div>
+                            <div className="text-orange-700 font-semibold">Upload a clear photo of the receipt/transfer (Indomaret/Alfamart transfers are accepted).</div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-800">Transaction / reference number (optional but helps admin verify faster)</label>
+                                <input
+                                    type="text"
+                                    value={depositReference}
+                                    onChange={(e) => setDepositReference(e.target.value)}
+                                    placeholder="e.g. BRIVA/VA/Store reference"
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+                                    maxLength={80}
+                                />
+                            </div>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <label className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border-2 border-orange-300 text-orange-800 font-semibold cursor-pointer hover:bg-orange-50 transition ${depositUploading ? 'opacity-60 cursor-not-allowed' : ''}`}>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        disabled={depositUploading}
+                                        onChange={(e) => handleUploadDepositProof(e.target.files?.[0] || null)}
+                                    />
+                                    {depositUploading ? 'Uploading proof…' : depositProofUrl ? 'Replace proof' : 'Upload proof of transfer'}
+                                </label>
+                                {depositProofUrl && (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <a
+                                            href={depositProofUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 font-semibold"
+                                        >
+                                            View proof
+                                        </a>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveDepositProof}
+                                            disabled={depositUploading}
+                                            className="text-red-600 hover:text-red-700 font-semibold"
+                                        >
+                                            Delete & re-upload
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                        {depositError && <div className="text-xs text-red-600">{depositError}</div>}
                     </div>
                 )}
                 
@@ -1688,32 +2354,46 @@ export default function ChatWindow({
                                         </div>
                                     )}
                                     <div className="text-sm whitespace-pre-wrap break-words">
-                                        {(msg.message || msg.content || '').split('\n').map((line, idx) => {
-                                            // Make map links clickable
-                                            if (line.includes('google.com/maps')) {
-                                                const urlMatch = line.match(/(https:\/\/[^\s]+)/);
-                                                if (urlMatch) {
-                                                    const url = urlMatch[1];
-                                                    const parts = line.split(url);
-                                                    return (
-                                                        <div key={idx}>
-                                                            {parts[0]}
-                                                            <a 
-                                                                href={url} 
-                                                                target="_blank" 
-                                                                rel="noopener noreferrer"
-                                                                className="text-blue-500 hover:text-blue-700 underline font-medium"
-                                                                onClick={(e) => e.stopPropagation()}
-                                                            >
-                                                                {language === 'id' ? 'Lihat di Peta' : 'View on Map'}
-                                                            </a>
-                                                            {parts[1]}
-                                                        </div>
-                                                    );
+                                        {msg.messageType === 'payment-card' && (msg as any).metadata?.paymentCard ? (
+                                            <div className="space-y-2">
+                                                <PaymentCard
+                                                    bankName={(msg as any).metadata.paymentCard.bankName}
+                                                    accountHolderName={(msg as any).metadata.paymentCard.accountHolderName}
+                                                    accountNumber={(msg as any).metadata.paymentCard.accountNumber}
+                                                    size="small"
+                                                />
+                                                <p className="text-xs text-gray-700">
+                                                    30% non-refundable deposit is paid directly to the member after acceptance. Upload your transfer proof below so they can verify it.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            (msg.message || msg.content || '').split('\n').map((line, idx) => {
+                                                // Make map links clickable
+                                                if (line.includes('google.com/maps')) {
+                                                    const urlMatch = line.match(/(https:\/\/[^\s]+)/);
+                                                    if (urlMatch) {
+                                                        const url = urlMatch[1];
+                                                        const parts = line.split(url);
+                                                        return (
+                                                            <div key={idx}>
+                                                                {parts[0]}
+                                                                <a 
+                                                                    href={url} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-500 hover:text-blue-700 underline font-medium"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    {language === 'id' ? 'Lihat di Peta' : 'View on Map'}
+                                                                </a>
+                                                                {parts[1]}
+                                                            </div>
+                                                        );
+                                                    }
                                                 }
-                                            }
-                                            return <div key={idx}>{line}</div>;
-                                        })}
+                                                return <div key={idx}>{line}</div>;
+                                            })
+                                        )}
                                     </div>
                                     <div className={`text-xs mt-1 ${
                                         isSystemMessage ? 'text-blue-600' :

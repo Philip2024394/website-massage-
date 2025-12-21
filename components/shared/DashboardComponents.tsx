@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Page } from '../../types/pageTypes';
-import { Star, QrCode, Tag, Building, Menu, Users, Bell, Package, Settings, LogOut, X } from 'lucide-react';
+import { Star, QrCode, Tag, Building, Menu, Users, Bell, Package, Settings, X } from 'lucide-react';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../../utils/ratingUtils';
 import { useTranslations } from '../../lib/useTranslations';
 
@@ -85,11 +85,10 @@ export const SideDrawer: React.FC<{
     onClose: () => void;
     activeTab: string;
     setActiveTab: (tab: string) => void;
-    onLogout: () => void;
     providersCount: number;
     type: 'hotel' | 'villa';
     onNavigate?: (page: Page) => void;
-}> = ({ isOpen, onClose, activeTab, setActiveTab, onLogout, providersCount, type, onNavigate }) => {
+}> = ({ isOpen, onClose, activeTab, setActiveTab, providersCount, type, onNavigate }) => {
     const { t } = useTranslations();
     
     const navigationItems = [
@@ -187,19 +186,6 @@ export const SideDrawer: React.FC<{
                                 Privacy
                             </button>
                         </div>
-                    </div>
-                    {/* Logout Button */}
-                    <div className="p-4">
-                        <button
-                            onClick={() => {
-                                onClose();
-                                onLogout();
-                            }}
-                            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-md"
-                        >
-                            <LogOut className="w-5 h-5" />
-                            <span className="font-medium">{t('dashboard.logout')}</span>
-                        </button>
                     </div>
                 </div>
             </div>

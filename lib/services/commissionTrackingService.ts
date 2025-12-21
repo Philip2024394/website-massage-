@@ -3,7 +3,7 @@
  * 
  * Handles Pro membership 30% commission payments:
  * - Creates commission record after booking
- * - 3-hour payment deadline
+ * - 4-hour payment deadline
  * - Auto-deactivates account if payment not submitted
  * - Auto-reactivates after proof upload
  * - Admin verification system
@@ -21,7 +21,7 @@ export interface CommissionPayment {
     serviceAmount: number;
     commissionRate: number; // 30%
     commissionAmount: number;
-    paymentDeadline: string; // 3 hours after booking
+    paymentDeadline: string; // 4 hours after booking
     paymentProofUrl?: string;
     paymentProofUploadedAt?: string;
     paymentMethod?: string;
@@ -34,7 +34,7 @@ export interface CommissionPayment {
 }
 
 class CommissionTrackingService {
-    private readonly collectionId = 'commission_payments'; // Hardcoded collection ID
+    private readonly collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
 
     /**
      * Check if therapist has any unpaid commissions
@@ -101,9 +101,9 @@ class CommissionTrackingService {
         const commissionRate = 30; // Pro membership: 30%
         const commissionAmount = Math.round(serviceAmount * 0.30);
         
-        // 3-hour deadline from booking time
+        // 4-hour deadline from booking time
         const deadline = new Date(bookingDate);
-        deadline.setHours(deadline.getHours() + 3);
+        deadline.setHours(deadline.getHours() + 4);
 
         try {
             const record = await databases.createDocument(
@@ -128,8 +128,16 @@ class CommissionTrackingService {
 
             console.log('✅ Commission record created:', record.$id);
             
-            // Start monitoring for 3-hour deadline
+            // Start monitoring for 4-hour deadline + hourly reminders
             this.scheduleDeadlineCheck(record.$id, deadline);
+            this.scheduleHourlyReminders(
+                record.$id,
+                therapistId,
+                therapistName,
+                bookingId,
+                new Date(bookingDate),
+                deadline
+            );
 
             return record as unknown as unknown as CommissionPayment;
         } catch (error) {
@@ -163,7 +171,7 @@ class CommissionTrackingService {
                 this.collectionId,
                 commissionId,
                 {
-                    paymentProofUrl: proofUrl,
+                    paymentProofImage: proofUrl,
                     paymentProofUploadedAt: new Date().toISOString(),
                     paymentMethod,
                     status: 'awaiting_verification',
@@ -359,7 +367,7 @@ class CommissionTrackingService {
     }
 
     /**
-     * Schedule deadline check (3 hours)
+    * Schedule deadline check (4 hours)
      */
     private scheduleDeadlineCheck(commissionId: string, deadline: Date): void {
         const now = new Date();
@@ -378,6 +386,49 @@ class CommissionTrackingService {
                     await this.checkOverduePayments();
                 }
             }, timeUntilDeadline);
+        }
+    }
+
+    /**
+     * Hourly reminders with sound for therapist chat/notifications (until deadline)
+     */
+    private scheduleHourlyReminders(
+        commissionId: string,
+        therapistId: string,
+        therapistName: string,
+        bookingId: string,
+        bookingDate: Date,
+        deadline: Date
+    ): void {
+        const maxHours = 4; // total window
+        for (let hour = 1; hour <= maxHours; hour++) {
+            const fireAt = new Date(bookingDate.getTime() + hour * 60 * 60 * 1000);
+            const delay = fireAt.getTime() - Date.now();
+            if (delay <= 0 || fireAt > deadline) continue;
+
+            setTimeout(async () => {
+                try {
+                    await databases.createDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.notifications || 'notifications',
+                        ID.unique(),
+                        {
+                            type: 'payment_reminder',
+                            title: 'Commission Payment Reminder',
+                            message: `Payment due for booking ${bookingId}. ${maxHours - hour} hour(s) left before deadline.`,
+                            therapistId,
+                            therapistName,
+                            commissionId,
+                            sound: 'payment-reminder.mp3',
+                            playSound: true,
+                            createdAt: new Date().toISOString(),
+                            read: false
+                        }
+                    );
+                } catch (error) {
+                    console.error('Error creating payment reminder notification:', error);
+                }
+            }, delay);
         }
     }
 

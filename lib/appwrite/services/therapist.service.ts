@@ -84,7 +84,6 @@ export const therapistService = {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
             const response = await rateLimitedDb.listDocuments(
-                databases,
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists
             );

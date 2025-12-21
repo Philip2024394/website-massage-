@@ -1,5 +1,5 @@
 import React from 'react';
-import { X as CloseIcon, LogOut } from 'lucide-react';
+import { X as CloseIcon } from 'lucide-react';
 
 export interface PartnerNavItem {
   id: string;
@@ -15,10 +15,9 @@ interface PartnersDrawerProps {
   onClose: () => void;
   items: PartnerNavItem[];
   onSelect: (id: string) => void;
-  onLogout?: () => void;
 }
 
-export const PartnersDrawer: React.FC<PartnersDrawerProps> = ({ isOpen, onClose, items, onSelect, onLogout }) => {
+export const PartnersDrawer: React.FC<PartnersDrawerProps> = ({ isOpen, onClose, items, onSelect }) => {
   if (!isOpen) return null;
 
   return (
@@ -79,14 +78,7 @@ export const PartnersDrawer: React.FC<PartnersDrawerProps> = ({ isOpen, onClose,
         </nav>
 
         {/* Footer */}
-        <div className="p-4 bg-gray-50 border-t">
-          {onLogout && (
-            <button onClick={onLogout} className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-br from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all transform hover:scale-105 shadow-sm hover:shadow-md">
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">Logout</span>
-            </button>
-          )}
-        </div>
+        <div className="p-4 bg-gray-50 border-t"></div>
       </div>
     </div>
   );
