@@ -41,7 +41,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     <img 
                         src={customVerifiedBadge}
                         alt="Verified Therapist"
-                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain"
+                        className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain"
                         style={{
                             maxWidth: '100%',
                             maxHeight: '100%',
@@ -55,7 +55,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
                         alt="Verified Member"
-                        className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain"
                     />
                 </div>
             )}
