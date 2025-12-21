@@ -12,63 +12,63 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'THERAPISTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        places: 'PLACES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        facial_places: 'FACIAL_PLACES_COLLECTION_ID', // Facial salons/spas collection
-        agents: 'AGENTS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        bookings: 'BOOKINGS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        reviews: '693e1a5d001d8cc58e16', // Reviews collection
-        notifications: 'NOTIFICATIONS_COLLECTION_ID', // ✅ CORRECT - Therapist notification system
-        users: 'USERS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        therapists: 'Therapists', // ✅ Actual collection name
+        places: 'Places', // ✅ Actual collection name
+        facial_places: 'Facial Places', // Facial salons/spas collection
+        agents: 'Agents', // ✅ Actual collection name
+        bookings: 'Bookings', // ✅ Actual collection name
+        reviews: 'Reviews', // Reviews collection
+        notifications: 'Notifications', // ✅ Therapist notification system
+        users: 'Users', // ✅ Actual collection name
         // Keep the rest as-is
-        agentVisits: 'agent_visits_collection_id',
-        hotelBookings: 'hotel_bookings',
-        hotels: 'HOTELS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        cities: 'CITIES_COLLECTION_ID', // Cities for location dropdown
+        agentVisits: 'Agent Visits',
+        hotelBookings: 'Hotel Bookings',
+        hotels: 'Hotels',
+        cities: 'Cities',
         villas: '', // Disabled - collection doesn't exist
-        massageTypes: 'MASSAGE_TYPES_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
-        imageAssets: 'image_assets',
-        loginBackgrounds: 'login_backgrounds',
-        customLinks: 'CUSTOM_LINKS_COLLECTION_ID', // ✅ CORRECT - Live from Appwrite
+        massageTypes: 'Massage Types',
+        membershipPricing: 'Membership Pricing',
+        imageAssets: 'Image Assets',
+        loginBackgrounds: 'Login Backgrounds',
+        customLinks: 'Custom Links',
         translations: '', // Disabled - collection doesn't exist (causes 404 errors)
-        commissionRecords: 'commission_records',
+        commissionRecords: 'Commission Records',
         attributes: 'ATTRIBUTES',
         analyticsEvents: 'Analytics Events',
-        therapistJobListings: 'therapist_job_listings',
-        employerJobPostings: 'employer_job_postings',
-        bankDetails: 'bank_details',
-        paymentTransactions: 'payment_transactions',
-        premiumPayments: 'premium_payments',
-        therapistMenus: 'therapist_menus',
-        messages: 'messages',
-        packages: 'packages_collection_id',
-        pushSubscriptions: 'push_subscriptions',
-        loyaltyWallets: 'loyalty_wallets',
-        providerLoyaltySettings: 'provider_loyalty_settings',
-        coinTransactions: 'coinTransactions', // ✅ CORRECT - Live from Appwrite
-        userRegistrations: 'user_registrations',
-        chatRooms: 'chat_rooms', // NEW: Booking chat rooms
-        chatMessages: 'chat_messages', // NEW: Chat messages with translations
-        chatSessions: 'chat_sessions', // NEW: Persistent chat session management
+        therapistJobListings: 'Therapist Job Listings',
+        employerJobPostings: 'Employer Job Postings',
+        bankDetails: 'Bank Details',
+        paymentTransactions: 'Payment Transactions',
+        premiumPayments: 'Premium Payments',
+        therapistMenus: 'Therapist Menus',
+        messages: 'Messages',
+        packages: 'Packages',
+        pushSubscriptions: 'Push Subscriptions',
+        loyaltyWallets: 'Loyalty Wallets',
+        providerLoyaltySettings: 'Provider Loyalty Settings',
+        coinTransactions: 'Coin Transactions',
+        userRegistrations: 'User Registrations',
+        chatRooms: 'Chat Rooms',
+        chatMessages: 'Chat Messages',
+        chatSessions: 'Chat Sessions',
         chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
-        payments: 'payments', // NEW: Therapist payment/earnings tracking
+        payments: 'Payments',
         // Lead Generation System
-        leads: '', // Disabled - collection doesn't exist (causes 404 errors)
-        leadGenerations: 'lead_generations', // NEW: Pay-per-lead tracking
-        leadBillingSummary: 'lead_billing_summary', // NEW: Monthly lead billing
+        leads: 'Leads',
+        leadGenerations: 'Lead Generations',
+        leadBillingSummary: 'Lead Billing Summary',
         // Membership Agreement System
-        membershipAgreements: 'membership_agreements', // NEW: Membership contracts
-        membershipUpgrades: 'membership_upgrades', // NEW: Premium upgrade tracking
-        deactivationRequests: 'deactivation_requests', // NEW: Account deactivation
-        coins: 'coins', // NEW: Coin rewards transactions
-        referrals: 'referrals', // NEW: Referral tracking
-        activeDiscounts: 'active_discounts', // NEW: Promotional discount system
-        appConfig: 'app_config', // NEW: Global app configuration (membership toggle, etc.)
+        membershipAgreements: 'Membership Agreements',
+        membershipUpgrades: 'Membership Upgrades',
+        deactivationRequests: 'Deactivation Requests',
+        coins: 'Coins',
+        referrals: 'Referrals',
+        activeDiscounts: 'Active Discounts',
+        appConfig: 'App Config',
         // NEW: Affiliate tracking
-        affiliateClicks: 'affiliate_clicks',
-        affiliateAttributions: 'affiliate_attributions',
-        memberships: 'memberships_collection_id', // NEW: Membership packages (Bronze, Silver, Gold)
+        affiliateClicks: 'Affiliate Clicks',
+        affiliateAttributions: 'Affiliate Attributions',
+        memberships: 'Memberships',
         uiConfig: '', // Disabled - collection doesn't exist (causes 404 errors)
     },
     
