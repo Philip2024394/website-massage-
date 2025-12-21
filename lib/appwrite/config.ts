@@ -16,40 +16,40 @@ export const APPWRITE_CONFIG = {
     therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'Therapists',
     places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'Places', 
     facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'Facial Places',
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'users_collection_id',
-    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'agents_collection_id',
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
-    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'reviews_collection_id',
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
+    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'Bookings',
+    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'Reviews',
     
     // Analytics
-    analytics: 'analytics_collection_id',
+    analytics: 'Analytics',
     analyticsEvents: 'Analytics Events',
-    agentVisits: 'agent_visits_collection_id',
+    agentVisits: 'Agent Visits',
     
     // Communication
-    messages: 'messages_collection_id',
-    notifications: 'notifications_collection_id',
-    chatMessages: 'chat_messages_collection_id',
-    chatRooms: 'chat_rooms_collection_id',
-    chatSessions: 'chat_sessions_collection_id',
-    chatTranslations: 'chat_translations_collection_id',
+    messages: 'Messages',
+    notifications: 'Notifications',
+    chatMessages: 'Chat Messages',
+    chatRooms: 'Chat Rooms',
+    chatSessions: 'Chat Sessions',
+    chatTranslations: 'Chat Translations',
     
     // Business  
-    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || 'hotels_collection_id',
-    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'partners_collection_id',
+    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || 'Hotels',
+    partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content
-    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'massage_types_collection_id',
-    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'custom_links_collection_id', 
-    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'image_assets_collection_id',
-    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'login_backgrounds_collection_id',
-    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'translations_collection_id',
+    massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
+    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'Custom Links', 
+    imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
+    loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
+    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'Translations',
     
     // Pricing & Payments
-    membershipPricing: 'membership_pricing_collection_id',
-    pricing: 'pricing_collection_id',
-    commissionRecords: 'commission_records',
-    payments: 'payments_collection_id',
+    membershipPricing: 'Membership Pricing',
+    pricing: 'Pricing',
+    commissionRecords: 'Commission Records',
+    payments: 'Payments',
     
     // Membership & Leads
     leadGenerations: 'Lead Generations',
@@ -59,15 +59,15 @@ export const APPWRITE_CONFIG = {
     leads: 'Leads',
     
     // Jobs
-    employerJobPostings: 'employer_job_postings_collection_id',
-    therapistJobListings: 'therapist_job_listings_collection_id',
-    therapistMenus: 'therapist_menus_collection_id',
+    employerJobPostings: 'Employer Job Postings',
+    therapistJobListings: 'Therapist Job Listings',
+    therapistMenus: 'Therapist Menus',
     
     // Other
-    verifications: 'verifications_collection_id',
-    pushSubscriptions: 'push_subscriptions_collection_id',
-    appConfig: 'app_config_collection_id',
-    uiConfig: 'ui_config_collection_id',
+    verifications: 'Verifications',
+    pushSubscriptions: 'Push Subscriptions',
+    appConfig: 'App Config',
+    uiConfig: 'UI Config',
     attributes: 'ATTRIBUTES'
   }
 };
