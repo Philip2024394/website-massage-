@@ -4,7 +4,8 @@
  * Provides consistent UI and SEO for all shared links
  */
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
+import { AppDrawer } from '../../components/AppDrawerClean';
 
 interface SharedProfileLayoutProps {
     children: ReactNode;
@@ -13,6 +14,7 @@ interface SharedProfileLayoutProps {
     city?: string;
     error?: string | null;
     loading?: boolean;
+    onNavigate?: (page: any) => void;
 }
 
 export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
@@ -21,8 +23,11 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
     providerType,
     city,
     error,
-    loading
+    loading,
+    onNavigate
 }) => {
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
     // Loading state
     if (loading) {
         return (
@@ -61,6 +66,27 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
     // Success state - render children
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white">
+            {/* Hamburger menu button - fixed position */}
+            <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="fixed top-4 left-4 z-50 bg-white rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
+                aria-label="Open navigation menu"
+            >
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            {/* Navigation Drawer */}
+            <AppDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                onNavigate={onNavigate || (() => {})}
+                language="en"
+                translations={{}}
+                t={(key: string) => key}
+            />
+
             {/* Shared link indicator banner */}
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white py-2 text-center text-sm">
                 ✨ Viewing shared profile • {providerType === 'therapist' ? 'Therapist' : providerType === 'facial' ? 'Facial Place' : 'Massage Place'}

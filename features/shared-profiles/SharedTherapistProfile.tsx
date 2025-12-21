@@ -168,7 +168,14 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <SharedProfileLayout
+            providerName={therapist.name}
+            providerType="therapist"
+            city={therapist.city}
+            error={error}
+            loading={loading}
+            onNavigate={onNavigate}
+        >
             <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
                 {/* Hero Logo */}
                 <div className="flex justify-center mb-4">
@@ -198,7 +205,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 {/* Optional bottom space */}
                 <div className="min-h-[32px]" />
             </div>
-        </div>
+        </SharedProfileLayout>
     );
 };
 
