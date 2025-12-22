@@ -930,17 +930,17 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
               )}
               
               <div className="flex items-center gap-3">
-                {/* Language Toggle - ID/EN Flags */}
-                <div className="flex bg-white rounded-full shadow-md overflow-hidden">
+                {/* Language Toggle - ID/EN Round Flag Buttons */}
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
                       setChatLanguage('id');
                       setTranslatedMessages({}); // Clear cache to retranslate
                     }}
-                    className={`px-3 py-2 text-lg transition-all ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg transition-all ${
                       chatLanguage === 'id'
-                        ? 'bg-orange-500 scale-110'
-                        : 'bg-white hover:bg-orange-50'
+                        ? 'bg-orange-500 ring-4 ring-orange-300 scale-110'
+                        : 'bg-white hover:bg-orange-50 hover:scale-105'
                     }`}
                     title="Translate to Indonesian"
                   >
@@ -951,10 +951,10 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                       setChatLanguage('en');
                       setTranslatedMessages({}); // Clear cache to retranslate
                     }}
-                    className={`px-3 py-2 text-lg transition-all ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg transition-all ${
                       chatLanguage === 'en'
-                        ? 'bg-orange-500 scale-110'
-                        : 'bg-white hover:bg-orange-50'
+                        ? 'bg-orange-500 ring-4 ring-orange-300 scale-110'
+                        : 'bg-white hover:bg-orange-50 hover:scale-105'
                     }`}
                     title="Translate to English"
                   >
