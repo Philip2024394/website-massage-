@@ -65,6 +65,63 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
     return patterns.some(pattern => pattern.test(text));
   };
 
+  // Detect phone numbers split across multiple consecutive messages (spam evasion)
+  const detectSplitPhoneNumber = (recentMessages: Message[], currentSenderId: string): boolean => {
+    // Get last 5-10 messages from same sender
+    const senderMessages = recentMessages
+      .filter(m => m.senderId === currentSenderId)
+      .slice(-10);
+    
+    if (senderMessages.length < 3) return false; // Need at least 3 messages to detect pattern
+    
+    // Concatenate text from same sender (remove spaces and punctuation)
+    const concatenated = senderMessages
+      .map(m => m.message)
+      .join('')
+      .replace(/[\s\-\.\,]/g, ''); // Remove spaces, dashes, dots, commas
+    
+    // Check if concatenated text forms a phone number
+    const phonePatterns = [
+      /\+?62\d{9,}/,     // +62 followed by 9+ digits
+      /08\d{9,}/,        // 08 followed by 9+ digits  
+      /628\d{9,}/,       // 628 followed by 9+ digits
+      /\d{10,}/          // 10+ consecutive digits
+    ];
+    
+    // Also check if recent messages are suspiciously short (1-3 chars each with numbers)
+    const shortNumberMessages = senderMessages.filter(m => 
+      m.message.length <= 3 && /\d/.test(m.message)
+    );
+    
+    if (shortNumberMessages.length >= 5) {
+      return true; // Likely splitting number
+    }
+    
+    return phonePatterns.some(pattern => pattern.test(concatenated));
+  };
+
+  // Detect phone numbers split across multiple consecutive messages (spam evasion)
+  const detectSplitPhoneNumber = (recentMessages: Message[]): boolean => {
+    // Get last 5-10 messages from same sender
+    const lastMessages = recentMessages.slice(-10);
+    
+    // Concatenate text from same sender
+    const concatenated = lastMessages
+      .map(m => m.message)
+      .join('')
+      .replace(/\s/g, ''); // Remove spaces
+    
+    // Check if concatenated text forms a phone number
+    const phonePatterns = [
+      /\+?62\d{9,}/,     // +62 followed by 9+ digits
+      /08\d{9,}/,        // 08 followed by 9+ digits  
+      /628\d{9,}/,       // 628 followed by 9+ digits
+      /\d{10,}/          // 10+ consecutive digits
+    ];
+    
+    return phonePatterns.some(pattern => pattern.test(concatenated));
+  };
+
   // Auto-remove phone numbers from text
   const removePhoneNumbers = (text: string): string => {
     let cleaned = text;
@@ -238,56 +295,78 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !isPremium) return;
     
+    const senderId = String(therapist.$id || therapist.id);
+    
     // Check for phone numbers
     const hasPhoneNumber = detectPhoneNumber(newMessage.trim());
     
-    if (hasPhoneNumber) {
+    // Check for split phone numbers across recent messages
+    const hasSplitNumber = detectSplitPhoneNumber(messages, senderId);
+    
+    if (hasPhoneNumber || hasSplitNumber) {
       // Auto-remove phone numbers
       const cleanedMessage = removePhoneNumbers(newMessage.trim());
       
       // Show warning
       setPhoneNumberWarning(true);
-      setTimeout(() => setPhoneNumberWarning(false), 5000);
+      setTimeout(() => setPhoneNumberWarning(false), 8000);
       
       // Report to admin
       try {
+        const violationId = 'violation-' + Date.now();
         await flagMessage(
-          'violation-' + Date.now(),
-          newMessage.trim(),
+          violationId,
+          hasSplitNumber 
+            ? 'Split number pattern: ' + messages.slice(-5).map(m => m.message).join(' | ') + ' | ' + newMessage.trim()
+            : newMessage.trim(),
           cleanedMessage,
-          String(therapist.$id || therapist.id),
+          senderId,
           'admin',
-          String(therapist.$id || therapist.id),
-          'Phone number sharing attempt',
+          senderId,
+          hasSplitNumber 
+            ? 'Split phone number pattern detected across multiple messages' 
+            : 'Phone number sharing attempt',
           100,
-          ['phone_number'],
+          hasSplitNumber ? ['phone_number', 'spam_evasion', 'split_pattern'] : ['phone_number'],
           'high'
         );
+        
+        // Add to flagged messages to show violation warning
+        setFlaggedMessageIds(prev => new Set(prev).add(violationId));
       } catch (error) {
         console.error('Failed to report violation:', error);
       }
       
       // Send warning message to chat
       const conversationId = messagingService.generateConversationId(
-        { id: String(therapist.$id || therapist.id), role: 'therapist' },
+        { id: senderId, role: 'therapist' },
         { id: 'admin', role: 'admin' }
       );
+      
+      const warningText = hasSplitNumber
+        ? '⚠️ CRITICAL VIOLATION: Split phone number pattern detected across your recent messages. This is an attempt to evade our security system. Both accounts will be deactivated immediately and reported. All contact exchange must occur through IndastreetMassage platform only. - Team Indastreet'
+        : '⚠️ WARNING: Sharing contact numbers (phone/WhatsApp) is strictly prohibited. Both accounts will be deactivated until further notice if numbers are shared. All bookings must be done through the IndastreetMassage platform. - Team Indastreet';
       
       await messagingService.sendMessage({
         conversationId,
         senderId: 'system',
         senderType: 'system',
         senderName: 'Team Indastreet',
-        receiverId: String(therapist.$id || therapist.id),
+        receiverId: senderId,
         receiverType: 'therapist',
         receiverName: therapist.name || 'Therapist',
-        content: '⚠️ WARNING: Sharing contact numbers (phone/WhatsApp) is strictly prohibited. Both accounts will be deactivated until further notice if numbers are shared. All bookings must be done through the IndastreetMassage platform. - Team Indastreet',
+        content: warningText,
       });
       
       // Clear input and refresh
       setNewMessage('');
       await fetchMessages();
       setSending(false);
+      
+      if (hasSplitNumber) {
+        alert('⚠️ SECURITY ALERT\\n\\nSuspicious pattern detected! Your recent messages appear to contain prohibited contact information split across multiple lines.\\n\\nThis behavior violates our Terms of Service and is considered spam evasion. Your account has been flagged for immediate review.');
+      }
+      
       return;
     }
     
@@ -869,7 +948,40 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                                     : 'bg-white text-gray-800 border border-gray-200'
                                 }`}
                               >
-                                {msg.discountBanner ? (
+                                {/* Show violation warning if flagged */}
+                                {flaggedMessageIds.has(msg.$id) ? (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-red-600 font-semibold">
+                                      <AlertTriangle className="w-5 h-5" />
+                                      <span>Community Guidelines Violation</span>
+                                    </div>
+                                    <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded">
+                                      <p className="text-sm text-gray-800 font-medium mb-2">
+                                        ⚠️ This message has been flagged for review. We believe it violates our Terms and Conditions.
+                                      </p>
+                                      <p className="text-xs text-gray-600 leading-relaxed">
+                                        <strong>Prohibited behaviors include:</strong><br />
+                                        • Sharing contact information (WhatsApp, phone numbers, email)<br />
+                                        • Attempting to bypass platform by splitting numbers across messages<br />
+                                        • Harassment, spam, or inappropriate content<br />
+                                        • Scam attempts or fraudulent activity
+                                      </p>
+                                      <div className="mt-2 pt-2 border-t border-red-200">
+                                        <p className="text-xs text-red-700 font-semibold">
+                                          Both accounts may be subject to suspension or permanent deactivation.
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center justify-between text-xs">
+                                      <div className="flex items-center gap-2 text-gray-600">
+                                        <span className="font-bold">Team Indastreet</span>
+                                        <span>•</span>
+                                        <span className="text-orange-600 font-semibold">Under Review</span>
+                                      </div>
+                                      <span className="text-gray-500">{formatTime(msg.timestamp)}</span>
+                                    </div>
+                                  </div>
+                                ) : msg.discountBanner ? (
                                   <div>
                                     <img 
                                       src={msg.discountBanner} 
