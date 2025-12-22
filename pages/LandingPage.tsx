@@ -109,10 +109,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     };
 
     return (
-        <div className="relative min-h-screen w-full flex overflow-hidden">
+        <div className="relative min-h-screen w-full flex overflow-hidden bg-gray-900">
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
-                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-in-out"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
@@ -121,7 +121,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 }}
             />
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
-            <div className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen">
+            <div 
+                className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen transition-opacity duration-700 ease-in-out"
+                style={{ opacity: imageLoaded ? 1 : 0 }}
+            >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>

@@ -5,6 +5,7 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { translations } from '../../translations';
 
 type Step = 'plan' | 'account';
+type Mode = 'signup' | 'signin';
 
 interface FormData {
     planType: PlanType | null;
@@ -32,6 +33,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                          null;
 
     const [currentStep, setCurrentStep] = useState<Step>(initialPlan ? 'account' : 'plan');
+    const [mode, setMode] = useState<Mode>('signup');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -99,6 +101,49 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
     const handlePlanSelect = (plan: PlanType) => {
         setFormData(prev => ({ ...prev, planType: plan }));
         setCurrentStep('account');
+    };
+
+    const handleSignin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        // Validation for signin
+        if (!formData.email.trim() || !formData.email.includes('@')) {
+            setError('Please enter a valid email');
+            return;
+        }
+        if (!formData.password) {
+            setError('Please enter your password');
+            return;
+        }
+
+        try {
+            setLoading(true);
+
+            // Import auth service dynamically
+            const { therapistAuth } = await import('../../lib/auth');
+            
+            // Attempt sign in
+            const response = await therapistAuth.signIn(formData.email, formData.password);
+            
+            if (!response.success) {
+                setError(response.error || 'Sign in failed');
+                return;
+            }
+
+            // Redirect to dashboard based on portal type
+            const isProduction = !window.location.origin.includes('localhost');
+            const dashboardUrl = isProduction ? window.location.origin : 'http://localhost:3003';
+            
+            console.log('✅ Signed in successfully! Redirecting to dashboard...');
+            window.location.href = dashboardUrl;
+
+        } catch (err: any) {
+            console.error('Sign in error:', err);
+            setError(err.message || 'An error occurred during sign in');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSignup = async (e: React.FormEvent) => {
@@ -185,7 +230,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                 'facial_place': window.location.origin,
                 'hotel': window.location.origin
             } : {
-                'massage_therapist': 'http://localhost:3005', // Therapist Dashboard
+                'massage_therapist': 'http://localhost:3003', // Therapist Dashboard
                 'massage_place': 'http://localhost:3002',      // Place Dashboard
                 'facial_place': 'http://localhost:3006',       // Facial Dashboard
                 'hotel': 'http://localhost:3007'               // Hotel Dashboard (future)
@@ -351,7 +396,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                         </div>
 
                         <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
-                            <form onSubmit={handleSignup} className="space-y-6">
+                            <form onSubmit={mode === 'signup' ? handleSignup : handleSignin} className="space-y-6">
                                 {/* Account Type */}
                                 <div>
                                     <label className="block text-sm font-medium text-black mb-4">
@@ -386,20 +431,22 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                                     </div>
                                 </div>
 
-                                {/* Name */}
-                                <div>
-                                    <label className="block text-sm font-medium text-black mb-2">
-                                        Full Name <span className="text-orange-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
-                                        placeholder="Enter your full name"
-                                        required
-                                    />
-                                </div>
+                                {/* Name - only show in signup mode */}
+                                {mode === 'signup' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-black mb-2">
+                                            Full Name <span className="text-orange-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                                            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
+                                            placeholder="Enter your full name"
+                                            required
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Email */}
                                 <div>
@@ -441,39 +488,41 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                                     <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
                                 </div>
 
-                                {/* Terms */}
-                                <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
-                                    <input
-                                        type="checkbox"
-                                        id="terms"
-                                        checked={formData.termsAccepted}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
-                                        className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
-                                        required
-                                    />
-                                    <label htmlFor="terms" className="text-sm text-gray-600">
-                                        I agree to the{' '}
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                // Store current plan in localStorage for terms page
-                                                localStorage.setItem('pendingTermsPlan', formData.planType || 'pro');
-                                                onNavigate?.('packageTerms');
-                                            }}
-                                            className="text-orange-500 hover:text-orange-600 underline bg-transparent border-none p-0 cursor-pointer"
-                                        >
-                                            Terms and Conditions
-                                        </button>{' '}
-                                        and{' '}
-                                        <button
-                                            type="button"
-                                            onClick={() => onNavigate?.('privacy')}
-                                            className="text-orange-500 hover:text-orange-600 underline bg-transparent border-none p-0 cursor-pointer"
-                                        >
-                                            Privacy Policy
-                                        </button>
-                                    </label>
-                                </div>
+                                {/* Terms - only show in signup mode */}
+                                {mode === 'signup' && (
+                                    <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                        <input
+                                            type="checkbox"
+                                            id="terms"
+                                            checked={formData.termsAccepted}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
+                                            className="mt-1 w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500 focus:ring-2"
+                                            required
+                                        />
+                                        <label htmlFor="terms" className="text-sm text-gray-600">
+                                            I agree to the{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    // Store current plan in localStorage for terms page
+                                                    localStorage.setItem('pendingTermsPlan', formData.planType || 'pro');
+                                                    onNavigate?.('packageTerms');
+                                                }}
+                                                className="text-orange-500 hover:text-orange-600 underline bg-transparent border-none p-0 cursor-pointer"
+                                            >
+                                                Terms and Conditions
+                                            </button>{' '}
+                                            and{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => onNavigate?.('privacy')}
+                                                className="text-orange-500 hover:text-orange-600 underline bg-transparent border-none p-0 cursor-pointer"
+                                            >
+                                                Privacy Policy
+                                            </button>
+                                        </label>
+                                    </div>
+                                )}
 
                                 {/* Submit Button */}
                                 <button
@@ -481,18 +530,33 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                                     disabled={loading}
                                     className="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-lg font-medium text-lg transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {loading ? 'Creating Account...' : 'Create Account & Continue'}
+                                    {loading ? (mode === 'signup' ? 'Creating Account...' : 'Signing in...') : (mode === 'signup' ? 'Create Account & Continue' : 'Sign In')}
                                 </button>
 
                                 <p className="text-center text-sm text-gray-500">
-                                    Already have an account?{' '}
-                                    <button
-                                        type="button"
-                                        onClick={() => onNavigate?.('providerAuth')}
-                                        className="text-orange-500 hover:text-orange-600 underline font-medium bg-transparent border-none p-0 cursor-pointer"
-                                    >
-                                        Sign in
-                                    </button>
+                                    {mode === 'signup' ? (
+                                        <>
+                                            Already have an account?{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setMode('signin')}
+                                                className="text-orange-500 hover:text-orange-600 underline font-medium bg-transparent border-none p-0 cursor-pointer"
+                                            >
+                                                Sign in
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            Don't have an account?{' '}
+                                            <button
+                                                type="button"
+                                                onClick={() => setMode('signup')}
+                                                className="text-orange-500 hover:text-orange-600 underline font-medium bg-transparent border-none p-0 cursor-pointer"
+                                            >
+                                                Create Account
+                                            </button>
+                                        </>
+                                    )}
                                 </p>
                             </form>
                         </div>
