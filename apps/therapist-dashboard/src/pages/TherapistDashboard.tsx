@@ -10,7 +10,8 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
-import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -1238,6 +1239,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           </div>
         </div>
       )}
+
+      {/* Floating Chat Button */}
+      {onNavigate && <FloatingChatButton onNavigate={onNavigate} therapistId={therapist?.$id || therapist?.id} />}
     </div>
   );
 };

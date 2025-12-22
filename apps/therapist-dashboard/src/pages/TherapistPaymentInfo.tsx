@@ -5,6 +5,7 @@ import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import PaymentCard from '../../../../components/PaymentCard';
 import type { Therapist } from '../../../../types';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface TherapistPaymentInfoProps {
   therapist: Therapist | null;
@@ -402,6 +403,10 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
           </div>
         </div>
       </main>
+      <FloatingChatButton 
+        onNavigate={() => window.history.back()} 
+        therapistId={therapist?.$id} 
+      />
     </div>
   );
 };

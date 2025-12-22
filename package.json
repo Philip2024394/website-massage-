@@ -58,21 +58,21 @@
     "size:check": "npm run monitor:files",
     "size:report": "npm run monitor:files > file-size-report.txt",
     "precheck": "npm run monitor:files",
-    
     "migrate:services": "node scripts/appwrite-migration.cjs report",
     "migrate:extract": "node scripts/appwrite-migration.cjs extract",
     "migrate:all": "node scripts/appwrite-migration.cjs extract-all",
-    
     "refactor:check": "npm run monitor:files && npm run lint",
     "refactor:plan": "echo 'See docs/COMPONENT_REFACTORING_GUIDE.md for guidelines'",
     "refactor:verify": "npm run type-check && npm run test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/react-calendar": "^3.9.0",
     "appwrite": "^21.4.0",
     "axios": "^1.6.0",
     "clsx": "^2.0.0",
+    "crypto-js": "^4.2.0",
     "date-fns": "^3.0.0",
     "express": "^5.1.0",
     "framer-motion": "^11.18.2",

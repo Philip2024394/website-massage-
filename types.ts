@@ -344,6 +344,10 @@ export interface Therapist {
     operationalHours?: string; // JSON string of daily hours { monday: { start: '09:00', end: '17:00', enabled: true }, ... }
     workingDays?: string; // JSON string of working days array ['monday', 'tuesday', ...]
     manualBookings?: string; // JSON string of manual bookings (non-system bookings)
+    
+    // Online hours tracking (resets monthly)
+    onlineHoursThisMonth?: number; // Total hours therapist was available/busy this month
+    lastOnlineHoursUpdate?: string; // ISO timestamp of last online hours update
 }
 
 // Commission payment record

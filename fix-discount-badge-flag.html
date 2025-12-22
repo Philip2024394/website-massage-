@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Discount Badge - Set isDiscountActive Flag</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        input { padding: 8px; margin: 5px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Discount Badge - Set isDiscountActive Flag</h1>
+    
+    <div class="info">
+        <p><strong>This tool will:</strong></p>
+        <ul>
+            <li>Find your therapist profile by email</li>
+            <li>Check if discount percentage and end time are set</li>
+            <li>Set the <code>isDiscountActive</code> flag to <code>true</code></li>
+            <li>This will make the discount badge appear on your profile card</li>
+        </ul>
+    </div>
+    
+    <div>
+        <h3>Step 1: Sign In</h3>
+        <input type="email" id="email" placeholder="Your email" value="indastreet1@gmail.com">
+        <input type="password" id="password" placeholder="Your password">
+        <button onclick="signIn()">Sign In</button>
+    </div>
+    
+    <div id="therapistInfo" style="display:none;">
+        <h3>Step 2: Fix Discount Badge</h3>
+        <button onclick="fixDiscountBadge()">🔧 Set isDiscountActive = true</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        const client = new Appwrite.Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const account = new Appwrite.Account(client);
+        const databases = new Appwrite.Databases(client);
+        
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        const THERAPISTS_COLLECTION = 'therapists_collection_id';
+        
+        let currentUser = null;
+        let therapistDoc = null;
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const p = document.createElement('p');
+            p.className = type;
+            p.innerHTML = message;
+            output.appendChild(p);
+            console.log(message);
+        }
+        
+        async function signIn() {
+            try {
+                const email = document.getElementById('email').value.trim().toLowerCase();
+                const password = document.getElementById('password').value;
+                
+                if (!email || !password) {
+                    log('❌ Please enter email and password', 'error');
+                    return;
+                }
+                
+                log('🔄 Signing in...');
+                
+                // Clear existing session
+                try {
+                    await account.deleteSession('current');
+                } catch {}
+                
+                // Create new session
+                await account.createEmailPasswordSession(email, password);
+                currentUser = await account.get();
+                
+                log(`✅ Signed in as: ${currentUser.email}`, 'success');
+                
+                // Find therapist profile
+                log('🔍 Looking for therapist profile...');
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION,
+                    [Appwrite.Query.equal('email', currentUser.email)]
+                );
+                
+                if (response.documents.length === 0) {
+                    log('❌ No therapist profile found for this email', 'error');
+                    return;
+                }
+                
+                therapistDoc = response.documents[0];
+                log(`✅ Found therapist profile: ${therapistDoc.name}`, 'success');
+                log(`<div class="info">
+                    <strong>Current Discount Settings:</strong><br>
+                    • Discount Percentage: ${therapistDoc.discountPercentage || 0}%<br>
+                    • Discount End Time: ${therapistDoc.discountEndTime || 'NOT SET'}<br>
+                    • isDiscountActive: <strong>${therapistDoc.isDiscountActive}</strong><br>
+                    ${therapistDoc.discountEndTime ? `• Expires: ${new Date(therapistDoc.discountEndTime).toLocaleString()}` : ''}
+                </div>`);
+                
+                // Check if discount is configured
+                if (!therapistDoc.discountPercentage || therapistDoc.discountPercentage === 0) {
+                    log('⚠️ No discount percentage set. Please set a discount in your dashboard first.', 'error');
+                    return;
+                }
+                
+                if (!therapistDoc.discountEndTime) {
+                    log('⚠️ No discount end time set. Please activate a discount in your dashboard first.', 'error');
+                    return;
+                }
+                
+                // Check if expired
+                const endTime = new Date(therapistDoc.discountEndTime);
+                const now = new Date();
+                if (endTime < now) {
+                    log(`⚠️ Discount has expired (ended ${Math.floor((now - endTime) / 60000)} minutes ago). Please activate a new discount.`, 'error');
+                    return;
+                }
+                
+                const hoursLeft = Math.floor((endTime - now) / 3600000);
+                const minutesLeft = Math.floor(((endTime - now) % 3600000) / 60000);
+                log(`✅ Discount is valid for ${hoursLeft}h ${minutesLeft}m`, 'success');
+                
+                // Show fix button
+                document.getElementById('therapistInfo').style.display = 'block';
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function fixDiscountBadge() {
+            try {
+                if (!therapistDoc) {
+                    log('❌ No therapist profile loaded. Please sign in first.', 'error');
+                    return;
+                }
+                
+                log('🔄 Setting isDiscountActive flag to true...');
+                
+                const updated = await databases.updateDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION,
+                    therapistDoc.$id,
+                    {
+                        isDiscountActive: true
+                    }
+                );
+                
+                log(`✅ SUCCESS! isDiscountActive flag set to: ${updated.isDiscountActive}`, 'success');
+                log(`<div class="info"><strong>🎉 Badge should now appear on your profile card!</strong><br>
+                    The discount badge will show:<br>
+                    • ${updated.discountPercentage}% OFF<br>
+                    • Countdown timer showing time remaining<br>
+                    <br>
+                    Visit the main site and search for "${updated.name}" to see your badge!
+                </div>`);
+                
+                // Refresh therapist data
+                therapistDoc = updated;
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

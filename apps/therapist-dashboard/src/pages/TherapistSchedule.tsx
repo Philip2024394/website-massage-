@@ -3,6 +3,7 @@ import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, A
 import { Therapist, Booking } from '../../../../types';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface TherapistScheduleProps {
   therapist: Therapist | null;
@@ -581,6 +582,10 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist }) => {
           </div>
         </div>
       )}
+      <FloatingChatButton 
+        onNavigate={() => {}} 
+        therapistId={therapist?.$id} 
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
 import { analyticsService } from '../../../../lib/services/analyticsService';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface Payment {
   $id: string;
@@ -402,6 +403,9 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           )}
         </div>
       </div>
+
+      {/* Floating Chat Button */}
+      {onBack && <FloatingChatButton onNavigate={(page) => window.history.back()} therapistId={therapist.$id} />}
       </main>
     </div>
   );

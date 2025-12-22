@@ -1,13 +1,14 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { FileText, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface TherapistLegalProps {
   therapist: any;
   onBack: () => void;
 }
 
-const TherapistLegal: React.FC<TherapistLegalProps> = ({ onBack }) => {
+const TherapistLegal: React.FC<TherapistLegalProps> = ({ therapist, onBack }) => {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['intro']));
 
@@ -528,6 +529,10 @@ Last Updated: December 11, 2024`
           </div>
         </div>
       </div>
+      <FloatingChatButton 
+        onNavigate={onBack} 
+        therapistId={therapist?.$id || 'default'} 
+      />
     </div>
   );
 };

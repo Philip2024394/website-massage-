@@ -3,9 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
     MessageSquare, Send, Search, Trash2, Archive, 
     ChevronDown, ChevronRight, User, Building, Sparkles,
-    Clock, X, CheckCheck, Paperclip, Image as ImageIcon, FileText
+    Clock, X, CheckCheck, Paperclip, Image as ImageIcon, FileText, Flag, AlertTriangle, Shield
 } from 'lucide-react';
 import { therapistService, placesService, messagingService } from '@shared/appwriteService';
+import { moderateContent, checkRateLimit } from '@/lib/utils/contentModeration';
+import { encryptMessage, decryptMessage } from '@/lib/utils/encryption';
+import { flagMessage, getFlaggedMessages, type FlaggedMessage } from '@/lib/appwrite/services/flaggedMessages.service';
 
 interface Member {
     $id: string;
@@ -42,6 +45,10 @@ interface Message {
     readAt?: Date;
     senderName: string;
     deliveredAt?: Date;
+    isFlagged?: boolean;
+    flaggedAt?: Date;
+    flagReason?: string;
+    moderationScore?: number;
 }
 
 const AdminChatCenter: React.FC = () => {
@@ -62,12 +69,18 @@ const AdminChatCenter: React.FC = () => {
     const [showDeleted, setShowDeleted] = useState(false);
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [flaggedMessages, setFlaggedMessages] = useState<FlaggedMessage[]>([]);
+    const [showFlaggedPanel, setShowFlaggedPanel] = useState(false);
+    const [flagModalOpen, setFlagModalOpen] = useState(false);
+    const [selectedMessageToFlag, setSelectedMessageToFlag] = useState<Message | null>(null);
+    const [flagReason, setFlagReason] = useState('');
 
-    const CONVERSATION_EXPIRY_WEEKS = 5;
+    const CONVERSATION_EXPIRY_DAYS = 30; // Changed from 5 weeks to exactly 30 days for compliance
 
     useEffect(() => {
         loadMembers();
         loadConversations();
+        loadFlaggedMessages();
     }, []);
 
     useEffect(() => {
@@ -189,6 +202,29 @@ const AdminChatCenter: React.FC = () => {
         if (!newMessage.trim() || !selectedMember) return;
 
         try {
+            // Check rate limit
+            if (!checkRateLimit('admin', 20, 60000)) {
+                alert('Sending too many messages. Please wait a moment.');
+                return;
+            }
+
+            // Moderate content
+            const moderation = moderateContent(newMessage.trim());
+            if (moderation.score >= 70) {
+                alert('Message contains inappropriate content and cannot be sent.');
+                return;
+            }
+
+            if (moderation.score >= 40) {
+                const confirmed = confirm(
+                    `Message may contain inappropriate content (${moderation.violations.join(', ')}). Send anyway?`
+                );
+                if (!confirmed) return;
+            }
+
+            // Encrypt message
+            const encryptedContent = encryptMessage(newMessage.trim());
+
             // Determine member role
             const memberRole = selectedMember.category === 'therapist' ? 'therapist' : 'place';
             
@@ -207,10 +243,10 @@ const AdminChatCenter: React.FC = () => {
                 receiverId: selectedMember.$id,
                 receiverType: memberRole,
                 receiverName: selectedMember.name,
-                content: newMessage.trim(),
+                content: encryptedContent, // Store encrypted
             });
 
-            // Add to local messages immediately
+            // Add to local messages immediately (unencrypted for display)
             const message: Message = {
                 $id: savedMsg.$id || Date.now().toString(),
                 senderId: 'admin',
@@ -225,10 +261,64 @@ const AdminChatCenter: React.FC = () => {
             setMessages(prev => [...prev, message]);
             setNewMessage('');
             
-            console.log('✅ Admin message sent to database');
+            console.log('✅ Admin message sent to database (encrypted)');
         } catch (error) {
             console.error('❌ Error sending message:', error);
             alert('Failed to send message. Please try again.');
+        }
+    };
+
+    const loadFlaggedMessages = async () => {
+        try {
+            const flagged = await getFlaggedMessages('pending');
+            setFlaggedMessages(flagged);
+        } catch (error) {
+            console.error('Error loading flagged messages:', error);
+        }
+    };
+
+    const handleFlagMessage = async (message: Message) => {
+        setSelectedMessageToFlag(message);
+        setFlagModalOpen(true);
+    };
+
+    const submitFlagMessage = async () => {
+        if (!selectedMessageToFlag || !flagReason.trim()) return;
+
+        try {
+            const moderation = moderateContent(selectedMessageToFlag.content);
+            
+            await flagMessage(
+                selectedMessageToFlag.$id,
+                selectedMessageToFlag.content,
+                selectedMessageToFlag.senderId,
+                selectedMessageToFlag.receiverId,
+                'admin', // Admin ID
+                flagReason.trim(),
+                moderation.score,
+                moderation.violations,
+                moderation.riskLevel
+            );
+
+            // Update local message state
+            setMessages(prev => prev.map(msg => 
+                msg.$id === selectedMessageToFlag.$id 
+                    ? { ...msg, isFlagged: true, flaggedAt: new Date(), flagReason: flagReason.trim() }
+                    : msg
+            ));
+
+            // Reload flagged messages
+            await loadFlaggedMessages();
+
+            // Close modal
+            setFlagModalOpen(false);
+            setSelectedMessageToFlag(null);
+            setFlagReason('');
+
+            alert('Message flagged successfully');
+        } catch (error) {
+            console.error('Error flagging message:', error);
+            alert('Failed to flag message');
         }
     };
 

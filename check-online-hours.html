@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Online Hours Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .therapist-card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .therapist-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .field-label { color: #666; }
+        .field-value { 
+            font-weight: bold;
+            color: #333;
+        }
+        .missing { color: #dc3545; }
+        .present { color: #28a745; }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕐 Online Hours Tracking - Diagnostic Tool</h1>
+        
+        <div class="info">
+            <strong>What this tool does:</strong>
+            <ul>
+                <li>Checks if therapists have online hours tracking fields</li>
+                <li>Shows current month's accumulated hours</li>
+                <li>Verifies lastOnlineHoursUpdate timestamps</li>
+                <li>Can initialize missing fields to 0</li>
+            </ul>
+        </div>
+
+        <button id="checkBtn" onclick="checkOnlineHours()">Check All Therapists</button>
+        <button id="initializeBtn" onclick="initializeFields()" style="background: #ff9800;">Initialize Missing Fields</button>
+        
+        <div id="output"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.1"></script>
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const dbId = '68f76ee1000e64ca8d05';
+        const collectionId = '68f77017000f45c5fd7c'; // therapists collection
+
+        let therapistsData = [];
+
+        async function checkOnlineHours() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<div class="info">Loading therapists...</div>';
+            
+            try {
+                const response = await databases.listDocuments(dbId, collectionId, [
+                    Query.limit(100)
+                ]);
+                
+                therapistsData = response.documents;
+                
+                let html = `<h2>Found ${therapistsData.length} Therapists</h2>`;
+                
+                let hasField = 0;
+                let missingField = 0;
+                let hasHours = 0;
+                let needsReset = 0;
+                
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                therapistsData.forEach(therapist => {
+                    const hasOnlineHours = therapist.onlineHoursThisMonth !== undefined && therapist.onlineHoursThisMonth !== null;
+                    const hasLastUpdate = therapist.lastOnlineHoursUpdate !== undefined && therapist.lastOnlineHoursUpdate !== null;
+                    const hours = hasOnlineHours ? therapist.onlineHoursThisMonth : 0;
+                    
+                    if (hasOnlineHours) hasField++;
+                    else missingField++;
+                    
+                    if (hours > 0) hasHours++;
+                    
+                    // Check if last update was in a previous month (needs reset)
+                    let needsMonthReset = false;
+                    if (hasLastUpdate) {
+                        const lastUpdate = new Date(therapist.lastOnlineHoursUpdate);
+                        if (lastUpdate.getMonth() !== currentMonth || lastUpdate.getFullYear() !== currentYear) {
+                            needsMonthReset = true;
+                            needsReset++;
+                        }
+                    }
+                    
+                    html += `
+                        <div class="therapist-card">
+                            <div class="therapist-name">
+                                ${therapist.name || 'Unnamed'}
+                                ${therapist.status ? `<span style="font-size:14px; color: ${therapist.status === 'Available' ? 'green' : therapist.status === 'Busy' ? 'orange' : 'gray'}">● ${therapist.status}</span>` : ''}
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Therapist ID:</span>
+                                <span class="field-value">${therapist.$id}</span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Email:</span>
+                                <span class="field-value">${therapist.email || 'N/A'}</span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Online Hours This Month:</span>
+                                <span class="field-value ${hasOnlineHours ? 'present' : 'missing'}">
+                                    ${hasOnlineHours ? `${hours.toFixed(1)}h` : '❌ Field Missing'}
+                                </span>
+                            </div>
+                            <div class="field-row">
+                                <span class="field-label">Last Update:</span>
+                                <span class="field-value ${hasLastUpdate ? 'present' : 'missing'}">
+                                    ${hasLastUpdate ? new Date(therapist.lastOnlineHoursUpdate).toLocaleString() : '❌ Never Updated'}
+                                </span>
+                            </div>
+                            ${needsMonthReset ? '<div class="warning" style="margin-top:10px; padding:8px; font-size:13px;">⚠️ Last update was in a previous month - should be reset to 0</div>' : ''}
+                        </div>
+                    `;
+                });
+                
+                html = `
+                    <div class="status ${missingField > 0 ? 'warning' : 'success'}">
+                        <strong>Summary:</strong><br>
+                        ✅ ${hasField} therapists have tracking fields<br>
+                        ❌ ${missingField} therapists missing fields<br>
+                        📊 ${hasHours} therapists with hours this month<br>
+                        ${needsReset > 0 ? `⚠️ ${needsReset} therapists need month reset` : ''}
+                    </div>
+                ` + html;
+                
+                output.innerHTML = html;
+                
+            } catch (error) {
+                output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+
+        async function initializeFields() {
+            if (therapistsData.length === 0) {
+                alert('Please check therapists first!');
+                return;
+            }
+            
+            const output = document.getElementById('output');
+            const btn = document.getElementById('initializeBtn');
+            btn.disabled = true;
+            btn.textContent = 'Initializing...';
+            
+            let updated = 0;
+            let errors = 0;
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            for (const therapist of therapistsData) {
+                try {
+                    const hasOnlineHours = therapist.onlineHoursThisMonth !== undefined && therapist.onlineHoursThisMonth !== null;
+                    const hasLastUpdate = therapist.lastOnlineHoursUpdate !== undefined && therapist.lastOnlineHoursUpdate !== null;
+                    
+                    let needsUpdate = false;
+                    const updateData = {};
+                    
+                    // Initialize missing field
+                    if (!hasOnlineHours) {
+                        updateData.onlineHoursThisMonth = 0;
+                        needsUpdate = true;
+                    } else {
+                        // Check if needs month reset
+                        if (hasLastUpdate) {
+                            const lastUpdate = new Date(therapist.lastOnlineHoursUpdate);
+                            if (lastUpdate.getMonth() !== currentMonth || lastUpdate.getFullYear() !== currentYear) {
+                                updateData.onlineHoursThisMonth = 0;
+                                needsUpdate = true;
+                            }
+                        }
+                    }
+                    
+                    if (!hasLastUpdate || needsUpdate) {
+                        updateData.lastOnlineHoursUpdate = now.toISOString();
+                        needsUpdate = true;
+                    }
+                    
+                    if (needsUpdate) {
+                        await databases.updateDocument(dbId, collectionId, therapist.$id, updateData);
+                        updated++;
+                        console.log(`✅ Updated ${therapist.name}: ${JSON.stringify(updateData)}`);
+                    }
+                    
+                } catch (error) {
+                    errors++;
+                    console.error(`❌ Failed to update ${therapist.name}:`, error);
+                }
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Initialize Missing Fields';
+            
+            output.innerHTML = `
+                <div class="status ${errors > 0 ? 'warning' : 'success'}">
+                    <strong>Initialization Complete!</strong><br>
+                    ✅ Updated ${updated} therapists<br>
+                    ${errors > 0 ? `❌ ${errors} errors` : ''}
+                </div>
+            ` + output.innerHTML;
+            
+            // Refresh the list
+            setTimeout(() => checkOnlineHours(), 1000);
+        }
+    </script>
+</body>
+</html>

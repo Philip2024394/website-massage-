@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, User, Phone, Crown, Lock, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface Booking {
   $id: string;
@@ -503,6 +504,10 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
           </>
         )}
       </div>
+      <FloatingChatButton 
+        onNavigate={() => {}} 
+        therapistId={therapist?.$id || 'default'} 
+      />
     </div>
   );
 };

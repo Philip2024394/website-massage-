@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../components/ChatWindow';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface Booking {
   $id: string;
@@ -557,6 +558,9 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           }}
         />
       )}
+
+      {/* Floating Chat Button */}
+      {onNavigate && <FloatingChatButton onNavigate={onNavigate} therapistId={therapist.$id} />}
       </main>
     </div>
   );

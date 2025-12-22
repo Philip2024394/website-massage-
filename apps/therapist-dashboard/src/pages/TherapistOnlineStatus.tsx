@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge } from "lucide-react";
 import { therapistService } from "../../../../lib/appwriteService";
+import FloatingChatButton from '../components/FloatingChatButton';
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
 
@@ -59,9 +60,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     if (therapist?.discountDuration) setDiscountDuration(therapist.discountDuration);
     if (therapist?.isDiscountActive !== undefined) setIsDiscountActive(therapist.isDiscountActive);
     
-    // Load online hours this month
-    if (therapist?.onlineHoursThisMonth !== undefined) {
+    // Load online hours this month (default to 0 if null or undefined)
+    if (therapist?.onlineHoursThisMonth !== undefined && therapist?.onlineHoursThisMonth !== null) {
       setOnlineHoursThisMonth(therapist.onlineHoursThisMonth);
+    } else {
+      setOnlineHoursThisMonth(0);
     }
     
     // Load current status from therapist data (prioritize status field)
@@ -436,8 +439,25 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   };
 
   const handleSaveDiscount = async () => {
+    console.log('🔍 Activate Discount clicked:', {
+      isPremium,
+      discountPercentage,
+      discountDuration,
+      therapistId: therapist.$id
+    });
+    
     if (!isPremium) {
       alert('⭐ Discount badges are a Premium feature. Upgrade to Premium to unlock!');
+      return;
+    }
+    
+    if (discountPercentage === 0) {
+      alert('⚠️ Please select a discount percentage (5%, 10%, 15%, or 20%)');
+      return;
+    }
+    
+    if (discountDuration === 0) {
+      alert('⚠️ Please select a duration (1h, 3h, 6h, or 12h)');
       return;
     }
     
@@ -448,6 +468,13 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         ? new Date(Date.now() + discountDuration * 60 * 60 * 1000).toISOString()
         : null;
       
+      console.log('📤 Updating therapist with discount:', {
+        discountPercentage,
+        discountDuration,
+        discountEndTime,
+        isDiscountActive: true
+      });
+      
       await therapistService.update(therapist.$id, {
         discountPercentage,
         discountDuration,
@@ -457,12 +484,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       setIsDiscountActive(true);
       devLog('✅ Discount badge activated');
-      alert(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`);
+      console.log('✅ Discount saved successfully!');
+      alert(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!\n\nThe badge will now appear on your profile card on the main site.`);
       
       if (onRefresh) await onRefresh();
     } catch (error) {
       console.error('❌ Failed to save discount:', error);
-      alert('Failed to save discount. Please try again.');
+      console.error('Error details:', error.message, error.code);
+      alert(`❌ Failed to save discount: ${error.message}\n\nPlease check the console for details.`);
     }
   };
 
@@ -939,6 +968,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           </button>
         </div>
       </div>
+
+      {/* Floating Chat Button with Notifications */}
+      {onNavigate && <FloatingChatButton onNavigate={onNavigate} therapistId={therapist.$id} />}
     </div>
   );
 };

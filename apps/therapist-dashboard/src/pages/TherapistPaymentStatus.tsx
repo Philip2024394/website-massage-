@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw } from 'lucide-react';
 import { paymentConfirmationService } from '../../../../lib/appwriteService';
 import type { Therapist } from '../../../../types';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface TherapistPaymentStatusProps {
     therapist: Therapist;
@@ -295,6 +296,10 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                     </div>
                 )}
             </div>
+            <FloatingChatButton 
+                onNavigate={() => window.history.back()} 
+                therapistId={therapist.$id} 
+            />
         </div>
     );
 };

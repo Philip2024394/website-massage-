@@ -83,6 +83,9 @@ export const account = new Account(client);
 export const storage = new Storage(client);
 export const functions = new Functions(client);
 
+// Export database ID for convenience
+export const DATABASE_ID = APPWRITE_CONFIG.databaseId;
+
 // Rate-limited database instance (alias for databases)
 export const rateLimitedDb = databases;
 

@@ -3,6 +3,7 @@ import { Therapist } from '../../../../types';
 import { therapistMenusService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2 } from 'lucide-react';
+import FloatingChatButton from '../components/FloatingChatButton';
 
 interface MenuService {
   id: string;
@@ -444,6 +445,10 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
           </div>
         </div>
       </div>
+      <FloatingChatButton 
+        onNavigate={onClose || (() => {})} 
+        therapistId={therapist?.$id} 
+      />
     </main>
   );
 };
