@@ -1010,42 +1010,40 @@ ${locationInfo}${coordinatesInfo}
                 <p className="text-xs text-gray-600 text-left">
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
-                {therapist.membershipTier === 'premium' && (
-                    <button
-                        onClick={(e) => {
-                            console.log('🔴 BUTTON CLICKED - Starting...');
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('🍽️ Opening price list modal for:', therapist.name);
-                            console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
-                            console.log('🔍 Current URL:', window.location.href);
-                            console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
-                            try {
-                                setShowPriceListModal(true);
-                                console.log('✅ Modal state set to true');
-                            } catch (error) {
-                                console.error('❌ Error setting modal state:', error);
-                            }
-                        }}
-                        className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
-                    >
-                        <style>{`
-                            @keyframes flash-subtle {
-                                0%, 100% { opacity: 1; }
-                                50% { opacity: 0.6; }
-                            }
-                            .animate-flash-subtle {
-                                animation: flash-subtle 2s ease-in-out infinite;
-                            }
-                        `}</style>
-                        <img 
-                            src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
-                            alt="Menu"
-                            className="w-10 h-10 object-contain"
-                        />
-                        <span className="font-bold text-black">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
-                    </button>
-                )}
+                <button
+                    onClick={(e) => {
+                        console.log('🔴 BUTTON CLICKED - Starting...');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🍽️ Opening price list modal for:', therapist.name);
+                        console.log('🔍 Therapist ID:', therapist.$id || therapist.id);
+                        console.log('🔍 Current URL:', window.location.href);
+                        console.log('🔍 Session storage has_entered_app:', sessionStorage.getItem('has_entered_app'));
+                        try {
+                            setShowPriceListModal(true);
+                            console.log('✅ Modal state set to true');
+                        } catch (error) {
+                            console.error('❌ Error setting modal state:', error);
+                        }
+                    }}
+                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
+                >
+                    <style>{`
+                        @keyframes flash-subtle {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.6; }
+                        }
+                        .animate-flash-subtle {
+                            animation: flash-subtle 2s ease-in-out infinite;
+                        }
+                    `}</style>
+                    <img 
+                        src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
+                        alt="Menu"
+                        className="w-10 h-10 object-contain"
+                    />
+                    <span className="font-bold text-black">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
+                </button>
             </div>
 
             {/* Therapist Bio - Natural flow with proper margin */}
