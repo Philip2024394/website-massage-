@@ -13,7 +13,7 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite database
-    therapists: 'therapists_collection_id',
+    therapists: 'therapists_collection_id', // Updated to match actual collection name
     places: 'places_collection_id', 
     facial_places: 'facial_places_collection',
     users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
@@ -61,7 +61,7 @@ export const APPWRITE_CONFIG = {
     // Jobs
     employerJobPostings: 'Employer Job Postings',
     therapistJobListings: 'Therapist Job Listings',
-    therapistMenus: 'Therapist Menus',
+    therapistMenus: 'therapist_menus',
     
     // Other
     verifications: 'Verifications',

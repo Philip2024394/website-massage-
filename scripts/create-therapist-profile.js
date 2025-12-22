@@ -1,0 +1,120 @@
+import { Client, Databases, ID } from 'node-appwrite';
+
+const client = new Client()
+    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+    .setProject('68f23b11000d25eb3664');
+
+const databases = new Databases(client);
+const databaseId = '68f76ee1000e64ca8d05';
+const therapistCollectionId = '676703b40009b9dd33de';
+
+async function createTherapistProfile() {
+    console.log('🔧 Creating therapist profile for indastreet1@gmail.com...');
+    
+    try {
+        // Check if therapist already exists
+        const response = await databases.listDocuments(databaseId, therapistCollectionId);
+        const existing = response.documents.find(doc => doc.email === 'indastreet1@gmail.com');
+        
+        if (existing) {
+            console.log('✅ Therapist profile already exists!');
+            console.log('   ID:', existing.$id);
+            console.log('   Name:', existing.name);
+            return;
+        }
+        
+        console.log('📝 Creating new therapist profile...');
+        
+        // Create therapist document
+        const therapistData = {
+            email: 'indastreet1@gmail.com',
+            userId: '693cfadf000997d3cd66', // Appwrite user ID for indastreet1@gmail.com
+            name: 'IndaStreet Demo Therapist',
+            specialization: 'Traditional Balinese',
+            yearsOfExperience: 5,
+            isLicensed: true,
+            location: 'Denpasar, Bali',
+            hourlyRate: 150000,
+            
+            // Status and availability
+            status: 'Available',
+            availability: 'Available', 
+            isLive: true,
+            isActive: true,
+            isPremium: false,
+            
+            // Contact information
+            phoneNumber: '+6281234567890',
+            whatsappNumber: '+6281234567890',
+            
+            // Profile details
+            description: 'Professional massage therapist with 5 years experience in traditional Balinese massage techniques.',
+            profilePicture: 'https://via.placeholder.com/400x300?text=Therapist+Profile',
+            
+            // Location data
+            coordinates: JSON.stringify({ lat: -8.6705, lng: 115.2126 }),
+            city: 'Denpasar',
+            
+            // Services offered
+            massageTypes: JSON.stringify(['Traditional Balinese', 'Deep Tissue', 'Relaxation', 'Swedish']),
+            languages: JSON.stringify(['English', 'Indonesian']),
+            
+            // Pricing structure
+            pricing: JSON.stringify({
+                '60': { price: 150000, currency: 'IDR' },
+                '90': { price: 200000, currency: 'IDR' },
+                '120': { price: 250000, currency: 'IDR' }
+            }),
+            
+            // Analytics data
+            analytics: JSON.stringify({
+                impressions: 0,
+                views: 0,
+                profileViews: 0,
+                whatsapp_clicks: 0,
+                whatsappClicks: 0,
+                phone_clicks: 0,
+                directions_clicks: 0,
+                bookings: 25
+            }),
+            
+            // Timestamps
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        
+        const result = await databases.createDocument(
+            databaseId,
+            therapistCollectionId,
+            ID.unique(),
+            therapistData
+        );
+        
+        console.log('\n✅ SUCCESS! Therapist profile created:');
+        console.log('   Profile ID:', result.$id);
+        console.log('   Name:', result.name);
+        console.log('   Email:', result.email);
+        console.log('   Status:', result.status);
+        console.log('   Location:', result.location);
+        console.log('');
+        console.log('🎉 You can now sign in to the therapist dashboard!');
+        console.log('🔗 Try: http://localhost:3001/signin');
+        
+    } catch (error) {
+        console.error('❌ Error:', error.message);
+        console.log('');
+        if (error.code === 401) {
+            console.log('🔐 Authentication required. This script needs API key access.');
+            console.log('ℹ️  Alternative solution: Complete signup flow');
+        } else if (error.code === 404) {
+            console.log('🔍 Collection not found - check collection ID');
+        }
+        console.log('\n📋 RECOMMENDED SOLUTION:');
+        console.log('1. Go to: http://localhost:3001/signup');
+        console.log('2. Use a NEW email address (e.g., indastreet2@gmail.com)');
+        console.log('3. Complete the full signup process');
+        console.log('4. This will create both account AND therapist profile');
+    }
+}
+
+createTherapistProfile();

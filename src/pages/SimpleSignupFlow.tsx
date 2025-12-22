@@ -3,6 +3,14 @@ import { Check, ArrowLeft, Eye, EyeOff, Building2, User, Sparkles, Briefcase, Ho
 import { membershipSignupService, type PlanType, type PortalType } from '../../lib/services/membershipSignup.service';
 import { useLanguage } from '../../hooks/useLanguage';
 import { translations } from '../../translations';
+import { Client, Account } from 'appwrite';
+
+// Create Appwrite client and account directly
+const client = new Client()
+    .setEndpoint('https://syd.cloud.appwrite.io/v1')
+    .setProject('68f23b11000d25eb3664');
+
+const account = new Account(client);
 
 type Step = 'plan' | 'account';
 type Mode = 'signup' | 'signin';
@@ -119,28 +127,32 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
 
         try {
             setLoading(true);
-
-            // Import auth service dynamically
-            const { therapistAuth } = await import('../../lib/auth');
             
-            // Attempt sign in
-            const response = await therapistAuth.signIn(formData.email, formData.password);
+            const normalizedEmail = formData.email.toLowerCase().trim();
             
-            if (!response.success) {
-                setError(response.error || 'Sign in failed');
-                return;
+            // Clear any existing session
+            try {
+                await account.deleteSession('current');
+            } catch {
+                // No session to clear
             }
+            
+            // Create email session
+            await account.createEmailPasswordSession(normalizedEmail, formData.password);
+            
+            // Get user info
+            const user = await account.get();
+            console.log('✅ Signed in successfully:', user.$id);
 
-            // Redirect to dashboard based on portal type
+            // Redirect to dashboard
             const isProduction = !window.location.origin.includes('localhost');
             const dashboardUrl = isProduction ? window.location.origin : 'http://localhost:3003';
             
-            console.log('✅ Signed in successfully! Redirecting to dashboard...');
             window.location.href = dashboardUrl;
 
         } catch (err: any) {
             console.error('Sign in error:', err);
-            setError(err.message || 'An error occurred during sign in');
+            setError(err.message || 'Invalid email or password');
         } finally {
             setLoading(false);
         }

@@ -80,14 +80,25 @@ function App() {
       const currentUser = await authService.getCurrentUser();
       if (currentUser) {
         console.log('✅ Authenticated user:', currentUser.email);
+        console.log('✅ User ID:', currentUser.$id);
+        console.log('✅ User status:', currentUser.status);
+        
+        console.log('🔍 Attempting to fetch therapist profile...');
+        console.log('🔍 Using collection:', 'therapists_collection_id');
+        console.log('🔍 Searching by email:', currentUser.email);
         
         const therapists = await therapistService.getByEmail(currentUser.email);
         console.log('🔍 Looking for therapist with email:', currentUser.email);
         console.log('🔍 Found therapists:', therapists);
+        console.log('🔍 Number of results:', therapists?.length || 0);
         
         if (therapists && therapists.length > 0) {
           const therapistDoc = therapists[0];
           console.log('✅ Found therapist document:', therapistDoc.$id);
+          console.log('✅ Therapist name:', therapistDoc.name);
+          console.log('✅ Therapist email:', therapistDoc.email);
+          console.log('✅ Therapist status:', therapistDoc.status);
+          console.log('✅ Agent ID (userId):', therapistDoc.agentId);
           setUser(therapistDoc);
           setIsAuthenticated(true);
           
@@ -113,10 +124,33 @@ function App() {
           }
         } else {
           console.error('❌ No therapist document found for email:', currentUser.email);
-          console.error('❌ This means the therapist account was not created in Appwrite therapists collection');
-          console.error('❌ Check: 1) Email matches exactly 2) therapists collection exists 3) Document was created');
-          // User is authenticated but has no therapist profile
-          alert(`No therapist profile found for ${currentUser.email}. Please contact admin to create your therapist profile.`);
+          console.error('❌ Query returned:', therapists);
+          console.error('❌ This means the therapist account was not found in Appwrite therapists collection');
+          console.error('❌ Check: 1) Email matches exactly 2) therapists collection exists 3) Collection permissions allow read');
+          console.error('❌ Collection ID being used:', 'therapists_collection_id');
+          console.error('❌ Database ID:', '68f76ee1000e64ca8d05');
+          
+          // More helpful error message
+          console.error(`
+╔════════════════════════════════════════════════════════════╗
+║  NO THERAPIST PROFILE FOUND                                ║
+╚════════════════════════════════════════════════════════════╝
+
+Email: ${currentUser.email}
+User ID: ${currentUser.$id}
+Collection: therapists_collection_id
+
+Possible causes:
+1. Profile exists but collection permissions don't allow authenticated reads
+2. Email mismatch (check case sensitivity)
+3. Profile needs to be created
+4. agentId doesn't match user ID
+
+COPY ALL CONSOLE OUTPUT AND SEND TO DEVELOPER
+          `);
+          
+          // Alert disabled for debugging - check console instead
+          // alert(errorMsg);
           setIsAuthenticated(false);
         }
       }
@@ -162,14 +196,41 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    // Redirect to auth app for unified sign in/create account flow
-    const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
-    window.location.href = `${authUrl}/signin`;
+    // TEMPORARILY DISABLED - Show error instead of redirecting
+    // const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+    // window.location.href = `${authUrl}/signin`;
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Redirecting to sign in...</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="max-w-2xl w-full mx-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-red-500">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">❌</div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">Authentication Failed</h1>
+              <p className="text-gray-600">Unable to load therapist dashboard</p>
+            </div>
+            
+            <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mb-6">
+              <h2 className="font-bold text-red-800 mb-2">⚠️ Debug Information:</h2>
+              <p className="text-sm text-red-700 mb-4">
+                Open browser console (F12) to see detailed error messages.
+                Copy ALL console output and send to developer.
+              </p>
+            </div>
+            
+            <div className="space-y-2 text-sm">
+              <p className="text-gray-700"><strong>Expected:</strong> Therapist profile found in database</p>
+              <p className="text-gray-700"><strong>Result:</strong> No profile found or permission denied</p>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <a 
+                href="http://localhost:3001/signin" 
+                className="inline-block px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Back to Sign In
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     );

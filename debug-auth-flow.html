@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Authentication Flow</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Debug Authentication Flow</h1>
+    <button onclick="debugAuth()">Debug Sign-In Process</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Account, Databases, Query } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
+        
+        async function debugAuth() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Debugging authentication flow...<br><br>';
+            
+            try {
+                // Step 1: Test if there's an active session
+                result.innerHTML += '<h3>1️⃣ Checking existing session</h3>';
+                try {
+                    const currentUser = await account.get();
+                    result.innerHTML += `✅ Active session found: ${currentUser.email}<br>`;
+                    result.innerHTML += `   User ID: ${currentUser.$id}<br>`;
+                    result.innerHTML += `   Email verified: ${currentUser.emailVerification}<br>`;
+                    
+                    if (currentUser.email === 'indastreet1@gmail.com') {
+                        result.innerHTML += '<div style="background: #e8f5e8; padding: 10px;">✅ This is Surtiningsih\'s session!</div>';
+                        
+                        // Step 2: Test therapist lookup
+                        result.innerHTML += '<h3>2️⃣ Testing therapist profile lookup</h3>';
+                        await testTherapistLookup(currentUser.email);
+                    } else {
+                        result.innerHTML += '<div style="background: #fff3cd; padding: 10px;">⚠️ Different user session</div>';
+                    }
+                    
+                } catch (sessionError) {
+                    result.innerHTML += `❌ No active session: ${sessionError.message}<br>`;
+                    result.innerHTML += '<p>You need to sign in first at <a href="http://localhost:3001/signin" target="_blank">http://localhost:3001/signin</a></p>';
+                }
+                
+            } catch (error) {
+                result.innerHTML += `❌ Error: ${error.message}<br>`;
+            }
+        }
+        
+        async function testTherapistLookup(email) {
+            const result = document.getElementById('result');
+            
+            try {
+                // Use the same query as therapistService.getByEmail
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    [Query.equal('email', email)]
+                );
+                
+                result.innerHTML += `📊 Query returned ${response.documents.length} documents<br>`;
+                
+                if (response.documents.length > 0) {
+                    const therapist = response.documents[0];
+                    result.innerHTML += '<div style="background: #e8f5e8; padding: 15px; margin: 10px 0;">';
+                    result.innerHTML += '<h4>✅ THERAPIST PROFILE FOUND</h4>';
+                    result.innerHTML += `Name: ${therapist.name}<br>`;
+                    result.innerHTML += `Email: ${therapist.email}<br>`;
+                    result.innerHTML += `Profile ID: ${therapist.$id}<br>`;
+                    result.innerHTML += `Is Live: ${therapist.isLive}<br>`;
+                    result.innerHTML += `Status: ${therapist.status}<br>`;
+                    result.innerHTML += `Agent ID: ${therapist.agentId}<br>`;
+                    result.innerHTML += '</div>';
+                    
+                    result.innerHTML += '<h3>3️⃣ Testing dashboard redirect</h3>';
+                    result.innerHTML += '<p>The therapist profile exists and should load in the dashboard.</p>';
+                    result.innerHTML += '<p><strong>Problem might be:</strong></p>';
+                    result.innerHTML += '<ul>';
+                    result.innerHTML += '<li>Different session context in dashboard iframe</li>';
+                    result.innerHTML += '<li>Collection permissions issue in dashboard</li>';
+                    result.innerHTML += '<li>Caching problem</li>';
+                    result.innerHTML += '</ul>';
+                    
+                    result.innerHTML += '<h3>4️⃣ Recommended Fix</h3>';
+                    result.innerHTML += '<p><a href="http://localhost:3003" target="_blank">Open Therapist Dashboard Directly</a></p>';
+                    result.innerHTML += '<p>Check the browser console for specific errors</p>';
+                    
+                } else {
+                    result.innerHTML += '<div style="background: #f8d7da; padding: 15px;">';
+                    result.innerHTML += '<h4>❌ NO THERAPIST PROFILE FOUND</h4>';
+                    result.innerHTML += '<p>This confirms the dashboard error is legitimate.</p>';
+                    result.innerHTML += '<p>The profile exists in anonymous queries but not in authenticated queries.</p>';
+                    result.innerHTML += '<p><strong>This suggests a permissions issue!</strong></p>';
+                    result.innerHTML += '</div>';
+                }
+                
+            } catch (lookupError) {
+                result.innerHTML += `❌ Therapist lookup error: ${lookupError.message}<br>`;
+            }
+        }
+    </script>
+</body>
+</html>

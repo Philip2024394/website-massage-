@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Verified Account</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Test Surtiningsih's Verified Account</h1>
+    <button onclick="testAccount()">Test Account Status</button>
+    <button onclick="testSignIn()">Test Sign-In Flow</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Account, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
+        
+        async function testAccount() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing account status...<br>';
+            
+            try {
+                // Check if there's already a session
+                try {
+                    const user = await account.get();
+                    result.innerHTML += `✅ Current user: ${user.name} (${user.email})<br>`;
+                    result.innerHTML += `✅ User ID: ${user.$id}<br>`;
+                    result.innerHTML += `✅ Email verified: ${user.emailVerification}<br>`;
+                    result.innerHTML += `✅ Account status: ${user.status}<br>`;
+                    
+                    if (user.email === 'indastreet1@gmail.com') {
+                        result.innerHTML += '<div style="background: #e8f5e8; padding: 10px;">';
+                        result.innerHTML += '🎉 This is Surtiningsih\'s account!<br>';
+                        result.innerHTML += `User ID matches: ${user.$id === '693cfadf000997d3cd66' ? '✅ YES' : '❌ NO'}<br>`;
+                        result.innerHTML += '</div>';
+                        
+                        // Test therapist profile access
+                        result.innerHTML += '<h3>Testing Therapist Profile Access:</h3>';
+                        await testTherapistProfile(user.$id);
+                    }
+                    
+                } catch (error) {
+                    result.innerHTML += '⚠️ No active session<br>';
+                    result.innerHTML += 'You can test sign-in with indastreet1@gmail.com<br>';
+                }
+                
+            } catch (error) {
+                result.innerHTML += '❌ Error: ' + error.message + '<br>';
+            }
+        }
+        
+        async function testTherapistProfile(userId) {
+            const result = document.getElementById('result');
+            
+            try {
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05', 
+                    'therapists_collection_id',
+                    []
+                );
+                
+                const therapist = response.documents.find(doc => 
+                    doc.email === 'indastreet1@gmail.com' || 
+                    doc.userId === userId
+                );
+                
+                if (therapist) {
+                    result.innerHTML += '✅ Therapist profile found!<br>';
+                    result.innerHTML += `Profile ID: ${therapist.$id}<br>`;
+                    result.innerHTML += `Name: ${therapist.name}<br>`;
+                    result.innerHTML += `Email: ${therapist.email}<br>`;
+                    result.innerHTML += `Status: ${therapist.status}<br>`;
+                    result.innerHTML += `Is Live: ${therapist.isLive}<br>`;
+                    result.innerHTML += '<br>🎉 Sign-in should work now!<br>';
+                } else {
+                    result.innerHTML += '❌ No therapist profile found<br>';
+                }
+                
+            } catch (error) {
+                result.innerHTML += '❌ Profile check error: ' + error.message + '<br>';
+            }
+        }
+        
+        async function testSignIn() {
+            const result = document.getElementById('result');
+            result.innerHTML += '<h3>Sign-In Test:</h3>';
+            result.innerHTML += '<p>Try signing in at: <a href="http://localhost:3001/signin" target="_blank">http://localhost:3001/signin</a></p>';
+            result.innerHTML += '<p>Use: indastreet1@gmail.com</p>';
+            result.innerHTML += '<p>Should redirect to: <a href="http://localhost:3003" target="_blank">http://localhost:3003</a></p>';
+        }
+    </script>
+</body>
+</html>

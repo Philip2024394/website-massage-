@@ -83,7 +83,7 @@ export const therapistService = {
     async getAll(): Promise<any[]> {
         try {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            const response = await rateLimitedDb.listDocuments(
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists
             );
@@ -165,8 +165,9 @@ export const therapistService = {
             }
 
             console.log('🔍 Searching for therapist by email:', email);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
+            console.log('🔍 Using database:', APPWRITE_CONFIG.databaseId);
+            console.log('🔍 Using collection:', APPWRITE_CONFIG.collections.therapists);
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 [Query.equal('email', email)]
@@ -216,8 +217,20 @@ export const therapistService = {
             // Provide detailed error context
             if (error && typeof error === 'object') {
                 const err = error as any;
+                console.error('❌ Error details:', {
+                    code: err.code,
+                    type: err.type,
+                    message: err.message,
+                    response: err.response
+                });
                 if (err.code === 404) {
                     console.error('🔍 Collection not found:', APPWRITE_CONFIG.collections.therapists);
+                }
+                if (err.code === 401 || err.type === 'general_unauthorized_scope') {
+                    console.error('🔐 PERMISSION DENIED: User does not have permission to read from this collection');
+                    console.error('🔐 This means the therapists_collection_id does not allow authenticated users to read');
+                    console.error('🔐 Solution: Go to Appwrite Console → Database → therapists_collection_id → Settings → Permissions');
+                    console.error('🔐 Add permission: Role "Users" with READ access');
                 }
             }
             

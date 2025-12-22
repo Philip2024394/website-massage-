@@ -41,7 +41,7 @@ export const APPWRITE_CONFIG = {
         bankDetails: 'Bank Details',
         paymentTransactions: 'Payment Transactions',
         premiumPayments: 'Premium Payments',
-        therapistMenus: 'Therapist Menus',
+        therapistMenus: 'therapist_menus',
         messages: 'Messages',
         packages: 'Packages',
         pushSubscriptions: 'Push Subscriptions',

@@ -14,7 +14,7 @@ export { client, ID };
 // Database and Collection IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: '676703b40009b9dd33de',
+    THERAPISTS: 'therapists_collection_id', // Corrected to actual collection ID
     PLACES: '6767038a003b7bdff200',
     USERS: '67670355000b2bc99d43',
     AGENTS: '677a5d1b002097c0b5d6',

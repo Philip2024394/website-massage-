@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Surtiningsih Menu Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        .menu-data { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Testing Surtiningsih Menu Data</h1>
+    <p>This will check if Surtiningsih's menu data loads properly with the correct collection ID.</p>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        import { Client, Databases, Query } from 'https://cdn.skypack.dev/appwrite@21.4.0';
+        
+        const log = (message, type = 'info') => {
+            const results = document.getElementById('results');
+            results.innerHTML += `<div class="${type}">${message}</div>`;
+        };
+        
+        // Use correct configuration
+        const config = {
+            endpoint: 'https://syd.cloud.appwrite.io/v1',
+            projectId: '68f23b11000d25eb3664',
+            databaseId: '68f76ee1000e64ca8d05',
+            collections: {
+                therapists: '676703b40009b9dd33de',
+                therapist_menus: 'therapist_menus'
+            }
+        };
+        
+        const client = new Client()
+            .setEndpoint(config.endpoint)
+            .setProject(config.projectId);
+            
+        const databases = new Databases(client);
+        
+        async function testSurtiningsihMenu() {
+            try {
+                log('🔍 Step 1: Looking for Surtiningsih in therapists collection...', 'info');
+                
+                // First find Surtiningsih's therapist ID
+                const therapistsResponse = await databases.listDocuments(
+                    config.databaseId,
+                    config.collections.therapists,
+                    [Query.search('name', 'Surtiningsih')]
+                );
+                
+                if (therapistsResponse.documents.length === 0) {
+                    log('❌ Surtiningsih not found in therapists collection', 'error');
+                    return;
+                }
+                
+                const therapist = therapistsResponse.documents[0];
+                log(`✅ Found Surtiningsih! ID: ${therapist.$id}`, 'success');
+                log(`📋 Name: ${therapist.name}`, 'info');
+                
+                log('🔍 Step 2: Looking for her menu data...', 'info');
+                
+                // Now look for her menu data
+                const menusResponse = await databases.listDocuments(
+                    config.databaseId,
+                    config.collections.therapist_menus,
+                    [Query.equal('therapistId', therapist.$id)]
+                );
+                
+                if (menusResponse.documents.length === 0) {
+                    log('⚠️ No menu data found for Surtiningsih', 'error');
+                    log('💡 This means she needs to create her menu in the therapist dashboard', 'info');
+                } else {
+                    log(`✅ Found ${menusResponse.documents.length} menu(s) for Surtiningsih!`, 'success');
+                    
+                    menusResponse.documents.forEach((menu, index) => {
+                        log(`📋 Menu ${index + 1}:`, 'info');
+                        log(`   - Menu ID: ${menu.menuId || 'Not set'}`, 'info');
+                        log(`   - Menu Name: ${menu.menuName || 'Not set'}`, 'info');
+                        log(`   - Active: ${menu.isActive ? 'Yes' : 'No'}`, 'info');
+                        log(`   - Menu Items: ${menu.menuItems || 0}`, 'info');
+                        log(`   - Created: ${new Date(menu.createdDate).toLocaleDateString()}`, 'info');
+                        
+                        if (menu.menuData) {
+                            try {
+                                const menuData = JSON.parse(menu.menuData);
+                                log(`   - Services: ${menuData.length || 0}`, 'info');
+                                log('📄 Menu Data:', 'info');
+                                log(JSON.stringify(menuData, null, 2), 'menu-data');
+                            } catch (e) {
+                                log(`   - Raw Menu Data: ${menu.menuData}`, 'info');
+                            }
+                        }
+                    });
+                }
+                
+                log('✅ Test completed!', 'success');
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run the test
+        testSurtiningsihMenu();
+    </script>
+</body>
+</html>

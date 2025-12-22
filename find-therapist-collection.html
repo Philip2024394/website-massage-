@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Collection Finder - Browser Auth</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Find Therapist Collection ID</h1>
+    <button onclick="findCollections()">Find Collections</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Databases, Account, ID } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const account = new Account(client);
+        
+        async function findCollections() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Working...<br>';
+            
+            try {
+                // Try to create anonymous session
+                try {
+                    await account.createAnonymousSession();
+                    result.innerHTML += '✅ Anonymous session created<br>';
+                } catch (error) {
+                    if (error.message.includes('already exists')) {
+                        result.innerHTML += 'ℹ️ Using existing session<br>';
+                    } else {
+                        result.innerHTML += '⚠️ Session error: ' + error.message + '<br>';
+                    }
+                }
+                
+                // List collections
+                const response = await databases.listCollections('68f76ee1000e64ca8d05');
+                
+                result.innerHTML += '<h3>Available Collections:</h3>';
+                response.collections.forEach(collection => {
+                    result.innerHTML += `<div style="margin: 10px 0; padding: 10px; border: 1px solid #ccc;">`;
+                    result.innerHTML += `<strong>${collection.name}</strong><br>`;
+                    result.innerHTML += `ID: <code>${collection.$id}</code><br>`;
+                    result.innerHTML += `Attributes: ${collection.attributes.length}<br>`;
+                    if (collection.name.toLowerCase().includes('therapist')) {
+                        result.innerHTML += `<span style="color: green; font-weight: bold;">🎯 THERAPIST COLLECTION!</span>`;
+                    }
+                    result.innerHTML += `</div>`;
+                });
+                
+                // Look for therapist collections
+                const therapistCollections = response.collections.filter(c => 
+                    c.name.toLowerCase().includes('therapist') || 
+                    c.name.toLowerCase().includes('massage')
+                );
+                
+                if (therapistCollections.length > 0) {
+                    result.innerHTML += '<h3 style="color: green;">🎯 Therapist Collections Found:</h3>';
+                    therapistCollections.forEach(collection => {
+                        result.innerHTML += `<div style="background: #e8f5e8; padding: 15px; margin: 10px 0;">`;
+                        result.innerHTML += `<strong>${collection.name}</strong><br>`;
+                        result.innerHTML += `<code>${collection.$id}</code><br>`;
+                        result.innerHTML += `<button onclick="testCollection('${collection.$id}', '${collection.name}')">Test This Collection</button>`;
+                        result.innerHTML += `</div>`;
+                    });
+                } else {
+                    result.innerHTML += '<h3 style="color: red;">❌ No Therapist Collections Found</h3>';
+                    result.innerHTML += '<p>You need to create a therapist collection in the Appwrite Console:</p>';
+                    result.innerHTML += '<ol>';
+                    result.innerHTML += '<li>Go to <a href="https://cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05" target="_blank">Appwrite Console</a></li>';
+                    result.innerHTML += '<li>Create a new collection called "Therapists"</li>';
+                    result.innerHTML += '<li>Add the required attributes</li>';
+                    result.innerHTML += '<li>Update the collection ID in your config</li>';
+                    result.innerHTML += '</ol>';
+                }
+                
+            } catch (error) {
+                result.innerHTML += '❌ Error: ' + error.message + '<br>';
+                console.error(error);
+            }
+        }
+        
+        async function testCollection(collectionId, collectionName) {
+            const result = document.getElementById('result');
+            result.innerHTML += `<h4>Testing ${collectionName} (${collectionId})</h4>`;
+            
+            try {
+                const response = await databases.listDocuments('68f76ee1000e64ca8d05', collectionId);
+                result.innerHTML += `✅ SUCCESS! Found ${response.documents.length} documents<br>`;
+                
+                if (response.documents.length > 0) {
+                    const sample = response.documents[0];
+                    result.innerHTML += `Sample document: ${JSON.stringify(sample, null, 2)}<br>`;
+                    
+                    // Create therapist profile for indastreet1@gmail.com
+                    result.innerHTML += `<button onclick="createTherapistProfile('${collectionId}')">Create Therapist Profile</button><br>`;
+                }
+            } catch (error) {
+                result.innerHTML += `❌ Error: ${error.message}<br>`;
+            }
+        }
+        
+        async function createTherapistProfile(collectionId) {
+            const result = document.getElementById('result');
+            result.innerHTML += '<h4>Creating Therapist Profile...</h4>';
+            
+            try {
+                const therapistData = {
+                    email: 'indastreet1@gmail.com',
+                    userId: '693cfadf000997d3cd66',
+                    name: 'IndaStreet Demo Therapist',
+                    specialization: 'Traditional Balinese',
+                    yearsOfExperience: 5,
+                    isLicensed: true,
+                    location: 'Denpasar, Bali',
+                    status: 'active',
+                    verified: true,
+                    availableToday: true,
+                    isLive: true,
+                    category: 'therapist',
+                    membershipTier: 'premium',
+                    phone: '+62-812-3456-7890',
+                    whatsapp: '+62-812-3456-7890',
+                    bio: 'Experienced traditional Balinese massage therapist',
+                    coordinates: JSON.stringify({ lat: -8.6705, lng: 115.2126 }),
+                    city: 'Denpasar',
+                    massageTypes: JSON.stringify(['Traditional Balinese', 'Deep Tissue']),
+                    languages: JSON.stringify(['English', 'Indonesian']),
+                    pricing: JSON.stringify({
+                        '60': { price: 150000, currency: 'IDR' },
+                        '90': { price: 200000, currency: 'IDR' }
+                    }),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                const doc = await databases.createDocument(
+                    '68f76ee1000e64ca8d05',
+                    collectionId,
+                    ID.unique(),
+                    therapistData
+                );
+                
+                result.innerHTML += '✅ SUCCESS! Therapist profile created:<br>';
+                result.innerHTML += `Profile ID: ${doc.$id}<br>`;
+                result.innerHTML += `Name: ${doc.name}<br>`;
+                result.innerHTML += `Email: ${doc.email}<br>`;
+                result.innerHTML += '<br>🎉 You can now sign in to the therapist dashboard!<br>';
+                result.innerHTML += '<a href="http://localhost:3001/signin" target="_blank">Try Sign In</a><br>';
+                
+            } catch (error) {
+                result.innerHTML += `❌ Error creating profile: ${error.message}<br>`;
+            }
+        }
+    </script>
+</body>
+</html>

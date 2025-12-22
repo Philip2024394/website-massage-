@@ -194,7 +194,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         };
 
         // Add or update structured data script
-        let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+        let structuredDataScript = document.querySelector('script[type="application/ld+json"]') as HTMLScriptElement;
         if (!structuredDataScript) {
             structuredDataScript = document.createElement('script');
             structuredDataScript.type = 'application/ld+json';

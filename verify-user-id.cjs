@@ -1,0 +1,27 @@
+const { Client, Databases, Account } = require('node-appwrite');
+
+console.log('✅ Current agentId in database: 693cfadf000997d3cd66');
+console.log('');
+console.log('Now you need to verify this matches your Appwrite User ID:');
+console.log('');
+console.log('STEPS:');
+console.log('1. Start dev servers: npm run dev:all');
+console.log('2. Go to: http://localhost:3001');
+console.log('3. Sign in with:');
+console.log('   - Portal: Massage Therapist');
+console.log('   - Email: indastreet1@gmail.com');
+console.log('   - Password: (your password)');
+console.log('');
+console.log('4. Open Browser Console (F12) and look for:');
+console.log('   "✅ User ID: [some-id]"');
+console.log('');
+console.log('5. Compare the User ID with: 693cfadf000997d3cd66');
+console.log('');
+console.log('IF THEY MATCH:');
+console.log('  ✅ Sign-in should work!');
+console.log('  ✅ Dashboard should load');
+console.log('');
+console.log('IF THEY DON\'T MATCH:');
+console.log('  ❌ Run: node fix-agentid.cjs [new-user-id]');
+console.log('  Example: node fix-agentid.cjs 694abcdef1234567890');
+console.log('');

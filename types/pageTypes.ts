@@ -143,6 +143,7 @@ export type Page =
     | 'decline-booking'
     | 'verifiedProBadge'
     | 'sharedProfileStandards'
+    | 'shared-profile-standards'  // Kebab-case variant for routing
     | 'mobileTherapistStandards'
     | 'customerProviders'
     | 'customerReviews'

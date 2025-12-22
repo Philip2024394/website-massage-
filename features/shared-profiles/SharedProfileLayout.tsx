@@ -83,7 +83,6 @@ export const SharedProfileLayout: React.FC<SharedProfileLayoutProps> = ({
                 onClose={() => setIsDrawerOpen(false)}
                 onNavigate={onNavigate || (() => {})}
                 language="en"
-                translations={{}}
                 t={(key: string) => key}
             />
 

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Profile Linkage</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Debug Therapist Profile Linkage</h1>
+    <button onclick="debugProfile()">Debug Profile Issue</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Account, Databases } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
+        
+        async function debugProfile() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Debugging profile linkage...<br><br>';
+            
+            try {
+                // Create anonymous session to access database
+                try {
+                    await account.createAnonymousSession();
+                    result.innerHTML += '✅ Database access established<br><br>';
+                } catch (error) {
+                    if (error.message.includes('already exists')) {
+                        result.innerHTML += 'ℹ️ Using existing database session<br><br>';
+                    }
+                }
+                
+                // Fetch all therapists to find Surtiningsih
+                const response = await databases.listDocuments('68f76ee1000e64ca8d05', 'therapists_collection_id');
+                
+                result.innerHTML += `<h3>📊 Found ${response.documents.length} therapist profiles total</h3>`;
+                
+                // Search for profiles related to indastreet1@gmail.com
+                const targetEmail = 'indastreet1@gmail.com';
+                const targetUserId = '693cfadf000997d3cd66';
+                
+                result.innerHTML += '<h3>🔍 Searching for Surtiningsih/indastreet1@gmail.com:</h3>';
+                
+                const potentialMatches = response.documents.filter(doc => {
+                    return (
+                        doc.email === targetEmail ||
+                        doc.userId === targetUserId ||
+                        (doc.name || '').toLowerCase().includes('surtiningsih') ||
+                        (doc.email || '').toLowerCase().includes('indastreet')
+                    );
+                });
+                
+                if (potentialMatches.length > 0) {
+                    result.innerHTML += `<div style="background: #fff3cd; padding: 15px; border: 1px solid #ffeeba;">`;
+                    result.innerHTML += `<h4>🎯 Found ${potentialMatches.length} potential match(es):</h4>`;
+                    
+                    potentialMatches.forEach((match, index) => {
+                        result.innerHTML += `<div style="background: white; padding: 10px; margin: 10px 0; border-left: 4px solid #007bff;">`;
+                        result.innerHTML += `<strong>Match ${index + 1}:</strong><br>`;
+                        result.innerHTML += `Name: <strong>${match.name || 'No name'}</strong><br>`;
+                        result.innerHTML += `Email: <strong>${match.email || 'No email'}</strong><br>`;
+                        result.innerHTML += `UserId: <strong>${match.userId || 'No userId field'}</strong><br>`;
+                        result.innerHTML += `Profile ID: ${match.$id}<br>`;
+                        result.innerHTML += `Status: ${match.status || 'No status'}<br>`;
+                        result.innerHTML += `Is Live: ${match.isLive}<br>`;
+                        result.innerHTML += `Verified: ${match.verified}<br><br>`;
+                        
+                        // Check what's wrong
+                        result.innerHTML += '<strong>Issues Found:</strong><br>';
+                        if (match.email !== targetEmail) {
+                            result.innerHTML += `❌ Email mismatch: "${match.email}" ≠ "${targetEmail}"<br>`;
+                        } else {
+                            result.innerHTML += `✅ Email matches perfectly<br>`;
+                        }
+                        
+                        if (!match.userId) {
+                            result.innerHTML += `❌ Missing userId field - profile not linked to Appwrite user<br>`;
+                            result.innerHTML += `<button onclick="fixProfile('${match.$id}', '${targetUserId}')">Fix: Link to User ${targetUserId}</button><br>`;
+                        } else if (match.userId !== targetUserId) {
+                            result.innerHTML += `❌ UserId mismatch: "${match.userId}" ≠ "${targetUserId}"<br>`;
+                            result.innerHTML += `<button onclick="fixProfile('${match.$id}', '${targetUserId}')">Fix: Update userId</button><br>`;
+                        } else {
+                            result.innerHTML += `✅ UserId matches perfectly<br>`;
+                        }
+                        
+                        result.innerHTML += `</div>`;
+                    });
+                    
+                    result.innerHTML += `</div>`;
+                } else {
+                    result.innerHTML += '<div style="background: #f8d7da; padding: 15px; border: 1px solid #f5c6cb;">';
+                    result.innerHTML += '<h4>❌ No matches found!</h4>';
+                    result.innerHTML += '<p>No profiles found matching:</p>';
+                    result.innerHTML += `<ul>`;
+                    result.innerHTML += `<li>Email: ${targetEmail}</li>`;
+                    result.innerHTML += `<li>UserId: ${targetUserId}</li>`;
+                    result.innerHTML += `<li>Name containing: surtiningsih</li>`;
+                    result.innerHTML += `</ul>`;
+                    
+                    result.innerHTML += '<h4>Available Profiles:</h4>';
+                    response.documents.slice(0, 5).forEach(doc => {
+                        result.innerHTML += `<div>${doc.name || 'Unnamed'} - ${doc.email || 'No email'}</div>`;
+                    });
+                    result.innerHTML += '</div>';
+                }
+                
+                // Show the exact search logic being used by the app
+                result.innerHTML += '<h3>🔍 App Search Logic:</h3>';
+                result.innerHTML += '<div style="background: #e9ecef; padding: 10px; font-family: monospace;">';
+                result.innerHTML += `Looking for: email === "${targetEmail}"<br>`;
+                result.innerHTML += 'This must match exactly (case-sensitive)<br>';
+                result.innerHTML += '</div>';
+                
+            } catch (error) {
+                result.innerHTML += '❌ Error: ' + error.message + '<br>';
+                console.error(error);
+            }
+        }
+        
+        async function fixProfile(profileId, userId) {
+            const result = document.getElementById('result');
+            result.innerHTML += '<br>⚠️ Profile fixing requires admin permissions.<br>';
+            result.innerHTML += 'Use the backend script to update the userId field.<br>';
+        }
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Eye, EyeOff, Building2, User, Sparkles, Hotel, Star, Circle, Mail, Lock } from 'lucide-react';
-import { account, ID } from '../lib/appwrite';
+import { account, ID, databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
 import { translations, getStoredLanguage } from '../translations';
 
 type PlanType = 'pro' | 'plus';
@@ -151,6 +151,14 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
         try {
             setLoading(true);
 
+            // Delete any existing session first to avoid "session already exists" error
+            try {
+                await account.deleteSession('current');
+                console.log('🗑️ Deleted existing session before signup');
+            } catch (sessionError) {
+                console.log('ℹ️ No existing session to delete (this is normal)');
+            }
+
             // Create Appwrite account
             const user = await account.create(
                 ID.unique(),
@@ -159,8 +167,60 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
                 formData.name
             );
 
+            console.log('✅ Appwrite account created:', user.$id);
+
             // Create session automatically
-            await account.createEmailSession(formData.email, formData.password);
+            await account.createEmailPasswordSession(formData.email, formData.password);
+
+            console.log('✅ Session created successfully');
+
+            // Create therapist profile in database (only for therapist portal)
+            if (formData.portalType === 'massage_therapist') {
+                try {
+                    console.log('📝 Creating therapist profile in database...');
+                    const therapistProfile = await databases.createDocument(
+                        DATABASE_ID,
+                        COLLECTIONS.THERAPISTS,
+                        ID.unique(),
+                        {
+                            // Required fields
+                            email: formData.email.toLowerCase().trim(),
+                            name: formData.name,
+                            agentId: user.$id, // Link to Appwrite user
+                            specialization: 'General Massage',
+                            yearsOfExperience: 0,
+                            isLicensed: false,
+                            location: '',
+                            hourlyRate: 100,
+                            pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                            coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                            therapistId: user.$id,
+                            id: user.$id,
+                            hotelId: '',
+                            countryCode: '+66',
+                            price60: '100',
+                            price90: '150',
+                            price120: '200',
+                            
+                            // Optional fields with defaults
+                            isLive: false,
+                            status: 'available',
+                            availability: 'Available',
+                            profilePicture: '',
+                            mainImage: '',
+                            description: '',
+                            whatsappNumber: '',
+                            massageTypes: JSON.stringify([]),
+                            languages: JSON.stringify(['English']),
+                        }
+                    );
+                    console.log('✅ Therapist profile created:', therapistProfile.$id);
+                } catch (profileError: any) {
+                    console.error('❌ Failed to create therapist profile:', profileError);
+                    // Don't block signup if profile creation fails - user can complete profile later
+                    console.warn('⚠️ Continuing with signup - profile can be created later');
+                }
+            }
 
             // Store user info
             localStorage.setItem('selected_membership_plan', formData.planType);
@@ -170,8 +230,8 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             localStorage.setItem('selectedPortalType', formData.portalType);
 
             const portalToDashboardUrl: Record<PortalType, string> = {
-                'massage_therapist': 'http://localhost:3002',
-                'massage_place': 'http://localhost:3005',
+                'massage_therapist': 'http://localhost:3003',
+                'massage_place': 'http://localhost:3002',
                 'facial_place': 'http://localhost:3006',
                 'hotel': 'http://localhost:3007'
             };

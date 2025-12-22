@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign-in Debug Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@21.4.0"></script>
+</head>
+<body>
+    <h1>Sign-in Debug Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message) {
+            console.log(message);
+            results.innerHTML += `<p>${message}</p>`;
+        }
+        
+        // Test Appwrite SDK availability
+        log('🔍 Testing Appwrite SDK availability...');
+        
+        if (typeof window.Appwrite !== 'undefined') {
+            log('✅ Appwrite SDK loaded successfully');
+            
+            // Create client and account
+            const client = new Appwrite.Client()
+                .setEndpoint('https://syd.cloud.appwrite.io/v1')
+                .setProject('68f23b11000d25eb3664');
+            
+            const account = new Appwrite.Account(client);
+            
+            log('✅ Client and Account created');
+            
+            // Check if createEmailSession method exists
+            if (typeof account.createEmailSession === 'function') {
+                log('✅ createEmailSession method is available');
+                log('🔍 Method type: ' + typeof account.createEmailSession);
+            } else {
+                log('❌ createEmailSession method is NOT available');
+                log('🔍 Available methods: ' + Object.getOwnPropertyNames(account.__proto__).join(', '));
+            }
+            
+            // Test basic account method
+            account.get()
+                .then(user => {
+                    log('✅ Already logged in as: ' + user.email);
+                })
+                .catch(err => {
+                    log('ℹ️ Not logged in (expected): ' + err.message);
+                });
+                
+        } else {
+            log('❌ Appwrite SDK not loaded');
+        }
+    </script>
+</body>
+</html>

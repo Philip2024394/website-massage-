@@ -59,7 +59,7 @@ export const hotelAuth = {
             } catch (err: any) {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
-            const session = await account.createEmailSession(email, password);
+            const session = await account.createEmailPasswordSession(email, password);
             console.log('✅ Session created:', session.$id);
             const user = await account.get();
             console.log('✅ User retrieved:', user.$id);
@@ -103,7 +103,7 @@ export const adminAuth = {
         try {
             console.log('👤 Admin signin start:', email);
             try { await account.deleteSession('current'); } catch {}
-            const session = await account.createEmailSession(email, password);
+            const session = await account.createEmailPasswordSession(email, password);
             console.log('✅ Admin session created:', session.$id);
             const user = await account.get();
             return { success: true, userId: user.$id };
@@ -157,7 +157,7 @@ export const therapistAuth = {
             
             // Create session after account creation
             logger.debug('🔵 [Therapist Sign-Up] Creating session...');
-            await account.createEmailSession(normalizedEmail, password);
+            await account.createEmailPasswordSession(normalizedEmail, password);
             logger.debug('✅ [Therapist Sign-Up] Session created');
             
             const therapistId = ID.unique();
@@ -269,7 +269,7 @@ export const therapistAuth = {
             }
             
             console.log('🔵 [Therapist Sign-In] Creating email/password session...');
-            await account.createEmailSession(email, password);
+            await account.createEmailPasswordSession(email, password);
             console.log('✅ [Therapist Sign-In] Session created');
             
             console.log('🔵 [Therapist Sign-In] Getting user account...');
@@ -402,7 +402,7 @@ export const placeAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailSession(email, password);
+            await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             console.log('✅ Authentication successful for:', email, 'user ID:', user.$id);
             
@@ -512,7 +512,7 @@ export const villaAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailSession(email, password);
+            await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             
             const villas = await databases.listDocuments(
@@ -611,7 +611,7 @@ export const agentAuth = {
                 console.log('ℹ️ No existing session to clear:', err?.message || 'unknown reason');
             }
 
-            await account.createEmailSession(email, password);
+            await account.createEmailPasswordSession(email, password);
             const user = await account.get();
             
             const agents = await databases.listDocuments(

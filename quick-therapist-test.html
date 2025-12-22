@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Therapist Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+</head>
+<body>
+    <h1>Quick Collection Test</h1>
+    <button onclick="testCollections()">Test Collections</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Databases, Account } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const account = new Account(client);
+        
+        async function testCollections() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Testing...<br>';
+            
+            // Try different collection IDs that might exist
+            const collectionIds = [
+                'therapists_collection_id',
+                '676703b40009b9dd33de', 
+                'therapists',
+                'Therapists',
+                'massage_therapists'
+            ];
+            
+            try {
+                // Create anonymous session
+                try {
+                    await account.createAnonymousSession();
+                    result.innerHTML += '✅ Anonymous session created<br>';
+                } catch (error) {
+                    if (error.message.includes('already exists')) {
+                        result.innerHTML += 'ℹ️ Using existing session<br>';
+                    }
+                }
+                
+                result.innerHTML += '<h3>Testing Collection IDs:</h3>';
+                
+                for (const collectionId of collectionIds) {
+                    try {
+                        const response = await databases.listDocuments('68f76ee1000e64ca8d05', collectionId);
+                        result.innerHTML += `<div style="background: #e8f5e8; padding: 10px; margin: 5px 0;">`;
+                        result.innerHTML += `✅ <strong>${collectionId}</strong>: Found ${response.documents.length} therapists<br>`;
+                        
+                        if (response.documents.length > 0) {
+                            const names = response.documents.slice(0, 3).map(d => d.name || d.therapistName || 'Unnamed').join(', ');
+                            result.innerHTML += `Names: ${names}<br>`;
+                            
+                            if (response.documents.find(d => (d.name || '').toLowerCase().includes('budi'))) {
+                                result.innerHTML += `🎯 <strong>FOUND BUDI!</strong><br>`;
+                            }
+                        }
+                        result.innerHTML += `</div>`;
+                        
+                        // If we found therapists, update config and break
+                        if (response.documents.length > 0) {
+                            result.innerHTML += `<h3>✅ WORKING COLLECTION ID: <code>${collectionId}</code></h3>`;
+                            result.innerHTML += '<p>Update lib/appwrite/config.ts with this ID!</p>';
+                            break;
+                        }
+                        
+                    } catch (error) {
+                        result.innerHTML += `<div style="background: #ffe8e8; padding: 5px; margin: 2px 0;">`;
+                        result.innerHTML += `❌ ${collectionId}: ${error.message}<br>`;
+                        result.innerHTML += `</div>`;
+                    }
+                }
+                
+            } catch (error) {
+                result.innerHTML += '❌ General Error: ' + error.message + '<br>';
+            }
+        }
+    </script>
+</body>
+</html>

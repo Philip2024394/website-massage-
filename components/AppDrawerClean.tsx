@@ -268,12 +268,12 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex flex-col items-center gap-3 px-4 py-2">
-                  <button 
-                    onClick={() => handleItemClick(undefined, 'landing')}
+                  <a 
+                    href={`${getAuthAppUrl()}/signin`}
                     className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
                   >
                     Sign In
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
