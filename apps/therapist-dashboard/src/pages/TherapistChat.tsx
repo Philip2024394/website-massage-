@@ -49,7 +49,14 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   const [flagCategory, setFlagCategory] = useState('');
   const [flagComment, setFlagComment] = useState('');
   const [flaggedMessageIds, setFlaggedMessageIds] = useState<Set<string>>(new Set());
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+  const [adminOnline, setAdminOnline] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Phone number detection patterns
   const detectPhoneNumber = (text: string): boolean => {
@@ -63,6 +70,43 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
       /\d{10,}/g                     // 10+ consecutive digits
     ];
     return patterns.some(pattern => pattern.test(text));
+  };
+
+  // Play notification sound
+  const playNotificationSound = () => {
+    if (!soundEnabled) return;
+    
+    try {
+      // Create audio element if not exists
+      if (!audioRef.current) {
+        audioRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZXA0PVKzn77BiFwtDm93yvW0hBSyBzvLYiTcIGWi77eefTRAMUKfj8LZjHAY4ktfyzHksBSR3x/DdkEAKFF606+uoVRQKRp/g8r5sIQUxh9Hz04IzBh5uwO/jmVwND1Ss5++wYhcLQ5vd8r1tIQUsgc7y2Ik3CBlou+3nn00QDFA=');
+        audioRef.current.volume = 0.5;
+      }
+      audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+    } catch (error) {
+      console.error('Sound notification error:', error);
+    }
+  };
+
+  // Show desktop notification
+  const showDesktopNotification = (title: string, body: string) => {
+    if (!('Notification' in window)) return;
+    
+    if (Notification.permission === 'granted') {
+      new Notification(title, {
+        body,
+        icon: 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258',
+        badge: 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258',
+        tag: 'chat-message',
+        requireInteraction: false
+      });
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          showDesktopNotification(title, body);
+        }
+      });
+    }
   };
 
   // Detect phone numbers split across multiple consecutive messages (spam evasion)
@@ -280,6 +324,33 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
         // Only update if messages actually changed (prevents flashing)
         const messagesChanged = JSON.stringify(messages.map(m => m.$id)) !== JSON.stringify(mappedMessages.map(m => m.$id));
         if (messagesChanged || messages.length === 0) {
+          // Check for new messages from admin/system
+          if (messages.length > 0 && mappedMessages.length > messages.length) {
+            const newMessages = mappedMessages.slice(messages.length);
+            const adminMessages = newMessages.filter(msg => 
+              msg.senderType === 'admin' || msg.senderType === 'system'
+            );
+            
+            if (adminMessages.length > 0) {
+              // Play notification sound
+              playNotificationSound();
+              
+              // Update unread count if minimized
+              if (isMinimized) {
+                setUnreadCount(prev => prev + adminMessages.length);
+              }
+              
+              // Show desktop notification for first new message
+              const firstNewMessage = adminMessages[0];
+              showDesktopNotification(
+                'New message from IndastreetMassage Support',
+                firstNewMessage.message.length > 50 
+                  ? firstNewMessage.message.substring(0, 50) + '...'
+                  : firstNewMessage.message
+              );
+            }
+          }
+          
           setMessages(mappedMessages);
         }
       }
@@ -616,30 +687,101 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
           </div>
         ) : (
           /* Chat Interface for Premium Members */
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col h-[600px] md:h-[700px] max-h-[85vh] overflow-hidden w-full max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col w-full max-w-4xl mx-auto transition-all duration-300" style={{ height: isMinimized ? '60px' : '600px' }}>
             {/* Orange Header */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3 flex items-center justify-between cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
               <div className="flex items-center gap-3">
                 {/* Admin Profile Image */}
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
-                  <img 
-                    src={adminAvatar} 
-                    alt="Support Team"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback if image fails to load
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.parentElement.innerHTML = '<div class="w-full h-full bg-white flex items-center justify-center"><svg class="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>';
-                    }}
-                  />
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+                    <img 
+                      src={adminAvatar} 
+                      alt="Support Team"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Fallback if image fails to load
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement.innerHTML = '<div class="w-full h-full bg-white flex items-center justify-center"><svg class="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>';
+                      }}
+                    />
+                  </div>
+                  {/* Online Status Indicator */}
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                    adminOnline ? 'bg-green-500' : 'bg-gray-400'
+                  }`}></div>
+                  {/* Unread Counter */}
+                  {unreadCount > 0 && !isMinimized && (
+                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold animate-pulse">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h3 className="text-white font-bold text-sm">Support Team</h3>
-                  <p className="text-orange-100 text-xs">Online Now</p>
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    IndastreetMassage Support
+                    <Crown className="w-5 h-5" />
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <p className="text-orange-100 text-sm">
+                      {adminOnline ? 'Online' : 'Offline'} • Premium Support
+                    </p>
+                    {isTyping && (
+                      <div className="flex items-center gap-1 text-orange-100 text-xs animate-pulse">
+                        <div className="flex gap-1">
+                          <div className="w-1 h-1 bg-orange-100 rounded-full animate-bounce"></div>
+                          <div className="w-1 h-1 bg-orange-100 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-1 h-1 bg-orange-100 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        </div>
+                        <span>typing...</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
+                {/* Sound Toggle */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSoundEnabled(!soundEnabled);
+                  }}
+                  className={`p-2 rounded-full transition-colors ${
+                    soundEnabled ? 'bg-white/20 hover:bg-white/30' : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                  title={soundEnabled ? 'Disable Sound' : 'Enable Sound'}
+                >
+                  {soundEnabled ? (
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.697L5.777 14H4a2 2 0 01-2-2V8a2 2 0 012-2h1.777l2.606-2.697a1 1 0 011.617-.697zM14 5a1 1 0 011.414 0A7.01 7.01 0 0118 10a7.01 7.01 0 01-2.586 5A1 1 0 0114 13.586 5.01 5.01 0 0016 10a5.01 5.01 0 00-2-4.414A1 1 0 0114 5z" clipRule="evenodd" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.697L5.777 14H4a2 2 0 01-2-2V8a2 2 0 012-2h1.777l2.606-2.697a1 1 0 011.617-.697zM12.293 7.293a1 1 0 011.414 0L15 8.586l1.293-1.293a1 1 0 111.414 1.414L16.414 10l1.293 1.293a1 1 0 01-1.414 1.414L15 11.414l-1.293 1.293a1 1 0 01-1.414-1.414L13.586 10l-1.293-1.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+                
+                {/* Minimize/Maximize Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMinimized(!isMinimized);
+                    if (isMinimized) setUnreadCount(0); // Clear unread when maximizing
+                  }}
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                  title={isMinimized ? 'Maximize Chat' : 'Minimize Chat'}
+                >
+                  {isMinimized ? (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 14l9-9m0 0l-5 5m5-5v5" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  )}
+                </button>
                 {/* Close Button */}
                 <button 
                   onClick={onBack}
@@ -815,9 +957,12 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
               )}
             </div>
 
-            {/* Messages Area */}
-            <div 
-              className="flex-1 overflow-y-auto p-6 space-y-4"
+            {/* Chat Content - Hidden when minimized */}
+            {!isMinimized && (
+              <>
+                {/* Messages Area */}
+                <div 
+                  className="flex-1 overflow-y-auto p-6 space-y-4"
               style={{
                 backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20chat.png)',
                 backgroundSize: 'cover',
@@ -1129,6 +1274,8 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                 </p>
               </div>
             </div>
+            </>
+            )}
           </div>
         )}
 
