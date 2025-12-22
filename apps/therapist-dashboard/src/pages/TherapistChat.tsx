@@ -44,6 +44,11 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
   const [phoneNumberWarning, setPhoneNumberWarning] = useState(false);
   const [chatLanguage, setChatLanguage] = useState<'id' | 'en'>('id');
   const [translatedMessages, setTranslatedMessages] = useState<{[key: string]: string}>({});
+  const [showFlagModal, setShowFlagModal] = useState(false);
+  const [flaggedMessage, setFlaggedMessage] = useState<Message | null>(null);
+  const [flagCategory, setFlagCategory] = useState('');
+  const [flagComment, setFlagComment] = useState('');
+  const [flaggedMessageIds, setFlaggedMessageIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Phone number detection patterns
@@ -358,26 +363,42 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
     }
   };
 
-  const handleFlagMessage = async (msg: Message) => {
-    const reason = prompt('Why are you reporting this message?\n\n1. Inappropriate content\n2. Spam\n3. Harassment\n4. Other\n\nEnter reason:');
-    
-    if (!reason) return;
+  const handleFlagMessage = (msg: Message) => {
+    setFlaggedMessage(msg);
+    setFlagCategory('');
+    setFlagComment('');
+    setShowFlagModal(true);
+  };
+
+  const submitFlagReport = async () => {
+    if (!flagCategory || !flaggedMessage) return;
     
     try {
+      const fullReason = flagComment 
+        ? `${flagCategory}: ${flagComment}`
+        : flagCategory;
+      
       await flagMessage(
-        msg.$id,
-        msg.message,
-        msg.message,
-        msg.senderId,
+        flaggedMessage.$id,
+        flaggedMessage.message,
+        flaggedMessage.message,
+        flaggedMessage.senderId,
         String(therapist.$id || therapist.id),
         String(therapist.$id || therapist.id),
-        reason,
+        fullReason,
         50,
         ['user_report'],
         'medium'
       );
       
-      alert('Message reported to admin. Thank you for helping keep our community safe.');
+      // Add to flagged messages set to show notification
+      setFlaggedMessageIds(prev => new Set(prev).add(flaggedMessage.$id));
+      
+      // Close modal
+      setShowFlagModal(false);
+      setFlaggedMessage(null);
+      setFlagCategory('');
+      setFlagComment('');
     } catch (error) {
       console.error('Failed to flag message:', error);
       alert('Failed to report message. Please try again.');
@@ -870,6 +891,14 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                                 {translatedMessages[msg.$id] && (
                                   <p className="text-xs opacity-60 mt-1 italic">Translated</p>
                                 )}
+                                
+                                {/* Flagged for Review Indicator */}
+                                {flaggedMessageIds.has(msg.$id) && (
+                                  <div className="mt-2 flex items-center gap-1.5 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full border border-orange-300">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    <span className="font-semibold">Flagged for review</span>
+                                  </div>
+                                )}
                               </div>
                               
                               {/* Flag Button - Bottom Right of Bubble */}
@@ -1059,6 +1088,115 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
                   >
                     <Send className="w-4 h-4" />
                     Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Flag Message Report Modal */}
+        {showFlagModal && flaggedMessage && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Flag className="w-6 h-6 text-white" />
+                  <h3 className="text-white font-bold text-lg">Report Message</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowFlagModal(false);
+                    setFlaggedMessage(null);
+                    setFlagCategory('');
+                    setFlagComment('');
+                  }}
+                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                  title="Close"
+                >
+                  <X className="w-5 h-5 text-white" />
+                </button>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6">
+                {/* Message Preview */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-gray-500 mb-1">Reporting this message:</p>
+                  <p className="text-sm text-gray-800 line-clamp-3">{flaggedMessage.message}</p>
+                </div>
+                
+                {/* Report Categories */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Select behavior type: <span className="text-red-500">*</span>
+                  </label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'inappropriate', label: '🚫 Inappropriate Content', desc: 'Offensive or unsuitable material' },
+                      { value: 'spam', label: '📢 Spam or Advertising', desc: 'Unwanted promotional content' },
+                      { value: 'harassment', label: '😠 Harassment or Abuse', desc: 'Threatening or abusive behavior' },
+                      { value: 'scam', label: '⚠️ Scam or Fraud', desc: 'Suspicious or fraudulent activity' },
+                      { value: 'other', label: '📝 Other Violation', desc: 'Other policy violations' }
+                    ].map((category) => (
+                      <button
+                        key={category.value}
+                        onClick={() => setFlagCategory(category.value)}
+                        className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                          flagCategory === category.value
+                            ? 'border-red-500 bg-red-50'
+                            : 'border-gray-200 hover:border-red-200 hover:bg-red-50/50'
+                        }`}
+                      >
+                        <div className="font-semibold text-sm">{category.label}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{category.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Additional Comment */}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Additional details (optional):
+                  </label>
+                  <textarea
+                    value={flagComment}
+                    onChange={(e) => setFlagComment(e.target.value)}
+                    placeholder="Provide more context about this report..."
+                    rows={3}
+                    className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-red-400 focus:outline-none resize-none text-sm"
+                  />
+                </div>
+                
+                {/* Warning Notice */}
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-yellow-800">
+                    ⚠️ False reports may result in action against your account. All reports are reviewed by our moderation team.
+                  </p>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowFlagModal(false);
+                      setFlaggedMessage(null);
+                      setFlagCategory('');
+                      setFlagComment('');
+                    }}
+                    className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={submitFlagReport}
+                    disabled={!flagCategory}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg hover:from-red-600 hover:to-orange-600 transition-all font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Submit Report
                   </button>
                 </div>
               </div>
