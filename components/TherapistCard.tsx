@@ -416,22 +416,32 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 if (showPriceListModal) {
                     const therapistId = String(therapist.$id || therapist.id);
                     console.log('🍽️ Loading menu for therapist:', therapistId);
+                    console.log('🔍 Therapist name:', therapist.name);
+                    console.log('🔍 Therapist $id:', therapist.$id);
+                    console.log('🔍 Therapist id:', therapist.id);
                     
                     try {
                         // Check if therapist menus collection exists by trying to load menu
                         const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
                         console.log('📄 Menu document received:', menuDoc);
+                        console.log('📄 Menu document ID:', menuDoc?.$id);
+                        console.log('📄 Menu document therapistId:', menuDoc?.therapistId);
+                        console.log('📄 Menu document menuData length:', menuDoc?.menuData?.length);
                         
                         if (menuDoc?.menuData) {
+                            console.log('📄 Raw menuData:', menuDoc.menuData);
                             const parsed = JSON.parse(menuDoc.menuData);
+                            console.log('📄 Parsed menuData:', parsed);
                             setMenuData(Array.isArray(parsed) ? parsed : []);
                             console.log('✅ Menu items loaded:', parsed.length);
                         } else {
                             console.log('ℹ️ No menu data found - using fallback pricing');
+                            console.log('ℹ️ menuDoc is:', menuDoc);
                             setMenuData([]);
                         }
                     } catch (error: any) {
                         console.log('ℹ️ Menu collection not available - using fallback pricing:', error.message);
+                        console.error('❌ Full error:', error);
                         // Don't treat this as an error - just use fallback pricing
                         setMenuData([]);
                     }
@@ -1846,7 +1856,7 @@ ${locationInfo}${coordinatesInfo}
                                         <div className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-orange-50 items-center">
                                             {/* Service Name */}
                                             <div className="col-span-4">
-                                                <div className="font-medium text-sm text-gray-900">Professional Massage</div>
+                                                <div className="font-medium text-sm text-gray-900">Traditional Massage</div>
                                                 <div className="text-xs text-gray-500 mt-1">Traditional therapeutic massage</div>
                                             </div>
 

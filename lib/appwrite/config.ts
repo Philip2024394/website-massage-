@@ -61,7 +61,7 @@ export const APPWRITE_CONFIG = {
     // Jobs
     employerJobPostings: 'Employer Job Postings',
     therapistJobListings: 'Therapist Job Listings',
-    therapistMenus: 'Therapist Menus',
+    therapistMenus: 'therapist_menus',  // ✅ Fixed: was 'Therapist Menus' (with space), now using actual collection ID
     
     // Other
     verifications: 'Verifications',

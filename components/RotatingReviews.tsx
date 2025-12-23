@@ -48,6 +48,7 @@ interface RotatingReviewsProps {
 
 const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, providerId, providerName, providerType = 'therapist', providerImage }) => {
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -249,9 +250,35 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                                         ))}
                                     </div>
                                 </div>
-                                <p className="text-gray-700 text-sm leading-relaxed">
-                                    {review.reviewText || review.comment}
-                                </p>
+                                {(() => {
+                                    const text = review.reviewText || review.comment || '';
+                                    const hashSource = `${review.$id}-${index}`;
+                                    let hash = 0;
+                                    for (let i = 0; i < hashSource.length; i++) hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
+                                    const clampLines = 2 + Math.abs(hash) % 4; // 2..5 lines
+                                    const isExpanded = expanded.has(review.$id);
+                                    return (
+                                        <>
+                                            <p className={`text-gray-700 text-sm leading-relaxed ${isExpanded ? '' : `line-clamp-${clampLines}`}`}>
+                                                {text}
+                                            </p>
+                                            {text.length > 120 && (
+                                                <button
+                                                    onClick={() => {
+                                                        setExpanded(prev => {
+                                                            const next = new Set(prev);
+                                                            if (next.has(review.$id)) next.delete(review.$id); else next.add(review.$id);
+                                                            return next;
+                                                        });
+                                                    }}
+                                                    className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700"
+                                                >
+                                                    {isExpanded ? 'Show less' : 'Read more'}
+                                                </button>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                                 {review.location && (
                                     <p className="text-xs text-gray-500 mt-2">
                                         📍 {review.location}
