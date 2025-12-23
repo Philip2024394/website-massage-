@@ -256,11 +256,17 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         // Set selected place first
         onSelectPlace(place);
         
+        // Update URL for shareable link
+        const placeId = place.id || (place as any).$id;
+        const slug = place.name?.toLowerCase().replace(/\s+/g, '-') || 'place';
+        const profileUrl = `/profile/place/${placeId}-${slug}`;
+        window.history.pushState({}, '', profileUrl);
+        
         // Use setTimeout to ensure state update completes before navigation
         if (onNavigate) {
-            console.log('🏨 Navigating to massagePlaceProfile');
+            console.log('🏨 Navigating to massage-place-profile');
             setTimeout(() => {
-                onNavigate('massagePlaceProfile');
+                onNavigate('massage-place-profile');
             }, 0);
         } else {
             console.error('❌ onNavigate is not defined!');

@@ -21,7 +21,13 @@ const PriceListPage: React.FC<PriceListPageProps> = ({ therapist, onBack }) => {
         const loadMenu = async () => {
             try {
                 const therapistId = String(therapist.$id || therapist.id);
-                const response = await fetch(`https://syd.cloud.appwrite.io/v1/databases/68f76ee1000e64ca8d05/collections/therapist_menus/documents?queries[]=${encodeURIComponent(JSON.stringify({ method: 'equal', attribute: 'therapistId', values: [therapistId] }))}&queries[]=${encodeURIComponent(JSON.stringify({ method: 'limit', values: [1] }))}`);
+                const response = await fetch(
+                    `https://syd.cloud.appwrite.io/v1/databases/68f76ee1000e64ca8d05/collections/therapist_menus/documents?queries[]=${encodeURIComponent(
+                        JSON.stringify({ method: 'equal', attribute: 'therapistId', values: [therapistId] })
+                    )}&queries[]=${encodeURIComponent(
+                        JSON.stringify({ method: 'orderDesc', attribute: '$updatedAt' })
+                    )}&queries[]=${encodeURIComponent(JSON.stringify({ method: 'limit', values: [1] }))}`
+                );
                 
                 if (response.ok) {
                     const data = await response.json();

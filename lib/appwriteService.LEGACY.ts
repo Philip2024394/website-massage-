@@ -6714,6 +6714,8 @@ export const therapistMenusService = {
                 APPWRITE_CONFIG.collections.therapistMenus,
                 [
                     Query.equal('therapistId', therapistId),
+                    // If duplicates exist, always pick the most recently updated doc
+                    Query.orderDesc('$updatedAt'),
                     Query.limit(1)
                 ]
             );

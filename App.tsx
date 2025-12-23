@@ -22,6 +22,7 @@ import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
 import { chatSessionService } from './services/chatSessionService';
 import ChatErrorBoundary from './components/ChatErrorBoundary';
+import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
 
@@ -417,6 +418,45 @@ const App = () => {
 
     console.log('📄 App.tsx: Current page state:', state.page);
 
+    // ===== URL SYNCHRONIZATION SYSTEM =====
+    // Sync browser URL with page state
+    useEffect(() => {
+        // Skip URL update during initial load to avoid conflicts with direct URL access
+        const isInitialLoad = sessionStorage.getItem('app_initial_load') !== 'done';
+        if (isInitialLoad) {
+            sessionStorage.setItem('app_initial_load', 'done');
+            return;
+        }
+        
+        // Update browser URL when page changes
+        const currentPath = window.location.pathname;
+        const expectedUrl = getUrlForPage(state.page);
+        
+        // Only update if URL doesn't match (avoid unnecessary history entries)
+        if (currentPath !== expectedUrl && !currentPath.startsWith('/profile/therapist/') && !currentPath.startsWith('/profile/place/') && !currentPath.startsWith('/accept-booking/')) {
+            updateBrowserUrl(state.page, undefined, false);
+        }
+    }, [state.page]);
+
+    // Handle browser back/forward buttons
+    useEffect(() => {
+        const handlePopState = (event: PopStateEvent) => {
+            const path = window.location.pathname;
+            const page = getPageFromUrl(path);
+            
+            if (page && page !== state.page) {
+                console.log('🔙 Browser back/forward navigation to:', page);
+                state.setPage(page);
+            }
+        };
+        
+        window.addEventListener('popstate', handlePopState);
+        
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [state.page, state.setPage]);
+
     // Detect direct path navigation for accept-booking links and membership page
     useEffect(() => {
         try {
@@ -425,6 +465,44 @@ const App = () => {
                 state.setPage('accept-booking');
             } else if (path === '/join' || path.startsWith('/join/')) {
                 state.setPage('membership-select');
+            } else if (path.startsWith('/profile/therapist/')) {
+                // Handle direct therapist profile URL with reviews
+                const match = path.match(/\/profile\/therapist\/(\d+)-/);
+                if (match && state.therapists?.length) {
+                    const therapistId = match[1];
+                    const found = state.therapists.find((t: any) => 
+                        (t.id || t.$id || '').toString() === therapistId
+                    );
+                    if (found) {
+                        state.setSelectedTherapist(found);
+                        state.setPage('therapist-profile');
+                    }
+                } else if (match) {
+                    // Store for later when therapists are loaded
+                    sessionStorage.setItem('pending_deeplink', JSON.stringify({
+                        provider: `therapist-${match[1]}`,
+                        targetPage: 'therapist-profile'
+                    }));
+                }
+            } else if (path.startsWith('/profile/place/')) {
+                // Handle direct massage place profile URL
+                const match = path.match(/\/profile\/place\/(\d+)-/);
+                if (match && state.places?.length) {
+                    const placeId = match[1];
+                    const found = state.places.find((p: any) => 
+                        (p.id || p.$id || '').toString() === placeId
+                    );
+                    if (found) {
+                        state.setSelectedPlace(found);
+                        state.setPage('massage-place-profile');
+                    }
+                } else if (match) {
+                    // Store for later when places are loaded
+                    sessionStorage.setItem('pending_deeplink', JSON.stringify({
+                        provider: `place-${match[1]}`,
+                        targetPage: 'massage-place-profile'
+                    }));
+                }
             } else if (path === '/signup' || path.startsWith('/signup')) {
                 // Handle signup - set page state to trigger redirect or render SimpleSignupFlow
                 const urlParams = new URLSearchParams(window.location.search);
@@ -444,7 +522,7 @@ const App = () => {
             console.warn('Path detection failed:', e);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [state.therapists, state.places]);
 
     // Navigate to deep-linked profile once data is available (requires state)
     useEffect(() => {
@@ -468,7 +546,7 @@ const App = () => {
                 const found = state.places.find((pl: any) => ((pl.id ?? pl.$id ?? '').toString() === idStr));
                 if (found) {
                     state.setSelectedPlace(found);
-                    state.setPage('massagePlaceProfile');
+                    state.setPage('massage-place-profile');
                     sessionStorage.removeItem('pending_deeplink');
                 }
             }

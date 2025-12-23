@@ -216,7 +216,9 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(publicRoutes.landing.component);
         
         case 'home':
-            return renderRoute(publicRoutes.home.component);
+            return renderRoute(publicRoutes.home.component, {
+                onSelectTherapist: props.handleSetSelectedTherapist
+            });
         
         case 'about':
             return renderRoute(publicRoutes.about.component);
@@ -265,7 +267,47 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== PROFILE ROUTES =====
         case 'therapist-profile':
-            return renderRoute(profileRoutes.therapist.component);
+            console.log('🔧 [TherapistProfile] Rendering therapist profile page');
+            console.log('  - selectedTherapist:', props.selectedTherapist);
+            console.log('  - URL path:', window.location.pathname);
+            
+            // Check if accessing via URL with ID parameter
+            const pathMatch = window.location.pathname.match(/\/profile\/therapist\/(\d+-[\w-]+)/);
+            if (pathMatch && !props.selectedTherapist) {
+                // Extract ID from URL and find therapist
+                const urlId = pathMatch[1].split('-')[0];
+                const foundTherapist = props.therapists.find((t: any) => 
+                    (t.id || t.$id || '').toString() === urlId
+                );
+                if (foundTherapist) {
+                    return renderRoute(profileRoutes.therapistProfile.component, {
+                        therapist: foundTherapist
+                    });
+                }
+            }
+            
+            return renderRoute(profileRoutes.therapistProfile.component, {
+                therapist: props.selectedTherapist,
+                // Header props
+                onLanguageChange: props.onLanguageChange,
+                language: props.language,
+                selectedCity: props.selectedCity,
+                onCityChange: props.onCityChange,
+                therapists: props.therapists,
+                places: props.places,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                onNavigate: props.onNavigate
+            });
         
         // NEW: Simple share routes
         case 'share-therapist':
@@ -294,7 +336,66 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.sharedTherapist.component);
         
         case 'massage-place-profile':
-            return renderRoute(profileRoutes.massagePlace.component);
+            console.log('🔧 [MassagePlaceProfile] Rendering massage place profile page');
+            console.log('  - selectedPlace:', props.selectedPlace);
+            console.log('  - URL path:', window.location.pathname);
+            
+            // Check if accessing via URL with ID parameter
+            const placePathMatch = window.location.pathname.match(/\/profile\/place\/(\d+-[\w-]+)/);
+            if (placePathMatch && !props.selectedPlace) {
+                // Extract ID from URL and find place
+                const urlId = placePathMatch[1].split('-')[0];
+                const foundPlace = props.places.find((p: any) => 
+                    (p.id || p.$id || '').toString() === urlId
+                );
+                if (foundPlace) {
+                    return renderRoute(profileRoutes.massagePlace.component, {
+                        place: foundPlace,
+                        // Header props
+                        onLanguageChange: props.onLanguageChange,
+                        language: props.language,
+                        selectedCity: props.selectedCity,
+                        onCityChange: props.onCityChange,
+                        therapists: props.therapists,
+                        places: props.places,
+                        onMassageJobsClick: props.onMassageJobsClick,
+                        onHotelPortalClick: props.onHotelPortalClick,
+                        onVillaPortalClick: props.onVillaPortalClick,
+                        onTherapistPortalClick: props.onTherapistPortalClick,
+                        onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                        onFacialPortalClick: props.onFacialPortalClick,
+                        onAgentPortalClick: props.onAgentPortalClick,
+                        onCustomerPortalClick: props.onCustomerPortalClick,
+                        onAdminPortalClick: props.onAdminPortalClick,
+                        onTermsClick: props.onTermsClick,
+                        onPrivacyClick: props.onPrivacyClick,
+                        onNavigate: props.onNavigate
+                    });
+                }
+            }
+            
+            return renderRoute(profileRoutes.massagePlace.component, {
+                place: props.selectedPlace,
+                // Header props
+                onLanguageChange: props.onLanguageChange,
+                language: props.language,
+                selectedCity: props.selectedCity,
+                onCityChange: props.onCityChange,
+                therapists: props.therapists,
+                places: props.places,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onHotelPortalClick: props.onHotelPortalClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onFacialPortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                onNavigate: props.onNavigate
+            });
         
         case 'facial-place-profile':
             return renderRoute(profileRoutes.facialPlace.component);

@@ -271,8 +271,8 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
         onSelectPlace(place);
         
         if (onNavigate) {
-            console.log('🏨 Navigating to facialPlaceProfile');
-            onNavigate('facialPlaceProfile');
+            console.log('🏨 Navigating to facial-place-profile');
+            onNavigate('facial-place-profile');
         } else {
             console.error('❌ onNavigate is not defined!');
         }

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Star, MessageSquare, User, MessageCircle, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, Star, MessageSquare, User, MessageCircle, Calendar, Clock } from 'lucide-react';
 import { PageContainer } from '../components/layout/PageContainer';
 import { ReviewData } from '../components/ReviewModal';
 import { ReviewCard } from '../components/ReviewCard';
 import { reviewService } from '../lib/appwriteService';
 
 interface ReviewsPageProps {
-  providerId: string;
-  providerName: string;
-  providerType: 'therapist' | 'place';
+  providerId?: string;
+  providerName?: string;
+  providerType?: 'therapist' | 'place';
   providerImage?: string;
   ownerWhatsApp?: string;
   initialReviews?: ReviewData[];
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const avatarOptions = [
@@ -44,6 +44,27 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   initialReviews = [],
   onBack,
 }) => {
+  // Fallback to URL params if props are not provided
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const qpProviderId = params.get('providerId') || undefined;
+  const qpProviderName = params.get('providerName') || undefined;
+  const qpProviderType = (params.get('providerType') as 'therapist' | 'place' | null) || undefined;
+  const qpProviderImage = params.get('providerImage') || undefined;
+
+  const effectiveProviderId = providerId ?? qpProviderId ?? '0';
+  const effectiveProviderName = providerName ?? qpProviderName ?? 'Unknown';
+  const effectiveProviderType: 'therapist' | 'place' = providerType ?? qpProviderType ?? 'therapist';
+  const effectiveProviderImage = providerImage ?? qpProviderImage;
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack(); // AppRouter routes this to 'home'
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      window.location.href = '/';
+    }
+  };
   const [reviews, setReviews] = useState<ReviewData[]>(initialReviews);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,7 +85,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
     const loadReviews = async () => {
       try {
         setLoading(true);
-        const appwriteReviews = await reviewService.getByProvider(Number(providerId), providerType);
+        const appwriteReviews = await reviewService.getByProvider(Number(effectiveProviderId), effectiveProviderType);
         
         // Convert Appwrite reviews to ReviewData format
         const formattedReviews: ReviewData[] = appwriteReviews.map((review: any) => ({
@@ -86,7 +107,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
     };
 
     loadReviews();
-  }, [providerId, providerType]);
+  }, [effectiveProviderId, effectiveProviderType]);
 
   const averageRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -159,7 +180,27 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       });
 
       console.log('✅ Review submitted successfully');
-      
+
+      // Determine redirect target
+      const paramsForRedirect = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+      const returnUrl = paramsForRedirect.get('returnUrl');
+      const idForRedirect = effectiveProviderId;
+      const nameForRedirect = effectiveProviderName || '';
+      const cleanSlug = nameForRedirect
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      let fallbackProfileUrl = '/';
+      if (idForRedirect && cleanSlug) {
+        if (effectiveProviderType === 'place') {
+          fallbackProfileUrl = `/profile/place/${idForRedirect}-${cleanSlug}`;
+        } else {
+          fallbackProfileUrl = `/profile/therapist/${idForRedirect}-${cleanSlug}`;
+        }
+      }
+
       // Reset form
       setUserName('');
       setWhatsappNumber('');
@@ -168,13 +209,13 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       setSelectedAvatar('');
       setErrors({});
       setShowForm(false);
-      
-      // Show success message
-      setShowSuccessMessage(true);
-      setTimeout(() => setShowSuccessMessage(false), 5000);
 
-      // Scroll to top to see the new review
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Redirect back to profile (prefer explicit returnUrl)
+      if (typeof window !== 'undefined') {
+        const target = returnUrl || fallbackProfileUrl;
+        window.location.href = target;
+        return;
+      }
     } catch (error) {
       console.error('❌ Error submitting review:', error);
       
@@ -188,7 +229,7 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Success Message Toast */}
       {showSuccessMessage && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-slide-down">
@@ -213,10 +254,10 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
               <span className="text-orange-500">street</span>
             </h1>
             <button 
-              onClick={onBack} 
+              onClick={handleBack} 
               className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
-              <Home className="w-5 h-5 text-orange-600" />
+              <ArrowLeft className="w-5 h-5 text-orange-600" />
             </button>
           </div>
         </PageContainer>
@@ -228,16 +269,16 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
           <div className="relative z-10">
             <h2 className="text-2xl font-bold text-gray-900 mb-1 pr-20 sm:pr-24">Customer Reviews</h2>
             <div className="flex items-center gap-3 pr-20 sm:pr-24">
-              {providerImage && (
+              {effectiveProviderImage && (
                 <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orange-500 shadow-md flex-shrink-0">
                   <img 
-                    src={providerImage} 
-                    alt={providerName}
+                    src={effectiveProviderImage} 
+                    alt={effectiveProviderName}
                     className="w-full h-full object-cover"
                   />
                 </div>
               )}
-              <p className="text-gray-600 font-medium">{providerName}</p>
+              <p className="text-gray-600 font-medium">{effectiveProviderName}</p>
             </div>
           </div>
           <img 

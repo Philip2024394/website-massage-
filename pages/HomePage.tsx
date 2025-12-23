@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
-import TherapistCard from '../components/TherapistCard';
+import TherapistHomeCard from '../components/TherapistHomeCard';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import FacialPlaceCard from '../components/FacialPlaceCard';
 import RatingModal from '../components/RatingModal';
@@ -37,6 +37,7 @@ interface HomePageProps {
     selectedCity?: string; // Add optional prop for external control
     onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
+    onSelectTherapist?: (therapist: Therapist) => void; // Add therapist selection
     onBook: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onQuickBookWithChat?: (provider: Therapist | Place, type: 'therapist' | 'place') => void;
     onChatWithBusyTherapist?: (therapist: Therapist) => void;
@@ -114,6 +115,7 @@ const HomePage: React.FC<HomePageProps> = ({
     selectedCity: propSelectedCity, // Get from prop
     onSetUserLocation, 
     onSelectPlace,
+    onSelectTherapist,
     onBook,
     onQuickBookWithChat,
     onChatWithBusyTherapist,
@@ -1294,21 +1296,19 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 
                                 return (
                                 <div key={therapist.$id || `therapist-wrapper-${therapist.id}-${index}`}>
-                                <TherapistCard
+                                <TherapistHomeCard
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
-                                    onRate={() => handleOpenRatingModal(therapist)}
-                                    onBook={() => onBook(therapist, 'therapist')}
-                                    onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist, 'therapist') : undefined}
-                                    onChatWithBusyTherapist={onChatWithBusyTherapist}
-                                    onShowRegisterPrompt={onShowRegisterPrompt}
-
-                                    isCustomerLoggedIn={!!loggedInCustomer}
+                                    onClick={(t) => {
+                                        // Set selected therapist and navigate to profile page with URL update
+                                        onSelectTherapist?.(t);
+                                        const therapistId = t.id || t.$id;
+                                        const slug = t.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                        const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                        window.history.pushState({}, '', profileUrl);
+                                        onNavigate?.('therapist-profile');
+                                    }}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
-                                    loggedInProviderId={loggedInProvider?.id}
-                                    onNavigate={onNavigate}
-                                    activeDiscount={realDiscount}
-                                    t={translationsObject}
                                 />
                                 {/* Accommodation Massage Service Link */}
                                 <div className="mt-2 mb-8 text-center">

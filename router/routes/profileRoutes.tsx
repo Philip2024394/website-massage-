@@ -24,6 +24,12 @@ export const profileRoutes = {
     component: TherapistProfilePage,
     name: 'therapist'
   },
+  // NEW: Profile page with reviews (internal + shareable URL)
+  therapistProfile: {
+    path: '/profile/therapist/:id',
+    component: TherapistProfilePage,
+    name: 'therapistProfile'
+  },
   // NEW: Simple, clean share URLs
   shareTherapist: {
     path: '/share/therapist/:id',
