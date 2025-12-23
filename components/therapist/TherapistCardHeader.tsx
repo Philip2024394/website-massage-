@@ -35,7 +35,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 />
             </div>
                 
-            {/* Verified Badge - Top Left Corner - Custom or Premium - Properly positioned within image */}
+            {/* Verified Badge - Top Left Corner - Custom, Premium, or Basic Admin Verified */}
             {customVerifiedBadge ? (
                 <div className="absolute top-2 left-2 z-30 max-w-[25%] max-h-[25%]">
                     <img 
@@ -50,13 +50,19 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                         }}
                     />
                 </div>
-            ) : (therapist as any).membershipTier === 'premium' && (
+            ) : (therapist as any).membershipTier === 'premium' ? (
                 <div className="absolute top-2 left-2 z-30">
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
                         alt="Verified Member"
                         className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain"
                     />
+                </div>
+            ) : therapist.isVerified && (
+                <div className="absolute top-3 left-3 bg-blue-600 rounded-full p-2.5 shadow-lg z-30 border-2 border-white">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
                 </div>
             )}
 
