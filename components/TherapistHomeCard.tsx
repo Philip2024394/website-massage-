@@ -222,7 +222,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <span className="text-xs text-gray-300">({displayReviewCount})</span>
                 </div>
 
-                {/* Premium Verified Badge - Centered between star rating and profile */}
+                {/* Premium Verified Badge - Left side, vertically centered */}
                 {(() => {
                     // Check if premium member or verified
                     const isPremium = therapist.membershipTier === 'premium' || 
@@ -231,7 +231,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     (therapist as any).verificationBadge === 'verified';
                     
                     return isPremium && (
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20">
+                        <div className="absolute top-1/2 left-3 transform -translate-y-1/2 z-20">
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
                                 alt="Verified Badge"
