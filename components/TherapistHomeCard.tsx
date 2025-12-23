@@ -202,12 +202,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
                     <div className="flex-shrink-0">
-                        <div className="relative w-16 sm:w-20 h-16 sm:h-20">
+                        <div className="relative w-24 h-24">
                             <img 
                                 className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={therapist.name}
-                                style={{ width: '64px', height: '64px' }}
+                                style={{ width: '96px', height: '96px' }}
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
@@ -216,11 +216,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                     
                     {/* Name and Status Column */}
-                    <div className="flex-1 min-w-0 pt-8 sm:pt-12">
+                    <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
                         {/* Name and Location - Same line with name on left, location on right */}
-                        <div className="mb-1.5">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                                <h3 className="text-sm sm:text-lg font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors leading-tight flex-shrink-0">
+                        <div className="mb-1">
+                            <div className="flex items-center justify-between gap-2 mb-1 mt-4">
+                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
                                     {therapist.name}
                                 </h3>
                                 <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
@@ -234,9 +234,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
 
                         {/* Status Badge - Under name like profile card */}
-                        <div className={`inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                            <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1 sm:mr-1.5`}></span>
-                            <span className="text-xs">{statusStyle.label}</span>
+                        <div className="overflow-visible">
+                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`}>
+                                <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
+                                <span className="text-xs">{statusStyle.label}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -244,7 +246,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
             {/* Client Preference - Menerima with Languages on same line (After profile section like profile card) */}
             <div className="mx-4 mb-2">
-                <div className="flex items-center gap-3">
+                <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
