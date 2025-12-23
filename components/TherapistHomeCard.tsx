@@ -204,9 +204,10 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <div className="flex-shrink-0">
                         <div className="relative w-16 sm:w-20 h-16 sm:h-20">
                             <img 
-                                className="w-16 sm:w-20 h-16 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
+                                className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={therapist.name}
+                                style={{ width: '64px', height: '64px' }}
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
@@ -215,35 +216,99 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                     
                     {/* Name and Status Column */}
-                    <div className="flex-1 min-w-0 pt-10 sm:pt-14">
-                        {/* Name and Location on same line */}
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors flex-1">
+                    <div className="flex-1 min-w-0 pt-8 sm:pt-12">
+                        {/* Name and Location - Stack on mobile for better readability */}
+                        <div className="mb-1.5">
+                            <h3 className="text-sm sm:text-lg font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors leading-tight mb-1">
                                 {therapist.name}
                             </h3>
-                            <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
-                                <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex items-center gap-1 text-gray-600">
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span className="text-xs">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
+                                <span className="text-xs sm:text-xs truncate">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
                             </div>
                         </div>
 
                         {/* Status Badge - Under name like profile card */}
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                            <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
-                            {statusStyle.label}
+                        <div className={`inline-flex items-center px-2 sm:px-2.5 py-1 sm:py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                            <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1 sm:mr-1.5`}></span>
+                            <span className="text-xs">{statusStyle.label}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Client Preference - Menerima (After profile section like profile card) */}
+            {/* Client Preference - Menerima with Languages on same line (After profile section like profile card) */}
             <div className="mx-4 mb-2">
-                <p className="text-xs text-gray-600 text-left">
-                    <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
-                </p>
+                <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-600">
+                        <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
+                    </p>
+                    {(() => {
+                        const languages = therapist.languages 
+                            ? (typeof therapist.languages === 'string' 
+                                ? therapist.languages.split(',').map(l => l.trim()) 
+                                : therapist.languages)
+                            : [];
+                        
+                        if (!languages || !Array.isArray(languages) || languages.length === 0) return null;
+                        
+                        // Language mapping with flags
+                        const langMap: Record<string, {flag: string, name: string}> = {
+                            'english': {flag: '🇬🇧', name: 'EN'},
+                            'indonesian': {flag: '🇮🇩', name: 'ID'},
+                            'mandarin': {flag: '🇨🇳', name: 'ZH'},
+                            'japanese': {flag: '🇯🇵', name: 'JP'},
+                            'korean': {flag: '🇰🇷', name: 'KR'},
+                            'thai': {flag: '🇹🇭', name: 'TH'},
+                            'vietnamese': {flag: '🇻🇳', name: 'VI'},
+                            'french': {flag: '🇫🇷', name: 'FR'},
+                            'german': {flag: '🇩🇪', name: 'DE'},
+                            'spanish': {flag: '🇪🇸', name: 'ES'},
+                            'portuguese': {flag: '🇵🇹', name: 'PT'},
+                            'italian': {flag: '🇮🇹', name: 'IT'},
+                            'russian': {flag: '🇷🇺', name: 'RU'},
+                            'arabic': {flag: '🇸🇦', name: 'AR'},
+                            'hindi': {flag: '🇮🇳', name: 'HI'},
+                            // Language codes for backward compatibility
+                            'en': {flag: '🇬🇧', name: 'EN'},
+                            'id': {flag: '🇮🇩', name: 'ID'},
+                            'zh': {flag: '🇨🇳', name: 'ZH'},
+                            'ja': {flag: '🇯🇵', name: 'JP'},
+                            'ko': {flag: '🇰🇷', name: 'KR'},
+                            'th': {flag: '🇹🇭', name: 'TH'},
+                            'vi': {flag: '🇻🇳', name: 'VI'},
+                            'fr': {flag: '🇫🇷', name: 'FR'},
+                            'de': {flag: '🇩🇪', name: 'DE'},
+                            'es': {flag: '🇪🇸', name: 'ES'},
+                            'pt': {flag: '🇵🇹', name: 'PT'},
+                            'it': {flag: '🇮🇹', name: 'IT'},
+                            'ru': {flag: '🇷🇺', name: 'RU'},
+                            'ar': {flag: '🇸🇦', name: 'AR'},
+                            'hi': {flag: '🇮🇳', name: 'HI'}
+                        };
+                        
+                        return (
+                            <div className="flex items-center gap-1">
+                                {languages.slice(0, 2).map(lang => {
+                                    const langKey = lang.toLowerCase();
+                                    const langInfo = langMap[langKey] || {flag: '🌐', name: lang.slice(0, 2).toUpperCase()};
+                                    return (
+                                        <span key={lang} className="flex items-center gap-0.5 text-xs">
+                                            <span className="text-xs">{langInfo.flag}</span>
+                                            <span className="text-xs font-medium text-gray-700">{langInfo.name}</span>
+                                        </span>
+                                    );
+                                })}
+                                {languages.length > 2 && (
+                                    <span className="text-xs text-gray-500">+{languages.length - 2}</span>
+                                )}
+                            </div>
+                        );
+                    })()}
+                </div>
             </div>
 
             {/* Description (After Menerima like profile card) */}
