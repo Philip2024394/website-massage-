@@ -304,9 +304,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                         </span>
                                     );
                                 })}
-                                {languages.length > 2 && (
-                                    <span className="text-xs text-gray-500">+{languages.length - 2}</span>
-                                )}
                             </div>
                         );
                     })()}
