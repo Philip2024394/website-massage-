@@ -175,23 +175,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
                 {/* Verified Badge - Top Left on main image */}
                 {(() => {
-                    // Debug logging for Surtiningsih
-                    if (therapist.name?.toLowerCase().includes('surtiningsih')) {
-                        console.log('🔍 Surtiningsih Home Card Debug:', {
-                            name: therapist.name,
-                            isVerified: therapist.isVerified,
-                            verifiedProp: (therapist as any).verified,
-                            verificationBadge: (therapist as any).verificationBadge,
-                            membershipTier: therapist.membershipTier,
-                            allKeys: Object.keys(therapist)
-                        });
-                    }
-                    
-                    // Check multiple verification sources
+                    // Check multiple verification sources including premium membership
                     const isVerified = therapist.isVerified || 
                                      (therapist as any).verified || 
                                      (therapist as any).verificationBadge === 'verified' ||
-                                     (therapist.membershipTier === 'premium' && therapist.name?.toLowerCase().includes('surtiningsih'));
+                                     therapist.membershipTier === 'premium';
                     
                     return isVerified && (
                         <div className="absolute top-3 left-3 bg-blue-600 rounded-full p-3 shadow-lg z-30 border-2 border-white">
@@ -207,7 +195,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     therapist.isVerified || 
                     (therapist as any).verified || 
                     (therapist as any).verificationBadge === 'verified' ||
-                    (therapist.membershipTier === 'premium' && therapist.name?.toLowerCase().includes('surtiningsih'))
+                    therapist.membershipTier === 'premium'
                     ? 'left-20' : 'left-3'
                 } bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5`}>
                     <StarIcon className="w-4 h-4 text-orange-500" />
