@@ -4,6 +4,9 @@ import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/
 import DistanceDisplay from './DistanceDisplay';
 import { bookingService } from '../lib/appwriteService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
+import SocialSharePopup from './SocialSharePopup';
+import { generateShareableURL } from '../utils/seoSlugGenerator';
+import { shareLinkService } from '../lib/services/shareLinkService';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -34,6 +37,16 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         return 0;
     });
 
+    // Share functionality state
+    const [showSharePopup, setShowSharePopup] = useState(false);
+    const [shortShareUrl, setShortShareUrl] = useState<string>('');
+
+    // Handle share functionality
+    const handleShareClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowSharePopup(true);
+    };
+
     useEffect(() => {
         const loadBookingsCount = async () => {
             try {
@@ -48,6 +61,35 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         };
 
         loadBookingsCount();
+    }, [therapist]);
+
+    // Generate share URL
+    useEffect(() => {
+        const generateShareUrl = async () => {
+            try {
+                const therapistId = String((therapist as any).id || (therapist as any).$id || '');
+                if (!therapistId) return;
+                
+                // Try to get existing share link
+                const shareLink = await shareLinkService.getByEntity('therapist', therapistId);
+                if (shareLink) {
+                    const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
+                    setShortShareUrl(shortUrl);
+                } else {
+                    // Fallback to regular URL
+                    const fullUrl = generateShareableURL(therapist.name, 'therapist', therapistId);
+                    setShortShareUrl(fullUrl);
+                }
+            } catch (error) {
+                console.error('Error generating share URL:', error);
+                // Fallback to regular URL
+                const therapistId = String((therapist as any).id || (therapist as any).$id || '');
+                const fullUrl = generateShareableURL(therapist.name, 'therapist', therapistId);
+                setShortShareUrl(fullUrl);
+            }
+        };
+
+        generateShareUrl();
     }, [therapist]);
 
     // Parse pricing
@@ -217,6 +259,18 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </span>
                     </div>
                 )}
+
+                {/* Share Button - Bottom Right Corner of image */}
+                <button
+                    onClick={handleShareClick}
+                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                    title="Share this therapist"
+                    aria-label="Share this therapist"
+                >
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                </button>
             </div>
 
             {/* Profile Section - Similar to MassagePlaceCard */}
@@ -373,6 +427,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </button>
             </div>
             </div>
+
+            {/* Social Share Popup */}
+            {showSharePopup && (
+                <SocialSharePopup
+                    isOpen={showSharePopup}
+                    onClose={() => setShowSharePopup(false)}
+                    therapistName={therapist.name}
+                    therapistId={String((therapist as any).id || (therapist as any).$id || '')}
+                    shareUrl={shortShareUrl || generateShareableURL(therapist.name, 'therapist', String((therapist as any).id || (therapist as any).$id || ''))}
+                />
+            )}
         </div>
     );
 };
