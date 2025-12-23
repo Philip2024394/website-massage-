@@ -204,7 +204,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <div className="flex-shrink-0">
                         <div className="relative w-16 sm:w-20 h-16 sm:h-20">
                             <img 
-                                className="w-16 sm:w-20 h-16 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                                className="w-16 sm:w-20 h-16 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={therapist.name}
                                 onError={(e) => {
@@ -260,21 +260,21 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 {/* Pricing */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
                     {pricing["60"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">60 min</div>
-                            <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["60"])}</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
                         </div>
                     )}
                     {pricing["90"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">90 min</div>
-                            <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["90"])}</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
                         </div>
                     )}
                     {pricing["120"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">120 min</div>
-                            <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["120"])}</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
                         </div>
                     )}
                 </div>

@@ -258,19 +258,21 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                                         <div className="font-medium text-gray-900 text-sm">{service.serviceName}</div>
                                                     </div>
                                                     
-                                                    {/* Duration buttons - simplified for brevity */}
+                                                    {/* Duration buttons - improved mobile width */}
                                                     {['60', '90', '120'].map((duration) => (
                                                         <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
                                                             {service[`price${duration}`] ? (
                                                                 <button
                                                                     onClick={() => onSelectService(index, duration as '60' | '90' | '120')}
-                                                                    className={`px-2 py-1 rounded text-xs transition-all border-2 ${
+                                                                    className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 break-words ${
                                                                         isRowSelected && selectedDuration === duration
                                                                             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
                                                                             : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
                                                                     }`}
                                                                 >
-                                                                    Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
+                                                                    <span className="block truncate text-xs">
+                                                                        Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
+                                                                    </span>
                                                                 </button>
                                                             ) : (
                                                                 <span className="text-xs text-gray-400">-</span>

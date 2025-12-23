@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Menu Permissions</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .log { background: #f8f8f8; border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px; }
+        .success { border-left: 4px solid #28a745; }
+        .error { border-left: 4px solid #dc3545; }
+        .warning { border-left: 4px solid #ffc107; }
+        .info { border-left: 4px solid #17a2b8; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 10px 0; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Menu Collection Permissions Debug</h1>
+        <p>This will test if the <code>therapist_menus</code> collection is accessible from the browser (like on your live site).</p>
+        
+        <button onclick="testMenuAccess()">🧪 Test Menu Collection Access</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        // Production configuration (same as your live site)
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<pre>${message}</pre>`;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        async function testMenuAccess() {
+            document.getElementById('results').innerHTML = '';
+            log('🔄 Testing therapist_menus collection access...\n', 'info');
+            
+            try {
+                // Test 1: List documents (what the live site tries to do)
+                log('1️⃣ Testing: List documents from therapist_menus collection...', 'info');
+                
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05', // databaseId
+                    'therapist_menus',       // collection ID
+                    [Query.limit(1)]         // Just try to get 1 document
+                );
+
+                log(`✅ SUCCESS! Found ${response.documents.length} menu documents`, 'success');
+                
+                if (response.documents.length > 0) {
+                    const sample = response.documents[0];
+                    log(`📄 Sample menu document:`, 'info');
+                    log(`   - Document ID: ${sample.$id}`, 'info');
+                    log(`   - Therapist ID: ${sample.therapistId || 'N/A'}`, 'info');
+                    log(`   - Has menuData: ${sample.menuData ? 'YES' : 'NO'}`, 'info');
+                    log(`   - Menu items: ${sample.menuData ? JSON.parse(sample.menuData).length : 0}`, 'info');
+                }
+                
+                log('\n🎉 CONCLUSION: Menu collection is accessible!', 'success');
+                log('💡 This means the issue might be elsewhere...', 'warning');
+                
+            } catch (error) {
+                log(`❌ FAILED: ${error.message}`, 'error');
+                
+                if (error.code === 401) {
+                    log('\n🚨 ISSUE IDENTIFIED: Unauthorized access!', 'error');
+                    log('📝 SOLUTION NEEDED:', 'warning');
+                    log('   1. Open Appwrite Console', 'info');
+                    log('   2. Go to Database → therapist_menus collection', 'info');
+                    log('   3. Click "Settings" → "Permissions"', 'info');
+                    log('   4. Add "Any" role with "Read" permission', 'info');
+                    log('   5. Save the changes', 'info');
+                } else if (error.code === 404) {
+                    log('\n🚨 ISSUE IDENTIFIED: Collection not found!', 'error');
+                    log('📝 The collection ID "therapist_menus" doesn\'t exist', 'warning');
+                } else {
+                    log(`\n🚨 UNEXPECTED ERROR: ${JSON.stringify(error, null, 2)}`, 'error');
+                }
+            }
+            
+            log('\n📊 Test completed.', 'info');
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            setTimeout(testMenuAccess, 1000);
+        });
+    </script>
+</body>
+</html>
