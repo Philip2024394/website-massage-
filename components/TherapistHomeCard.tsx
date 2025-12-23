@@ -3,6 +3,7 @@ import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import { bookingService } from '../lib/appwriteService';
+import { isDiscountActive } from '../utils/therapistCardHelpers';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -98,86 +99,181 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const statusStyle = getStatusStyles();
 
+    // Generate consistent fake booking count for new therapists (18-26)
+    const getInitialBookingCount = (therapistId: string): number => {
+        let hash = 0;
+        for (let i = 0; i < therapistId.length; i++) {
+            hash = ((hash << 5) - hash) + therapistId.charCodeAt(i);
+            hash = hash & hash;
+        }
+        return 18 + (Math.abs(hash) % 9);
+    };
+
+    const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
+    const joinedDisplay = (() => {
+        if (!joinedDateRaw) return '—';
+        try {
+            const d = new Date(joinedDateRaw);
+            if (isNaN(d.getTime())) return '—';
+            return d.toLocaleDateString('en-GB');
+        } catch {
+            return '—';
+        }
+    })();
+
+    const displayBookingsCount = bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount;
+
     return (
-        <div 
-            onClick={() => {
-                onClick(therapist);
-                onIncrementAnalytics('detailViews');
-            }}
-            className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
-        >
+        <div className="relative">
+            {/* External meta bar (Joined Date / Free / Orders) */}
+            <div className="flex justify-between items-center mb-2 px-2">
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {joinedDisplay}
+                </span>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        localStorage.setItem('selectedPortalType', 'massage_therapist');
+                        localStorage.setItem('selected_membership_plan', 'pro');
+                        window.location.href = '/therapist-portal';
+                    }}
+                    className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
+                >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Therapist Join Free
+                </button>
+                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    Orders: {displayBookingsCount}
+                </span>
+            </div>
+            
+            <div 
+                onClick={() => {
+                    onClick(therapist);
+                    onIncrementAnalytics('detailViews');
+                }}
+                className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+            >
             {/* Image Container */}
             <div className="relative h-48 sm:h-56 overflow-hidden">
                 <img
-                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                    src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                     }}
                 />
-                
-                {/* Status Badge - Top Right */}
-                <div className={`absolute top-3 right-3 px-3 py-1 rounded-full ${statusStyle.bg} backdrop-blur-sm flex items-center gap-2`}>
-                    <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse`}></span>
-                    <span className={`text-xs font-semibold ${statusStyle.text}`}>{statusStyle.label}</span>
+
+                {/* Star Rating Badge - Top Left */}
+                <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5">
+                    <StarIcon className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-bold text-white">{displayRating}</span>
+                    <span className="text-xs text-gray-300">({displayReviewCount})</span>
                 </div>
 
-                {/* Orders Badge - Top Left */}
+                {/* Orders Badge - Top Right */}
                 {bookingsCount > 0 && (
-                    <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm">
+                    <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm">
                         <span className="text-xs font-bold text-white">{bookingsCount}+ Orders</span>
+                    </div>
+                )}
+
+                {/* Discount Badge - Bottom Center */}
+                {isDiscountActive(therapist) && (
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 backdrop-blur-sm animate-pulse">
+                        <span className="text-xs font-bold text-white flex items-center gap-1">
+                            🔥 Discount Active
+                        </span>
                     </div>
                 )}
             </div>
 
-            {/* Content */}
-            <div className="p-4">
-                {/* Name & Rating Row */}
-                <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-bold text-gray-900 flex-1 line-clamp-1 group-hover:text-orange-600 transition-colors">
-                        {therapist.name}
-                    </h3>
-                    <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-lg ml-2">
-                        <StarIcon className="w-4 h-4 text-orange-500" />
-                        <span className="text-sm font-bold text-gray-900">{displayRating}</span>
-                        <span className="text-xs text-gray-500">({displayReviewCount})</span>
+            {/* Profile Section - Similar to MassagePlaceCard */}
+            <div className="px-4 -mt-8 sm:-mt-12 pb-4 relative z-10">
+                <div className="flex items-start gap-3">
+                    {/* Profile Picture */}
+                    <div className="flex-shrink-0">
+                        <div className="relative w-16 sm:w-20 h-16 sm:h-20">
+                            <img 
+                                className="w-16 sm:w-20 h-16 sm:h-20 rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
+                                src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                alt={therapist.name}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+                                }}
+                            />
+                        </div>
+                    </div>
+                    
+                    {/* Name and Status Column */}
+                    <div className="flex-1 min-w-0 pt-10 sm:pt-14">
+                        {/* Name and Location on same line */}
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate group-hover:text-orange-600 transition-colors flex-1">
+                                {therapist.name}
+                            </h3>
+                            <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
+                                <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="text-xs">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
+                            </div>
+                        </div>
+
+                        {/* Status Badge - Under name like profile card */}
+                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
+                            <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
+                            {statusStyle.label}
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Location */}
-                <div className="flex items-center gap-1 text-gray-600 mb-3">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="text-sm">{therapist.city || therapist.location || 'Bali'}</span>
-                    {userLocation && therapist.coordinates && (
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerCoordinates={therapist.coordinates}
-                            className="text-xs text-gray-500 ml-1"
-                        />
-                    )}
+            {/* Client Preference - Menerima (After profile section like profile card) */}
+            <div className="mx-4 mb-2">
+                <p className="text-xs text-gray-600 text-left">
+                    <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
+                </p>
+            </div>
+
+            {/* Description (After Menerima like profile card) */}
+            {therapist.description && (
+                <div className="mx-4 mb-3">
+                    <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-2 text-left">
+                        {therapist.description}
+                    </p>
                 </div>
+            )}
 
+            {/* Content */}
+            <div className="px-4 pb-4">
                 {/* Pricing */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
                     {pricing["60"] > 0 && (
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500 mb-1">60 min</div>
+                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                            <div className="text-xs text-gray-600 mb-1">60 min</div>
                             <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["60"])}</div>
                         </div>
                     )}
                     {pricing["90"] > 0 && (
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500 mb-1">90 min</div>
+                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                            <div className="text-xs text-gray-600 mb-1">90 min</div>
                             <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["90"])}</div>
                         </div>
                     )}
                     {pricing["120"] > 0 && (
-                        <div className="text-center p-2 bg-gray-50 rounded-lg">
-                            <div className="text-xs text-gray-500 mb-1">120 min</div>
+                        <div className="text-center p-2 bg-gray-200 rounded-lg">
+                            <div className="text-xs text-gray-600 mb-1">120 min</div>
                             <div className="text-sm font-bold text-gray-900">Rp {formatPrice(pricing["120"])}</div>
                         </div>
                     )}
@@ -187,6 +283,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <button className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all">
                     View Profile
                 </button>
+            </div>
             </div>
         </div>
     );
