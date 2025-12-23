@@ -444,6 +444,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     } catch (error: any) {
                         console.log('ℹ️ Menu collection not available - using fallback pricing:', error.message);
                         console.error('❌ Full error:', error);
+                        console.error('❌ Error stack:', error.stack);
+                        console.error('❌ Error code:', error.code);
+                        console.error('❌ Error type:', error.type);
+                        console.log('🔍 Therapist details for debugging:');
+                        console.log('   - Name:', therapist.name);
+                        console.log('   - ID:', therapistId);
+                        console.log('   - $id:', therapist.$id);
+                        console.log('   - id:', therapist.id);
+                        
                         // Don't treat this as an error - just use fallback pricing
                         setMenuData([]);
                     }
