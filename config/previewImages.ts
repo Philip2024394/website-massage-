@@ -25,7 +25,7 @@ export const PREVIEW_IMAGES = {
   // Special therapist images (optional - use therapist ID as key)
   therapists: {
     // Budi's unique header image for shared profile
-    '692467a3001f6f05aaa1': 'https://ik.imagekit.io/7grri5v7d/budi-yogyakarta-massage-header.png',
+    '692467a3001f6f05aaa1': 'https://ik.imagekit.io/7grri5v7d/massage%2024.png?updatedAt=1766417843230',
     // Add more therapists as needed:
     // '693cfadf003d16b9896a': 'https://ik.imagekit.io/7grri5v7d/surtiningsih-header.png',
   }
