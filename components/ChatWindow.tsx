@@ -2099,8 +2099,9 @@ export default function ChatWindow({
     }
 
     // ACTIVE CHAT SCREEN
+    // Use z-[9999] for full screen to ensure it's above all page elements (headers, menus, etc.)
     const containerClass = isFullScreen
-        ? `fixed inset-0 w-full h-full max-w-full bg-white rounded-none sm:rounded-none shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`
+        ? `fixed inset-0 w-full h-full max-w-full bg-white rounded-none sm:rounded-none shadow-2xl flex flex-col z-[9999] border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`
         : `fixed bottom-2 right-2 left-2 sm:left-auto sm:right-4 sm:bottom-4 w-auto sm:w-96 max-w-full h-[400px] sm:h-[500px] bg-white rounded-lg shadow-2xl flex flex-col z-50 border border-gray-200 transform transition-all duration-300 ease-out ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`;
 
     return (
