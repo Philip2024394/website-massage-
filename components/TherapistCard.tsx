@@ -421,7 +421,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     console.log('🔍 Therapist id:', therapist.id);
                     
                     try {
-                        // Check if therapist menus collection exists by trying to load menu
+                        // 🛡️ MENU DATA LOADING - Depends on therapist_menus collection
+                        // If collection ID has spaces, this will fail with 400/404 errors
+                        // See THERAPIST_MENU_SYSTEM_SAFEGUARDS.md for requirements
                         const menuDoc = await therapistMenusService.getByTherapistId(therapistId);
                         console.log('📄 Menu document received:', menuDoc);
                         console.log('📄 Menu document ID:', menuDoc?.$id);

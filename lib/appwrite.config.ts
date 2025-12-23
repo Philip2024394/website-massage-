@@ -41,7 +41,7 @@ export const APPWRITE_CONFIG = {
         bankDetails: 'bank_details',
         paymentTransactions: 'payment_transactions',
         premiumPayments: 'premium_payments',
-        therapistMenus: 'therapist_menus',
+        therapistMenus: 'therapist_menus', // 🛡️ CRITICAL: Must use underscores, NOT spaces. 'Therapist Menus' causes 400 errors!
         messages: 'Messages',
         packages: 'Packages',
         pushSubscriptions: 'push_subscriptions',

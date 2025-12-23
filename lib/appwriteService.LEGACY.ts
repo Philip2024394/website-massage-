@@ -6703,6 +6703,12 @@ export const premiumPaymentsService = {
 // ===========================
 // Therapist Menus Service
 // ===========================
+// 🛡️ THERAPIST MENUS SERVICE 
+// CRITICAL REQUIREMENTS:
+// 1. Collection ID must use underscores: 'therapist_menus' NOT 'Therapist Menus' 
+// 2. Menu data flows: Dashboard → Service → Collection → TherapistCard display
+// 3. Always check for null returns - collection might be disabled
+// 4. See THERAPIST_MENU_SYSTEM_SAFEGUARDS.md for full documentation
 export const therapistMenusService = {
     /**
      * Get menu for therapist
