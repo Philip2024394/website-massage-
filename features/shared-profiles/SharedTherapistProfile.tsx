@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import { SharedProfileLayout } from './SharedProfileLayout';
 import { useSharedProfile } from './hooks/useSharedProfile';
 import TherapistCard from '../../components/TherapistCard';
+import RotatingReviews from '../../components/RotatingReviews';
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL, generateShareText } from './utils/shareUrlBuilder';
 import { analyticsService } from '../../services/analyticsService';
@@ -283,6 +284,18 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     hideJoinButton={true}
                     customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png"
                 />
+
+                {/* Rotating Reviews Section */}
+                <div className="mt-8">
+                    <RotatingReviews 
+                        location={therapist.city || therapist.location || 'Yogyakarta'} 
+                        limit={5}
+                        providerId={therapist.$id || therapist.id}
+                        providerName={therapist.name}
+                        providerType={'therapist'}
+                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                    />
+                </div>
 
                 {/* Optional bottom space */}
                 <div className="min-h-[32px]" />
