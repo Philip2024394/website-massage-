@@ -478,6 +478,28 @@ export const bookingService = {
     },
 
     /**
+     * Get bookings count for a provider (therapist or place)
+     */
+    async getBookingsCount(providerId: string, providerType: 'therapist' | 'place' = 'therapist'): Promise<number> {
+        try {
+            const attribute = providerType === 'therapist' ? 'therapistId' : 'placeId';
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                [
+                    Query.equal(attribute, providerId),
+                    Query.limit(1) // We only need the count, not the documents
+                ]
+            );
+
+            return response.total || 0;
+        } catch (error) {
+            console.error(`❌ Error fetching ${providerType} bookings count:`, error);
+            return 0;
+        }
+    },
+
+    /**
      * Get all bookings for admin
      */
     async getAllBookings(): Promise<Booking[]> {

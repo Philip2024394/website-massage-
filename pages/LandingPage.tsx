@@ -81,11 +81,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             const userLocation = await locationService.requestLocationWithFallback();
             if (!isMountedRef.current) return;
             await enterAppCallback(defaultLanguage, userLocation);
-            try { 
-                await requestInstall(); 
-            } catch {}
-        } catch (error) {
-            console.error('❌ Failed to get location:', error);
+            // Note: PWA install prompt removed to prevent user gesture error
+        } catch (locationError) {
+            console.error('❌ Failed to get location:', locationError);
             
             const defaultLocation: UserLocation = {
                 address: 'Jakarta, Indonesia',
@@ -96,9 +94,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             try {
                 if (!isMountedRef.current) return;
                 await enterAppCallback(defaultLanguage, defaultLocation);
-                try { 
-                    await requestInstall(); 
-                } catch {}
+                // Note: PWA install prompt removed to prevent user gesture error
             } catch (enterError) {
                 console.error('❌ Failed to call enterApp:', enterError);
                 alert(`Error entering app: ${enterError instanceof Error ? enterError.message : 'Unknown error'}`);

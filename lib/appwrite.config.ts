@@ -17,58 +17,58 @@ export const APPWRITE_CONFIG = {
         facial_places: 'facial_places_collection', // ✅ Actual collection ID
         agents: 'Agents', // ✅ Actual collection name
         bookings: 'bookings_collection_id', // ✅ Actual collection ID
-        reviews: 'Reviews', // Reviews collection
+        reviews: '', // Disabled - collection doesn't exist (causes 404 errors)
         notifications: 'Notifications', // ✅ Therapist notification system
         users: 'Users', // ✅ Actual collection name
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
-        agentVisits: 'Agent Visits',
-        hotelBookings: 'Hotel Bookings',
+        agentVisits: 'agent_visits',
+        hotelBookings: 'hotel_bookings',
         hotels: 'hotels_collection_id', // ✅ Actual collection ID
-        cities: 'Cities',
+        cities: '', // Disabled - collection doesn't exist (causes 404 errors)
         villas: '', // Disabled - collection doesn't exist
-        massageTypes: 'Massage Types',
-        membershipPricing: 'Membership Pricing',
-        imageAssets: 'Image Assets',
-        loginBackgrounds: 'Login Backgrounds',
+        massageTypes: 'massage_types',
+        membershipPricing: 'membership_pricing',
+        imageAssets: 'image_assets',
+        loginBackgrounds: 'login_backgrounds',
         customLinks: '67670249000b8becb947', // ✅ Real production collection ID
         translations: '6767020d001f6bafeea2', // ✅ Real production collection ID
-        commissionRecords: 'Commission Records',
+        commissionRecords: 'commission_records',
         attributes: 'ATTRIBUTES',
-        analyticsEvents: 'Analytics Events',
-        therapistJobListings: 'Therapist Job Listings',
-        employerJobPostings: 'Employer Job Postings',
-        bankDetails: 'Bank Details',
-        paymentTransactions: 'Payment Transactions',
-        premiumPayments: 'Premium Payments',
-        therapistMenus: 'Therapist Menus',
+        analyticsEvents: 'analytics_events',
+        therapistJobListings: 'therapist_job_listings',
+        employerJobPostings: 'employer_job_postings',
+        bankDetails: 'bank_details',
+        paymentTransactions: 'payment_transactions',
+        premiumPayments: 'premium_payments',
+        therapistMenus: 'therapist_menus',
         messages: 'Messages',
         packages: 'Packages',
-        pushSubscriptions: 'Push Subscriptions',
-        loyaltyWallets: 'Loyalty Wallets',
-        providerLoyaltySettings: 'Provider Loyalty Settings',
-        coinTransactions: 'Coin Transactions',
-        userRegistrations: 'User Registrations',
-        chatRooms: 'Chat Rooms',
-        chatMessages: 'Chat Messages',
+        pushSubscriptions: 'push_subscriptions',
+        loyaltyWallets: 'loyalty_wallets',
+        providerLoyaltySettings: 'provider_loyalty_settings',
+        coinTransactions: 'coin_transactions',
+        userRegistrations: 'user_registrations',
+        chatRooms: 'chat_rooms',
+        chatMessages: 'chat_messages',
         chatSessions: 'chat_sessions',
         chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
         payments: 'Payments',
         // Lead Generation System
         leads: 'leads', // ✅ Lead generation collection // TODO: Create collection with attributes
-        leadGenerations: 'Lead Generations',
-        leadBillingSummary: 'Lead Billing Summary',
+        leadGenerations: 'lead_generations',
+        leadBillingSummary: 'lead_billing_summary',
         // Membership Agreement System
-        membershipAgreements: 'Membership Agreements',
-        membershipUpgrades: 'Membership Upgrades',
-        deactivationRequests: 'Deactivation Requests',
+        membershipAgreements: 'membership_agreements',
+        membershipUpgrades: 'membership_upgrades',
+        deactivationRequests: 'deactivation_requests',
         coins: 'Coins',
         referrals: 'Referrals',
-        activeDiscounts: 'Active Discounts',
-        appConfig: 'App Config',
+        activeDiscounts: 'active_discounts',
+        appConfig: 'app_config',
         // NEW: Affiliate tracking
-        affiliateClicks: 'Affiliate Clicks',
-        affiliateAttributions: 'Affiliate Attributions',
+        affiliateClicks: 'affiliate_clicks',
+        affiliateAttributions: 'affiliate_attributions',
         memberships: 'Memberships',
         uiConfig: '', // Disabled - collection doesn't exist (causes 404 errors)
     },
