@@ -242,8 +242,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
             {/* Client Preference - Menerima with Languages on same line (After profile section like profile card) */}
             <div className="mx-4 mb-2">
-                <div className="flex justify-between items-center">
-                    <p className="text-xs text-gray-600">
+                <div className="flex items-center gap-3">
+                    <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
                     {(() => {
