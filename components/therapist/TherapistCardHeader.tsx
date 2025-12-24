@@ -55,7 +55,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
                         alt="Verified Member"
-                        className="w-24 h-24 object-contain drop-shadow-lg"
+                        className="w-28 h-28 object-contain drop-shadow-lg"
                     />
                 </div>
             ) : therapist.isVerified && (

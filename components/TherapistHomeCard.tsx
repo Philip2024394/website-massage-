@@ -235,7 +235,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
                                 alt="Verified Badge"
-                                className="w-24 h-24 drop-shadow-lg"
+                                className="w-28 h-28 drop-shadow-lg"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).style.display = 'none';
                                 }}
