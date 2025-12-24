@@ -409,7 +409,36 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         case 'facial-place-profile':
-            return renderRoute(profileRoutes.facialPlace.component);
+            console.log('🔧 [FacialPlaceProfile] Rendering facial place profile page');
+            console.log('  - selectedPlace:', props.selectedPlace);
+            
+            return renderRoute(profileRoutes.facialPlace.component, {
+                place: props.selectedPlace,
+                onBack: () => props.setPage('home'),
+                onBook: () => {
+                    // Open WhatsApp booking for facial treatments
+                    if (props.selectedPlace?.whatsappNumber) {
+                        const message = `Hi! I'd like to book a facial treatment at ${props.selectedPlace.name}. When are you available?`;
+                        window.open(`https://wa.me/${props.selectedPlace.whatsappNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+                    }
+                },
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: props.onMassageJobsClick,
+                onVillaPortalClick: props.onVillaPortalClick,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onFacialPlacePortalClick: props.onFacialPortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: props.onAdminPortalClick,
+                onTermsClick: props.onTermsClick,
+                onPrivacyClick: props.onPrivacyClick,
+                therapists: props.therapists,
+                places: props.places,
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                language: props.language,
+                onLanguageChange: props.onLanguageChange
+            });
         
         case 'place-detail':
             return renderRoute(profileRoutes.placeDetail.component);
