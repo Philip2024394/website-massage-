@@ -1241,15 +1241,79 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 }
                             }
 
-                            // Sort by status: Available -> Busy -> Offline
-                            const statusRank = (s: any) => {
-                                const val = String(s || '').toLowerCase();
-                                if (val === 'available' || val === 'online') return 0;
-                                if (val === 'busy') return 1;
-                                if (val === 'offline') return 2;
-                                return 1;
+                            // Advanced priority sorting system
+                            const getPriorityScore = (therapist: any) => {
+                                let score = 0;
+
+                                // 1. Status Priority (0-1000 points)
+                                const status = String(therapist.status || '').toLowerCase();
+                                if (status === 'available' || status === 'online') {
+                                    score += 1000; // Highest priority
+                                } else if (status === 'busy') {
+                                    score += 500;  // Medium priority
+                                } else {
+                                    score += 0;    // Offline gets lowest
+                                }
+
+                                // 2. Premium Account Boost (0-500 points)
+                                if (therapist.isPremium || therapist.accountType === 'premium') {
+                                    score += 500;
+                                }
+
+                                // 3. Industry Standards Boost (0-300 points)
+                                if (therapist.isVerified || therapist.hasIndustryStandards || therapist.certifications?.length > 0) {
+                                    score += 300;
+                                }
+
+                                // 4. Online Activity Priority (0-200 points)
+                                const now = new Date();
+                                if (therapist.lastSeen) {
+                                    const lastSeen = new Date(therapist.lastSeen);
+                                    const hoursAgo = (now.getTime() - lastSeen.getTime()) / (1000 * 60 * 60);
+                                    
+                                    if (hoursAgo <= 1) score += 200;       // Online within 1 hour
+                                    else if (hoursAgo <= 6) score += 150;  // Online within 6 hours
+                                    else if (hoursAgo <= 24) score += 100; // Online within 24 hours
+                                    else if (hoursAgo <= 72) score += 50;  // Online within 3 days
+                                }
+
+                                // 5. Rating Quality Bonus (0-100 points)
+                                const rating = parseFloat(therapist.averageRating || '0');
+                                if (rating >= 4.5) score += 100;
+                                else if (rating >= 4.0) score += 75;
+                                else if (rating >= 3.5) score += 50;
+
+                                // 6. Order Count Boost (0-50 points)
+                                const orders = parseInt(therapist.orderCount || '0');
+                                if (orders >= 50) score += 50;
+                                else if (orders >= 20) score += 30;
+                                else if (orders >= 10) score += 20;
+
+                                // 7. Featured Sample Always on Top (10000 points)
+                                if (isFeaturedSample(therapist, 'therapist')) {
+                                    score += 10000;
+                                }
+
+                                return score;
                             };
-                            baseList = baseList.slice().sort((a: any, b: any) => statusRank(a.status) - statusRank(b.status));
+
+                            // Apply intelligent sorting with randomization within same priority groups
+                            baseList = baseList
+                                .slice()
+                                .map(therapist => ({ 
+                                    ...therapist, 
+                                    priorityScore: getPriorityScore(therapist),
+                                    randomSeed: Math.random() // For randomization within groups
+                                }))
+                                .sort((a: any, b: any) => {
+                                    // Primary sort by priority score (descending)
+                                    if (b.priorityScore !== a.priorityScore) {
+                                        return b.priorityScore - a.priorityScore;
+                                    }
+                                    
+                                    // Secondary sort by random seed for same-priority items
+                                    return a.randomSeed - b.randomSeed;
+                                });
 
                             // Removed sample therapist fallback: now show empty-state message below if none live
 
@@ -1262,11 +1326,19 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     return { ...therapist, mainImage: assignedImage || therapist.mainImage };
                                 });
 
-                            console.log('🔧 [DEBUG] Final therapist list:', {
+                            console.log('🔧 [DEBUG] Final therapist list with priority scores:', {
                                 originalCount: therapists?.length || 0,
                                 afterFiltering: baseList.length,
                                 finalCount: preparedTherapists.length,
-                                sampleNames: baseList.slice(0, 3).map(t => t.name)
+                                priorityBreakdown: baseList.slice(0, 5).map(t => ({
+                                    name: t.name,
+                                    status: t.status,
+                                    score: t.priorityScore,
+                                    isPremium: t.isPremium || false,
+                                    isVerified: t.isVerified || false,
+                                    rating: t.averageRating || 'N/A',
+                                    orders: t.orderCount || 0
+                                }))
                             });
 
                             return preparedTherapists.map((therapist: any, index: number) => {
