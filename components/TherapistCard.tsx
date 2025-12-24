@@ -5,7 +5,7 @@ import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } fro
 import { notificationService, bookingService, reviewService, therapistMenusService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
+import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
 import { shareLinkService } from '../lib/services/shareLinkService';
@@ -531,7 +531,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
     const displayRating = formatRating(effectiveRating);
-    const displayReviewCount = getDisplayReviewCount(therapist.reviewCount);
     
     // Debug pricing for this specific therapist
     devLog(`💰 TherapistCard pricing for ${therapist.name}:`, {
@@ -885,12 +884,6 @@ ${locationInfo}${coordinatesInfo}
                     Therapist Join Free
                 </button>
                 )}
-                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    Orders: {bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
-                </span>
             </div>
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
             <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">
@@ -902,6 +895,7 @@ ${locationInfo}${coordinatesInfo}
                         setShowSharePopup(true);
                     }}
                     customVerifiedBadge={customVerifiedBadge}
+                    bookingsCount={bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
                 />
 
             {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
@@ -956,7 +950,6 @@ ${locationInfo}${coordinatesInfo}
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
                                     <span className="font-bold text-gray-900 text-base leading-none">{displayRating}</span>
-                                    <span className="text-xs text-gray-600 leading-none">({displayReviewCount})</span>
                                 </div>
                             </div>
                         </div>
@@ -1072,25 +1065,23 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Content Section - Compact layout */}
             <div className="px-4">
-            {/* Massage Specializations - Moved to right side */}
+            {/* Massage Specializations - Centered */}
             <div className="border-t border-gray-100 pt-3">
-                <div className="flex justify-between items-start">
-                    <div className="mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">
-                            {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
-                        </h4>
-                    </div>
-                    <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
-                        {massageTypes.slice(0, 5).map(type => (
-                            <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{type}</span>
-                        ))}
-                        {massageTypes.length === 0 && (
-                            <span className="text-xs text-gray-400">No specialties selected</span>
-                        )}
-                        {massageTypes.length > 5 && (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
-                        )}
-                    </div>
+                <div className="mb-2">
+                    <h4 className="text-xs font-semibold text-gray-700 text-center">
+                        {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
+                    </h4>
+                </div>
+                <div className="flex flex-wrap gap-1 justify-center">
+                    {massageTypes.slice(0, 5).map(type => (
+                        <span key={type} className="px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-gray-700/50">{type}</span>
+                    ))}
+                    {massageTypes.length === 0 && (
+                        <span className="text-xs text-gray-400">No specialties selected</span>
+                    )}
+                    {massageTypes.length > 5 && (
+                        <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
+                    )}
                 </div>
                 </div>
             </div>
@@ -1109,7 +1100,7 @@ ${locationInfo}${coordinatesInfo}
                 }
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
-                    <div className={`${getDynamicSpacing('mt-4', 'mt-3', 'mt-2')}`}>
+                    <div className={`px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2')}`}>
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
                             {therapist.yearsOfExperience && (
@@ -1746,7 +1737,6 @@ ${locationInfo}${coordinatesInfo}
                                     <div className="flex items-center gap-2 text-xs">
                                         <StarIcon className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
                                         <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{displayRating}</span>
-                                        <span className="text-orange-100">({displayReviewCount})</span>
                                     </div>
                                 </div>
                             </div>

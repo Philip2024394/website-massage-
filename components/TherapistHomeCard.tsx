@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
-import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
+import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
 import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
@@ -117,7 +117,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     const rawRating = getDisplayRating(therapist.rating, therapist.reviewCount);
     const effectiveRating = rawRating > 0 ? rawRating : 4.8;
     const displayRating = formatRating(effectiveRating);
-    const displayReviewCount = getDisplayReviewCount(therapist.reviewCount);
 
     const formatPrice = (price: number) => {
         if (price >= 1000000) {
@@ -188,12 +187,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </svg>
                     Therapist Join Free
                 </button>
-                <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    Orders: {displayBookingsCount}
-                </span>
             </div>
             
             <div 
@@ -218,7 +211,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <div className="absolute top-3 left-3 shadow-lg flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5">
                     <StarIcon className="w-4 h-4 text-orange-500" />
                     <span className="text-sm font-bold text-white">{displayRating}</span>
-                    <span className="text-xs text-gray-300">({displayReviewCount})</span>
                 </div>
 
                 {/* Premium Verified Badge - Left side, between star rating and profile */}
@@ -244,9 +236,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 })()}
 
                 {/* Orders Badge - Top Right */}
-                {bookingsCount > 0 && (
-                    <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm">
-                        <span className="text-xs font-bold text-white">{bookingsCount}+ Orders</span>
+                {displayBookingsCount > 0 && (
+                    <div className="absolute top-3 right-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-orange-400/50">
+                        {displayBookingsCount}+ Orders
                     </div>
                 )}
 

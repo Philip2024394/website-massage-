@@ -1311,7 +1311,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
                                 {/* Accommodation Massage Service Link */}
-                                <div className="mt-2 mb-8 text-center">
+                                <div className="mt-2 mb-8 flex justify-center">
                                     <button
                                         onClick={() => onNavigate?.('indastreet-partners')}
                                         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"
@@ -1472,7 +1472,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
                                                 {/* Accommodation Massage Service Link */}
-                                                <div className="mt-2 mb-4 text-center">
+                                                <div className="mt-2 mb-4 flex justify-center">
                                                     <button
                                                         onClick={() => onNavigate?.('indastreet-partners')}
                                                         className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 transition-colors"

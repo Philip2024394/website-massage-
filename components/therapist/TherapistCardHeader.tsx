@@ -9,13 +9,15 @@ interface TherapistCardHeaderProps {
     displayImage: string;
     onShareClick: () => void;
     customVerifiedBadge?: string;
+    bookingsCount?: number;
 }
 
 const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     therapist,
     displayImage,
     onShareClick,
-    customVerifiedBadge
+    customVerifiedBadge,
+    bookingsCount = 0
 }) => {
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
@@ -66,9 +68,23 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 </div>
             )}
 
+            {/* Orders Badge - Top right corner */}
+            {bookingsCount > 0 && !isDiscountActive(therapist) && (
+                <div className="absolute top-3 right-3 z-30 bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-orange-400/50">
+                    {bookingsCount}+ Orders
+                </div>
+            )}
+
             {/* 🎯 ENHANCED DISCOUNT BADGE - Larger orange badge in top right corner with glow effect */}
+            {/* Orders badge shows with discount if active */}
             {isDiscountActive(therapist) && (
                 <div className="absolute top-3 right-3 z-30 flex flex-col items-end gap-2">
+                    {/* Orders badge when discount is active */}
+                    {bookingsCount > 0 && (
+                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-orange-400/50">
+                            {bookingsCount}+ Orders
+                        </div>
+                    )}
                     {/* Enhanced Orange Discount Badge with Subtle Fade Effect */}
                     <div className="relative">
                         {/* Main badge with subtle fade animation */}
