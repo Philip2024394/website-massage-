@@ -237,7 +237,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
                 {/* Orders Badge - Top Right */}
                 {displayBookingsCount > 0 && (
-                    <div className="absolute top-3 right-3 bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-orange-400/50">
+                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
                         {displayBookingsCount}+ Orders
                     </div>
                 )}

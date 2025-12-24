@@ -896,6 +896,7 @@ ${locationInfo}${coordinatesInfo}
                     }}
                     customVerifiedBadge={customVerifiedBadge}
                     bookingsCount={bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount}
+                    displayRating={displayRating}
                 />
 
             {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
@@ -929,27 +930,6 @@ ${locationInfo}${coordinatesInfo}
                                     }}
                                 >
                                     {therapist.name ? therapist.name.charAt(0).toUpperCase() : '👤'}
-                                </div>
-                                
-                                {/* Star Rating Badge */}
-                                <div 
-                                    className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1 cursor-pointer z-30 border border-orange-100"
-                                    onClick={() => {
-                                        // If customer is logged in, use parent's onRate (opens authenticated review)
-                                        // If not logged in, open anonymous review modal
-                                        if (isCustomerLoggedIn) {
-                                            onRate(therapist);
-                                        } else {
-                                            setShowReviewModal(true);
-                                        }
-                                    }}
-                                    aria-label={`Rate ${therapist.name}`}
-                                    role="button"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="#eab308">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <span className="font-bold text-gray-900 text-base leading-none">{displayRating}</span>
                                 </div>
                             </div>
                         </div>
@@ -1050,9 +1030,9 @@ ${locationInfo}${coordinatesInfo}
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
                         alt="Menu"
-                        className="w-10 h-10 object-contain"
+                        className="w-12 h-12 object-contain"
                     />
-                    <span className="font-bold text-black">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
+                    <span className="font-bold text-black text-sm">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
                 </button>
             </div>
 
@@ -1189,14 +1169,14 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
-                <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
+                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
                     <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
                         🔥 Discounted Price's Displayed
                     </p>
                 </div>
             )}
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1">
+            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
                 {/* 60 min pricing */}
                 <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
                     isDiscountActive(therapist)
@@ -1205,8 +1185,11 @@ ${locationInfo}${coordinatesInfo}
                 }`}>
                     {/* Star Rating - Top Right */}
                     {displayRating && (
-                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{displayRating}
+                        <div className="absolute top-1.5 right-1.5 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">60 min</p>
@@ -1234,8 +1217,11 @@ ${locationInfo}${coordinatesInfo}
                 }`}>
                     {/* Star Rating - Top Right */}
                     {displayRating && (
-                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{displayRating}
+                        <div className="absolute top-1.5 right-1.5 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">90 min</p>
@@ -1258,8 +1244,11 @@ ${locationInfo}${coordinatesInfo}
                 }`}>
                     {/* Star Rating - Top Right */}
                     {displayRating && (
-                        <div className="absolute top-1.5 right-1.5 text-yellow-400 text-xs font-bold">
-                            ★{displayRating}
+                        <div className="absolute top-1.5 right-1.5 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            {displayRating}
                         </div>
                     )}
                     <p className="text-gray-600 text-xs mb-1">120 min</p>
@@ -1275,32 +1264,7 @@ ${locationInfo}${coordinatesInfo}
                 </div>
             </div>
 
-            {/* Terms and Conditions Link */}
-            <div className="text-center mt-4 px-1">
-                <button 
-                    type="button"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        // Check if we're on a shared profile page
-                        const isSharedProfile = window.location.pathname.includes('/share/');
-                        const baseUrl = window.location.origin;
-                        if (isSharedProfile) {
-                            // Open terms in new tab but with referrer info to come back to shared profile
-                            const currentUrl = window.location.href;
-                            window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
-                        } else {
-                            // Normal navigation for regular pages
-                            window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
-                        }
-                    }}
-                    className="text-sm text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
-                >
-                    Terms and Conditions
-                </button>
-            </div>
-
-            <div className={`flex gap-2 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3')}`}>
+            <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3')}`}>
                 <button
                     onClick={(e) => {
                         e.preventDefault();
@@ -1405,26 +1369,23 @@ ${locationInfo}${coordinatesInfo}
                 </button>
             </div>
 
-            {/* Terms and Conditions Link - Moved below booking buttons and centered */}
-            <div className="text-center mt-4 px-1">
+            {/* Terms and Conditions Link - Below booking buttons */}
+            <div className="text-center mt-3 px-4">
                 <button 
                     type="button"
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        // Check if we're on a shared profile page
                         const isSharedProfile = window.location.pathname.includes('/share/');
                         const baseUrl = window.location.origin;
                         if (isSharedProfile) {
-                            // Open terms in new tab but with referrer info to come back to shared profile
                             const currentUrl = window.location.href;
                             window.open(`${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}`, '_blank');
                         } else {
-                            // Normal navigation for regular pages
                             window.open(`${baseUrl}/mobile-terms-and-conditions`, '_blank');
                         }
                     }}
-                    className="text-sm text-orange-600 hover:text-orange-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
+                    className="text-xs text-gray-500 hover:text-gray-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
                 >
                     Terms and Conditions
                 </button>
@@ -1463,44 +1424,6 @@ ${locationInfo}${coordinatesInfo}
                     </button>
                 </div>
             )}
-
-            {/* Share, Directory, and Reviews Links - Match MassagePlaceCard style */}
-            <div className="flex flex-wrap justify-between items-center gap-2 mt-3 px-4 pt-3">
-                <button
-                    onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setShowSharePopup(true);
-                    }}
-                    className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                >
-                    <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                    </svg>
-                    <span>Share</span>
-                </button>
-                
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (onNavigate) {
-                            onNavigate('massage-types');
-                        } else {
-                            window.location.href = '/massage-types';
-                        }
-                    }}
-                    title={t?.home?.massageDirectoryTitle || 'Go to Massage Types'}
-                    className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                >
-                    <svg className="w-4 h-4 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8m0 0l-3.5 3.5M16 7l-3.5 3.5M5 12h14M5 16h14" />
-                    </svg>
-                    <span>Massage Types</span>
-                </button>
-            </div>
             
             {/* Busy Therapist Confirmation Modal */}
             {showBusyModal && (
