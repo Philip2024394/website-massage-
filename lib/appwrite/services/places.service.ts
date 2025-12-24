@@ -9,6 +9,16 @@ import { ID, Query } from 'appwrite';
 export const placesService = {
     async getAllPlaces(): Promise<any[]> {
         try {
+            // Check if user is authenticated to avoid 401 errors
+            let isAuthenticated = false;
+            try {
+                await account.get();
+                isAuthenticated = true;
+            } catch {
+                // User not authenticated, will use seed data
+                isAuthenticated = false;
+            }
+
             // Fetch complete places from Appwrite
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
@@ -18,22 +28,22 @@ export const placesService = {
 
             // Enrich with analytics from leads collection if available
             for (const place of response.documents) {
-                try {
-                    // Only query leads if collection exists (not empty string)
-                    if (APPWRITE_CONFIG.collections.leads) {
+                // Only attempt to query leads if user is authenticated
+                if (isAuthenticated && APPWRITE_CONFIG.collections.leads) {
+                    try {
                         const leadsData = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             APPWRITE_CONFIG.collections.leads,
                             [Query.equal('placeId', place.$id)]
                         );
                         place.analytics = JSON.stringify({ bookings: leadsData.total });
-                    } else {
-                        // Use seed data if leads collection doesn't exist
-                        throw new Error('Leads collection disabled');
+                    } catch (error) {
+                        // Fallback to seed data if query fails
+                        const seedBookings = 32 + Math.floor(Math.random() * 19);
+                        place.analytics = JSON.stringify({ bookings: seedBookings });
                     }
-                } catch (error) {
-                    // Silently use seed data for 401 (unauthorized) or other errors
-                    // This is expected for public users without leads collection access
+                } else {
+                    // Use seed data for unauthenticated users
                     const seedBookings = 32 + Math.floor(Math.random() * 19);
                     place.analytics = JSON.stringify({ bookings: seedBookings });
                 }
