@@ -358,13 +358,18 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         );
     }
 
-    // Debug hero image
-    console.log('🖼️ [SharedTherapistProfile] Hero image:', {
-        therapistName: therapist.name,
-        mainImage: therapist.mainImage,
-        profilePicture: therapist.profilePicture,
-        hasMainImage: !!therapist.mainImage
-    });
+    // Get hero image - special case for Budi (ID: 152935)
+    const getHeroImage = () => {
+        const therapistIdStr = therapist.id?.toString() || therapist.$id?.toString() || '';
+        
+        // Budi's custom hero image
+        if (therapistIdStr === '152935') {
+            return "https://ik.imagekit.io/7grri5v7d/massage%207.png?updatedAt=1766417587398";
+        }
+        
+        // Default fallback chain
+        return therapist.mainImage || therapist.profilePicture || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -372,7 +377,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                 {/* Hero Image */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src={therapist.mainImage || therapist.profilePicture || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png"} 
+                        src={getHeroImage()} 
                         alt={`${therapist.name} banner`}
                         className="h-48 w-auto object-contain"
                     />
