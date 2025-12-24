@@ -639,6 +639,48 @@ const HomePage: React.FC<HomePageProps> = ({
         return statusImpliesLive;
     };
 
+    // SHOWCASE PROFILE SYSTEM - First 5 Yogyakarta profiles appear everywhere
+    const getYogyakartaShowcaseProfiles = (allTherapists: any[], targetCity: string): any[] => {
+        if (!allTherapists || allTherapists.length === 0) return [];
+        
+        // Don't create showcase profiles for Yogyakarta itself (show real profiles there)
+        if (targetCity.toLowerCase() === 'yogyakarta' || 
+            targetCity.toLowerCase() === 'yogya' || 
+            targetCity.toLowerCase() === 'jogja') {
+            return [];
+        }
+        
+        // Find Yogyakarta therapists (first 5 by creation/upload order)
+        const yogyaTherapists = allTherapists
+            .filter((t: any) => {
+                if (!t.location) return false;
+                const location = t.location.toLowerCase();
+                return location.includes('yogyakarta') || 
+                       location.includes('yogya') || 
+                       location.includes('jogja');
+            })
+            .slice(0, 5); // Take first 5
+        
+        // Create showcase versions with busy status and target city location
+        const showcaseProfiles = yogyaTherapists.map((therapist: any, index: number) => ({
+            ...therapist,
+            // Override key properties for showcase
+            $id: `showcase-${therapist.$id || therapist.id}-${targetCity}`, // Unique ID for showcase version
+            id: `showcase-${therapist.$id || therapist.id}-${targetCity}`,
+            status: 'busy', // Always busy to prevent bookings
+            availability: 'busy',
+            location: targetCity, // Dynamic location matching
+            isShowcaseProfile: true, // Flag to identify showcase profiles
+            originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
+            showcaseCity: targetCity, // Track which city this showcase is for
+            // Keep all other properties (name, image, rating, etc.) the same
+        }));
+        
+        console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);
+        
+        return showcaseProfiles;
+    };
+
     // Filter therapists and places by location automatically
     useEffect(() => {
         const filterByLocation = async () => {
@@ -817,6 +859,17 @@ const HomePage: React.FC<HomePageProps> = ({
             return false;
         });
         
+        // Add showcase profiles from Yogyakarta to other cities
+        let finalTherapistList = [...filteredTherapists];
+        if (selectedCity !== 'all') {
+            const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
+            if (showcaseProfiles.length > 0) {
+                // Add showcase profiles to the list (they'll appear as busy)
+                finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
+                console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity}`);
+            }
+        }
+        
         // Filter hotels by selected city (similar logic to therapists)
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
         const filteredHotels = liveHotels.filter((h: any) => {
@@ -854,7 +907,7 @@ const HomePage: React.FC<HomePageProps> = ({
         console.log('  📊 Total therapists prop:', therapists.length, therapists.map((t: any) => ({ id: t.$id || t.id, name: t.name, isLive: t.isLive })));
         console.log('  📍 Nearby therapists (location-filtered):', nearbyTherapists.length);
         console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
-        console.log('  🎯 Final filtered therapists (massage type + location):', filteredTherapists.length);
+        console.log('  🎯 Final filtered therapists (massage type + location + showcase):', finalTherapistList.length);
         console.log('  🏨 Final filtered hotels (location):', filteredHotels.length);
         console.log('  📍 Auto-detected location:', autoDetectedLocation);
         console.log('  🏙️ Selected city:', selectedCity);
@@ -1238,6 +1291,16 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                             baseList = [ownerDoc, ...baseList];
                                         }
                                     }
+                                }
+                            }
+
+                            // Add Yogyakarta showcase profiles to non-Yogyakarta cities
+                            if (selectedCity !== 'all') {
+                                const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
+                                if (showcaseProfiles.length > 0) {
+                                    // Add showcase profiles (they appear as busy, can't be booked)
+                                    baseList = [...baseList, ...showcaseProfiles];
+                                    console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display`);
                                 }
                             }
 
