@@ -93,6 +93,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
     const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
     const [showJoinPopup, setShowJoinPopup] = useState(false);
+    const [animatedPriceIndex, setAnimatedPriceIndex] = useState<number>(0); // 0=60min, 1=90min, 2=120min
+    
+    // Animated price frame that moves randomly between containers
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setAnimatedPriceIndex(prev => {
+                // Generate random next index (0-2) different from current
+                const options = [0, 1, 2].filter(i => i !== prev);
+                return options[Math.floor(Math.random() * options.length)];
+            });
+        }, 2000); // Move every 2 seconds
+        
+        return () => clearInterval(interval);
+    }, []);
     
     // Debug modal state changes
     useEffect(() => {
@@ -1190,8 +1204,10 @@ ${locationInfo}${coordinatesInfo}
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 0
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
@@ -1222,8 +1238,10 @@ ${locationInfo}${coordinatesInfo}
                 </div>
 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 1
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
@@ -1249,8 +1267,10 @@ ${locationInfo}${coordinatesInfo}
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 2
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
