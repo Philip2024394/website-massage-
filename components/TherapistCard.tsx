@@ -1387,7 +1387,7 @@ ${locationInfo}${coordinatesInfo}
                     }}
                     className="text-xs text-gray-500 hover:text-gray-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
                 >
-                    Terms and Conditions
+                    Please Read Terms and Conditions
                 </button>
             </div>
 
