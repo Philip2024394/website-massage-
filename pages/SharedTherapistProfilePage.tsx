@@ -362,14 +362,27 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     const getHeroImage = () => {
         const therapistIdStr = therapist.id?.toString() || therapist.$id?.toString() || '';
         
+        console.log('🖼️ Hero Image Debug:', {
+            therapistName: therapist.name,
+            therapistId: therapist.id,
+            therapist$id: therapist.$id,
+            therapistIdStr: therapistIdStr,
+            isBudi: therapistIdStr === '152935'
+        });
+        
         // Budi's custom hero image
         if (therapistIdStr === '152935') {
+            console.log('✅ Showing Budi custom hero image');
             return "https://ik.imagekit.io/7grri5v7d/massage%207.png?updatedAt=1766417587398";
         }
         
         // Default fallback chain
+        console.log('⚠️ Not Budi - using fallback');
         return therapist.mainImage || therapist.profilePicture || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
     };
+
+    const heroImageUrl = getHeroImage();
+    console.log('🎨 Final hero image URL:', heroImageUrl);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -377,9 +390,13 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                 {/* Hero Image */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src={getHeroImage()} 
+                        src={heroImageUrl} 
                         alt={`${therapist.name} banner`}
                         className="h-48 w-auto object-contain"
+                        onError={(e) => {
+                            console.error('❌ Hero image failed to load:', heroImageUrl);
+                            e.currentTarget.src = "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
+                        }}
                     />
                 </div>
 
