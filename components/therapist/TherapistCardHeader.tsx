@@ -55,7 +55,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     />
                 </div>
             ) : (therapist as any).membershipTier === 'premium' ? (
-                <div className="absolute top-12 left-6 z-30">
+                <div className="absolute top-[2.688rem] left-6 z-30">
                     <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
                         alt="Verified Member"
