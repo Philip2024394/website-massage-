@@ -59,6 +59,16 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
     setLoading(true);
 
     try {
+      // Clear any existing session first
+      try {
+        const session = await account.getSession('current');
+        if (session) {
+          await account.deleteSession('current');
+        }
+      } catch (e) {
+        // No active session, which is fine
+      }
+      
       // Sign in with email and password
       await account.createEmailSession(email, password);
       
@@ -97,6 +107,16 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
     setLoading(true);
 
     try {
+      // Clear any existing session first
+      try {
+        const session = await account.getSession('current');
+        if (session) {
+          await account.deleteSession('current');
+        }
+      } catch (e) {
+        // No active session, which is fine
+      }
+      
       // Create account
       await account.create(ID.unique(), email, password, name);
       

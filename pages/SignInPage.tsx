@@ -51,7 +51,17 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
         setLoading(true);
         
         try {
-            // Sign in with Appwrite
+            // Check if there's already an active session and delete it
+            try {
+                const session = await account.getSession('current');
+                if (session) {
+                    await account.deleteSession('current');
+                }
+            } catch (e) {
+                // No active session, which is fine
+            }
+            
+            // Create new session with Appwrite
             await account.createEmailPasswordSession(formData.email, formData.password);
             
             // Store portal type for session
