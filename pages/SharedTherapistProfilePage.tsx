@@ -358,13 +358,21 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         );
     }
 
+    // Debug hero image
+    console.log('🖼️ [SharedTherapistProfile] Hero image:', {
+        therapistName: therapist.name,
+        mainImage: therapist.mainImage,
+        profilePicture: therapist.profilePicture,
+        hasMainImage: !!therapist.mainImage
+    });
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
                 {/* Hero Image */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src={therapist.mainImage || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png"} 
+                        src={therapist.mainImage || therapist.profilePicture || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png"} 
                         alt={`${therapist.name} banner`}
                         className="h-48 w-auto object-contain"
                     />
