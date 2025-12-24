@@ -243,8 +243,12 @@ export const useNavigation = ({
         setSelectedPlace(place);
         if (place) {
             // Determine which profile page to navigate to based on place type
-            const placeType = (place as any).type || 'massage';
-            if (placeType === 'facial' || placeType === 'beauty') {
+            const placeType = (place as any).type;
+            const hasFacialTypes = (place as any).facialTypes !== undefined;
+            const hasFacialServices = (place as any).facialServices !== undefined;
+            
+            // Navigate to facial profile if type is facial OR has facial-specific attributes
+            if (placeType === 'facial' || placeType === 'beauty' || hasFacialTypes || hasFacialServices) {
                 setPage('facial-place-profile');
             } else {
                 setPage('massage-place-profile');

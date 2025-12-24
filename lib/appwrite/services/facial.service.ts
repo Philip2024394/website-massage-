@@ -22,6 +22,7 @@ export const facialPlaceService = {
                 return {
                     ...fp,
                     id: fp.$id,
+                    type: 'facial', // Mark as facial place for routing
                     name: fp.name || 'Unnamed Facial Spa',
                     mainImage: fp.mainImage || fp.mainimage,
                     profilePicture: fp.mainImage || fp.mainimage,
