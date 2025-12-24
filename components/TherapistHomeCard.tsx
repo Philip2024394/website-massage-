@@ -231,11 +231,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     (therapist as any).verificationBadge === 'verified';
                     
                     return isPremium && (
-                        <div className="absolute top-20 left-3 z-20">
+                        <div className="absolute top-12 left-6 z-20">
                             <img 
                                 src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
                                 alt="Verified Badge"
-                                className="w-20 h-20 drop-shadow-lg"
+                                className="w-24 h-24 drop-shadow-lg"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).style.display = 'none';
                                 }}
