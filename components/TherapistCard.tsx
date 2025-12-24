@@ -17,6 +17,7 @@ import BookingFormPopup, { BookingData } from './BookingFormPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
+import TherapistJoinPopup from './TherapistJoinPopup';
 import { useUIConfig } from '../hooks/useUIConfig';
 import { MessageCircle, Clock, X, FileText } from 'lucide-react';
 import { chatTranslationService } from '../services/chatTranslationService';
@@ -91,6 +92,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [highlightedCell, setHighlightedCell] = useState<{serviceIndex: number, duration: '60' | '90' | '120'} | null>(null);
     const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
     const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
+    const [showJoinPopup, setShowJoinPopup] = useState(false);
     
     // Debug modal state changes
     useEffect(() => {
@@ -873,13 +875,7 @@ ${locationInfo}${coordinatesInfo}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        // Set localStorage for therapist signup
-                        localStorage.setItem('selectedPortalType', 'massage_therapist');
-                        localStorage.setItem('selected_membership_plan', 'pro');
-                        // Use client-side navigation instead of full page reload
-                        if (onNavigate) {
-                            onNavigate('therapist-portal');
-                        }
+                        setShowJoinPopup(true);
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >
@@ -1076,23 +1072,26 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Content Section - Compact layout */}
             <div className="px-4">
-            {/* Massage Specializations - Above languages section */}
+            {/* Massage Specializations - Moved to right side */}
             <div className="border-t border-gray-100 pt-3">
-                <div className="mb-2">
-                    <h4 className="text-xs font-semibold text-gray-700">
-                        {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
-                    </h4>
+                <div className="flex justify-between items-start">
+                    <div className="mb-2">
+                        <h4 className="text-xs font-semibold text-gray-700">
+                            {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
+                        </h4>
+                    </div>
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[60%]">
+                        {massageTypes.slice(0, 5).map(type => (
+                            <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{type}</span>
+                        ))}
+                        {massageTypes.length === 0 && (
+                            <span className="text-xs text-gray-400">No specialties selected</span>
+                        )}
+                        {massageTypes.length > 5 && (
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
+                        )}
+                    </div>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                    {massageTypes.slice(0, 5).map(type => (
-                        <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-200">{type}</span>
-                    ))}
-                    {massageTypes.length === 0 && (
-                        <span className="text-xs text-gray-400">No specialties selected</span>
-                    )}
-                    {massageTypes.length > 5 && (
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
-                    )}
                 </div>
             </div>
 
@@ -1485,24 +1484,6 @@ ${locationInfo}${coordinatesInfo}
                     </svg>
                     <span>Massage Types</span>
                 </button>
-                
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (onNavigate) {
-                            onNavigate('reviews');
-                        } else {
-                            window.location.href = '/reviews';
-                        }
-                    }}
-                    className="flex items-center gap-1 text-xs text-gray-700 hover:text-gray-900 font-semibold transition-colors"
-                >
-                    <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span>Reviews</span>
-                </button>
             </div>
             </div>
             
@@ -1706,6 +1687,12 @@ ${locationInfo}${coordinatesInfo}
                     type="therapist"
                 />
             )}
+
+            {/* Therapist Join Popup */}
+            <TherapistJoinPopup
+                isOpen={showJoinPopup}
+                onClose={() => setShowJoinPopup(false)}
+            />
 
             {/* Price List Bottom Sheet Slider */}
             {showPriceListModal && (

@@ -7,6 +7,7 @@ import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
+import TherapistJoinPopup from './TherapistJoinPopup';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -40,6 +41,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     // Share functionality state
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [shortShareUrl, setShortShareUrl] = useState<string>('');
+    const [showJoinPopup, setShowJoinPopup] = useState(false);
 
     // Handle share functionality
     const handleShareClick = (e: React.MouseEvent) => {
@@ -178,9 +180,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        localStorage.setItem('selectedPortalType', 'massage_therapist');
-                        localStorage.setItem('selected_membership_plan', 'pro');
-                        window.location.href = '/therapist-portal';
+                        setShowJoinPopup(true);
                     }}
                     className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
                 >
@@ -438,6 +438,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     shareUrl={shortShareUrl || generateShareableURL(therapist.name, 'therapist', String((therapist as any).id || (therapist as any).$id || ''))}
                 />
             )}
+
+            {/* Therapist Join Popup */}
+            <TherapistJoinPopup
+                isOpen={showJoinPopup}
+                onClose={() => setShowJoinPopup(false)}
+            />
         </div>
     );
 };

@@ -521,8 +521,6 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
 
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                             <span>⭐ {formatRating(displayRating)}</span>
-                            <span>•</span>
-                            <span>{reviewCount} reviews</span>
                         </div>
 
                         <div className="bg-gray-50 rounded-lg p-3">
