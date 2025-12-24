@@ -6,7 +6,7 @@
 import type { Page } from '../types/pageTypes';
 
 // Map of page names to URL paths
-export const pageToUrl: Record<Page, string> = {
+export const pageToUrl: Partial<Record<Page, string>> = {
     // Public routes
     'landing': '/',
     'home': '/home',
@@ -116,15 +116,10 @@ export const pageToUrl: Record<Page, string> = {
     'placeDashboard': '/dashboard/place',
     'place-dashboard': '/dashboard/place',
     'agentDashboard': '/dashboard/agent',
-    'agent-dashboard': '/dashboard/agent',
     'customerDashboard': '/dashboard/customer',
-    'customer-dashboard': '/dashboard/customer',
     'adminDashboard': '/dashboard/admin',
-    'admin-dashboard': '/dashboard/admin',
-    'villaPortal': '/dashboard/villa',
-    'villa-portal': '/dashboard/villa',
-    'hotelPortal': '/dashboard/hotel',
-    'hotel-portal': '/dashboard/hotel',
+    'villaDashboard': '/dashboard/villa',
+    'hotelDashboard': '/dashboard/hotel',
 };
 
 // Reverse map: URL paths to page names

@@ -161,7 +161,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     isOpen={isMenuOpen}
                     onClose={() => setIsMenuOpen(false)}
                     t={t || {}}
-                    language={language || 'id'}
+                    language={(language || 'id') as 'en' | 'id' | 'gb'}
                     onMassageJobsClick={onMassageJobsClick}
                     onHotelPortalClick={onHotelPortalClick}
                     onVillaPortalClick={onVillaPortalClick}

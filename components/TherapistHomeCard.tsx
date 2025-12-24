@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
-import { bookingService } from '../lib/appwriteService';
+import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -79,14 +79,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     setShortShareUrl(shortUrl);
                 } else {
                     // Fallback to regular URL
-                    const fullUrl = generateShareableURL(therapist.name, 'therapist', therapistId);
+                    const fullUrl = generateShareableURL(therapist);
                     setShortShareUrl(fullUrl);
                 }
             } catch (error) {
                 console.error('Error generating share URL:', error);
                 // Fallback to regular URL
-                const therapistId = String((therapist as any).id || (therapist as any).$id || '');
-                const fullUrl = generateShareableURL(therapist.name, 'therapist', therapistId);
+                const fullUrl = generateShareableURL(therapist);
                 setShortShareUrl(fullUrl);
             }
         };
@@ -200,7 +199,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             <div 
                 onClick={() => {
                     onClick(therapist);
-                    onIncrementAnalytics('detailViews');
+                    onIncrementAnalytics('views');
                 }}
                 className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
             >
@@ -327,10 +326,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
                     </p>
                     {(() => {
-                        const languages = therapist.languages 
-                            ? (typeof therapist.languages === 'string' 
-                                ? therapist.languages.split(',').map(l => l.trim()) 
-                                : therapist.languages)
+                        const languagesValue = (therapist as any).languages;
+                        const languages = languagesValue 
+                            ? (typeof languagesValue === 'string' 
+                                ? (languagesValue as string).split(',').map((l: string) => l.trim()) 
+                                : languagesValue)
                             : [];
                         
                         if (!languages || !Array.isArray(languages) || languages.length === 0) return null;
@@ -433,9 +433,10 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <SocialSharePopup
                     isOpen={showSharePopup}
                     onClose={() => setShowSharePopup(false)}
-                    therapistName={therapist.name}
-                    therapistId={String((therapist as any).id || (therapist as any).$id || '')}
-                    shareUrl={shortShareUrl || generateShareableURL(therapist.name, 'therapist', String((therapist as any).id || (therapist as any).$id || ''))}
+                    title={therapist.name}
+                    description={`Professional massage therapist in Bali`}
+                    url={shortShareUrl || generateShareableURL(therapist)}
+                    type="therapist"
                 />
             )}
 

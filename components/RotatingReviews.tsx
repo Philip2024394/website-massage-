@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, MessageSquarePlus } from 'lucide-react';
+import { Star, MessageSquare } from 'lucide-react';
 import { appwriteDatabases } from '../lib/appwrite/client';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
@@ -214,7 +214,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                     className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors shadow-sm"
                     title="Post a review"
                 >
-                    <MessageSquarePlus className="w-4 h-4" />
+                    <MessageSquare className="w-4 h-4" />
                     <span>Post</span>
                 </button>
             </div>

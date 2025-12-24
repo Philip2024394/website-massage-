@@ -182,6 +182,7 @@ export type Page =
     | 'customer-support'
     | 'place-discount-badge'
     | 'verified-pro-badge'
+    | 'shared-profile-standards'
     | 'mobile-therapist-standards'
     | 'guest-alerts'
     | 'partner-settings'

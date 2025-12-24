@@ -165,6 +165,12 @@ interface AppRouterProps {
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
     setSelectedJobId: (id: string | null) => void;
+    
+    // Missing properties for header/navigation
+    onLanguageChange?: (lang: Language) => void;
+    selectedCity?: string;
+    onCityChange?: (city: string) => void;
+    onNavigate?: (page: Page) => void;
 }
 
 /**
