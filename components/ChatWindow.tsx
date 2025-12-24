@@ -1619,22 +1619,25 @@ export default function ChatWindow({
                                                     key={duration}
                                                     type="button"
                                                     onClick={() => setSelectedDuration(duration as 60 | 90 | 120)}
-                                                    className={`p-3 rounded-lg border transition-all relative ${
+                                                    className={`p-3 rounded-lg border shadow-md transition-all relative min-h-[75px] flex flex-col justify-center ${
                                                         selectedDuration === duration
-                                                            ? 'border-green-500 bg-green-500 text-black shadow-sm'
+                                                            ? 'border-orange-500 bg-orange-50 text-black border-2'
                                                             : 'bg-gray-100 border-gray-200 text-black hover:bg-gray-200'
                                                     }`}
                                                 >
-                                                    <div className="text-xs">{duration} min</div>
-                                                    <div className={`mt-1 ${selectedDuration === duration ? 'font-bold' : 'font-semibold'}`}>
-                                                        {getPriceLabel(duration.toString() as '60' | '90' | '120')}
-                                                    </div>
-                                                    {/* Star Rating - Top Right */}
+                                                    {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                                                     {typeof providerRating === 'number' && providerRating > 0 && (
-                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
-                                                            ★{providerRating.toFixed(1)}
+                                                        <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                                                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                            {providerRating.toFixed(1)}
                                                         </div>
                                                     )}
+                                                    <div className="text-xs text-gray-600">{duration} min</div>
+                                                    <div className={`mt-1 text-sm ${selectedDuration === duration ? 'font-bold' : 'font-semibold'}`}>
+                                                        {getPriceLabel(duration.toString() as '60' | '90' | '120')}
+                                                    </div>
                                                 </button>
                                             ))}
                                         </div>
@@ -2022,21 +2025,24 @@ export default function ChatWindow({
                                                     type="button"
                                                     onClick={() => setServiceDuration(duration as '60' | '90' | '120')}
                                                     disabled={registering}
-                                                    className={`p-3 sm:p-4 rounded-lg border transition-all relative touch-manipulation min-h-[64px] sm:min-h-[72px] ${
+                                                    className={`p-3 sm:p-4 rounded-lg border shadow-md transition-all relative touch-manipulation min-h-[75px] flex flex-col justify-center ${
                                                         serviceDuration === duration
-                                                            ? 'border-green-500 bg-green-500 text-black shadow-sm'
+                                                            ? 'border-orange-500 bg-orange-50 text-black border-2'
                                                             : 'bg-gray-100 border-gray-200 text-black hover:bg-gray-200 active:bg-gray-300'
                                                     } ${registering ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                                    style={{ minWidth: '80px', minHeight: '64px' }}
+                                                    style={{ minWidth: '80px' }}
                                                 >
-                                                    {/* Star Rating - Top Right */}
+                                                    {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                                                     {typeof providerRating === 'number' && providerRating > 0 && (
-                                                        <div className="absolute top-1 right-1 text-yellow-400 text-xs font-bold">
-                                                            ★{providerRating.toFixed(1)}
+                                                        <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                                                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                            </svg>
+                                                            {providerRating.toFixed(1)}
                                                         </div>
                                                     )}
-                                                    <div className="text-xs">{duration} min</div>
-                                                    <div className={`mt-1 ${serviceDuration === duration ? 'font-bold' : 'font-semibold'}`}>
+                                                    <div className="text-xs text-gray-600">{duration} min</div>
+                                                    <div className={`mt-1 text-sm ${serviceDuration === duration ? 'font-bold' : 'font-semibold'}`}>
                                                         {getPriceLabel(duration as '60' | '90' | '120')}
                                                     </div>
                                                 </button>
