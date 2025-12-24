@@ -31,7 +31,9 @@ export const placesService = {
                         // Use seed data if leads collection doesn't exist
                         throw new Error('Leads collection disabled');
                     }
-                } catch {
+                } catch (error) {
+                    // Silently use seed data for 401 (unauthorized) or other errors
+                    // This is expected for public users without leads collection access
                     const seedBookings = 32 + Math.floor(Math.random() * 19);
                     place.analytics = JSON.stringify({ bookings: seedBookings });
                 }
