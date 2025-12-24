@@ -36,6 +36,7 @@ interface AppDrawerProps {
   onTermsClick?: () => void;
   onPrivacyClick?: () => void;
   onQRCodeClick?: () => void;
+  onLoginClick?: () => void;
   therapists?: any[];
   places?: any[];
 }
@@ -109,6 +110,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onTermsClick,
   onPrivacyClick,
   onQRCodeClick,
+  onLoginClick,
 }) => {
   if (!isHome || !isOpen) return null;
 
@@ -269,7 +271,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               <div className="pt-4 mt-6 border-t border-gray-300">
                 <div className="flex flex-col items-center gap-3 px-4 py-2">
                   <button 
-                    onClick={() => handleItemClick(undefined, 'landing')}
+                    onClick={() => handleItemClick(onLoginClick, 'landing')}
                     className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
                   >
                     Sign In

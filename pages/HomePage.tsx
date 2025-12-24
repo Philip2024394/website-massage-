@@ -1073,6 +1073,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     onTermsClick={onTermsClick}
                     onPrivacyClick={onPrivacyClick}
                     onQRCodeClick={() => onNavigate && onNavigate('qr-code')}
+                    onLoginClick={onLoginClick}
                     therapists={therapists}
                     places={places}
                 />
