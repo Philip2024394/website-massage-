@@ -184,8 +184,10 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             
             <div 
                 onClick={() => {
-                    onClick(place);
-                    onIncrementAnalytics('views');
+                    if (typeof onClick === 'function') {
+                        onClick(place);
+                        onIncrementAnalytics('views');
+                    }
                 }}
                 className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
             >

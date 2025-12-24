@@ -240,6 +240,7 @@ export const useNavigation = ({
     }, [setUserLocation]);
 
     const handleSetSelectedPlace = useCallback((place: Place | null) => {
+        console.log('🏨 handleSetSelectedPlace called with:', place);
         setSelectedPlace(place);
         if (place) {
             // Determine which profile page to navigate to based on place type
@@ -247,10 +248,19 @@ export const useNavigation = ({
             const hasFacialTypes = (place as any).facialTypes !== undefined;
             const hasFacialServices = (place as any).facialServices !== undefined;
             
+            console.log('🔍 Place type detection:', {
+                placeType,
+                hasFacialTypes,
+                hasFacialServices,
+                placeName: place.name
+            });
+            
             // Navigate to facial profile if type is facial OR has facial-specific attributes
             if (placeType === 'facial' || placeType === 'beauty' || hasFacialTypes || hasFacialServices) {
+                console.log('✅ Navigating to facial-place-profile');
                 setPage('facial-place-profile');
             } else {
+                console.log('✅ Navigating to massage-place-profile');
                 setPage('massage-place-profile');
             }
         }
