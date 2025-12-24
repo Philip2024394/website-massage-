@@ -651,9 +651,17 @@ const HomePage: React.FC<HomePageProps> = ({
         }
         
         // Find Yogyakarta therapists (first 5 by creation/upload order)
+        // EXCLUDE featured samples since they already show everywhere
         const yogyaTherapists = allTherapists
             .filter((t: any) => {
                 if (!t.location) return false;
+                
+                // Skip featured samples (like Budi) - they already show in all cities
+                if (isFeaturedSample(t, 'therapist')) {
+                    console.log(`⚠️ Excluding featured sample "${t.name}" from showcase system (already shows everywhere)`);
+                    return false;
+                }
+                
                 const location = t.location.toLowerCase();
                 return location.includes('yogyakarta') || 
                        location.includes('yogya') || 
