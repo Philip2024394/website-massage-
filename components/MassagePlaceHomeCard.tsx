@@ -13,6 +13,7 @@ interface MassagePlaceHomeCardProps {
     onClick: (place: Place) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
+    readOnly?: boolean; // Lock card to read-only mode
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -25,7 +26,8 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
     place, 
     onClick,
     onIncrementAnalytics,
-    userLocation
+    userLocation,
+    readOnly = false // Default to editable unless specified
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -179,87 +181,157 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     </svg>
                     Partner Portal
                 </span>
+                {!readOnly && displayBookingsCount > 0 && (
+                    <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        {displayBookingsCount}
+                    </span>
+                )}
+                {readOnly && (
+                    <span className="text-[11px] text-gray-500 font-medium bg-gray-200 px-2 py-0.5 rounded-full">
+                        Read Only
+                    </span>
+                )}
             </div>
             
             <div 
-                onClick={() => {
+                onClick={readOnly ? undefined : () => {
                     onClick(place);
                     onIncrementAnalytics('views');
                 }}
-                className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
             <div className="relative h-48 sm:h-56 overflow-hidden">
-                {/* Main Image */}
                 <img
-                    src={(place as any).image || `https://picsum.photos/400/300?random=${place.id || place.$id}`}
-                    alt={place.name || "Massage Place"}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || '/default-place.jpg'}
+                    alt={place.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/default-place.jpg';
+                    }}
                 />
 
-                {/* Discount badge (top left) */}
-                {isDiscountActive(place) && (
-                    <div className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
-                        {(place as any).discountPercentage}% OFF
+                {/* Star Rating Badge - Top Left */}
+                <div className="absolute top-3 left-3 shadow-lg flex items-center gap-1.5 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5">
+                    <StarIcon className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-bold text-white">{displayRating}</span>
+                </div>
+
+                {/* Premium Verified Badge - Left side, between star rating and profile */}
+                {(() => {
+                    // Check if premium member or verified
+                    const isPremium = place.membershipTier === 'premium' || 
+                                    place.isVerified || 
+                                    (place as any).verified || 
+                                    (place as any).verificationBadge === 'verified';
+                    
+                    return isPremium && (
+                        <div className="absolute top-12 left-6 z-20">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                                alt="Verified Badge"
+                                className="w-28 h-28 drop-shadow-lg"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                            />
+                        </div>
+                    );
+                })()}
+
+                {/* Orders Badge - Top Right */}
+                {displayBookingsCount > 0 && (
+                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
+                        {displayBookingsCount}+ Orders
                     </div>
                 )}
 
-                {/* Share button (top right) */}
-                <button
-                    onClick={handleShareClick}
-                    className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 transition-all"
-                    title="Share this place"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                    </svg>
-                </button>
-
-                {/* Price container with rating badges (positioned at top edge, 50% inside/outside) */}
-                <div className="absolute -top-4 left-4 right-4 flex justify-between items-center">
-                    {/* Rating Badge */}
-                    <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
-                        <StarIcon className="w-4 h-4 text-white" />
-                        <span className="text-sm font-bold">{displayRating}</span>
+                {/* Discount Badge - Bottom Center */}
+                {isDiscountActive(place) && (
+                    <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 backdrop-blur-sm animate-pulse">
+                        <span className="text-xs font-bold text-white flex items-center gap-1">
+                            🔥 Discount Active
+                        </span>
                     </div>
+                )}
 
-                    {/* Price Badge */}
-                    {(pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0) && (
-                        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 rounded-xl shadow-lg">
-                            <span className="text-sm font-bold">
-                                {pricing["60"] > 0 ? `${formatPrice(pricing["60"])}` :
-                                 pricing["90"] > 0 ? `${formatPrice(pricing["90"])}` :
-                                 pricing["120"] > 0 ? `${formatPrice(pricing["120"])}` : '—'}
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Orders badge (bottom left) */}
-                <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    {displayBookingsCount} orders
-                </div>
+                {/* Share Button - Bottom Right Corner of image */}
+                {!readOnly && (
+                    <button
+                        onClick={handleShareClick}
+                        className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                        title="Share this place"
+                        aria-label="Share this place"
+                    >
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                    </button>
+                )}
             </div>
 
-            {/* Card Content */}
-            <div className="p-4">
-                {/* Name and Location Row */}
-                <div className="flex justify-between items-start mb-2">
+            {/* Profile Section - Similar to TherapistHomeCard */}
+            <div className="px-4 -mt-8 sm:-mt-12 pb-4 relative z-10">
+                <div className="flex items-start gap-3">
+                    {/* Profile Picture */}
+                    <div className="flex-shrink-0">
+                        <div className="relative w-24 h-24">
+                            <img 
+                                className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
+                                src={(place as any).profilePicture || (place as any).mainImage || (place as any).image || '/default-place.jpg'}
+                                alt={place.name}
+                                style={{ width: '96px', height: '96px' }}
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/default-place.jpg';
+                                }}
+                            />
+                        </div>
+                    </div>
+                    
                     {/* Name and Status Column */}
-                    <div className="flex-1 min-w-0 pr-3">
-                        <h3 className="font-bold text-gray-900 text-base truncate leading-tight">
+                    <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
+                        {/* Distance Display - Above name on mobile, hidden on larger screens */}
+                        <div className="sm:hidden mb-2">
+                            {userLocation && (
+                                <DistanceDisplay
+                                    userLocation={userLocation}
+                                    targetLocation={{
+                                        lat: parseFloat(String((place as any).lat || (place as any).latitude || 0)),
+                                        lng: parseFloat(String((place as any).lng || (place as any).longitude || 0))
+                                    }}
+                                    className="text-xs text-gray-500"
+                                />
+                            )}
+                        </div>
+
+                        {/* Name */}
+                        <h3 className="font-bold text-gray-900 text-base sm:text-lg leading-tight mb-1">
                             {place.name || "Massage Place"}
                         </h3>
                         
-                        {/* Status Badge - Under name like profile card */}
-                        <div className="mt-1">
+                        {/* Status Badge */}
+                        <div className="mb-2">
                             <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`}>
                                 <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
                                 <span className="text-xs">{statusStyle.label}</span>
                             </div>
+                        </div>
+
+                        {/* Distance Display - To the right on larger screens */}
+                        <div className="hidden sm:block">
+                            {userLocation && (
+                                <DistanceDisplay
+                                    userLocation={userLocation}
+                                    targetLocation={{
+                                        lat: parseFloat(String((place as any).lat || (place as any).latitude || 0)),
+                                        lng: parseFloat(String((place as any).lng || (place as any).longitude || 0))
+                                    }}
+                                    className="text-sm text-gray-500"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -393,47 +465,56 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 </div>
             )}
 
-            {/* Footer with Distance and Chat Button */}
-            <div className="mx-4 pb-4 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                    {userLocation && (
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            targetLocation={{
-                                lat: parseFloat(String((place as any).lat || (place as any).latitude || 0)),
-                                lng: parseFloat(String((place as any).lng || (place as any).longitude || 0))
-                            }}
-                            className="text-gray-600"
-                        />
+            {/* Content */}
+            <div className="px-4 pb-4">
+                {/* Pricing */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                    {pricing["60"] > 0 && (
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                            <div className="text-xs text-gray-600 mb-1">60 min</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
+                        </div>
+                    )}
+                    {pricing["90"] > 0 && (
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                            <div className="text-xs text-gray-600 mb-1">90 min</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
+                        </div>
+                    )}
+                    {pricing["120"] > 0 && (
+                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                            <div className="text-xs text-gray-600 mb-1">120 min</div>
+                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
+                        </div>
                     )}
                 </div>
-                
+
+                {/* View Profile Button */}
                 <button 
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        // Handle place chat/booking
-                        onClick(place);
-                    }}
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-2"
+                    disabled={readOnly}
+                    className={`w-full py-2.5 font-semibold rounded-lg transition-all ${
+                        readOnly 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                    }`}
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    </svg>
-                    Book Now
+                    {readOnly ? 'View Only' : 'View Profile'}
                 </button>
             </div>
-        </div>
+            </div>
 
-        {/* Share Popup */}
-        <SocialSharePopup
-            isOpen={showSharePopup}
-            onClose={() => setShowSharePopup(false)}
-            title={place.name || "Massage Place"}
-            description={place.description || "Professional massage services"}
-            url={shortShareUrl}
-            type="place"
-        />
-    </div>
+            {/* Social Share Popup */}
+            {showSharePopup && (
+                <SocialSharePopup
+                    isOpen={showSharePopup}
+                    onClose={() => setShowSharePopup(false)}
+                    title={place.name}
+                    description={place.description || "Professional massage services"}
+                    url={shortShareUrl}
+                    type="place"
+                />
+            )}
+        </div>
     );
 };
 
