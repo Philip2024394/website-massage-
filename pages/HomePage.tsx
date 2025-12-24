@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistHomeCard from '../components/TherapistHomeCard';
-import MassagePlaceCard from '../components/MassagePlaceCard';
-import FacialPlaceCard from '../components/FacialPlaceCard';
+import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
+import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -1604,16 +1604,11 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                             
                                             return (
                                                 <>
-                                                <MassagePlaceCard
+                                                <MassagePlaceHomeCard
                                                     key={placeId}
                                                     place={place}
-                                                    onRate={() => handleOpenRatingModal(place, 'place')}
-                                                    onSelectPlace={onSelectPlace}
-                                                    onNavigate={onNavigate}
+                                                    onClick={onSelectPlace}
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
-                                                    onShowRegisterPrompt={onShowRegisterPrompt}
-                                                    isCustomerLoggedIn={!!loggedInCustomer}
-                                                    t={translationsObject}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
                                                 {/* Accommodation Massage Service Link */}
@@ -1713,16 +1708,11 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                             const placeId = place.id || place.$id;
                                             
                                             return (
-                                                <FacialPlaceCard
+                                                <FacialPlaceHomeCard
                                                     key={placeId}
                                                     place={place}
-                                                    onRate={() => handleOpenRatingModal(place, 'place')}
-                                                    onSelectPlace={onSelectPlace}
-                                                    onNavigate={onNavigate}
+                                                    onClick={onSelectPlace}
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
-                                                    onShowRegisterPrompt={onShowRegisterPrompt}
-                                                    isCustomerLoggedIn={!!loggedInCustomer}
-                                                    t={translationsObject}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
                                             );
