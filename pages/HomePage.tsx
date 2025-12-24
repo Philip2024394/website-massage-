@@ -137,6 +137,7 @@ const HomePage: React.FC<HomePageProps> = ({
     onPrivacyClick, 
     onNavigate,
     onLanguageChange, 
+    onLoginClick,
     t,
     language
 }) => {
