@@ -192,9 +192,12 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             <div className="relative h-48 sm:h-56 overflow-hidden">
                 {/* Main Image */}
                 <img
-                    src={(place as any).image || `https://picsum.photos/400/300?random=${place.id || place.$id}&category=beauty`}
+                    src={(place as any).mainImage || (place as any).profilePicture || (place as any).image || 'https://ik.imagekit.io/7grri5v7d/facial%202.png'}
                     alt={place.name || "Facial Clinic"}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/facial%202.png';
+                    }}
                 />
 
                 {/* Discount badge (top left) */}
