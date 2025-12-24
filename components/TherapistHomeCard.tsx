@@ -209,11 +209,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
-            <div className="relative h-48 sm:h-56 overflow-hidden">
+            <div className="relative h-48 sm:h-56 overflow-visible">
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-cover transition-transform duration-500"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                     }}
@@ -278,17 +278,27 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 )}
             </div>
 
-            {/* Profile Section - Similar to MassagePlaceCard */}
-            <div className="px-4 -mt-8 sm:-mt-12 pb-4 relative z-10">
+            {/* Location - Below image on the right side */}
+            <div className="px-4 mt-2 mb-1 flex justify-end">
+                <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-700">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
+                </div>
+            </div>
+
+            {/* Profile Section - Match TherapistCard positioning */}
+            <div className="px-4 -mt-10 sm:-mt-16 pb-4 relative z-20 overflow-visible">
                 <div className="flex items-start gap-3">
-                    {/* Profile Picture */}
-                    <div className="flex-shrink-0">
-                        <div className="relative w-24 h-24">
+                    {/* Profile Picture - Match TherapistCard styling */}
+                    <div className="flex-shrink-0 relative z-20">
+                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square ring-2 ring-orange-100 overflow-visible">
                             <img 
-                                className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-gray-100 aspect-square" 
+                                className="w-full h-full rounded-full object-cover aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={therapist.name}
-                                style={{ width: '96px', height: '96px' }}
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
@@ -296,54 +306,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
                     </div>
                     
-                    {/* Name and Status Column */}
+                    {/* Name and Status Column - Match TherapistCard padding */}
                     <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                        {/* Distance Display - Above name on mobile, hidden on larger screens */}
-                        <div className="block sm:hidden mb-1">
-                            <DistanceDisplay
-                                userLocation={userLocation}
-                                providerLocation={{ 
-                                    lat: parseFloat((therapist as any).latitude || '0'), 
-                                    lng: parseFloat((therapist as any).longitude || '0') 
-                                }}
-                                className="justify-start"
-                                size="sm"
-                                showTravelTime={false}
-                            />
-                        </div>
-                        
-                        {/* Name and Location - Mobile: name only, Desktop: name + location */}
+                        {/* Name Only */}
                         <div className="mb-1">
-                            <div className="flex items-center justify-between gap-2 mb-1 mt-4">
+                            <div className="flex items-center justify-between gap-2 mb-1">
                                 <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
                                     {therapist.name}
                                 </h3>
-                                
-                                {/* Location - Desktop: show city, Mobile: show distance */}
-                                <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
-                                    {/* Desktop: City name */}
-                                    <div className="hidden sm:flex items-center gap-1">
-                                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                        <span className="text-xs sm:text-xs truncate">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
-                                    </div>
-                                    
-                                    {/* Mobile: Distance */}
-                                    <div className="block sm:hidden">
-                                        <DistanceDisplay
-                                            userLocation={userLocation}
-                                            providerLocation={{ 
-                                                lat: parseFloat((therapist as any).latitude || '0'), 
-                                                lng: parseFloat((therapist as any).longitude || '0') 
-                                            }}
-                                            className="justify-end"
-                                            size="sm"
-                                            showTravelTime={false}
-                                        />
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -383,32 +353,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         if (!languages || !Array.isArray(languages) || languages.length === 0) {
                             // Fallback: show Indonesian and English flags if no languages specified
                             return (
-                                <div className="flex items-center gap-1">
-                                    <span className="flex items-center gap-0.5 text-xs">
-                                        <span 
-                                            className="text-sm" 
-                                            style={{
-                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                fontSize: '14px',
-                                                lineHeight: '1'
-                                            }}
-                                        >
-                                            🇮🇩
-                                        </span>
-                                        <span className="text-xs font-medium text-gray-700">ID</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                        <span className="text-xs">🇮🇩</span>
+                                        <span className="text-xs font-semibold">ID</span>
                                     </span>
-                                    <span className="flex items-center gap-0.5 text-xs">
-                                        <span 
-                                            className="text-sm" 
-                                            style={{
-                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                fontSize: '14px',
-                                                lineHeight: '1'
-                                            }}
-                                        >
-                                            🇬🇧
-                                        </span>
-                                        <span className="text-xs font-medium text-gray-700">EN</span>
+                                    <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                        <span className="text-xs">🇬🇧</span>
+                                        <span className="text-xs font-semibold">EN</span>
                                     </span>
                                 </div>
                             );
@@ -451,23 +403,24 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         
                         return (
                             <div className="flex items-center gap-1">
-                                {languages.slice(0, 2).map(lang => {
+                                {languages.slice(0, 2).map((lang, index, array) => {
                                     const langKey = lang.toLowerCase();
-                                    const langInfo = langMap[langKey] || {flag: '🌐', name: lang.slice(0, 2).toUpperCase()};
+                                    // Default to Indonesian flag if language not recognized
+                                    const langInfo = langMap[langKey] || {flag: '🇮🇩', name: 'ID'};
+                                    
+                                    // Skip duplicate language codes
+                                    const isDuplicate = array.slice(0, index).some(prevLang => {
+                                        const prevKey = prevLang.toLowerCase();
+                                        const prevInfo = langMap[prevKey] || {flag: '🇮🇩', name: 'ID'};
+                                        return prevInfo.name === langInfo.name;
+                                    });
+                                    
+                                    if (isDuplicate) return null;
+                                    
                                     return (
-                                        <span key={lang} className="flex items-center gap-0.5 text-xs">
-                                            {/* Use emoji flag with proper font family to ensure display */}
-                                            <span 
-                                                className="text-sm" 
-                                                style={{
-                                                    fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
-                                                    fontSize: '14px',
-                                                    lineHeight: '1'
-                                                }}
-                                            >
-                                                {langInfo.flag}
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-700">{langInfo.name}</span>
+                                        <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                            <span className="text-xs">{langInfo.flag}</span>
+                                            <span className="text-xs font-semibold">{langInfo.name}</span>
                                         </span>
                                     );
                                 })}
