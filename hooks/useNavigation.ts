@@ -82,7 +82,7 @@ export const useNavigation = ({
 
     // Simple page navigation handlers
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
-    const handleNavigateToTherapistLogin = useCallback(() => setPage('therapistLogin'), [setPage]);
+    const handleNavigateToTherapistLogin = useCallback(() => setPage('signIn'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     // Redirect to simpleSignup instead of redundant registrationChoice page
     const handleNavigateToRegistrationChoice = useCallback(() => setPage('simpleSignup'), [setPage]);

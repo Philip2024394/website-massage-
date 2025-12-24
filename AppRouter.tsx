@@ -258,6 +258,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(publicRoutes.discounts.component);
 
         // ===== AUTH ROUTES =====
+        case 'sign-in':
+        case 'signIn':
+            return renderRoute(authRoutes.signIn.component);
+            
         case 'therapist-login':
         case 'therapistLogin':
             return renderRoute(authRoutes.therapistLogin.component);

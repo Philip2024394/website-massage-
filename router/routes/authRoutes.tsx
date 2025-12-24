@@ -9,8 +9,14 @@ const TherapistLoginPage = React.lazy(() => import('../../pages/TherapistLoginPa
 const MassagePlaceLoginPage = React.lazy(() => import('../../pages/MassagePlaceLoginPage'));
 const FacialPortalPage = React.lazy(() => import('../../pages/FacialPortalPage'));
 const SimpleSignupFlow = React.lazy(() => import('../../src/pages/SimpleSignupFlow'));
+const SignInPage = React.lazy(() => import('../../pages/SignInPage'));
 
 export const authRoutes = {
+  signIn: {
+    path: '/sign-in',
+    component: SignInPage,
+    name: 'signIn'
+  },
   therapistLogin: {
     path: '/therapist-login',
     component: TherapistLoginPage,
