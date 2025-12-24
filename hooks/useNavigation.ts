@@ -241,7 +241,16 @@ export const useNavigation = ({
 
     const handleSetSelectedPlace = useCallback((place: Place | null) => {
         setSelectedPlace(place);
-    }, [setSelectedPlace]);
+        if (place) {
+            // Determine which profile page to navigate to based on place type
+            const placeType = (place as any).type || 'massage';
+            if (placeType === 'facial' || placeType === 'beauty') {
+                setPage('facial-place-profile');
+            } else {
+                setPage('massage-place-profile');
+            }
+        }
+    }, [setSelectedPlace, setPage]);
 
     return {
         // Back navigation
