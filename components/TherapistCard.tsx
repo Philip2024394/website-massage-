@@ -1639,8 +1639,11 @@ ${locationInfo}${coordinatesInfo}
                     onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        // Add report profile functionality here
-                        alert('Report Profile functionality coming soon');
+                        if (onNavigate) {
+                            onNavigate('contact');
+                        } else {
+                            window.location.href = '/contact';
+                        }
                     }}
                     className="inline-flex flex-col items-center cursor-pointer bg-transparent border-none p-0"
                 >
