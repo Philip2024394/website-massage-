@@ -936,6 +936,18 @@ ${locationInfo}${coordinatesInfo}
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
+                            {/* Distance Display - Above name on mobile only */}
+                            <div className="block sm:hidden mb-1 mt-2">
+                                <DistanceDisplay
+                                    userLocation={userLocation}
+                                    providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
+                                    className="text-gray-700"
+                                    showTravelTime={false}
+                                    showIcon={true}
+                                    size="sm"
+                                />
+                            </div>
+                            
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
@@ -981,8 +993,8 @@ ${locationInfo}${coordinatesInfo}
                         </div>
                     </div>
                     
-                    {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
+                    {/* Right side: Distance - Desktop only */}
+                    <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
                         <DistanceDisplay
                             userLocation={userLocation}
                             providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}

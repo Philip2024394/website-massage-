@@ -284,18 +284,51 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     
                     {/* Name and Status Column */}
                     <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                        {/* Name and Location - Same line with name on left, location on right */}
+                        {/* Distance Display - Above name on mobile, hidden on larger screens */}
+                        <div className="block sm:hidden mb-1">
+                            <DistanceDisplay
+                                userLocation={userLocation}
+                                providerLocation={{ 
+                                    lat: parseFloat((therapist as any).latitude || '0'), 
+                                    lng: parseFloat((therapist as any).longitude || '0') 
+                                }}
+                                className="justify-start"
+                                size="sm"
+                                showTravelTime={false}
+                            />
+                        </div>
+                        
+                        {/* Name and Location - Mobile: name only, Desktop: name + location */}
                         <div className="mb-1">
                             <div className="flex items-center justify-between gap-2 mb-1 mt-4">
                                 <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
                                     {therapist.name}
                                 </h3>
+                                
+                                {/* Location - Desktop: show city, Mobile: show distance */}
                                 <div className="flex items-center gap-1 text-gray-600 flex-shrink-0">
-                                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <span className="text-xs sm:text-xs truncate">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
+                                    {/* Desktop: City name */}
+                                    <div className="hidden sm:flex items-center gap-1">
+                                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        <span className="text-xs sm:text-xs truncate">{(therapist.city || therapist.location || 'Bali').split(',')[0].trim()}</span>
+                                    </div>
+                                    
+                                    {/* Mobile: Distance */}
+                                    <div className="block sm:hidden">
+                                        <DistanceDisplay
+                                            userLocation={userLocation}
+                                            providerLocation={{ 
+                                                lat: parseFloat((therapist as any).latitude || '0'), 
+                                                lng: parseFloat((therapist as any).longitude || '0') 
+                                            }}
+                                            className="justify-end"
+                                            size="sm"
+                                            showTravelTime={false}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
