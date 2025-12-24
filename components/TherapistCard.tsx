@@ -1147,7 +1147,7 @@ ${locationInfo}${coordinatesInfo}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
             {/* Massage Therapist Standards Link - Different targets for shared profiles vs home page */}
-            <div className="text-center mb-2 mt-2">
+            <div className="text-center mb-4 mt-2">
                 <button
                     onClick={() => {
                         const isSharedProfile = window.location.pathname.includes('/share/');
