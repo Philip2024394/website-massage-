@@ -223,7 +223,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'home':
             return renderRoute(publicRoutes.home.component, {
-                onSelectTherapist: props.handleSetSelectedTherapist
+                onSelectTherapist: props.handleSetSelectedTherapist,
+                onLoginClick: props.handleNavigateToTherapistLogin
             });
         
         case 'about':
