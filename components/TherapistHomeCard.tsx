@@ -358,41 +358,81 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                 : languagesValue)
                             : [];
                         
-                        if (!languages || !Array.isArray(languages) || languages.length === 0) return null;
+                        // Debug logging
+                        console.log('🏠 TherapistHomeCard languages debug:', {
+                            therapistName: therapist.name,
+                            languagesValue,
+                            parsedLanguages: languages,
+                            languagesType: typeof languagesValue
+                        });
                         
-                        // Language mapping with flags
-                        const langMap: Record<string, {flag: string, name: string}> = {
-                            'english': {flag: '🇬🇧', name: 'EN'},
-                            'indonesian': {flag: '🇮🇩', name: 'ID'},
-                            'mandarin': {flag: '🇨🇳', name: 'ZH'},
-                            'japanese': {flag: '🇯🇵', name: 'JP'},
-                            'korean': {flag: '🇰🇷', name: 'KR'},
-                            'thai': {flag: '🇹🇭', name: 'TH'},
-                            'vietnamese': {flag: '🇻🇳', name: 'VI'},
-                            'french': {flag: '🇫🇷', name: 'FR'},
-                            'german': {flag: '🇩🇪', name: 'DE'},
-                            'spanish': {flag: '🇪🇸', name: 'ES'},
-                            'portuguese': {flag: '🇵🇹', name: 'PT'},
-                            'italian': {flag: '🇮🇹', name: 'IT'},
-                            'russian': {flag: '🇷🇺', name: 'RU'},
-                            'arabic': {flag: '🇸🇦', name: 'AR'},
-                            'hindi': {flag: '🇮🇳', name: 'HI'},
+                        if (!languages || !Array.isArray(languages) || languages.length === 0) {
+                            // Fallback: show Indonesian and English flags if no languages specified
+                            return (
+                                <div className="flex items-center gap-1">
+                                    <span className="flex items-center gap-0.5 text-xs">
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇮🇩
+                                        </span>
+                                        <span className="text-xs font-medium text-gray-700">ID</span>
+                                    </span>
+                                    <span className="flex items-center gap-0.5 text-xs">
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇬🇧
+                                        </span>
+                                        <span className="text-xs font-medium text-gray-700">EN</span>
+                                    </span>
+                                </div>
+                            );
+                        }
+                        
+                        // Language mapping with flags - using CSS flag icons for better mobile compatibility
+                        const langMap: Record<string, {flag: string, name: string, flagClass?: string}> = {
+                            'english': {flag: '🇬🇧', name: 'EN', flagClass: 'fi fi-gb'},
+                            'indonesian': {flag: '🇮🇩', name: 'ID', flagClass: 'fi fi-id'},
+                            'mandarin': {flag: '🇨🇳', name: 'ZH', flagClass: 'fi fi-cn'},
+                            'japanese': {flag: '🇯🇵', name: 'JP', flagClass: 'fi fi-jp'},
+                            'korean': {flag: '🇰🇷', name: 'KR', flagClass: 'fi fi-kr'},
+                            'thai': {flag: '🇹🇭', name: 'TH', flagClass: 'fi fi-th'},
+                            'vietnamese': {flag: '🇻🇳', name: 'VI', flagClass: 'fi fi-vn'},
+                            'french': {flag: '🇫🇷', name: 'FR', flagClass: 'fi fi-fr'},
+                            'german': {flag: '🇩🇪', name: 'DE', flagClass: 'fi fi-de'},
+                            'spanish': {flag: '🇪🇸', name: 'ES', flagClass: 'fi fi-es'},
+                            'portuguese': {flag: '🇵🇹', name: 'PT', flagClass: 'fi fi-pt'},
+                            'italian': {flag: '🇮🇹', name: 'IT', flagClass: 'fi fi-it'},
+                            'russian': {flag: '🇷🇺', name: 'RU', flagClass: 'fi fi-ru'},
+                            'arabic': {flag: '🇸🇦', name: 'AR', flagClass: 'fi fi-sa'},
+                            'hindi': {flag: '🇮🇳', name: 'HI', flagClass: 'fi fi-in'},
                             // Language codes for backward compatibility
-                            'en': {flag: '🇬🇧', name: 'EN'},
-                            'id': {flag: '🇮🇩', name: 'ID'},
-                            'zh': {flag: '🇨🇳', name: 'ZH'},
-                            'ja': {flag: '🇯🇵', name: 'JP'},
-                            'ko': {flag: '🇰🇷', name: 'KR'},
-                            'th': {flag: '🇹🇭', name: 'TH'},
-                            'vi': {flag: '🇻🇳', name: 'VI'},
-                            'fr': {flag: '🇫🇷', name: 'FR'},
-                            'de': {flag: '🇩🇪', name: 'DE'},
-                            'es': {flag: '🇪🇸', name: 'ES'},
-                            'pt': {flag: '🇵🇹', name: 'PT'},
-                            'it': {flag: '🇮🇹', name: 'IT'},
-                            'ru': {flag: '🇷🇺', name: 'RU'},
-                            'ar': {flag: '🇸🇦', name: 'AR'},
-                            'hi': {flag: '🇮🇳', name: 'HI'}
+                            'en': {flag: '🇬🇧', name: 'EN', flagClass: 'fi fi-gb'},
+                            'id': {flag: '🇮🇩', name: 'ID', flagClass: 'fi fi-id'},
+                            'zh': {flag: '🇨🇳', name: 'ZH', flagClass: 'fi fi-cn'},
+                            'ja': {flag: '🇯🇵', name: 'JP', flagClass: 'fi fi-jp'},
+                            'ko': {flag: '🇰🇷', name: 'KR', flagClass: 'fi fi-kr'},
+                            'th': {flag: '🇹🇭', name: 'TH', flagClass: 'fi fi-th'},
+                            'vi': {flag: '🇻🇳', name: 'VI', flagClass: 'fi fi-vn'},
+                            'fr': {flag: '🇫🇷', name: 'FR', flagClass: 'fi fi-fr'},
+                            'de': {flag: '🇩🇪', name: 'DE', flagClass: 'fi fi-de'},
+                            'es': {flag: '🇪🇸', name: 'ES', flagClass: 'fi fi-es'},
+                            'pt': {flag: '🇵🇹', name: 'PT', flagClass: 'fi fi-pt'},
+                            'it': {flag: '🇮🇹', name: 'IT', flagClass: 'fi fi-it'},
+                            'ru': {flag: '🇷🇺', name: 'RU', flagClass: 'fi fi-ru'},
+                            'ar': {flag: '🇸🇦', name: 'AR', flagClass: 'fi fi-sa'},
+                            'hi': {flag: '🇮🇳', name: 'HI', flagClass: 'fi fi-in'}
                         };
                         
                         return (
@@ -402,7 +442,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     const langInfo = langMap[langKey] || {flag: '🌐', name: lang.slice(0, 2).toUpperCase()};
                                     return (
                                         <span key={lang} className="flex items-center gap-0.5 text-xs">
-                                            <span className="text-xs">{langInfo.flag}</span>
+                                            {/* Use emoji flag with proper font family to ensure display */}
+                                            <span 
+                                                className="text-sm" 
+                                                style={{
+                                                    fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                    fontSize: '14px',
+                                                    lineHeight: '1'
+                                                }}
+                                            >
+                                                {langInfo.flag}
+                                            </span>
                                             <span className="text-xs font-medium text-gray-700">{langInfo.name}</span>
                                         </span>
                                     );
