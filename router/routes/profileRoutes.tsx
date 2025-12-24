@@ -7,7 +7,7 @@ import React from 'react';
 
 const TherapistProfilePage = React.lazy(() => import('../../pages/TherapistProfilePage'));
 const MassagePlaceProfilePage = React.lazy(() => import('../../pages/MassagePlaceProfilePage'));
-const FacialPlaceProfilePage = React.lazy(() => import('../../pages/FacialPlaceProfilePage'));
+const FacialPlaceProfilePage = React.lazy(() => import('../../pages/FacialPlaceProfilePageNew'));
 const PlaceDetailPage = React.lazy(() => import('../../pages/PlaceDetailPage'));
 
 // New shared profile components (bulletproof, guaranteed to work)
