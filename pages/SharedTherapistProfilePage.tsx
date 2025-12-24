@@ -364,8 +364,8 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                 {/* Hero Image */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
-                        alt="Logo" 
+                        src={therapist.mainImage || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png"} 
+                        alt={`${therapist.name} banner`}
                         className="h-48 w-auto object-contain"
                     />
                 </div>
