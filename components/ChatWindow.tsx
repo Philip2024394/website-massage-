@@ -2097,7 +2097,7 @@ export default function ChatWindow({
                     )}
 
                     <p className="text-xs text-center text-gray-500">
-                        🔒 Your information is private and will only be shared with {providerName}
+                        🔒 Your WhatsApp number is private and will only be used by admin
                     </p>
                 </div>
             </div>
