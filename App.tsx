@@ -11,8 +11,8 @@ import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import ChatWindow from './components/ChatWindow';
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
-// localStorage disabled globally
-import './utils/disableLocalStorage';
+// localStorage disabled globally - COMMENTED OUT to enable language persistence
+// import './utils/disableLocalStorage';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';

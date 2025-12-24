@@ -106,7 +106,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     };
     
     const [page, _setPage] = useState<string>(getInitialPage());
-    const [language, setLanguage] = useState<Language>(() => {
+    const [language, _setLanguage] = useState<Language>(() => {
         // Check localStorage for saved language, default to Indonesian
         try {
             const stored = localStorage.getItem('app_language');
@@ -114,6 +114,18 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         } catch {}
         return 'id'; // Default to Indonesian
     });
+
+    // Wrapper for setLanguage to persist to localStorage
+    const setLanguage = useCallback((newLanguage: Language) => {
+        console.log('🌐 Language changing from', language, 'to', newLanguage);
+        _setLanguage(newLanguage);
+        try {
+            localStorage.setItem('app_language', newLanguage);
+            console.log('✅ Language saved to localStorage:', newLanguage);
+        } catch (error) {
+            console.error('❌ Failed to save language to localStorage:', error);
+        }
+    }, [language]);
     const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
     const [selectedMassageType, setSelectedMassageType] = useState<string>('all');
     const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
