@@ -35,6 +35,7 @@ interface HomePageProps {
     hotels: any[];
     userLocation: UserLocation | null;
     selectedCity?: string; // Add optional prop for external control
+    readOnly?: boolean; // Lock components to read-only mode
     onSetUserLocation: (location: UserLocation) => void;
     onSelectPlace: (place: Place) => void;
     onSelectTherapist?: (therapist: Therapist) => void; // Add therapist selection
@@ -113,6 +114,7 @@ const HomePage: React.FC<HomePageProps> = ({
     hotels,
     userLocation,
     selectedCity: propSelectedCity, // Get from prop
+    readOnly = false, // Default to editable unless specified
     onSetUserLocation, 
     onSelectPlace,
     onSelectTherapist,
@@ -1444,6 +1446,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 <TherapistHomeCard
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
+                                    readOnly={readOnly}
                                     onClick={(t) => {
                                         // Set selected therapist and navigate to profile page with URL update
                                         onSelectTherapist?.(t);

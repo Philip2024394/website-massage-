@@ -14,6 +14,7 @@ interface TherapistHomeCardProps {
     onClick: (therapist: Therapist) => void;
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
+    readOnly?: boolean; // Lock card to read-only mode
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -26,7 +27,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     therapist, 
     onClick,
     onIncrementAnalytics,
-    userLocation
+    userLocation,
+    readOnly = false // Default to editable unless specified
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -175,26 +177,36 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </svg>
                     {joinedDisplay}
                 </span>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setShowJoinPopup(true);
-                    }}
-                    className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
-                >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Therapist Join Free
-                </button>
+                {!readOnly && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowJoinPopup(true);
+                        }}
+                        className="text-[11px] text-green-600 font-semibold flex items-center gap-1 hover:text-green-700 hover:underline transition-colors cursor-pointer"
+                    >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Therapist Join Free
+                    </button>
+                )}
+                {readOnly && (
+                    <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Read Only
+                    </span>
+                )}
             </div>
             
             <div 
-                onClick={() => {
+                onClick={readOnly ? undefined : () => {
                     onClick(therapist);
                     onIncrementAnalytics('views');
                 }}
-                className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-xl transition-all duration-300 cursor-pointer group"
+                className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
             <div className="relative h-48 sm:h-56 overflow-hidden">
@@ -252,16 +264,18 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 )}
 
                 {/* Share Button - Bottom Right Corner of image */}
-                <button
-                    onClick={handleShareClick}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
-                    title="Share this therapist"
-                    aria-label="Share this therapist"
-                >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </button>
+                {!readOnly && (
+                    <button
+                        onClick={handleShareClick}
+                        className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
+                        title="Share this therapist"
+                        aria-label="Share this therapist"
+                    >
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                    </button>
+                )}
             </div>
 
             {/* Profile Section - Similar to MassagePlaceCard */}
@@ -497,8 +511,15 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 </div>
 
                 {/* View Profile Button */}
-                <button className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all">
-                    View Profile
+                <button 
+                    disabled={readOnly}
+                    className={`w-full py-2.5 font-semibold rounded-lg transition-all ${
+                        readOnly 
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                            : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
+                    }`}
+                >
+                    {readOnly ? 'View Only' : 'View Profile'}
                 </button>
             </div>
             </div>

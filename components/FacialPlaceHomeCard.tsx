@@ -216,23 +216,18 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 </button>
 
                 {/* Price container with rating badges (positioned at top edge, 50% inside/outside) */}
-                <div className="absolute -top-4 left-4 right-4 flex justify-between items-center">
+                <div className="absolute -top-4 left-4 right-4 flex justify-between items-start">
                     {/* Rating Badge */}
                     <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-3 py-2 rounded-xl shadow-lg flex items-center gap-1.5">
                         <StarIcon className="w-4 h-4 text-white" />
                         <span className="text-sm font-bold">{displayRating}</span>
                     </div>
+                </div>
 
-                    {/* Price Badge */}
-                    {(pricing["60"] > 0 || pricing["90"] > 0 || pricing["120"] > 0) && (
-                        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-xl shadow-lg">
-                            <span className="text-sm font-bold">
-                                {pricing["60"] > 0 ? `${formatPrice(pricing["60"])}` :
-                                 pricing["90"] > 0 ? `${formatPrice(pricing["90"])}` :
-                                 pricing["120"] > 0 ? `${formatPrice(pricing["120"])}` : '—'}
-                            </span>
-                        </div>
-                    )}
+                {/* Star rating badge on image (bottom right) */}
+                <div className="absolute bottom-3 right-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <StarIcon className="w-3 h-3 text-white" />
+                    <span>{displayRating}</span>
                 </div>
 
                 {/* Orders badge (bottom left) */}
@@ -392,6 +387,39 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                     </p>
                 </div>
             )}
+
+            {/* Price Containers for 60/90/120 min treatments */}
+            <div className="mx-4 mb-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-3">Treatment Packages</h4>
+                <div className="grid grid-cols-3 gap-2">
+                    {/* 60 min package */}
+                    <div className="bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-pink-700 mb-1">60 min</div>
+                        <div className="text-sm font-bold text-gray-900">
+                            {pricing["60"] > 0 ? `${formatPrice(pricing["60"])}` : 'Call'}
+                        </div>
+                        <div className="text-[10px] text-gray-600 mt-1">Basic</div>
+                    </div>
+                    
+                    {/* 90 min package */}
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-purple-700 mb-1">90 min</div>
+                        <div className="text-sm font-bold text-gray-900">
+                            {pricing["90"] > 0 ? `${formatPrice(pricing["90"])}` : 'Call'}
+                        </div>
+                        <div className="text-[10px] text-gray-600 mt-1">Premium</div>
+                    </div>
+                    
+                    {/* 120 min package */}
+                    <div className="bg-gradient-to-br from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-3 text-center">
+                        <div className="text-xs font-medium text-pink-700 mb-1">120 min</div>
+                        <div className="text-sm font-bold text-gray-900">
+                            {pricing["120"] > 0 ? `${formatPrice(pricing["120"])}` : 'Call'}
+                        </div>
+                        <div className="text-[10px] text-gray-600 mt-1">Luxury</div>
+                    </div>
+                </div>
+            </div>
 
             {/* Footer with Distance and Book Button */}
             <div className="mx-4 pb-4 flex justify-between items-center">
