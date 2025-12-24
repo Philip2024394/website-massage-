@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
     Clock, MapPin, Phone, Mail, Star, ChevronLeft, ChevronRight, 
-    Award, Users, Sparkles, CheckCircle, X, Heart,
+    Award, Users, Sparkles, CheckCircle, X, Heart, Calendar,
     Image as ImageIcon
 } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
