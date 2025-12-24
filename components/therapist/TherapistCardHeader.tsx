@@ -22,12 +22,12 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     displayRating
 }) => {
     return (
-        <div className="h-48 w-full overflow-visible relative rounded-t-xl">
+        <div className="h-48 w-full overflow-visible relative rounded-t-xl group">
             <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
                 <img 
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={(e) => {
                         console.error('🖼️ Main image failed to load:', displayImage);
                         // Fallback to a working ImageKit URL
