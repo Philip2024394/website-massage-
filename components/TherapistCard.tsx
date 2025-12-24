@@ -1048,7 +1048,7 @@ ${locationInfo}${coordinatesInfo}
             {/* Massage Specializations - Centered */}
             <div className="border-t border-gray-100 pt-3">
                 <div className="mb-2">
-                    <h4 className="text-xs font-semibold text-gray-700 text-center">
+                    <h4 className="text-sm font-semibold text-gray-700 text-center">
                         {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
                     </h4>
                 </div>
