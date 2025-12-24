@@ -1391,6 +1391,23 @@ ${locationInfo}${coordinatesInfo}
                 </button>
             </div>
 
+            {/* Report Profile Section */}
+            <div className="text-center mt-4 px-4">
+                <button 
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // Add report profile functionality here
+                        alert('Report Profile functionality coming soon');
+                    }}
+                    className="inline-flex flex-col items-center cursor-pointer bg-transparent border-none p-0"
+                >
+                    <span className="text-sm font-bold text-red-600 hover:text-red-700">Report Profile</span>
+                    <span className="text-xs text-gray-500 mt-0.5">Violates Stated Standards</span>
+                </button>
+            </div>
+
             {/* End Content Section wrapper */}
             </div>
 
