@@ -56,7 +56,8 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 const count = await bookingService.getBookingsCount(placeId, 'facial');
                 setBookingsCount(count);
             } catch (error) {
-                console.error('Failed to load bookings count:', error);
+                // Silently fall back to default count (don't log error)
+                // Bookings collection may not have facial place records yet
             }
         };
 
@@ -443,7 +444,11 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                     onClick={(e) => {
                         e.stopPropagation();
                         // Handle facial place chat/booking
-                        onClick(place);
+                        if (typeof onClick === 'function') {
+                            onClick(place);
+                        } else {
+                            console.error('onClick is not a function in FacialPlaceHomeCard');
+                        }
                     }}
                     className="bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-2"
                 >
