@@ -1,3 +1,10 @@
+// ===== APPWRITE DEBUG LOGGING =====
+console.log('🔧 APPWRITE CONFIG DEBUG:');
+console.log('  📍 Endpoint:', 'https://syd.cloud.appwrite.io/v1');
+console.log('  🆔 Project ID:', '68f23b11000d25eb3664');
+console.log('  💾 Database ID:', '68f76ee1000e64ca8d05');
+console.log('  👥 Therapists Collection ID:', 'THERAPISTS_COLLECTION_ID');
+
 // Google Maps API Configuration
 export const GOOGLE_MAPS_API_KEY = 'AIzaSyBzcGi0AcIHpgJTayMdc06ayS_KwMsDqKU';
 
@@ -12,28 +19,29 @@ export const APPWRITE_CONFIG = {
     // Collection IDs from your Appwrite database  
     collections: {
         admins: '', // Disabled - collection doesn't exist
-        therapists: 'therapists_collection_id', // ✅ Actual collection ID
-        places: 'places_collection_id', // ✅ Actual collection ID  
-        facial_places: 'facial_places_collection', // ✅ Actual collection ID
-        agents: 'Agents', // ✅ Actual collection name
-        bookings: 'bookings_collection_id', // ✅ Actual collection ID
-        reviews: '', // Disabled - collection doesn't exist (causes 404 errors)
-        notifications: 'Notifications', // ✅ Therapist notification system
-        users: 'Users', // ✅ Actual collection name
+        therapists: 'THERAPISTS_COLLECTION_ID', // ✅ Actual collection name
+        places: 'PLACES_COLLECTION_ID', // ✅ Actual collection name
+        facial_places: 'facial_places_collection', // ✅ Actual collection name
+        agents: 'AGENTS_COLLECTION_ID', // ✅ Actual collection name
+        bookings: 'BOOKINGS_COLLECTION_ID', // ✅ Actual collection name
+        reviews: 'REVIEWS_COLLECTION_ID', // ✅ Actual collection name
+        notifications: 'NOTIFICATIONS_COLLECTION_ID', // ✅ Therapist notification system
+        users: 'USERS_COLLECT', // ✅ Actual collection name
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'agent_visits',
         hotelBookings: 'hotel_bookings',
-        hotels: 'hotels_collection_id', // ✅ Actual collection ID
-        cities: '', // Disabled - collection doesn't exist (causes 404 errors)
+        hotels: 'HOTELS_COLLECTION_ID', // ✅ Actual collection name
+        cities: '', // Disabled - has spaces in name 'cities collection id' (causes 400 errors)
         villas: '', // Disabled - collection doesn't exist
-        massageTypes: 'massage_types',
-        membershipPricing: 'membership_pricing',
+        massageTypes: 'MASSAGE_TYPES_COLLECTION_ID', // ✅ Actual collection name
+        membershipPricing: 'MEMBERSHIP_PRICING_COLLECTION_ID', // ✅ Actual collection name
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-        customLinks: '67670249000b8becb947', // ✅ Real production collection ID
-        translations: '6767020d001f6bafeea2', // ✅ Real production collection ID
+        customLinks: 'CUSTOM_LINKS_COLLECTION_ID', // ✅ Actual collection name
+        translations: 'Translations', // ✅ Actual collection name
         commissionRecords: 'commission_records',
+        auditLogs: 'audit_logs', // 🔒 Security audit trail for authorization violations
         attributes: 'ATTRIBUTES',
         analyticsEvents: 'analytics_events',
         therapistJobListings: 'therapist_job_listings',
@@ -75,6 +83,7 @@ export const APPWRITE_CONFIG = {
     
     // Storage bucket IDs
     bucketId: '68f76bdd002387590584', // Main storage bucket
+    paymentProofsBucketId: '694d62f4000e59d03e0a', // Payment proof uploads for commission tracking
     facialPlacesBucketId: '6932f43700113926eb80', // Facial places images bucket
     
     // Google Maps Integration

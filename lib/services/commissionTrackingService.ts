@@ -3,14 +3,10 @@
  * 
  * Handles Pro membership 30% commission payments:
  * - Creates commission record after booking
- * - 4-hour payment deadline
- * - Auto-deactivates account if payment not submitted
- * - Auto-reactivates after proof upload
- * - Admin verification system
- */
-
-import { databases, storage, APPWRITE_CONFIG, Query, ID } from './_shared';
-
+ * - 3-hour payment deadline (EXACTLY 3 hours)
+ * - Server-side deadline enforcement via Appwrite Function
+ * - Uses therapist_menus collection for account status
+ * - Admin-only account reactivation
 export interface CommissionPayment {
     $id: string;
     therapistId: string;
@@ -101,12 +97,9 @@ class CommissionTrackingService {
         const commissionRate = 30; // Pro membership: 30%
         const commissionAmount = Math.round(serviceAmount * 0.30);
         
-        // 4-hour deadline from booking time
+        // 3-hour deadline from booking time (EXACTLY 3 hours)
         const deadline = new Date(bookingDate);
-        deadline.setHours(deadline.getHours() + 4);
-
-        try {
-            const record = await databases.createDocument(
+        deadline.setHours(deadline.getHours() + 3);
                 APPWRITE_CONFIG.databaseId,
                 this.collectionId,
                 ID.unique(),
@@ -158,12 +151,13 @@ class CommissionTrackingService {
         try {
             // Upload file to storage
             const uploadedFile = await storage.createFile(
-                'payment_proofs', // Hardcoded bucket ID
+                APPWRITE_CONFIG.paymentProofsBucketId || '694d62f4000e59d03e0a',
                 ID.unique(),
                 proofFile
             );
 
-            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/payment_proofs/files/${uploadedFile.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            const bucketId = APPWRITE_CONFIG.paymentProofsBucketId || '694d62f4000e59d03e0a';
+            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${bucketId}/files/${uploadedFile.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
 
             // Update commission record
             const updated = await databases.updateDocument(
@@ -321,16 +315,29 @@ class CommissionTrackingService {
      */
     private async deactivateAccount(therapistId: string): Promise<void> {
         try {
+            // Query therapist_menus to find menu document for this therapist
+            const menuDocs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                [Query.equal('therapistId', therapistId)]
+            );
+
+            if (menuDocs.documents.length === 0) {
+                console.warn(`No therapist_menus document found for therapistId: ${therapistId}`);
+                return;
+            }
+
+            // Update the menu document status
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists || 'therapists',
-                therapistId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                menuDocs.documents[0].$id,
                 {
                     status: 'busy',
                     bookingEnabled: false,
                     scheduleEnabled: false,
                     deactivationReason: 'Payment overdue - upload payment proof to reactivate',
-                    updatedAt: new Date().toISOString()
+                    deactivatedAt: new Date().toISOString()
                 }
             );
 
@@ -346,16 +353,29 @@ class CommissionTrackingService {
      */
     private async reactivateAccount(therapistId: string): Promise<void> {
         try {
+            // Query therapist_menus to find menu document for this therapist
+            const menuDocs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                [Query.equal('therapistId', therapistId)]
+            );
+
+            if (menuDocs.documents.length === 0) {
+                console.warn(`No therapist_menus document found for therapistId: ${therapistId}`);
+                return;
+            }
+
+            // Update the menu document status
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists || 'therapists',
-                therapistId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                menuDocs.documents[0].$id,
                 {
-                    status: 'available',
+                    status: 'active',
                     bookingEnabled: true,
                     scheduleEnabled: true,
                     deactivationReason: null,
-                    updatedAt: new Date().toISOString()
+                    deactivatedAt: null
                 }
             );
 
