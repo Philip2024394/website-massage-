@@ -1,0 +1,16 @@
+{
+  "name": "commission-deadline-enforcer",
+  "version": "1.0.0",
+  "description": "Server-side enforcement of commission payment deadlines",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
