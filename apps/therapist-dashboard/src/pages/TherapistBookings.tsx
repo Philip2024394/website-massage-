@@ -177,18 +177,23 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
   const handleCompleteBooking = async (bookingId: string) => {
     try {
-      // TODO: Update booking status to 'completed' in Appwrite
-      devLog('Marking booking as completed:', bookingId);
-      
-      setBookings(prev => prev.map(b => 
+      console.log('💼 Marking booking as completed:', bookingId);
+
+      // Update booking status in Appwrite
+      const { bookingService } = await import('../../../../lib/appwriteService');
+      await bookingService.updateStatus(bookingId, 'Completed');
+
+      // Note: Commission record is automatically created by bookingService.updateStatus()
+      // when status changes to 'Completed' (integrated in booking.service.ts)
+
+      setBookings(prev => prev.map(b =>
         b.$id === bookingId ? { ...b, status: 'completed' as const } : b
       ));
-      
-      devLog('✅ Booking completed');
+
+      console.log('✅ Booking completed successfully');
     } catch (error) {
-      console.error('Failed to complete booking:', error);
-    }
-  };
+      console.error('❌ Failed to complete booking:', error);
+      alert('Failed to complete booking. Please try again.');
 
   const getFilteredBookings = () => {
     let filtered = bookings;

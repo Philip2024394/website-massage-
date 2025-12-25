@@ -5,6 +5,7 @@
 
 import { databases, storage, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
+import { validateBookingCreation, logAuthViolation } from '../../guards/bookingAuthGuards';
 
 // Import services with proper fallbacks
 let notificationService: any;
@@ -63,6 +64,42 @@ export const bookingService = {
         hotelRoomNumber?: string;
     }): Promise<any> {
         try {
+            // 🔒 CRITICAL: Authorization check BEFORE booking creation
+            console.log('🔒 Validating booking authorization...', {
+                providerId: booking.providerId,
+                providerType: booking.providerType,
+                userId: booking.userId
+            });
+
+            const authCheck = await validateBookingCreation(
+                booking.userId,
+                booking.providerId,
+                booking.providerType
+            );
+
+            if (!authCheck.allowed) {
+                console.error('❌ Booking authorization FAILED:', authCheck.reason);
+                
+                // Log violation to audit trail
+                if (booking.userId) {
+                    await logAuthViolation(
+                        'BOOKING_BLOCKED',
+                        booking.userId,
+                        authCheck.reason || 'Authorization failed',
+                        {
+                            providerId: booking.providerId,
+                            providerType: booking.providerType,
+                            service: booking.service
+                        },
+                        authCheck.severity || 'error'
+                    );
+                }
+
+                throw new Error(authCheck.reason || 'Booking not allowed');
+            }
+
+            console.log('✅ Booking authorization PASSED');
+
             // Validate 1-hour minimum if startTime is provided
             if (booking.startTime && booking.bookingDate) {
                 const bookingDateTime = `${booking.bookingDate}T${booking.startTime}`;
@@ -250,6 +287,29 @@ export const bookingService = {
                 update.providerResponseStatus = 'Confirmed';
             } else if (status === 'Completed') {
                 update.completedAt = nowIso;
+                
+                // 🔒 CRITICAL: Create commission record for PRO therapists
+                if (response.providerType === 'therapist') {
+                    console.log('💰 Creating commission record for completed booking');
+                    try {
+                        const { commissionTrackingService } = await import('../../services/commissionTrackingService');
+                        
+                        await commissionTrackingService.createCommissionRecord(
+                            response.providerId,
+                            response.providerName,
+                            bookingId,
+                            nowIso, // bookingDate = completion time
+                            undefined, // no scheduled date for immediate
+                            response.totalCost || 0
+                        );
+                        
+                        console.log('✅ Commission record created successfully');
+                    } catch (commissionError) {
+                        console.error('❌ CRITICAL: Failed to create commission record:', commissionError);
+                        // Don't throw - booking completion shouldn't fail if commission creation fails
+                        // But log this as critical for manual review
+                    }
+                }
             } else if (status === 'Cancelled') {
                 update.cancelledAt = nowIso;
                 update.providerResponseStatus = 'Declined';
