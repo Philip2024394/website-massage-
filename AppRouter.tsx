@@ -736,6 +736,67 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment-info':
             return renderRoute(PaymentInfoPage);
 
+        // ===== GENERIC DASHBOARD ROUTE - Redirects to appropriate dashboard =====
+        case 'dashboard':
+            // Redirect to appropriate dashboard based on logged-in user type
+            if (props.user) {
+                const userType = props.user.userType || props.user.role;
+                if (userType === 'therapist' || props.user.therapistId) {
+                    // Redirect to therapist dashboard
+                    return renderRoute(therapistRoutes.dashboard.component, {
+                        therapist: props.user,
+                        onLogout: props.handleLogout,
+                        onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
+                        onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                        onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
+                        onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                        onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
+                        onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
+                        onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
+                        onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                        onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                        onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                        onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
+                        onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
+                        onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
+                        onNavigateHome: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                } else if (userType === 'massage-place' || userType === 'massage_place') {
+                    return renderRoute(placeRoutes.dashboard.component, {
+                        place: props.user,
+                        onBack: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                } else if (userType === 'facial-place' || userType === 'facial_place') {
+                    return renderRoute(facialRoutes.dashboard.component, {
+                        place: props.user,
+                        onBack: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                }
+            }
+            // No user logged in - show home page
+            return renderRoute(publicRoutes.home.component, {
+                onNavigate: props.onNavigate,
+                onBook: props.handleOpenBookingPopup,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces,
+                hotels: props.hotels,
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
+                onQuickBookWithChat: props.handleQuickBookWithChat,
+                onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onIncrementAnalytics: props.handleIncrementAnalytics,
+                selectedCity: props.selectedCity,
+                onCityChange: props.setSelectedCity,
+                t: props.t,
+                language: props.language
+            });
+
         // ===== THERAPIST DASHBOARD ROUTES =====
         case 'therapist':
         case 'therapistDashboard':
@@ -751,6 +812,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
                 onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
                 onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
+                onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
                 onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
                 onNavigateHome: () => props.onNavigate?.('home'),
                 language: props.language

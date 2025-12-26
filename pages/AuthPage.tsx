@@ -108,43 +108,76 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
         if (accountType === 'therapist') {
             const therapistId = ID.unique();
             await therapistService.create({
-                ...profileData,
+                email: profileData.email,
+                name: profileData.name,
                 therapistId: therapistId,
                 id: therapistId,
                 hotelId: '',
+                countryCode: '+62',
+                whatsappNumber: '',
                 specialization: 'General Massage',
                 yearsOfExperience: 0,
                 isLicensed: false,
+                isLive: false,
                 hourlyRate: 100,
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                price60: '100',
+                price90: '150',
+                price120: '200',
                 coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                therapistType: 'massage',
                 location: 'Bali, Indonesia',
-                averageRating: 5.0,
-                totalReviews: 0,
-                verified: true,
+                status: 'available',
+                availability: 'Available',
+                description: '',
+                profilePicture: '',
+                mainImage: '',
+                massageTypes: '',
+                languages: '',
             });
         } else if (accountType === 'massage-place') {
+            const placeId = ID.unique();
             await placesService.create({
-                ...profileData,
-                placeName: `${profileData.name}'s Massage Place`,
-                placeType: 'massage',
+                email: profileData.email,
+                name: profileData.name,
+                id: placeId,
+                placeId: placeId,
+                category: 'massage-place',
+                password: '',
+                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                status: 'Closed',
+                isLive: false,
+                openingTime: '09:00',
+                closingTime: '21:00',
+                coordinates: [106.8456, -6.2088],
+                hotelId: '',
                 location: 'Bali, Indonesia',
-                averageRating: 5.0,
-                totalReviews: 0,
+                description: '',
+                whatsappnumber: '',
+                mainimage: '',
+                profilePicture: '',
+                galleryImages: '[]',
+                massagetypes: '[]',
+                languagesspoken: '[]',
+                additionalservices: '[]',
             });
         } else if (accountType === 'facial-place') {
+            const facialPlaceId = ID.unique();
             await placesService.create({
-                ...profileData,
-                placeName: `${profileData.name}'s Facial Place`,
-                placeType: 'facial',
-                location: 'Bali, Indonesia',
-                averageRating: 5.0,
-                totalReviews: 0,
+                email: profileData.email,
+                name: profileData.name,
+                facialPlaceId: facialPlaceId,
+                collectionName: 'facial_places',
+                category: 'spa',
+                description: '',
+                address: 'Bali, Indonesia',
+                lastUpdate: new Date().toISOString(),
             });
         }
         
         console.log('✅ Account created successfully');
+        
+        // Wait a moment for database to index the new document
+        await new Promise(resolve => setTimeout(resolve, 1000));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {

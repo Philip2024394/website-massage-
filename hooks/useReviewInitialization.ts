@@ -87,9 +87,10 @@ export function useReviewInitialization() {
         userName: string,
         rating: number,
         comment: string,
+        location?: string,
         bookingId?: string
     ) => {
-        return reviewService.addReview(providerId, providerType, userId, userName, rating, comment, bookingId);
+        return reviewService.addReview(providerId, providerType, userId, userName, rating, comment, location, bookingId);
     };
 
     useEffect(() => {

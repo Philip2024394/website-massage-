@@ -9,6 +9,16 @@ import { ID, Query } from 'appwrite';
 // Import services with proper fallbacks
 let sendAdminNotification: any;
 let getNonRepeatingMainImage: any;
+
+// Helper for creating a solid color data URL placeholder
+const createPlaceholderDataURL = (text: string, bgColor: string = '#f3f4f6', textColor: string = '#374151') => {
+    const svg = `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="300" fill="${bgColor}"/>
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="18" fill="${textColor}">${text}</text>
+    </svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
 try {
     ({ sendAdminNotification } = require('../config'));
 } catch {
@@ -17,7 +27,7 @@ try {
 try {
     ({ getNonRepeatingMainImage } = require('../config'));
 } catch {
-    getNonRepeatingMainImage = (index: number) => `https://via.placeholder.com/400x300?text=Therapist+${index + 1}`;
+    getNonRepeatingMainImage = (index: number) => createPlaceholderDataURL(`Therapist ${index + 1}`);
 }
 
 export const therapistService = {
@@ -349,8 +359,7 @@ export const therapistService = {
             
             // First, get the current document to preserve all existing data
             console.log('📋 Fetching current document to preserve all fields...');
-            const currentDocument = await rateLimitedDb.getDocument(
-                databases,
+            const currentDocument = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id
@@ -577,8 +586,7 @@ export const therapistService = {
                 }
             }
 
-            const response = await rateLimitedDb.updateDocument(
-                databases,
+            const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id,

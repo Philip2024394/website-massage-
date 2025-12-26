@@ -3,6 +3,7 @@ import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import GlobalHeader from './components/GlobalHeader';
 import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
+import { useAutoReviews } from './hooks/useAutoReviews';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingPopup from './components/BookingPopup';
@@ -439,6 +440,9 @@ const App = () => {
     // All hooks combined - ALWAYS call this hook at the same point
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
+    
+    // Initialize auto-review system for Yogyakarta therapists (5-minute updates)
+    useAutoReviews();
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;

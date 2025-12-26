@@ -11,7 +11,6 @@ import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/ther
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
-import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BookingFormPopup, { BookingData } from './BookingFormPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
@@ -379,9 +378,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     let validStatus = AvailabilityStatus.Offline;
     const statusStr = String((therapist as any).availability || therapist.status || '');
     
-    if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
+    // Special handling for showcase profiles - they should always be busy outside of Yogyakarta
+    if ((therapist as any).isShowcaseProfile) {
+        validStatus = AvailabilityStatus.Busy;
+        console.log(`🎭 Showcase profile ${therapist.name} forced to Busy status in ${(therapist as any).showcaseCity}`);
+    } else if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
         validStatus = AvailabilityStatus.Available;
-    } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy) {
+    } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy || statusStr === 'busy') {
         validStatus = AvailabilityStatus.Busy;
     } else if (statusStr === 'Offline' || statusStr === AvailabilityStatus.Offline) {
         validStatus = AvailabilityStatus.Offline;
@@ -923,8 +926,9 @@ ${locationInfo}${coordinatesInfo}
                             <div className="w-24 h-24 bg-white rounded-full p-1 shadow-sm relative aspect-square overflow-visible ring-2 ring-orange-100">
                                 {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                                     <img 
+                                        key={(therapist as any).profilePicture}
                                         className="w-full h-full rounded-full object-cover aspect-square" 
-                                        src={(therapist as any).profilePicture} 
+                                        src={(therapist as any).profilePicture.includes('?') ? `${(therapist as any).profilePicture}&t=${Date.now()}` : `${(therapist as any).profilePicture}?t=${Date.now()}`}
                                         alt={`${therapist.name} profile`} 
                                         onError={(e) => {
                                             const imgElement = e.target as HTMLImageElement;
@@ -950,17 +954,17 @@ ${locationInfo}${coordinatesInfo}
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                            {/* Distance Display - Above name on mobile only */}
-                            <div className="block sm:hidden mb-1 mt-2">
-                                <DistanceDisplay
-                                    userLocation={userLocation}
-                                    providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                                    className="text-gray-700"
-                                    showTravelTime={false}
-                                    showIcon={true}
-                                    size="sm"
-                                />
-                            </div>
+                            {/* Location Display - Above name on mobile only */}
+                            {therapist.location && (
+                                <div className="block sm:hidden mb-1 mt-2">
+                                    <div className="flex items-center text-xs text-gray-600">
+                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{locationCity || therapist.location}</span>
+                                    </div>
+                                </div>
+                            )}
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
                             <div className="overflow-visible">
@@ -1007,17 +1011,17 @@ ${locationInfo}${coordinatesInfo}
                         </div>
                     </div>
                     
-                    {/* Right side: Distance - Desktop only */}
-                    <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-gray-700"
-                            showTravelTime={false}
-                            showIcon={true}
-                            size="sm"
-                        />
-                    </div>
+                    {/* Right side: Location - Desktop only */}
+                    {therapist.location && (
+                        <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
+                            <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                <span>{locationCity || therapist.location}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             
@@ -1702,7 +1706,8 @@ ${locationInfo}${coordinatesInfo}
                         <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0">
                             <div className="flex items-center gap-3 flex-1">
                                 <img
-                                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                    key={(therapist as any).profilePicture}
+                                    src={((therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg').includes('?') ? `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}&t=${Date.now()}` : `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}?t=${Date.now()}`}
                                     alt={therapist.name}
                                     className="w-11 h-11 rounded-full border-2 border-white object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}

@@ -678,24 +678,21 @@ const HomePage: React.FC<HomePageProps> = ({
             return [];
         }
         
-        // Find Yogyakarta therapists (first 5 by creation/upload order)
-        // EXCLUDE featured samples since they already show everywhere
+        // Find first 5 Yogyakarta therapists (by creation/upload order)
+        // INCLUDE all therapists, even featured ones, for the first 5 showcase system
         const yogyaTherapists = allTherapists
             .filter((t: any) => {
                 if (!t.location) return false;
-                
-                // Skip featured samples (like Budi) - they already show in all cities
-                if (isFeaturedSample(t, 'therapist')) {
-                    console.log(`⚠️ Excluding featured sample "${t.name}" from showcase system (already shows everywhere)`);
-                    return false;
-                }
                 
                 const location = t.location.toLowerCase();
                 return location.includes('yogyakarta') || 
                        location.includes('yogya') || 
                        location.includes('jogja');
             })
-            .slice(0, 5); // Take first 5
+            .slice(0, 5); // Take first 5 (including Budi and all others)
+        
+        console.log(`🎭 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase in ${targetCity}:`, 
+                   yogyaTherapists.map(t => t.name));
         
         // Create showcase versions with busy status and target city location
         const showcaseProfiles = yogyaTherapists.map((therapist: any, index: number) => ({
@@ -703,13 +700,15 @@ const HomePage: React.FC<HomePageProps> = ({
             // Override key properties for showcase
             $id: `showcase-${therapist.$id || therapist.id}-${targetCity}`, // Unique ID for showcase version
             id: `showcase-${therapist.$id || therapist.id}-${targetCity}`,
-            status: 'busy', // Always busy to prevent bookings
+            status: 'busy', // Always busy to prevent bookings outside Yogyakarta
             availability: 'busy',
-            location: targetCity, // Dynamic location matching
+            isAvailable: false, // Ensure not bookable
+            location: `${targetCity}, Indonesia`, // Dynamic location matching user's viewing area
+            city: targetCity, // Set city field as well
             isShowcaseProfile: true, // Flag to identify showcase profiles
             originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
             showcaseCity: targetCity, // Track which city this showcase is for
-            // Keep all other properties (name, image, rating, etc.) the same
+            // Keep all other properties (name, image, rating, reviews, etc.) the same
         }));
         
         console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);

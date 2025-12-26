@@ -371,10 +371,19 @@ class AdminTranslationService {
                 }
             }
 
-            // Translate massage types (stored as JSON string)
+            // Translate massage types (can be JSON string or comma-separated string)
             if (data.massageTypes) {
                 try {
-                    const massageTypesArray = JSON.parse(data.massageTypes);
+                    let massageTypesArray: string[];
+                    
+                    // Try to parse as JSON first, fallback to comma-separated string
+                    try {
+                        massageTypesArray = JSON.parse(data.massageTypes);
+                    } catch {
+                        // If not JSON, treat as comma-separated string
+                        massageTypesArray = data.massageTypes.split(',').map((t: string) => t.trim()).filter(Boolean);
+                    }
+                    
                     const translatedTypes: string[] = [];
                     
                     for (const type of massageTypesArray) {
@@ -386,8 +395,8 @@ class AdminTranslationService {
                         }
                     }
                     
-                    translatedData[`massageTypes_${sourceLanguage}`] = data.massageTypes; // Keep original JSON
-                    translatedData[`massageTypes_${targetLanguage}`] = JSON.stringify(translatedTypes);
+                    translatedData[`massageTypes_${sourceLanguage}`] = data.massageTypes; // Keep original format
+                    translatedData[`massageTypes_${targetLanguage}`] = translatedTypes.join(', '); // Store as comma-separated
                 } catch (error) {
                     console.warn('Failed to parse or translate massage types:', error);
                     translatedData[`massageTypes_${sourceLanguage}`] = data.massageTypes;

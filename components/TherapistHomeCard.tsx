@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
-import DistanceDisplay from './DistanceDisplay';
 import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import TherapistCard from '../components/TherapistCard';
+import RotatingReviews from '../components/RotatingReviews';
 import type { Therapist, UserLocation } from '../types';
 import { useTranslations } from '../lib/useTranslations';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -384,19 +385,22 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     const heroImageUrl = getHeroImage();
     console.log('🎨 Final hero image URL:', heroImageUrl);
 
+    // Add cache-busting to ensure image updates are visible
+    const getCacheBustedUrl = (url: string) => {
+        if (!url) return url;
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}t=${Date.now()}`;
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
-                {/* Hero Image */}
+                {/* Hero Logo - Same as /share/ implementation */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src={heroImageUrl} 
-                        alt={`${therapist.name} banner`}
+                        src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
+                        alt="Logo" 
                         className="h-48 w-auto object-contain"
-                        onError={(e) => {
-                            console.error('❌ Hero image failed to load:', heroImageUrl);
-                            e.currentTarget.src = "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
-                        }}
                     />
                 </div>
 
@@ -415,6 +419,23 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     hideJoinButton={true}
                     customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png"
                 />
+
+                {/* Rotating Reviews Section - Same as /share/ implementation */}
+                <div className="mt-8">
+                    {console.log('🔧 About to render RotatingReviews with:', {
+                        location: therapist.city || therapist.location || 'Yogyakarta',
+                        providerId: (therapist as any).$id || (therapist as any).id,
+                        providerName: therapist.name
+                    })}
+                    <RotatingReviews 
+                        location={therapist.city || therapist.location || 'Yogyakarta'} 
+                        limit={5}
+                        providerId={(therapist as any).$id || (therapist as any).id}
+                        providerName={therapist.name}
+                        providerType={'therapist'}
+                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                    />
+                </div>
 
                 {/* Optional bottom space for custom messaging */}
                 <div className="min-h-[32px]" />

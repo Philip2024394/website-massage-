@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
-import { appwriteDatabases } from '../lib/appwrite/client';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { Query } from 'appwrite';
+import reviewService from '../lib/reviewService';
 
 // Avatar pool for review displays
 const REVIEW_AVATARS = [
@@ -26,7 +24,8 @@ const REVIEW_AVATARS = [
 ];
 
 interface Review {
-    $id: string;
+    $id?: string;
+    id?: string;
     name?: string;
     reviewerName?: string;
     rating: number;
@@ -35,6 +34,9 @@ interface Review {
     avatar?: string;
     location?: string;
     city?: string;
+    providerId?: string | number;
+    providerType?: 'therapist' | 'place';
+    createdAt?: string;
 }
 
 interface RotatingReviewsProps {
@@ -50,119 +52,117 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
     const [reviews, setReviews] = useState<Review[]>([]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    // Function to fetch reviews from Appwrite
-    const fetchReviews = async () => {
+    // Debug component mount
+    useEffect(() => {
+        console.log('🔧 RotatingReviews mounted with props:', {
+            location,
+            limit,
+            providerId,
+            providerName,
+            providerType,
+            providerImage
+        });
+    }, []);
+
+    // Function to fetch reviews from local reviewService
+    const fetchReviews = () => {
         try {
             setLoading(true);
-            console.log('🔍 Fetching reviews for location:', location);
+            console.log('🔍 Fetching reviews for:', { location, providerId, providerType });
 
-            // Fetch all reviews from Appwrite
-            const response = await appwriteDatabases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.reviews,
-                [
-                    Query.limit(100), // Get up to 100 reviews to filter and randomize
-                    Query.orderDesc('$createdAt')
-                ]
-            );
+            let fetchedReviews: Review[] = [];
 
-            console.log('📋 Total reviews fetched:', response.documents.length);
-
-            // Filter for Yogyakarta/Jogja location
-            const locationLower = location.toLowerCase();
-            const isYogyakartaSearch = locationLower.includes('yogya') || locationLower.includes('jogja');
-
-            let filteredReviews = response.documents.filter((doc: any) => {
-                const docLocation = (doc.location || doc.city || '').toLowerCase();
+            // If providerId is specified, get reviews for that specific provider
+            if (providerId) {
+                fetchedReviews = reviewService.getReviewsForProvider(providerId, providerType, limit);
+                console.log('📋 Provider reviews fetched:', fetchedReviews.length);
+            } else {
+                // Get Yogyakarta reviews (for showcase profiles)
+                const locationLower = location.toLowerCase();
+                const isYogyakartaSearch = locationLower.includes('yogya') || locationLower.includes('jogja');
+                
                 if (isYogyakartaSearch) {
-                    return docLocation.includes('yogya') || docLocation.includes('jogja');
+                    fetchedReviews = reviewService.getYogyakartaReviews(limit);
+                    console.log('📋 Yogyakarta reviews fetched:', fetchedReviews.length);
+                } else {
+                    // For other locations, get recent reviews
+                    fetchedReviews = reviewService.getRecentReviews(limit);
+                    console.log('📋 Recent reviews fetched:', fetchedReviews.length);
                 }
-                return docLocation.includes(locationLower);
-            });
-
-            console.log('✅ Filtered reviews for', location, ':', filteredReviews.length);
-
-            // If no reviews found for the location, use all reviews as fallback
-            if (filteredReviews.length === 0) {
-                console.log('⚠️ No reviews found for location, using all reviews');
-                filteredReviews = response.documents;
             }
 
-            // Map to Review interface
-            const mappedReviews: Review[] = filteredReviews.map((doc: any) => ({
-                $id: doc.$id,
-                name: doc.name || doc.reviewerName || 'Anonymous',
-                reviewerName: doc.reviewerName || doc.name || 'Anonymous',
-                rating: doc.rating || 5,
-                comment: doc.comment || doc.reviewText || 'Great service!',
-                reviewText: doc.reviewText || doc.comment || 'Great service!',
-                avatar: doc.avatar || REVIEW_AVATARS[Math.floor(Math.random() * REVIEW_AVATARS.length)],
-                location: doc.location || doc.city || location,
-                city: doc.city || doc.location || location
-            }));
-
-            // Shuffle and select random reviews
-            const shuffled = mappedReviews.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, limit);
-
-            // Assign avatars if not present
-            const reviewsWithAvatars = selected.map((review, index) => ({
-                ...review,
-                avatar: review.avatar || REVIEW_AVATARS[index % REVIEW_AVATARS.length]
-            }));
+            // Assign avatars and adapt location to viewing area
+            const reviewsWithAvatars = fetchedReviews.map((review, index) => {
+                // Replace Yogyakarta with current viewing location for showcase profiles
+                let displayLocation = review.location || location;
+                if (review.location?.toLowerCase().includes('yogya') || review.location?.toLowerCase().includes('jogja')) {
+                    // For showcase profiles, show the location user is viewing from
+                    if (!location.toLowerCase().includes('yogya') && !location.toLowerCase().includes('jogja')) {
+                        displayLocation = location;
+                    }
+                }
+                
+                // Replace location mentions in comments for showcase profiles
+                let displayComment = review.comment || review.reviewText || '';
+                if (!location.toLowerCase().includes('yogya') && !location.toLowerCase().includes('jogja')) {
+                    displayComment = displayComment
+                        .replace(/Yogyakarta/gi, location.split(',')[0])
+                        .replace(/Yogya/gi, location.split(',')[0])
+                        .replace(/Jogja/gi, location.split(',')[0]);
+                }
+                
+                return {
+                    ...review,
+                    avatar: review.avatar || REVIEW_AVATARS[index % REVIEW_AVATARS.length],
+                    $id: review.$id || review.id || `review-${index}`,
+                    location: displayLocation,
+                    comment: displayComment,
+                    reviewText: displayComment
+                };
+            });
 
             setReviews(reviewsWithAvatars);
-            setError(null);
             console.log('✅ Loaded', reviewsWithAvatars.length, 'reviews');
         } catch (err) {
             console.error('❌ Error fetching reviews:', err);
-            setError('Failed to load reviews');
-            // Set fallback reviews if fetch fails
-            setFallbackReviews();
+            setReviews([]);
         } finally {
             setLoading(false);
         }
     };
 
-    // Fallback reviews if Appwrite fetch fails
-    const setFallbackReviews = () => {
-        const fallbackReviewData = [
-            { name: 'Andi Prasetyo', rating: 5, comment: 'Excellent massage service in Yogyakarta! The therapist was very professional and skilled.' },
-            { name: 'Sari Wulandari', rating: 5, comment: 'Great experience in the Jogja area. Highly recommend for anyone visiting Yogyakarta.' },
-            { name: 'Bambang Sutrisno', rating: 5, comment: 'Perfect massage therapy in the heart of Yogyakarta. Will definitely book again.' },
-            { name: 'Dewi Lestari', rating: 5, comment: 'Amazing service in the Malioboro area. The therapist knows exactly what they\'re doing.' },
-            { name: 'Fajar Nugraha', rating: 5, comment: 'Wonderful massage experience in Yogyakarta. Great value for money in this city.' }
-        ];
-
-        const fallbackReviews: Review[] = fallbackReviewData.map((review, index) => ({
-            $id: `fallback-${index}`,
-            ...review,
-            reviewerName: review.name,
-            reviewText: review.comment,
-            avatar: REVIEW_AVATARS[index % REVIEW_AVATARS.length],
-            location,
-            city: location
-        }));
-
-        setReviews(fallbackReviews);
-    };
-
-    // Initial fetch
+    // Initial fetch - ensure reviewService is initialized
     useEffect(() => {
+        // Force reviewService to initialize if in browser
+        if (typeof window !== 'undefined') {
+            console.log('🔧 Ensuring reviewService is ready...');
+            // Trigger a dummy call to ensure reviewService constructor has run
+            reviewService.getRecentReviews(1);
+        }
         fetchReviews();
-    }, [location]);
+    }, [location, providerId, limit]);
+
+    // Listen for review updates from auto-review system
+    useEffect(() => {
+        const handleReviewUpdate = () => {
+            console.log('🔄 Reviews updated, refreshing display...');
+            fetchReviews();
+        };
+
+        window.addEventListener('reviewsUpdated', handleReviewUpdate);
+        return () => window.removeEventListener('reviewsUpdated', handleReviewUpdate);
+    }, [location, providerId, limit]);
 
     // Rotate reviews every 5 minutes (300000ms)
     useEffect(() => {
         const interval = setInterval(() => {
-            console.log('🔄 Rotating reviews...');
+            console.log('🔄 Auto-rotating reviews...');
             fetchReviews();
         }, 300000); // 5 minutes
 
         return () => clearInterval(interval);
-    }, [location, limit]);
+    }, [location, limit, providerId]);
 
     if (loading) {
         return (
@@ -170,17 +170,6 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                 <h2 className="text-xl font-medium text-black mb-4">Customer Reviews</h2>
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error && reviews.length === 0) {
-        return (
-            <div className="mb-6">
-                <h2 className="text-xl font-medium text-black mb-4">Customer Reviews</h2>
-                <div className="text-center py-4 text-gray-600">
-                    <p>{error}</p>
                 </div>
             </div>
         );
@@ -218,8 +207,13 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                     <span>Post</span>
                 </button>
             </div>
-            <div className="space-y-4">
-                {reviews.map((review, index) => (
+            
+            {reviews.length === 0 ? (
+                <div className="text-center py-4 text-gray-600">
+                    <p>No reviews available yet. Be the first to review!</p>
+                </div>
+            ) : (
+                <div className="space-y-4">{reviews.map((review, index) => (
                     <div key={review.$id} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
                         <div className="flex items-start gap-4">
                             {/* Avatar */}
@@ -287,8 +281,8 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                             </div>
                         </div>
                     </div>
-                ))}
-            </div>
+                ))}</div>
+            )}
         </div>
     );
 };

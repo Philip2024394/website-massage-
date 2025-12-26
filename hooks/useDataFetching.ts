@@ -72,9 +72,14 @@ export const useDataFetching = () => {
             console.log('✅ Hotels data received:', hotelsData?.length || 0);
             
             // Initialize review data for new accounts
-            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => 
-                reviewService.initializeProvider(therapist) as Therapist
-            );
+            console.log('🎯 Initializing reviews for therapists...');
+            const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => {
+                const initialized = reviewService.initializeProvider(therapist) as Therapist;
+                if (initialized.rating !== therapist.rating || initialized.reviewCount !== (therapist as any).reviewcount) {
+                    console.log(`📊 Initialized ${therapist.name}: ${initialized.rating}★ (${initialized.reviewCount} reviews)`);
+                }
+                return initialized;
+            });
             
             const placesWithReviews = (placesData || []).map((place: Place) => 
                 reviewService.initializeProvider(place) as Place
