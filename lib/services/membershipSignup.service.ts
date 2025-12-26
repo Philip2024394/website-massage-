@@ -563,7 +563,7 @@ class MembershipSignupService {
                 proofFile
             );
 
-            const proofUrl = `https://cloud.appwrite.io/v1/storage/buckets/${SIGNUP_CONFIG.STORAGE_BUCKET_ID}/files/${uploadedFile.$id}/view?project=${SIGNUP_CONFIG.DATABASE_ID}`;
+            const proofUrl = `https://syd.cloud.appwrite.io/v1/storage/buckets/${SIGNUP_CONFIG.STORAGE_BUCKET_ID}/files/${uploadedFile.$id}/view?project=${SIGNUP_CONFIG.DATABASE_ID}`;
 
             // Create payment submission record
             const submissionId = ID.unique();

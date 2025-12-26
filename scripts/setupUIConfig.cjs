@@ -14,7 +14,7 @@ const client = new sdk.Client();
 const databases = new sdk.Databases(client);
 
 // Appwrite configuration
-const APPWRITE_ENDPOINT = 'https://cloud.appwrite.io/v1';
+const APPWRITE_ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = '67ad11370013cea5c66b';
 const APPWRITE_API_KEY = process.env.APPWRITE_API_KEY; // Set this in your environment
 const DATABASE_ID = '67ad12f5003ce2f7bcc2';

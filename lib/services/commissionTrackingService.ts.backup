@@ -2,17 +2,11 @@
  * Commission Payment Tracking Service
  * 
  * Handles Pro membership 30% commission payments:
- * - Creates commission record after booking completion
- * - EXACTLY 3-hour payment deadline (SERVER TIME ONLY)
- * - Deactivates account if payment deadline exceeded (SERVER-SIDE ENFORCEMENT)
- * - Account reactivation ONLY on admin approval (NOT on proof upload)
- * - Admin verification system with audit logging
- * 
- * CRITICAL: NO client-side enforcement. All deadline checks via Appwrite Function.
- */
-
-import { databases, storage, APPWRITE_CONFIG, Query, ID } from './_shared';
-
+ * - Creates commission record after booking
+ * - 3-hour payment deadline (EXACTLY 3 hours)
+ * - Server-side deadline enforcement via Appwrite Function
+ * - Uses therapist_menus collection for account status
+ * - Admin-only account reactivation
 export interface CommissionPayment {
     $id: string;
     therapistId: string;
@@ -36,9 +30,7 @@ export interface CommissionPayment {
 }
 
 class CommissionTrackingService {
-
     private readonly collectionId = APPWRITE_CONFIG.collections.commissionRecords || 'commission_records';
-
     /**
      * Check if therapist has any unpaid commissions
      * Used to block new bookings until payment is made
@@ -104,12 +96,9 @@ class CommissionTrackingService {
         const commissionRate = 30; // Pro membership: 30%
         const commissionAmount = Math.round(serviceAmount * 0.30);
         
-        // EXACTLY 3-hour deadline from booking completion (SERVER TIME)
+        // 3-hour deadline from booking time (EXACTLY 3 hours)
         const deadline = new Date(bookingDate);
         deadline.setHours(deadline.getHours() + 3);
-
-        try {
-            const record = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 this.collectionId,
                 ID.unique(),
@@ -130,12 +119,18 @@ class CommissionTrackingService {
             );
 
             console.log('✅ Commission record created:', record.$id);
-            console.log('⏰ Payment deadline:', deadline.toISOString());
-            console.log('⚠️  CRITICAL: Deadline enforcement is SERVER-SIDE ONLY via Appwrite Function');
             
-            // NOTE: Deadline enforcement handled by Appwrite Function (runs every 5-10 minutes)
-            // Client-side scheduling REMOVED to prevent bypass attacks
-            
+            // Start monitoring for 4-hour deadline + hourly reminders
+            this.scheduleDeadlineCheck(record.$id, deadline);
+            this.scheduleHourlyReminders(
+                record.$id,
+                therapistId,
+                therapistName,
+                bookingId,
+                new Date(bookingDate),
+                deadline
+            );
+
             return record as unknown as unknown as CommissionPayment;
         } catch (error) {
             console.error('Error creating commission record:', error);
@@ -153,19 +148,14 @@ class CommissionTrackingService {
         paymentMethod: string
     ): Promise<CommissionPayment> {
         try {
-            // Verify storage bucket exists in config
-            const bucketId = APPWRITE_CONFIG.bucketId; // Use main bucket or add payment_proofs to config
-            if (!bucketId) {
-                throw new Error('Storage bucket not configured - cannot upload payment proof');
-            }
-            
             // Upload file to storage
             const uploadedFile = await storage.createFile(
-                bucketId,
+                APPWRITE_CONFIG.paymentProofsBucketId || '694d62f4000e59d03e0a',
                 ID.unique(),
                 proofFile
             );
 
+            const bucketId = APPWRITE_CONFIG.paymentProofsBucketId || '694d62f4000e59d03e0a';
             const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${bucketId}/files/${uploadedFile.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
 
             // Update commission record
@@ -182,12 +172,11 @@ class CommissionTrackingService {
                 }
             );
 
-            console.log('✅ Payment proof uploaded - awaiting admin verification');
-            console.log('⚠️  CRITICAL: Account remains DEACTIVATED until admin approval');
+            console.log('✅ Payment proof uploaded, activating account...');
 
-            // NOTE: Account reactivation happens ONLY after admin approval
-            // This prevents fake proof uploads from bypassing payment enforcement
+            // Get therapist ID and reactivate account
             const record = updated as unknown as CommissionPayment;
+            await this.reactivateAccount(record.therapistId);
 
             // Notify admin for verification
             await this.notifyAdminForVerification(commissionId);
@@ -227,13 +216,11 @@ class CommissionTrackingService {
             const record = updated as unknown as CommissionPayment;
 
             if (!verified) {
-                // If rejected, ensure account stays deactivated and require new proof
+                // If rejected, deactivate account and require new proof
                 await this.deactivateAccount(record.therapistId);
-                console.log('❌ Payment rejected by admin - account remains deactivated');
+                console.log('❌ Payment rejected, account deactivated');
             } else {
-                // ONLY on admin approval - reactivate account
-                await this.reactivateAccount(record.therapistId);
-                console.log('✅ Payment verified by admin - account reactivated');
+                console.log('✅ Payment verified, account remains active');
             }
 
             return record;
@@ -327,16 +314,29 @@ class CommissionTrackingService {
      */
     private async deactivateAccount(therapistId: string): Promise<void> {
         try {
+            // Query therapist_menus to find menu document for this therapist
+            const menuDocs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                [Query.equal('therapistId', therapistId)]
+            );
+
+            if (menuDocs.documents.length === 0) {
+                console.warn(`No therapist_menus document found for therapistId: ${therapistId}`);
+                return;
+            }
+
+            // Update the menu document status
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists || 'therapists',
-                therapistId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                menuDocs.documents[0].$id,
                 {
                     status: 'busy',
                     bookingEnabled: false,
                     scheduleEnabled: false,
                     deactivationReason: 'Payment overdue - upload payment proof to reactivate',
-                    updatedAt: new Date().toISOString()
+                    deactivatedAt: new Date().toISOString()
                 }
             );
 
@@ -352,16 +352,29 @@ class CommissionTrackingService {
      */
     private async reactivateAccount(therapistId: string): Promise<void> {
         try {
+            // Query therapist_menus to find menu document for this therapist
+            const menuDocs = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                [Query.equal('therapistId', therapistId)]
+            );
+
+            if (menuDocs.documents.length === 0) {
+                console.warn(`No therapist_menus document found for therapistId: ${therapistId}`);
+                return;
+            }
+
+            // Update the menu document status
             await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists || 'therapists',
-                therapistId,
+                APPWRITE_CONFIG.collections.therapistMenus || 'therapist_menus',
+                menuDocs.documents[0].$id,
                 {
-                    status: 'available',
+                    status: 'active',
                     bookingEnabled: true,
                     scheduleEnabled: true,
                     deactivationReason: null,
-                    updatedAt: new Date().toISOString()
+                    deactivatedAt: null
                 }
             );
 
@@ -369,6 +382,72 @@ class CommissionTrackingService {
         } catch (error) {
             console.error('Error reactivating account:', error);
             throw error;
+        }
+    }
+
+    /**
+    * Schedule deadline check (4 hours)
+     */
+    private scheduleDeadlineCheck(commissionId: string, deadline: Date): void {
+        const now = new Date();
+        const timeUntilDeadline = deadline.getTime() - now.getTime();
+
+        if (timeUntilDeadline > 0) {
+            setTimeout(async () => {
+                // Check if payment was submitted
+                const record = await databases.getDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    this.collectionId,
+                    commissionId
+                );
+
+                if ((record as unknown as unknown as CommissionPayment).status === 'pending') {
+                    await this.checkOverduePayments();
+                }
+            }, timeUntilDeadline);
+        }
+    }
+
+    /**
+     * Hourly reminders with sound for therapist chat/notifications (until deadline)
+     */
+    private scheduleHourlyReminders(
+        commissionId: string,
+        therapistId: string,
+        therapistName: string,
+        bookingId: string,
+        bookingDate: Date,
+        deadline: Date
+    ): void {
+        const maxHours = 4; // total window
+        for (let hour = 1; hour <= maxHours; hour++) {
+            const fireAt = new Date(bookingDate.getTime() + hour * 60 * 60 * 1000);
+            const delay = fireAt.getTime() - Date.now();
+            if (delay <= 0 || fireAt > deadline) continue;
+
+            setTimeout(async () => {
+                try {
+                    await databases.createDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.notifications || 'notifications',
+                        ID.unique(),
+                        {
+                            type: 'payment_reminder',
+                            title: 'Commission Payment Reminder',
+                            message: `Payment due for booking ${bookingId}. ${maxHours - hour} hour(s) left before deadline.`,
+                            therapistId,
+                            therapistName,
+                            commissionId,
+                            sound: 'payment-reminder.mp3',
+                            playSound: true,
+                            createdAt: new Date().toISOString(),
+                            read: false
+                        }
+                    );
+                } catch (error) {
+                    console.error('Error creating payment reminder notification:', error);
+                }
+            }, delay);
         }
     }
 

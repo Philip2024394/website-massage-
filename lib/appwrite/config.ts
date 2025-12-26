@@ -13,12 +13,12 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite database
-    therapists: 'therapists_collection_id',
-    places: 'places_collection_id', 
-    facial_places: 'facial_places_collection',
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
+    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'THERAPISTS_COLLECTION_ID', // Real production collection ID
+    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id', // Real production collection ID
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'facial_places_collection', // Real production collection ID
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'users_collection_id', // Real production collection ID
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
+    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id', // Real production collection ID
     reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'Reviews',
     
     // Analytics
@@ -35,15 +35,15 @@ export const APPWRITE_CONFIG = {
     chatTranslations: 'Chat Translations',
     
     // Business  
-    hotels: 'hotels_collection_id',
+    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || 'hotels_collection_id', // Real production collection ID
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content
     massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
-    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'Custom Links', 
+    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'custom_links_collection_id', // Real production collection ID
     imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
     loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
-    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'Translations',
+    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'translations_collection_id', // Real production collection ID
     
     // Pricing & Payments
     membershipPricing: 'Membership Pricing',

@@ -30,6 +30,10 @@ export const useDataFetching = () => {
                 [] as Therapist[]
             );
             console.log('✅ Therapists data received:', therapistsData?.length || 0);
+            console.log('🔍 THERAPIST QUERY RESULT DEBUG:');
+            console.log('  📊 Total therapists:', therapistsData?.length || 0);
+            console.log('  🆔 Document IDs:', therapistsData?.map(t => t.$id) || []);
+            console.log('  📄 Full result:', therapistsData);
             
             // Try to fetch places, but handle gracefully if collection is empty
             console.log('🔄 Attempting to fetch places data...');

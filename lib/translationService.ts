@@ -308,10 +308,10 @@ class AdminTranslationService {
         
         // Initialize Appwrite client
         this.client
-            .setEndpoint((import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1')
-            .setProject((import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '');
+            .setEndpoint((import.meta as any).env?.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1')
+            .setProject((import.meta as any).env?.VITE_APPWRITE_PROJECT_ID || '68f23b11000d25eb3664');
             
-        this.databaseId = (import.meta as any).env?.VITE_APPWRITE_DATABASE_ID || '';
+        this.databaseId = (import.meta as any).env?.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05';
     }
 
     /**

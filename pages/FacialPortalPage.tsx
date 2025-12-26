@@ -70,17 +70,16 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       }
       
       // Sign in with email and password
-      await account.createEmailSession(email, password);
+      await account.createEmailPasswordSession(email, password);
       
       // Get user account
       const user = await account.get();
       
       showToast('Welcome back! Logging in...', 'success');
       
-      // Navigate to dashboard
-      if (onLoginSuccess) {
-        onLoginSuccess(user.$id, user.email);
-      }
+      // Redirect to facial dashboard
+      const { redirectToDashboard } = await import('../utils/dashboardRedirect');
+      redirectToDashboard('facial', user.$id);
     } catch (error: any) {
       console.error('Sign in error:', error);
       const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
@@ -121,17 +120,16 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       await account.create(ID.unique(), email, password, name);
       
       // Automatically sign in
-      await account.createEmailSession(email, password);
+      await account.createEmailPasswordSession(email, password);
       
       // Get user account
       const user = await account.get();
       
       showToast('Account created successfully! Welcome!', 'success');
       
-      // Navigate to dashboard
-      if (onLoginSuccess) {
-        onLoginSuccess(user.$id, user.email);
-      }
+      // Redirect to facial dashboard
+      const { redirectToDashboard } = await import('../utils/dashboardRedirect');
+      redirectToDashboard({ userType: 'user' });
     } catch (error: any) {
       console.error('Sign up error:', error);
       const errorMessage = error.message || 'Sign up failed. Please try again.';

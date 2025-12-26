@@ -7,6 +7,7 @@ import { databases, ID, Query } from './appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { MessageSenderType } from '../types';
 import * as chatService from './chatService';
+import { commissionTrackingService } from './services/commissionTrackingService';
 
 export interface Booking {
     $id?: string;
@@ -167,9 +168,19 @@ export const bookingService = {
      */
     async completeBooking(bookingId: string): Promise<Booking> {
         try {
-            return await this.updateBookingStatus(bookingId, 'completed', {
+            const updatedBooking = await this.updateBookingStatus(bookingId, 'completed', {
                 completedAt: new Date().toISOString()
             } as any);
+
+            // Create commission record for completed booking (idempotent)
+            try {
+                await this.createCommissionRecord(updatedBooking);
+            } catch (commissionError) {
+                console.error('❌ Commission creation failed but booking completed:', commissionError);
+                // Booking completion still succeeds even if commission fails
+            }
+
+            return updatedBooking;
         } catch (error) {
             console.error('❌ Error completing booking:', error);
             throw error;
@@ -189,6 +200,52 @@ export const bookingService = {
         } catch (error) {
             console.error('❌ Error cancelling booking:', error);
             throw error;
+        }
+    },
+
+    /**
+     * Create commission record for completed booking (idempotent)
+     * Only creates commission when booking status becomes 'Completed'
+     */
+    async createCommissionRecord(booking: Booking): Promise<void> {
+        try {
+            // Only create commission for completed bookings
+            if (booking.status !== 'completed') {
+                console.log('📋 Skipping commission - booking not completed:', booking.status);
+                return;
+            }
+
+            // Idempotent check - avoid duplicate commission records
+            const existingRecords = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                [Query.equal('bookingId', booking.bookingId)]
+            );
+
+            if (existingRecords.documents.length > 0) {
+                console.log('✅ Commission already exists for booking:', booking.bookingId);
+                return;
+            }
+
+            // Calculate commission amount (30% for Pro membership)
+            const commissionAmount = booking.price * 0.30;
+
+            // Create commission record with 3-hour deadline
+            await commissionTrackingService.createCommissionRecord(
+                booking.therapistId,
+                booking.therapistName,
+                booking.bookingId,
+                commissionAmount,
+                booking.completedAt || new Date().toISOString()
+            );
+
+            console.log('✅ Commission record created for booking:', booking.bookingId);
+            console.log('💰 Commission amount:', `$${commissionAmount.toFixed(2)}`);
+            console.log('⏰ Deadline: 3 hours from completion');
+
+        } catch (error) {
+            console.error('❌ Failed to create commission record:', error);
+            throw error; // Re-throw to be caught by completeBooking error handler
         }
     },
 

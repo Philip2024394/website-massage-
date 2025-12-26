@@ -12,7 +12,8 @@
  * These guards MUST be called before ANY booking creation.
  */
 
-import { databases, APPWRITE_CONFIG, Query } from '../appwrite';
+import { databases, Query } from '../appwrite';
+import { APPWRITE_CONFIG } from '../appwrite.config';
 
 interface AuthResult {
     allowed: boolean;
