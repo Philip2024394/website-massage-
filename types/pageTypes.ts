@@ -7,8 +7,15 @@ export type Page =
     | 'landing' 
     | 'auth' 
     | 'signIn'
+    | 'signin' // Sign in page
+    | 'signup' // Sign up page
+    | 'login' // Login page
+    | 'createAccount' // Create account page
+    | 'onboarding-package' // Package onboarding
+    | 'create-account'  // New unified account creation page
     | 'home' 
     | 'joinIndastreet'
+    | 'role-selection'
     | 'detail' 
     | 'massagePlaceProfile' 
     | 'facialProviders'
@@ -21,7 +28,9 @@ export type Page =
     | 'registrationChoice' 
     | 'providerAuth' 
     | 'therapistStatus' 
+    | 'therapistAvailability' // Therapist availability page
     | 'therapistPortal'
+    | 'therapist' // Therapist portal/dashboard
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'therapist-profile' // Hyphenated variant for routing
     | 'facial-place-profile' // Facial place profile page
@@ -198,5 +207,8 @@ export type LoggedInProvider = {
 
 export type LoggedInUser = { 
     id: string; 
-    type: 'admin' | 'hotel' | 'villa' | 'agent'
+    type: 'admin' | 'hotel' | 'villa' | 'agent' | 'therapist' | 'place' | 'facial-place' | 'user';
+    email?: string;
+    name?: string;
+    data?: any;
 };

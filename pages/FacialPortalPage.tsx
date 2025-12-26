@@ -77,9 +77,12 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       
       showToast('Welcome back! Logging in...', 'success');
       
-      // Redirect to facial dashboard
-      const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-      redirectToDashboard('facial', user.$id);
+      // Call onLoginSuccess callback to navigate to dashboard
+      if (onLoginSuccess) {
+        onLoginSuccess(user.$id, email);
+      } else if (onNavigate) {
+        onNavigate('dashboard');
+      }
     } catch (error: any) {
       console.error('Sign in error:', error);
       const errorMessage = error.message || 'Sign in failed. Please check your credentials.';
@@ -127,9 +130,12 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       
       showToast('Account created successfully! Welcome!', 'success');
       
-      // Redirect to facial dashboard
-      const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-      redirectToDashboard({ userType: 'user' });
+      // Call onLoginSuccess callback to navigate to dashboard
+      if (onLoginSuccess) {
+        onLoginSuccess(user.$id, email);
+      } else if (onNavigate) {
+        onNavigate('dashboard');
+      }
     } catch (error: any) {
       console.error('Sign up error:', error);
       const errorMessage = error.message || 'Sign up failed. Please try again.';

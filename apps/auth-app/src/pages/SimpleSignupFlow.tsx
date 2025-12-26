@@ -160,7 +160,7 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             );
 
             // Create session automatically
-            await account.createEmailSession(formData.email, formData.password);
+            await account.createEmailPasswordSession(formData.email, formData.password);
 
             // Store user info
             localStorage.setItem('selected_membership_plan', formData.planType);
@@ -170,10 +170,10 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             localStorage.setItem('selectedPortalType', formData.portalType);
 
             const portalToDashboardUrl: Record<PortalType, string> = {
-                'massage_therapist': 'http://localhost:3002',
-                'massage_place': 'http://localhost:3005',
-                'facial_place': 'http://localhost:3006',
-                'hotel': 'http://localhost:3007'
+                'massage_therapist': '/therapist',
+                'massage_place': '/place-dashboard',
+                'facial_place': '/facial-dashboard',
+                'hotel': '/hotel-dashboard'
             };
 
             const dashboardUrl = portalToDashboardUrl[formData.portalType];

@@ -7,6 +7,7 @@ import DistanceDisplay from './DistanceDisplay';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
+import { generatePlaceSlug } from '../utils/seoSlugGenerator';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -24,6 +25,22 @@ const isDiscountActive = (place: Place): boolean => {
 const getDynamicSpacing = (longDesc: string, mediumDesc: string, shortDesc: string) => {
     // This is a simple implementation - you can customize based on actual description length
     return shortDesc; // Default to short spacing for massage places
+};
+
+// Helper function to generate shareable URL for places
+const generatePlaceShareableURL = (place: Place, baseUrl?: string): string => {
+    const origin = (() => {
+        const preferred = baseUrl || (typeof window !== 'undefined' ? window.location.origin : undefined);
+        if (!preferred) return 'https://www.indastreetmassage.com';
+        const lower = preferred.toLowerCase();
+        const isLocal = lower.includes('localhost') || lower.includes('127.0.0.1') || /:\d{2,5}$/.test(lower);
+        return isLocal ? 'https://www.indastreetmassage.com' : preferred;
+    })();
+
+    const slug = generatePlaceSlug(place);
+    const placeId = (place as any).id ?? (place as any).$id ?? '';
+    const pathSegment = placeId ? `${placeId}-${slug}` : slug;
+    return `${origin}/massage-place-profile/${pathSegment}`;
 };
 
 interface MassagePlaceCardProps {
@@ -256,11 +273,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
         // Set selected place first
         onSelectPlace(place);
         
-        // Update URL for shareable link
-        const placeId = place.id || (place as any).$id;
-        const slug = place.name?.toLowerCase().replace(/\s+/g, '-') || 'place';
-        const profileUrl = `/profile/place/${placeId}-${slug}`;
-        window.history.pushState({}, '', profileUrl);
+        // Update URL using SEO-optimized shareable link
+        const profileUrl = generatePlaceShareableURL(place);
+        const path = new URL(profileUrl).pathname;
+        window.history.pushState({}, '', path);
         
         // Use setTimeout to ensure state update completes before navigation
         if (onNavigate) {
@@ -305,7 +321,10 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     Orders: {bookingsCount}
                 </span>
             </div>
-            <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8">
+            <div 
+                onClick={handleViewDetails}
+                className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8 cursor-pointer hover:shadow-xl"
+            >
                 {/* Main Image Banner + Lazy Loading (full-width cover) */}
                 <div className="h-48 w-full overflow-visible relative rounded-t-xl">
                 <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
@@ -403,6 +422,17 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                     </svg>
                 </button>
             </div>
+            </div>
+            
+            {/* Location - Below image on the right side */}
+            <div className="px-4 mt-2 mb-1 flex justify-end">
+                <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="text-xs font-medium text-gray-700">{(place.city || place.location || 'Bali').split(',')[0].trim()}</span>
+                </div>
             </div>
             
             {/* Profile Section - Flexbox layout for stable positioning */}
@@ -603,78 +633,58 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             )}
 
             {/* Pricing */}
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 w-full">
-                {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">120 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["120"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["120"]))}</p>
-                    )}
-                </div>
-                    
-                {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">60 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["60"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["60"]))}</p>
-                    )}
-                </div>
-                    
-                {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[60px] flex flex-col justify-center min-w-0 ${
-                    isDiscountActive(place) ? 'bg-gray-50 border-orange-500 border-2' : 'bg-gray-50 border-gray-200'
-                }`} 
-                style={isDiscountActive(place) ? {
-                    animation: 'priceRimFade 3s ease-in-out infinite'
-                } : {}}>
-                    <p className="text-gray-600 text-xs">90 min</p>
-                    {isDiscountActive(place) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm line-through opacity-60">
-                                IDR {formatPrice(Number(pricing["90"]))}
-                            </p>
-                            <p className="font-bold text-orange-600 text-sm sm:text-lg">
-                                IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (place as any).discountPercentage / 100)))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm sm:text-lg">IDR {formatPrice(Number(pricing["90"]))}</p>
-                    )}
-                </div>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+                {pricing["60"] > 0 && (
+                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                        <div className="text-xs text-gray-600 mb-1">60 min</div>
+                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                            {isDiscountActive(place) ? (
+                                <>
+                                    <div className="line-through opacity-60 text-xs">Rp {formatPrice(pricing["60"])}</div>
+                                    <div className="text-orange-600">Rp {formatPrice(Math.round(pricing["60"] * (1 - (place as any).discountPercentage / 100)))}</div>
+                                </>
+                            ) : (
+                                `Rp ${formatPrice(pricing["60"])}`
+                            )}
+                        </div>
+                    </div>
+                )}
+                {pricing["90"] > 0 && (
+                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                        <div className="text-xs text-gray-600 mb-1">90 min</div>
+                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                            {isDiscountActive(place) ? (
+                                <>
+                                    <div className="line-through opacity-60 text-xs">Rp {formatPrice(pricing["90"])}</div>
+                                    <div className="text-orange-600">Rp {formatPrice(Math.round(pricing["90"] * (1 - (place as any).discountPercentage / 100)))}</div>
+                                </>
+                            ) : (
+                                `Rp ${formatPrice(pricing["90"])}`
+                            )}
+                        </div>
+                    </div>
+                )}
+                {pricing["120"] > 0 && (
+                    <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
+                        <div className="text-xs text-gray-600 mb-1">120 min</div>
+                        <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">
+                            {isDiscountActive(place) ? (
+                                <>
+                                    <div className="line-through opacity-60 text-xs">Rp {formatPrice(pricing["120"])}</div>
+                                    <div className="text-orange-600">Rp {formatPrice(Math.round(pricing["120"] * (1 - (place as any).discountPercentage / 100)))}</div>
+                                </>
+                            ) : (
+                                `Rp ${formatPrice(pricing["120"])}`
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
                 {/* Action Button */}
                 <button
                     onClick={handleViewDetails}
-                    className="w-full flex items-center justify-center gap-2 bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors duration-300"
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-3 px-4 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300"
                 >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

@@ -15,6 +15,7 @@ interface TherapistHomeCardProps {
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
     readOnly?: boolean; // Lock card to read-only mode
+    onNavigate?: (page: string) => void; // Add navigation prop
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -28,7 +29,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     onClick,
     onIncrementAnalytics,
     userLocation,
-    readOnly = false // Default to editable unless specified
+    readOnly = false, // Default to editable unless specified
+    onNavigate // Add navigation prop
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -493,6 +495,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             <TherapistJoinPopup
                 isOpen={showJoinPopup}
                 onClose={() => setShowJoinPopup(false)}
+                onNavigate={onNavigate}
             />
         </div>
     );

@@ -1,9 +1,17 @@
 import { appwriteAccount } from './client';
+import { retryWithBackoff } from '../rateLimitService';
+
+// Debug logging
+console.log('🔧 Auth service loaded with rate limiting support');
+console.log('🔧 retryWithBackoff function available:', typeof retryWithBackoff);
 
 export const authService = {
     async getCurrentUser(): Promise<any> {
         try {
-            return await appwriteAccount.get();
+            return await retryWithBackoff(
+                () => appwriteAccount.get(),
+                'account_get'
+            );
         } catch (error: any) {
             // Silently handle expected guest/401 errors (not logged in)
             // Only log unexpected errors
@@ -18,15 +26,24 @@ export const authService = {
         try {
             // Delete any existing session first
             try {
-                await appwriteAccount.deleteSession('current');
+                await retryWithBackoff(
+                    () => appwriteAccount.deleteSession('current'),
+                    'account_delete_session'
+                );
                 console.log('🗑️ Existing session cleared before login');
             } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
             
-            await appwriteAccount.createEmailSession(email, password);
-            return await appwriteAccount.get();
+            await retryWithBackoff(
+                () => appwriteAccount.createEmailPasswordSession(email, password),
+                'account_login'
+            );
+            return await retryWithBackoff(
+                () => appwriteAccount.get(),
+                'account_get_after_login'
+            );
         } catch (error) {
             console.error('Error logging in:', error);
             throw error;
@@ -42,18 +59,28 @@ export const authService = {
         try {
             // Delete any existing session first
             try {
-                await appwriteAccount.deleteSession('current');
+                await retryWithBackoff(
+                    () => appwriteAccount.deleteSession('current'),
+                    'account_delete_session_register'
+                );
                 console.log('🗑️ Existing session cleared before registration');
             } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
             
-            const response = await appwriteAccount.create('unique()', email, password, name);
+            const response = await retryWithBackoff(
+                () => appwriteAccount.create('unique()', email, password, name),
+                'account_create'
+            );
+            
             // Auto-login after registration unless explicitly disabled
             const shouldAutoLogin = options?.autoLogin !== false;
             if (shouldAutoLogin) {
-                await appwriteAccount.createEmailSession(email, password);
+                await retryWithBackoff(
+                    () => appwriteAccount.createEmailPasswordSession(email, password),
+                    'account_login_after_register'
+                );
             }
             return response;
         } catch (error) {
@@ -64,7 +91,10 @@ export const authService = {
     
     async logout(): Promise<void> {
         try {
-            await appwriteAccount.deleteSession('current');
+            await retryWithBackoff(
+                () => appwriteAccount.deleteSession('current'),
+                'account_logout'
+            );
         } catch (error) {
             console.error('Error logging out:', error);
             throw error;

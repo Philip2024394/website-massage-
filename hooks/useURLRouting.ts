@@ -11,21 +11,31 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'landing': '/',
         'home': '/home',
         'facialProviders': '/facials',
-        'facialPlaceProfile': '/facial-place',
-        'facialPlaceDashboard': '/facial-dashboard',
-        'therapistProfile': '/therapist',
-        'massagePlaceProfile': '/massage-place',
         'massageTypes': '/massage-types',
         'facialTypes': '/facial-types',
         'faq': '/faq',
         'todays-discounts': '/discounts',
         'therapistLogin': '/therapist-login',
-        'therapistPortal': '/therapist-portal',
-        'therapistDashboard': '/therapist-dashboard',
-        'therapistStatus': '/therapist-status',
+        'therapistPortal': '/dashboard/therapist',
+        'therapistDashboard': '/dashboard/therapist',
+        'therapist': '/dashboard/therapist',
+        'therapistStatus': '/dashboard/therapist/status',
+        'therapistAvailability': '/dashboard/therapist/availability',
+        'therapistBookings': '/dashboard/therapist/bookings',
+        'therapistProfile': '/dashboard/therapist/profile',
+        'therapistMenu': '/dashboard/therapist/menu',
         'massagePlaceLogin': '/place-login',
-        'placeDashboard': '/place-dashboard',
-        'massagePlacePortal': '/place-portal',
+        'placeDashboard': '/dashboard/massage-place',
+        'massagePlace': '/dashboard/massage-place',
+        'massagePlacePortal': '/dashboard/massage-place',
+        'massagePlaceProfile': '/dashboard/massage-place/profile',
+        'massagePlaceTherapists': '/dashboard/massage-place/therapists',
+        'massagePlaceBookings': '/dashboard/massage-place/bookings',
+        'facialPlaceDashboard': '/dashboard/facial-place',
+        'facialPlace': '/dashboard/facial-place',
+        'facialPlaceProfile': '/dashboard/facial-place/profile',
+        'facialPlaceServices': '/dashboard/facial-place/services',
+        'facialPlaceBookings': '/dashboard/facial-place/bookings',
         'shared-therapist-profile': '/therapist-profile',
         'share-therapist': '/share/therapist',
         'share-place': '/share/place',
@@ -35,6 +45,12 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'customerSupport': '/support',
         'registrationChoice': '/register',
         'joinIndastreet': '/join',
+        'signup': '/signup',
+        'signin': '/signin',
+        'login': '/login',
+        'createAccount': '/create-account',
+        'onboarding-package': '/onboarding/package',
+        'simpleSignup': '/signup',
         'booking': '/booking',
         'accept-booking': '/accept-booking',
         'notifications': '/notifications',
@@ -51,6 +67,9 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'adminDashboard': '/admin',
         'hotelDashboard': '/hotel-dashboard',
         'villaDashboard': '/villa-dashboard',
+        'therapist-dashboard': '/dashboard/therapist',
+        'massage-place-dashboard': '/dashboard/massage-place',
+        'facial-place-dashboard': '/dashboard/facial-place',
         'browseJobs': '/browse-jobs',
         'massageJobs': '/massage-jobs',
         'therapistJobs': '/therapist-jobs',
@@ -80,6 +99,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         
         const path = pageToPath[page] || '/';
         const currentPath = window.location.pathname;
+        
+        console.log('🔄 URL Routing - Page changed:', {
+            page,
+            mappedPath: pageToPath[page],
+            finalPath: path,
+            currentPath
+        });
         
         if (currentPath !== path) {
             console.log(`📍 URL Routing: ${page} → ${path}`);
@@ -117,6 +143,42 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                     return;
                 }
                 
+                // Handle dashboard routes
+                if (path === '/dashboard/therapist') {
+                    setPage('therapist-dashboard');
+                    return;
+                }
+                if (path === '/dashboard/massage-place') {
+                    setPage('massage-place-dashboard');
+                    return;
+                }
+                if (path === '/dashboard/facial-place') {
+                    setPage('facial-place-dashboard');
+                    return;
+                }
+                
+                // Handle auth routes with query parameters
+                if (path === '/signup') {
+                    setPage('signup');
+                    return;
+                }
+                if (path === '/signin' || path === '/sign-in') {
+                    setPage('signin');
+                    return;
+                }
+                if (path === '/create-account') {
+                    setPage('createAccount');
+                    return;
+                }
+                if (path === '/login') {
+                    setPage('login');
+                    return;
+                }
+                if (path === '/onboarding/package') {
+                    setPage('onboarding-package');
+                    return;
+                }
+                
                 const targetPage = pathToPage[path] || 'landing';
                 console.log(`🔗 Direct URL: ${path} → ${targetPage}`);
                 setPage(targetPage);
@@ -127,6 +189,10 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         
         // Set initial page based on URL on mount
         const initialPath = window.location.pathname;
+        console.log('🔍 URL Routing Debug - Initial path detection:');
+        console.log('   📍 window.location.pathname:', initialPath);
+        console.log('   📍 window.location.href:', window.location.href);
+        console.log('   📍 window.location.search:', window.location.search);
         
         // Handle new share URLs
         if (initialPath.startsWith('/share/therapist/')) {
@@ -149,6 +215,23 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         }
         
         if (initialPath !== '/' && initialPath !== '/home') {
+            // Handle auth routes with query parameters
+            if (initialPath === '/signup') {
+                console.log(`🎯 Initial URL: ${initialPath} → signup`);
+                setPage('signup');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (initialPath === '/login') {
+                console.log(`🎯 Initial URL: ${initialPath} → login`);
+                setPage('login');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            if (initialPath === '/onboarding/package') {
+                console.log(`🎯 Initial URL: ${initialPath} → onboarding-package`);
+                setPage('onboarding-package');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
+            
             const targetPage = pathToPage[initialPath];
             if (targetPage && targetPage !== page) {
                 console.log(`🎯 Initial URL: ${initialPath} → ${targetPage}`);

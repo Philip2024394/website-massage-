@@ -31,6 +31,31 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'simpleSignup': '/signup',
     'membership-select': '/join',
     
+    // Dashboard routes - Therapist
+    'therapist': '/dashboard/therapist',
+    'therapistDashboard': '/dashboard/therapist',
+    'therapistPortal': '/dashboard/therapist',
+    'therapistStatus': '/dashboard/therapist/status',
+    'therapistAvailability': '/dashboard/therapist/availability',
+    'therapistBookings': '/dashboard/therapist/bookings',
+    'therapistProfile': '/dashboard/therapist/profile',
+    'therapistMenu': '/dashboard/therapist/menu',
+    
+    // Dashboard routes - Massage Place
+    'massagePlace': '/dashboard/massage-place',
+    'placeDashboard': '/dashboard/massage-place',
+    'massagePlacePortal': '/dashboard/massage-place',
+    'massagePlaceProfile': '/dashboard/massage-place/profile',
+    'massagePlaceTherapists': '/dashboard/massage-place/therapists',
+    'massagePlaceBookings': '/dashboard/massage-place/bookings',
+    
+    // Dashboard routes - Facial Place
+    'facialPlace': '/dashboard/facial-place',
+    'facialPlaceDashboard': '/dashboard/facial-place',
+    'facialPlaceProfile': '/dashboard/facial-place/profile',
+    'facialPlaceServices': '/dashboard/facial-place/services',
+    'facialPlaceBookings': '/dashboard/facial-place/bookings',
+    
     // Profile routes
     'therapist-profile': '/profile/therapist',
     'massage-place-profile': '/profile/place',
@@ -94,7 +119,6 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'therapist-job-registration': '/therapist-job-registration',
     'reviews': '/reviews',
     'job-unlock-payment': '/job-unlock-payment',
-    'therapistStatus': '/therapist-status',
     'customer-reviews': '/customer-reviews',
     'customer-support': '/customer-support',
     'place-discount-badge': '/place-discount-badge',
@@ -110,14 +134,10 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'employer-info': '/employer-info',
     'payment-info': '/payment-info',
     
-    // Dashboard routes
-    'therapistDashboard': '/dashboard/therapist',
-    'therapist-dashboard': '/dashboard/therapist',
-    'placeDashboard': '/dashboard/place',
-    'place-dashboard': '/dashboard/place',
+    // Other dashboard routes (non-user dashboards)
     'agentDashboard': '/dashboard/agent',
     'customerDashboard': '/dashboard/customer',
-    'adminDashboard': '/dashboard/admin',
+    'adminDashboard': '/admin',
     'villaDashboard': '/dashboard/villa',
     'hotelDashboard': '/dashboard/hotel',
 };

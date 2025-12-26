@@ -45,6 +45,13 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
   const hasPageHeader = useHasPageHeader([page]);
   const { language, setLanguage } = useLanguage();
 
+  console.log('🔍 GlobalHeader render check:', { 
+    page, 
+    isStandalone, 
+    hasPageHeader, 
+    shouldRender: isStandalone && !hasPageHeader 
+  });
+
   if (!isStandalone) return null;
   if (hasPageHeader) return null;
 
@@ -61,9 +68,15 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
             style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
             onClick={() => {
               try {
+                console.log('🍔 GlobalHeader burger menu clicked!');
+                console.log('🍔 Dispatching customer_dashboard_open_drawer event');
                 window.dispatchEvent(new CustomEvent('customer_dashboard_open_drawer'));
+                console.log('🍔 Dispatching toggleDrawer event');
                 window.dispatchEvent(new CustomEvent('toggleDrawer'));
-              } catch {}
+                console.log('🍔 Both events dispatched successfully');
+              } catch (error) {
+                console.error('🍔 Error dispatching drawer events:', error);
+              }
             }}
           >
             <BurgerMenuIcon className="w-6 h-6 text-gray-700" />

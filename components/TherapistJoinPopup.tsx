@@ -4,10 +4,25 @@ import { X } from 'lucide-react';
 interface TherapistJoinPopupProps {
     isOpen: boolean;
     onClose: () => void;
+    onNavigate?: (page: string) => void;
 }
 
-const TherapistJoinPopup: React.FC<TherapistJoinPopupProps> = ({ isOpen, onClose }) => {
+const TherapistJoinPopup: React.FC<TherapistJoinPopupProps> = ({ isOpen, onClose, onNavigate }) => {
     if (!isOpen) return null;
+
+    const handleSignupClick = () => {
+        onClose();
+        if (onNavigate) {
+            // Navigate to signup with therapist role
+            const url = new URL(window.location.href);
+            url.searchParams.set('role', 'therapist');
+            window.history.pushState({}, '', url.toString());
+            onNavigate('signup');
+        } else {
+            // Fallback - direct redirect
+            window.location.href = '/signup?role=therapist';
+        }
+    };
 
     const handleWhatsAppClick = () => {
         const phoneNumber = '6281233766950';
@@ -37,6 +52,24 @@ const TherapistJoinPopup: React.FC<TherapistJoinPopupProps> = ({ isOpen, onClose
                     <p className="text-black text-base mb-6 font-medium">
                         Join Indastreet As Therapist And Start Earning Today
                     </p>
+
+                    {/* Create Account button */}
+                    <button
+                        onClick={handleSignupClick}
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg flex items-center justify-center gap-2 w-full transition-colors mb-3"
+                    >
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Create Account Now
+                    </button>
+
+                    {/* Or divider */}
+                    <div className="flex items-center my-4">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="px-3 text-gray-500 text-sm">or</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                    </div>
 
                     {/* WhatsApp button */}
                     <button

@@ -81,8 +81,13 @@ function App() {
       if (currentUser) {
         console.log('✅ Authenticated user:', currentUser.email);
         
-        const therapists = await therapistService.getByEmail(currentUser.email);
-        console.log('🔍 Looking for therapist with email:', currentUser.email);
+        // Normalize email for consistent lookup (therapist documents are stored with normalized emails)
+        const normalizedEmail = currentUser.email.toLowerCase().trim();
+        console.log('🔍 [DEBUG] Auth email exact value:', JSON.stringify(currentUser.email));
+        console.log('🔍 [DEBUG] Normalized email for lookup:', normalizedEmail);
+        
+        const therapists = await therapistService.getByEmail(normalizedEmail);
+        console.log('🔍 Looking for therapist with email:', normalizedEmail);
         console.log('🔍 Found therapists:', therapists);
         
         if (therapists && therapists.length > 0) {
@@ -112,11 +117,15 @@ function App() {
             });
           }
         } else {
-          console.error('❌ No therapist document found for email:', currentUser.email);
-          console.error('❌ This means the therapist account was not created in Appwrite therapists collection');
-          console.error('❌ Check: 1) Email matches exactly 2) therapists collection exists 3) Document was created');
+          console.error('❌ No therapist document found for email:', normalizedEmail);
+          console.error('❌ Original auth email:', currentUser.email);
+          console.error('❌ This means the therapist profile lookup failed');
+          console.error('❌ Possible causes:');
+          console.error('   1. Therapist document was not created during signup');
+          console.error('   2. Document exists but email field differs');
+          console.error('   3. Database/collection permissions issue');
           // User is authenticated but has no therapist profile
-          alert(`No therapist profile found for ${currentUser.email}. Please contact admin to create your therapist profile.`);
+          alert(`No therapist profile found for ${normalizedEmail}. Please contact admin to verify your account setup.`);
           setIsAuthenticated(false);
         }
       }
@@ -232,7 +241,6 @@ function App() {
             onNavigateToBookings={() => setCurrentPage('bookings')}
             onNavigateToEarnings={() => setCurrentPage('earnings')}
             onNavigateToChat={() => setCurrentPage('chat')}
-            onProfileSaved={() => setCurrentPage('status')}
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}

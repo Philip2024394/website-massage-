@@ -3,6 +3,9 @@
  * Helps manage Appwrite rate limits and provides user-friendly error handling
  */
 
+// Development mode detection
+const isDevelopment = import.meta.env?.DEV || process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+
 interface RateLimitTracker {
     [key: string]: {
         count: number;
@@ -16,6 +19,13 @@ const rateLimitTracker: RateLimitTracker = {};
  * Check if an operation should be rate limited
  */
 export function checkRateLimit(operation: string, maxAttempts: number = 5, windowMs: number = 60000): boolean {
+    // In development mode, be much more lenient with rate limiting
+    if (isDevelopment) {
+        console.log(`🛠️ DEV MODE: Rate limiting relaxed for ${operation}`);
+        maxAttempts = maxAttempts * 10; // 10x more attempts allowed
+        windowMs = windowMs / 10; // 10x shorter reset window
+    }
+    
     const now = Date.now();
     const key = operation;
     
@@ -33,6 +43,9 @@ export function checkRateLimit(operation: string, maxAttempts: number = 5, windo
     
     // Check if limit exceeded
     if (tracker.count >= maxAttempts) {
+        if (isDevelopment) {
+            console.log(`⚠️ DEV MODE: Still rate limited for ${operation}, but with relaxed limits`);
+        }
         return false; // Rate limited
     }
     
@@ -81,6 +94,45 @@ export function resetRateLimit(operation: string): void {
 export function resetAllRateLimits(): void {
     Object.keys(rateLimitTracker).forEach(key => delete rateLimitTracker[key]);
     console.log('🔄 All rate limits reset');
+}
+
+/**
+ * Development helper: Completely disable rate limiting temporarily
+ */
+export function disableRateLimiting(): void {
+    if (isDevelopment) {
+        // Override checkRateLimit to always return true
+        (window as any).originalCheckRateLimit = checkRateLimit;
+        (window as any).checkRateLimit = () => true;
+        console.log('🛠️ DEV MODE: Rate limiting DISABLED for this session');
+        console.log('💡 To re-enable: Call enableRateLimiting() in console');
+    } else {
+        console.warn('⚠️ Rate limiting can only be disabled in development mode');
+    }
+}
+
+/**
+ * Development helper: Re-enable rate limiting
+ */
+export function enableRateLimiting(): void {
+    if (isDevelopment && (window as any).originalCheckRateLimit) {
+        delete (window as any).checkRateLimit;
+        console.log('🛠️ DEV MODE: Rate limiting ENABLED');
+    }
+}
+
+// Make development helpers globally available
+if (isDevelopment) {
+    (window as any).resetAllRateLimits = resetAllRateLimits;
+    (window as any).disableRateLimiting = disableRateLimiting;
+    (window as any).enableRateLimiting = enableRateLimiting;
+    (window as any).resetRateLimit = resetRateLimit;
+    
+    console.log('🛠️ DEV MODE: Rate limit helpers available:');
+    console.log('   - resetAllRateLimits() - Reset all rate limits');
+    console.log('   - disableRateLimiting() - Completely disable rate limiting');
+    console.log('   - enableRateLimiting() - Re-enable rate limiting');
+    console.log('   - resetRateLimit("operation") - Reset specific operation');
 }
 
 /**

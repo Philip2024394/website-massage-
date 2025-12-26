@@ -66,42 +66,59 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         if (isDetectingLocation) return;
         if (!isMountedRef.current) return;
         
-        // Check if enterApp callback exists
-        if (!enterAppCallback) {
-            console.error('❌ No enterApp callback provided to LandingPage');
-            alert('Error: Navigation function not available. Please refresh the page.');
-            return;
-        }
-        
-        // Don't change button text during navigation to prevent removeChild errors
-        // Just disable the button and navigate immediately
         setIsDetectingLocation(true);
         
         try {
-            const userLocation = await locationService.requestLocationWithFallback();
-            if (!isMountedRef.current) return;
-            await enterAppCallback(defaultLanguage, userLocation);
-            // Note: PWA install prompt removed to prevent user gesture error
-        } catch (locationError) {
-            console.error('❌ Failed to get location:', locationError);
-            
-            const defaultLocation: UserLocation = {
-                address: 'Jakarta, Indonesia',
-                lat: -6.2088,
-                lng: 106.8456
-            };
-            
-            try {
+            // First, try the provided callback
+            if (enterAppCallback) {
+                console.log('🚀 Using provided enterApp callback');
+                const userLocation = await locationService.requestLocationWithFallback();
                 if (!isMountedRef.current) return;
-                await enterAppCallback(defaultLanguage, defaultLocation);
-                // Note: PWA install prompt removed to prevent user gesture error
-            } catch (enterError) {
-                console.error('❌ Failed to call enterApp:', enterError);
-                alert(`Error entering app: ${enterError instanceof Error ? enterError.message : 'Unknown error'}`);
+                await enterAppCallback(defaultLanguage, userLocation);
+                return;
+            }
+            
+            // Fallback: Direct navigation to home page
+            console.log('🚀 Using fallback navigation to home');
+            
+            // If we have an onNavigate prop, use it
+            if (selectLanguage || (window as any).setPage) {
+                const userLocation = await locationService.requestLocationWithFallback();
+                if (!isMountedRef.current) return;
+                
+                // Set language if possible
+                if (selectLanguage) {
+                    await selectLanguage(defaultLanguage);
+                }
+                
+                // Navigate to home page
+                if ((window as any).setPage) {
+                    console.log('🚀 Navigating to home via global setPage');
+                    (window as any).setPage('home');
+                } else {
+                    // Final fallback - redirect via URL
+                    console.log('🚀 Fallback: Redirecting to /home');
+                    window.location.href = '/home';
+                }
+                return;
+            }
+            
+            // Final fallback - URL redirect
+            console.log('🚀 Final fallback: URL redirect');
+            window.location.href = '/home';
+            
+        } catch (error) {
+            console.error('❌ Failed to handle enter click:', error);
+            
+            // Emergency fallback
+            console.log('🚀 Emergency fallback: Direct URL navigation');
+            window.location.href = '/home';
+        } finally {
+            // Don't reset loading state if component is unmounting
+            if (isMountedRef.current) {
                 setIsDetectingLocation(false);
             }
         }
-        // Component will unmount during navigation, no need to reset state
     };
 
     return (

@@ -89,9 +89,12 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                 const therapistId = response.documentId || response.userId;
                 console.log('✅ [Login Success] Redirecting to therapist dashboard with ID:', therapistId);
                 
-                // Redirect to therapist dashboard
-                const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-                redirectToDashboard({ userType: 'therapist' });
+                // Redirect to therapist dashboard using page state navigation
+                if (onNavigate) {
+                    onNavigate('therapist');
+                } else {
+                    console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
+                }
             } else {
                 const errorMessage = typeof response.error === 'string' ? response.error : 'Sign in failed. Please try again.';
                 throw new Error(errorMessage);
@@ -117,8 +120,11 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
             if (response.success && response.userId) {
                 console.log('✅ Registration successful, account created!');
                 // Redirect to therapist dashboard after successful registration
-                const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-                redirectToDashboard({ userType: 'therapist' });
+                if (onNavigate) {
+                    onNavigate('therapist');
+                } else {
+                    console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
+                }
             } else {
                 const errorMessage = typeof response.error === 'string' ? response.error : 'Registration failed. Please try again.';
                 throw new Error(errorMessage);

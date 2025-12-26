@@ -10,6 +10,7 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
+import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
 
 interface TherapistPortalPageProps {
@@ -26,7 +27,7 @@ interface TherapistPortalPageProps {
   onNavigateToMenu?: () => void;
   onLogout?: () => void;
   onNavigateHome?: () => void;
-  onProfileSaved?: () => void;
+  language?: 'en' | 'id';
 }
 
 const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
@@ -43,7 +44,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToMenu,
   onLogout,
   onNavigateHome,
-  onProfileSaved
+  language = 'id'
 }) => {
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
@@ -444,15 +445,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       console.log('✅ Toast dispatched - Profile saved successfully');
       console.log('✅ Check HomePage for your therapist card!');
       
-      // Call onProfileSaved callback if provided (for onboarding flow)
-      // Otherwise fall back to onNavigateToStatus
-      const navigationCallback = onProfileSaved || onNavigateToStatus;
-      if (navigationCallback) {
-        setTimeout(() => {
-          console.log('🔄 Navigating after profile save...');
-          navigationCallback();
-        }, 1500); // Short delay to let user see the success message
-      }
+      // Don't auto-navigate away from profile page after saving
+      // Let user stay on profile to continue editing if needed
+      // Navigation callback removed to prevent unwanted redirects
     } catch (e: any) {
       console.error('❌ Failed to save profile:', e);
       const errorMessage = e?.message || e?.toString() || 'Failed to save profile';
@@ -615,6 +610,63 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
+  // Navigation handler for TherapistLayout menu
+  const handleNavigate = (pageId: string) => {
+    console.log('🔄 Navigating to:', pageId);
+    switch (pageId) {
+      case 'status':
+        onNavigateToStatus?.();
+        break;
+      case 'schedule':
+        // Navigate to schedule page when available
+        console.log('Schedule navigation - to be implemented');
+        break;
+      case 'dashboard':
+        // Already on dashboard, do nothing or refresh
+        break;
+      case 'bookings':
+        onNavigateToBookings?.();
+        break;
+      case 'earnings':
+        onNavigateToEarnings?.();
+        break;
+      case 'payment':
+        onNavigateToPayment?.();
+        break;
+      case 'payment-status':
+        // Navigate to payment status when available
+        console.log('Payment status navigation - to be implemented');
+        break;
+      case 'commission-payment':
+        // Navigate to commission payment when available
+        console.log('Commission payment navigation - to be implemented');
+        break;
+      case 'premium-upgrade':
+        onNavigateToPayment?.();
+        break;
+      case 'custom-menu':
+        onNavigateToMenu?.();
+        break;
+      case 'chat':
+        onNavigateToChat?.();
+        break;
+      case 'notifications':
+        onNavigateToNotifications?.();
+        break;
+      case 'calendar':
+        onNavigateToCalendar?.();
+        break;
+      case 'legal':
+        onNavigateToLegal?.();
+        break;
+      case 'logout':
+        onLogout?.();
+        break;
+      default:
+        console.warn('Unknown navigation:', pageId);
+    }
+  };
+
   // Safety check for null therapist
   if (!therapist) {
     return (
@@ -627,7 +679,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="dashboard"
+      onNavigate={handleNavigate}
+      language={language}
+    >
+      <div className="min-h-screen bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 shadow-lg">
@@ -1238,7 +1296,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </TherapistLayout>
   );
 };
 

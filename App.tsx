@@ -438,7 +438,7 @@ const App = () => {
 
     // All hooks combined - ALWAYS call this hook at the same point
     const hooks = useAllHooks();
-    const { state, navigation, authHandlers, providerAgentHandlers, derived } = hooks;
+    const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
     
     // Use the actual language from hooks, not hardcoded
     const { language, setLanguage } = state;
@@ -590,32 +590,6 @@ const App = () => {
             console.warn('Deeplink navigation failed:', e);
         }
     }, [state.therapists, state.places]);
-
-    // Force therapists to land on the status page first with chat minimized, but only when they're in provider flows (avoid hijacking public landing)
-    useEffect(() => {
-        const isTherapist = state.loggedInProvider?.type === 'therapist';
-        if (!isTherapist) {
-            sessionStorage.removeItem('therapist_status_landing_seen');
-            return;
-        }
-
-        // Do not redirect when they intentionally visit public/marketing pages
-        const publicPages = ['landing', 'home', 'about', 'contact', 'company', 'how-it-works', 'faq', 'massageTypes', 'facialTypes', 'providers', 'facialProviders', 'discounts', 'shared-therapist-profile', 'share-therapist', 'share-place', 'share-facial'];
-        if (publicPages.includes(state.page as string)) {
-            return;
-        }
-
-        const alreadyLanded = sessionStorage.getItem('therapist_status_landing_seen') === 'true';
-        if (!alreadyLanded && state.page !== 'therapistStatus') {
-            sessionStorage.setItem('chat_minimized', 'true');
-            state.setPage('therapistStatus');
-            return;
-        }
-
-        if (state.page === 'therapistStatus') {
-            sessionStorage.setItem('therapist_status_landing_seen', 'true');
-        }
-    }, [state.loggedInProvider, state.page, state.setPage]);
 
     // Play welcome music only for customers (never for members) and only once
     useEffect(() => {
@@ -779,13 +753,19 @@ const App = () => {
         (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
         (window as any).openScheduleBookingPopup = handleOpenScheduleBookingPopup;
         
+        // Register global navigation functions
+        (window as any).setPage = state.setPage;
+        (window as any).setLanguage = setLanguage;
+        
         return () => {
             // Cleanup on unmount
             delete (window as any).openBookingPopup;
             delete (window as any).openBookingStatusTracker;
             delete (window as any).openScheduleBookingPopup;
+            delete (window as any).setPage;
+            delete (window as any).setLanguage;
         };
-    }, []);
+    }, [state.setPage, setLanguage]);
 
     const handleFindNewTherapist = () => {
         setIsStatusTrackerOpen(false);
@@ -820,8 +800,8 @@ const App = () => {
                     hotels={state.hotels}
                     notifications={state.notifications}
                     bookings={state.bookings}
-                    // Pass the global loggedInUser (role-aware) to satisfy dashboard guards
-                    user={state.loggedInUser as any}
+                    // Pass loggedInProvider for therapists/places (has full profile data), otherwise use loggedInUser
+                    user={(state.loggedInProvider || state.loggedInCustomer || state.loggedInUser) as any}
                     userLocation={state.userLocation}
                     selectedPlace={state.selectedPlace}
                     selectedMassageType={state.selectedMassageType}
@@ -843,6 +823,7 @@ const App = () => {
                     handleNavigateToTherapistLogin={navigation?.handleNavigateToTherapistLogin || (() => {})}
                     handleNavigateToRegistrationChoice={navigation?.handleNavigateToRegistrationChoice || (() => {})}
                     handleNavigateToBooking={navigation?.handleNavigateToBooking || (() => {})}
+                    restoreUserSession={restoreUserSession}
                     handleQuickBookWithChat={(provider: Therapist | Place, type: 'therapist' | 'place') => {
                         console.log('🚀 Opening chat for provider:', provider.name);
                         window.dispatchEvent(new CustomEvent('openChat', {
@@ -900,13 +881,13 @@ const App = () => {
                     handleMarkNotificationAsRead={() => {}}
                     handleNavigateToNotifications={navigation?.handleNavigateToNotifications || (() => {})}
                     handleNavigateToAgentAuth={navigation?.handleNavigateToAuth || (() => {})}
-                    onTherapistPortalClick={navigation?.handleNavigateToTherapistPortal || (() => {})}
-                    onMassagePlacePortalClick={navigation?.handleNavigateToMassagePlacePortal || (() => {})}
+                    onTherapistPortalClick={navigation?.handleNavigateToTherapistSignup || (() => {})}
+                    onMassagePlacePortalClick={navigation?.handleNavigateToMassagePlaceSignup || (() => {})}
                     onAgentPortalClick={() => state.setPage('agentPortal')}
                     onCustomerPortalClick={() => state.setPage('customerPortal')}
                     onHotelPortalClick={() => state.setPage('hotelDashboard')}
                     onVillaPortalClick={() => state.setPage('villaDashboard')}
-                    onFacialPortalClick={() => state.setPage('facialPortal')}
+                    onFacialPortalClick={navigation?.handleNavigateToFacialPlaceSignup || (() => {})}
                     onAdminPortalClick={() => state.setPage('adminDashboard')}
                     onBrowseJobsClick={() => state.setPage('browseJobs')}
                     onEmployerJobPostingClick={() => state.setPage('employerJobPosting')}
@@ -917,6 +898,7 @@ const App = () => {
 
 
                     setPage={state.setPage}
+                    onNavigate={state.setPage}
                     setLoggedInProvider={state.setLoggedInProvider}
                     setLoggedInCustomer={state.setLoggedInCustomer}
 

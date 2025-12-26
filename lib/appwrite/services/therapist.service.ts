@@ -164,14 +164,34 @@ export const therapistService = {
                 return [];
             }
 
-            console.log('🔍 Searching for therapist by email:', email);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
+            // Normalize email for consistent lookup (case-insensitive, trimmed)
+            const normalizedEmail = email.toLowerCase().trim();
+            
+            console.log('🔍 Searching for therapist by email:', normalizedEmail);
+            console.log('🔍 [DEBUG] Original email:', JSON.stringify(email));
+            console.log('🔍 [DEBUG] Normalized email:', JSON.stringify(normalizedEmail));
+            
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('email', email)]
+                [Query.equal('email', normalizedEmail)]
             );
             console.log('📋 Found therapists with email:', response.documents.length);
+            
+            if (response.documents.length === 0) {
+                console.warn('⚠️ No therapist found for email:', normalizedEmail);
+                console.warn('⚠️ This may indicate:');
+                console.warn('   1. Therapist document not created during signup');
+                console.warn('   2. Email stored with different normalization');
+                console.warn('   3. Document exists but email field is different');
+            } else {
+                console.log('📋 [DEBUG] Found therapist document(s):', response.documents.map(d => ({
+                    id: d.$id,
+                    email: d.email,
+                    name: d.name,
+                    status: d.status
+                })));
+            }
             
             // Normalize status for each therapist found
             const normalizeStatus = (status: string) => {
@@ -214,6 +234,71 @@ export const therapistService = {
             console.error('❌ Error finding therapist by email:', error);
             
             // Provide detailed error context
+            if (error && typeof error === 'object') {
+                const err = error as any;
+                if (err.code === 404) {
+                    console.error('🔍 Collection not found:', APPWRITE_CONFIG.collections.therapists);
+                }
+            }
+            
+            return [];
+        }
+    },
+    async getByUserId(userId: string): Promise<any[]> {
+        try {
+            // Check if collection is disabled
+            if (!APPWRITE_CONFIG.collections.therapists) {
+                console.warn('⚠️ Therapist collection is disabled - returning empty array');
+                return [];
+            }
+
+            console.log('🔍 Searching for therapist by userId:', userId);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.equal('userId', userId)]
+            );
+            console.log('📋 Found therapists with userId:', response.documents.length);
+            
+            // Normalize status for each therapist found
+            const normalizeStatus = (status: string) => {
+                if (!status) return 'Offline';
+                const lowercaseStatus = status.toLowerCase();
+                if (lowercaseStatus === 'available') return 'Available';
+                if (lowercaseStatus === 'busy') return 'Busy';
+                if (lowercaseStatus === 'offline') return 'Offline';
+                return status;
+            };
+            
+            const normalizedTherapists = response.documents.map((therapist: any) => {
+                // Extract busy timer data from description if present
+                let extractedBusyTimer = null;
+                let cleanDescription = therapist.description || '';
+                
+                const timerMatch = cleanDescription.match(/\[TIMER:(.+?)\]/);
+                if (timerMatch) {
+                    try {
+                        extractedBusyTimer = JSON.parse(timerMatch[1]);
+                        cleanDescription = cleanDescription.replace(/\[TIMER:.+?\]/, '').trim();
+                    } catch (e) {
+                        console.warn('Failed to parse timer data for therapist:', therapist.name);
+                    }
+                }
+
+                return {
+                    ...therapist,
+                    status: normalizeStatus(therapist.status),
+                    availability: normalizeStatus(therapist.availability || therapist.status),
+                    description: cleanDescription,
+                    busyUntil: extractedBusyTimer?.busyUntil || null,
+                    busyDuration: extractedBusyTimer?.busyDuration || null
+                };
+            });
+            
+            return normalizedTherapists;
+        } catch (error) {
+            console.error('❌ Error finding therapist by userId:', error);
+            
             if (error && typeof error === 'object') {
                 const err = error as any;
                 if (err.code === 404) {

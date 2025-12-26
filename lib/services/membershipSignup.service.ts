@@ -1094,6 +1094,296 @@ class MembershipSignupService {
                 return baseMemberData;
         }
     }
+
+    // ===== SIMPLIFIED AUTHENTICATION METHODS =====
+
+    /**
+     * Simplified account creation - automatically sets Pro plan (30% commission)
+     */
+    async createAccountSimplified(accountData: { 
+        name: string; 
+        email: string; 
+        password: string; 
+        portalType: PortalType 
+    }): Promise<{ user: any; memberId: string }> {
+        try {
+            console.log('🔧 Creating Appwrite account (simplified flow)...');
+            
+            // Create Appwrite user account
+            const user = await account.create(
+                ID.unique(),
+                accountData.email,
+                accountData.password,
+                accountData.name
+            );
+            console.log('✅ Appwrite user created:', user.$id);
+            
+            // Auto-login the new user
+            await account.createEmailPasswordSession(accountData.email, accountData.password);
+            console.log('✅ User auto-logged in');
+            
+            // Automatically set to Pro plan (30% commission)
+            const planType: PlanType = 'pro';
+            
+            // Create member profile in appropriate collection
+            const memberData = this.prepareMemberDataSimplified(
+                user.$id, 
+                accountData.name,
+                accountData.email, 
+                accountData.portalType,
+                planType
+            );
+            
+            const collectionId = this.getCollectionIdFromPortalType(accountData.portalType);
+            
+            const memberProfile = await databases.createDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                collectionId,
+                user.$id,
+                memberData
+            );
+            console.log('✅ Member profile created:', memberProfile.$id);
+            
+            return {
+                user,
+                memberId: memberProfile.$id
+            };
+            
+        } catch (error) {
+            console.error('❌ Account creation failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Prepare member data with automatic Pro plan
+     */
+    private prepareMemberDataSimplified(
+        userId: string,
+        name: string, 
+        email: string,
+        portalType: PortalType,
+        planType: PlanType
+    ): any {
+        const baseMemberData = {
+            email,
+            name,
+            planType,
+            membershipPlan: planType,
+            isLive: true, // Automatically set to live
+            isVerified: true, // Automatically verified
+            status: 'active', // Automatically active
+            paymentStatus: 'active', // No payment required
+            profileComplete: true, // Skip profile completion
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // Add portal-specific required fields
+        switch (portalType) {
+            case 'therapist':
+                return {
+                    ...baseMemberData,
+                    // Required fields for therapists collection
+                    therapistId: userId,
+                    specialization: 'General Massage',
+                    yearsOfExperience: 1,
+                    isLicensed: false,
+                    location: '',
+                    hourlyRate: 100,
+                    services: [],
+                    availability: {},
+                    languages: ['id'],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    reviewCount: 0,
+                    bookingsEnabled: true,
+                    isOwnerTherapist: null
+                };
+            case 'massage_place':
+                return {
+                    ...baseMemberData,
+                    // Required fields for places collection
+                    placeId: userId,
+                    address: '',
+                    services: [],
+                    amenities: [],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    priceRange: { min: 0, max: 0 },
+                    openingHours: {},
+                    bookingsEnabled: true
+                };
+            case 'facial_place':
+                return {
+                    ...baseMemberData,
+                    // Required fields for facial places collection
+                    facialPlaceId: userId,
+                    address: '',
+                    services: [],
+                    treatments: [],
+                    coordinates: [0, 0],
+                    city: '',
+                    rating: 0,
+                    priceRange: { min: 0, max: 0 },
+                    openingHours: {},
+                    bookingsEnabled: true
+                };
+            default:
+                return baseMemberData;
+        }
+    }
+
+    // ===== AUTHENTICATION METHODS =====
+
+    /**
+     * Sign in user with email and password
+     */
+    async signIn(email: string, password: string): Promise<any> {
+        try {
+            console.log('🔑 Signing in user:', email);
+            const session = await account.createEmailPasswordSession(email, password);
+            console.log('✅ Sign in successful');
+            return session;
+        } catch (error) {
+            console.error('❌ Sign in failed:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get current user session
+     */
+    async getCurrentSession(): Promise<any> {
+        try {
+            const session = await account.getSession('current');
+            return session;
+        } catch (error) {
+            console.log('ℹ️ No active session');
+            return null;
+        }
+    }
+
+    /**
+     * Get current user
+     */
+    async getCurrentUser(): Promise<any> {
+        try {
+            const user = await account.get();
+            return user;
+        } catch (error) {
+            console.log('ℹ️ No active user');
+            return null;
+        }
+    }
+
+    /**
+     * Get current user profile from appropriate collection based on role
+     */
+    async getCurrentUserProfile(): Promise<any> {
+        try {
+            const user = await this.getCurrentUser();
+            if (!user) return null;
+
+            // Try to find user in therapists collection first
+            try {
+                const therapist = await databases.getDocument(
+                    SIGNUP_CONFIG.DATABASE_ID,
+                    SIGNUP_CONFIG.COLLECTIONS.THERAPISTS,
+                    user.$id
+                );
+                return { ...therapist, portalType: 'therapist' };
+            } catch (error) {
+                // Not found in therapists, try places
+            }
+
+            // Try massage places
+            try {
+                const place = await databases.getDocument(
+                    SIGNUP_CONFIG.DATABASE_ID,
+                    SIGNUP_CONFIG.COLLECTIONS.PLACES,
+                    user.$id
+                );
+                return { ...place, portalType: 'massage_place' };
+            } catch (error) {
+                // Not found in places, try facial places
+            }
+
+            // Try facial places
+            try {
+                const facialPlace = await databases.getDocument(
+                    SIGNUP_CONFIG.DATABASE_ID,
+                    SIGNUP_CONFIG.COLLECTIONS.FACIAL_PLACES,
+                    user.$id
+                );
+                return { ...facialPlace, portalType: 'facial_place' };
+            } catch (error) {
+                console.log('User profile not found in any collection');
+                return null;
+            }
+        } catch (error) {
+            console.error('Failed to get user profile:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Update user's membership plan
+     */
+    async updateMembershipPlan(planType: PlanType): Promise<void> {
+        try {
+            const user = await this.getCurrentUser();
+            if (!user) throw new Error('No authenticated user');
+
+            const profile = await this.getCurrentUserProfile();
+            if (!profile) throw new Error('User profile not found');
+
+            const collectionId = this.getCollectionIdFromPortalType(profile.portalType);
+            
+            await databases.updateDocument(
+                SIGNUP_CONFIG.DATABASE_ID,
+                collectionId,
+                user.$id,
+                { planType, status: 'active' }
+            );
+
+            console.log('✅ Membership plan updated:', planType);
+        } catch (error) {
+            console.error('❌ Failed to update membership plan:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get collection ID from portal type
+     */
+    private getCollectionIdFromPortalType(portalType: string): string {
+        switch (portalType) {
+            case 'therapist':
+                return SIGNUP_CONFIG.COLLECTIONS.THERAPISTS;
+            case 'massage_place':
+                return SIGNUP_CONFIG.COLLECTIONS.PLACES;
+            case 'facial_place':
+                return SIGNUP_CONFIG.COLLECTIONS.FACIAL_PLACES;
+            default:
+                return SIGNUP_CONFIG.COLLECTIONS.THERAPISTS;
+        }
+    }
+
+    /**
+     * Sign out current user
+     */
+    async signOut(): Promise<void> {
+        try {
+            await account.deleteSession('current');
+            console.log('✅ User signed out');
+        } catch (error) {
+            console.error('❌ Sign out failed:', error);
+            throw error;
+        }
+    }
 }
 
 export const membershipSignupService = new MembershipSignupService();

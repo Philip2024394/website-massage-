@@ -82,6 +82,7 @@ export const useNavigation = ({
 
     // Simple page navigation handlers
     const handleNavigateToAuth = useCallback(() => setPage('profile'), [setPage]);
+    // Sign In - goes to multi-portal selection page
     const handleNavigateToTherapistLogin = useCallback(() => setPage('signIn'), [setPage]);
     const handleNavigateToMassagePlaceLogin = useCallback(() => setPage('massagePlaceLogin'), [setPage]);
     // Redirect to simpleSignup instead of redundant registrationChoice page
@@ -106,6 +107,8 @@ export const useNavigation = ({
     const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
     const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
+    
+    // Portal handlers - for LOGIN (existing users)
     const handleNavigateToTherapistPortal = useCallback(() => {
         // Check if provider is logged in, route to dashboard, otherwise to login
         if (loggedInProvider?.type === 'therapist') {
@@ -114,6 +117,7 @@ export const useNavigation = ({
             setPage('therapistLogin');
         }
     }, [setPage, loggedInProvider]);
+    
     const handleNavigateToMassagePlacePortal = useCallback(() => {
         // Check if provider is logged in, route to dashboard, otherwise to login
         if (loggedInProvider?.type === 'place') {
@@ -122,6 +126,24 @@ export const useNavigation = ({
             setPage('massagePlaceLogin');
         }
     }, [setPage, loggedInProvider]);
+    
+    // Legacy handlers - kept for backward compatibility but functionality moved to URL-based routing
+    // These are deprecated and should not be used for new implementations
+    const handleNavigateToTherapistSignup = useCallback(() => {
+        console.log('⚠️ DEPRECATED: Use URL-based routing instead: /signup?role=therapist');
+        window.location.href = '/signup?role=therapist';
+    }, []);
+    
+    const handleNavigateToMassagePlaceSignup = useCallback(() => {
+        console.log('⚠️ DEPRECATED: Use URL-based routing instead: /signup?role=massage_place');
+        window.location.href = '/signup?role=massage_place';
+    }, []);
+    
+    const handleNavigateToFacialPlaceSignup = useCallback(() => {
+        console.log('⚠️ DEPRECATED: Use URL-based routing instead: /signup?role=facial_place');
+        window.location.href = '/signup?role=facial_place';
+    }, []);
+    
     const handleNavigateToTherapistProfileCreation = useCallback(() => {
         console.log('🎯 HANDLER: Navigating to therapist job registration');
         alert('🎯 APP.TSX CALLBACK EXECUTING!');
@@ -283,6 +305,11 @@ export const useNavigation = ({
         handleNavigateToTherapistPortal,
         handleNavigateToMassagePlacePortal,
         handleNavigateToTherapistProfileCreation,
+        
+        // Signup navigation (new members - sets localStorage)
+        handleNavigateToTherapistSignup,
+        handleNavigateToMassagePlaceSignup,
+        handleNavigateToFacialPlaceSignup,
         
         // Booking navigation
         handleNavigateToBooking,

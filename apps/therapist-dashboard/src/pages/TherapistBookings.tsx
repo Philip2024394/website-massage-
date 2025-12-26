@@ -194,6 +194,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     } catch (error) {
       console.error('❌ Failed to complete booking:', error);
       alert('Failed to complete booking. Please try again.');
+    }
+  };
 
   const getFilteredBookings = () => {
     let filtered = bookings;

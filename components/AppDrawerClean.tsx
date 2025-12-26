@@ -112,6 +112,8 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onQRCodeClick,
   onLoginClick,
 }) => {
+  console.log('🚪 AppDrawer render check:', { isHome, isOpen, shouldRender: isHome && isOpen });
+  
   if (!isHome || !isOpen) return null;
 
   // Get drawer text based on language
@@ -139,7 +141,15 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   };
 
   const handleItemClick = (callback?: () => void, fallbackPage?: string) => {
-    console.log('🔍 Drawer navigation:', { hasCallback: !!callback, fallbackPage, hasOnNavigate: !!onNavigate });
+    console.log('🔍 Drawer navigation:', { 
+      hasCallback: !!callback, 
+      callbackType: typeof callback,
+      fallbackPage, 
+      hasOnNavigate: !!onNavigate,
+      hasOnTherapistPortalClick: !!onTherapistPortalClick,
+      hasOnMassagePlacePortalClick: !!onMassagePlacePortalClick,
+      hasOnFacialPortalClick: !!onFacialPortalClick
+    });
     
     if (callback) {
       try {
@@ -152,7 +162,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
     } else if (fallbackPage && onNavigate) {
       try {
         console.log('✅ Navigating to page:', fallbackPage);
+        console.log('🔍 onNavigate type:', typeof onNavigate);
+        console.log('🔍 Calling onNavigate with:', fallbackPage);
         onNavigate(fallbackPage);
+        console.log('✅ onNavigate called successfully');
       } catch (error) {
         console.error('❌ Navigation error:', error);
       }
@@ -179,6 +192,29 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
 
           <nav className="flex-grow overflow-y-auto p-4">
             <div className="space-y-3">
+              {/* Authentication Section - Separate Buttons */}
+              <div className="border-b border-gray-200 pb-4 mb-4">
+                <div className="space-y-3">
+                  {/* Create Account Button */}
+                  <button 
+                    onClick={() => handleItemClick(undefined, 'signup')} 
+                    className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  >
+                    <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
+                    <span className="text-sm text-white font-bold">Create Account</span>
+                  </button>
+                  
+                  {/* Sign In Button */}
+                  <button 
+                    onClick={() => handleItemClick(undefined, 'signin')} 
+                    className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl border-2 border-orange-500 bg-white hover:bg-orange-50 shadow-md hover:shadow-lg transform hover:scale-105 transition-all"
+                  >
+                    <Users className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                    <span className="text-sm text-orange-500 font-bold">Sign In</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <button onClick={() => handleItemClick(undefined, 'indastreet-partners')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
@@ -247,34 +283,6 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                   <button onClick={() => handleItemClick(undefined, 'website-management')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                     <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
                     <span className="text-sm text-gray-700 font-medium">{dt.websitePartners}</span>
-                  </button>
-                </div>
-
-                {/* Join Provider Section */}
-                <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
-                  <h3 className="text-xs font-bold text-orange-600 uppercase tracking-wider px-3 mb-3">{dt.joinAsProvider}</h3>
-                  <button onClick={() => handleItemClick(undefined, 'simple-signup')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
-                    <UserPlus className="w-5 h-5 text-white flex-shrink-0" />
-                    <span className="text-sm text-white font-bold">{dt.joinTherapist}</span>
-                  </button>
-                  <button onClick={() => handleItemClick(onMassagePlacePortalClick, 'massage-place-portal')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
-                    <Building className="w-5 h-5 text-white flex-shrink-0" />
-                    <span className="text-sm text-white font-bold">{dt.joinMassageSpa}</span>
-                  </button>
-                  <button onClick={() => handleItemClick(onFacialPortalClick, 'facial-portal')} className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
-                    <Sparkles className="w-5 h-5 text-white flex-shrink-0" />
-                    <span className="text-sm text-white font-bold">{dt.joinSkinClinic}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-4 mt-6 border-t border-gray-300">
-                <div className="flex flex-col items-center gap-3 px-4 py-2">
-                  <button 
-                    onClick={() => handleItemClick(onLoginClick, 'landing')}
-                    className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
-                  >
-                    Sign In
                   </button>
                 </div>
               </div>

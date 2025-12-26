@@ -109,14 +109,10 @@ const AuthRouter: React.FC = () => {
       type: userType
     }));
 
-    // Redirect to appropriate dashboard
-    const isProduction = !window.location.origin.includes('localhost');
-    const dashboardUrls = isProduction ? {
-      therapist: window.location.origin,
-      place: window.location.origin
-    } : {
-      therapist: 'http://localhost:3003',
-      place: 'http://localhost:3002'
+    // Redirect to appropriate dashboard route
+    const dashboardUrls = {
+      therapist: '/therapist',
+      place: '/place-dashboard'
     };
     
     window.location.href = dashboardUrls[userType];

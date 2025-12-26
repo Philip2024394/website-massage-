@@ -4,6 +4,7 @@ import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge 
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
+import TherapistLayout from '../components/TherapistLayout';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -17,11 +18,30 @@ interface TherapistOnlineStatusProps {
   onBack: () => void;
   onRefresh?: () => Promise<void>;
   onNavigate?: (page: string) => void;
+  language?: 'en' | 'id';
 }
 
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
-const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate }) => {
+const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language = 'id' }) => {
+  // Safety check - redirect if no therapist data
+  if (!therapist) {
+    console.error('❌ No therapist data provided to TherapistOnlineStatus');
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Loading therapist data...</p>
+          <button
+            onClick={onBack}
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   const [status, setStatus] = useState<OnlineStatus>('offline');
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
@@ -535,7 +555,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
 
   const accountHealth = getAccountHealth();
 
+  // Handle navigation from TherapistLayout menu
+  const handleNavigate = (pageId: string) => {
+    if (onNavigate) {
+      onNavigate(pageId);
+    }
+  };
+
   return (
+    <TherapistLayout 
+      therapist={therapist} 
+      currentPage="status" 
+      onNavigate={handleNavigate}
+      language={language}
+    >
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -606,7 +639,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             <h2 className="text-lg font-bold text-gray-900">Current Status</h2>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span className="text-sm font-semibold text-gray-700">{onlineHoursThisMonth.toFixed(1)}h</span>
+              <span className="text-sm font-semibold text-gray-700">{(onlineHoursThisMonth || 0).toFixed(1)}h</span>
               <span className="text-xs text-gray-500">this month</span>
             </div>
           </div>
@@ -940,6 +973,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         </div>
       </div>
     </div>
+    </TherapistLayout>
   );
 };
 

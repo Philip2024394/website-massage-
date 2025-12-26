@@ -170,9 +170,8 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     });
                     
                     console.log('🔄 Redirecting to place dashboard with placeId:', effectivePlaceId);
-                    // Redirect to place dashboard after successful signup
-                    const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-                    redirectToDashboard('place', effectivePlaceId);
+                    // Call onSuccess callback to navigate to place dashboard
+                    onSuccess(effectivePlaceId);
                     return;
                 } else {
                     throw new Error(response.error || 'Sign up failed');
@@ -212,9 +211,8 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     console.log(`✅ Place login successful for ${email} (placeId: ${effectivePlaceId})`);
                     console.log('🔄 Redirecting to place dashboard with placeId:', effectivePlaceId);
                     
-                    // Redirect to place dashboard
-                    const { redirectToDashboard } = await import('../utils/dashboardRedirect');
-                    redirectToDashboard({ userType: 'place' });
+                    // Call onSuccess callback to navigate to place dashboard
+                    onSuccess(effectivePlaceId);
                 } else {
                     throw new Error(response.error || 'Sign in failed');
                 }
