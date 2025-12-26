@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
 import reviewService from '../lib/reviewService';
+import { useLanguageContext } from '../context/LanguageContext';
 
 // Avatar pool for review displays
 const REVIEW_AVATARS = [
@@ -52,6 +53,32 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
     const [reviews, setReviews] = useState<Review[]>([]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
+    const { language } = useLanguageContext();
+    
+    // Convert 'gb' to 'en' for consistency
+    const currentLanguage: 'en' | 'id' = language === 'gb' ? 'en' : language as 'en' | 'id';
+    
+    // Translations
+    const translations = {
+        en: {
+            title: 'Customer Reviews',
+            topReviews: 'Top 5 Reviews',
+            post: 'Post',
+            noReviews: 'No reviews available yet. Be the first to review!',
+            showMore: 'Show more',
+            showLess: 'Show less'
+        },
+        id: {
+            title: 'Ulasan Pelanggan',
+            topReviews: 'Top 5 Ulasan',
+            post: 'Posting',
+            noReviews: 'Belum ada ulasan. Jadilah yang pertama untuk mengulas!',
+            showMore: 'Baca lebih lanjut',
+            showLess: 'Lihat lebih sedikit'
+        }
+    };
+    
+    const t = translations[currentLanguage];
 
     // Debug component mount
     useEffect(() => {
@@ -167,7 +194,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
     if (loading) {
         return (
             <div className="mb-6">
-                <h2 className="text-xl font-medium text-black mb-4">Customer Reviews</h2>
+                <h2 className="text-xl font-medium text-black mb-4">{t.title}</h2>
                 <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
                 </div>
@@ -193,24 +220,24 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
         <div className="mb-6">
             <div className="flex items-center justify-between mb-4 gap-3">
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-medium text-black">Customer Reviews</h2>
+                    <h2 className="text-xl font-medium text-black">{t.title}</h2>
                     <span className="text-sm text-gray-500">
-                        {providerName ? `${providerName} Top 5 Reviews` : (location ? `${location} Top 5 Reviews` : 'Top 5 Reviews')}
+                        {providerName ? `${providerName} ${t.topReviews}` : (location ? `${location} ${t.topReviews}` : t.topReviews)}
                     </span>
                 </div>
                 <button
                     onClick={handlePostClick}
                     className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors shadow-sm"
-                    title="Post a review"
+                    title={t.post}
                 >
                     <MessageSquare className="w-4 h-4" />
-                    <span>Post</span>
+                    <span>{t.post}</span>
                 </button>
             </div>
             
             {reviews.length === 0 ? (
                 <div className="text-center py-4 text-gray-600">
-                    <p>No reviews available yet. Be the first to review!</p>
+                    <p>{t.noReviews}</p>
                 </div>
             ) : (
                 <div className="space-y-4">{reviews.map((review, index) => (
@@ -267,7 +294,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
                                                     }}
                                                     className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700"
                                                 >
-                                                    {isExpanded ? 'Show less' : 'Read more'}
+                                                    {isExpanded ? t.showLess : t.showMore}
                                                 </button>
                                             )}
                                         </>

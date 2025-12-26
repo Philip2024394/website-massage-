@@ -13,18 +13,18 @@ class AutoReviewService {
     /**
      * Start auto-generating reviews for a therapist every 5 minutes
      */
-    startAutoReviews(therapistId: string, therapistName: string) {
+    startAutoReviews(therapistId: string, therapistName: string, language: 'en' | 'id' = 'en') {
         // Clear existing interval if any
         this.stopAutoReviews(therapistId);
         
-        console.log(`🔄 Starting auto-reviews for ${therapistName} (${therapistId}) - every 5 minutes`);
+        console.log(`🔄 Starting auto-reviews for ${therapistName} (${therapistId}) - every 5 minutes [${language.toUpperCase()}]`);
         
         // Generate first review immediately
-        this.generateRandomReview(therapistId, therapistName);
+        this.generateRandomReview(therapistId, therapistName, language);
         
         // Then continue every 5 minutes
         const intervalId = setInterval(() => {
-            this.generateRandomReview(therapistId, therapistName);
+            this.generateRandomReview(therapistId, therapistName, language);
         }, 5 * 60 * 1000); // 5 minutes
         
         this.intervals.set(therapistId, intervalId);
@@ -57,7 +57,7 @@ class AutoReviewService {
     /**
      * Generate a random review and add it to the review service
      */
-    private generateRandomReview(therapistId: string, therapistName: string) {
+    private generateRandomReview(therapistId: string, therapistName: string, language: 'en' | 'id' = 'en') {
         // Mix of Indonesian locals and international tourists for realism
         const fakeNames = [
             'Sarah Mitchell', 'Budi Santoso', 'Emma Rodriguez', 'Ahmad Hidayat',
@@ -67,8 +67,8 @@ class AutoReviewService {
             'Sophie Martin', 'Fitri Rahmawati', 'Chris Lee', 'Indah Permata'
         ];
         
-        // Generate unique comment by combining templates
-        const comment = this.generateUniqueComment(therapistId, therapistName);
+        // Generate unique comment in the specified language
+        const comment = this.generateUniqueComment(therapistId, therapistName, language);
         const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
         
         // Generate rating (80% chance of 5 stars, 20% chance of 4 stars)
@@ -76,6 +76,8 @@ class AutoReviewService {
         
         // Create fake user ID
         const fakeUserId = `auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const locationText = language === 'id' ? 'Yogyakarta, Indonesia' : 'Yogyakarta, Indonesia';
         
         try {
             // Add the review using the existing review service
@@ -86,10 +88,10 @@ class AutoReviewService {
                 randomName,
                 rating,
                 comment,
-                'Yogyakarta, Indonesia'
+                locationText
             );
             
-            console.log(`⭐ Auto-generated review for ${therapistName} (${therapistId})`);
+            console.log(`⭐ Auto-generated review for ${therapistName} (${therapistId}) [${language.toUpperCase()}]`);
             
             // Trigger a custom event to notify components that reviews were updated
             window.dispatchEvent(new CustomEvent('reviewsUpdated', {
@@ -107,8 +109,9 @@ class AutoReviewService {
     
     /**
      * Generate a unique comment by combining templates and variables
+     * Now supports both English and Indonesian
      */
-    private generateUniqueComment(therapistId: string, therapistName: string): string {
+    private generateUniqueComment(therapistId: string, therapistName: string, language: 'en' | 'id' = 'en'): string {
         // Initialize used comments set for this therapist if not exists
         if (!this.usedComments.has(therapistId)) {
             this.usedComments.set(therapistId, new Set());
@@ -116,32 +119,61 @@ class AutoReviewService {
         
         const used = this.usedComments.get(therapistId)!;
         
-        // Comment templates with variables
-        const templates = [
-            // Quality descriptors
-            ['Excellent', 'Amazing', 'Fantastic', 'Outstanding', 'Wonderful', 'Incredible', 'Superb', 'Perfect', 'Brilliant', 'Exceptional'],
-            // Service aspects
-            ['massage', 'therapy session', 'treatment', 'service', 'experience', 'session', 'massage therapy', 'deep tissue work'],
-            // Professional qualities
-            ['very professional', 'highly skilled', 'extremely knowledgeable', 'very experienced', 'incredibly talented', 'truly expert'],
-            // Benefits
-            ['helped with my back pain', 'relieved my muscle tension', 'reduced my stress', 'improved my flexibility', 'addressed my shoulder issues', 'fixed my neck pain', 'eased my chronic pain'],
-            // Outcomes
-            ['I feel much better now', 'I\'m completely relaxed', 'my pain is gone', 'I feel rejuvenated', 'I\'m so refreshed', 'the results are amazing'],
-            // Recommendations
-            ['Highly recommend', 'Will definitely book again', 'Must try', 'Worth every penny', 'Can\'t recommend enough', 'Five stars all the way']
-        ];
+        // Bilingual comment templates
+        const templates = {
+            en: [
+                // Quality descriptors
+                ['Excellent', 'Amazing', 'Fantastic', 'Outstanding', 'Wonderful', 'Incredible', 'Superb', 'Perfect', 'Brilliant', 'Exceptional'],
+                // Service aspects
+                ['massage', 'therapy session', 'treatment', 'service', 'experience', 'session', 'massage therapy', 'deep tissue work'],
+                // Professional qualities
+                ['very professional', 'highly skilled', 'extremely knowledgeable', 'very experienced', 'incredibly talented', 'truly expert'],
+                // Benefits
+                ['helped with my back pain', 'relieved my muscle tension', 'reduced my stress', 'improved my flexibility', 'addressed my shoulder issues', 'fixed my neck pain', 'eased my chronic pain'],
+                // Outcomes
+                ['I feel much better now', 'I\'m completely relaxed', 'my pain is gone', 'I feel rejuvenated', 'I\'m so refreshed', 'the results are amazing'],
+                // Recommendations
+                ['Highly recommend', 'Will definitely book again', 'Must try', 'Worth every penny', 'Can\'t recommend enough', 'Five stars all the way']
+            ],
+            id: [
+                // Quality descriptors
+                ['Luar biasa', 'Menakjubkan', 'Fantastis', 'Sangat bagus', 'Sempurna', 'Hebat', 'Istimewa', 'Sempurna', 'Cemerlang', 'Eksepsional'],
+                // Service aspects
+                ['pijat', 'sesi terapi', 'perawatan', 'layanan', 'pengalaman', 'sesi', 'terapi pijat', 'pijat jaringan dalam'],
+                // Professional qualities
+                ['sangat profesional', 'sangat terampil', 'sangat berpengalaman', 'sangat berpengalaman', 'sangat berbakat', 'benar-benar ahli'],
+                // Benefits
+                ['membantu sakit punggung saya', 'meredakan ketegangan otot saya', 'mengurangi stres saya', 'meningkatkan fleksibilitas saya', 'mengatasi masalah bahu saya', 'memperbaiki sakit leher saya', 'mengurangi nyeri kronis saya'],
+                // Outcomes
+                ['Saya merasa jauh lebih baik sekarang', 'Saya benar-benar rileks', 'rasa sakit saya hilang', 'Saya merasa segar kembali', 'Saya sangat segar', 'hasilnya luar biasa'],
+                // Recommendations
+                ['Sangat merekomendasikan', 'Pasti akan pesan lagi', 'Harus dicoba', 'Sepadan dengan harganya', 'Sangat merekomendasikan', 'Bintang lima semua']
+            ]
+        };
         
-        // More specific template structures
-        const structures = [
-            (t: string[][]) => `${t[0][rand(t[0])]} ${t[1][rand(t[1])]}! The therapist was ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}!`,
-            (t: string[][]) => `${t[0][rand(t[0])]} experience! ${t[3][rand(t[3])]} and ${t[4][rand(t[4])]}. The ${t[1][rand(t[1])]} was professional and effective. ${t[5][rand(t[5])]}.`,
-            (t: string[][]) => `Really ${t[0][rand(t[0]).toLowerCase()]} ${t[1][rand(t[1])]}. ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
-            (t: string[][]) => `The ${t[1][rand(t[1])]} was ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} and I ${t[4][rand(t[4]).toLowerCase()]}. ${t[5][rand(t[5])]}.`,
-            (t: string[][]) => `${t[0][rand(t[0])]} massage therapy! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. Will return!`,
-            (t: string[][]) => `Booked this ${t[1][rand(t[1])]} and was not disappointed. ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`
-        ];
+        const currentTemplates = templates[language];
         
+        // More specific template structures with bilingual support
+        const structures = {
+            en: [
+                (t: string[][]) => `${t[0][rand(t[0])]} ${t[1][rand(t[1])]}! The therapist was ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}!`,
+                (t: string[][]) => `${t[0][rand(t[0])]} experience! ${t[3][rand(t[3])]} and ${t[4][rand(t[4])]}. The ${t[1][rand(t[1])]} was professional and effective. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Really ${t[0][rand(t[0]).toLowerCase()]} ${t[1][rand(t[1])]}. ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `The ${t[1][rand(t[1])]} was ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} and I ${t[4][rand(t[4]).toLowerCase()]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `${t[0][rand(t[0])]} massage therapy! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. Will return!`,
+                (t: string[][]) => `Booked this ${t[1][rand(t[1])]} and was not disappointed. ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`
+            ],
+            id: [
+                (t: string[][]) => `${t[0][rand(t[0])]} ${t[1][rand(t[1])]}! Terapisnya ${t[2][rand(t[2])]} dan ${t[3][rand(t[3])]}. ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}!`,
+                (t: string[][]) => `Pengalaman ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[1][rand(t[1])]} nya profesional dan efektif. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Benar-benar ${t[1][rand(t[1])]} yang ${t[0][rand(t[0]).toLowerCase()]}. ${t[2][rand(t[2])]} dan ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `${t[1][rand(t[1])]} nya ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Terapi pijat ${t[0][rand(t[0]).toLowerCase()]}! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, dan ${t[4][rand(t[4])]}. Akan kembali!`,
+                (t: string[][]) => `Pesan ${t[1][rand(t[1])]} ini dan tidak mengecewakan. ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, dan ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`
+            ]
+        };
+        
+        const currentStructures = structures[language];
         const rand = (arr: string[]) => Math.floor(Math.random() * arr.length);
         
         // Try to generate a unique comment (max 20 attempts)
@@ -149,8 +181,8 @@ class AutoReviewService {
         let comment = '';
         
         while (attempts < 20) {
-            const structureFunc = structures[rand(structures)];
-            comment = structureFunc(templates);
+            const structureFunc = currentStructures[rand(currentStructures)];
+            comment = structureFunc(currentTemplates);
             
             if (!used.has(comment)) {
                 used.add(comment);
@@ -160,8 +192,9 @@ class AutoReviewService {
         }
         
         // Fallback: add timestamp to ensure uniqueness
-        const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        comment = `${comment} (Booked ${timestamp})`;
+        const timestamp = new Date().toLocaleTimeString(language === 'id' ? 'id-ID' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+        const bookedText = language === 'id' ? 'Dipesan' : 'Booked';
+        comment = `${comment} (${bookedText} ${timestamp})`;
         used.add(comment);
         
         return comment;
