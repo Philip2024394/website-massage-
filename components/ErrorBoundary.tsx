@@ -20,6 +20,31 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     static getDerivedStateFromError(error: Error): State {
+        const errorMessage = error?.message || '';
+        const errorStack = error?.stack || '';
+        
+        // ULTIMATE DOM error detection - prevent state change for DOM errors
+        const isDOMError = errorMessage.includes('removeChild') || 
+                          errorMessage.includes('The node to be removed is not a child') ||
+                          errorMessage.includes('insertBefore') ||
+                          errorMessage.includes('replaceChild') ||
+                          errorMessage.includes('appendChild') ||
+                          errorMessage.includes('NotFoundError') ||
+                          errorMessage.includes('Failed to execute') ||
+                          error?.name === 'NotFoundError' ||
+                          errorStack.includes('removeChild') ||
+                          errorStack.includes('insertBefore') ||
+                          errorStack.includes('commitDeletionEffectsOnFiber') ||
+                          errorStack.includes('react-dom');
+        
+        // Don't set error state for DOM errors - let them pass silently
+        if (isDOMError) {
+            return {
+                hasError: false,
+                error: null
+            };
+        }
+        
         return {
             hasError: true,
             error
@@ -49,14 +74,6 @@ class ErrorBoundary extends Component<Props, State> {
                 message: errorMessage.substring(0, 80),
                 name: error?.name
             });
-            
-            // Schedule auto-recovery to prevent infinite loops
-            setTimeout(() => {
-                this.setState({
-                    hasError: false,
-                    error: null
-                });
-            }, 100);
             return; // Don't process DOM errors further
         } else {
             console.error('ErrorBoundary caught non-DOM error:', error, errorInfo);

@@ -21,21 +21,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapist': '/dashboard/therapist',
         'therapistStatus': '/dashboard/therapist/status',
         'therapistAvailability': '/dashboard/therapist/availability',
-        'therapistBookings': '/dashboard/therapist/bookings',
         'therapistProfile': '/dashboard/therapist/profile',
-        'therapistMenu': '/dashboard/therapist/menu',
         'massagePlaceLogin': '/place-login',
         'placeDashboard': '/dashboard/massage-place',
-        'massagePlace': '/dashboard/massage-place',
         'massagePlacePortal': '/dashboard/massage-place',
         'massagePlaceProfile': '/dashboard/massage-place/profile',
-        'massagePlaceTherapists': '/dashboard/massage-place/therapists',
-        'massagePlaceBookings': '/dashboard/massage-place/bookings',
         'facialPlaceDashboard': '/dashboard/facial-place',
-        'facialPlace': '/dashboard/facial-place',
         'facialPlaceProfile': '/dashboard/facial-place/profile',
-        'facialPlaceServices': '/dashboard/facial-place/services',
-        'facialPlaceBookings': '/dashboard/facial-place/bookings',
         'shared-therapist-profile': '/therapist-profile',
         'share-therapist': '/share/therapist',
         'share-place': '/share/place',
@@ -67,9 +59,6 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'adminDashboard': '/admin',
         'hotelDashboard': '/hotel-dashboard',
         'villaDashboard': '/villa-dashboard',
-        'therapist-dashboard': '/dashboard/therapist',
-        'massage-place-dashboard': '/dashboard/massage-place',
-        'facial-place-dashboard': '/dashboard/facial-place',
         'browseJobs': '/browse-jobs',
         'massageJobs': '/massage-jobs',
         'therapistJobs': '/therapist-jobs',
@@ -156,11 +145,11 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                     return;
                 }
                 if (path === '/dashboard/massage-place') {
-                    setPage('massage-place-dashboard');
+                    setPage('place-dashboard');
                     return;
                 }
                 if (path === '/dashboard/facial-place') {
-                    setPage('facial-place-dashboard');
+                    setPage('facialPlaceDashboard');
                     return;
                 }
                 

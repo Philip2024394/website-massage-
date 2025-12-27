@@ -1469,7 +1469,22 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     const assignedImage = shuffledHomeImages.length > 0 
                                         ? shuffledHomeImages[index % shuffledHomeImages.length] 
                                         : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    return { ...therapist, mainImage: assignedImage || therapist.mainImage };
+                                    
+                                    // Override location for featured samples when shown in non-home cities
+                                    let displayLocation = therapist.location;
+                                    let displayCity = therapist.city;
+                                    if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') {
+                                        displayLocation = selectedCity;
+                                        displayCity = selectedCity;
+                                        console.log(`🎯 Overriding featured sample ${therapist.name} location to ${selectedCity}`);
+                                    }
+                                    
+                                    return { 
+                                        ...therapist, 
+                                        mainImage: assignedImage || therapist.mainImage,
+                                        location: displayLocation,
+                                        city: displayCity
+                                    };
                                 });
 
                             console.log('🔧 [DEBUG] Final therapist list with priority scores:', {

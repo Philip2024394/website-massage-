@@ -17,10 +17,9 @@ interface MenuService {
 
 interface TherapistMenuProps {
   therapist: Therapist | null;
-  onNavigateToPayment?: () => void;
 }
 
-const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPayment }) => {
+const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
   const [services, setServices] = useState<MenuService[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -203,8 +202,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
     }
   };
 
-  // Check if therapist is premium
-  const isPremium = therapist?.subscriptionTier === 'premium' || therapist?.subscriptionTier === 'trial';
+  // All features now available for standard 30% commission plan
+  const isPremium = true; // Always true - no premium restrictions
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
@@ -235,11 +234,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
               </div>
             )}
           </div>
-          {isPremium && (
-            <div className="mt-2 flex items-center gap-2">
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 rounded-lg">
-                <span className="text-xs font-medium text-orange-700">👑 Premium Feature</span>
-              </div>
+          <div className="mt-2 flex items-center gap-2">
               
               {/* Data Size Indicator */}
               {services.length > 0 && (() => {
@@ -267,22 +262,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
 
         {/* Content */}
         <div className="p-8 space-y-6">
-          {!isPremium ? (
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Premium Feature</h3>
-              <p className="text-sm text-gray-700 mb-4">
-                Upgrade to Premium to create a custom service menu with your own pricing. 
-                Your menu will be displayed on your therapist card for customers to browse and book.
-              </p>
-              <button 
-                onClick={() => onNavigateToPayment?.()}
-                className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all"
-              >
-                Upgrade to Premium
-              </button>
-            </div>
-          ) : (
-            <>
+          {/* All features available - no premium restriction */}
+          <>
               {/* Info Box */}
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                 <p className="text-sm text-blue-700 mb-2">

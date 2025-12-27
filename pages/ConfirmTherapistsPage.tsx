@@ -1397,6 +1397,8 @@ const ConfirmTherapistsPage: React.FC = () => {
                   </label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto border border-gray-200 rounded-lg p-4 pb-20">
                     {[
+                      'Traditional', 'Body Scrub', 'Facial', 'Acupressure', 'Scraping', 'Cupping',
+                      'Sprain', 'Hands', 'Feet',
                       'Relaxation Massage', 'Therapeutic Massage', 'Sports Recovery', 'Stress Relief',
                       'Pain Management', 'Wellness Massage', 'Beauty Treatment', 'Detox Massage',
                       'Energy Healing', 'Medical Massage', 'Prenatal Care', 'Couples Treatment',

@@ -422,11 +422,15 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
 
                 {/* Rotating Reviews Section - Same as /share/ implementation */}
                 <div className="mt-8">
-                    {console.log('🔧 About to render RotatingReviews with:', {
-                        location: therapist.city || therapist.location || 'Yogyakarta',
-                        providerId: (therapist as any).$id || (therapist as any).id,
-                        providerName: therapist.name
-                    })}
+                    {/* Debug logging moved outside JSX */}
+                    {(() => {
+                        console.log('🔧 About to render RotatingReviews with:', {
+                            location: therapist.city || therapist.location || 'Yogyakarta',
+                            providerId: (therapist as any).$id || (therapist as any).id,
+                            providerName: therapist.name
+                        });
+                        return null;
+                    })()}
                     <RotatingReviews 
                         location={therapist.city || therapist.location || 'Yogyakarta'} 
                         limit={5}
@@ -434,6 +438,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                         providerName={therapist.name}
                         providerType={'therapist'}
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        onNavigate={onNavigate}
                     />
                 </div>
 

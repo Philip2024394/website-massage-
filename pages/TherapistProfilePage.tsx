@@ -279,6 +279,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        onNavigate={onNavigate}
                     />
                 </div>
             </div>

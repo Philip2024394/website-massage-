@@ -47,9 +47,18 @@ interface RotatingReviewsProps {
     providerName?: string;
     providerType?: 'therapist' | 'place';
     providerImage?: string;
+    onNavigate?: (page: string, params?: Record<string, string>) => void; // Optional navigation handler
 }
 
-const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, providerId, providerName, providerType = 'therapist', providerImage }) => {
+const RotatingReviews: React.FC<RotatingReviewsProps> = ({ 
+    location, 
+    limit = 5, 
+    providerId, 
+    providerName, 
+    providerType = 'therapist', 
+    providerImage,
+    onNavigate 
+}) => {
     const [reviews, setReviews] = useState<Review[]>([]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
@@ -203,16 +212,31 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, 
     }
 
     const handlePostClick = () => {
-        try {
-            const url = new URL(window.location.origin + '/reviews');
-            if (providerId) url.searchParams.set('providerId', String(providerId));
-            if (providerName) url.searchParams.set('providerName', providerName);
-            if (providerType) url.searchParams.set('providerType', providerType);
-            if (providerImage) url.searchParams.set('providerImage', providerImage);
-            url.searchParams.set('returnUrl', window.location.href);
-            window.location.href = url.toString();
-        } catch {
-            window.location.href = '/reviews';
+        // If onNavigate is provided, use React routing (preferred)
+        if (onNavigate) {
+            const params: Record<string, string> = {};
+            if (providerId) params.providerId = String(providerId);
+            if (providerName) params.providerName = providerName;
+            if (providerType) params.providerType = providerType;
+            if (providerImage) params.providerImage = providerImage;
+            params.returnUrl = window.location.pathname;
+            
+            // Store params in sessionStorage for the reviews page to read
+            sessionStorage.setItem('reviewParams', JSON.stringify(params));
+            onNavigate('reviews');
+        } else {
+            // Fallback to direct URL navigation with query params
+            try {
+                const url = new URL(window.location.origin + '/reviews');
+                if (providerId) url.searchParams.set('providerId', String(providerId));
+                if (providerName) url.searchParams.set('providerName', providerName);
+                if (providerType) url.searchParams.set('providerType', providerType);
+                if (providerImage) url.searchParams.set('providerImage', providerImage);
+                url.searchParams.set('returnUrl', window.location.href);
+                window.location.href = url.toString();
+            } catch {
+                window.location.href = '/reviews';
+            }
         }
     };
 

@@ -45,8 +45,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [status, setStatus] = useState<OnlineStatus>('offline');
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
-  // Calculate isPremium dynamically from therapist prop - recalculates on therapist update
-  const isPremium = therapist?.membershipTier === 'premium' || false;
+  // All therapists have access to all features - no premium restrictions
+  const isPremium = true;
   const [onlineHoursThisMonth, setOnlineHoursThisMonth] = useState<number>(0);
   const [busyStartTime, setBusyStartTime] = useState<string | null>(therapist?.busyStartTime || null);
   const [busyTimeRemaining, setBusyTimeRemaining] = useState<number | null>(null);
@@ -757,7 +757,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Auto-Offline Timer</h2>
-                <p className="text-xs text-gray-500">{isPremium ? 'Premium Feature' : 'Premium feature - Upgrade to unlock'}</p>
+                <p className="text-xs text-gray-500">Schedule automatic offline time daily</p>
               </div>
             </div>
             {!isPremium && (
@@ -840,7 +840,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Discount Badge</h2>
-                <p className="text-xs text-gray-500">{isPremium ? 'Premium Feature' : 'Premium feature - Upgrade to unlock'}</p>
+                <p className="text-xs text-gray-500">Add discount badges to your profile</p>
               </div>
             </div>
             {isDiscountActive && (

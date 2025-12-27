@@ -645,10 +645,10 @@ class ReviewService {
      * Get reviews for Yogyakarta location (for showcase profiles)
      */
     getYogyakartaReviews(limit: number = 5): Review[] {
-        // Get reviews for all Yogyakarta therapists
-        const yogyaTherapistIds = [
-            '69dynamic list of Yogyakarta therapist IDs
-        const yogyaTherapistIds = getYogyakartaTherapists().map(t => t.id)onst yogyaReviews = this.reviews
+        // Get dynamic list of Yogyakarta therapist IDs
+        const yogyaTherapistIds = getYogyakartaTherapists().map(t => t.id);
+        
+        const yogyaReviews = this.reviews
             .filter(r => yogyaTherapistIds.includes(r.providerId.toString()) && r.providerType === 'therapist')
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, limit);

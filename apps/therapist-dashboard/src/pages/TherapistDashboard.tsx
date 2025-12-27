@@ -750,20 +750,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div className="mb-6">
               <BookingRequestCard 
                 therapistId={therapist.$id}
-                membershipTier={therapist.membershipTier === 'plus' ? 'plus' : 'free'}
+                membershipTier={'plus'}
               />
             </div>
           )}
 
-          {/* Pro Plan Warnings */}
-          {therapist?.membershipTier === 'free' && (
-            <div className="mb-6 rounded-2xl shadow-sm border-2 border-red-200 overflow-hidden">
-              <ProPlanWarnings 
-                therapistName={therapist?.name || therapist?.fullName || 'Member'}
-                showFullTerms={false}
-              />
-            </div>
-          )}
+          {/* Pro Plan Warnings - Hidden since all features are now standard */}
 
           {/* Profile Form Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -838,8 +830,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </label>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  {/* Verified Badge */}
-                  {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
+                  {/* Verified Badge - Available for all therapists */}
+                  {therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
                     <div className="absolute -top-1 -left-1 z-10 w-8 h-8">
                       <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
@@ -1069,33 +1061,26 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Premium Custom Menu Feature */}
+            {/* Custom Service Menu Feature - Available for all therapists */}
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <MenuIcon className="w-5 h-5 text-orange-600" />
                   <h3 className="font-bold text-gray-900">Custom Service Menu</h3>
-                  {therapist?.membershipTier === 'premium' && (
-                    <span className="text-xs px-2 py-0.5 bg-orange-500 text-white rounded-full">Premium</span>
-                  )}
                 </div>
               </div>
               <p className="text-sm text-gray-700 mb-4">
-                {therapist?.membershipTier === 'premium' 
-                  ? '📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.'
-                  : '📋 Upgrade to Premium to create a custom service menu. List unlimited services with custom names and prices to attract more bookings.'}
+                📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.
               </p>
               <button
                 onClick={() => {
-                  if (therapist?.membershipTier === 'premium' && onNavigateToMenu) {
+                  if (onNavigateToMenu) {
                     onNavigateToMenu();
-                  } else if (onNavigateToPayment) {
-                    onNavigateToPayment();
                   }
                 }}
                 className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-sm"
               >
-                {therapist?.membershipTier === 'premium' ? '→ Manage My Menu' : '👑 Upgrade to Premium'}
+                → Manage My Menu
               </button>
             </div>
 

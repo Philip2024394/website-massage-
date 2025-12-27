@@ -307,9 +307,7 @@ function App() {
       case 'payment-status':
         return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'custom-menu':
-        return <TherapistMenu therapist={user} onNavigateToPayment={() => setCurrentPage('premium-upgrade')} />;
-      case 'premium-upgrade':
-        return <PremiumUpgrade therapist={user} />;
+        return <TherapistMenu therapist={user} />;
       case 'commission-payment':
         return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'schedule':
@@ -327,7 +325,6 @@ function App() {
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}
-            onNavigateToPayment={() => setCurrentPage('premium-upgrade')}
             onNavigateToMenu={() => setCurrentPage('custom-menu')}
           />
         );

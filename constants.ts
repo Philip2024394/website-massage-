@@ -182,6 +182,10 @@ export const getMassageTypeDetails = (massageType: string): MassageTypeInfo | un
 
 export const MASSAGE_TYPES_CATEGORIZED = [
     {
+        category: 'Basic Services',
+        types: ['Traditional', 'Body Scrub', 'Facial', 'Hands', 'Feet']
+    },
+    {
         category: 'Western Massages',
         types: ['Swedish Massage', 'Deep Tissue Massage', 'Sports Massage', 'Hot Stone Massage', 'Aromatherapy Massage']
     },
@@ -191,11 +195,11 @@ export const MASSAGE_TYPES_CATEGORIZED = [
     },
     {
         category: 'Traditional Indonesian Techniques',
-        types: ['Kerokan (Coin Rub)', 'Jamu Massage']
+        types: ['Kerokan (Coin Rub)', 'Jamu Massage', 'Scraping', 'Cupping']
     },
     {
         category: 'Specialty Massages',
-        types: ['Prenatal Massage', 'Lymphatic Massage', 'Indian Head Massage']
+        types: ['Prenatal Massage', 'Lymphatic Massage', 'Indian Head Massage', 'Sprain']
     }
 ];
 

@@ -153,28 +153,30 @@ class AutoReviewService {
         
         const currentTemplates = templates[language];
         
+        // Helper function to get random index
+        const rand = (arr: string[] | ((t: string[][]) => string)[]) => Math.floor(Math.random() * arr.length);
+        
         // More specific template structures with bilingual support
         const structures = {
             en: [
                 (t: string[][]) => `${t[0][rand(t[0])]} ${t[1][rand(t[1])]}! The therapist was ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}!`,
                 (t: string[][]) => `${t[0][rand(t[0])]} experience! ${t[3][rand(t[3])]} and ${t[4][rand(t[4])]}. The ${t[1][rand(t[1])]} was professional and effective. ${t[5][rand(t[5])]}.`,
-                (t: string[][]) => `Really ${t[0][rand(t[0]).toLowerCase()]} ${t[1][rand(t[1])]}. ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
-                (t: string[][]) => `The ${t[1][rand(t[1])]} was ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} and I ${t[4][rand(t[4]).toLowerCase()]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Really ${t[0][rand(t[0])].toLowerCase()} ${t[1][rand(t[1])]}. ${t[2][rand(t[2])]} and ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `The ${t[1][rand(t[1])]} was ${t[0][rand(t[0])].toLowerCase()}! ${t[3][rand(t[3])]} and I ${t[4][rand(t[4])].toLowerCase()}. ${t[5][rand(t[5])]}.`,
                 (t: string[][]) => `${t[0][rand(t[0])]} massage therapy! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. Will return!`,
                 (t: string[][]) => `Booked this ${t[1][rand(t[1])]} and was not disappointed. ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, and ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`
             ],
             id: [
                 (t: string[][]) => `${t[0][rand(t[0])]} ${t[1][rand(t[1])]}! Terapisnya ${t[2][rand(t[2])]} dan ${t[3][rand(t[3])]}. ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}!`,
-                (t: string[][]) => `Pengalaman ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[1][rand(t[1])]} nya profesional dan efektif. ${t[5][rand(t[5])]}.`,
-                (t: string[][]) => `Benar-benar ${t[1][rand(t[1])]} yang ${t[0][rand(t[0]).toLowerCase()]}. ${t[2][rand(t[2])]} dan ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
-                (t: string[][]) => `${t[1][rand(t[1])]} nya ${t[0][rand(t[0]).toLowerCase()]}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`,
-                (t: string[][]) => `Terapi pijat ${t[0][rand(t[0]).toLowerCase()]}! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, dan ${t[4][rand(t[4])]}. Akan kembali!`,
+                (t: string[][]) => `Pengalaman ${t[0][rand(t[0])].toLowerCase()}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[1][rand(t[1])]} nya profesional dan efektif. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Benar-benar ${t[1][rand(t[1])]} yang ${t[0][rand(t[0])].toLowerCase()}. ${t[2][rand(t[2])]} dan ${t[3][rand(t[3])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `${t[1][rand(t[1])]} nya ${t[0][rand(t[0])].toLowerCase()}! ${t[3][rand(t[3])]} dan ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`,
+                (t: string[][]) => `Terapi pijat ${t[0][rand(t[0])].toLowerCase()}! ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, dan ${t[4][rand(t[4])]}. Akan kembali!`,
                 (t: string[][]) => `Pesan ${t[1][rand(t[1])]} ini dan tidak mengecewakan. ${t[2][rand(t[2])]}, ${t[3][rand(t[3])]}, dan ${t[4][rand(t[4])]}. ${t[5][rand(t[5])]}.`
             ]
         };
         
         const currentStructures = structures[language];
-        const rand = (arr: string[]) => Math.floor(Math.random() * arr.length);
         
         // Try to generate a unique comment (max 20 attempts)
         let attempts = 0;
