@@ -4,6 +4,7 @@
  */
 
 import { generateInitialReviewData, updateRatingWithNewReview, removeReviewRating } from './reviewInitializationService';
+import { getYogyakartaTherapists } from './therapistListProvider';
 import type { Therapist, Place } from '../types';
 
 // Import Surtiningsih mock reviews
@@ -247,12 +248,10 @@ class ReviewService {
             return; // Skip in SSR
         }
         
-        const yogyaTherapists = [
-            { id: '692467a3001f6f05aaa1', name: 'Budi' },
-            { id: '69499239000c90bfd283', name: 'ww' },
-            { id: '694a02cd0036089583db', name: 'ww' },
-            { id: '694ed78e002b0c06171e', name: 'Wiwid' } // Updated to match profile page ID
-        ];
+        // Get dynamic list of Yogyakarta therapists
+        const yogyaTherapists = getYogyakartaTherapists();
+        
+        console.log(`🔄 Initializing reviews for ${yogyaTherapists.length} Yogyakarta therapists...`);
         
         const names = [
             'Sarah Mitchell', 'Budi Santoso', 'Emma Rodriguez', 'Ahmad Hidayat',
@@ -357,7 +356,7 @@ class ReviewService {
             return; // Skip in SSR
         }
         
-        const wiwidId = '694ed78f9574395fd7b9';
+        const wiwidId = '694ed78e002b0c06171e'; // ✅ FIXED: Correct Wiwid ID matching profile page
         const existingReviews = this.reviews.filter(r => r.providerId === wiwidId);
         
         if (existingReviews.length === 0) {
@@ -648,14 +647,8 @@ class ReviewService {
     getYogyakartaReviews(limit: number = 5): Review[] {
         // Get reviews for all Yogyakarta therapists
         const yogyaTherapistIds = [
-            '692467a3001f6f05aaa1', // Budi
-            '69499239000c90bfd283', // ww
-            '694a02cd0036089583db', // ww
-            '694ed78e002b0c06171e', // Wiwid - Updated to match profile page ID
-            '693cfadf003d16b9896a'  // Surtiningsih
-        ];
-        
-        const yogyaReviews = this.reviews
+            '69dynamic list of Yogyakarta therapist IDs
+        const yogyaTherapistIds = getYogyakartaTherapists().map(t => t.id)onst yogyaReviews = this.reviews
             .filter(r => yogyaTherapistIds.includes(r.providerId.toString()) && r.providerType === 'therapist')
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, limit);

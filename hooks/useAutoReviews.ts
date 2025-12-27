@@ -5,13 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { autoReviewService } from '../lib/autoReviewService';
 import { useLanguageContext } from '../context/LanguageContext';
-
-const YOGYAKARTA_THERAPISTS = [
-    { id: '692467a3001f6f05aaa1', name: 'Budi' },
-    { id: '69499239000c90bfd283', name: 'ww' },
-    { id: '694a02cd0036089583db', name: 'ww' },
-    { id: '694ed78e002b0c06171e', name: 'Wiwid' } // Updated to match profile page ID
-];
+import { getYogyakartaTherapists } from '../lib/therapistListProvider';
 
 export const useAutoReviews = () => {
     const isInitialized = useRef(false);
@@ -22,6 +16,9 @@ export const useAutoReviews = () => {
     
     useEffect(() => {
         if (!isInitialized.current) {
+            // Get dynamic list of Yogyakarta therapists
+            const YOGYAKARTA_THERAPISTS = getYogyakartaTherapists();
+            
             console.log(`🚀 Starting auto-review system for Yogyakarta therapists [${currentLanguage.toUpperCase()}]...`);
             console.log(`📋 Will initialize ${YOGYAKARTA_THERAPISTS.length} therapists:`, YOGYAKARTA_THERAPISTS);
             
