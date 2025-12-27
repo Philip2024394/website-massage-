@@ -36,6 +36,12 @@ export const profileRoutes = {
     component: SharedTherapistProfile,
     name: 'shareTherapist'
   },
+  // NEW: SEO-optimized share URLs with location keywords
+  shareTherapistSEO: {
+    path: '/share/:slug/:id',
+    component: SharedTherapistProfile,
+    name: 'shareTherapistSEO'
+  },
   sharePlace: {
     path: '/share/place/:id',
     component: SharedPlaceProfile,

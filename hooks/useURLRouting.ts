@@ -123,18 +123,25 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 // Handle direct URL navigation
                 const path = window.location.pathname;
                 
-                // Handle new share URLs
-                if (path.startsWith('/share/therapist/')) {
-                    setPage('share-therapist');
-                    return;
-                }
-                if (path.startsWith('/share/place/')) {
-                    setPage('share-place');
-                    return;
-                }
-                if (path.startsWith('/share/facial/')) {
-                    setPage('share-facial');
-                    return;
+                // Handle new share URLs (with SEO keywords or simple format)
+                // Match: /share/pijat-yogyakarta-wiwid/123 OR /share/therapist/123
+                if (path.startsWith('/share/')) {
+                    const segments = path.split('/').filter(Boolean);
+                    if (segments.length >= 3) {
+                        // SEO format: /share/{slug}/{id}
+                        setPage('share-therapist');
+                        return;
+                    } else if (segments[1] === 'therapist') {
+                        // Simple format: /share/therapist/{id}
+                        setPage('share-therapist');
+                        return;
+                    } else if (segments[1] === 'place') {
+                        setPage('share-place');
+                        return;
+                    } else if (segments[1] === 'facial') {
+                        setPage('share-facial');
+                        return;
+                    }
                 }
                 
                 // Handle legacy therapist profile URL
@@ -194,18 +201,20 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         console.log('   📍 window.location.href:', window.location.href);
         console.log('   📍 window.location.search:', window.location.search);
         
-        // Handle new share URLs
-        if (initialPath.startsWith('/share/therapist/')) {
-            setPage('share-therapist');
-            return () => window.removeEventListener('popstate', handlePopState);
-        }
-        if (initialPath.startsWith('/share/place/')) {
-            setPage('share-place');
-            return () => window.removeEventListener('popstate', handlePopState);
-        }
-        if (initialPath.startsWith('/share/facial/')) {
-            setPage('share-facial');
-            return () => window.removeEventListener('popstate', handlePopState);
+        // Handle new share URLs (with SEO keywords or simple format)
+        if (initialPath.startsWith('/share/')) {
+            const segments = initialPath.split('/').filter(Boolean);
+            if (segments.length >= 3 || segments[1] === 'therapist') {
+                // SEO format or simple therapist format
+                setPage('share-therapist');
+                return () => window.removeEventListener('popstate', handlePopState);
+            } else if (segments[1] === 'place') {
+                setPage('share-place');
+                return () => window.removeEventListener('popstate', handlePopState);
+            } else if (segments[1] === 'facial') {
+                setPage('share-facial');
+                return () => window.removeEventListener('popstate', handlePopState);
+            }
         }
         
         // Handle legacy therapist profile URL
