@@ -210,11 +210,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
-            <div className="relative h-48 sm:h-56 overflow-hidden">
+            <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500"
+                    loading="lazy"
+                    width="400"
+                    height="224"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                     }}
@@ -299,8 +302,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             <img 
                                 className="w-full h-full rounded-full object-cover aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                                alt={therapist.name}
-                                onError={(e) => {
+                                alt={therapist.name}                                loading="lazy"
+                                width="96"
+                                height="96"                                onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
                             />
