@@ -360,11 +360,29 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             return (
                                 <div className="flex items-center gap-1.5">
                                     <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span className="text-xs">🇮🇩</span>
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇮🇩
+                                        </span>
                                         <span className="text-xs font-semibold">ID</span>
                                     </span>
                                     <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span className="text-xs">🇬🇧</span>
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇬🇧
+                                        </span>
                                         <span className="text-xs font-semibold">EN</span>
                                     </span>
                                 </div>
@@ -424,7 +442,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     
                                     return (
                                         <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                            <span className="text-xs">{langInfo.flag}</span>
+                                            {/* Use emoji flag with proper font family to ensure display */}
+                                            <span 
+                                                className="text-sm" 
+                                                style={{
+                                                    fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                    fontSize: '14px',
+                                                    lineHeight: '1'
+                                                }}
+                                            >
+                                                {langInfo.flag}
+                                            </span>
                                             <span className="text-xs font-semibold">{langInfo.name}</span>
                                         </span>
                                     );
