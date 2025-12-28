@@ -667,7 +667,7 @@ const HomePage: React.FC<HomePageProps> = ({
         return statusImpliesLive;
     };
 
-    // SHOWCASE PROFILE SYSTEM - First 5 Yogyakarta profiles appear everywhere
+    // SHOWCASE PROFILE SYSTEM - Random 5 Yogyakarta profiles appear in each city
     const getYogyakartaShowcaseProfiles = (allTherapists: any[], targetCity: string): any[] => {
         if (!allTherapists || allTherapists.length === 0) return [];
         
@@ -678,8 +678,7 @@ const HomePage: React.FC<HomePageProps> = ({
             return [];
         }
         
-        // Find first 5 Yogyakarta therapists (by creation/upload order)
-        // INCLUDE all therapists, even featured ones, for the first 5 showcase system
+        // Find all Yogyakarta therapists
         const yogyaTherapists = allTherapists
             .filter((t: any) => {
                 if (!t.location) return false;
@@ -688,14 +687,17 @@ const HomePage: React.FC<HomePageProps> = ({
                 return location.includes('yogyakarta') || 
                        location.includes('yogya') || 
                        location.includes('jogja');
-            })
-            .slice(0, 5); // Take first 5 (including Budi and all others)
+            });
         
-        console.log(`🎭 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase in ${targetCity}:`, 
-                   yogyaTherapists.map(t => t.name));
+        // Shuffle and take random 5 - different for each city
+        const shuffled = shuffleArray([...yogyaTherapists]);
+        const selectedTherapists = shuffled.slice(0, 5);
+        
+        console.log(`🎭 Selected ${selectedTherapists.length} random Yogyakarta therapists for showcase in ${targetCity}:`, 
+                   selectedTherapists.map(t => t.name));
         
         // Create showcase versions with busy status and target city location
-        const showcaseProfiles = yogyaTherapists.map((therapist: any, index: number) => ({
+        const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => ({
             ...therapist,
             // Override key properties for showcase
             $id: `showcase-${therapist.$id || therapist.id}-${targetCity}`, // Unique ID for showcase version
