@@ -1435,10 +1435,9 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 else if (orders >= 20) score += 30;
                                 else if (orders >= 10) score += 20;
 
-                                // 7. Featured Sample Always on Top (10000 points)
-                                if (isFeaturedSample(therapist, 'therapist')) {
-                                    score += 10000;
-                                }
+                                // 7. Featured samples (Budi) - NO SPECIAL BOOST
+                                // Featured samples are randomized with other available therapists
+                                // No longer pinned to top to avoid "stuck" appearance
 
                                 return score;
                             };
