@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,27 @@ interface BaliSpaIndustryTrends2025PageProps {
 
 const BaliSpaIndustryTrends2025Page: React.FC<BaliSpaIndustryTrends2025PageProps> = ({ onNavigate, onBack: _onBack, t: _t }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    // SEO: Add structured data and meta tags
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Bali Spa Industry Trends 2025: Market Analysis & Revenue Forecast',
+            description: 'Comprehensive analysis of Bali\'s $2.1B spa industry: trends, pricing, digital transformation, and growth opportunities for massage therapists and wellness businesses in 2025.',
+            url: 'https://www.indastreetmassage.com/blog-bali-spa-trends-2025',
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20massage.png?updatedAt=1761561435844',
+            datePublished: '2024-11-10T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Wayan Sari',
+            keywords: ['Bali spa industry', 'massage trends 2025', 'wellness tourism Bali', 'spa revenue forecast', 'Bali massage market'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Bali Spa Industry Trends 2025', url: 'https://www.indastreetmassage.com/blog-bali-spa-trends-2025' }
+            ]
+        });
+
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">

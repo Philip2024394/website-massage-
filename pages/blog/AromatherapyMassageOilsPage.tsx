@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,7 +21,24 @@ interface AromatherapyMassageOilsPageProps {
 
 const AromatherapyMassageOilsPage: React.FC<AromatherapyMassageOilsPageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Complete Guide to Aromatherapy Massage Oils & Essential Oils',
+            description: 'Professional guide to massage oils: best carrier oils, essential oil blends, therapeutic benefits, safety guidelines, and sourcing premium aromatherapy products.',
+            url: 'https://www.indastreetmassage.com/blog-aromatherapy-massage-oils',
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20massage.png?updatedAt=1761561435844',
+            datePublished: '2024-11-27T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Kadek Ayu',
+            keywords: ['aromatherapy oils', 'massage oils', 'essential oils massage', 'carrier oils', 'aromatherapy massage'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Aromatherapy Massage Oils', url: 'https://www.indastreetmassage.com/blog-aromatherapy-massage-oils' }
+            ]
+        });
+        return cleanup;
+    }, []);
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,25 @@ interface TraditionalBalineseMassagePageProps {
 
 const TraditionalBalineseMassagePage: React.FC<TraditionalBalineseMassagePageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Traditional Balinese Massage: Ancient Healing Techniques Explained',
+            description: 'Complete guide to authentic Balinese massage: techniques, benefits, pressure points, essential oils, and how it differs from other massage styles.',
+            url: 'https://www.indastreetmassage.com/blog-traditional-balinese-massage',
+            image: 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png',
+            datePublished: '2024-11-22T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Nyoman Sari',
+            keywords: ['Balinese massage', 'traditional massage Bali', 'Indonesian massage', 'Bali healing techniques', 'massage Bali'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Traditional Balinese Massage', url: 'https://www.indastreetmassage.com/blog-traditional-balinese-massage' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     // Updated image URL with fresh timestamp for cache busting
     const imageUrl = `https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=${Date.now()}&tr=w-1920,h-400,fo-auto`;

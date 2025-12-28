@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,25 @@ interface WellnessTourismUbudPageProps {
 
 const WellnessTourismUbudPage: React.FC<WellnessTourismUbudPageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'The Rise of Wellness Tourism in Ubud: Opportunities for Therapists',
+            description: 'Ubud wellness boom analysis: yoga retreat economy, digital nomad market, therapist opportunities, and how to capitalize on Bali\'s wellness tourism growth.',
+            url: 'https://www.indastreetmassage.com/blog-wellness-tourism-ubud',
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20massage.png?updatedAt=1761561435844',
+            datePublished: '2024-12-01T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Made Surya',
+            keywords: ['Ubud wellness tourism', 'Ubud massage', 'Bali wellness', 'yoga retreat Ubud', 'wellness tourism Bali'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Wellness Tourism in Ubud', url: 'https://www.indastreetmassage.com/blog-wellness-tourism-ubud' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">

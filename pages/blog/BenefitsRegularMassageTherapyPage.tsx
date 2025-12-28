@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,25 @@ interface BenefitsRegularMassageTherapyPageProps {
 
 const BenefitsRegularMassageTherapyPage: React.FC<BenefitsRegularMassageTherapyPageProps> = ({ onNavigate, onBack: _onBack, t: _t }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: '10 Science-Backed Benefits of Regular Massage Therapy',
+            description: 'Discover proven health benefits of regular massage: stress relief, pain management, improved circulation, better sleep, immune boost, and mental wellness.',
+            url: 'https://www.indastreetmassage.com/blog-benefits-regular-massage',
+            image: 'https://ik.imagekit.io/7grri5v7d/bali%20massage.png?updatedAt=1761561435844',
+            datePublished: '2024-11-18T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Dr. Putu Sari',
+            keywords: ['massage benefits', 'massage therapy health', 'stress relief massage', 'pain management', 'wellness benefits'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Benefits of Regular Massage', url: 'https://www.indastreetmassage.com/blog-benefits-regular-massage' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">

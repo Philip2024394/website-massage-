@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,25 @@ interface MassageCareerIndonesiaPageProps {
 
 const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({ onNavigate, onBack: _onBack, t: _t }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Building a Successful Massage Therapy Career in Indonesia',
+            description: 'Complete guide to starting and growing your massage therapy career in Indonesia: training, certification, pricing strategies, and income expectations for 2025.',
+            url: 'https://www.indastreetmassage.com/blog-massage-career-indonesia',
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages.png?updatedAt=1761561725353',
+            datePublished: '2024-11-15T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Made Wira',
+            keywords: ['massage career Indonesia', 'therapist training', 'massage certification', 'therapist income', 'wellness career'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Massage Career Indonesia', url: 'https://www.indastreetmassage.com/blog-massage-career-indonesia' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">

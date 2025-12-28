@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,26 @@ interface Top10MassageTechniquesPageProps {
 
 const Top10MassageTechniquesPage: React.FC<Top10MassageTechniquesPageProps> = ({ onNavigate, onBack: _onBack, t: _t }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    // SEO: Add structured data and meta tags
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Top 10 Massage Techniques Every Therapist Should Master',
+            description: 'Essential massage techniques guide: Swedish, deep tissue, Thai, Balinese, hot stone, aromatherapy, and more. Perfect your skills and expand your service offerings.',
+            url: 'https://www.indastreetmassage.com/blog-top-10-massage-techniques',
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages%20indonisea.png?updatedAt=1761561981004',
+            datePublished: '2024-11-12T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Ketut Ayu',
+            keywords: ['massage techniques', 'Swedish massage', 'deep tissue massage', 'Thai massage', 'Balinese massage', 'hot stone therapy'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Top 10 Massage Techniques', url: 'https://www.indastreetmassage.com/blog-top-10-massage-techniques' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">

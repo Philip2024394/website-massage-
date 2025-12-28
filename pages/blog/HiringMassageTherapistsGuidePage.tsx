@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,7 +21,24 @@ interface HiringMassageTherapistsGuidePageProps {
 
 const HiringMassageTherapistsGuidePage: React.FC<HiringMassageTherapistsGuidePageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Complete Guide to Hiring Professional Massage Therapists',
+            description: 'Employer\'s guide to hiring qualified massage therapists: screening, interviews, certification verification, salary expectations, and retention strategies.',
+            url: 'https://www.indastreetmassage.com/blog-hiring-massage-therapists',
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages.png?updatedAt=1761561725353',
+            datePublished: '2024-11-20T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Agung Prasetyo',
+            keywords: ['hiring massage therapists', 'spa recruitment', 'therapist hiring guide', 'wellness staffing', 'therapist interview'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Hiring Massage Therapists Guide', url: 'https://www.indastreetmassage.com/blog-hiring-massage-therapists' }
+            ]
+        });
+        return cleanup;
+    }, []);
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">

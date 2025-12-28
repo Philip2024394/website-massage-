@@ -1029,6 +1029,81 @@ const HomePage: React.FC<HomePageProps> = ({
 
     // Rating modal handlers removed for design mock
 
+    // SEO: Add Schema.org structured data for LocalBusiness and AggregateRating
+    useEffect(() => {
+        // Calculate average rating from therapists
+        const therapistsWithRatings = therapists.filter(t => t.rating && t.rating > 0);
+        const avgRating = therapistsWithRatings.length > 0 
+            ? therapistsWithRatings.reduce((sum, t) => sum + t.rating, 0) / therapistsWithRatings.length 
+            : 4.8;
+        const reviewCount = therapists.reduce((sum, t) => sum + (t.reviewCount || 0), 0) || 500;
+
+        const schema = {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "IndaStreet Massage",
+            "image": "https://ik.imagekit.io/7grri5v7d/Massage%20hub%20indastreet.png",
+            "url": "https://www.indastreetmassage.com",
+            "telephone": "+62-812-3456-7890",
+            "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "Indonesia",
+                "addressLocality": "Multiple Cities",
+                "addressRegion": "Indonesia"
+            },
+            "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": -8.4095,
+                "longitude": 115.1889
+            },
+            "priceRange": "$$",
+            "openingHoursSpecification": {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                "opens": "00:00",
+                "closes": "23:59"
+            },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": avgRating.toFixed(1),
+                "reviewCount": reviewCount,
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.indastreetmassage.com/search?q={search_term}",
+                "query-input": "required name=search_term"
+            },
+            "sameAs": [
+                "https://www.facebook.com/indastreet",
+                "https://www.instagram.com/indastreet",
+                "https://twitter.com/indastreet"
+            ]
+        };
+
+        // Inject schema into document head
+        const scriptId = 'homepage-schema';
+        let scriptTag = document.getElementById(scriptId);
+        
+        if (!scriptTag) {
+            scriptTag = document.createElement('script');
+            scriptTag.id = scriptId;
+            scriptTag.type = 'application/ld+json';
+            document.head.appendChild(scriptTag);
+        }
+        
+        scriptTag.textContent = JSON.stringify(schema);
+
+        return () => {
+            // Cleanup on unmount
+            const tag = document.getElementById(scriptId);
+            if (tag) {
+                tag.remove();
+            }
+        };
+    }, [therapists]);
+
     // ...existing code...
 
     // Removed unused renderTherapists

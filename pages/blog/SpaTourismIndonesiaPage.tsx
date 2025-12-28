@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { setupBlogArticleSEO } from '../../utils/seoSchema';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -20,6 +21,25 @@ interface SpaTourismIndonesiaPageProps {
 
 const SpaTourismIndonesiaPage: React.FC<SpaTourismIndonesiaPageProps> = ({ onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    useEffect(() => {
+        const cleanup = setupBlogArticleSEO({
+            title: 'Spa Tourism Indonesia: $8B Industry Growth & Opportunities 2025',
+            description: 'Indonesia\'s spa tourism boom: market analysis, top destinations, investment opportunities, and how therapists can capitalize on wellness tourism growth.',
+            url: 'https://www.indastreetmassage.com/blog-spa-tourism-indonesia',
+            image: 'https://ik.imagekit.io/7grri5v7d/jogja%20massages%20indonisea.png?updatedAt=1761561981004',
+            datePublished: '2024-11-25T08:00:00Z',
+            dateModified: '2025-12-29T12:00:00Z',
+            author: 'Dewi Lestari',
+            keywords: ['spa tourism Indonesia', 'wellness tourism', 'spa industry Indonesia', 'massage tourism', 'wellness travel'],
+            breadcrumbs: [
+                { name: 'Home', url: 'https://www.indastreetmassage.com/' },
+                { name: 'Blog', url: 'https://www.indastreetmassage.com/blog' },
+                { name: 'Spa Tourism Indonesia', url: 'https://www.indastreetmassage.com/blog-spa-tourism-indonesia' }
+            ]
+        });
+        return cleanup;
+    }, []);
 
     return (
         <div className="min-h-screen bg-gray-50">
