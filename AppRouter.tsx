@@ -321,10 +321,40 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             
         case 'sign-in':
         case 'signIn':
-            return renderRoute(authRoutes.signIn.component);
+            return renderRoute(authRoutes.signIn.component, {
+                mode: 'signin',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    const dashboardPageMap: Record<string, string> = {
+                        'therapist': 'therapist-status',
+                        'massage-place': 'massage-place-dashboard', 
+                        'facial-place': 'facial-place-dashboard'
+                    };
+                    const dashboardPage = dashboardPageMap[userType] || 'home';
+                    props.onNavigate(dashboardPage);
+                },
+                onBack: () => props.onNavigate('home')
+            });
             
         case 'login':
-            return renderRoute(authRoutes.login.component);
+            return renderRoute(authRoutes.login.component, {
+                mode: 'signin',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    const dashboardPageMap: Record<string, string> = {
+                        'therapist': 'therapist-status',
+                        'massage-place': 'massage-place-dashboard', 
+                        'facial-place': 'facial-place-dashboard'
+                    };
+                    const dashboardPage = dashboardPageMap[userType] || 'home';
+                    props.onNavigate(dashboardPage);
+                },
+                onBack: () => props.onNavigate('home')
+            });
             
         case 'signup':
         case 'createAccount':
