@@ -34,6 +34,7 @@ export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
         { id: '694a02cd0036089583db', name: 'ww' },
         { id: '694ed78e002b0c06171e', name: 'Wiwid' },
         { id: '694fa14f54e047d47576', name: 'Ela' }, // ✅ ADDED - Ela in Yogyakarta
+        { id: '694fa81cd8ff39b89351', name: 'Biman' }, // ✅ ADDED - Biman in Yogyakarta
     ];
     
     console.log(`⚠️ Using fallback list of ${fallbackList.length} Yogyakarta therapists`);

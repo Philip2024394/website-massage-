@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
-import reviewService from '../lib/reviewService';
+import { getReviewsForProfile } from '../lib/hybridReviewService';
+import { isSeedReview } from '../lib/seedReviews';
 import { useLanguageContext } from '../context/LanguageContext';
 
 // Avatar pool for review displays
@@ -29,15 +30,20 @@ interface Review {
     id?: string;
     name?: string;
     reviewerName?: string;
+    userName?: string;
     rating: number;
-    comment: string;
+    comment?: string;
+    text?: string;
+    reviewContent?: string;
     reviewText?: string;
     avatar?: string;
+    avatarUrl?: string;
     location?: string;
     city?: string;
     providerId?: string | number;
     providerType?: 'therapist' | 'place';
     createdAt?: string;
+    isSeed?: boolean;
 }
 
 interface RotatingReviewsProps {
@@ -59,9 +65,12 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
     providerImage,
     onNavigate 
 }) => {
+    // STABLE RENDERING: Always render component, never conditionally unmount
     const [reviews, setReviews] = useState<Review[]>([]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
-    const [loading, setLoading] = useState(true);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [hasRealReviews, setHasRealReviews] = useState(false);
+    const isMountedRef = useRef(true);
     const { language } = useLanguageContext();
     
     // Convert 'gb' to 'en' for consistency
@@ -73,143 +82,111 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
             title: 'Customer Reviews',
             topReviews: 'Top 5 Reviews',
             post: 'Post',
-            noReviews: 'No reviews available yet. Be the first to review!',
+            loading: 'Loading reviews...',
             showMore: 'Show more',
-            showLess: 'Show less'
+            showLess: 'Show less',
+            previewLabel: 'Preview Review'
         },
         id: {
             title: 'Ulasan Pelanggan',
             topReviews: 'Top 5 Ulasan',
             post: 'Posting',
-            noReviews: 'Belum ada ulasan. Jadilah yang pertama untuk mengulas!',
+            loading: 'Memuat ulasan...',
             showMore: 'Baca lebih lanjut',
-            showLess: 'Lihat lebih sedikit'
+            showLess: 'Lihat lebih sedikit',
+            previewLabel: 'Ulasan Pratinjau'
         }
     };
     
     const t = translations[currentLanguage];
 
-    // Debug component mount
+    // Cleanup on unmount
     useEffect(() => {
-        console.log('🔧 RotatingReviews mounted with props:', {
-            location,
-            limit,
-            providerId,
-            providerName,
-            providerType,
-            providerImage
-        });
+        return () => {
+            isMountedRef.current = false;
+        };
     }, []);
 
-    // Function to fetch reviews from local reviewService
-    const fetchReviews = () => {
+    // Fetch reviews with stable, race-condition-free logic
+    const fetchReviews = async () => {
+        // Don't update state if component unmounted
+        if (!isMountedRef.current) return;
+        
         try {
-            setLoading(true);
-            console.log('🔍 Fetching reviews for:', { location, providerId, providerType });
-
-            let fetchedReviews: Review[] = [];
-
-            // If providerId is specified, get reviews for that specific provider
+            // CRITICAL: For specific provider, use hybrid service with seed reviews
             if (providerId) {
-                fetchedReviews = reviewService.getReviewsForProvider(providerId, providerType, limit);
-                console.log('📋 Provider reviews fetched:', fetchedReviews.length);
+                const result = await getReviewsForProfile(
+                    providerId,
+                    providerType,
+                    location,
+                    { includeSeeds: true }
+                );
+                
+                if (!isMountedRef.current) return;
+                
+                // Format reviews for display
+                const formattedReviews = result.reviews.map((review, index) => {
+                    const displayComment = review.reviewContent || review.text || review.comment || '';
+                    const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
+                    const displayAvatar = review.avatarUrl || review.avatar;
+                    
+                    return {
+                        ...review,
+                        avatar: displayAvatar,
+                        $id: review.$id || review.id || `review-${index}`,
+                        name: displayName,
+                        reviewerName: displayName,
+                        userName: displayName,
+                        comment: displayComment,
+                        text: displayComment,
+                        reviewContent: displayComment,
+                        reviewText: displayComment,
+                        location: review.city || location,
+                        isSeed: isSeedReview(review)
+                    };
+                });
+                
+                setReviews(formattedReviews);
+                setHasRealReviews(result.hasRealReviews);
+                console.log(`✅ Loaded ${formattedReviews.length} reviews (${result.hasRealReviews ? 'with' : 'no'} real reviews)`);
             } else {
-                // Get Yogyakarta reviews (for showcase profiles)
-                const locationLower = location.toLowerCase();
-                const isYogyakartaSearch = locationLower.includes('yogya') || locationLower.includes('jogja');
-                
-                if (isYogyakartaSearch) {
-                    fetchedReviews = reviewService.getYogyakartaReviews(limit);
-                    console.log('📋 Yogyakarta reviews fetched:', fetchedReviews.length);
-                } else {
-                    // For other locations, get recent reviews
-                    fetchedReviews = reviewService.getRecentReviews(limit);
-                    console.log('📋 Recent reviews fetched:', fetchedReviews.length);
-                }
+                // For general/location-based reviews, fetch all approved
+                // This is used on homepage or location pages
+                setReviews([]);
+                console.log('ℹ️ No providerId specified, skipping review fetch');
             }
-
-            // Assign avatars and adapt location to viewing area
-            const reviewsWithAvatars = fetchedReviews.map((review, index) => {
-                // Replace Yogyakarta with current viewing location for showcase profiles
-                let displayLocation = review.location || location;
-                if (review.location?.toLowerCase().includes('yogya') || review.location?.toLowerCase().includes('jogja')) {
-                    // For showcase profiles, show the location user is viewing from
-                    if (!location.toLowerCase().includes('yogya') && !location.toLowerCase().includes('jogja')) {
-                        displayLocation = location;
-                    }
-                }
-                
-                // Replace location mentions in comments for showcase profiles
-                let displayComment = review.comment || review.reviewText || '';
-                if (!location.toLowerCase().includes('yogya') && !location.toLowerCase().includes('jogja')) {
-                    displayComment = displayComment
-                        .replace(/Yogyakarta/gi, location.split(',')[0])
-                        .replace(/Yogya/gi, location.split(',')[0])
-                        .replace(/Jogja/gi, location.split(',')[0]);
-                }
-                
-                return {
-                    ...review,
-                    avatar: review.avatar || REVIEW_AVATARS[index % REVIEW_AVATARS.length],
-                    $id: review.$id || review.id || `review-${index}`,
-                    location: displayLocation,
-                    comment: displayComment,
-                    reviewText: displayComment
-                };
-            });
-
-            setReviews(reviewsWithAvatars);
-            console.log('✅ Loaded', reviewsWithAvatars.length, 'reviews');
         } catch (err) {
             console.error('❌ Error fetching reviews:', err);
-            setReviews([]);
+            // On error, don't clear reviews - keep what we have
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setIsInitialLoad(false);
+            }
         }
     };
 
-    // Initial fetch - ensure reviewService is initialized
+    // Initial fetch on mount and when key props change
     useEffect(() => {
-        // Force reviewService to initialize if in browser
-        if (typeof window !== 'undefined') {
-            console.log('🔧 Ensuring reviewService is ready...');
-            // Trigger a dummy call to ensure reviewService constructor has run
-            reviewService.getRecentReviews(1);
-        }
+        isMountedRef.current = true;
         fetchReviews();
-    }, [location, providerId, limit]);
+    }, [location, providerId, providerType]);
 
-    // Listen for review updates from auto-review system
+    // Rotate seed reviews every 5 minutes
     useEffect(() => {
-        const handleReviewUpdate = () => {
-            console.log('🔄 Reviews updated, refreshing display...');
+        // Only set up rotation if we have reviews displayed
+        if (reviews.length === 0) return;
+        
+        const rotationInterval = setInterval(() => {
+            console.log('🔄 Rotating seed reviews (5-minute refresh)');
             fetchReviews();
-        };
+        }, 5 * 60 * 1000); // 5 minutes
 
-        window.addEventListener('reviewsUpdated', handleReviewUpdate);
-        return () => window.removeEventListener('reviewsUpdated', handleReviewUpdate);
-    }, [location, providerId, limit]);
+        return () => clearInterval(rotationInterval);
+    }, [reviews.length, location, providerId, providerType]);
 
-    // Rotate reviews every 5 minutes (300000ms)
-    useEffect(() => {
-        const interval = setInterval(() => {
-            console.log('🔄 Auto-rotating reviews...');
-            fetchReviews();
-        }, 300000); // 5 minutes
-
-        return () => clearInterval(interval);
-    }, [location, limit, providerId]);
-
-    if (loading) {
-        return (
-            <div className="mb-6">
-                <h2 className="text-xl font-medium text-black mb-4">{t.title}</h2>
-                <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                </div>
-            </div>
-        );
-    }
+    // STABLE RENDERING: Always render component with placeholder
+    // Never show loading spinner that causes layout shift
+    const showPlaceholder = isInitialLoad && reviews.length === 0;
 
     const handlePostClick = () => {
         // If onNavigate is provided, use React routing (preferred)
@@ -240,6 +217,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
         }
     };
 
+    // STABLE RENDERING: Always render with placeholder-first approach
     return (
         <div className="mb-6">
             <div className="flex items-center justify-between mb-4 gap-3">
@@ -259,80 +237,113 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                 </button>
             </div>
             
-            {reviews.length === 0 ? (
-                <div className="text-center py-4 text-gray-600">
-                    <p>{t.noReviews}</p>
-                </div>
-            ) : (
-                <div className="space-y-4">{reviews.map((review, index) => (
-                    <div key={review.$id} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
-                        <div className="flex items-start gap-4">
-                            {/* Avatar */}
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                <img
-                                    src={review.avatar}
-                                    alt={review.reviewerName || review.name || 'Reviewer'}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-
-                            {/* Review Content */}
-                            <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-medium text-black">
-                                        {review.reviewerName || review.name || 'Anonymous'}
-                                    </h3>
-                                    <div className="flex items-center gap-1">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 ${
-                                                    i < review.rating
-                                                        ? 'fill-yellow-400 text-yellow-400'
-                                                        : 'text-gray-300'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
+            {/* Show placeholder during initial load */}
+            {showPlaceholder ? (
+                <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm animate-pulse">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
                                 </div>
-                                {(() => {
-                                    const text = review.reviewText || review.comment || '';
-                                    const hashSource = `${review.$id}-${index}`;
-                                    let hash = 0;
-                                    for (let i = 0; i < hashSource.length; i++) hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
-                                    const clampLines = 2 + Math.abs(hash) % 4; // 2..5 lines
-                                    const isExpanded = expanded.has(review.$id);
-                                    return (
-                                        <>
-                                            <p className={`text-gray-700 text-sm leading-relaxed ${isExpanded ? '' : `line-clamp-${clampLines}`}`}>
-                                                {text}
-                                            </p>
-                                            {text.length > 120 && (
-                                                <button
-                                                    onClick={() => {
-                                                        setExpanded(prev => {
-                                                            const next = new Set(prev);
-                                                            if (next.has(review.$id)) next.delete(review.$id); else next.add(review.$id);
-                                                            return next;
-                                                        });
-                                                    }}
-                                                    className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700"
-                                                >
-                                                    {isExpanded ? t.showLess : t.showMore}
-                                                </button>
-                                            )}
-                                        </>
-                                    );
-                                })()}
-                                {review.location && (
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        📍 {review.location}
-                                    </p>
-                                )}
                             </div>
                         </div>
-                    </div>
-                ))}</div>
+                    ))}
+                </div>
+            ) : reviews.length === 0 ? (
+                <div className="text-center py-8 text-gray-600">
+                    <p className="text-sm">{t.loading}</p>
+                </div>
+            ) : (
+                <div className="space-y-4">{reviews.map((review, index) => {
+                    const displayText = review.text || review.reviewContent || review.comment || review.reviewText || '';
+                    const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
+                    const displayAvatar = review.avatarUrl || review.avatar;
+                    const reviewId = review.$id || review.id || `review-${index}`;
+                    const isExpanded = expanded.has(reviewId);
+                    const isSeed = review.isSeed === true;
+                    
+                    return (
+                        <div key={reviewId} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm relative">
+                            {/* Seed review indicator (hidden by default, shows on hover for admins) */}
+                            {isSeed && (
+                                <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                    <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                        {t.previewLabel}
+                                    </span>
+                                </div>
+                            )}
+                            
+                            <div className="flex items-start gap-4">
+                                {/* Avatar */}
+                                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+                                    {displayAvatar && (
+                                        <img
+                                            src={displayAvatar}
+                                            alt={displayName}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Review Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="font-medium text-black truncate">
+                                            {displayName}
+                                        </h3>
+                                        <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    className={`w-4 h-4 ${
+                                                        i < review.rating
+                                                            ? 'fill-yellow-400 text-yellow-400'
+                                                            : 'text-gray-300'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Review text with expand/collapse */}
+                                    <p className={`text-gray-700 text-sm leading-relaxed whitespace-pre-wrap ${isExpanded ? '' : 'line-clamp-3'}`}>
+                                        {displayText}
+                                    </p>
+                                    
+                                    {displayText.length > 150 && (
+                                        <button
+                                            onClick={() => {
+                                                setExpanded(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(reviewId)) {
+                                                        next.delete(reviewId);
+                                                    } else {
+                                                        next.add(reviewId);
+                                                    }
+                                                    return next;
+                                                });
+                                            }}
+                                            className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                                        >
+                                            {isExpanded ? t.showLess : t.showMore}
+                                        </button>
+                                    )}
+                                    
+                                    {(review.location || review.city) && (
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            📍 {review.city || review.location}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}</div>
             )}
         </div>
     );

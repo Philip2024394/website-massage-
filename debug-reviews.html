@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Review System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c3e50; }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #2980b9; }
+        button.success { background: #27ae60; }
+        button.danger { background: #e74c3c; }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Review System Debugger</h1>
+        <p>Check the status of the review system and fix any issues</p>
+        
+        <div>
+            <button onclick="checkSystem()">📊 Check System Status</button>
+            <button class="success" onclick="initializeAllTherapists()">✨ Initialize All Therapists</button>
+            <button class="danger" onclick="clearAndReset()">🔄 Clear & Reset</button>
+            <button onclick="showRawData()">📋 Show Raw Data</button>
+        </div>
+        
+        <div id="output" class="output"></div>
+    </div>
+
+    <script>
+        const THERAPISTS = [
+            { id: '692467a3001f6f05aaa1', name: 'Budi' },
+            { id: '69499239000c90bfd283', name: 'ww' },
+            { id: '694a02cd0036089583db', name: 'ww' },
+            { id: '694ed78e002b0c06171e', name: 'Wiwid' },
+            { id: '694fa14f54e047d47576', name: 'Ela' },
+            { id: '694fa81cd8ff39b89351', name: 'Biman' }
+        ];
+
+        function checkSystem() {
+            const output = document.getElementById('output');
+            let report = '';
+            
+            report += '=== REVIEW SYSTEM STATUS ===\n\n';
+            
+            // Check localStorage
+            report += '1. LocalStorage Check:\n';
+            const reviewsJson = localStorage.getItem('massage_app_reviews');
+            if (!reviewsJson) {
+                report += '   ❌ No reviews found in localStorage\n';
+                report += '   Key: "massage_app_reviews" is EMPTY\n\n';
+            } else {
+                const reviews = JSON.parse(reviewsJson);
+                report += `   ✅ Found ${reviews.length} total reviews\n\n`;
+                
+                // Check each therapist
+                report += '2. Reviews per Therapist:\n';
+                THERAPISTS.forEach(therapist => {
+                    const therapistReviews = reviews.filter(r => r.providerId === therapist.id);
+                    if (therapistReviews.length > 0) {
+                        report += `   ✅ ${therapist.name}: ${therapistReviews.length} reviews\n`;
+                    } else {
+                        report += `   ❌ ${therapist.name}: NO REVIEWS\n`;
+                    }
+                });
+                
+                report += '\n3. Review Distribution:\n';
+                const fiveStars = reviews.filter(r => r.rating === 5).length;
+                const fourStars = reviews.filter(r => r.rating === 4).length;
+                report += `   5⭐: ${fiveStars} reviews (${((fiveStars/reviews.length)*100).toFixed(1)}%)\n`;
+                report += `   4⭐: ${fourStars} reviews (${((fourStars/reviews.length)*100).toFixed(1)}%)\n`;
+            }
+            
+            report += '\n4. System Readiness:\n';
+            if (window.__YOGYAKARTA_THERAPISTS__) {
+                report += `   ✅ __YOGYAKARTA_THERAPISTS__ exists (${window.__YOGYAKARTA_THERAPISTS__.length} therapists)\n`;
+            } else {
+                report += '   ⚠️  __YOGYAKARTA_THERAPISTS__ not found (using fallback)\n';
+            }
+            
+            report += '\n=== RECOMMENDATIONS ===\n';
+            if (!reviewsJson) {
+                report += '⚠️  PROBLEM: No reviews in localStorage!\n';
+                report += '💡 SOLUTION: Click "Initialize All Therapists" button\n';
+            } else {
+                const reviews = JSON.parse(reviewsJson);
+                const therapistsWithoutReviews = THERAPISTS.filter(t => 
+                    reviews.filter(r => r.providerId === t.id).length === 0
+                );
+                if (therapistsWithoutReviews.length > 0) {
+                    report += `⚠️  PROBLEM: ${therapistsWithoutReviews.length} therapist(s) have no reviews\n`;
+                    report += '💡 SOLUTION: Click "Initialize All Therapists" button\n';
+                } else {
+                    report += '✅ All therapists have reviews!\n';
+                    report += '💡 Auto-review system should be generating new reviews every 5 minutes\n';
+                }
+            }
+            
+            output.textContent = report;
+        }
+
+        function initializeAllTherapists() {
+            const output = document.getElementById('output');
+            
+            // Get existing reviews
+            const reviewsJson = localStorage.getItem('massage_app_reviews');
+            const existingReviews = reviewsJson ? JSON.parse(reviewsJson) : [];
+            
+            const names = [
+                'Sarah Mitchell', 'Budi Santoso', 'Emma Rodriguez', 'Ahmad Hidayat',
+                'David Chen', 'Sari Wulandari', 'Michael Johnson', 'Dewi Lestari',
+                'James Anderson', 'Rina Putri', 'Lisa Thompson', 'Agus Wijaya',
+                'Tom Wilson', 'Maya Kusuma', 'Anna Schmidt', 'Rudi Hartono'
+            ];
+            
+            const comments = [
+                'Excellent massage! Very professional and punctual.',
+                'Amazing experience, highly recommend for back pain relief.',
+                'Great service, will definitely book again soon.',
+                'Fantastic technique and wonderful atmosphere throughout.',
+                'Professional from start to finish, helped with muscle tension.',
+                'Very relaxing experience with skilled hands.',
+                'Outstanding therapist, knew exactly what I needed.',
+                'Perfect pressure and timing, felt rejuvenated after.',
+                'Incredible deep tissue work, my shoulders feel amazing.',
+                'Wonderful massage in comfortable setting, very satisfied.',
+                'Best massage I\'ve had in Indonesia! Truly exceptional.',
+                'Highly skilled with traditional techniques combined well.',
+                'Professional service, booking process was easy and smooth.',
+                'Great value for money, will use again for sure.',
+                'Exceeded expectations, therapist was friendly and expert.'
+            ];
+            
+            let report = '';
+            let totalAdded = 0;
+            
+            THERAPISTS.forEach((therapist, index) => {
+                const therapistReviews = existingReviews.filter(r => r.providerId === therapist.id);
+                
+                if (therapistReviews.length === 0) {
+                    // Generate 8 reviews per therapist
+                    for (let i = 0; i < 8; i++) {
+                        const rating = Math.random() > 0.2 ? 5 : 4; // 80% 5-star
+                        const daysAgo = Math.floor(Math.random() * 15) + 1; // 1-15 days ago
+                        
+                        const review = {
+                            id: `review_${therapist.id}_init_${Date.now()}_${i}`,
+                            providerId: therapist.id,
+                            providerType: 'therapist',
+                            userId: `user_init_${Date.now()}_${i}`,
+                            userName: names[(index * 2 + i) % names.length],
+                            rating: rating,
+                            comment: comments[(index * 3 + i) % comments.length],
+                            location: 'Yogyakarta, Indonesia',
+                            createdAt: new Date(Date.now() - (daysAgo * 86400000)).toISOString(),
+                            isVerified: false
+                        };
+                        existingReviews.push(review);
+                        totalAdded++;
+                    }
+                    report += `✅ ${therapist.name}: Generated 8 reviews\n`;
+                } else {
+                    report += `⏭️  ${therapist.name}: Already has ${therapistReviews.length} reviews (skipped)\n`;
+                }
+            });
+            
+            // Save to localStorage
+            localStorage.setItem('massage_app_reviews', JSON.stringify(existingReviews));
+            
+            // Dispatch event to refresh UI
+            window.dispatchEvent(new CustomEvent('reviewsUpdated'));
+            
+            report += `\n✅ Total new reviews added: ${totalAdded}\n`;
+            report += `📊 Total reviews in system: ${existingReviews.length}\n\n`;
+            report += '=== NEXT STEPS ===\n';
+            report += '1. Refresh the main app page\n';
+            report += '2. Visit any therapist profile\n';
+            report += '3. Reviews should now be visible\n';
+            report += '4. Auto-review system will add more every 5 minutes\n';
+            
+            output.textContent = report;
+        }
+
+        function clearAndReset() {
+            if (!confirm('⚠️ This will delete ALL reviews. Continue?')) {
+                return;
+            }
+            
+            localStorage.removeItem('massage_app_reviews');
+            window.dispatchEvent(new CustomEvent('reviewsUpdated'));
+            
+            document.getElementById('output').textContent = 
+                '✅ All reviews cleared!\n\n' +
+                'Click "Initialize All Therapists" to generate new reviews.\n' +
+                'Or refresh the app and the system will auto-initialize.';
+        }
+
+        function showRawData() {
+            const reviewsJson = localStorage.getItem('massage_app_reviews');
+            const output = document.getElementById('output');
+            
+            if (!reviewsJson) {
+                output.textContent = '❌ No data in localStorage';
+                return;
+            }
+            
+            const reviews = JSON.parse(reviewsJson);
+            output.textContent = JSON.stringify(reviews, null, 2);
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', checkSystem);
+    </script>
+</body>
+</html>

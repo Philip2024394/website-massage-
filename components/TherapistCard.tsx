@@ -500,10 +500,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             await reviewService.createAnonymous({
                 providerType: reviewData.providerType,
                 providerId: String(reviewData.providerId),
-                providerName: therapist.name,
                 rating: reviewData.rating,
                 reviewerName: reviewData.name,
-                whatsappNumber: reviewData.whatsappNumber
+                reviewContent: `Review by ${reviewData.name}`
             });
             
             setShowReviewModal(false);
