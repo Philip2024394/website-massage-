@@ -57,6 +57,19 @@ export const authService = {
         options?: { autoLogin?: boolean }
     ): Promise<any> {
         try {
+            console.log('🔵 auth.service: Starting registration for:', email);
+            
+            // Validate inputs
+            if (!email || !email.includes('@')) {
+                throw new Error('Invalid email format');
+            }
+            if (!password || password.length < 8) {
+                throw new Error('Password must be at least 8 characters long');
+            }
+            if (!name || name.trim().length === 0) {
+                throw new Error('Name is required');
+            }
+            
             // Delete any existing session first
             try {
                 await retryWithBackoff(
@@ -69,23 +82,45 @@ export const authService = {
                 console.log('ℹ️ No existing session to clear');
             }
             
+            console.log('🔵 Creating Appwrite account...');
             const response = await retryWithBackoff(
                 () => appwriteAccount.create('unique()', email, password, name),
                 'account_create'
             );
+            console.log('✅ Appwrite account created:', response.$id);
             
             // Auto-login after registration unless explicitly disabled
             const shouldAutoLogin = options?.autoLogin !== false;
             if (shouldAutoLogin) {
+                console.log('🔵 Auto-logging in...');
                 await retryWithBackoff(
                     () => appwriteAccount.createEmailPasswordSession(email, password),
                     'account_login_after_register'
                 );
+                console.log('✅ Auto-login successful');
             }
             return response;
-        } catch (error) {
-            console.error('Error registering:', error);
-            throw error;
+        } catch (error: any) {
+            console.error('❌ auth.service: Registration failed:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response
+            });
+            
+            // Provide specific error messages based on Appwrite error codes
+            if (error.code === 409 || error.message?.includes('already exists')) {
+                throw new Error('An account with this email already exists');
+            } else if (error.code === 400 || error.message?.toLowerCase().includes('invalid email')) {
+                throw new Error('Invalid email format');
+            } else if (error.code === 400 || error.message?.toLowerCase().includes('password')) {
+                throw new Error('Password must be at least 8 characters long');
+            } else if (error.code === 429 || error.message?.includes('rate limit')) {
+                throw new Error('Too many registration attempts. Please wait a moment');
+            } else {
+                throw new Error(error.message || 'Registration failed. Please try again');
+            }
         }
     },
     

@@ -417,7 +417,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     t={t}
                     hideJoinButton={true}
-                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/verfied_member_massages_13-removebg-preview.png"
+                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/verfied_badge-removebg-preview.png"
                 />
 
                 {/* Rotating Reviews Section - Same as /share/ implementation */}

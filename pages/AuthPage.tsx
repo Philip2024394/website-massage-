@@ -42,8 +42,24 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
     ];
 
     const validateForm = () => {
+        // Clear previous errors
+        setError('');
+        
         if (!email || !password) {
             setError('Please fill all required fields');
+            return false;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address');
+            return false;
+        }
+        
+        // Validate password length (Appwrite requires 8 characters minimum)
+        if (password.length < 8) {
+            setError('Password must be at least 8 characters');
             return false;
         }
         
@@ -65,119 +81,153 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
         }
         
         // For unified mode (auth page), require everything
-        if (mode === 'unified' && (!accountType || !acceptTerms)) {
-            setError('Please fill all fields and accept terms & conditions');
-            return false;
-        }
-        
-        if (!email.includes('@')) {
-            setError('Please enter a valid email address');
-            return false;
-        }
-        
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters');
-            return false;
+        if (mode === 'unified') {
+            if (!accountType) {
+                setError('Please select an account type');
+                return false;
+            }
+            if (!acceptTerms) {
+                setError('Please accept terms & conditions');
+                return false;
+            }
         }
         
         return true;
     };
 
     const createNewAccount = async (normalizedEmail: string, password: string, accountType: string) => {
-        // 1. Create Appwrite auth account
-        const authUser = await authService.register(
-            normalizedEmail,
-            password,
-            normalizedEmail.split('@')[0], // Use email prefix as name
-            { autoLogin: true }
-        );
-        
-        // 2. Create corresponding profile document
-        const profileData = {
-            email: normalizedEmail,
-            role: accountType,
-            commission: 30, // Auto-assign 30% commission
-            active: true, // Mark as active - no admin approval needed
-            approved: true,
-            userId: authUser.$id,
-            createdAt: new Date().toISOString(),
-            name: normalizedEmail.split('@')[0],
-        };
-        
-        // Create profile in appropriate collection
-        if (accountType === 'therapist') {
-            const therapistId = ID.unique();
-            await therapistService.create({
-                email: profileData.email,
-                name: profileData.name,
-                therapistId: therapistId,
-                id: therapistId,
-                hotelId: '',
-                countryCode: '+62',
-                whatsappNumber: '',
-                specialization: 'General Massage',
-                yearsOfExperience: 0,
-                isLicensed: false,
-                isLive: false,
-                hourlyRate: 100,
-                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                price60: '100',
-                price90: '150',
-                price120: '200',
-                coordinates: JSON.stringify({ lat: 0, lng: 0 }),
-                location: 'Bali, Indonesia',
-                status: 'available',
-                availability: 'Available',
-                description: '',
-                profilePicture: '',
-                mainImage: '',
-                massageTypes: '',
-                languages: '',
+        try {
+            console.log('🔵 Step 1: Creating Appwrite auth account for:', normalizedEmail);
+            
+            // 1. Create Appwrite auth account
+            const authUser = await authService.register(
+                normalizedEmail,
+                password,
+                normalizedEmail.split('@')[0], // Use email prefix as name
+                { autoLogin: true }
+            );
+            
+            console.log('✅ Step 1 Complete: Auth account created with ID:', authUser.$id);
+            console.log('🔵 Step 2: Creating profile document for account type:', accountType);
+            
+            // 2. Create corresponding profile document
+            const profileData = {
+                email: normalizedEmail,
+                role: accountType,
+                commission: 30, // Auto-assign 30% commission
+                active: true, // Mark as active - no admin approval needed
+                approved: true,
+                userId: authUser.$id,
+                createdAt: new Date().toISOString(),
+                name: normalizedEmail.split('@')[0],
+            };
+            
+            // Create profile in appropriate collection
+            if (accountType === 'therapist') {
+                const therapistId = ID.unique();
+                console.log('🔵 Creating therapist profile with ID:', therapistId);
+                await therapistService.create({
+                    email: profileData.email,
+                    name: profileData.name,
+                    therapistId: therapistId,
+                    id: therapistId,
+                    hotelId: '',
+                    countryCode: '+62',
+                    whatsappNumber: '',
+                    specialization: 'General Massage',
+                    yearsOfExperience: 0,
+                    isLicensed: false,
+                    isLive: false,
+                    hourlyRate: 100,
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    price60: '100',
+                    price90: '150',
+                    price120: '200',
+                    coordinates: JSON.stringify({ lat: 0, lng: 0 }),
+                    location: 'Bali, Indonesia',
+                    status: 'available',
+                    availability: 'Available',
+                    description: '',
+                    profilePicture: '',
+                    mainImage: '',
+                    massageTypes: '',
+                    languages: '',
+                });
+                console.log('✅ Therapist profile created successfully');
+            } else if (accountType === 'massage-place') {
+                const placeId = ID.unique();
+                console.log('🔵 Creating massage place profile with ID:', placeId);
+                await placesService.create({
+                    email: profileData.email,
+                    name: profileData.name,
+                    id: placeId,
+                    placeId: placeId,
+                    category: 'massage-place',
+                    password: '',
+                    pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
+                    status: 'Closed',
+                    isLive: false,
+                    openingTime: '09:00',
+                    closingTime: '21:00',
+                    coordinates: [106.8456, -6.2088],
+                    hotelId: '',
+                    location: 'Bali, Indonesia',
+                    description: '',
+                    whatsappnumber: '',
+                    mainimage: '',
+                    profilePicture: '',
+                    galleryImages: '[]',
+                    massagetypes: '[]',
+                    languagesspoken: '[]',
+                    additionalservices: '[]',
+                });
+                console.log('✅ Massage place profile created successfully');
+            } else if (accountType === 'facial-place') {
+                const facialPlaceId = ID.unique();
+                console.log('🔵 Creating facial place profile with ID:', facialPlaceId);
+                await placesService.create({
+                    email: profileData.email,
+                    name: profileData.name,
+                    facialPlaceId: facialPlaceId,
+                    collectionName: 'facial_places',
+                    category: 'spa',
+                    description: '',
+                    address: 'Bali, Indonesia',
+                    lastUpdate: new Date().toISOString(),
+                });
+                console.log('✅ Facial place profile created successfully');
+            }
+            
+            console.log('✅ Step 2 Complete: Profile document created');
+            console.log('🔵 Step 3: Waiting for database indexing...');
+            
+            // Wait a moment for database to index the new document
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('✅ Account creation process completed successfully');
+            
+        } catch (error: any) {
+            console.error('❌ Account creation failed at step:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response
             });
-        } else if (accountType === 'massage-place') {
-            const placeId = ID.unique();
-            await placesService.create({
-                email: profileData.email,
-                name: profileData.name,
-                id: placeId,
-                placeId: placeId,
-                category: 'massage-place',
-                password: '',
-                pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
-                status: 'Closed',
-                isLive: false,
-                openingTime: '09:00',
-                closingTime: '21:00',
-                coordinates: [106.8456, -6.2088],
-                hotelId: '',
-                location: 'Bali, Indonesia',
-                description: '',
-                whatsappnumber: '',
-                mainimage: '',
-                profilePicture: '',
-                galleryImages: '[]',
-                massagetypes: '[]',
-                languagesspoken: '[]',
-                additionalservices: '[]',
-            });
-        } else if (accountType === 'facial-place') {
-            const facialPlaceId = ID.unique();
-            await placesService.create({
-                email: profileData.email,
-                name: profileData.name,
-                facialPlaceId: facialPlaceId,
-                collectionName: 'facial_places',
-                category: 'spa',
-                description: '',
-                address: 'Bali, Indonesia',
-                lastUpdate: new Date().toISOString(),
-            });
+            
+            // Provide specific error messages based on error type
+            if (error.code === 409 || error.message?.includes('already exists')) {
+                throw new Error('An account with this email already exists. Please sign in instead.');
+            } else if (error.code === 400 || error.message?.includes('Invalid email')) {
+                throw new Error('Invalid email format. Please check and try again.');
+            } else if (error.code === 400 || error.message?.includes('Password')) {
+                throw new Error('Password must be at least 8 characters long.');
+            } else if (error.code === 429 || error.message?.includes('rate limit')) {
+                throw new Error('Too many attempts. Please wait a moment and try again.');
+            } else {
+                throw new Error(error.message || 'Failed to create account. Please try again.');
+            }
         }
-        
-        console.log('✅ Account created successfully');
-        
-        // Wait a moment for database to index the new document
-        await new Promise(resolve => setTimeout(resolve, 1000));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -233,8 +283,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 }
                 
                 try {
+                    console.log('🔵 Starting account creation process...');
                     // Create new account
                     await createNewAccount(normalizedEmail, password, accountType);
+                    
+                    console.log('✅ Account created successfully!');
                     
                     // Clear the start_fresh flag to allow session restoration
                     sessionStorage.removeItem('start_fresh');
@@ -243,7 +296,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     onAuthSuccess(accountType);
                 } catch (error: any) {
                     console.error('❌ Account creation failed:', error);
-                    setError(`Failed to create account: ${error.message}`);
+                    // Use the detailed error message from createNewAccount
+                    setError(error.message || 'Failed to create account. Please try again.');
                 }
             }
             else {
@@ -282,6 +336,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     try {
                         await createNewAccount(normalizedEmail, password, accountType);
                         
+                        console.log('✅ Account created successfully!');
+                        
                         // Clear the start_fresh flag to allow session restoration
                         sessionStorage.removeItem('start_fresh');
                         console.log('✅ Cleared start_fresh flag - session can now be restored');
@@ -289,14 +345,24 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                         onAuthSuccess(accountType);
                     } catch (error: any) {
                         console.error('❌ Account creation failed:', error);
-                        setError(`Failed to create account: ${error.message}`);
+                        // Use the detailed error message from createNewAccount
+                        setError(error.message || 'Failed to create account. Please try again.');
                     }
                 }
             }
             
         } catch (error: any) {
             console.error('❌ Auth process failed:', error);
-            setError('Authentication failed. Please try again.');
+            // Provide more specific error messaging
+            if (error.code === 401) {
+                setError('Invalid email or password. Please try again.');
+            } else if (error.code === 429) {
+                setError('Too many login attempts. Please wait a moment and try again.');
+            } else if (error.message) {
+                setError(error.message);
+            } else {
+                setError('Authentication failed. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
