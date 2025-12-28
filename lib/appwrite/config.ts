@@ -13,13 +13,13 @@ export const APPWRITE_CONFIG = {
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
   collections: {
     // Core collections - Using actual collection IDs from Appwrite database
-    therapists: 'therapists_collection_id',
-    places: 'places_collection_id', 
-    facial_places: 'facial_places_collection',
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || 'Users',
+    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id',
+    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id',
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447', // Real production collection ID
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || '67670355000b2bc99d43', // Real production collection ID
     agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
     bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
-    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'Reviews',
+    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'reviews_collection_id',
     
     // Analytics
     analytics: 'Analytics',
@@ -35,15 +35,15 @@ export const APPWRITE_CONFIG = {
     chatTranslations: 'Chat Translations',
     
     // Business  
-    hotels: 'hotels_collection_id',
+    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || '676701f9001e6dc8b278', // Real production collection ID
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content
     massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
-    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || 'Custom Links', 
+    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || '67670249000b8becb947', // Real production collection ID
     imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
     loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
-    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || 'Translations',
+    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || '6767020d001f6bafeea2', // Real production collection ID
     
     // Pricing & Payments
     membershipPricing: 'Membership Pricing',

@@ -26,7 +26,7 @@ interface TherapistBookingsProps {
 }
 
 const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate }) => {
-  const isPremium = therapist?.membershipTier === 'premium';
+  const isPremium = true; // All features available for standard 30% commission plan
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'received' | 'scheduled' | 'completed'>('all');
@@ -177,16 +177,23 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
   const handleCompleteBooking = async (bookingId: string) => {
     try {
-      // TODO: Update booking status to 'completed' in Appwrite
-      devLog('Marking booking as completed:', bookingId);
-      
-      setBookings(prev => prev.map(b => 
+      console.log('💼 Marking booking as completed:', bookingId);
+
+      // Update booking status in Appwrite
+      const { bookingService } = await import('../../../../lib/appwriteService');
+      await bookingService.updateStatus(bookingId, 'Completed');
+
+      // Note: Commission record is automatically created by bookingService.updateStatus()
+      // when status changes to 'Completed' (integrated in booking.service.ts)
+
+      setBookings(prev => prev.map(b =>
         b.$id === bookingId ? { ...b, status: 'completed' as const } : b
       ));
-      
-      devLog('✅ Booking completed');
+
+      console.log('✅ Booking completed successfully');
     } catch (error) {
-      console.error('Failed to complete booking:', error);
+      console.error('❌ Failed to complete booking:', error);
+      alert('Failed to complete booking. Please try again.');
     }
   };
 
@@ -471,29 +478,13 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                         <MessageCircle className="w-5 h-5" />
                         Chat
                       </button>
-                      {isPremium ? (
-                        <button
-                          onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-2xl hover:from-green-600 hover:via-green-700 hover:to-green-800 font-bold transition-all shadow-lg shadow-green-300/50 hover:shadow-xl hover:shadow-green-400/60 hover:-translate-y-0.5"
-                        >
-                          <Phone className="w-5 h-5" />
-                          WhatsApp
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            if (onNavigate) {
-                              onNavigate('premium-upgrade');
-                            } else {
-                              alert('⭐ WhatsApp access is a Premium feature! Upgrade to Premium to contact customers directly via WhatsApp.');
-                            }
-                          }}
-                          className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 text-white rounded-2xl hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-700 font-bold transition-all shadow-lg shadow-yellow-300/50 hover:shadow-xl hover:shadow-yellow-400/60 hover:-translate-y-0.5"
-                        >
-                          <Crown className="w-5 h-5" />
-                          Upgrade
-                        </button>
-                      )}
+                      <button
+                        onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-2xl hover:from-green-600 hover:via-green-700 hover:to-green-800 font-bold transition-all shadow-lg shadow-green-300/50 hover:shadow-xl hover:shadow-green-400/60 hover:-translate-y-0.5"
+                      >
+                        <Phone className="w-5 h-5" />
+                        WhatsApp
+                      </button>
                       <button
                         onClick={() => handleCompleteBooking(booking.$id)}
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
@@ -504,29 +495,13 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                     </>
                   )}
                   {booking.status === 'completed' && (
-                    isPremium ? (
-                      <button
-                        onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 text-gray-700 rounded-2xl hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 font-bold transition-all shadow-lg shadow-gray-300/50 hover:shadow-xl hover:shadow-gray-400/60 hover:-translate-y-0.5"
-                      >
-                        <Phone className="w-5 h-5" />
-                        Contact Again
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          if (onNavigate) {
-                            onNavigate('premium-upgrade');
-                          } else {
-                            alert('⭐ WhatsApp access is a Premium feature! Upgrade to Premium for direct customer contact.');
-                          }
-                        }}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-yellow-400 via-amber-500 to-yellow-600 text-white rounded-2xl hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-700 font-bold transition-all shadow-lg shadow-yellow-300/50 hover:shadow-xl hover:shadow-yellow-400/60 hover:-translate-y-0.5"
-                      >
-                        <Crown className="w-5 h-5" />
-                        Upgrade to Contact
-                      </button>
-                    )
+                    <button
+                      onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 text-gray-700 rounded-2xl hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 font-bold transition-all shadow-lg shadow-gray-300/50 hover:shadow-xl hover:shadow-gray-400/60 hover:-translate-y-0.5"
+                    >
+                      <Phone className="w-5 h-5" />
+                      Contact Again
+                    </button>
                   )}
                 </div>
               </div>

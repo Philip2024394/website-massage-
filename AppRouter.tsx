@@ -23,8 +23,10 @@ import { authRoutes } from './router/routes/authRoutes';
 import { profileRoutes } from './router/routes/profileRoutes';
 import { legalRoutes } from './router/routes/legalRoutes';
 import { blogRoutes } from './router/routes/blogRoutes';
+import { therapistRoutes } from './router/routes/therapistRoutes';
 
 // Specialized pages not in route modules
+const CreateAccountPage = React.lazy(() => import('./pages/CreateAccountPage'));
 const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
@@ -47,6 +49,7 @@ const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
+const RoleSelectionPage = React.lazy(() => import('./pages/RoleSelectionPage'));
 const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
 const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
@@ -165,6 +168,7 @@ interface AppRouterProps {
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
     setSelectedJobId: (id: string | null) => void;
+    restoreUserSession?: () => Promise<void>;
     
     // Missing properties for header/navigation
     onLanguageChange?: (lang: Language) => void;
@@ -258,10 +262,108 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'discounts':
             return renderRoute(publicRoutes.discounts.component);
 
+        // ===== JOIN ROUTES =====
+        case 'joinIndastreet':
+            // Redirect Join Indastreet to role selection page
+            return renderRoute(RoleSelectionPage);
+
         // ===== AUTH ROUTES =====
+        case 'auth':
+            return renderRoute(authRoutes.auth.component, {
+                onAuthSuccess: (userType: string) => {
+                    // Redirect to appropriate dashboard based on role
+                    const dashboardMap: Record<string, string> = {
+                        'therapist': '/dashboard/therapist',
+                        'massage-place': '/dashboard/massage-place', 
+                        'facial-place': '/dashboard/facial-place'
+                    };
+                    
+                    const dashboardUrl = dashboardMap[userType];
+                    if (dashboardUrl) {
+                        window.location.href = dashboardUrl;
+                    } else {
+                        console.error('Unknown user type:', userType);
+                    }
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
+        case 'signin':
+            return renderRoute(authRoutes.signin.component, {
+                mode: 'signin',
+                onAuthSuccess: async (userType: string) => {
+                    console.log('✅ Sign in successful - navigating to dashboard for:', userType);
+                    
+                    // Restore user session to populate loggedInUser state
+                    if (props.restoreUserSession) {
+                        console.log('🔄 Restoring user session after sign-in...');
+                        await props.restoreUserSession();
+                        console.log('✅ User session restored');
+                    }
+                    
+                    // Navigate within React app instead of external redirect
+                    const dashboardPageMap: Record<string, string> = {
+                        'therapist': 'therapist-status',
+                        'massage-place': 'massage-place-dashboard', 
+                        'facial-place': 'facial-place-dashboard'
+                    };
+                    
+                    const dashboardPage = dashboardPageMap[userType];
+                    if (dashboardPage) {
+                        props.onNavigate(dashboardPage);
+                    } else {
+                        console.error('Unknown user type:', userType);
+                        props.onNavigate('home');
+                    }
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
         case 'sign-in':
         case 'signIn':
             return renderRoute(authRoutes.signIn.component);
+            
+        case 'login':
+            return renderRoute(authRoutes.login.component);
+            
+        case 'signup':
+        case 'createAccount':
+        case 'create-account':
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                onAuthSuccess: async (userType: string) => {
+                    console.log('✅ Signup successful - navigating to dashboard for:', userType);
+                    
+                    // Restore user session to populate loggedInUser state
+                    if (props.restoreUserSession) {
+                        console.log('🔄 Restoring user session after signup...');
+                        await props.restoreUserSession();
+                        console.log('✅ User session restored');
+                    }
+                    
+                    // Navigate within React app instead of external redirect
+                    const dashboardPageMap: Record<string, string> = {
+                        'therapist': 'therapist-status',
+                        'massage-place': 'massage-place-dashboard', 
+                        'facial-place': 'facial-place-dashboard'
+                    };
+                    
+                    const dashboardPage = dashboardPageMap[userType];
+                    if (dashboardPage) {
+                        props.onNavigate(dashboardPage);
+                    } else {
+                        console.error('Unknown user type:', userType);
+                        props.onNavigate('home');
+                    }
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
+        case 'role-selection':
+            return renderRoute(RoleSelectionPage);
+            
+        case 'onboarding-package':
+            return renderRoute(authRoutes.onboardingPackage.component);
             
         case 'therapist-login':
         case 'therapistLogin':
@@ -634,12 +736,202 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'payment-info':
             return renderRoute(PaymentInfoPage);
 
-        // ===== DASHBOARD ROUTES =====
+        // ===== GENERIC DASHBOARD ROUTE - Redirects to appropriate dashboard =====
+        case 'dashboard':
+            // Redirect to appropriate dashboard based on logged-in user type
+            if (props.user) {
+                const userType = props.user.userType || props.user.role;
+                if (userType === 'therapist' || props.user.therapistId) {
+                    // Redirect to therapist dashboard
+                    return renderRoute(therapistRoutes.dashboard.component, {
+                        therapist: props.user,
+                        onLogout: props.handleLogout,
+                        onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
+                        onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                        onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
+                        onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                        onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
+                        onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
+                        onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
+                        onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                        onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                        onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                        onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
+                        onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
+                        onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
+                        onNavigateHome: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                } else if (userType === 'massage-place' || userType === 'massage_place') {
+                    return renderRoute(placeRoutes.dashboard.component, {
+                        place: props.user,
+                        onBack: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                } else if (userType === 'facial-place' || userType === 'facial_place') {
+                    return renderRoute(facialRoutes.dashboard.component, {
+                        place: props.user,
+                        onBack: () => props.onNavigate?.('home'),
+                        language: props.language
+                    });
+                }
+            }
+            // No user logged in - show home page
+            return renderRoute(publicRoutes.home.component, {
+                onNavigate: props.onNavigate,
+                onBook: props.handleOpenBookingPopup,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces,
+                hotels: props.hotels,
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
+                onQuickBookWithChat: props.handleQuickBookWithChat,
+                onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onIncrementAnalytics: props.handleIncrementAnalytics,
+                selectedCity: props.selectedCity,
+                onCityChange: props.setSelectedCity,
+                t: props.t,
+                language: props.language
+            });
+
+        // ===== THERAPIST DASHBOARD ROUTES =====
+        case 'therapist':
         case 'therapistDashboard':
         case 'therapist-dashboard':
-            return renderRoute(authRoutes.therapistLogin.component, {
-                redirectToDashboard: true
+            return renderRoute(therapistRoutes.dashboard.component, {
+                therapist: props.user,
+                onLogout: props.handleLogout,
+                onNavigateToStatus: () => props.onNavigate?.('therapist-status'),
+                onNavigateToBookings: () => props.onNavigate?.('therapist-bookings'),
+                onNavigateToEarnings: () => props.onNavigate?.('therapist-earnings'),
+                onNavigateToChat: () => props.onNavigate?.('therapist-chat'),
+                onNavigateToNotifications: () => props.onNavigate?.('therapist-notifications'),
+                onNavigateToLegal: () => props.onNavigate?.('therapist-legal'),
+                onNavigateToCalendar: () => props.onNavigate?.('therapist-calendar'),
+                onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
+                onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
+                onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
+                onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
+                onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
+                onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
+                onNavigateHome: () => props.onNavigate?.('home'),
+                language: props.language
             });
+        
+        case 'therapist-status':
+            return renderRoute(therapistRoutes.status.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-bookings':
+            return renderRoute(therapistRoutes.bookings.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-earnings':
+            return renderRoute(therapistRoutes.earnings.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-chat':
+            return renderRoute(therapistRoutes.chat.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-notifications':
+            return renderRoute(therapistRoutes.notifications.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-legal':
+            return renderRoute(therapistRoutes.legal.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-calendar':
+            return renderRoute(therapistRoutes.calendar.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-payment':
+            return renderRoute(therapistRoutes.payment.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-payment-status':
+            return renderRoute(therapistRoutes.paymentStatus.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-menu':
+            return renderRoute(therapistRoutes.menu.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-premium':
+            return renderRoute(therapistRoutes.premium.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-commission':
+            return renderRoute(therapistRoutes.commission.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-schedule':
+            return renderRoute(therapistRoutes.schedule.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        case 'therapist-package-terms':
+            return renderRoute(therapistRoutes.packageTerms.component, {
+                therapist: props.user,
+                language: props.language
+            });
+
+        // ===== OTHER DASHBOARD ROUTES =====
         
         case 'placeDashboard':
         case 'place-dashboard':

@@ -9,6 +9,16 @@ import { ID, Query } from 'appwrite';
 // Import services with proper fallbacks
 let sendAdminNotification: any;
 let getNonRepeatingMainImage: any;
+
+// Helper for creating a solid color data URL placeholder
+const createPlaceholderDataURL = (text: string, bgColor: string = '#f3f4f6', textColor: string = '#374151') => {
+    const svg = `<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+        <rect width="400" height="300" fill="${bgColor}"/>
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="18" fill="${textColor}">${text}</text>
+    </svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+};
+
 try {
     ({ sendAdminNotification } = require('../config'));
 } catch {
@@ -17,7 +27,7 @@ try {
 try {
     ({ getNonRepeatingMainImage } = require('../config'));
 } catch {
-    getNonRepeatingMainImage = (index: number) => `https://via.placeholder.com/400x300?text=Therapist+${index + 1}`;
+    getNonRepeatingMainImage = (index: number) => createPlaceholderDataURL(`Therapist ${index + 1}`);
 }
 
 export const therapistService = {
@@ -164,14 +174,34 @@ export const therapistService = {
                 return [];
             }
 
-            console.log('🔍 Searching for therapist by email:', email);
-            const response = await rateLimitedDb.listDocuments(
-                databases,
+            // Normalize email for consistent lookup (case-insensitive, trimmed)
+            const normalizedEmail = email.toLowerCase().trim();
+            
+            console.log('🔍 Searching for therapist by email:', normalizedEmail);
+            console.log('🔍 [DEBUG] Original email:', JSON.stringify(email));
+            console.log('🔍 [DEBUG] Normalized email:', JSON.stringify(normalizedEmail));
+            
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('email', email)]
+                [Query.equal('email', normalizedEmail)]
             );
             console.log('📋 Found therapists with email:', response.documents.length);
+            
+            if (response.documents.length === 0) {
+                console.warn('⚠️ No therapist found for email:', normalizedEmail);
+                console.warn('⚠️ This may indicate:');
+                console.warn('   1. Therapist document not created during signup');
+                console.warn('   2. Email stored with different normalization');
+                console.warn('   3. Document exists but email field is different');
+            } else {
+                console.log('📋 [DEBUG] Found therapist document(s):', response.documents.map(d => ({
+                    id: d.$id,
+                    email: d.email,
+                    name: d.name,
+                    status: d.status
+                })));
+            }
             
             // Normalize status for each therapist found
             const normalizeStatus = (status: string) => {
@@ -224,6 +254,71 @@ export const therapistService = {
             return [];
         }
     },
+    async getByUserId(userId: string): Promise<any[]> {
+        try {
+            // Check if collection is disabled
+            if (!APPWRITE_CONFIG.collections.therapists) {
+                console.warn('⚠️ Therapist collection is disabled - returning empty array');
+                return [];
+            }
+
+            console.log('🔍 Searching for therapist by userId:', userId);
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.equal('userId', userId)]
+            );
+            console.log('📋 Found therapists with userId:', response.documents.length);
+            
+            // Normalize status for each therapist found
+            const normalizeStatus = (status: string) => {
+                if (!status) return 'Offline';
+                const lowercaseStatus = status.toLowerCase();
+                if (lowercaseStatus === 'available') return 'Available';
+                if (lowercaseStatus === 'busy') return 'Busy';
+                if (lowercaseStatus === 'offline') return 'Offline';
+                return status;
+            };
+            
+            const normalizedTherapists = response.documents.map((therapist: any) => {
+                // Extract busy timer data from description if present
+                let extractedBusyTimer = null;
+                let cleanDescription = therapist.description || '';
+                
+                const timerMatch = cleanDescription.match(/\[TIMER:(.+?)\]/);
+                if (timerMatch) {
+                    try {
+                        extractedBusyTimer = JSON.parse(timerMatch[1]);
+                        cleanDescription = cleanDescription.replace(/\[TIMER:.+?\]/, '').trim();
+                    } catch (e) {
+                        console.warn('Failed to parse timer data for therapist:', therapist.name);
+                    }
+                }
+
+                return {
+                    ...therapist,
+                    status: normalizeStatus(therapist.status),
+                    availability: normalizeStatus(therapist.availability || therapist.status),
+                    description: cleanDescription,
+                    busyUntil: extractedBusyTimer?.busyUntil || null,
+                    busyDuration: extractedBusyTimer?.busyDuration || null
+                };
+            });
+            
+            return normalizedTherapists;
+        } catch (error) {
+            console.error('❌ Error finding therapist by userId:', error);
+            
+            if (error && typeof error === 'object') {
+                const err = error as any;
+                if (err.code === 404) {
+                    console.error('🔍 Collection not found:', APPWRITE_CONFIG.collections.therapists);
+                }
+            }
+            
+            return [];
+        }
+    },
     async getCurrentUser(): Promise<any> {
         try {
             return await account.get();
@@ -264,8 +359,7 @@ export const therapistService = {
             
             // First, get the current document to preserve all existing data
             console.log('📋 Fetching current document to preserve all fields...');
-            const currentDocument = await rateLimitedDb.getDocument(
-                databases,
+            const currentDocument = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id
@@ -492,8 +586,7 @@ export const therapistService = {
                 }
             }
 
-            const response = await rateLimitedDb.updateDocument(
-                databases,
+            const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id,

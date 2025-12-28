@@ -1,7 +1,12 @@
 import React from 'react';
 import { ArrowLeft, Shield, Clock, CreditCard, MapPin, Phone } from 'lucide-react';
+import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
+import PageContainer from '../components/layout/PageContainer';
 
 const MobileTermsAndConditionsPage: React.FC = () => {
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+    const [language, setLanguage] = React.useState<'en' | 'id'>('id');
+    
     // Get the returnTo URL and context from query params
     const urlParams = new URLSearchParams(window.location.search);
     const returnToUrl = urlParams.get('returnTo');
@@ -32,26 +37,62 @@ const MobileTermsAndConditionsPage: React.FC = () => {
 
     return (
         <div className={isSharedProfileContext ? "min-h-screen bg-white" : "min-h-screen bg-gray-50"}>
-            {/* Header */}
-            <div className={isSharedProfileContext ? "bg-white p-4" : "bg-white shadow-sm border-b sticky top-0 z-10"}>
-                <div className="flex items-center justify-between">
-                    <button 
-                        onClick={handleBackNavigation}
-                        className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                        <span className="text-sm font-medium">Back</span>
-                    </button>
-                    {!isSharedProfileContext && (
-                        <>
-                            <h1 className="text-lg font-bold text-gray-800">
-                                Terms & Conditions
+            {/* Global Header - Same as Home Page */}
+            {!isSharedProfileContext && (
+                <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
+                    <PageContainer className="py-2 sm:py-3 max-w-full">
+                        <div className="flex justify-between items-center max-w-full">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
+                                <span className="text-black">Inda</span>
+                                <span className="text-orange-500">Street</span>
                             </h1>
-                            <div className="w-12"></div> {/* Spacer for center alignment */}
-                        </>
-                    )}
+                            <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
+                                {/* Language Selector - Flag Icon */}
+                                <button 
+                                    onClick={() => {
+                                        const newLanguage = language === 'id' ? 'en' : 'id';
+                                        setLanguage(newLanguage);
+                                        console.log('🌐 Language changed to:', newLanguage);
+                                    }} 
+                                    className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                                    title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                                >
+                                    <span className="text-xl sm:text-2xl">
+                                        {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                                    </span>
+                                </button>
+
+                                <button 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsMenuOpen(true);
+                                    }} 
+                                    title="Menu" 
+                                    className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
+                                >
+                                    <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                                </button>
+                            </div>
+                        </div>
+                    </PageContainer>
+                </header>
+            )}
+
+            {/* Shared Profile Context Header */}
+            {isSharedProfileContext && (
+                <div className="bg-white p-4">
+                    <div className="flex items-center justify-between">
+                        <button 
+                            onClick={handleBackNavigation}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                            <span className="text-sm font-medium">Back</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Hero Image for Shared Profile Context */}
             {isSharedProfileContext && (

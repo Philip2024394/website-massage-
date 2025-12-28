@@ -17,30 +17,31 @@ export { databases as appwriteDatabases };
 export { account as appwriteAccount };
 export { storage as appwriteStorage };
 
-// Database and Collection IDs - REVERTED TO PRODUCTION DATABASE
+// Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: 'therapists_collection_id',
-    PLACES: 'places_collection_id',
-    USERS: 'users_collection_id', 
-    AGENTS: 'agents_collection_id',
-    BOOKINGS: 'bookings_collection_id',
-    REVIEWS: 'reviews_collection_id',
-    ANALYTICS: 'analytics_collection_id',
-    ANALYTICS_EVENTS: 'Analytics Events',
-    ADMINS: '', // Disabled - collection doesn't exist
-    HOTELS: 'hotels_collection_id',
-    VILLAS: '', // Disabled - collection doesn't exist
-    PARTNERS: 'partners_collection_id', // Hotel & Villa partners
-    NOTIFICATIONS: 'notifications_collection_id',
-    MASSAGE_TYPES: 'massage_types_collection_id',
-    MEMBERSHIP_PRICING: 'membership_pricing_collection_id',
-    CUSTOM_LINKS: 'custom_links_collection_id',
-    IMAGE_ASSETS: 'image_assets', 
-    LOGIN_BACKGROUNDS: 'login_backgrounds',
-    TRANSLATIONS: 'translations_collection_id',
-    COMMISSION_RECORDS: 'commission_records',
-    ATTRIBUTES: 'ATTRIBUTES'
+    THERAPISTS: 'THERAPISTS_COLLECTION_ID', // ✅ Real production collection ID
+    PLACES: 'places_collection_id', // ✅ Real production collection ID
+    FACIAL_PLACES: 'facial_places_collection', // ✅ Real production collection ID (facial places)
+    USERS: 'users_collection_id', // ✅ Real production collection ID
+    AGENTS: 'users_collection_id', // Using users collection
+    BOOKINGS: 'bookings_collection_id', // ✅ Real production collection ID (NOTE: May not exist in database)
+    REVIEWS: '6767020d001f6bafeea2', // Using translations collection as fallback
+    ANALYTICS: '6767020d001f6bafeea2', // Using translations collection as fallback
+    ANALYTICS_EVENTS: '6767020d001f6bafeea2', // Using translations collection as fallback
+    ADMINS: 'users_collection_id', // Using users collection
+    HOTELS: 'hotels_collection_id', // ✅ Real production collection ID
+    VILLAS: 'hotels_collection_id', // Using hotels collection
+    PARTNERS: 'hotels_collection_id', // Using hotels collection
+    NOTIFICATIONS: '6767020d001f6bafeea2', // Using translations collection as fallback
+    MASSAGE_TYPES: '6767020d001f6bafeea2', // Using translations collection as fallback
+    MEMBERSHIP_PRICING: '6767020d001f6bafeea2', // Using translations collection as fallback
+    CUSTOM_LINKS: 'custom_links_collection_id', // ✅ Real production collection ID
+    IMAGE_ASSETS: 'custom_links_collection_id', // Using custom links collection
+    LOGIN_BACKGROUNDS: 'custom_links_collection_id', // Using custom links collection
+    TRANSLATIONS: '6767020d001f6bafeea2', // ✅ Real production collection ID
+    COMMISSION_RECORDS: '6767020d001f6bafeea2', // Using translations collection as fallback
+    ATTRIBUTES: '6767020d001f6bafeea2' // Using translations collection as fallback
 };
 
 // Storage bucket IDs

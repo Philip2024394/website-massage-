@@ -140,8 +140,14 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     // Membership tier
     const membershipTier = (therapist as any).membershipTier || 'basic';
     
-    // Status display
-    const displayStatus = therapist.status || 'Available';
+    // Status display - handle showcase profiles
+    let displayStatus = therapist.status || 'Available';
+    
+    // Special handling for showcase profiles - they should always be busy outside of Yogyakarta
+    if ((therapist as any).isShowcaseProfile) {
+        displayStatus = 'Busy';
+        console.log(`🎭 Showcase profile ${therapist.name} showing as Busy in ${(therapist as any).showcaseCity}`);
+    }
     
     // Join date calculation
     const joinedDate = therapist.membershipStartDate ? new Date(therapist.membershipStartDate) : new Date();
@@ -396,7 +402,8 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     <div className="h-48 w-full overflow-visible relative rounded-t-xl">
                         <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
                             <img 
-                                src={displayImage} 
+                                key={displayImage}
+                                src={displayImage.includes('?') ? `${displayImage}&t=${Date.now()}` : `${displayImage}?t=${Date.now()}`}
                                 alt={`${therapist.name} cover`} 
                                 className={`w-full h-full object-cover transition-all duration-500 ${isDiscountActive(therapist) ? 'brightness-110 contrast-110 saturate-110' : ''}`}
                                 onError={(e) => {
@@ -431,8 +438,9 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                             <div className="w-24 h-24 bg-white rounded-full p-1 shadow-xl relative aspect-square overflow-visible">
                                 {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                                     <img 
+                                        key={(therapist as any).profilePicture}
                                         className="w-full h-full rounded-full object-cover aspect-square" 
-                                        src={(therapist as any).profilePicture} 
+                                        src={(therapist as any).profilePicture.includes('?') ? `${(therapist as any).profilePicture}&t=${Date.now()}` : `${(therapist as any).profilePicture}?t=${Date.now()}`}
                                         alt={`${therapist.name} profile`} 
                                         onError={(e) => {
                                             const imgElement = e.target as HTMLImageElement;

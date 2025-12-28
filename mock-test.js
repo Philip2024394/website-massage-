@@ -1,0 +1,1 @@
+console.log("Mock data test - Budi and Surtiningsih should be visible now"); window.mockTherapists = [{id: "692467a3001f6f05aaa1", name: "Budi", location: "Seminyak, Bali", services: ["Deep Tissue Massage"], rating: 4.8}, {id: "693cfadf003d16b9896a", name: "Surtiningsih", location: "Canggu, Bali", services: ["Swedish Massage"], rating: 4.9}];

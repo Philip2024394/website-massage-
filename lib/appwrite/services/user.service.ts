@@ -30,7 +30,12 @@ export const userService = {
                 [Query.equal('email', email), Query.limit(1)]
             );
             return response.documents.length > 0 ? response.documents[0] : null;
-        } catch (error) {
+        } catch (error: any) {
+            // Gracefully handle missing users collection (404)
+            if (error.code === 404 || error.message?.includes('could not be found')) {
+                console.warn('⚠️ Users collection not found - skipping customer check');
+                return null;
+            }
             console.error('Error fetching customer by email:', error);
             throw error;
         }
@@ -78,27 +83,50 @@ export const userService = {
     async getByEmail(email: string): Promise<any> {
         try {
             // Search across all user collections
-            const therapistResponse = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists,
-                [Query.equal('email', email)]
-            );
-            if (therapistResponse.documents.length > 0) {
-                return therapistResponse.documents[0];
+            
+            // 1. Check therapists collection
+            try {
+                const therapistResponse = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.therapists,
+                    [Query.equal('email', email)]
+                );
+                if (therapistResponse.documents.length > 0) {
+                    console.log('✅ Found user in therapists collection');
+                    return therapistResponse.documents[0];
+                }
+            } catch (error: any) {
+                console.warn('⚠️ Error checking therapists collection:', error.message);
             }
             
-            const placeResponse = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.places,
-                [Query.equal('email', email)]
-            );
-            if (placeResponse.documents.length > 0) {
-                return placeResponse.documents[0];
+            // 2. Check places collection
+            try {
+                const placeResponse = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.places,
+                    [Query.equal('email', email)]
+                );
+                if (placeResponse.documents.length > 0) {
+                    console.log('✅ Found user in places collection');
+                    return placeResponse.documents[0];
+                }
+            } catch (error: any) {
+                console.warn('⚠️ Error checking places collection:', error.message);
             }
-            // Also check users collection for customers
-            const customer = await userService.getCustomerByEmail(email);
-            if (customer) return customer;
             
+            // 3. Check users/customers collection (optional - may not exist)
+            try {
+                const customer = await userService.getCustomerByEmail(email);
+                if (customer) {
+                    console.log('✅ Found user in customers collection');
+                    return customer;
+                }
+            } catch (error: any) {
+                // Users collection is optional, don't throw error
+                console.warn('⚠️ Users collection not available:', error.message);
+            }
+            
+            console.log('ℹ️ No existing user found with email:', email);
             return null;
         } catch (error) {
             console.error('Error fetching user by email:', error);

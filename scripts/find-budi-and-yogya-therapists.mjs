@@ -34,14 +34,14 @@ async function findYogyakartaTherapists() {
 
         // Look for Yogyakarta therapists
         const yogyaTherapists = response.documents.filter(t => 
-            t.city && (
+            (t.city && (
                 t.city.toLowerCase().includes('yogya') || 
-                t.city.toLowerCase().includes('jogja') ||
-                t.location && (
-                    t.location.toLowerCase().includes('yogya') || 
-                    t.location.toLowerCase().includes('jogja')
-                )
-            )
+                t.city.toLowerCase().includes('jogja')
+            )) ||
+            (t.location && (
+                t.location.toLowerCase().includes('yogya') || 
+                t.location.toLowerCase().includes('jogja')
+            ))
         );
 
         console.log(`🎯 Budi therapists found: ${budiTherapists.length}`);

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star, MessageSquare } from 'lucide-react';
-import { appwriteDatabases } from '../lib/appwrite/client';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { Query } from 'appwrite';
+import { getReviewsForProfile } from '../lib/hybridReviewService';
+import { isSeedReview } from '../lib/seedReviews';
+import { useLanguageContext } from '../context/LanguageContext';
 
 // Avatar pool for review displays
 const REVIEW_AVATARS = [
@@ -26,15 +26,24 @@ const REVIEW_AVATARS = [
 ];
 
 interface Review {
-    $id: string;
+    $id?: string;
+    id?: string;
     name?: string;
     reviewerName?: string;
+    userName?: string;
     rating: number;
-    comment: string;
+    comment?: string;
+    text?: string;
+    reviewContent?: string;
     reviewText?: string;
     avatar?: string;
+    avatarUrl?: string;
     location?: string;
     city?: string;
+    providerId?: string | number;
+    providerType?: 'therapist' | 'place';
+    createdAt?: string;
+    isSeed?: boolean;
 }
 
 interface RotatingReviewsProps {
@@ -44,251 +53,298 @@ interface RotatingReviewsProps {
     providerName?: string;
     providerType?: 'therapist' | 'place';
     providerImage?: string;
+    onNavigate?: (page: string, params?: Record<string, string>) => void; // Optional navigation handler
 }
 
-const RotatingReviews: React.FC<RotatingReviewsProps> = ({ location, limit = 5, providerId, providerName, providerType = 'therapist', providerImage }) => {
+const RotatingReviews: React.FC<RotatingReviewsProps> = ({ 
+    location, 
+    limit = 5, 
+    providerId, 
+    providerName, 
+    providerType = 'therapist', 
+    providerImage,
+    onNavigate 
+}) => {
+    // STABLE RENDERING: Always render component, never conditionally unmount
     const [reviews, setReviews] = useState<Review[]>([]);
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [hasRealReviews, setHasRealReviews] = useState(false);
+    const isMountedRef = useRef(true);
+    const { language } = useLanguageContext();
+    
+    // Convert 'gb' to 'en' for consistency
+    const currentLanguage: 'en' | 'id' = language === 'gb' ? 'en' : language as 'en' | 'id';
+    
+    // Translations
+    const translations = {
+        en: {
+            title: 'Customer Reviews',
+            topReviews: 'Top 5 Reviews',
+            post: 'Post',
+            loading: 'Loading reviews...',
+            showMore: 'Show more',
+            showLess: 'Show less',
+            previewLabel: 'Preview Review'
+        },
+        id: {
+            title: 'Ulasan Pelanggan',
+            topReviews: 'Top 5 Ulasan',
+            post: 'Posting',
+            loading: 'Memuat ulasan...',
+            showMore: 'Baca lebih lanjut',
+            showLess: 'Lihat lebih sedikit',
+            previewLabel: 'Ulasan Pratinjau'
+        }
+    };
+    
+    const t = translations[currentLanguage];
 
-    // Function to fetch reviews from Appwrite
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    // Fetch reviews with stable, race-condition-free logic
     const fetchReviews = async () => {
+        // Don't update state if component unmounted
+        if (!isMountedRef.current) return;
+        
         try {
-            setLoading(true);
-            console.log('🔍 Fetching reviews for location:', location);
-
-            // Fetch all reviews from Appwrite
-            const response = await appwriteDatabases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.reviews,
-                [
-                    Query.limit(100), // Get up to 100 reviews to filter and randomize
-                    Query.orderDesc('$createdAt')
-                ]
-            );
-
-            console.log('📋 Total reviews fetched:', response.documents.length);
-
-            // Filter for Yogyakarta/Jogja location
-            const locationLower = location.toLowerCase();
-            const isYogyakartaSearch = locationLower.includes('yogya') || locationLower.includes('jogja');
-
-            let filteredReviews = response.documents.filter((doc: any) => {
-                const docLocation = (doc.location || doc.city || '').toLowerCase();
-                if (isYogyakartaSearch) {
-                    return docLocation.includes('yogya') || docLocation.includes('jogja');
-                }
-                return docLocation.includes(locationLower);
-            });
-
-            console.log('✅ Filtered reviews for', location, ':', filteredReviews.length);
-
-            // If no reviews found for the location, use all reviews as fallback
-            if (filteredReviews.length === 0) {
-                console.log('⚠️ No reviews found for location, using all reviews');
-                filteredReviews = response.documents;
+            // CRITICAL: For specific provider, use hybrid service with seed reviews
+            if (providerId) {
+                const result = await getReviewsForProfile(
+                    providerId,
+                    providerType,
+                    location,
+                    { includeSeeds: true }
+                );
+                
+                if (!isMountedRef.current) return;
+                
+                // Format reviews for display
+                const formattedReviews = result.reviews.map((review, index) => {
+                    const displayComment = review.reviewContent || review.text || review.comment || '';
+                    const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
+                    const displayAvatar = review.avatarUrl || review.avatar;
+                    
+                    return {
+                        ...review,
+                        avatar: displayAvatar,
+                        $id: review.$id || review.id || `review-${index}`,
+                        name: displayName,
+                        reviewerName: displayName,
+                        userName: displayName,
+                        comment: displayComment,
+                        text: displayComment,
+                        reviewContent: displayComment,
+                        reviewText: displayComment,
+                        location: review.city || location,
+                        isSeed: isSeedReview(review)
+                    };
+                });
+                
+                setReviews(formattedReviews);
+                setHasRealReviews(result.hasRealReviews);
+                console.log(`✅ Loaded ${formattedReviews.length} reviews (${result.hasRealReviews ? 'with' : 'no'} real reviews)`);
+            } else {
+                // For general/location-based reviews, fetch all approved
+                // This is used on homepage or location pages
+                setReviews([]);
+                console.log('ℹ️ No providerId specified, skipping review fetch');
             }
-
-            // Map to Review interface
-            const mappedReviews: Review[] = filteredReviews.map((doc: any) => ({
-                $id: doc.$id,
-                name: doc.name || doc.reviewerName || 'Anonymous',
-                reviewerName: doc.reviewerName || doc.name || 'Anonymous',
-                rating: doc.rating || 5,
-                comment: doc.comment || doc.reviewText || 'Great service!',
-                reviewText: doc.reviewText || doc.comment || 'Great service!',
-                avatar: doc.avatar || REVIEW_AVATARS[Math.floor(Math.random() * REVIEW_AVATARS.length)],
-                location: doc.location || doc.city || location,
-                city: doc.city || doc.location || location
-            }));
-
-            // Shuffle and select random reviews
-            const shuffled = mappedReviews.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, limit);
-
-            // Assign avatars if not present
-            const reviewsWithAvatars = selected.map((review, index) => ({
-                ...review,
-                avatar: review.avatar || REVIEW_AVATARS[index % REVIEW_AVATARS.length]
-            }));
-
-            setReviews(reviewsWithAvatars);
-            setError(null);
-            console.log('✅ Loaded', reviewsWithAvatars.length, 'reviews');
         } catch (err) {
             console.error('❌ Error fetching reviews:', err);
-            setError('Failed to load reviews');
-            // Set fallback reviews if fetch fails
-            setFallbackReviews();
+            // On error, don't clear reviews - keep what we have
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setIsInitialLoad(false);
+            }
         }
     };
 
-    // Fallback reviews if Appwrite fetch fails
-    const setFallbackReviews = () => {
-        const fallbackReviewData = [
-            { name: 'Andi Prasetyo', rating: 5, comment: 'Excellent massage service in Yogyakarta! The therapist was very professional and skilled.' },
-            { name: 'Sari Wulandari', rating: 5, comment: 'Great experience in the Jogja area. Highly recommend for anyone visiting Yogyakarta.' },
-            { name: 'Bambang Sutrisno', rating: 5, comment: 'Perfect massage therapy in the heart of Yogyakarta. Will definitely book again.' },
-            { name: 'Dewi Lestari', rating: 5, comment: 'Amazing service in the Malioboro area. The therapist knows exactly what they\'re doing.' },
-            { name: 'Fajar Nugraha', rating: 5, comment: 'Wonderful massage experience in Yogyakarta. Great value for money in this city.' }
-        ];
-
-        const fallbackReviews: Review[] = fallbackReviewData.map((review, index) => ({
-            $id: `fallback-${index}`,
-            ...review,
-            reviewerName: review.name,
-            reviewText: review.comment,
-            avatar: REVIEW_AVATARS[index % REVIEW_AVATARS.length],
-            location,
-            city: location
-        }));
-
-        setReviews(fallbackReviews);
-    };
-
-    // Initial fetch
+    // Initial fetch on mount and when key props change
     useEffect(() => {
+        isMountedRef.current = true;
         fetchReviews();
-    }, [location]);
+    }, [location, providerId, providerType]);
 
-    // Rotate reviews every 5 minutes (300000ms)
+    // Rotate seed reviews every 5 minutes
     useEffect(() => {
-        const interval = setInterval(() => {
-            console.log('🔄 Rotating reviews...');
+        // Only set up rotation if we have reviews displayed
+        if (reviews.length === 0) return;
+        
+        const rotationInterval = setInterval(() => {
+            console.log('🔄 Rotating seed reviews (5-minute refresh)');
             fetchReviews();
-        }, 300000); // 5 minutes
+        }, 5 * 60 * 1000); // 5 minutes
 
-        return () => clearInterval(interval);
-    }, [location, limit]);
+        return () => clearInterval(rotationInterval);
+    }, [reviews.length, location, providerId, providerType]);
 
-    if (loading) {
-        return (
-            <div className="mb-6">
-                <h2 className="text-xl font-medium text-black mb-4">Customer Reviews</h2>
-                <div className="flex items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error && reviews.length === 0) {
-        return (
-            <div className="mb-6">
-                <h2 className="text-xl font-medium text-black mb-4">Customer Reviews</h2>
-                <div className="text-center py-4 text-gray-600">
-                    <p>{error}</p>
-                </div>
-            </div>
-        );
-    }
+    // STABLE RENDERING: Always render component with placeholder
+    // Never show loading spinner that causes layout shift
+    const showPlaceholder = isInitialLoad && reviews.length === 0;
 
     const handlePostClick = () => {
-        try {
-            const url = new URL(window.location.origin + '/reviews');
-            if (providerId) url.searchParams.set('providerId', String(providerId));
-            if (providerName) url.searchParams.set('providerName', providerName);
-            if (providerType) url.searchParams.set('providerType', providerType);
-            if (providerImage) url.searchParams.set('providerImage', providerImage);
-            url.searchParams.set('returnUrl', window.location.href);
-            window.location.href = url.toString();
-        } catch {
-            window.location.href = '/reviews';
+        // If onNavigate is provided, use React routing (preferred)
+        if (onNavigate) {
+            const params: Record<string, string> = {};
+            if (providerId) params.providerId = String(providerId);
+            if (providerName) params.providerName = providerName;
+            if (providerType) params.providerType = providerType;
+            if (providerImage) params.providerImage = providerImage;
+            params.returnUrl = window.location.pathname;
+            
+            // Store params in sessionStorage for the reviews page to read
+            sessionStorage.setItem('reviewParams', JSON.stringify(params));
+            onNavigate('reviews');
+        } else {
+            // Fallback to direct URL navigation with query params
+            try {
+                const url = new URL(window.location.origin + '/reviews');
+                if (providerId) url.searchParams.set('providerId', String(providerId));
+                if (providerName) url.searchParams.set('providerName', providerName);
+                if (providerType) url.searchParams.set('providerType', providerType);
+                if (providerImage) url.searchParams.set('providerImage', providerImage);
+                url.searchParams.set('returnUrl', window.location.href);
+                window.location.href = url.toString();
+            } catch {
+                window.location.href = '/reviews';
+            }
         }
     };
 
+    // STABLE RENDERING: Always render with placeholder-first approach
     return (
         <div className="mb-6">
             <div className="flex items-center justify-between mb-4 gap-3">
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-medium text-black">Customer Reviews</h2>
+                    <h2 className="text-xl font-medium text-black">{t.title}</h2>
                     <span className="text-sm text-gray-500">
-                        {providerName ? `${providerName} Top 5 Reviews` : (location ? `${location} Top 5 Reviews` : 'Top 5 Reviews')}
+                        {providerName ? `${providerName} ${t.topReviews}` : (location ? `${location} ${t.topReviews}` : t.topReviews)}
                     </span>
                 </div>
                 <button
                     onClick={handlePostClick}
                     className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-semibold rounded-lg transition-colors shadow-sm"
-                    title="Post a review"
+                    title={t.post}
                 >
                     <MessageSquare className="w-4 h-4" />
-                    <span>Post</span>
+                    <span>{t.post}</span>
                 </button>
             </div>
-            <div className="space-y-4">
-                {reviews.map((review, index) => (
-                    <div key={review.$id} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
-                        <div className="flex items-start gap-4">
-                            {/* Avatar */}
-                            <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
-                                <img
-                                    src={review.avatar}
-                                    alt={review.reviewerName || review.name || 'Reviewer'}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-
-                            {/* Review Content */}
-                            <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="font-medium text-black">
-                                        {review.reviewerName || review.name || 'Anonymous'}
-                                    </h3>
-                                    <div className="flex items-center gap-1">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 ${
-                                                    i < review.rating
-                                                        ? 'fill-yellow-400 text-yellow-400'
-                                                        : 'text-gray-300'
-                                                }`}
-                                            />
-                                        ))}
-                                    </div>
+            
+            {/* Show placeholder during initial load */}
+            {showPlaceholder ? (
+                <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm animate-pulse">
+                            <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-full bg-gray-200"></div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-5/6"></div>
                                 </div>
-                                {(() => {
-                                    const text = review.reviewText || review.comment || '';
-                                    const hashSource = `${review.$id}-${index}`;
-                                    let hash = 0;
-                                    for (let i = 0; i < hashSource.length; i++) hash = ((hash << 5) - hash) + hashSource.charCodeAt(i);
-                                    const clampLines = 2 + Math.abs(hash) % 4; // 2..5 lines
-                                    const isExpanded = expanded.has(review.$id);
-                                    return (
-                                        <>
-                                            <p className={`text-gray-700 text-sm leading-relaxed ${isExpanded ? '' : `line-clamp-${clampLines}`}`}>
-                                                {text}
-                                            </p>
-                                            {text.length > 120 && (
-                                                <button
-                                                    onClick={() => {
-                                                        setExpanded(prev => {
-                                                            const next = new Set(prev);
-                                                            if (next.has(review.$id)) next.delete(review.$id); else next.add(review.$id);
-                                                            return next;
-                                                        });
-                                                    }}
-                                                    className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700"
-                                                >
-                                                    {isExpanded ? 'Show less' : 'Read more'}
-                                                </button>
-                                            )}
-                                        </>
-                                    );
-                                })()}
-                                {review.location && (
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        📍 {review.location}
-                                    </p>
-                                )}
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : reviews.length === 0 ? (
+                <div className="text-center py-8 text-gray-600">
+                    <p className="text-sm">{t.loading}</p>
+                </div>
+            ) : (
+                <div className="space-y-4">{reviews.map((review, index) => {
+                    const displayText = review.text || review.reviewContent || review.comment || review.reviewText || '';
+                    const displayName = review.userName || review.reviewerName || review.name || 'Anonymous';
+                    const displayAvatar = review.avatarUrl || review.avatar;
+                    const reviewId = review.$id || review.id || `review-${index}`;
+                    const isExpanded = expanded.has(reviewId);
+                    const isSeed = review.isSeed === true;
+                    
+                    return (
+                        <div key={reviewId} className="p-4 border border-gray-200 rounded-lg bg-white shadow-sm relative">
+                            {/* Seed review indicator (hidden by default, shows on hover for admins) */}
+                            {isSeed && (
+                                <div className="absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity">
+                                    <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                                        {t.previewLabel}
+                                    </span>
+                                </div>
+                            )}
+                            
+                            <div className="flex items-start gap-4">
+                                {/* Avatar */}
+                                <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 bg-gray-100">
+                                    {displayAvatar && (
+                                        <img
+                                            src={displayAvatar}
+                                            alt={displayName}
+                                            className="w-full h-full object-cover"
+                                            loading="lazy"
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Review Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="font-medium text-black truncate">
+                                            {displayName}
+                                        </h3>
+                                        <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    className={`w-4 h-4 ${
+                                                        i < review.rating
+                                                            ? 'fill-yellow-400 text-yellow-400'
+                                                            : 'text-gray-300'
+                                                    }`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Review text with expand/collapse */}
+                                    <p className={`text-gray-700 text-sm leading-relaxed whitespace-pre-wrap ${isExpanded ? '' : 'line-clamp-3'}`}>
+                                        {displayText}
+                                    </p>
+                                    
+                                    {displayText.length > 150 && (
+                                        <button
+                                            onClick={() => {
+                                                setExpanded(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(reviewId)) {
+                                                        next.delete(reviewId);
+                                                    } else {
+                                                        next.add(reviewId);
+                                                    }
+                                                    return next;
+                                                });
+                                            }}
+                                            className="mt-2 text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                                        >
+                                            {isExpanded ? t.showLess : t.showMore}
+                                        </button>
+                                    )}
+                                    
+                                    {(review.location || review.city) && (
+                                        <p className="text-xs text-gray-500 mt-2">
+                                            📍 {review.city || review.location}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}</div>
+            )}
         </div>
     );
 };

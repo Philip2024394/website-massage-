@@ -21,11 +21,21 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     bookingsCount = 0,
     displayRating
 }) => {
+    // Add cache-busting parameter to force image refresh
+    const getCacheBustedUrl = (url: string) => {
+        if (!url) return url;
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}t=${Date.now()}`;
+    };
+
+    const cacheBustedImage = getCacheBustedUrl(displayImage);
+
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
             <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
                 <img 
-                    src={displayImage} 
+                    key={displayImage}
+                    src={cacheBustedImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -39,9 +49,19 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 />
             </div>
                 
-            {/* Verified Badge - Top Left Corner - Custom, Premium, or Basic Admin Verified */}
+            {/* Rating Badge - Top Left */}
+            {displayRating && (
+                <div className="absolute top-3 left-3 z-30 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5">
+                    <svg className="w-4 h-4 fill-current text-yellow-400" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span className="text-sm font-bold text-white">{displayRating}</span>
+                </div>
+            )}
+            
+            {/* Verified Badge - Below Rating Badge - Custom, Premium, or Basic Admin Verified */}
             {customVerifiedBadge ? (
-                <div className="absolute top-2 left-2 z-30 max-w-[25%] max-h-[25%]">
+                <div className="absolute top-14 left-2 z-30 max-w-[25%] max-h-[25%]">
                     <img 
                         src={customVerifiedBadge}
                         alt="Verified Therapist"
@@ -67,16 +87,6 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                </div>
-            )}
-            
-            {/* Rating Badge - Top Left */}
-            {displayRating && (
-                <div className="absolute top-3 left-3 z-30 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5">
-                    <svg className="w-4 h-4 fill-current text-yellow-400" viewBox="0 0 20 20">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span className="text-sm font-bold text-white">{displayRating}</span>
                 </div>
             )}
 

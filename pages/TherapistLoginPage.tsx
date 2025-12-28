@@ -87,8 +87,14 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
                 localStorage.removeItem('therapist-cache');
                 
                 const therapistId = response.documentId || response.userId;
-                console.log('✅ [Login Success] About to call onSuccess with ID:', therapistId);
-                onSuccess(therapistId);
+                console.log('✅ [Login Success] Redirecting to therapist dashboard with ID:', therapistId);
+                
+                // Redirect to therapist dashboard using page state navigation
+                if (onNavigate) {
+                    onNavigate('therapist');
+                } else {
+                    console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
+                }
             } else {
                 const errorMessage = typeof response.error === 'string' ? response.error : 'Sign in failed. Please try again.';
                 throw new Error(errorMessage);
@@ -107,26 +113,26 @@ const TherapistLoginPage: React.FC<TherapistLoginPageProps> = ({
         setLoading(true);
 
         try {
+            console.log('🔵 Starting registration...');
             const response = await therapistAuth.signUp(registerData.email, registerData.password);
+            console.log('📊 Registration response:', response);
             
             if (response.success && response.userId) {
-                // Switch to login mode after successful registration
-                setViewMode('login');
-                setPhoneNumber(registerData.email); // Pre-fill email for login
-                setPassword(''); // Clear password for security
-                setRegisterData({
-                    email: '',
-                    password: ''
-                });
-                setError('✅ Account created successfully! Please sign in with your credentials.');
+                console.log('✅ Registration successful, account created!');
+                // Redirect to therapist dashboard after successful registration
+                if (onNavigate) {
+                    onNavigate('therapist');
+                } else {
+                    console.error('❌ onNavigate prop is missing - cannot redirect to dashboard');
+                }
             } else {
                 const errorMessage = typeof response.error === 'string' ? response.error : 'Registration failed. Please try again.';
                 throw new Error(errorMessage);
             }
         } catch (err: any) {
+            console.error('❌ Registration error:', err);
             const errorMessage = typeof err === 'string' ? err : (err?.message || 'Registration failed. Please try again.');
             setError(errorMessage);
-        } finally {
             setLoading(false);
         }
     };

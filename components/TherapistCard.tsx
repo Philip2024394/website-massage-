@@ -11,7 +11,6 @@ import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/ther
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
-import DistanceDisplay from './DistanceDisplay';
 import BookingConfirmationPopup from './BookingConfirmationPopup';
 import BookingFormPopup, { BookingData } from './BookingFormPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
@@ -93,6 +92,20 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
     const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
     const [showJoinPopup, setShowJoinPopup] = useState(false);
+    const [animatedPriceIndex, setAnimatedPriceIndex] = useState<number>(0); // 0=60min, 1=90min, 2=120min
+    
+    // Animated price frame that moves randomly between containers
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setAnimatedPriceIndex(prev => {
+                // Generate random next index (0-2) different from current
+                const options = [0, 1, 2].filter(i => i !== prev);
+                return options[Math.floor(Math.random() * options.length)];
+            });
+        }, 2000); // Move every 2 seconds
+        
+        return () => clearInterval(interval);
+    }, []);
     
     // Debug modal state changes
     useEffect(() => {
@@ -365,9 +378,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     let validStatus = AvailabilityStatus.Offline;
     const statusStr = String((therapist as any).availability || therapist.status || '');
     
-    if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
+    // Special handling for showcase profiles - they should always be busy outside of Yogyakarta
+    if ((therapist as any).isShowcaseProfile) {
+        validStatus = AvailabilityStatus.Busy;
+        console.log(`🎭 Showcase profile ${therapist.name} forced to Busy status in ${(therapist as any).showcaseCity}`);
+    } else if (statusStr === 'Available' || statusStr === AvailabilityStatus.Available) {
         validStatus = AvailabilityStatus.Available;
-    } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy) {
+    } else if (statusStr === 'Busy' || statusStr === AvailabilityStatus.Busy || statusStr === 'busy') {
         validStatus = AvailabilityStatus.Busy;
     } else if (statusStr === 'Offline' || statusStr === AvailabilityStatus.Offline) {
         validStatus = AvailabilityStatus.Offline;
@@ -483,10 +500,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             await reviewService.createAnonymous({
                 providerType: reviewData.providerType,
                 providerId: String(reviewData.providerId),
-                providerName: therapist.name,
                 rating: reviewData.rating,
                 reviewerName: reviewData.name,
-                whatsappNumber: reviewData.whatsappNumber
+                reviewContent: `Review by ${reviewData.name}`
             });
             
             setShowReviewModal(false);
@@ -909,8 +925,9 @@ ${locationInfo}${coordinatesInfo}
                             <div className="w-24 h-24 bg-white rounded-full p-1 shadow-sm relative aspect-square overflow-visible ring-2 ring-orange-100">
                                 {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
                                     <img 
+                                        key={(therapist as any).profilePicture}
                                         className="w-full h-full rounded-full object-cover aspect-square" 
-                                        src={(therapist as any).profilePicture} 
+                                        src={(therapist as any).profilePicture.includes('?') ? `${(therapist as any).profilePicture}&t=${Date.now()}` : `${(therapist as any).profilePicture}?t=${Date.now()}`}
                                         alt={`${therapist.name} profile`} 
                                         onError={(e) => {
                                             const imgElement = e.target as HTMLImageElement;
@@ -936,17 +953,17 @@ ${locationInfo}${coordinatesInfo}
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                            {/* Distance Display - Above name on mobile only */}
-                            <div className="block sm:hidden mb-1 mt-2">
-                                <DistanceDisplay
-                                    userLocation={userLocation}
-                                    providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                                    className="text-gray-700"
-                                    showTravelTime={false}
-                                    showIcon={true}
-                                    size="sm"
-                                />
-                            </div>
+                            {/* Location Display - Above name on mobile only */}
+                            {therapist.location && (
+                                <div className="block sm:hidden mb-1 mt-2">
+                                    <div className="flex items-center text-xs text-gray-600">
+                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>{locationCity || therapist.location}</span>
+                                    </div>
+                                </div>
+                            )}
                             
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
                             <div className="overflow-visible">
@@ -993,17 +1010,17 @@ ${locationInfo}${coordinatesInfo}
                         </div>
                     </div>
                     
-                    {/* Right side: Distance - Desktop only */}
-                    <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(therapist.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-gray-700"
-                            showTravelTime={false}
-                            showIcon={true}
-                            size="sm"
-                        />
-                    </div>
+                    {/* Right side: Location - Desktop only */}
+                    {therapist.location && (
+                        <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
+                            <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                <span>{locationCity || therapist.location}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             
@@ -1190,8 +1207,10 @@ ${locationInfo}${coordinatesInfo}
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 0
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
@@ -1222,8 +1241,10 @@ ${locationInfo}${coordinatesInfo}
                 </div>
 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 1
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
@@ -1249,8 +1270,10 @@ ${locationInfo}${coordinatesInfo}
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-300 min-h-[75px] flex flex-col justify-center ${
-                    isDiscountActive(therapist)
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                    animatedPriceIndex === 2
+                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
+                        : isDiscountActive(therapist)
                         ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
                         : 'bg-gray-100 border-gray-200'
                 }`}>
@@ -1682,7 +1705,8 @@ ${locationInfo}${coordinatesInfo}
                         <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0">
                             <div className="flex items-center gap-3 flex-1">
                                 <img
-                                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                    key={(therapist as any).profilePicture}
+                                    src={((therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg').includes('?') ? `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}&t=${Date.now()}` : `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}?t=${Date.now()}`}
                                     alt={therapist.name}
                                     className="w-11 h-11 rounded-full border-2 border-white object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}

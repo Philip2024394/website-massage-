@@ -8,22 +8,35 @@ import { ID, Query } from 'appwrite';
 
 export const reviewService = {
     async create(review: {
-        providerId: number;
+        providerId: string;
         providerType: 'therapist' | 'place';
-        providerName: string;
         rating: number;
-        comment?: string;
-        whatsapp: string;
-        status: 'pending' | 'approved' | 'rejected';
+        reviewContent: string;
+        reviewerId: string;
+        userName?: string;
+        userId?: string;
+        status?: 'pending' | 'approved' | 'rejected';
     }): Promise<any> {
         try {
+            const now = new Date().toISOString();
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.reviews,
                 ID.unique(),
                 {
-                    ...review,
-                    createdAt: new Date().toISOString()
+                    reviewId: ID.unique(),
+                    providerId: review.providerId,
+                    providerType: review.providerType,
+                    rating: review.rating,
+                    reviewContent: review.reviewContent,
+                    reviewerId: review.reviewerId,
+                    reviewDate: now,
+                    createdAt: now,
+                    userName: review.userName || 'Anonymous',
+                    userId: review.userId || null,
+                    status: review.status || 'approved',
+                    likes: 0,
+                    comment: null
                 }
             );
             console.log('✅ Review created successfully:', response.$id);
@@ -35,32 +48,34 @@ export const reviewService = {
     },
 
     async createAnonymous(review: {
-        providerId: string | number;
+        providerId: string;
         providerType: 'therapist' | 'place';
-        providerName: string;
         rating: number;
         reviewerName: string;
-        whatsappNumber: string;
-        comment?: string;
-        avatar?: string;
+        reviewContent: string;
     }): Promise<any> {
         try {
+            const now = new Date().toISOString();
+            const reviewerId = `anonymous_${Date.now()}`;
+            
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.reviews,
                 ID.unique(),
                 {
-                    providerId: Number(review.providerId),
+                    reviewId: ID.unique(),
+                    providerId: review.providerId,
                     providerType: review.providerType,
-                    providerName: review.providerName,
                     rating: review.rating,
-                    comment: review.comment || '',
-                    whatsapp: review.whatsappNumber,
-                    reviewerName: review.reviewerName,
-                    avatar: review.avatar || 'https://ik.imagekit.io/7grri5v7d/avatar%201.png',
-                    isAnonymous: true,
+                    reviewContent: review.reviewContent,
+                    reviewerId: reviewerId,
+                    reviewDate: now,
+                    createdAt: now,
+                    userName: review.reviewerName,
+                    userId: null,
                     status: 'approved', // Auto-approve anonymous reviews
-                    createdAt: new Date().toISOString()
+                    likes: 0,
+                    comment: null
                 }
             );
             console.log('✅ Anonymous review created successfully:', response.$id);
@@ -131,7 +146,7 @@ export const reviewService = {
         }
     },
 
-    async getByProvider(providerId: number, providerType: 'therapist' | 'place'): Promise<any[]> {
+    async getByProvider(providerId: string | number, providerType: 'therapist' | 'place'): Promise<any[]> {
         try {
             // Check if reviews collection is disabled
             const reviewsCollection = APPWRITE_CONFIG.collections.reviews;
@@ -150,9 +165,10 @@ export const reviewService = {
                 APPWRITE_CONFIG.databaseId,
                 reviewsCollection,
                 [
-                    Query.equal('providerId', providerId),
+                    Query.equal('providerId', String(providerId)),
                     Query.equal('providerType', providerType),
-                    Query.equal('status', 'approved')
+                    Query.equal('status', 'approved'),
+                    Query.orderDesc('reviewDate')
                 ]
             );
             return response.documents;

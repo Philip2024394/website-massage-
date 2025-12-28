@@ -248,6 +248,31 @@ const HomePage: React.FC<HomePageProps> = ({
     });
 
     const [activeTab, setActiveTab] = useState('home');
+    
+    // Coming soon popup state
+    const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+    const [comingSoonSection, setComingSoonSection] = useState('');
+    
+    // Development mode toggle (press Ctrl+Shift+D to toggle)
+    const [isDevelopmentMode, setIsDevelopmentMode] = useState(() => {
+        return localStorage.getItem('massage_dev_mode') === 'true';
+    });
+    
+    // Add keyboard shortcut to toggle dev mode
+    useEffect(() => {
+        const handleKeydown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                const newDevMode = !isDevelopmentMode;
+                setIsDevelopmentMode(newDevMode);
+                localStorage.setItem('massage_dev_mode', newDevMode.toString());
+                console.log('🛠️ Development mode:', newDevMode ? 'ENABLED' : 'DISABLED');
+            }
+        };
+        
+        window.addEventListener('keydown', handleKeydown);
+        return () => window.removeEventListener('keydown', handleKeydown);
+    }, [isDevelopmentMode]);
+    
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
     const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -653,24 +678,21 @@ const HomePage: React.FC<HomePageProps> = ({
             return [];
         }
         
-        // Find Yogyakarta therapists (first 5 by creation/upload order)
-        // EXCLUDE featured samples since they already show everywhere
+        // Find first 5 Yogyakarta therapists (by creation/upload order)
+        // INCLUDE all therapists, even featured ones, for the first 5 showcase system
         const yogyaTherapists = allTherapists
             .filter((t: any) => {
                 if (!t.location) return false;
-                
-                // Skip featured samples (like Budi) - they already show in all cities
-                if (isFeaturedSample(t, 'therapist')) {
-                    console.log(`⚠️ Excluding featured sample "${t.name}" from showcase system (already shows everywhere)`);
-                    return false;
-                }
                 
                 const location = t.location.toLowerCase();
                 return location.includes('yogyakarta') || 
                        location.includes('yogya') || 
                        location.includes('jogja');
             })
-            .slice(0, 5); // Take first 5
+            .slice(0, 5); // Take first 5 (including Budi and all others)
+        
+        console.log(`🎭 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase in ${targetCity}:`, 
+                   yogyaTherapists.map(t => t.name));
         
         // Create showcase versions with busy status and target city location
         const showcaseProfiles = yogyaTherapists.map((therapist: any, index: number) => ({
@@ -678,13 +700,15 @@ const HomePage: React.FC<HomePageProps> = ({
             // Override key properties for showcase
             $id: `showcase-${therapist.$id || therapist.id}-${targetCity}`, // Unique ID for showcase version
             id: `showcase-${therapist.$id || therapist.id}-${targetCity}`,
-            status: 'busy', // Always busy to prevent bookings
+            status: 'busy', // Always busy to prevent bookings outside Yogyakarta
             availability: 'busy',
-            location: targetCity, // Dynamic location matching
+            isAvailable: false, // Ensure not bookable
+            location: `${targetCity}, Indonesia`, // Dynamic location matching user's viewing area
+            city: targetCity, // Set city field as well
             isShowcaseProfile: true, // Flag to identify showcase profiles
             originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
             showcaseCity: targetCity, // Track which city this showcase is for
-            // Keep all other properties (name, image, rating, etc.) the same
+            // Keep all other properties (name, image, rating, reviews, etc.) the same
         }));
         
         console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);
@@ -956,15 +980,26 @@ const HomePage: React.FC<HomePageProps> = ({
 
         // Listen for drawer toggle events from footer - React 19 concurrent rendering safe
         const handleToggleDrawer = () => {
+            console.log('🍔 toggleDrawer event received, current isMenuOpen:', isMenuOpen);
             setIsMenuOpen(prev => !prev);
+        };
+
+        const handleCustomerDashboardDrawer = () => {
+            console.log('🍔 customer_dashboard_open_drawer event received, current isMenuOpen:', isMenuOpen);
+            setIsMenuOpen(true);
         };
         
         // Add event listener with defensive checks for React 19 concurrent rendering
-        let listenerAdded = false;
+        let listenersAdded = [];
         try {
             if (typeof window !== 'undefined' && window.addEventListener) {
                 window.addEventListener('toggleDrawer', handleToggleDrawer);
-                listenerAdded = true;
+                listenersAdded.push(['toggleDrawer', handleToggleDrawer]);
+                
+                window.addEventListener('customer_dashboard_open_drawer', handleCustomerDashboardDrawer);
+                listenersAdded.push(['customer_dashboard_open_drawer', handleCustomerDashboardDrawer]);
+                
+                console.log('🍔 Added event listeners for drawer events');
             }
         } catch (error) {
             console.warn('Event listener setup warning (safe to ignore):', error);
@@ -972,16 +1007,16 @@ const HomePage: React.FC<HomePageProps> = ({
         
         return () => {
             // React 19 concurrent rendering safe cleanup - only remove if actually added
-            if (listenerAdded) {
+            listenersAdded.forEach(([eventType, handler]) => {
                 try {
                     if (typeof window !== 'undefined' && window.removeEventListener) {
-                        window.removeEventListener('toggleDrawer', handleToggleDrawer);
+                        window.removeEventListener(eventType, handler);
                     }
                 } catch (error) {
                     // Suppress DOM manipulation errors during React 19 concurrent rendering
                     console.warn('Event listener cleanup warning (safe to ignore in React 19):', error);
                 }
-            }
+            });
         };
     }, []);
 
@@ -1039,11 +1074,18 @@ const HomePage: React.FC<HomePageProps> = ({
                             </span>
                         </button>
 
-                        <button onClick={() => {
+                        <button onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             console.log('🍔 Burger menu clicked! Current isMenuOpen:', isMenuOpen);
+                            console.log('🍔 Event details:', { type: e.type, target: e.target, currentTarget: e.currentTarget });
                             console.log('🍔 Setting isMenuOpen to true');
                             setIsMenuOpen(true);
                             console.log('🍔 After setting - isMenuOpen should be true');
+                            // Force a small delay to ensure state updates
+                            setTimeout(() => {
+                                console.log('🍔 Delayed check - isMenuOpen:', isMenuOpen);
+                            }, 100);
                         }} title="Menu" className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center">
                            <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
@@ -1147,6 +1189,15 @@ const HomePage: React.FC<HomePageProps> = ({
                         )}
                     </div>
 
+                    {/* Development Mode Indicator */}
+                    {isDevelopmentMode && (
+                        <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-2 mb-3 mx-auto max-w-md">
+                            <p className="text-yellow-800 text-xs font-semibold text-center">
+                                🛠️ DEV MODE: Press Ctrl+Shift+D to toggle
+                            </p>
+                        </div>
+                    )}
+
                     {/* Toggle Buttons - Standard Height */}
                     <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
                         <button 
@@ -1157,8 +1208,19 @@ const HomePage: React.FC<HomePageProps> = ({
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
                         </button>
                         <button 
-                            onClick={() => setActiveTab('places')} 
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
+                            onClick={() => {
+                                if (isDevelopmentMode) {
+                                    setActiveTab('places');
+                                } else {
+                                    setComingSoonSection('Massage Places');
+                                    setShowComingSoonModal(true);
+                                }
+                            }} 
+                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${
+                                isDevelopmentMode 
+                                    ? (activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100')
+                                    : 'text-gray-600 hover:bg-gray-100'
+                            }`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.massagePlacesTab || 'Massage Places'}</span>
@@ -1183,10 +1245,19 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="flex justify-end flex-shrink-0">
                             <button
                                 onClick={() => {
-                                    console.log('🏨 Facial button clicked - switching to facials tab');
-                                    setActiveTab('facials');
+                                    if (isDevelopmentMode) {
+                                        console.log('🏨 Facial button clicked - switching to facials tab');
+                                        setActiveTab('facials');
+                                    } else {
+                                        setComingSoonSection('Facial Places');
+                                        setShowComingSoonModal(true);
+                                    }
                                 }}
-                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
+                                className={`px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm ${
+                                    isDevelopmentMode 
+                                        ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                                        : 'bg-gray-500 text-white hover:bg-gray-600'
+                                }`}
                                 title="Facials Indonesia"
                                 aria-label="Browse Facial Spas"
                             >
@@ -1398,7 +1469,22 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     const assignedImage = shuffledHomeImages.length > 0 
                                         ? shuffledHomeImages[index % shuffledHomeImages.length] 
                                         : undefined; // undefined triggers fallback logic inside TherapistCard
-                                    return { ...therapist, mainImage: assignedImage || therapist.mainImage };
+                                    
+                                    // Override location for featured samples when shown in non-home cities
+                                    let displayLocation = therapist.location;
+                                    let displayCity = therapist.city;
+                                    if (isFeaturedSample(therapist, 'therapist') && selectedCity !== 'all') {
+                                        displayLocation = selectedCity;
+                                        displayCity = selectedCity;
+                                        console.log(`🎯 Overriding featured sample ${therapist.name} location to ${selectedCity}`);
+                                    }
+                                    
+                                    return { 
+                                        ...therapist, 
+                                        mainImage: assignedImage || therapist.mainImage,
+                                        location: displayLocation,
+                                        city: displayCity
+                                    };
                                 });
 
                             console.log('🔧 [DEBUG] Final therapist list with priority scores:', {
@@ -1456,6 +1542,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         window.history.pushState({}, '', profileUrl);
                                         onNavigate?.('therapist-profile');
                                     }}
+                                    onNavigate={onNavigate}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
                                 {/* Accommodation Massage Service Link */}
@@ -1509,7 +1596,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     />
                 )}
 
-                {activeTab === 'places' && (
+                {activeTab === (isDevelopmentMode ? 'places' : 'places-disabled') && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
@@ -1636,7 +1723,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 )}
 
                 {/* Facials Tab - Show facial places */}
-                {activeTab === 'facials' && (
+                {activeTab === (isDevelopmentMode ? 'facials' : 'facials-disabled') && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialClinics || 'Facial Clinics'}</h3>
@@ -1811,6 +1898,56 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     </button>
                 </div>
             </div>
+            
+            {/* Coming Soon Modal */}
+            {showComingSoonModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 rounded-t-2xl">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-white text-xl font-bold">Coming Soon!</h2>
+                                <button
+                                    onClick={() => setShowComingSoonModal(false)}
+                                    className="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2 transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 text-center space-y-4">
+                            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                                <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                                    {comingSoonSection} Section
+                                </h3>
+                                <p className="text-gray-600 mb-4">
+                                    We are currently updating this section. Check back soon for amazing {comingSoonSection.toLowerCase()} near you!
+                                </p>
+                                <p className="text-sm text-orange-600 font-semibold">
+                                    🚧 Under Development - Live Site
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => setShowComingSoonModal(false)}
+                                className="w-full px-6 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors"
+                            >
+                                Got It!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

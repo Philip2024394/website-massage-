@@ -46,10 +46,26 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
 }) => {
   // Fallback to URL params if props are not provided
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
-  const qpProviderId = params.get('providerId') || undefined;
-  const qpProviderName = params.get('providerName') || undefined;
-  const qpProviderType = (params.get('providerType') as 'therapist' | 'place' | null) || undefined;
-  const qpProviderImage = params.get('providerImage') || undefined;
+  
+  // Try sessionStorage first (for React routing), then URL params
+  let sessionParams: Record<string, string> = {};
+  if (typeof window !== 'undefined') {
+    const storedParams = sessionStorage.getItem('reviewParams');
+    if (storedParams) {
+      try {
+        sessionParams = JSON.parse(storedParams);
+        // Clear after reading
+        sessionStorage.removeItem('reviewParams');
+      } catch (e) {
+        console.error('Failed to parse review params from sessionStorage', e);
+      }
+    }
+  }
+  
+  const qpProviderId = sessionParams.providerId || params.get('providerId') || undefined;
+  const qpProviderName = sessionParams.providerName || params.get('providerName') || undefined;
+  const qpProviderType = (sessionParams.providerType || params.get('providerType')) as 'therapist' | 'place' | null || undefined;
+  const qpProviderImage = sessionParams.providerImage || params.get('providerImage') || undefined;
 
   const effectiveProviderId = providerId ?? qpProviderId ?? '0';
   const effectiveProviderName = providerName ?? qpProviderName ?? 'Unknown';

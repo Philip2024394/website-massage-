@@ -124,12 +124,13 @@ export const useAllHooks = () => {
     });
     
     // Session restoration on app startup
-    useSessionRestore({
+    const { restoreUserSession } = useSessionRestore({
         setLoggedInProvider: state.setLoggedInProvider,
         setLoggedInCustomer: state.setLoggedInCustomer,
         setLoggedInAgent: state.setLoggedInAgent,
         setIsHotelLoggedIn: state.setIsHotelLoggedIn,
-        setIsVillaLoggedIn: state.setIsVillaLoggedIn
+        setIsVillaLoggedIn: state.setIsVillaLoggedIn,
+        setLoggedInUser: state.setLoggedInUser
     });
     // ALWAYS call booking handlers in the same order
     const bookingHandlers = useBookingHandlers({
@@ -235,6 +236,7 @@ export const useAllHooks = () => {
         providerAgentHandlers,
         footerNav,
         derived,
-        homeHandlers
+        homeHandlers,
+        restoreUserSession
     };
 };

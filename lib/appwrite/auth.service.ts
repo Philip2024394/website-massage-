@@ -1,9 +1,17 @@
 import { appwriteAccount } from './client';
+import { retryWithBackoff } from '../rateLimitService';
+
+// Debug logging
+console.log('🔧 Auth service loaded with rate limiting support');
+console.log('🔧 retryWithBackoff function available:', typeof retryWithBackoff);
 
 export const authService = {
     async getCurrentUser(): Promise<any> {
         try {
-            return await appwriteAccount.get();
+            return await retryWithBackoff(
+                () => appwriteAccount.get(),
+                'account_get'
+            );
         } catch (error: any) {
             // Silently handle expected guest/401 errors (not logged in)
             // Only log unexpected errors
@@ -18,15 +26,24 @@ export const authService = {
         try {
             // Delete any existing session first
             try {
-                await appwriteAccount.deleteSession('current');
+                await retryWithBackoff(
+                    () => appwriteAccount.deleteSession('current'),
+                    'account_delete_session'
+                );
                 console.log('🗑️ Existing session cleared before login');
             } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
             
-            await appwriteAccount.createEmailSession(email, password);
-            return await appwriteAccount.get();
+            await retryWithBackoff(
+                () => appwriteAccount.createEmailPasswordSession(email, password),
+                'account_login'
+            );
+            return await retryWithBackoff(
+                () => appwriteAccount.get(),
+                'account_get_after_login'
+            );
         } catch (error) {
             console.error('Error logging in:', error);
             throw error;
@@ -40,31 +57,79 @@ export const authService = {
         options?: { autoLogin?: boolean }
     ): Promise<any> {
         try {
+            console.log('🔵 auth.service: Starting registration for:', email);
+            
+            // Validate inputs
+            if (!email || !email.includes('@')) {
+                throw new Error('Invalid email format');
+            }
+            if (!password || password.length < 8) {
+                throw new Error('Password must be at least 8 characters long');
+            }
+            if (!name || name.trim().length === 0) {
+                throw new Error('Name is required');
+            }
+            
             // Delete any existing session first
             try {
-                await appwriteAccount.deleteSession('current');
+                await retryWithBackoff(
+                    () => appwriteAccount.deleteSession('current'),
+                    'account_delete_session_register'
+                );
                 console.log('🗑️ Existing session cleared before registration');
             } catch {
                 // No session to delete, continue
                 console.log('ℹ️ No existing session to clear');
             }
             
-            const response = await appwriteAccount.create('unique()', email, password, name);
+            console.log('🔵 Creating Appwrite account...');
+            const response = await retryWithBackoff(
+                () => appwriteAccount.create('unique()', email, password, name),
+                'account_create'
+            );
+            console.log('✅ Appwrite account created:', response.$id);
+            
             // Auto-login after registration unless explicitly disabled
             const shouldAutoLogin = options?.autoLogin !== false;
             if (shouldAutoLogin) {
-                await appwriteAccount.createEmailSession(email, password);
+                console.log('🔵 Auto-logging in...');
+                await retryWithBackoff(
+                    () => appwriteAccount.createEmailPasswordSession(email, password),
+                    'account_login_after_register'
+                );
+                console.log('✅ Auto-login successful');
             }
             return response;
-        } catch (error) {
-            console.error('Error registering:', error);
-            throw error;
+        } catch (error: any) {
+            console.error('❌ auth.service: Registration failed:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                type: error.type,
+                response: error.response
+            });
+            
+            // Provide specific error messages based on Appwrite error codes
+            if (error.code === 409 || error.message?.includes('already exists')) {
+                throw new Error('An account with this email already exists');
+            } else if (error.code === 400 || error.message?.toLowerCase().includes('invalid email')) {
+                throw new Error('Invalid email format');
+            } else if (error.code === 400 || error.message?.toLowerCase().includes('password')) {
+                throw new Error('Password must be at least 8 characters long');
+            } else if (error.code === 429 || error.message?.includes('rate limit')) {
+                throw new Error('Too many registration attempts. Please wait a moment');
+            } else {
+                throw new Error(error.message || 'Registration failed. Please try again');
+            }
         }
     },
     
     async logout(): Promise<void> {
         try {
-            await appwriteAccount.deleteSession('current');
+            await retryWithBackoff(
+                () => appwriteAccount.deleteSession('current'),
+                'account_logout'
+            );
         } catch (error) {
             console.error('Error logging out:', error);
             throw error;

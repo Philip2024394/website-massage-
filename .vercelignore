@@ -1,0 +1,4 @@
+# This project uses Netlify for deployment, not Vercel
+# Ignore all files to prevent Vercel deployments
+*
+**/*

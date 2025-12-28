@@ -33,15 +33,7 @@ const CityLocationDropdown = ({
   const portalRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
-  // Auto-close dropdown after 5 seconds
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        setIsOpen(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+  // Removed auto-close timer to prevent dropdown from closing unexpectedly
 
   // Fetch cities from Appwrite on component mount
   useEffect(() => {

@@ -169,8 +169,8 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                         data: { $id: effectivePlaceId, email }
                     });
                     
-                    console.log('🔄 Calling onSuccess to navigate to dashboard with placeId:', effectivePlaceId);
-                    // Navigate straight to dashboard (skip manual sign-in step)
+                    console.log('🔄 Redirecting to place dashboard with placeId:', effectivePlaceId);
+                    // Call onSuccess callback to navigate to place dashboard
                     onSuccess(effectivePlaceId);
                     return;
                 } else {
@@ -209,8 +209,9 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
                     // Note: Daily sign-in tracking for coin rewards has been disabled
                     
                     console.log(`✅ Place login successful for ${email} (placeId: ${effectivePlaceId})`);
-                    console.log('🔄 Calling onSuccess to navigate to dashboard with placeId:', effectivePlaceId);
-                    // Pass the PLACE document id to router so dashboard can load the correct profile
+                    console.log('🔄 Redirecting to place dashboard with placeId:', effectivePlaceId);
+                    
+                    // Call onSuccess callback to navigate to place dashboard
                     onSuccess(effectivePlaceId);
                 } else {
                     throw new Error(response.error || 'Sign in failed');

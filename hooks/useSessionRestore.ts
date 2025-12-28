@@ -12,6 +12,7 @@ interface UseSessionRestoreProps {
     setLoggedInAgent: (agent: any) => void;
     setIsHotelLoggedIn: (value: boolean) => void;
     setIsVillaLoggedIn: (value: boolean) => void;
+    setLoggedInUser: (user: any) => void;
 }
 
 export const useSessionRestore = (props: UseSessionRestoreProps) => {
@@ -20,7 +21,8 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
         setLoggedInCustomer,
         setLoggedInAgent,
         setIsHotelLoggedIn,
-        setIsVillaLoggedIn
+        setIsVillaLoggedIn,
+        setLoggedInUser
     } = props;
 
     const restoreUserSession = useCallback(async () => {
@@ -39,11 +41,25 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
             switch (sessionUser.type) {
                 case 'hotel':
                     setIsHotelLoggedIn(true);
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'hotel',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
+                    });
                     // Don't auto-navigate to hotel dashboard - let user manually access it
                     break;
                 
                 case 'villa':
                     setIsVillaLoggedIn(true);
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'villa',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
+                    });
                     // Don't auto-navigate to villa dashboard - let user manually access it
                     break;
                 
@@ -53,6 +69,13 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         type: 'therapist',
                         email: sessionUser.email,
                         ...sessionUser.data
+                    });
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'therapist',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
                     });
                     // Don't auto-navigate to therapist dashboard - let user manually access it
                     break;
@@ -64,6 +87,13 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'place',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
+                    });
                     // Don't auto-navigate to place dashboard - let user manually access it
                     break;
                 
@@ -73,6 +103,13 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         email: sessionUser.email,
                         ...sessionUser.data
                     });
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'agent',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
+                    });
                     // Don't auto-navigate to agent dashboard - let user manually access it
                     break;
                 
@@ -81,6 +118,13 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         id: sessionUser.id,
                         email: sessionUser.email,
                         ...sessionUser.data
+                    });
+                    setLoggedInUser({
+                        id: sessionUser.id,
+                        type: 'user',
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        data: sessionUser.data
                     });
                     // Don't auto-navigate to customer dashboard - let user manually access it
                     break;
@@ -96,7 +140,8 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
         setLoggedInCustomer,
         setLoggedInAgent,
         setIsHotelLoggedIn,
-        setIsVillaLoggedIn
+        setIsVillaLoggedIn,
+        setLoggedInUser
     ]);
 
     // Restore session on app startup - ALWAYS call this hook in the same order

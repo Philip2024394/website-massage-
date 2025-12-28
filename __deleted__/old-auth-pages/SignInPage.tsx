@@ -70,10 +70,10 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
             // Navigate based on portal type
             switch (formData.portalType) {
                 case 'massage_therapist':
-                    onNavigate?.('therapistPortal');
+                    onNavigate?.('therapistDashboard');
                     break;
                 case 'massage_place':
-                    onNavigate?.('massagePlacePortal');
+                    onNavigate?.('placeDashboard');
                     break;
                 case 'facial_place':
                     onNavigate?.('facialPortal');

@@ -132,11 +132,8 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             }
 
             // Redirect to dashboard based on portal type
-            const isProduction = !window.location.origin.includes('localhost');
-            const dashboardUrl = isProduction ? window.location.origin : 'http://localhost:3003';
-            
             console.log('✅ Signed in successfully! Redirecting to dashboard...');
-            window.location.href = dashboardUrl;
+            window.location.href = '/therapist';
 
         } catch (err: any) {
             console.error('Sign in error:', err);
@@ -222,23 +219,17 @@ const SimpleSignupFlow: React.FC<SimpleSignupFlowProps> = ({ onNavigate, onBack 
             localStorage.setItem('memberId', result.memberId);
             localStorage.setItem('selected_membership_plan', formData.planType);
 
-            // Map portal type to correct dashboard URL (separate apps on different ports)
-            const isProduction = !window.location.origin.includes('localhost');
-            const portalToDashboardUrl: Record<PortalType, string> = isProduction ? {
-                'massage_therapist': window.location.origin, // All on same domain in production
-                'massage_place': window.location.origin,
-                'facial_place': window.location.origin,
-                'hotel': window.location.origin
-            } : {
-                'massage_therapist': 'http://localhost:3003', // Therapist Dashboard
-                'massage_place': 'http://localhost:3002',      // Place Dashboard
-                'facial_place': 'http://localhost:3006',       // Facial Dashboard
-                'hotel': 'http://localhost:3007'               // Hotel Dashboard (future)
+            // Map portal type to correct dashboard route (single-app architecture)
+            const portalToDashboardUrl: Record<PortalType, string> = {
+                'massage_therapist': '/therapist',
+                'massage_place': '/place-dashboard',
+                'facial_place': '/facial-dashboard',
+                'hotel': '/hotel-dashboard'
             };
 
             const dashboardUrl = portalToDashboardUrl[formData.portalType];
             
-            // Redirect to the appropriate dashboard app
+            // Redirect to the appropriate dashboard route
             console.log(`✅ Account created! Redirecting to ${formData.portalType} dashboard at ${dashboardUrl}`);
             window.location.href = dashboardUrl;
 

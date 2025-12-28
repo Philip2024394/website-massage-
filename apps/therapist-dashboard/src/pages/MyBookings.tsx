@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
 
 interface Booking {
   $id: string;
@@ -216,6 +216,12 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
+            <button
+              onClick={onBack}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
+            </button>
             <Calendar className="w-6 h-6 text-orange-500" />
             <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
           </div>

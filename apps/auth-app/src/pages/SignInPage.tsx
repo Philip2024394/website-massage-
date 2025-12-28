@@ -75,7 +75,7 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
             }
 
             // Authenticate with Appwrite
-            const session = await account.createEmailSession(email, password);
+            const session = await account.createEmailPasswordSession(email, password);
             
             console.log('✅ Session created:', session);
             
@@ -84,17 +84,11 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
             localStorage.setItem('selectedPortalType', formData.portalType);
             localStorage.setItem('session_id', session.$id);
 
-            const isProduction = !window.location.origin.includes('localhost');
-            const dashboardUrls: Record<string, string> = isProduction ? {
-                'massage_therapist': 'https://therapist.indastreet.com',
-                'massage_place': 'https://place.indastreet.com',
-                'facial_place': 'https://facial.indastreet.com',
-                'hotel': 'https://hotel.indastreet.com'
-            } : {
-                'massage_therapist': 'http://localhost:3005',
-                'massage_place': 'http://localhost:3002',
-                'facial_place': 'http://localhost:3006',
-                'hotel': 'http://localhost:3007'
+            const dashboardUrls: Record<string, string> = {
+                'massage_therapist': '/therapist',
+                'massage_place': '/place-dashboard',
+                'facial_place': '/facial-dashboard',
+                'hotel': '/hotel-dashboard'
             };
 
             const dashboardUrl = dashboardUrls[formData.portalType];

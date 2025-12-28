@@ -261,7 +261,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             {/* Hero Logo */}
             <div className="flex justify-center mb-4 pt-4">
                 <img 
-                    src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
+                    src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
                     alt="Logo" 
                     className="h-48 w-auto object-contain"
                 />
@@ -294,6 +294,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                         providerName={therapist.name}
                         providerType={'therapist'}
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        onNavigate={onNavigate}
                     />
                 </div>
 

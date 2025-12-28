@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
-import DistanceDisplay from './DistanceDisplay';
 import { bookingService } from '../lib/bookingService';
 import { isDiscountActive } from '../utils/therapistCardHelpers';
 import SocialSharePopup from './SocialSharePopup';
@@ -15,6 +14,7 @@ interface TherapistHomeCardProps {
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     userLocation?: { lat: number; lng: number } | null;
     readOnly?: boolean; // Lock card to read-only mode
+    onNavigate?: (page: string) => void; // Add navigation prop
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -28,7 +28,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     onClick,
     onIncrementAnalytics,
     userLocation,
-    readOnly = false // Default to editable unless specified
+    readOnly = false, // Default to editable unless specified
+    onNavigate // Add navigation prop
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -209,11 +210,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
-            <div className="relative h-48 sm:h-56 overflow-hidden">
+            <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500"
+                    loading="lazy"
+                    width="400"
+                    height="224"
                     onError={(e) => {
                         (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                     }}
@@ -298,8 +302,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             <img 
                                 className="w-full h-full rounded-full object-cover aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                                alt={therapist.name}
-                                onError={(e) => {
+                                alt={therapist.name}                                loading="lazy"
+                                width="96"
+                                height="96"                                onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
                             />
@@ -355,11 +360,29 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             return (
                                 <div className="flex items-center gap-1.5">
                                     <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span className="text-xs">🇮🇩</span>
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇮🇩
+                                        </span>
                                         <span className="text-xs font-semibold">ID</span>
                                     </span>
                                     <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span className="text-xs">🇬🇧</span>
+                                        <span 
+                                            className="text-sm" 
+                                            style={{
+                                                fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                fontSize: '14px',
+                                                lineHeight: '1'
+                                            }}
+                                        >
+                                            🇬🇧
+                                        </span>
                                         <span className="text-xs font-semibold">EN</span>
                                     </span>
                                 </div>
@@ -419,7 +442,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     
                                     return (
                                         <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                            <span className="text-xs">{langInfo.flag}</span>
+                                            {/* Use emoji flag with proper font family to ensure display */}
+                                            <span 
+                                                className="text-sm" 
+                                                style={{
+                                                    fontFamily: '"Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif',
+                                                    fontSize: '14px',
+                                                    lineHeight: '1'
+                                                }}
+                                            >
+                                                {langInfo.flag}
+                                            </span>
                                             <span className="text-xs font-semibold">{langInfo.name}</span>
                                         </span>
                                     );
@@ -493,6 +526,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             <TherapistJoinPopup
                 isOpen={showJoinPopup}
                 onClose={() => setShowJoinPopup(false)}
+                onNavigate={onNavigate}
             />
         </div>
     );

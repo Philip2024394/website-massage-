@@ -609,15 +609,7 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             <span className="font-medium">{translate('home.menu.accommodationMassageService')}</span>
                         </button>
 
-                        <button 
-                            onClick={() => handleItemClick(undefined, 'joinIndastreet')}
-                            className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
-                        >
-                            <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                            </svg>
-                            <span className="font-medium">Join Indastreet</span>
-                        </button>
+
 
                         <button 
                             onClick={() => handleItemClick(onMassageJobsClick, 'massageJobs')}
@@ -738,41 +730,37 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                             </button>
                         </div>
 
-                        {/* LOGIN PORTALS - At the end */}
-                        <div className="border-t border-gray-200 pt-3 mt-3">
-                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                                {translate('home.menu.sections.loginCreateAccount')}
+                        {/* CLEAN AUTHENTICATION SECTION */}
+                        <div className="border-t-2 border-orange-200 pt-4 mt-4">
+                            <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3 text-center">
+                                Account Access
                             </h3>
                             
+                            {/* CREATE ACCOUNT - Primary Action */}
                             <button 
-                                onClick={() => handleItemClick(onTherapistPortalClick, 'therapistLogin')}
-                                className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
+                                onClick={() => handleItemClick(undefined, 'role-selection')}
+                                className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors mb-3"
                             >
-                                <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                <span>Create Account</span>
+                            </button>
+
+                            {/* SIGN IN - Secondary Action */}
+                            <button 
+                                onClick={() => handleItemClick(undefined, 'login')}
+                                className="flex items-center justify-center gap-2 w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <span className="font-medium">{translate('home.menu.therapistPortal')}</span>
+                                <span>Sign In</span>
                             </button>
-
-                            <button 
-                                onClick={() => handleItemClick(onMassagePlacePortalClick, 'massagePlaceLogin')}
-                                className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
-                            >
-                                <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                                <span className="font-medium">{translate('home.menu.massageSpaPortal')}</span>
-                            </button>
-
-                            <button 
-                                onClick={() => handleItemClick(() => onNavigate?.('website-management'))}
-                                className="flex items-center gap-2 w-full text-sm text-gray-600 hover:text-orange-600 transition-colors py-2"
-                            >
-                                <svg className="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-                                </svg>
-                                <span className="font-medium">{translate('home.menu.websitePartnersPortal')}</span>
-                            </button>
+                            
+                            <p className="text-xs text-gray-500 text-center mt-2">
+                                For all account types (Therapist, Spa, Partner)
+                            </p>
                         </div>
 
                         {/* FOOTER LINKS */}

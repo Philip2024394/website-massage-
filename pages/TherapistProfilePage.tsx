@@ -206,7 +206,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Home Service</span>
+                            <span className="whitespace-nowrap">{language === 'id' ? 'Layanan Rumah' : 'Home Service'}</span>
                         </button>
                         <button 
                             onClick={() => {
@@ -216,7 +216,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Massage Places</span>
+                            <span className="whitespace-nowrap">{language === 'id' ? 'Tempat Pijat' : 'Massage Places'}</span>
                         </button>
                     </div>
 
@@ -240,7 +240,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             <button
                                 onClick={() => onNavigate?.('facialProviders')}
                                 className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
-                                title="Facials Indonesia"
+                                title={language === 'id' ? 'Facial Indonesia' : 'Facials Indonesia'}
                             >
                                 <Sparkles className="w-5 h-5" />
                                 <span>Facial</span>
@@ -279,6 +279,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         providerName={(therapist as any).name}
                         providerType={'therapist'}
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        onNavigate={onNavigate}
                     />
                 </div>
             </div>

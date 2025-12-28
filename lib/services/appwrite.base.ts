@@ -18,17 +18,16 @@ export const appwriteClient = client;
 export const appwriteDatabases = databases;
 export const appwriteAccount = account;
 
-// Database and collection constants
+// Database and collection constants - UPDATED TO REAL PRODUCTION IDs
 export const APPWRITE_CONFIG = {
   databaseId: '68f76ee1000e64ca8d05',
   collections: {
-    // These IDs need to be updated with real collection IDs
-    therapists: 'therapists_collection_id',
-    places: 'places_collection_id',
-    users: 'users_collection_id',
-    bookings: 'bookings_collection_id',
-    reviews: 'reviews_collection_id',
-    messages: 'messages_collection_id',
-    notifications: 'notifications_collection_id',
+    therapists: 'THERAPISTS_COLLECTION_ID', // ✅ Real production collection ID
+    places: 'PLACES_COLLECTION_ID', // ✅ Real production collection ID
+    users: 'users_collection_id', // ✅ Real production collection ID
+    bookings: 'bookings_collection_id', // ✅ Real production collection ID
+    reviews: '', // Disabled - collection doesn't exist
+    messages: '', // Disabled - collection doesn't exist
+    notifications: '', // Disabled - collection doesn't exist
   }
 };

@@ -67,14 +67,16 @@ const ReviewSystem: React.FC<ReviewSystemProps> = ({
         setIsSubmitting(true);
 
         try {
-            // Add the review
+            // Add the review with provider's actual location
+            const providerLocation = provider.location || provider.city || 'Indonesia';
             reviewService.addReview(
                 provider.id,
                 providerType,
                 currentUserId,
                 currentUserName,
                 formData.rating,
-                formData.comment
+                formData.comment,
+                providerLocation
             );
 
             // Update provider rating

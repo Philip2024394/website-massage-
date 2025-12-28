@@ -70,16 +70,18 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       }
       
       // Sign in with email and password
-      await account.createEmailSession(email, password);
+      await account.createEmailPasswordSession(email, password);
       
       // Get user account
       const user = await account.get();
       
       showToast('Welcome back! Logging in...', 'success');
       
-      // Navigate to dashboard
+      // Call onLoginSuccess callback to navigate to dashboard
       if (onLoginSuccess) {
-        onLoginSuccess(user.$id, user.email);
+        onLoginSuccess(user.$id, email);
+      } else if (onNavigate) {
+        onNavigate('dashboard');
       }
     } catch (error: any) {
       console.error('Sign in error:', error);
@@ -121,16 +123,18 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
       await account.create(ID.unique(), email, password, name);
       
       // Automatically sign in
-      await account.createEmailSession(email, password);
+      await account.createEmailPasswordSession(email, password);
       
       // Get user account
       const user = await account.get();
       
       showToast('Account created successfully! Welcome!', 'success');
       
-      // Navigate to dashboard
+      // Call onLoginSuccess callback to navigate to dashboard
       if (onLoginSuccess) {
-        onLoginSuccess(user.$id, user.email);
+        onLoginSuccess(user.$id, email);
+      } else if (onNavigate) {
+        onNavigate('dashboard');
       }
     } catch (error: any) {
       console.error('Sign up error:', error);

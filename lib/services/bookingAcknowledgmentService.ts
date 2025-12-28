@@ -406,7 +406,19 @@ class BookingAcknowledgmentService {
                 averageResponseTime,
                 acceptanceRate
             };
-        } catch (error) {
+        } catch (error: any) {
+            // Handle collection not found gracefully
+            if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                console.warn('⚠️ Booking acknowledgments collection not found - returning default stats');
+                return {
+                    totalReceived: 0,
+                    totalAccepted: 0,
+                    totalRejected: 0,
+                    totalExpired: 0,
+                    averageResponseTime: 0,
+                    acceptanceRate: 0
+                };
+            }
             console.error('Error getting therapist stats:', error);
             throw error;
         }

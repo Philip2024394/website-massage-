@@ -6,7 +6,7 @@
 const sdk = require('node-appwrite');
 
 // Appwrite configuration
-const ENDPOINT = process.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+const ENDPOINT = process.env.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1';
 const PROJECT_ID = process.env.VITE_APPWRITE_PROJECT_ID || '68f76e7400027e91e77b';
 const API_KEY = process.env.APPWRITE_API_KEY; // Requires server-side API key
 const DB_ID = '68f76ee1000e64ca8d05';

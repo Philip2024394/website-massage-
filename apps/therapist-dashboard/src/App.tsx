@@ -41,16 +41,38 @@ function App() {
 
   // Function to refresh user data from Appwrite
   const refreshUser = async () => {
-    if (!user?.$id) return;
+    if (!user?.$id) {
+      console.log('⚠️ Cannot refresh - no user ID');
+      return;
+    }
     try {
-      console.log('🔄 Refreshing therapist data from Appwrite...');
+      console.log('🔄 Refreshing therapist data from Appwrite for ID:', user.$id);
+      console.log('📧 Session user email:', user.email);
+      console.log('👤 Session user name:', user.name);
+      
       const updatedTherapist = await therapistService.getById(user.$id);
-      console.log('✅ Therapist data refreshed:', {
+      console.log('✅ Therapist data refreshed from database:', {
+        id: updatedTherapist.$id,
+        name: updatedTherapist.name,
+        email: updatedTherapist.email,
         status: updatedTherapist.status,
         availability: updatedTherapist.availability,
-        isLive: updatedTherapist.isLive
+        isLive: updatedTherapist.isLive,
+        city: updatedTherapist.city,
+        whatsappNumber: updatedTherapist.whatsappNumber
       });
+      
+      // Check if IDs match
+      if (updatedTherapist.$id !== user.$id) {
+        console.warn('⚠️ ID MISMATCH DETECTED!');
+        console.warn('   Session ID:', user.$id);
+        console.warn('   Fetched ID:', updatedTherapist.$id);
+      } else {
+        console.log('✅ Session ID and fetched ID match:', user.$id);
+      }
+      
       setUser(updatedTherapist);
+      console.log('✅ User state updated with fresh data');
     } catch (error) {
       console.error('❌ Failed to refresh therapist data:', error);
     }
@@ -69,6 +91,21 @@ function App() {
     }
   }, [currentPage]);
 
+  // Listen for profile update events and refresh user data
+  useEffect(() => {
+    const handleProfileUpdate = (event: any) => {
+      console.log('🔔 Profile update event received, refreshing user data...');
+      if (user?.$id) {
+        refreshUser();
+      }
+    };
+
+    window.addEventListener('therapistProfileUpdated', handleProfileUpdate);
+    return () => {
+      window.removeEventListener('therapistProfileUpdated', handleProfileUpdate);
+    };
+  }, [user?.$id]);
+
   useEffect(() => {
     // Always rely on server state to decide onboarding
     console.log('🔄 App mounted - checking auth...');
@@ -81,9 +118,22 @@ function App() {
       if (currentUser) {
         console.log('✅ Authenticated user:', currentUser.email);
         
-        const therapists = await therapistService.getByEmail(currentUser.email);
-        console.log('🔍 Looking for therapist with email:', currentUser.email);
+        // Normalize email for consistent lookup (therapist documents are stored with normalized emails)
+        const normalizedEmail = currentUser.email.toLowerCase().trim();
+        console.log('🔍 [DEBUG] Auth email exact value:', JSON.stringify(currentUser.email));
+        console.log('🔍 [DEBUG] Normalized email for lookup:', normalizedEmail);
+        
+        let therapists = await therapistService.getByEmail(normalizedEmail);
+        console.log('🔍 Looking for therapist with email:', normalizedEmail);
         console.log('🔍 Found therapists:', therapists);
+        
+        // Retry if not found (database might still be indexing)
+        if (!therapists || therapists.length === 0) {
+          console.log('⏳ Therapist not found, retrying in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          therapists = await therapistService.getByEmail(normalizedEmail);
+          console.log('🔍 Retry result - Found therapists:', therapists?.length || 0);
+        }
         
         if (therapists && therapists.length > 0) {
           const therapistDoc = therapists[0];
@@ -112,12 +162,19 @@ function App() {
             });
           }
         } else {
-          console.error('❌ No therapist document found for email:', currentUser.email);
-          console.error('❌ This means the therapist account was not created in Appwrite therapists collection');
-          console.error('❌ Check: 1) Email matches exactly 2) therapists collection exists 3) Document was created');
-          // User is authenticated but has no therapist profile
-          alert(`No therapist profile found for ${currentUser.email}. Please contact admin to create your therapist profile.`);
-          setIsAuthenticated(false);
+          console.error('❌ No therapist document found for email:', normalizedEmail);
+          console.error('❌ Original auth email:', currentUser.email);
+          console.error('❌ This means the therapist profile lookup failed');
+          console.error('❌ Possible causes:');
+          console.error('   1. Therapist document was not created during signup');
+          console.error('   2. Document exists but email field differs');
+          console.error('   3. Database/collection permissions issue');
+          
+          // IMPORTANT: Don't immediately redirect - user IS authenticated
+          // Just show an error state instead of redirecting
+          console.warn('⚠️ User is authenticated but no therapist profile found. Keeping them on page to see error.');
+          setUser(null);
+          setIsAuthenticated(true); // Keep authenticated to prevent redirect
         }
       }
     } catch (error) {
@@ -175,6 +232,41 @@ function App() {
     );
   }
 
+  // Show error if authenticated but no therapist profile
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md p-8 bg-white rounded-lg shadow-lg">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            Your therapist profile could not be loaded. This might be a temporary issue.
+          </p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              Retry Loading Profile
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+          <p className="mt-6 text-sm text-gray-500">
+            If this problem persists, contact support at{' '}
+            <a href="mailto:indastreet.id@gmail.com" className="text-orange-600 hover:underline">
+              indastreet.id@gmail.com
+            </a>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Render page content
   const renderPage = () => {
     switch (currentPage) {
@@ -215,9 +307,7 @@ function App() {
       case 'payment-status':
         return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'custom-menu':
-        return <TherapistMenu therapist={user} onNavigateToPayment={() => setCurrentPage('premium-upgrade')} />;
-      case 'premium-upgrade':
-        return <PremiumUpgrade therapist={user} />;
+        return <TherapistMenu therapist={user} />;
       case 'commission-payment':
         return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'schedule':
@@ -232,11 +322,9 @@ function App() {
             onNavigateToBookings={() => setCurrentPage('bookings')}
             onNavigateToEarnings={() => setCurrentPage('earnings')}
             onNavigateToChat={() => setCurrentPage('chat')}
-            onProfileSaved={() => setCurrentPage('status')}
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}
-            onNavigateToPayment={() => setCurrentPage('premium-upgrade')}
             onNavigateToMenu={() => setCurrentPage('custom-menu')}
           />
         );

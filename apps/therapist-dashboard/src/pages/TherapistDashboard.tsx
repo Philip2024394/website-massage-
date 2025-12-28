@@ -10,6 +10,7 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
+import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
 
 interface TherapistPortalPageProps {
@@ -23,10 +24,14 @@ interface TherapistPortalPageProps {
   onNavigateToLegal?: () => void;
   onNavigateToCalendar?: () => void;
   onNavigateToPayment?: () => void;
+  onNavigateToPaymentStatus?: () => void;
+  onNavigateToCommission?: () => void;
+  onNavigateToPremium?: () => void;
+  onNavigateToSchedule?: () => void;
   onNavigateToMenu?: () => void;
   onLogout?: () => void;
   onNavigateHome?: () => void;
-  onProfileSaved?: () => void;
+  language?: 'en' | 'id';
 }
 
 const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
@@ -35,6 +40,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToBookings,
   onNavigateToEarnings,
   onNavigateToPayment,
+  onNavigateToPaymentStatus,
+  onNavigateToCommission,
+  onNavigateToPremium,
+  onNavigateToSchedule,
   onNavigateToChat,
   onNavigateToMembership,
   onNavigateToNotifications,
@@ -43,7 +52,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToMenu,
   onLogout,
   onNavigateHome,
-  onProfileSaved
+  language = 'id'
 }) => {
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
@@ -323,7 +332,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       showToast('❌ Error: Therapist data not loaded', 'error');
       return;
     }
+    console.log('� handleSaveProfile called');
     console.log('📝 Starting save with therapist:', therapist.$id || therapist.id);
+    console.log('👤 Therapist name:', therapist.name);
+    console.log('📧 Therapist email:', therapist.email);
+    console.log('🔍 Full therapist object keys:', Object.keys(therapist));
+    console.log('🎯 Using ID for update:', String(therapist.$id || therapist.id));
     setSaving(true);
     
     try {
@@ -385,6 +399,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         coordinates: JSON.stringify(coordinates),
         city: selectedCity !== 'all' ? selectedCity : null,
+        location: selectedCity !== 'all' ? selectedCity : null, // Add location field matching city
         isLive: true, // Auto-live on save
         // 🎯 NEW: Set default status fields for new profiles
         status: therapist.status || 'Available', // Default to Available if no status set
@@ -402,9 +417,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       console.log('📊 Saved data includes:', {
         name: savedTherapist.name,
         isLive: savedTherapist.isLive,
+        status: savedTherapist.status,
+        availability: savedTherapist.availability,
         whatsappNumber: savedTherapist.whatsappNumber,
-        coordinates: savedTherapist.coordinates
+        coordinates: savedTherapist.coordinates,
+        city: savedTherapist.city,
+        location: savedTherapist.location,
+        languages: savedTherapist.languages,
+        massageTypes: savedTherapist.massageTypes
       });
+
+      // Wait a moment for database to fully commit changes
+      console.log('⏳ Waiting for database to commit changes...');
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Auto-translate profile data to both languages
       console.log('🌐 Auto-translating profile data...');
@@ -434,25 +459,33 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         console.error('❌ Translation error (non-blocking):', translationError);
       }
 
-      // Fire refresh event
+      // Update local state with saved data to reflect changes immediately
+      setName(savedTherapist.name || name);
+      setWhatsappNumber(savedTherapist.whatsappNumber || whatsappNumber);
+      setDescription(savedTherapist.description || description);
+      setPrice60(String(savedTherapist.price60 || price60));
+      setPrice90(String(savedTherapist.price90 || price90));
+      setPrice120(String(savedTherapist.price120 || price120));
+      
+      // Fire refresh event for other components (like main app)
       console.log('🔔 Dispatching refreshTherapistData event...');
       window.dispatchEvent(new CustomEvent('refreshTherapistData', { detail: 'profile-updated' }));
       
+      // Also dispatch a custom event to refresh the parent App.tsx user state
+      console.log('🔔 Dispatching therapist data refresh for parent app...');
+      window.dispatchEvent(new CustomEvent('therapistProfileUpdated', { 
+        detail: { therapistId: savedTherapist.$id, updatedData: savedTherapist } 
+      }));
+      
       console.log('🎉 About to show success toast...');
-      showToast('✅ Profile saved and LIVE!', 'success');
+      showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
       setProfileSaved(true);
       console.log('✅ Toast dispatched - Profile saved successfully');
-      console.log('✅ Check HomePage for your therapist card!');
+      console.log('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
       
-      // Call onProfileSaved callback if provided (for onboarding flow)
-      // Otherwise fall back to onNavigateToStatus
-      const navigationCallback = onProfileSaved || onNavigateToStatus;
-      if (navigationCallback) {
-        setTimeout(() => {
-          console.log('🔄 Navigating after profile save...');
-          navigationCallback();
-        }, 1500); // Short delay to let user see the success message
-      }
+      // Don't auto-navigate away from profile page after saving
+      // Let user stay on profile to continue editing if needed
+      // User can click "Home" button in navbar to see their live card
     } catch (e: any) {
       console.error('❌ Failed to save profile:', e);
       const errorMessage = e?.message || e?.toString() || 'Failed to save profile';
@@ -615,6 +648,60 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
+  // Navigation handler for TherapistLayout menu
+  const handleNavigate = (pageId: string) => {
+    console.log('🔄 Navigating to:', pageId);
+    switch (pageId) {
+      case 'status':
+        onNavigateToStatus?.();
+        break;
+      case 'schedule':
+        onNavigateToSchedule?.();
+        break;
+      case 'dashboard':
+        // Already on dashboard, do nothing or refresh
+        break;
+      case 'bookings':
+        onNavigateToBookings?.();
+        break;
+      case 'earnings':
+        onNavigateToEarnings?.();
+        break;
+      case 'payment':
+        onNavigateToPayment?.();
+        break;
+      case 'payment-status':
+        onNavigateToPaymentStatus?.();
+        break;
+      case 'commission-payment':
+        onNavigateToCommission?.();
+        break;
+      case 'premium-upgrade':
+        onNavigateToPremium?.();
+        break;
+      case 'custom-menu':
+        onNavigateToMenu?.();
+        break;
+      case 'chat':
+        onNavigateToChat?.();
+        break;
+      case 'notifications':
+        onNavigateToNotifications?.();
+        break;
+      case 'calendar':
+        onNavigateToCalendar?.();
+        break;
+      case 'legal':
+        onNavigateToLegal?.();
+        break;
+      case 'logout':
+        onLogout?.();
+        break;
+      default:
+        console.warn('Unknown navigation:', pageId);
+    }
+  };
+
   // Safety check for null therapist
   if (!therapist) {
     return (
@@ -627,7 +714,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="dashboard"
+      onNavigate={handleNavigate}
+      language={language}
+    >
+      <div className="min-h-screen bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 shadow-lg">
@@ -657,52 +750,64 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             <div className="mb-6">
               <BookingRequestCard 
                 therapistId={therapist.$id}
-                membershipTier={therapist.membershipTier === 'plus' ? 'plus' : 'free'}
+                membershipTier={'plus'}
               />
             </div>
           )}
 
-          {/* Pro Plan Warnings */}
-          {therapist?.membershipTier === 'free' && (
-            <div className="mb-6 rounded-2xl shadow-sm border-2 border-red-200 overflow-hidden">
-              <ProPlanWarnings 
-                therapistName={therapist?.name || therapist?.fullName || 'Member'}
-                showFullTerms={false}
-              />
-            </div>
-          )}
+          {/* Pro Plan Warnings - Hidden since all features are now standard */}
 
           {/* Profile Form Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          {/* Live Status Banner */}
+          {therapist.isLive && (
+            <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                  <div>
+                    <p className="text-white font-bold text-lg">🟢 Your Profile is LIVE!</p>
+                    <p className="text-green-100 text-sm">Customers can see and book you on the homepage</p>
+                  </div>
+                </div>
+                <a
+                  href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-white text-green-600 rounded-lg font-bold hover:bg-green-50 transition-all shadow-sm text-sm"
+                >
+                  View on Homepage →
+                </a>
+              </div>
+            </div>
+          )}
           {/* Header */}
-          <div className="px-8 py-6">
-            <h2 className="text-gray-900 text-2xl font-bold">Profile page</h2>
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="text-gray-900 text-xl font-semibold">Profile Information</h2>
           </div>
 
           {/* Form Content */}
-          <div className="p-8 space-y-6">
+          <div className="p-6 space-y-5">
             {/* Name */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <User className="w-5 h-5 text-orange-500" />
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
                 First Name *
               </label>
               <input
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
                 placeholder="Enter your first name"
               />
             </div>
 
             {/* WhatsApp */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <MessageCircle className="w-5 h-5 text-orange-500" />
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
                 WhatsApp Number *
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-medium pointer-events-none">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none z-10">
                   +62
                 </span>
                 <input
@@ -712,29 +817,26 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     const digits = e.target.value.replace(/\D/g, '');
                     setWhatsappNumber('+62' + digits);
                   }}
-                  className="w-full border border-gray-200 rounded-xl pl-14 pr-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
+                  className="w-full border border-gray-300 rounded-lg pl-14 pr-3 py-2.5 focus:border-orange-500 focus:ring-1 focus:ring-orange-200 focus:outline-none"
                   placeholder="812345678"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">Enter Your Whats App Number</p>
             </div>
 
             {/* Profile Picture */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                <Image className="w-5 h-5 text-orange-500" />
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
                 Profile Picture
               </label>
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
                 <div className="relative">
-                  {/* Verified Badge */}
-                  {therapist?.membershipTier === 'premium' && therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
-                    <div className="absolute -top-2 -left-2 z-10 w-10 h-10">
+                  {/* Verified Badge - Available for all therapists */}
+                  {therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
+                    <div className="absolute -top-1 -left-1 z-10 w-8 h-8">
                       <img 
                         src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
                         alt="Verified"
                         className="w-full h-full object-contain drop-shadow-lg"
-                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
                       />
                     </div>
                   )}
@@ -742,11 +844,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     <img
                       src={profileImageDataUrl || therapist?.profilePicture}
                       alt="Preview"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-4 border-gray-50">
-                      <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
+                      <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
@@ -760,29 +862,28 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     className="hidden"
                     id="profile-upload"
                   />
-                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 cursor-pointer transition-all shadow-sm">
+                  <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
                     <Upload className="w-4 h-4" />
                     {uploadingImage ? 'Uploading...' : 'Upload Photo'}
                   </label>
-                  <p className="text-xs text-gray-500 mt-2">Maximum file size: 5MB</p>
+                  <p className="text-xs text-gray-500 mt-1.5">Max 5MB</p>
                 </div>
               </div>
             </div>
 
             {/* City/Tourist Location */}
             <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Location *
+              </label>
               <CityLocationDropdown
                 selectedCity={selectedCity}
                 onCityChange={setSelectedCity}
                 placeholder="Select Location"
-                label="Select Location *"
-                showLabel={true}
+                showLabel={false}
                 includeAll={false}
                 className="w-full"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Select where you provide services
-              </p>
             </div>
 
             {/* Location */}
@@ -867,63 +968,54 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
             {/* Languages */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                <Languages className="w-5 h-5 text-orange-500" />
-                Languages You Speak (select up to 3)
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Languages (max 3) - {selectedLanguages.length}/3 selected
               </label>
               <div className="flex flex-wrap gap-2">
                 {languageOptions.map(opt => (
                   <button
                     key={opt.code}
                     onClick={() => handleToggleLanguage(opt.code)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       selectedLanguages.includes(opt.code)
-                        ? 'bg-orange-500 text-white shadow-sm'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     {opt.label}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">{selectedLanguages.length} of 3 selected</p>
             </div>
 
             {/* Massage Types */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                <Hand className="w-5 h-5 text-orange-500" />
-                Massage Types (select up to 5)
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Massage Types (max 5) - {selectedMassageTypes.length}/5 selected
               </label>
-              <div className="flex flex-wrap gap-2 p-1">
+              <div className="flex flex-wrap gap-2">
                 {MASSAGE_TYPES_CATEGORIZED.flatMap(category => category.types).map(type => (
                   <button
                     key={type}
                     onClick={() => handleToggleMassageType(type)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                       selectedMassageTypes.includes(type)
-                        ? 'bg-green-500 text-white shadow-sm'
-                        : 'bg-white text-gray-700 border border-gray-200 hover:border-green-300 hover:bg-green-50'
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {selectedMassageTypes.includes(type) && (
-                      <CheckCircle className="w-4 h-4" />
-                    )}
                     {type.replace(/\s+Massage$/i, '')}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">{selectedMassageTypes.length} of 5 selected</p>
             </div>
 
             {/* Pricing */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                <Banknote className="w-5 h-5 text-orange-500" />
-                Massage Price's
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Massage Prices (100 = Rp 100,000)
               </label>
-              <p className="text-xs text-gray-500 mb-3">Example: 100 = Rp 100,000</p>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs text-gray-600 mb-2 font-medium">60 minutes</label>
                   <input
@@ -969,33 +1061,26 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Premium Custom Menu Feature */}
+            {/* Custom Service Menu Feature - Available for all therapists */}
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <MenuIcon className="w-5 h-5 text-orange-600" />
                   <h3 className="font-bold text-gray-900">Custom Service Menu</h3>
-                  {therapist?.membershipTier === 'premium' && (
-                    <span className="text-xs px-2 py-0.5 bg-orange-500 text-white rounded-full">Premium</span>
-                  )}
                 </div>
               </div>
               <p className="text-sm text-gray-700 mb-4">
-                {therapist?.membershipTier === 'premium' 
-                  ? '📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.'
-                  : '📋 Upgrade to Premium to create a custom service menu. List unlimited services with custom names and prices to attract more bookings.'}
+                📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.
               </p>
               <button
                 onClick={() => {
-                  if (therapist?.membershipTier === 'premium' && onNavigateToMenu) {
+                  if (onNavigateToMenu) {
                     onNavigateToMenu();
-                  } else if (onNavigateToPayment) {
-                    onNavigateToPayment();
                   }
                 }}
                 className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-sm"
               >
-                {therapist?.membershipTier === 'premium' ? '→ Manage My Menu' : '👑 Upgrade to Premium'}
+                → Manage My Menu
               </button>
             </div>
 
@@ -1238,7 +1323,8 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </TherapistLayout>
   );
 };
 

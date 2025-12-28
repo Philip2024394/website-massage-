@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wiwid Review Debug</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .section { background: #f5f5f5; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .success { background: #4CAF50; color: white; }
+        .danger { background: #f44336; color: white; }
+        pre { background: white; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Wiwid Review Debugger</h1>
+    
+    <div class="section">
+        <h2>Quick Actions</h2>
+        <button class="success" onclick="generateWiwidReviews()">Generate 10 Reviews for Wiwid</button>
+        <button onclick="checkStorage()">Check Storage</button>
+        <button class="danger" onclick="clearStorage()">Clear All</button>
+    </div>
+    
+    <div class="section">
+        <h2>Results</h2>
+        <div id="output"></div>
+    </div>
+    
+    <script>
+        const WIWID_ID = '694ed78f9574395fd7b9';
+        
+        function generateWiwidReviews() {
+            const names = [
+                'Sarah Mitchell', 'Budi Santoso', 'Emma Rodriguez', 'Ahmad Hidayat',
+                'David Chen', 'Sari Wulandari', 'Michael Johnson', 'Dewi Lestari',
+                'James Anderson', 'Rina Putri'
+            ];
+            
+            const comments = [
+                'Excellent massage! Very professional.',
+                'Amazing experience, highly recommend.',
+                'Fantastic massage therapy session! The therapist was very professional and knew exactly how to address my muscle tension. Highly recommended.',
+                'Very relaxing experience. Great technique and wonderful atmosphere. Will definitely return for another session.',
+                'Professional service from start to finish. The massage helped tremendously with my back pain. Excellent value for money.',
+                'Absolutely incredible massage experience! The therapist arrived on time and was very professional throughout the entire session. My shoulder tension has significantly improved after just one visit.',
+                'One of the best massages I\'ve ever had! The therapist was highly skilled and really understood how to work with my specific problem areas.',
+                'Great service, will book again.',
+                'Perfect session, exactly what I needed.',
+                'Outstanding therapist, very skilled.'
+            ];
+            
+            const existingReviewsJson = localStorage.getItem('massage_app_reviews');
+            const existingReviews = existingReviewsJson ? JSON.parse(existingReviewsJson) : [];
+            
+            // Remove any existing Wiwid reviews first
+            const filteredReviews = existingReviews.filter(r => r.providerId !== WIWID_ID);
+            
+            const newReviews = [];
+            for (let i = 0; i < 10; i++) {
+                const rating = Math.random() > 0.2 ? 5 : 4;
+                const review = {
+                    id: `review_wiwid_${Date.now()}_${i}`,
+                    providerId: WIWID_ID,
+                    providerType: 'therapist',
+                    userId: `user_${Date.now()}_${i}`,
+                    userName: names[i],
+                    rating: rating,
+                    comment: comments[i],
+                    location: 'Yogyakarta, Indonesia',
+                    createdAt: new Date(Date.now() - (i * 3600000)).toISOString(), // Spread over hours
+                    isVerified: false
+                };
+                newReviews.push(review);
+            }
+            
+            const allReviews = [...filteredReviews, ...newReviews];
+            localStorage.setItem('massage_app_reviews', JSON.stringify(allReviews));
+            
+            // Dispatch event to refresh components
+            window.dispatchEvent(new CustomEvent('reviewsUpdated'));
+            
+            document.getElementById('output').innerHTML = `
+                <div style="background: #4CAF50; color: white; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                    ✅ Successfully generated ${newReviews.length} reviews for Wiwid!
+                </div>
+                <h3>Generated Reviews:</h3>
+                <pre>${JSON.stringify(newReviews, null, 2)}</pre>
+                <p><strong>Total reviews in storage:</strong> ${allReviews.length}</p>
+                <p><strong>Wiwid's reviews:</strong> ${newReviews.length}</p>
+            `;
+        }
+        
+        function checkStorage() {
+            const reviewsJson = localStorage.getItem('massage_app_reviews');
+            const reviews = reviewsJson ? JSON.parse(reviewsJson) : [];
+            const wiwidReviews = reviews.filter(r => r.providerId === WIWID_ID);
+            
+            document.getElementById('output').innerHTML = `
+                <h3>Storage Status:</h3>
+                <p><strong>Total reviews:</strong> ${reviews.length}</p>
+                <p><strong>Wiwid reviews:</strong> ${wiwidReviews.length}</p>
+                ${wiwidReviews.length > 0 ? `
+                    <h4>Wiwid's Reviews:</h4>
+                    ${wiwidReviews.map(r => `
+                        <div style="background: white; padding: 10px; margin: 5px 0; border-left: 4px solid #4CAF50;">
+                            <strong>${r.userName}</strong> - ⭐ ${r.rating}/5<br>
+                            ${r.comment}<br>
+                            <small>📍 ${r.location} | ${new Date(r.createdAt).toLocaleString()}</small>
+                        </div>
+                    `).join('')}
+                ` : '<p style="color: #f44336;">❌ No reviews found for Wiwid</p>'}
+                <h4>Raw Data:</h4>
+                <pre>${JSON.stringify(wiwidReviews, null, 2)}</pre>
+            `;
+        }
+        
+        function clearStorage() {
+            if (confirm('Clear all reviews?')) {
+                localStorage.removeItem('massage_app_reviews');
+                document.getElementById('output').innerHTML = '<p style="color: #4CAF50;">✅ Storage cleared</p>';
+            }
+        }
+        
+        // Auto-check on load
+        checkStorage();
+    </script>
+</body>
+</html>

@@ -17,10 +17,9 @@ interface MenuService {
 
 interface TherapistMenuProps {
   therapist: Therapist | null;
-  onNavigateToPayment?: () => void;
 }
 
-const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPayment }) => {
+const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
   const [services, setServices] = useState<MenuService[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -203,6 +202,9 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
     }
   };
 
+  // All features now available for standard 30% commission plan
+  const isPremium = true; // Always true - no premium restrictions
+
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
@@ -232,11 +234,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
               </div>
             )}
           </div>
-          {isPremium && (
-            <div className="mt-2 flex items-center gap-2">
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 rounded-lg">
-                <span className="text-xs font-medium text-orange-700">👑 Premium Feature</span>
-              </div>
+          <div className="mt-2 flex items-center gap-2">
               
               {/* Data Size Indicator */}
               {services.length > 0 && (() => {
@@ -264,22 +262,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
 
         {/* Content */}
         <div className="p-8 space-y-6">
-          {!isPremium ? (
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Premium Feature</h3>
-              <p className="text-sm text-gray-700 mb-4">
-                Upgrade to Premium to create a custom service menu with your own pricing. 
-                Your menu will be displayed on your therapist card for customers to browse and book.
-              </p>
-              <button 
-                onClick={() => onNavigateToPayment?.()}
-                className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all"
-              >
-                Upgrade to Premium
-              </button>
-            </div>
-          ) : (
-            <>
+          {/* All features available - no premium restriction */}
+          <>
               {/* Info Box */}
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                 <p className="text-sm text-blue-700 mb-2">
@@ -326,78 +310,9 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
                             }}
                             onBlur={e => {
                               if (!e.target.value) {
-                                {services.length > 0 && (() => {
-                                  const validServices = services.filter(s => s.serviceName.trim());
-                                  const dataSize = new Blob([JSON.stringify(validServices)]).size;
-                                  const percentage = (dataSize / 50000) * 100;
-                                  const isNearLimit = percentage > 80;
-                                  const isOverLimit = dataSize > 50000;
-            
-                                  return (
-                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg ${
-                                      isOverLimit ? 'bg-red-100' : isNearLimit ? 'bg-yellow-100' : 'bg-green-100'
-                                    }`}>
-                                      <span className={`text-xs font-medium ${
-                                        isOverLimit ? 'text-red-700' : isNearLimit ? 'text-yellow-700' : 'text-green-700'
-                                      }`}>
-                                        📊 {dataSize}/50000 chars
-                                      </span>
-                                    </div>
-                                  );
-                                })()}
-                            type="text"
-                            value={service.min90 || ''}
-                            onChange={e => {
-                              const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                                {/* Info Box */}
-                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                                  <p className="text-sm text-blue-700 mb-2">
-                                    📋 <strong>Auto-Save Enabled:</strong> Your changes save automatically after 2 seconds. No need to click save!
-                                  </p>
-                                  <p className="text-xs text-gray-600">
-                                    💡 <strong>Tip:</strong> Leave price empty to hide that duration. Edit Min values to set custom minimum booking times.
-                                  </p>
-                                </div>
-
-                                {/* Services List - One Line Per Service */}
-                                <div className="space-y-3">
-                                  {services.length === 0 && (
-                                    <div className="text-center py-8 text-gray-500">
-                                      No services added yet. Click "+ Add New Service" to start.
-                                    </div>
-                                  )}
-            
-                                  {services.map((service, index) => (
-                                    <div key={service.id} className="bg-white border-2 border-orange-200 rounded-lg p-3 hover:shadow-md transition-shadow">
-                                      {/* Service Name - Full Width on Top */}
-                                      <div className="mb-3">
-                                        <input
-                                          type="text"
-                                          value={service.serviceName}
-                                          onChange={e => updateService(service.id, 'serviceName', e.target.value)}
-                                          className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:border-orange-500 outline-none"
-                                          placeholder="Service name"
-                                        />
-                                      </div>
-
-                                      {/* Duration Containers + Delete Button Row */}
-                                      <div className="flex items-start gap-2">
-                                        {/* 60 Minutes Container */}
-                                        <div className="flex-1">
-                                          <div className="flex items-center justify-center gap-1 mb-1">
-                                            <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
-                                            <input
-                                              type="text"
-                                              value={service.min60 || ''}
-                                              onChange={e => {
-                                                const value = e.target.value.replace(/\D/g, '').slice(0, 3);
-                                                updateService(service.id, 'min60', value);
-                                              }}
-                                              onBlur={e => {
-                                                if (!e.target.value) {
-                                                  updateService(service.id, 'min60', '60');
-                                                }
-                                              }}
+                                updateService(service.id, 'min60', '60');
+                              }
+                            }}
                                               className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
                                               placeholder="60"
                                               maxLength={3}
@@ -531,4 +446,12 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigateToPa
                                       Save Menu
                                     </>
                                   )}
-                                </button>
+                                </button>              </>
+            )}
+          </div>
+        </div>
+      </main>
+    );
+};
+
+export default TherapistMenu;

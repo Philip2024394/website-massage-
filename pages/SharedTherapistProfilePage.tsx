@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import TherapistCard from '../components/TherapistCard';
+import RotatingReviews from '../components/RotatingReviews';
 import type { Therapist, UserLocation } from '../types';
 import { useTranslations } from '../lib/useTranslations';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -358,13 +359,46 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         );
     }
 
+    // Get hero image - special case for Budi (ID: 152935)
+    const getHeroImage = () => {
+        const therapistIdStr = therapist.id?.toString() || therapist.$id?.toString() || '';
+        
+        console.log('🖼️ Hero Image Debug:', {
+            therapistName: therapist.name,
+            therapistId: therapist.id,
+            therapist$id: therapist.$id,
+            therapistIdStr: therapistIdStr,
+            isBudi: therapistIdStr === '152935'
+        });
+        
+        // Budi's custom hero image
+        if (therapistIdStr === '152935') {
+            console.log('✅ Showing Budi custom hero image');
+            return "https://ik.imagekit.io/7grri5v7d/massage%207.png?updatedAt=1766417587398";
+        }
+        
+        // Default fallback chain
+        console.log('⚠️ Not Budi - using fallback');
+        return therapist.mainImage || therapist.profilePicture || "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
+    };
+
+    const heroImageUrl = getHeroImage();
+    console.log('🎨 Final hero image URL:', heroImageUrl);
+
+    // Add cache-busting to ensure image updates are visible
+    const getCacheBustedUrl = (url: string) => {
+        if (!url) return url;
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}t=${Date.now()}`;
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
-                {/* Hero Image */}
+                {/* Hero Logo - Same as /share/ implementation */}
                 <div className="flex justify-center mb-4">
                     <img 
-                        src="https://ik.imagekit.io/7grri5v7d/logo%20yoga.png" 
+                        src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
                         alt="Logo" 
                         className="h-48 w-auto object-contain"
                     />
@@ -383,8 +417,30 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     isCustomerLoggedIn={Boolean(loggedInCustomer)}
                     t={t}
                     hideJoinButton={true}
-                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png"
+                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/verfied_badge-removebg-preview.png"
                 />
+
+                {/* Rotating Reviews Section - Same as /share/ implementation */}
+                <div className="mt-8">
+                    {/* Debug logging moved outside JSX */}
+                    {(() => {
+                        console.log('🔧 About to render RotatingReviews with:', {
+                            location: therapist.city || therapist.location || 'Yogyakarta',
+                            providerId: (therapist as any).$id || (therapist as any).id,
+                            providerName: therapist.name
+                        });
+                        return null;
+                    })()}
+                    <RotatingReviews 
+                        location={therapist.city || therapist.location || 'Yogyakarta'} 
+                        limit={5}
+                        providerId={(therapist as any).$id || (therapist as any).id}
+                        providerName={therapist.name}
+                        providerType={'therapist'}
+                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        onNavigate={onNavigate}
+                    />
+                </div>
 
                 {/* Optional bottom space for custom messaging */}
                 <div className="min-h-[32px]" />

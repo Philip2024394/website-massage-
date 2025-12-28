@@ -32,25 +32,29 @@ export const useAppState = () => {
         return 'mobile-terms-and-conditions';
       }
       
-      // Short URL format: /share/12345 or /share/slug-name
-      if (pathname.startsWith('/share/') && !pathname.startsWith('/share/therapist/') && !pathname.startsWith('/share/place/') && !pathname.startsWith('/share/facial/')) {
-        console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
-        console.log('🔗 Returning: share-therapist');
-        return 'share-therapist'; // Default to therapist for short links
-      }
-      
-      // New share URLs with explicit type
-      if (pathname.startsWith('/share/therapist/')) {
-        console.log('🔗 EXPLICIT THERAPIST SHARE URL');
-        return 'share-therapist';
-      }
-      if (pathname.startsWith('/share/place/')) {
-        console.log('🔗 EXPLICIT PLACE SHARE URL');
-        return 'share-place';
-      }
-      if (pathname.startsWith('/share/facial/')) {
-        console.log('🔗 EXPLICIT FACIAL SHARE URL');
-        return 'share-facial';
+      // Handle share URLs - both SEO format and simple format
+      if (pathname.startsWith('/share/')) {
+        const segments = pathname.split('/').filter(Boolean);
+        // segments will be: ['share', 'pijat-yogyakarta-wiwid', '123'] OR ['share', 'therapist', '123']
+        
+        if (segments.length >= 3) {
+          // SEO format: /share/{slug}/{id} - default to therapist
+          console.log('🔗 SEO SHARE URL DETECTED:', pathname);
+          return 'share-therapist';
+        } else if (segments[1] === 'therapist') {
+          console.log('🔗 EXPLICIT THERAPIST SHARE URL');
+          return 'share-therapist';
+        } else if (segments[1] === 'place') {
+          console.log('🔗 EXPLICIT PLACE SHARE URL');
+          return 'share-place';
+        } else if (segments[1] === 'facial') {
+          console.log('🔗 EXPLICIT FACIAL SHARE URL');
+          return 'share-facial';
+        } else {
+          // Short URL format: /share/12345
+          console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
+          return 'share-therapist'; // Default to therapist for short links
+        }
       }
       
       // Legacy therapist profile URL
