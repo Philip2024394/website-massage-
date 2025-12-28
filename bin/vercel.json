@@ -1,4 +1,6 @@
 {
+  "$comment": "⚠️ THIS PROJECT USES NETLIFY, NOT VERCEL! This file is kept for reference only.",
+  "$comment2": "Active deployment configuration is in netlify.toml",
   "framework": null,
   "buildCommand": "pnpm run build:vercel",
   "outputDirectory": "dist",
