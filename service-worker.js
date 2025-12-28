@@ -1,6 +1,6 @@
 // 🔥 CACHE-BUSTING: Update version on every deployment
 // Change this version whenever you deploy new code
-const CACHE_VERSION = 'v2.0.2'; // INCREMENT THIS ON EVERY DEPLOYMENT!
+const CACHE_VERSION = 'v2.1.0'; // INCREMENT THIS ON EVERY DEPLOYMENT!
 const CACHE_NAME = `indostreet-massage-cache-${CACHE_VERSION}`;
 const urlsToCache = [
   '/',

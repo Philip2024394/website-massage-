@@ -10,6 +10,9 @@ import './utils/domErrorHandler';
 // Suppress non-critical Appwrite collection errors in console
 import './utils/suppressNonCriticalErrors';
 
+// Initialize version checking for cache busting
+import { initVersionCheck } from './lib/versionCheck';
+
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 
@@ -34,6 +37,11 @@ if (isAdminMode) {
           console.log('Service Worker registration failed:', error);
         });
     });
+  }
+
+  // Initialize version check (production only)
+  if (import.meta.env.PROD) {
+    initVersionCheck();
   }
 
   // Mount React app
