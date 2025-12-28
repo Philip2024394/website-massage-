@@ -95,7 +95,8 @@ export const therapistService = {
             console.log('📋 Fetching all therapists from collection:', APPWRITE_CONFIG.collections.therapists);
             const response = await rateLimitedDb.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.therapists
+                APPWRITE_CONFIG.collections.therapists,
+                [Query.limit(500)] // Fetch up to 500 therapists (Appwrite default is only 25)
             );
             console.log('✅ Fetched therapists:', response.documents.length);
             

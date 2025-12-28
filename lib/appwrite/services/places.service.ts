@@ -23,12 +23,12 @@ export const placesService = {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
-                [Query.limit(100)]
+                [Query.limit(500)] // Increased from 100 to 500 to support more places
             );
 
             // Enrich with analytics from leads collection if available
             for (const place of response.documents) {
-                // Only attempt to query leads if user is authenticated
+                // Only attempt to query leads if user is authenticated (prevents 401 errors)
                 if (isAuthenticated && APPWRITE_CONFIG.collections.leads) {
                     try {
                         const leadsData = await databases.listDocuments(
@@ -38,7 +38,7 @@ export const placesService = {
                         );
                         place.analytics = JSON.stringify({ bookings: leadsData.total });
                     } catch (error) {
-                        // Fallback to seed data if query fails
+                        // Silently fallback to seed data if query fails
                         const seedBookings = 32 + Math.floor(Math.random() * 19);
                         place.analytics = JSON.stringify({ bookings: seedBookings });
                     }
