@@ -8,6 +8,7 @@ export type ClientPreference =
     | 'Females Only' 
     | 'Males And Females' 
     | 'Babies Only' 
+    | 'Woman And Children'
     | 'All Ages And Genders';
 
 export const CLIENT_PREFERENCE_OPTIONS: ClientPreference[] = [
@@ -15,6 +16,7 @@ export const CLIENT_PREFERENCE_OPTIONS: ClientPreference[] = [
     'Males Only',
     'Females Only', 
     'Babies Only',
+    'Woman And Children',
     'All Ages And Genders'
 ];
 
@@ -23,6 +25,7 @@ export const CLIENT_PREFERENCE_LABELS: Record<ClientPreference, string> = {
     'Males Only': 'Males Only',
     'Females Only': 'Females Only',
     'Babies Only': 'Babies Only',
+    'Woman And Children': 'Woman & Children',
     'All Ages And Genders': 'All Ages / Genders'
 };
 
@@ -31,6 +34,7 @@ export const CLIENT_PREFERENCE_DESCRIPTIONS: Record<ClientPreference, string> = 
     'Males Only': 'Accept only male adult clients',
     'Females Only': 'Accept only female adult clients',
     'Babies Only': 'Specialize in baby massage services only',
+    'Woman And Children': 'Accept women and children clients',
     'All Ages And Genders': 'Accept clients of all ages and genders'
 };
 
@@ -46,6 +50,7 @@ export function getClientPreferenceDisplay(preference?: ClientPreference, langua
             'Males Only': 'Hanya Pria',
             'Females Only': 'Hanya Wanita',
             'Babies Only': 'Hanya Bayi',
+            'Woman And Children': 'Wanita & Anak-anak',
             'All Ages And Genders': 'Semua Usia / Jenis Kelamin'
         };
         return translations[pref];
@@ -57,6 +62,7 @@ export function getClientPreferenceDisplay(preference?: ClientPreference, langua
         'Males Only': 'Males Only', 
         'Females Only': 'Females Only',
         'Babies Only': 'Babies Only',
+        'Woman And Children': 'Woman & Children',
         'All Ages And Genders': 'All Ages / Genders'
     };
     
