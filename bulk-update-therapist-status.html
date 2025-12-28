@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Update Therapist Status</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+        }
+        .control-panel {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .log {
+            background: #1a202c;
+            color: #a0aec0;
+            padding: 20px;
+            border-radius: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+        .success { color: #48bb78; }
+        .error { color: #f56565; }
+        .info { color: #4299e1; }
+        .warning { color: #ed8936; }
+        .summary {
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Bulk Update Therapist Status</h1>
+        <p class="subtitle">Update all therapists to a specific status without logging in individually</p>
+        
+        <div class="control-panel">
+            <label for="status">Select Target Status:</label>
+            <select id="status">
+                <option value="busy">Busy</option>
+                <option value="available">Available</option>
+                <option value="offline">Offline</option>
+            </select>
+            
+            <label for="therapistIds">Specific Therapist IDs (optional, comma-separated):</label>
+            <input 
+                type="text" 
+                id="therapistIds" 
+                placeholder="Leave empty to update all therapists"
+            >
+            
+            <button id="updateBtn" onclick="bulkUpdate()">
+                🚀 Start Bulk Update
+            </button>
+        </div>
+        
+        <div id="logContainer" class="log" style="display:none;">
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        // Initialize Appwrite
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05';
+        const APPWRITE_THERAPISTS_COLLECTION = 'therapists_collection_id';
+
+        let updateResults = {
+            total: 0,
+            successful: 0,
+            failed: 0
+        };
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logDiv = document.getElementById('log');
+            logContainer.style.display = 'block';
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            logDiv.appendChild(entry);
+            
+            // Auto-scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        async function updateTherapistStatus(therapistId, status, therapistName) {
+            try {
+                await databases.updateDocument(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_THERAPISTS_COLLECTION,
+                    therapistId,
+                    { status: status.toLowerCase() }
+                );
+                log(`✅ Updated ${therapistName} (${therapistId}) to ${status}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Failed to update ${therapistName}: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function bulkUpdate() {
+            // Clear previous log
+            document.getElementById('log').innerHTML = '';
+            updateResults = { total: 0, successful: 0, failed: 0 };
+            
+            const targetStatus = document.getElementById('status').value;
+            const therapistIdsInput = document.getElementById('therapistIds').value.trim();
+            const specificIds = therapistIdsInput ? therapistIdsInput.split(',').map(id => id.trim()) : null;
+            
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.disabled = true;
+            updateBtn.textContent = '⏳ Updating...';
+            
+            log('🚀 Starting bulk status update...', 'info');
+            log(`🎯 Target Status: ${targetStatus}`, 'info');
+            log(`📋 Scope: ${specificIds ? `${specificIds.length} specific therapist(s)` : 'All therapists'}`, 'info');
+            log('─'.repeat(50), 'info');
+            
+            try {
+                // Fetch therapists
+                const queries = specificIds 
+                    ? [Query.equal('$id', specificIds)] 
+                    : [Query.limit(100)];
+                
+                const response = await databases.listDocuments(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_THERAPISTS_COLLECTION,
+                    queries
+                );
+
+                const therapists = response.documents;
+                updateResults.total = therapists.length;
+                
+                log(`📊 Found ${therapists.length} therapist(s) to update`, 'info');
+                log('─'.repeat(50), 'info');
+
+                // Update each therapist
+                for (const therapist of therapists) {
+                    const success = await updateTherapistStatus(
+                        therapist.$id,
+                        targetStatus,
+                        therapist.name || 'Unknown'
+                    );
+                    
+                    if (success) {
+                        updateResults.successful++;
+                    } else {
+                        updateResults.failed++;
+                    }
+                    
+                    // Small delay to avoid rate limiting
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+
+                // Summary
+                log('─'.repeat(50), 'info');
+                log('📊 BULK UPDATE SUMMARY', 'info');
+                log('─'.repeat(50), 'info');
+                log(`Total therapists: ${updateResults.total}`, 'info');
+                log(`✅ Successful: ${updateResults.successful}`, 'success');
+                log(`❌ Failed: ${updateResults.failed}`, updateResults.failed > 0 ? 'error' : 'info');
+                log('─'.repeat(50), 'info');
+                log('✅ Bulk update completed!', 'success');
+
+            } catch (error) {
+                log(`❌ Error during bulk update: ${error.message}`, 'error');
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = '🚀 Start Bulk Update';
+            }
+        }
+    </script>
+</body>
+</html>
