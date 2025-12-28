@@ -257,7 +257,6 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
                 );
               })()}
             </div>
-          )}
         </div>
 
         {/* Content */}
@@ -446,8 +445,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
                                       Save Menu
                                     </>
                                   )}
-                                </button>              </>
-            )}
+                                </button>
+              </>
           </div>
         </div>
       </main>
