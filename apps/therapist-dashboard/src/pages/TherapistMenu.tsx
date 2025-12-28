@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Therapist } from '../../../../types';
 import { therapistMenusService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
-import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2, Home } from 'lucide-react';
 
 interface MenuService {
   id: string;
@@ -17,9 +17,10 @@ interface MenuService {
 
 interface TherapistMenuProps {
   therapist: Therapist | null;
+  onNavigate?: (page: string) => void;
 }
 
-const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
+const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) => {
   const [services, setServices] = useState<MenuService[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -215,6 +216,17 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist }) => {
               <MenuIcon className="w-6 h-6 text-orange-500" />
               <h2 className="text-gray-900 text-2xl font-bold">Therapist Menu</h2>
             </div>
+            
+            {/* Home Button */}
+            {onNavigate && (
+              <button
+                onClick={() => onNavigate('status')}
+                className="p-2 rounded-full hover:bg-orange-50 text-orange-500 transition-colors"
+                title="Back to Status"
+              >
+                <Home className="w-6 h-6" />
+              </button>
+            )}
             
             {/* Auto-Save Status Indicator */}
             {autoSaveStatus !== 'idle' && (

@@ -307,7 +307,7 @@ function App() {
       case 'payment-status':
         return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'custom-menu':
-        return <TherapistMenu therapist={user} />;
+        return <TherapistMenu therapist={user} onNavigate={setCurrentPage} />;
       case 'commission-payment':
         return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'schedule':
