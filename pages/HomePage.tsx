@@ -324,8 +324,8 @@ const HomePage: React.FC<HomePageProps> = ({
     // Reshuffle images whenever user views the Home tab (requirement: random change each time)
     useEffect(() => {
         if (activeTab === 'home') {
-            // Take first 17 (spec requirement) then shuffle for unique cycle
-            const baseImages = [...THERAPIST_MAIN_IMAGES.slice(0, 17)];
+            // Use all 18 available images then shuffle for unique cycle
+            const baseImages = [...THERAPIST_MAIN_IMAGES]; // Use all images, not just first 17
             const shuffled = shuffleArray(baseImages);
             setShuffledHomeImages(shuffled);
             console.log('🎲 HomePage shuffled therapist images for this view:', shuffled);
