@@ -40,10 +40,10 @@ export const APPWRITE_CONFIG = {
     
     // Content
     massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
-    customLinks: import.meta.env.VITE_CUSTOM_LINKS_COLLECTION_ID || '67670249000b8becb947', // Real production collection ID
+    customLinks: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
     imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
     loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
-    translations: import.meta.env.VITE_TRANSLATIONS_COLLECTION_ID || '6767020d001f6bafeea2', // Real production collection ID
+    translations: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
     
     // Pricing & Payments
     membershipPricing: 'Membership Pricing',
