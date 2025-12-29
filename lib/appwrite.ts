@@ -20,28 +20,28 @@ export { storage as appwriteStorage };
 // Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: 'THERAPISTS_COLLECTION_ID', // ✅ Real production collection ID
-    PLACES: 'places_collection_id', // ✅ Real production collection ID
-    FACIAL_PLACES: 'facial_places_collection', // ✅ Real production collection ID (facial places)
-    USERS: 'users_collection_id', // ✅ Real production collection ID
-    AGENTS: 'users_collection_id', // Using users collection
-    BOOKINGS: 'bookings_collection_id', // ✅ Real production collection ID (NOTE: May not exist in database)
-    REVIEWS: '6767020d001f6bafeea2', // Using translations collection as fallback
-    ANALYTICS: '6767020d001f6bafeea2', // Using translations collection as fallback
-    ANALYTICS_EVENTS: '6767020d001f6bafeea2', // Using translations collection as fallback
-    ADMINS: 'users_collection_id', // Using users collection
-    HOTELS: 'hotels_collection_id', // ✅ Real production collection ID
-    VILLAS: 'hotels_collection_id', // Using hotels collection
-    PARTNERS: 'hotels_collection_id', // Using hotels collection
-    NOTIFICATIONS: '6767020d001f6bafeea2', // Using translations collection as fallback
-    MASSAGE_TYPES: '6767020d001f6bafeea2', // Using translations collection as fallback
-    MEMBERSHIP_PRICING: '6767020d001f6bafeea2', // Using translations collection as fallback
-    CUSTOM_LINKS: 'custom_links_collection_id', // ✅ Real production collection ID
-    IMAGE_ASSETS: 'custom_links_collection_id', // Using custom links collection
-    LOGIN_BACKGROUNDS: 'custom_links_collection_id', // Using custom links collection
-    TRANSLATIONS: '6767020d001f6bafeea2', // ✅ Real production collection ID
-    COMMISSION_RECORDS: '6767020d001f6bafeea2', // Using translations collection as fallback
-    ATTRIBUTES: '6767020d001f6bafeea2' // Using translations collection as fallback
+    THERAPISTS: '676703b40009b9dd33de', // ✅ Real production collection ID
+    PLACES: '6767038a003b7bdff200', // ✅ Real production collection ID
+    FACIAL_PLACES: '67670371000c0bef1447', // ✅ Real production collection ID (facial places)
+    USERS: '67670355000b2bc99d43', // ✅ Real production collection ID
+    AGENTS: '67670355000b2bc99d43', // Using users collection
+    BOOKINGS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
+    REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
+    ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
+    ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
+    ADMINS: '67670355000b2bc99d43', // Using users collection
+    HOTELS: '676701f9001e6dc8b278', // ✅ Real production collection ID
+    VILLAS: '676701f9001e6dc8b278', // Using hotels collection
+    PARTNERS: '676701f9001e6dc8b278', // Using hotels collection
+    NOTIFICATIONS: '', // ⚠️ DISABLED - Collection doesn't exist
+    MASSAGE_TYPES: '', // ⚠️ DISABLED - Collection doesn't exist
+    MEMBERSHIP_PRICING: '', // ⚠️ DISABLED - Collection doesn't exist
+    CUSTOM_LINKS: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+    IMAGE_ASSETS: '', // ⚠️ DISABLED - Collection doesn't exist
+    LOGIN_BACKGROUNDS: '', // ⚠️ DISABLED - Collection doesn't exist
+    TRANSLATIONS: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+    COMMISSION_RECORDS: '', // ⚠️ DISABLED - Collection doesn't exist
+    ATTRIBUTES: '' // ⚠️ DISABLED - Collection doesn't exist
 };
 
 // Storage bucket IDs
