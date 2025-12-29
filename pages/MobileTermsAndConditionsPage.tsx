@@ -352,6 +352,58 @@ const MobileTermsAndConditionsPage: React.FC = () => {
                     </ul>
                 </div>
 
+                {/* Profile Setup & Operational Fees - For Therapists and Service Providers */}
+                <div className="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-indigo-500" />
+                        Profile Setup & Operational Fees
+                    </h3>
+                    <div className="space-y-4">
+                        <p className="text-gray-700 leading-relaxed">
+                            <strong>Platform Support Services:</strong> IndaStreet provides comprehensive business growth services to support massage therapists, massage centers, and facial treatment providers at every stage—from independent practitioners to established enterprises. Our team offers professional guidance, marketing support, and operational assistance to help you reach your full business potential.
+                        </p>
+                        
+                        <p className="text-gray-700 leading-relaxed">
+                            <strong>Operational Costs:</strong> Like your professional services, maintaining and operating a high-quality platform requires ongoing investment. To ensure sustainable growth, reliable infrastructure, and continuous improvement of our services, we must cover operational expenses including technology maintenance, customer support, payment processing, and platform development.
+                        </p>
+
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-4">
+                            <h4 className="font-bold text-indigo-900 text-base mb-3">Profile Upload Fee Structure</h4>
+                            
+                            <ul className="space-y-3 text-gray-700">
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Standard Profile Setup Fee:</strong> Therapist profiles, massage center profiles, and facial treatment center profiles uploaded and managed by the IndaStreet team are subject to a one-time setup fee of <strong>IDR 350,000</strong>. This fee covers professional profile creation, quality verification, photography assistance (if applicable), and initial platform integration.</span>
+                                </li>
+                                
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Fee Waiver Program:</strong> As a token of appreciation for your partnership and continued service, the <strong>IDR 350,000 profile setup fee will be fully waived and refunded after your account has been active and operational for 4 consecutive months</strong>. This is our way of saying thank you for choosing IndaStreet as your business growth partner.</span>
+                                </li>
+                                
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Profile Removal Policy:</strong> Please note that therapist profiles, massage center profiles, and facial treatment center profiles cannot be removed from the platform unless one of the following conditions is met:
+                                        <ul className="list-disc pl-6 mt-2 space-y-1">
+                                            <li>The profile setup fee of IDR 350,000 has been paid in full, OR</li>
+                                            <li>Your account has completed the 4-month operational period and qualifies for fee waiver</li>
+                                        </ul>
+                                    </span>
+                                </li>
+                                
+                                <li className="flex items-start gap-2">
+                                    <span className="w-2 h-2 bg-indigo-500 rounded-full mt-2 flex-shrink-0"></span>
+                                    <span><strong>Payment Methods:</strong> Profile setup fees can be paid via bank transfer, mobile payment apps, or other payment methods as specified by the IndaStreet admin team. Payment confirmation and receipts will be provided upon request.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <p className="text-sm text-gray-600 italic mt-4">
+                            <strong>Note:</strong> Self-registered profiles created directly by therapists or business owners through the platform's registration system are not subject to this setup fee. This fee applies exclusively to profiles created and uploaded by the IndaStreet team on behalf of service providers.
+                        </p>
+                    </div>
+                </div>
+
                 {/* Contact Information */}
                 <div className="bg-white rounded-lg shadow-sm border p-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
