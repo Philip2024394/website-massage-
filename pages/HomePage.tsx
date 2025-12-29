@@ -763,91 +763,70 @@ const HomePage: React.FC<HomePageProps> = ({
                 };
             });
             
+            // GPS-based filtering (25km radius) when user sets location AND city is 'all'
+            // City dropdown filtering takes priority when user selects specific city
+            if (locationToUse && selectedCity === 'all') {
+                try {
+                    console.log('🔍 Filtering providers by GPS location (25km radius):', locationToUse);
+                    
+                    // Get location coordinates
+                    const coords = 'lat' in locationToUse 
+                        ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                        : autoDetectedLocation;
+
+                    if (coords) {
+                        console.log('📍 Using coordinates:', coords);
+
+                        // Find nearby therapists and places (25km radius as requested)
+                        const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 25);
+                        const nearbyPlacesResult = await findNearbyPlaces('0', coords, 25);
+                        
+                        console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 25km`);
+                        console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 25km`);
+                        
+                        // Always include featured samples (Budi) regardless of location
+                        const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
+                        const featuredPlaces = places.filter((p: any) => isFeaturedSample(p, 'place'));
+                        
+                        // Merge nearby results with featured samples (remove duplicates)
+                        const mergedTherapists = [
+                            ...featuredTherapists,
+                            ...nearbyTherapistsResult.filter((t: any) => 
+                                !featuredTherapists.some((ft: any) => 
+                                    (ft.$id && ft.$id === t.$id) || (ft.id && ft.id === t.id)
+                                )
+                            )
+                        ];
+                        
+                        const mergedPlaces = [
+                            ...featuredPlaces,
+                            ...nearbyPlacesResult.filter((p: any) => 
+                                !featuredPlaces.some((fp: any) => 
+                                    (fp.$id && fp.$id === p.$id) || (fp.id && fp.id === p.id)
+                                )
+                            )
+                        ];
+                        
+                        // Use nearby results if found, otherwise fallback to all with coords
+                        setNearbyTherapists(mergedTherapists.length > 0 ? mergedTherapists : therapistsWithCoords);
+                        setNearbyPlaces(mergedPlaces.length > 0 ? mergedPlaces : placesWithCoords);
+                        setNearbyHotels(hotelsWithCoords);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('❌ Location filtering error:', error);
+                    // Fallback to showing all providers
+                }
+            }
+            
+            // Default: Show all providers with coordinates (city dropdown will filter later)
             setNearbyTherapists(therapistsWithCoords);
             setNearbyPlaces(placesWithCoords);
             setNearbyHotels(hotelsWithCoords);
-            
-            /* ORIGINAL LOCATION FILTERING CODE - Re-enable after adding coordinates to therapists
-            if (!locationToUse) {
-                // No location available, show all therapists (including featured samples)
-                setNearbyTherapists(therapists);
-                setNearbyPlaces(places);
-                return;
-            }
-
-            try {
-                console.log('🔍 Filtering providers by location:', locationToUse);
-                
-                // Get location coordinates
-                const coords = 'lat' in locationToUse 
-                    ? { lat: locationToUse.lat, lng: locationToUse.lng }
-                    : autoDetectedLocation;
-
-                if (!coords) {
-                    console.warn('⚠️ No valid coordinates found, showing all providers');
-                    // No coordinates available, show all therapists (including featured samples)
-                    setNearbyTherapists(therapists);
-                    setNearbyPlaces(places);
-                    return;
-                }
-
-                console.log('📍 Using coordinates:', coords);
-
-                // Find nearby therapists and places (50km radius)
-                const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 50);
-                const nearbyPlacesResult = await findNearbyPlaces('0', coords, 50);
-                
-                console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 50km`);
-                console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 50km`);
-                
-                // Always include featured samples (Budi and Sample Massage Spa) regardless of location
-                const featuredTherapists = therapists.filter((t: any) => isFeaturedSample(t, 'therapist'));
-                const featuredPlaces = places.filter((p: any) => isFeaturedSample(p, 'place'));
-                
-                console.log(`🔍 FEATURED SAMPLES SEARCH RESULTS:`);
-                console.log(`   - Total therapists: ${therapists.length}, Featured: ${featuredTherapists.length}`);
-                console.log(`   - Total places: ${places.length}, Featured: ${featuredPlaces.length}`);
-                if (featuredTherapists.length === 0) {
-                    console.log(`   - No "Budi" therapist found. Available therapists:`, therapists.map(t => t.name));
-                }
-                if (featuredPlaces.length === 0) {
-                    console.log(`   - No "Sample Massage Spa" found. Available places:`, places.map(p => p.name));
-                }
-                
-                // Merge nearby results with featured samples (remove duplicates)
-                const mergedTherapists = [
-                    ...featuredTherapists,
-                    ...nearbyTherapistsResult.filter((t: any) => 
-                        !featuredTherapists.some((ft: any) => 
-                            (ft.$id && ft.$id === t.$id) || (ft.id && ft.id === t.id)
-                        )
-                    )
-                ];
-                
-                const mergedPlaces = [
-                    ...featuredPlaces,
-                    ...nearbyPlacesResult.filter((p: any) => 
-                        !featuredPlaces.some((fp: any) => 
-                            (fp.$id && fp.$id === p.$id) || (fp.id && fp.id === p.id)
-                        )
-                    )
-                ];
-                
-                // If no nearby providers found, show featured samples + all therapists as fallback
-                setNearbyTherapists(mergedTherapists.length > 0 ? mergedTherapists : [...featuredTherapists, ...therapists]);
-                setNearbyPlaces(mergedPlaces.length > 0 ? mergedPlaces : [...featuredPlaces, ...places]);
-                
-            } catch (error) {
-                console.error('❌ Location filtering error:', error);
-                // Silent fallback to all providers
-                setNearbyTherapists(therapists);
-                setNearbyPlaces(places);
-            }
-            */
         };
 
         filterByLocation();
-    }, [therapists, places, hotels, autoDetectedLocation, userLocation]);
+    }, [therapists, places, hotels, autoDetectedLocation, userLocation, selectedCity]);
 
     // Log therapist display info with location filtering
     useEffect(() => {
