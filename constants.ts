@@ -170,6 +170,24 @@ export const MASSAGE_TYPE_DETAILS: MassageTypeInfo[] = [
         duration: '30-45 minutes',
         intensity: 'Moderate',
         bestFor: ['Headaches', 'Neck/shoulder tension', 'Hair health', 'Quick relaxation']
+    },
+    {
+        name: 'Abdominal Acupressure',
+        shortDescription: 'Specialized pressure point therapy on the abdomen to improve digestion, relieve tension, and support internal organ health.',
+        fullDescription: 'Abdominal acupressure is a therapeutic technique that applies gentle to moderate pressure on specific acupressure points located on the abdomen. This ancient healing practice focuses on improving digestive function, relieving bloating and constipation, reducing menstrual cramps, and promoting overall internal organ health. The therapist uses fingers, palms, and sometimes warm compresses to stimulate energy flow and release blockages in the abdominal area, supporting the body\'s natural healing processes.',
+        benefits: ['Improves digestion', 'Relieves bloating and gas', 'Reduces menstrual cramps', 'Alleviates constipation', 'Supports organ detoxification', 'Reduces abdominal tension'],
+        duration: '30-45 minutes',
+        intensity: 'Light',
+        bestFor: ['Digestive issues', 'Menstrual discomfort', 'Bloating', 'Abdominal tension']
+    },
+    {
+        name: 'Vitality Massage',
+        shortDescription: 'Energizing full-body massage combining invigorating techniques to boost energy, enhance circulation, and restore vitality.',
+        fullDescription: 'Vitality massage is a dynamic, energizing treatment designed to combat fatigue, boost energy levels, and restore overall vitality. This invigorating massage combines various techniques including brisk strokes, percussion movements, stretching, and pressure point stimulation to awaken the body and mind. Often incorporating essential oils known for their energizing properties like peppermint, rosemary, or citrus, this treatment improves circulation, oxygenates tissues, and leaves you feeling refreshed and rejuvenated.',
+        benefits: ['Boosts energy levels', 'Combats fatigue', 'Improves blood circulation', 'Enhances mental clarity', 'Reduces muscle stiffness', 'Revitalizes body and mind'],
+        duration: '60-90 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Low energy', 'Fatigue', 'Mental fog', 'Sluggishness']
     }
 ];
 
@@ -199,7 +217,7 @@ export const MASSAGE_TYPES_CATEGORIZED = [
     },
     {
         category: 'Specialty Massages',
-        types: ['Prenatal Massage', 'Lymphatic Massage', 'Indian Head Massage', 'Sprain']
+        types: ['Prenatal Massage', 'Lymphatic Massage', 'Indian Head Massage', 'Abdominal Acupressure', 'Vitality Massage', 'Sprain']
     }
 ];
 
@@ -279,6 +297,14 @@ export const MASSAGE_TYPES_WITH_IMAGES: MassageTypeWithImage[] = [
     { 
         name: 'Indian Head Massage', 
         imageUrl: 'https://ik.imagekit.io/7grri5v7d/body%20scrub%20indonisead.png?updatedAt=1759651049627'
+    },
+    { 
+        name: 'Abdominal Acupressure', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20tables.png?updatedAt=1761608423366'
+    },
+    { 
+        name: 'Vitality Massage', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20image%206.png?updatedAt=1760187126997'
     }
 ];
 
