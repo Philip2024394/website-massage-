@@ -884,6 +884,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 includeAll={false}
                 className="w-full"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Choose your city or tourist area (e.g., Depok West Java). When setting GPS location below, ensure it's within your selected city area.
+              </p>
             </div>
 
             {/* Location */}

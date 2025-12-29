@@ -142,6 +142,14 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         aliases: ["Apple City", "Malang East Java"]
       },
       {
+        name: "Depok",
+        province: "West Java",
+        coordinates: { lat: -6.4025, lng: 106.7942 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Depok West Java", "Depok City"]
+      },
+      {
         name: "Bogor",
         province: "West Java",
         coordinates: { lat: -6.5944, lng: 106.7892 },
