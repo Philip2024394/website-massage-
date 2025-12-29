@@ -8,6 +8,7 @@ import { loadGoogleMapsScript } from '../../../../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
 import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
+import { extractLocation, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalization';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
@@ -105,34 +106,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>(() => {
-    // 🐛 FIX: Use ONLY location field (city field doesn't exist in Appwrite schema!)
-    // Priority: location field > auto-detect from coordinates > default 'all'
-    console.log('🔍 LOCATION LOAD DEBUG:', {
-      location: therapist?.location,
-      coordinates: therapist?.coordinates
-    });
-    
-    if (therapist?.location) {
-      console.log('✅ Loaded from location field:', therapist.location);
-      return therapist.location;
-    }
-    
-    try {
-      const coords = therapist?.coordinates;
-      if (coords) {
-        const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
-        if (parsed?.lat && parsed?.lng) {
-          const matchedCity = matchProviderToCity({ lat: parsed.lat, lng: parsed.lng }, 25);
-          if (matchedCity?.name) {
-            console.log('✅ Auto-detected from coordinates:', matchedCity.name);
-            return matchedCity.name;
-          }
-        }
-      }
-    } catch {}
-    
-    console.log('⚠️ No location found, defaulting to "all"');
-    return 'all';
+    // � PRODUCTION HARDENING: Use centralized location extraction
+    const location = extractLocation(therapist);
+    console.log('🔍 LOCATION LOAD (normalized):', location);
+    return location;
   });
   
   // Location state
@@ -398,14 +375,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       }
 
-      // Build update data
-      console.log('📍 Current selectedCity state:', selectedCity);
-      console.log('📍 Will save city/location as:', selectedCity !== 'all' ? selectedCity : null);
+      // 🔒 PRODUCTION HARDENING: Use centralized location normalization
+      const normalizedLocation = normalizeLocationForSave(selectedCity, coordinates);
       
+      console.log('📍 Normalized location for save:', normalizedLocation);
+
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
-        languages: JSON.stringify(selectedLanguages), // FIX: JSON stringify languages array
+        languages: JSON.stringify(selectedLanguages),
         price60: price60.trim(),
         price90: price90.trim(),
         price120: price120.trim(),
@@ -413,13 +391,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
-        coordinates: coordinates && coordinates.lat !== 0 && coordinates.lng !== 0 ? JSON.stringify(coordinates) : null,
-        location: selectedCity !== 'all' ? selectedCity : null, // 🐛 FIX: Only location field exists (city doesn't exist in schema!)
-        isLive: true, // 🔥 ALWAYS TRUE - therapists visible even when offline/busy (same as Yogyakarta)
-        // 🎯 Preserve existing status - don't overwrite unless it's a new profile
+        ...normalizedLocation,  // 🔒 Spread normalized location fields
+        isLive: true,
         status: therapist.status || 'available',
         availability: therapist.availability || 'Available',
-        isOnline: true, // Set as online when profile is saved
+        isOnline: true,
       };
       
       // Only include profilePicture if it's a valid URL
@@ -429,20 +405,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
       const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
       console.log('✅ Profile saved to Appwrite:', savedTherapist);
-      console.log('📊 Saved data includes:', {
-        name: savedTherapist.name,
-        isLive: savedTherapist.isLive,
-        status: savedTherapist.status,
-        availability: savedTherapist.availability,
-        whatsappNumber: savedTherapist.whatsappNumber,
-        coordinates: savedTherapist.coordinates,
-        location: savedTherapist.location,
-        languages: savedTherapist.languages,
-        massageTypes: savedTherapist.massageTypes
-      });
       
-      // 🐛 CRITICAL: Verify location was actually saved
-      if (selectedCity !== 'all') {
+      // 🔒 PRODUCTION ASSERTION: Verify saved data
+      assertValidLocationData(savedTherapist, 'TherapistDashboard.save');
+      
+      console.log('✅ Profile saved to Appwrite:', savedTherapist);
+      
+      // Verify location persist
         if (savedTherapist.location === selectedCity) {
           console.log('✅ LOCATION SAVE VERIFIED:', selectedCity);
         } else {

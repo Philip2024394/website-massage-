@@ -96,7 +96,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     useEffect(() => {
         if (!therapist) return; // Guard clause
 
-        const city = therapist.city || 'Indonesia';
+        const city = therapist.location || 'Indonesia';
         const title = `${therapist.name} - Terapis Pijat Panggilan Profesional ${city}`;
         const description = `Terapis pijat profesional ${therapist.name} di ${city}. Layanan pijat panggilan ke hotel, villa, dan rumah. Booking online mudah, harga transparan, terapis berpengalaman dan terpercaya.`;
         const url = generateShareableURL(therapist);
@@ -425,14 +425,14 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     {/* Debug logging moved outside JSX */}
                     {(() => {
                         console.log('🔧 About to render RotatingReviews with:', {
-                            location: therapist.city || therapist.location || 'Yogyakarta',
+                            location: therapist.location || 'Yogyakarta',
                             providerId: (therapist as any).$id || (therapist as any).id,
                             providerName: therapist.name
                         });
                         return null;
                     })()}
                     <RotatingReviews 
-                        location={therapist.city || therapist.location || 'Yogyakarta'} 
+                        location={therapist.location || 'Yogyakarta'} 
                         limit={5}
                         providerId={(therapist as any).$id || (therapist as any).id}
                         providerName={therapist.name}

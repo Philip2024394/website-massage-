@@ -57,7 +57,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         }
 
         // 3. City-specific images for local appeal
-        const cityKey = therapist.city?.toLowerCase();
+        const cityKey = therapist.location?.toLowerCase();
         if (cityKey && PREVIEW_IMAGES.cities[cityKey]) {
             return PREVIEW_IMAGES.cities[cityKey];
         }
@@ -123,8 +123,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     useEffect(() => {
         if (!therapist) return;
 
-        const title = PREVIEW_TEMPLATES.title(therapist.name, (therapist.city || 'Bali').split(' ')[0]);
-        const description = PREVIEW_TEMPLATES.description(therapist.name, (therapist.city || 'Bali').split(' ')[0]);
+        const title = PREVIEW_TEMPLATES.title(therapist.name, (therapist.location || 'Bali').split(' ')[0]);
+        const description = PREVIEW_TEMPLATES.description(therapist.name, (therapist.location || 'Bali').split(' ')[0]);
         const shareUrl = generateTherapistShareURL(therapist);
         const previewImage = getPreviewImage(therapist);
 
@@ -184,7 +184,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             "url": shareUrl,
             "address": {
                 "@type": "PostalAddress",
-                "addressLocality": therapist.city || "Bali",
+                "addressLocality": therapist.location || "Bali",
                 "addressCountry": "Indonesia"
             },
             "offers": {
@@ -253,7 +253,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         <SharedProfileLayout
             providerName={therapist.name}
             providerType="therapist"
-            city={therapist.city}
+            city={therapist.location}
             error={error}
             loading={loading}
             onNavigate={onNavigate}
@@ -288,7 +288,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
                     <RotatingReviews 
-                        location={therapist.city || therapist.location || 'Yogyakarta'} 
+                        location={therapist.location || 'Yogyakarta'} 
                         limit={5}
                         providerId={therapist.$id || therapist.id}
                         providerName={therapist.name}

@@ -44,7 +44,7 @@ export function generateTherapistShareURL(therapist: Therapist): string {
     }
     
     // Generate SEO slug with location keyword + name
-    const location = therapist.city || therapist.location || 'Indonesia';
+    const location = therapist.location || 'Indonesia';
     const name = therapist.name || 'therapist';
     const seoSlug = generateSEOSlug(location, name);
     

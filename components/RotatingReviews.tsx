@@ -141,7 +141,7 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                         text: displayComment,
                         reviewContent: displayComment,
                         reviewText: displayComment,
-                        location: review.city || location,
+                        location: review.location || location,
                         isSeed: isSeedReview(review)
                     };
                 });
@@ -334,9 +334,9 @@ const RotatingReviews: React.FC<RotatingReviewsProps> = ({
                                         </button>
                                     )}
                                     
-                                    {(review.location || review.city) && (
+                                    {review.location && (
                                         <p className="text-xs text-gray-500 mt-2">
-                                            📍 {review.city || review.location}
+                                            📍 {review.location}
                                         </p>
                                     )}
                                 </div>

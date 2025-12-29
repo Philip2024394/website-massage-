@@ -49,7 +49,7 @@ export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
 export function updateYogyakartaTherapists(therapists: any[]) {
     const yogyaTherapists = therapists
         .filter(t => {
-            const location = (t.location || t.city || '').toLowerCase();
+            const location = (t.location || '').toLowerCase();
             return location.includes('yogya') || location.includes('jogja');
         })
         .map(t => ({

@@ -1649,7 +1649,7 @@ ${locationInfo}${coordinatesInfo}
                     isOpen={showSharePopup}
                     onClose={() => setShowSharePopup(false)}
                     title={`Book ${therapist.name} - IndaStreet Massage`}
-                    description={`${therapist.name} - Professional massage therapist in ${therapist.city || therapist.location}. Book now on IndaStreet!`}
+                    description={`${therapist.name} - Professional massage therapist in ${therapist.location}. Book now on IndaStreet!`}
                     url={userReferralCode && shortShareUrl ? 
                         `${shortShareUrl}?ref=${userReferralCode}` : 
                         (shortShareUrl || generateShareableURL(therapist))

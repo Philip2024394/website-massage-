@@ -20,6 +20,7 @@ import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, findCityByCoordinates } from '../constants/indonesianCities';
+import { matchesLocation, validateTherapistsBeforeRender } from '../utils/locationNormalization';
 import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
 
 
@@ -854,41 +855,26 @@ const HomePage: React.FC<HomePageProps> = ({
             
             if (selectedCity === 'all') return true;
             
-            // Try multiple matching strategies for city filtering
+            // 🔒 PRODUCTION: Use centralized location matching
+            const matches = matchesLocation(t.location, selectedCity);
             
-            // 🐛 DEBUG: Log each therapist's location data for diagnosis
-            const debugInfo = {
-                name: t.name,
-                location: t.location,
-                selectedCity: selectedCity
-            };
-            
-            // 1. Direct location field name match (🐛 FIX: city field doesn't exist in Appwrite schema!)
-            if (t.location && t.location.toLowerCase().includes(selectedCity.toLowerCase())) {
-                console.log(`✅ Location match for ${t.name}:`, debugInfo);
+            if (matches) {
+                console.log(`✅ Location match for ${t.name}:`, { location: t.location, filter: selectedCity });
                 return true;
             }
             
-            // 2. Coordinate-based matching
+            // Fallback: Coordinate-based matching
             if (t.coordinates) {
                 const parsedCoords = parseCoordinates(t.coordinates);
                 if (parsedCoords) {
                     const matchedCity = matchProviderToCity(parsedCoords, 25);
                     if (matchedCity && matchedCity.name === selectedCity) {
+                        console.log(`✅ Coordinate match for ${t.name}`);
                         return true;
                     }
                 }
             }
             
-            // 3. Check aliases for common name variations (Yogya, Jogja for Yogyakarta)
-            const selectedCityLower = selectedCity.toLowerCase();
-            if (selectedCityLower === 'yogyakarta' && 
-                t.location && (t.location.toLowerCase().includes('yogya') || t.location.toLowerCase().includes('jogja'))) {
-                return true;
-            }
-            
-            // 🐛 DEBUG: Log therapists that don't match any filter
-            console.log(`❌ No match for ${t.name}:`, debugInfo);
             return false;
         });
         
