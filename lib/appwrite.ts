@@ -20,10 +20,10 @@ export { storage as appwriteStorage };
 // Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
-    THERAPISTS: '676703b40009b9dd33de', // ✅ Real production collection ID
-    PLACES: '6767038a003b7bdff200', // ✅ Real production collection ID
+    THERAPISTS: 'therapists_collection_id', // ✅ Text-based collection ID
+    PLACES: 'places_collection_id', // ✅ Text-based collection ID
     FACIAL_PLACES: '67670371000c0bef1447', // ✅ Real production collection ID (facial places)
-    USERS: '67670355000b2bc99d43', // ✅ Real production collection ID
+    USERS: 'users_collection_id', // ✅ Text-based collection ID
     AGENTS: '67670355000b2bc99d43', // Using users collection
     BOOKINGS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
     REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
