@@ -35,7 +35,7 @@ export const APPWRITE_CONFIG = {
     chatTranslations: 'Chat Translations',
     
     // Business  
-    hotels: import.meta.env.VITE_HOTELS_COLLECTION_ID || '676701f9001e6dc8b278', // Real production collection ID
+    hotels: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content
@@ -56,7 +56,7 @@ export const APPWRITE_CONFIG = {
     membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
     membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
     deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
-    leads: 'leads', // ✅ Lead generation collection // TODO: Create collection with attributes
+    leads: '', // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
     
     // Jobs
     employerJobPostings: 'Employer Job Postings',

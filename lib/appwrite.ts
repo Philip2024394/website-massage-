@@ -30,9 +30,9 @@ export const COLLECTIONS = {
     ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
     ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     ADMINS: '67670355000b2bc99d43', // Using users collection
-    HOTELS: '676701f9001e6dc8b278', // ✅ Real production collection ID
-    VILLAS: '676701f9001e6dc8b278', // Using hotels collection
-    PARTNERS: '676701f9001e6dc8b278', // Using hotels collection
+    HOTELS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+    VILLAS: '', // ⚠️ DISABLED - Collection doesn't exist
+    PARTNERS: '', // ⚠️ DISABLED - Collection doesn't exist
     NOTIFICATIONS: '', // ⚠️ DISABLED - Collection doesn't exist
     MASSAGE_TYPES: '', // ⚠️ DISABLED - Collection doesn't exist
     MEMBERSHIP_PRICING: '', // ⚠️ DISABLED - Collection doesn't exist

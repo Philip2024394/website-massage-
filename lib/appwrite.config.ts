@@ -24,7 +24,7 @@ export const APPWRITE_CONFIG = {
         // Keep the rest as-is
         agentVisits: 'agent_visits',
         hotelBookings: 'hotel_bookings',
-        hotels: '676701f9001e6dc8b278', // ✅ Real production collection ID
+        hotels: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
         cities: '', // Disabled - collection doesn't exist (causes 404 errors)
         villas: '', // Disabled - collection doesn't exist
         massageTypes: 'massage_types',
@@ -55,7 +55,7 @@ export const APPWRITE_CONFIG = {
         chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
         payments: 'Payments',
         // Lead Generation System
-        leads: 'leads', // ✅ Lead generation collection // TODO: Create collection with attributes
+        leads: '', // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
         leadGenerations: 'lead_generations',
         leadBillingSummary: 'lead_billing_summary',
         // Membership Agreement System
