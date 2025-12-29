@@ -18,3 +18,8 @@ View your app in AI Studio: https://ai.studio/apps/drive/17n0o9nvpFtIkoIlfz0MSmB
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Development Notes
+
+**Large-file stabilization completed** (Tag: `vs-code-stabilization-2025-01`)  
+Further refactors require behavior-safe redesign.
