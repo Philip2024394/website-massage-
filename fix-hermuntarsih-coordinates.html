@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Hermuntarsih Coordinates</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #229954;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 8px 0;
+        }
+        .log-entry.success {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .log-entry.error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .log-entry.info {
+            color: #3498db;
+        }
+        .success-card {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success-card h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 Fix Hermuntarsih Coordinates</h1>
+        <p>This will set Yogyakarta coordinates for Hermuntarsih to enable location-based display.</p>
+        <button onclick="fixCoordinates()">Fix Coordinates Now</button>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        const THERAPISTS_COLLECTION = 'therapists_collection_id';
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            
+            if (type === 'card') {
+                entry.innerHTML = message;
+            } else {
+                entry.textContent = message;
+            }
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function fixCoordinates() {
+            document.getElementById('log').innerHTML = '';
+            
+            log('🔍 Searching for Hermuntarsih...', 'info');
+            
+            try {
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION,
+                    [Query.limit(500)]
+                );
+                
+                const hermun = response.documents.filter(t => 
+                    t.name && t.name.toLowerCase().includes('hermun')
+                );
+                
+                if (hermun.length === 0) {
+                    log('❌ Hermuntarsih not found', 'error');
+                    return;
+                }
+                
+                const therapist = hermun[0];
+                log(`✅ Found: ${therapist.name}`, 'success');
+                log('', 'info');
+                
+                log('📍 Setting Yogyakarta coordinates...', 'info');
+                
+                // Yogyakarta city center coordinates - must be JSON string
+                const yogyaCoordinates = JSON.stringify({
+                    lat: -7.7956,
+                    lng: 110.3695,
+                    address: 'Yogyakarta, Indonesia'
+                });
+                
+                await databases.updateDocument(
+                    DATABASE_ID,
+                    THERAPISTS_COLLECTION,
+                    therapist.$id,
+                    { coordinates: yogyaCoordinates }
+                );
+                
+                log('', 'info');
+                log('✅ SUCCESS! Coordinates updated', 'success');
+                log('   Latitude: -7.7956', 'success');
+                log('   Longitude: 110.3695', 'success');
+                log('   Address: Yogyakarta, Indonesia', 'success');
+                log('', 'info');
+                
+                const card = `
+                    <div class="success-card">
+                        <h3>🎉 Hermuntarsih is Ready!</h3>
+                        <p><strong>All settings are now correct:</strong></p>
+                        <ul>
+                            <li>✅ isLive: true</li>
+                            <li>✅ Status: busy</li>
+                            <li>✅ Location: Yogyakarta</li>
+                            <li>✅ Coordinates: Set</li>
+                        </ul>
+                        <p><strong>Next steps:</strong></p>
+                        <ol>
+                            <li>Go to <a href="https://www.indastreetmassage.com" target="_blank" style="color: #007bff;">www.indastreetmassage.com</a></li>
+                            <li>Refresh the page (Ctrl+F5)</li>
+                            <li>Select "Yogyakarta" or "All" from city filter</li>
+                            <li>Hermuntarsih should now be visible! 🎊</li>
+                        </ol>
+                    </div>
+                `;
+                log(card, 'card');
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

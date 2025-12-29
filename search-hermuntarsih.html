@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search for Hermuntarsih</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #ee5a5a;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+        .log-entry.success {
+            color: #27ae60;
+        }
+        .log-entry.error {
+            color: #e74c3c;
+        }
+        .log-entry.info {
+            color: #3498db;
+        }
+        .therapist-card {
+            background: #f0f8ff;
+            border: 2px solid #3498db;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .therapist-card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .therapist-card p {
+            margin: 5px 0;
+        }
+        .therapist-card strong {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Search for Hermuntarsih Therapist</h1>
+        <button id="searchBtn" onclick="searchHermuntarsih()">Search Hermuntarsih</button>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05';
+        const APPWRITE_THERAPISTS_COLLECTION = 'therapists_collection_id';
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            
+            if (type === 'therapist') {
+                entry.innerHTML = message; // Allow HTML for therapist cards
+            } else {
+                entry.textContent = message;
+            }
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function searchHermuntarsih() {
+            // Clear previous log
+            document.getElementById('log').innerHTML = '';
+            
+            const searchBtn = document.getElementById('searchBtn');
+            searchBtn.disabled = true;
+            searchBtn.textContent = '⏳ Searching...';
+            
+            log('🔍 Searching for Hermuntarsih in database...', 'info');
+            log('─'.repeat(70), 'info');
+            
+            try {
+                // Get all therapists
+                const response = await databases.listDocuments(
+                    APPWRITE_DATABASE_ID,
+                    APPWRITE_THERAPISTS_COLLECTION,
+                    [Query.limit(500)]
+                );
+                
+                log(`📊 Total therapists in database: ${response.total}`, 'info');
+                log('─'.repeat(70), 'info');
+                
+                // Search for Hermuntarsih
+                const hermun = response.documents.filter(t => 
+                    t.name && t.name.toLowerCase().includes('hermun')
+                );
+                
+                if (hermun.length === 0) {
+                    log('❌ Hermuntarsih NOT found in database', 'error');
+                    log('', 'info');
+                    log('📋 Showing all therapist names:', 'info');
+                    log('─'.repeat(70), 'info');
+                    
+                    response.documents.forEach((t, i) => {
+                        log(`${i + 1}. ${t.name || 'No name'} (ID: ${t.$id}) - Status: ${t.status} - isLive: ${t.isLive}`, 'info');
+                    });
+                } else {
+                    log(`✅ Found ${hermun.length} therapist(s) matching "hermun"`, 'success');
+                    log('─'.repeat(70), 'info');
+                    
+                    hermun.forEach(t => {
+                        const card = `
+                            <div class="therapist-card">
+                                <h3>👤 ${t.name}</h3>
+                                <p><strong>ID:</strong> ${t.$id}</p>
+                                <p><strong>Email:</strong> ${t.email || 'Not set'}</p>
+                                <p><strong>Status:</strong> ${t.status || 'Not set'}</p>
+                                <p><strong>isLive:</strong> ${t.isLive}</p>
+                                <p><strong>City:</strong> ${t.city || 'Not set'}</p>
+                                <p><strong>Location:</strong> ${t.location || 'Not set'}</p>
+                                <p><strong>Created:</strong> ${new Date(t.$createdAt).toLocaleString()}</p>
+                                <p><strong>Updated:</strong> ${new Date(t.$updatedAt).toLocaleString()}</p>
+                            </div>
+                        `;
+                        log(card, 'therapist');
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = 'Search Hermuntarsih';
+            }
+        }
+    </script>
+</body>
+</html>

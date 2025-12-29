@@ -135,11 +135,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         const statusStr = String((therapist as any).availability || therapist.status || 'Offline');
         
         if (statusStr === 'Available') {
-            return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available' };
+            return { bg: 'bg-green-100', text: 'text-green-700', dot: 'bg-green-500', label: 'Available', isAvailable: true };
         } else if (statusStr === 'Busy') {
-            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy' };
+            return { bg: 'bg-orange-100', text: 'text-orange-700', dot: 'bg-orange-500', label: 'Busy', isAvailable: false };
         }
-        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Offline' };
+        return { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', label: 'Offline', isAvailable: false };
     };
 
     const statusStyle = getStatusStyles();
@@ -325,7 +325,16 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         {/* Status Badge - Under name like profile card */}
                         <div className="overflow-visible">
                             <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`}>
-                                <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse mr-1.5`}></span>
+                                {/* Pulsing satellite broadcast ring for Available status */}
+                                <span className="relative inline-flex mr-1.5">
+                                    <span className={`w-2 h-2 rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'}`}></span>
+                                    {statusStyle.isAvailable && (
+                                        <>
+                                            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                                            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50 animate-pulse"></span>
+                                        </>
+                                    )}
+                                </span>
                                 <span className="text-xs">{statusStyle.label}</span>
                             </div>
                         </div>

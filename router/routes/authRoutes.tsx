@@ -1,13 +1,14 @@
 /**
  * Authentication Routes
  * Login, signup, and registration flows
+ * Organized in dedicated pages/auth/ folder for maintainability
  */
 
 import React from 'react';
 
-const AuthPage = React.lazy(() => import('../../pages/AuthPage'));
-const TherapistLoginPage = React.lazy(() => import('../../pages/TherapistLoginPage'));
-const MassagePlaceLoginPage = React.lazy(() => import('../../pages/MassagePlaceLoginPage'));
+const AuthPage = React.lazy(() => import('../../pages/auth/AuthPage'));
+const TherapistLoginPage = React.lazy(() => import('../../pages/auth/TherapistLoginPage'));
+const MassagePlaceLoginPage = React.lazy(() => import('../../pages/auth/MassagePlaceLoginPage'));
 const FacialPortalPage = React.lazy(() => import('../../pages/FacialPortalPage'));
 const PackageOnboarding = React.lazy(() => import('../../pages/PackageOnboarding'));
 

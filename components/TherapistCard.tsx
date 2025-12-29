@@ -968,21 +968,18 @@ ${locationInfo}${coordinatesInfo}
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
                             <div className="overflow-visible">
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
-                    <span className="relative mr-1.5">
-                        {displayStatus === AvailabilityStatus.Available && (
+                    <span className="relative inline-flex mr-1.5">
+                        <span className={`w-2 h-2 rounded-full block status-indicator relative ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
+                        {!isOvertime && displayStatus === AvailabilityStatus.Available && (
                             <>
-                                {/* Static ring glow effect for Available status */}
-                                <span className="absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full bg-green-300 opacity-40"></span>
-                                <span className="absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full bg-green-400 opacity-30"></span>
+                                {/* Pulsing satellite broadcast rings for Available status */}
+                                <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                                <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50 animate-pulse"></span>
                             </>
                         )}
-                        <span className={`w-2 h-2 rounded-full block status-indicator relative ${isOvertime ? 'bg-red-500' : style.dot}`}>
-                            {!isOvertime && (displayStatus === AvailabilityStatus.Available || displayStatus === AvailabilityStatus.Busy) && (
-                                <span className={`absolute inset-0 rounded-full animate-ping ${
-                                    displayStatus === AvailabilityStatus.Available ? 'bg-green-400' : 'bg-yellow-400'
-                                }`}></span>
-                            )}
-                        </span>
+                        {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
+                            <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
+                        )}
                     </span>
                                         {displayStatus === AvailabilityStatus.Busy ? (
                                             therapist.busyUntil ? (
