@@ -849,8 +849,11 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // Try multiple matching strategies for city filtering
             
-            // 1. Direct location name match
+            // 1. Direct location OR city field name match
             if (t.location && t.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+                return true;
+            }
+            if (t.city && t.city.toLowerCase().includes(selectedCity.toLowerCase())) {
                 return true;
             }
             
@@ -893,8 +896,11 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // Try multiple matching strategies for city filtering
             
-            // 1. Direct location name match
+            // 1. Direct location OR city field name match
             if (h.location && h.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+                return true;
+            }
+            if (h.city && h.city.toLowerCase().includes(selectedCity.toLowerCase())) {
                 return true;
             }
             
