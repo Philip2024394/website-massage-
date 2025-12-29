@@ -105,8 +105,23 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>(() => {
-    // Try to get city from existing therapist data or auto-detect from coordinates
-    if (therapist?.city) return therapist.city;
+    // 🐛 FIX: Check BOTH city AND location fields to prevent data loss
+    // Priority: city field > location field > auto-detect from coordinates > default 'all'
+    console.log('🔍 LOCATION LOAD DEBUG:', {
+      city: therapist?.city,
+      location: therapist?.location,
+      coordinates: therapist?.coordinates
+    });
+    
+    if (therapist?.city) {
+      console.log('✅ Loaded from city field:', therapist.city);
+      return therapist.city;
+    }
+    
+    if (therapist?.location) {
+      console.log('✅ Loaded from location field:', therapist.location);
+      return therapist.location;
+    }
     
     try {
       const coords = therapist?.coordinates;
@@ -114,11 +129,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         const parsed = typeof coords === 'string' ? JSON.parse(coords) : coords;
         if (parsed?.lat && parsed?.lng) {
           const matchedCity = matchProviderToCity({ lat: parsed.lat, lng: parsed.lng }, 25);
-          return matchedCity?.name || 'all';
+          if (matchedCity?.name) {
+            console.log('✅ Auto-detected from coordinates:', matchedCity.name);
+            return matchedCity.name;
+          }
         }
       }
     } catch {}
     
+    console.log('⚠️ No location found, defaulting to "all"');
     return 'all';
   });
   
@@ -386,6 +405,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }
 
       // Build update data
+      console.log('📍 Current selectedCity state:', selectedCity);
+      console.log('📍 Will save city/location as:', selectedCity !== 'all' ? selectedCity : null);
+      
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
@@ -397,13 +419,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
-        coordinates: JSON.stringify(coordinates),
+        coordinates: coordinates && coordinates.lat !== 0 && coordinates.lng !== 0 ? JSON.stringify(coordinates) : null,
         city: selectedCity !== 'all' ? selectedCity : null,
-        location: selectedCity !== 'all' ? selectedCity : null, // Add location field matching city
-        isLive: true, // Auto-live on save
-        // 🎯 NEW: Set default status fields for new profiles
-        status: therapist.status || 'Available', // Default to Available if no status set
-        availability: therapist.availability || 'Available', // Ensure consistency
+        location: selectedCity !== 'all' ? selectedCity : null, // Location matches city for dropdown filtering
+        isLive: true, // 🔥 ALWAYS TRUE - therapists visible even when offline/busy (same as Yogyakarta)
+        // 🎯 Preserve existing status - don't overwrite unless it's a new profile
+        status: therapist.status || 'available',
+        availability: therapist.availability || 'Available',
         isOnline: true, // Set as online when profile is saved
       };
       
@@ -426,6 +448,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         languages: savedTherapist.languages,
         massageTypes: savedTherapist.massageTypes
       });
+      
+      // 🐛 CRITICAL: Verify location was actually saved
+      if (selectedCity !== 'all') {
+        if (savedTherapist.city === selectedCity && savedTherapist.location === selectedCity) {
+          console.log('✅ LOCATION SAVE VERIFIED:', selectedCity);
+        } else {
+          console.error('❌ LOCATION SAVE FAILED!', {
+            expected: selectedCity,
+            savedCity: savedTherapist.city,
+            savedLocation: savedTherapist.location
+          });
+        }
+      }
 
       // Wait a moment for database to fully commit changes
       console.log('⏳ Waiting for database to commit changes...');

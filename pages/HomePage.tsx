@@ -655,16 +655,23 @@ const HomePage: React.FC<HomePageProps> = ({
             .toString()
             .trim()
             .toLowerCase();
-        const statusImpliesLive = normalizedStatus === 'available' || normalizedStatus === 'busy' || normalizedStatus === 'online';
-        const explicitOffline = normalizedStatus === 'offline' || normalizedLiveFlag === false;
-
-        if (explicitOffline) return false;
+        
+        // 🔥 CRITICAL FIX: Treat available, busy, AND offline as live (same as Yogyakarta therapists)
+        // Only hide if isLive explicitly set to false
+        const statusImpliesLive = normalizedStatus === 'available' || 
+                                  normalizedStatus === 'busy' || 
+                                  normalizedStatus === 'offline' ||  // ✅ OFFLINE NOW SHOWS!
+                                  normalizedStatus === 'online';
+        
+        // Only hide if explicitly disabled
+        if (normalizedLiveFlag === false) return false;
+        
+        // Show if isLive=true OR status implies live
         if (normalizedLiveFlag === true) return true;
-        if (normalizedLiveFlag === null) {
-            if (statusImpliesLive) return true;
-            return normalizedStatus.length === 0; // Default to visible when legacy records lack status
-        }
-        return statusImpliesLive;
+        if (statusImpliesLive) return true;
+        
+        // Default to visible when legacy records lack status
+        return normalizedStatus.length === 0;
     };
 
     // SHOWCASE PROFILE SYSTEM - Random 5 Yogyakarta profiles appear in each city
@@ -849,11 +856,21 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // Try multiple matching strategies for city filtering
             
+            // 🐛 DEBUG: Log each therapist's location data for diagnosis
+            const debugInfo = {
+                name: t.name,
+                location: t.location,
+                city: t.city,
+                selectedCity: selectedCity
+            };
+            
             // 1. Direct location OR city field name match
             if (t.location && t.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+                console.log(`✅ Location match for ${t.name}:`, debugInfo);
                 return true;
             }
             if (t.city && t.city.toLowerCase().includes(selectedCity.toLowerCase())) {
+                console.log(`✅ City match for ${t.name}:`, debugInfo);
                 return true;
             }
             
@@ -875,6 +892,8 @@ const HomePage: React.FC<HomePageProps> = ({
                 return true;
             }
             
+            // 🐛 DEBUG: Log therapists that don't match any filter
+            console.log(`❌ No match for ${t.name}:`, debugInfo);
             return false;
         });
         
