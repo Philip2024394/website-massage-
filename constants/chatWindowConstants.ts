@@ -70,3 +70,15 @@ export interface ChatWindowProps {
     isOpen: boolean;
     onClose: () => void;
 }
+
+// Booking status types
+export type BookingStatus = 'none' | 'pending' | 'accepted' | 'rejected' | 'expired' | 'on_the_way' | 'arriving' | 'arrived';
+
+// Scheduling step types
+export type SchedulingStep = 'duration' | 'time' | 'details';
+
+// Proximity tracking constant
+export const ARRIVAL_RADIUS_METERS = 20;
+
+// Audio notification constant
+export const DEFAULT_REMINDER_VOLUME = 0.8;

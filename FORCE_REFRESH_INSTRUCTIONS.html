@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 Force Refresh Instructions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .steps {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+        }
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .keyboard {
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Clear Browser Cache - Therapists Missing</h1>
+        
+        <div class="warning">
+            <strong>⚠️ PROBLEM:</strong> Your browser is using OLD JavaScript code!<br>
+            <strong>SYMPTOMS:</strong> Yogyakarta therapists missing, Aditia not showing in Bandung<br>
+            <strong>SOLUTION:</strong> Force refresh to load NEW code
+        </div>
+
+        <div class="steps">
+            <h2>How to Force Refresh (Clear Cache)</h2>
+            
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Go to your live website:</strong> https://yourwebsite.com
+            </div>
+            
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Hard Refresh (Force Reload):</strong><br><br>
+                
+                <strong>Windows:</strong> Press <span class="keyboard">Ctrl + F5</span> or <span class="keyboard">Ctrl + Shift + R</span><br>
+                <strong>Mac:</strong> Press <span class="keyboard">Cmd + Shift + R</span><br>
+                <strong>Chrome DevTools:</strong> Right-click refresh button → "Empty Cache and Hard Reload"
+            </div>
+            
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Verify it worked:</strong><br>
+                • Open DevTools (F12)<br>
+                • Go to Console tab<br>
+                • Look for: <strong>"🧪 Running location system smoke tests..."</strong><br>
+                • Should see: <strong>"✅ ALL SMOKE TESTS PASSED: 6/6"</strong>
+            </div>
+            
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Test the fix:</strong><br>
+                • Select "Yogyakarta" from dropdown → Should see 27 therapists<br>
+                • Select "Bandung" from dropdown → Should see Aditia<br>
+                • All location filtering should work perfectly
+            </div>
+        </div>
+
+        <div class="success">
+            <h3>✅ What Got Fixed</h3>
+            <p>The NEW code has:</p>
+            <ul>
+                <li>✅ Cache-busting headers (forces fresh JavaScript)</li>
+                <li>✅ Centralized location filtering (no more bugs)</li>
+                <li>✅ Smoke tests that run on page load</li>
+                <li>✅ Runtime assertions to catch errors immediately</li>
+            </ul>
+        </div>
+
+        <h2>🔧 Alternative Methods</h2>
+        
+        <div class="step">
+            <strong>Method 2: Clear Site Data</strong><br>
+            1. Open DevTools (F12)<br>
+            2. Go to Application tab<br>
+            3. Click "Clear storage" in left sidebar<br>
+            4. Click "Clear site data" button<br>
+            5. Refresh page
+        </div>
+
+        <div class="step">
+            <strong>Method 3: Incognito/Private Window</strong><br>
+            Open website in incognito/private browsing mode (no cache)
+        </div>
+
+        <div class="step">
+            <strong>Method 4: Clear Browser Cache Completely</strong><br>
+            Chrome: Settings → Privacy → Clear browsing data → Cached images and files<br>
+            (Select "All time" for time range)
+        </div>
+
+        <button onclick="window.open('https://www.youtube.com/watch?v=UP0kC4aN6T0', '_blank')">
+            📺 Watch: How to Hard Refresh
+        </button>
+    </div>
+
+    <script>
+        console.log('%c🔄 CACHE ISSUE DETECTED', 'color: red; font-size: 20px; font-weight: bold');
+        console.log('%cYour browser is using OLD JavaScript!', 'color: orange; font-size: 16px');
+        console.log('%cSolution: Press Ctrl+F5 (Windows) or Cmd+Shift+R (Mac)', 'color: green; font-size: 16px');
+    </script>
+</body>
+</html>

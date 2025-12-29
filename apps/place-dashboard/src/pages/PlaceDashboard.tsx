@@ -1577,7 +1577,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                         className="w-full"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Choose your city or tourist area. Exact device location is optional.
+                                        Choose your city or tourist area (e.g., Depok West Java). When setting location below, ensure it's within your selected city area.
                                     </p>
                                 </div>
                                 <div className="relative mb-3">

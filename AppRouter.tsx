@@ -24,9 +24,10 @@ import { profileRoutes } from './router/routes/profileRoutes';
 import { legalRoutes } from './router/routes/legalRoutes';
 import { blogRoutes } from './router/routes/blogRoutes';
 import { therapistRoutes } from './router/routes/therapistRoutes';
+import { adminRoutes } from './router/routes/adminRoutes';
 
 // Specialized pages not in route modules
-const CreateAccountPage = React.lazy(() => import('./pages/CreateAccountPage'));
+const CreateAccountPage = React.lazy(() => import('./pages/auth/CreateAccountPage'));
 const ConfirmTherapistsPage = React.lazy(() => import('./pages/ConfirmTherapistsPage'));
 const EmployerJobPostingPage = React.lazy(() => import('./pages/EmployerJobPostingPage'));
 const IndastreetPartnersPage = React.lazy(() => import('./pages/IndastreetPartnersPage'));
@@ -49,7 +50,7 @@ const ReviewsPage = React.lazy(() => import('./pages/ReviewsPage'));
 const JobUnlockPaymentPage = React.lazy(() => import('./pages/JobUnlockPaymentPage'));
 const TherapistStatusPage = React.lazy(() => import('./pages/TherapistStatusPage'));
 const CustomerReviewsPage = React.lazy(() => import('./pages/CustomerReviewsPage'));
-const RoleSelectionPage = React.lazy(() => import('./pages/RoleSelectionPage'));
+const RoleSelectionPage = React.lazy(() => import('./pages/auth/RoleSelectionPage'));
 const CustomerSupportPage = React.lazy(() => import('./pages/CustomerSupportPage'));
 const PlaceDiscountBadgePage = React.lazy(() => import('./pages/PlaceDiscountBadgePage'));
 const VerifiedProBadgePage = React.lazy(() => import('./pages/VerifiedProBadgePage'));
@@ -967,6 +968,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'place-dashboard':
             return renderRoute(authRoutes.placeLogin.component, {
                 redirectToDashboard: true
+            });
+
+        // ===== ADMIN ROUTES =====
+        case 'admin-live-listings':
+            return renderRoute(adminRoutes.liveListings.component, {
+                therapists: props.therapists || [],
+                loggedInAgent: props.loggedInAgent,
+                onNavigate: props.onNavigate
             });
 
         // ===== FALLBACK =====

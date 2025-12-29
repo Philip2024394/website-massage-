@@ -288,6 +288,52 @@ const HomePage: React.FC<HomePageProps> = ({
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [nearbyHotels, setNearbyHotels] = useState<any[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
+    
+    // 🔧 DEV-ONLY: Location override for testing geo-filtering from remote locations
+    const isDev = import.meta.env.DEV;
+    const [devLocationOverride, setDevLocationOverride] = useState<{lat: number, lng: number, label: string} | null>(null);
+    const [devShowAllTherapists, setDevShowAllTherapists] = useState(false); // Admin toggle to bypass 10km radius
+    const devTestLocations = {
+        'yogyakarta': { lat: -7.797068, lng: 110.370529, label: 'Yogyakarta Center' },
+        'bandung': { lat: -6.917464, lng: 107.619123, label: 'Bandung Center' },
+        'denpasar': { lat: -8.670458, lng: 115.212629, label: 'Denpasar Center' },
+        'jakarta': { lat: -6.2088, lng: 106.8456, label: 'Jakarta Center' }
+    };
+    
+    // 🔐 ADMIN/PREVIEW MODE: Parse query params for special viewing modes
+    const [previewTherapistId, setPreviewTherapistId] = useState<string | null>(null);
+    const [adminViewArea, setAdminViewArea] = useState<string | null>(null);
+    const [bypassRadiusForAdmin, setBypassRadiusForAdmin] = useState(false);
+    
+    // Check if user has admin/therapist privileges
+    const hasAdminPrivileges = !!(_loggedInAgent || loggedInProvider);
+    
+    useEffect(() => {
+        // Parse URL query params for admin/preview modes
+        const urlParams = new URLSearchParams(window.location.search);
+        const previewId = urlParams.get('previewTherapistId');
+        const adminArea = urlParams.get('adminViewArea');
+        const bypassRadius = urlParams.get('bypassRadius') === 'true';
+        
+        // Only allow preview/admin modes if user has privileges
+        if (hasAdminPrivileges) {
+            if (previewId) {
+                setPreviewTherapistId(previewId);
+                console.log('🔍 Preview mode enabled for therapist:', previewId);
+            }
+            if (adminArea && bypassRadius) {
+                setAdminViewArea(adminArea);
+                setBypassRadiusForAdmin(true);
+                console.log('🔐 Admin area view enabled:', adminArea);
+            }
+        } else {
+            // Clear any preview/admin modes if user doesn't have privileges
+            setPreviewTherapistId(null);
+            setAdminViewArea(null);
+            setBypassRadiusForAdmin(false);
+        }
+    }, [hasAdminPrivileges]);
+    
     // Shuffled unique home page therapist images (no repeats until all 17 used)
     const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
     
@@ -778,9 +824,11 @@ const HomePage: React.FC<HomePageProps> = ({
                     console.log('🔍 Filtering providers by GPS location (25km radius):', locationToUse);
                     
                     // Get location coordinates
-                    const coords = 'lat' in locationToUse 
+                    // 🔧 DEV-ONLY: Use override location if set, otherwise use real location
+                    const realCoords = 'lat' in locationToUse 
                         ? { lat: locationToUse.lat, lng: locationToUse.lng }
                         : autoDetectedLocation;
+                    const coords = (isDev && devLocationOverride) ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng } : realCoords;
 
                     if (coords) {
                         console.log('📍 Using coordinates:', coords);
@@ -951,7 +999,35 @@ const HomePage: React.FC<HomePageProps> = ({
         const missingHotelCoords = hotels.filter((h: any)=>!h.coordinates).length;
         console.log('  ⚠️ Hotels missing coordinates:', missingHotelCoords);
         console.log('  🔴 Live nearby hotels:', liveHotelsCount);
-    }, [therapists, nearbyTherapists, places, nearbyPlaces, hotels, nearbyHotels, selectedCity, autoDetectedLocation]);
+        
+        // 🔧 DEV-ONLY: Diagnostic assertions
+        if (isDev) {
+            console.assert(
+                therapists.length === 0 || nearbyTherapists.length > 0,
+                '⚠️ WARNING: Therapists exist in DB but 0 within 10km radius. Check coordinates or location.'
+            );
+            
+            const currentCoords = (isDev && devLocationOverride) 
+                ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng }
+                : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
+            
+            if (nearbyTherapists.length === 0 && therapists.length > 0 && currentCoords) {
+                const therapistsWithCoords = therapists.filter((t: any) => t.geopoint);
+                if (therapistsWithCoords.length > 0) {
+                    const minDist = Math.min(...therapistsWithCoords.map((t: any) => {
+                        const coords = t.geopoint;
+                        const dlat = currentCoords.lat - coords.latitude;
+                        const dlng = currentCoords.lng - coords.longitude;
+                        return Math.sqrt(dlat * dlat + dlng * dlng) * 111;
+                    }));
+                    console.assert(
+                        minDist <= 15,
+                        `⚠️ WARNING: User location is ${minDist.toFixed(1)}km from nearest therapist cluster. Consider location override.`
+                    );
+                }
+            }
+        }
+    }, [therapists, nearbyTherapists, places, nearbyPlaces, hotels, nearbyHotels, selectedCity, autoDetectedLocation, isDev, devLocationOverride, userLocation]);
 
     useEffect(() => {
         // Fetch custom drawer links
@@ -1289,6 +1365,18 @@ const HomePage: React.FC<HomePageProps> = ({
                         </button>
                     </div>
 
+                    {/*  ADMIN/PREVIEW MODE BANNER */}
+                    {(previewTherapistId || (adminViewArea && bypassRadiusForAdmin)) && hasAdminPrivileges && (
+                        <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-3 max-w-2xl mx-auto mt-4">
+                            <div className="font-bold text-yellow-800 mb-1">🔐 Admin Mode Active</div>
+                            <div className="text-sm text-yellow-700">
+                                {previewTherapistId && <div>• Preview Mode: Showing therapist ID {previewTherapistId} (bypassing 10km radius)</div>}
+                                {adminViewArea && bypassRadiusForAdmin && <div>• Area View: Showing all therapists in {adminViewArea} (radius bypass)</div>}
+                                <div className="mt-1 text-xs">This mode is only visible to admins/therapists</div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* City Dropdown + Facial Button - Responsive Grid */}
                     <div className="flex flex-row gap-2 items-center max-w-2xl mx-auto">
                         {/* City Dropdown - Flexible width, constrained on mobile */}
@@ -1348,6 +1436,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                     : (t?.home?.therapistsSubtitleCity?.replace('{city}', selectedCity) || `Find the best therapists in ${selectedCity}`)
                                 }
                             </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Browse Region dropdown (distance still applies)
+                            </p>
                         </div>
                         
                         <div className="space-y-3 max-w-full overflow-hidden">
@@ -1358,6 +1449,23 @@ const HomePage: React.FC<HomePageProps> = ({
                                     String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
                                 )
                             );
+
+                            // 🌍 GPS-BASED INCLUSION: Get therapists within radius (or all if dev mode bypass enabled)
+                            const currentUserLocation = (isDev && devLocationOverride) 
+                                ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng }
+                                : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
+
+                            // Helper: Calculate distance using Haversine formula
+                            const calculateHaversineDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
+                                const R = 6371; // Earth radius in km
+                                const dLat = (point2.lat - point1.lat) * Math.PI / 180;
+                                const dLon = (point2.lng - point1.lng) * Math.PI / 180;
+                                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                         Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) *
+                                         Math.sin(dLon/2) * Math.sin(dLon/2);
+                                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                                return R * c;
+                            };
 
 console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 totalTherapists: therapists?.length || 0,
@@ -1378,46 +1486,86 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
             }
 
             // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
-            let baseList = therapists
+            // 🌍 STEP 1: Calculate distances for all therapists with valid geopoints
+            let therapistsWithDistance = therapists
+                .map((t: any) => {
+                    let distance: number | null = null;
+                    let locationArea: string = t.city || t.location || 'Unknown';
+                    
+                    // Extract geopoint and calculate distance if user location exists
+                    if (currentUserLocation && (t.geopoint || t.coordinates)) {
+                        const therapistCoords = t.geopoint 
+                            ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude }
+                            : { lat: t.coordinates?.lat || 0, lng: t.coordinates?.lng || 0 };
+                        
+                        distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
+                        
+                        // Try to determine location area from coordinates
+                        if (t.coordinates) {
+                            const matchedCity = matchProviderToCity(therapistCoords, 25);
+                            if (matchedCity) {
+                                locationArea = matchedCity.name;
+                            }
+                        }
+                    }
+                    
+                    return { ...t, _distance: distance, _locationArea: locationArea };
+                });
+
+            // 🌍 STEP 2: GPS-BASED INCLUSION (10km radius or all if dev bypass enabled)
+            let baseList = therapistsWithDistance
                 .filter((t: any) => {
                     // CRITICAL: First check if therapist should be treated as live
                     const treatedAsLive = shouldTreatTherapistAsLive(t);
                     const isOwnerTherapist = isOwner(t);
                     const isFeatured = isFeaturedSample(t, 'therapist');
                     
-                    console.log('🔧 [DEBUG] Therapist filter check:', {
-                        name: t.name,
-                        treatedAsLive,
-                        isOwnerTherapist,
-                        isFeatured,
-                        isLive: t.isLive,
-                        status: t.status,
-                        willShow: treatedAsLive || isOwnerTherapist || isFeatured
-                    });
-                    
                     // Show live therapists, owner's profile, or featured samples
                     if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
                         return false;
                     }
+                    
+                    // Always show featured sample therapists (Budi) in all cities
+                    if (isFeatured) {
+                        return true;
+                    }
+                    
+                    // 🌍 GPS DISTANCE CHECK: Only include therapists within 10km (unless dev bypass enabled)
+                    if (t._distance !== null) {
+                        // 🔍 PREVIEW MODE: Allow this specific therapist to bypass radius if in preview mode
+                        if (previewTherapistId && (String(t.$id) === String(previewTherapistId) || String(t.id) === String(previewTherapistId))) {
+                            console.log('🔍 Preview mode: Including therapist outside radius:', t.name);
+                            return true; // Include previewed therapist regardless of distance
+                        }
+                        
+                        // 🔐 ADMIN AREA VIEW: Bypass radius if admin viewing specific area
+                        if (bypassRadiusForAdmin && hasAdminPrivileges) {
+                            return true; // Allow admin to see all therapists in area
+                        }
+                        
+                        // Dev mode bypass: show all therapists with coordinates if enabled
+                        if (isDev && devShowAllTherapists) {
+                            return true; // Skip distance check in dev verification mode
+                        }
+                        
+                        // Production: strict 10km radius
+                        if (t._distance > 10) {
+                            return false; // Exclude therapists beyond 10km
+                        }
+                    }
+                    
+                    // 🏷️ DROPDOWN FILTERING: Filter by location area AFTER GPS filtering (display grouping only)
+                    if (selectedCity !== 'all') {
+                        // 🔐 ADMIN AREA VIEW: Override dropdown with admin selected area
+                        if (adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
+                            return t._locationArea === adminViewArea;
+                        }
+                        // Filter by location area that was determined from coordinates
+                        return t._locationArea === selectedCity;
+                    }
                                     
-                                    // Always show featured sample therapists (Budi) in all cities
-                                    if (isFeatured) {
-                                        return true;
-                                    }
-                                    
-                                    if (selectedCity === 'all') return true;
-                                    
-                                    // Try to match therapist location to selected city
-                                    if (t.coordinates) {
-                                        const parsedCoords = parseCoordinates(t.coordinates);
-                                        if (parsedCoords) {
-                                            const matchedCity = matchProviderToCity(parsedCoords, 25);
-                                            return matchedCity?.name === selectedCity;
-                                        }
-                                    }
-                                    
-                                    return false;
-                                });
+                    return true;
+                });
 
                             // Ensure owner's profile appears once
                             if (loggedInProvider && loggedInProvider.type === 'therapist') {
@@ -1504,7 +1652,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 return score;
                             };
 
-                            // Apply intelligent sorting with randomization within same priority groups
+                            // Apply intelligent sorting: PRIMARY SORT BY DISTANCE, then by priority
                             baseList = baseList
                                 .slice()
                                 .map(therapist => ({ 
@@ -1513,12 +1661,19 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     randomSeed: Math.random() // For randomization within groups
                                 }))
                                 .sort((a: any, b: any) => {
-                                    // Primary sort by priority score (descending)
+                                    // 🌍 PRIMARY SORT: Distance (nearest first) - ONLY if user location exists
+                                    if (currentUserLocation && a._distance !== null && b._distance !== null) {
+                                        if (a._distance !== b._distance) {
+                                            return a._distance - b._distance; // Ascending (nearest first)
+                                        }
+                                    }
+                                    
+                                    // Secondary sort by priority score (descending)
                                     if (b.priorityScore !== a.priorityScore) {
                                         return b.priorityScore - a.priorityScore;
                                     }
                                     
-                                    // Secondary sort by random seed for same-priority items
+                                    // Tertiary sort by random seed for same-priority items
                                     return a.randomSeed - b.randomSeed;
                                 });
 
@@ -1556,6 +1711,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     name: t.name,
                                     status: t.status,
                                     score: t.priorityScore,
+                                    distance: t._distance,
+                                    locationArea: t._locationArea,
                                     isPremium: t.isPremium || false,
                                     isVerified: t.isVerified || false,
                                     rating: t.averageRating || 'N/A',
@@ -1563,7 +1720,34 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 }))
                             });
 
-                            return preparedTherapists.map((therapist: any, index: number) => {
+                            // 🏷️ GROUP BY LOCATION AREA for display (sorted by distance within each group)
+                            const therapistsByLocation: { [key: string]: any[] } = {};
+                            preparedTherapists.forEach((therapist: any) => {
+                                const area = therapist._locationArea || 'Unknown';
+                                if (!therapistsByLocation[area]) {
+                                    therapistsByLocation[area] = [];
+                                }
+                                therapistsByLocation[area].push(therapist);
+                            });
+
+                            // Render grouped therapists with section headers
+                            const locationAreas = Object.keys(therapistsByLocation).sort();
+                            
+                            return (
+                                <>
+                                {locationAreas.map((area) => {
+                                    const therapistsInArea = therapistsByLocation[area];
+                                    return (
+                                        <div key={`area-${area}`} className="mb-8">
+                                            {/* Location Area Header */}
+                                            {locationAreas.length > 1 && (
+                                                <h4 className="text-lg font-semibold text-gray-800 mb-3 px-1">
+                                                    📍 Nearby in {area}
+                                                </h4>
+                                            )}
+                                            
+                                            {/* Therapist Cards in This Area */}
+                                            {therapistsInArea.map((therapist: any, index: number) => {
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 // Parse languages safely - handle both JSON arrays and comma-separated strings
                                 let languagesParsed: string[] = [];
@@ -1588,8 +1772,20 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     expiresAt: new Date(therapist.discountEndTime)
                                 } : null;
                                 
+                                // 🔍 Check if this is the previewed therapist
+                                const isPreviewMode = previewTherapistId && (String(therapist.$id) === String(previewTherapistId) || String(therapist.id) === String(previewTherapistId));
+                                
                                 return (
                                 <div key={therapist.$id || `therapist-wrapper-${therapist.id}-${index}`}>
+                                {/* 🔍 Preview Mode Banner */}
+                                {isPreviewMode && (
+                                    <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-2 mb-2 text-center">
+                                        <span className="text-blue-700 font-semibold text-sm">
+                                            🔍 Preview Mode - Showing outside 10km radius
+                                        </span>
+                                    </div>
+                                )}
+                                <div className={isPreviewMode ? 'ring-4 ring-blue-400 rounded-lg' : ''}>
                                 <TherapistHomeCard
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
@@ -1606,6 +1802,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     onNavigate={onNavigate}
                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(therapist.id || therapist.$id, 'therapist', metric)}
                                 />
+                                </div>
                                 {/* Accommodation Massage Service Link */}
                                 <div className="mt-2 mb-8 flex justify-center">
                                     <button
@@ -1620,7 +1817,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 </div>
                                 </div>
                                 );
-                            });
+                            })}
+                                        </div>
+                                    );
+                                })}
+                                </>
+                            );
                         })()}
                         {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">

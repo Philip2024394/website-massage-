@@ -35,6 +35,26 @@ const CityLocationDropdown = ({
 
   // Removed auto-close timer to prevent dropdown from closing unexpectedly
 
+  // DEV-ONLY: Validate city data on mount
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+      const missingLocationId = allCities.filter(city => !city.locationId);
+      const missingCoords = allCities.filter(city => !city.coordinates || !city.coordinates.lat || !city.coordinates.lng);
+      
+      if (missingLocationId.length > 0) {
+        console.error('❌ DEV ERROR: Cities missing locationId:', missingLocationId.map(c => c.name));
+      }
+      if (missingCoords.length > 0) {
+        console.error('❌ DEV ERROR: Cities missing coordinates:', missingCoords.map(c => c.name));
+      }
+      
+      if (missingLocationId.length === 0 && missingCoords.length === 0) {
+        console.log('✅ DEV CHECK: All', allCities.length, 'cities have valid locationId and coordinates');
+      }
+    }
+  }, []);
+
   // Fetch cities from Appwrite on component mount
   useEffect(() => {
     const loadCities = async () => {
@@ -95,8 +115,22 @@ const CityLocationDropdown = ({
     }
   }, [isOpen]);
 
-  const handleCitySelect = (city: string) => {
-    onCityChange(city);
+  const handleCitySelect = (city: CityLocation | string) => {
+    if (typeof city === 'string') {
+      // Handle 'all' option
+      onCityChange(city);
+    } else {
+      // 🔒 STRICT: locationId must come from data, no runtime fallback
+      if (!city.locationId) {
+        console.error('❌ City missing locationId:', city.name);
+        if (import.meta.env.DEV) {
+          alert(`⚠️ DEV ERROR: City "${city.name}" is missing locationId in indonesianCities.ts`);
+        }
+        return; // Don't proceed without locationId
+      }
+      console.log(`🎯 City selected: ${city.name} → locationId: ${city.locationId}`);
+      onCityChange(city.locationId);
+    }
     setIsOpen(false);
     setSearchQuery('');
   };
@@ -117,9 +151,13 @@ const CityLocationDropdown = ({
       return placeholder;
     }
     
-    // Find the selected city - simple display without emojis
+    // Find the selected city by locationId or name - display readable name
     for (const category of cities) {
-      const foundCity = category.cities.find(city => city.name === selectedCity);
+      const foundCity = category.cities.find(city => 
+        city.locationId === selectedCity || 
+        city.name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-') === selectedCity ||
+        city.name === selectedCity
+      );
       if (foundCity) {
         return foundCity.name;
       }
@@ -235,10 +273,10 @@ const CityLocationDropdown = ({
                         <button
                           key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
                           type="button"
-                          onClick={() => handleCitySelect(city.name)}
+                          onClick={() => handleCitySelect(city)}
                           className={`
                             w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
-                            ${selectedCity === city.name ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
+                            ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
                           `}
                         >
                           {city.name}

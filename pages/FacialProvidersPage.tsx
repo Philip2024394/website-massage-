@@ -157,10 +157,13 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
             return filtered;
         }
         
-        // If city selected but no user location, filter by city name
+        // If city selected but no user location, filter by locationId
         if (localSelectedCity !== 'all') {
             const filtered = facialPlaces.filter(place => {
-                return place.location === localSelectedCity || place.location?.includes(localSelectedCity);
+                // Use locationId matching (import needed at top of file)
+                const placeLocationId = place.locationId || place.location?.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+                console.log(`🎯 FacialPlace filtering: ${place.name} locationId: ${placeLocationId}, filter: ${localSelectedCity}`);
+                return placeLocationId === localSelectedCity;
             });
             return filtered;
         }

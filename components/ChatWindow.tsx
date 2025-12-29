@@ -7,7 +7,7 @@ import { commissionTrackingService } from '../lib/services/commissionTrackingSer
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { detectPhoneNumber, getBlockedMessage } from '../utils/phoneBlocker';
-import { AVATAR_OPTIONS, Message, ChatWindowProps } from '../constants/chatWindowConstants';
+import { AVATAR_OPTIONS, Message, ChatWindowProps, BookingStatus, SchedulingStep, ARRIVAL_RADIUS_METERS, DEFAULT_REMINDER_VOLUME } from '../constants/chatWindowConstants';
 import { createProximityTracker, metersBetween } from '../services/proximityTrackingService';
 import PaymentCard from './PaymentCard';
 
@@ -119,11 +119,9 @@ export default function ChatWindow({
     const [hasUnread, setHasUnread] = useState(false);
     
     // Booking status tracking
-    type BookingStatus = 'none' | 'pending' | 'accepted' | 'rejected' | 'expired' | 'on_the_way' | 'arriving' | 'arrived';
     const [bookingStatus, setBookingStatus] = useState<BookingStatus>('none');
     const [pendingBookingId, setPendingBookingId] = useState<string>('');
     const [waitingForResponse, setWaitingForResponse] = useState(false);
-    const ARRIVAL_RADIUS_METERS = 20;
     const [therapistLocation, setTherapistLocation] = useState<{lat: number; lng: number} | null>(null);
     const therapistLocationRef = useRef<{lat: number; lng: number} | null>(null);
     const [therapistLocationAccuracy, setTherapistLocationAccuracy] = useState<number | null>(null);
@@ -142,12 +140,11 @@ export default function ChatWindow({
     const [depositError, setDepositError] = useState<string | null>(null);
     const [depositReference, setDepositReference] = useState('');
     const reminderAudioRef = useRef<HTMLAudioElement | null>(null);
-    const DEFAULT_REMINDER_VOLUME = 0.8;
     const [reminderVolume, setReminderVolume] = useState(DEFAULT_REMINDER_VOLUME);
     const [isReminderPaused, setIsReminderPaused] = useState(false);
     
     // Scheduling state (for scheduled bookings)
-    const [schedulingStep, setSchedulingStep] = useState<'duration' | 'time' | 'details'>('duration');
+    const [schedulingStep, setSchedulingStep] = useState<SchedulingStep>('duration');
     const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
     const [selectedTime, setSelectedTime] = useState<{hour: number, minute: number, label: string} | null>(null);
     const [timeSlots, setTimeSlots] = useState<{hour: number, minute: number, label: string, available: boolean}[]>([]);

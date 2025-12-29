@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LocationId Filtering Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@15.0.0"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff00; }
+        .log { margin: 5px 0; }
+        .success { color: #00ff00; }
+        .error { color: #ff4444; }
+        .warning { color: #ffaa00; }
+        .info { color: #4488ff; }
+        button { padding: 10px 20px; margin: 10px; background: #333; color: #fff; border: 1px solid #555; cursor: pointer; }
+        button:hover { background: #555; }
+        select { padding: 5px; margin: 10px; background: #333; color: #fff; border: 1px solid #555; }
+        .therapist-card { 
+            background: #333; 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            border-left: 4px solid #00ff00;
+        }
+        .therapist-card.no-match { border-left-color: #ff4444; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <h1>🎯 LocationId Filtering Test</h1>
+    
+    <div>
+        <label>Filter by LocationId:</label>
+        <select id="locationFilter" onchange="testFiltering()">
+            <option value="all">All Locations</option>
+            <option value="yogyakarta">Yogyakarta</option>
+            <option value="bandung">Bandung</option>
+            <option value="jakarta">Jakarta</option>
+            <option value="denpasar">Denpasar/Bali</option>
+            <option value="ubud">Ubud</option>
+            <option value="canggu">Canggu</option>
+        </select>
+        <button onclick="loadTherapists()">Load Therapists</button>
+        <button onclick="testFiltering()">Test Filtering</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        const client = new Client()
+            .setEndpoint('https://cloud.appwrite.io/v1')
+            .setProject('67449e4a002f5e205dd8');
+
+        const databases = new Databases(client);
+        let allTherapists = [];
+
+        function log(message, containerId = 'results') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'log info';
+            div.innerHTML = message;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function extractLocationId(therapist) {
+            // Match the V2 function logic
+            if (therapist.locationId && typeof therapist.locationId === 'string') {
+                const normalized = therapist.locationId.trim().toLowerCase();
+                if (normalized && normalized !== '' && normalized !== 'null' && normalized !== 'undefined') {
+                    return normalized;
+                }
+            }
+            
+            // Fallback: Convert location string to locationId
+            if (therapist.location && typeof therapist.location === 'string') {
+                return convertLocationToId(therapist.location);
+            }
+            
+            return 'all'; // Default
+        }
+
+        function convertLocationToId(location) {
+            if (!location) return 'all';
+            
+            const normalized = location.toLowerCase().trim();
+            
+            if (normalized.includes('yogyakarta') || normalized.includes('jogja') || normalized.includes('yogya')) {
+                return 'yogyakarta';
+            }
+            if (normalized.includes('bandung')) {
+                return 'bandung';
+            }
+            if (normalized.includes('jakarta')) {
+                return 'jakarta';
+            }
+            if (normalized.includes('denpasar') || normalized.includes('bali')) {
+                return 'denpasar';
+            }
+            if (normalized.includes('ubud')) {
+                return 'ubud';
+            }
+            if (normalized.includes('canggu')) {
+                return 'canggu';
+            }
+            
+            return location.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        }
+
+        function matchesLocationId(therapist, filterLocationId) {
+            const therapistLocationId = extractLocationId(therapist);
+            return therapistLocationId === filterLocationId;
+        }
+
+        async function loadTherapists() {
+            try {
+                const results = document.getElementById('results');
+                results.innerHTML = '<div class="log info">🔄 Loading therapists...</div>';
+                
+                const response = await databases.listDocuments('674853ad00198e73fa74', 'therapists', [
+                    Query.limit(50)
+                ]);
+                
+                allTherapists = response.documents;
+                
+                log(`✅ Loaded ${allTherapists.length} therapists`);
+                
+                // Show locationId distribution
+                const locationCounts = {};
+                allTherapists.forEach(t => {
+                    const locationId = extractLocationId(t);
+                    locationCounts[locationId] = (locationCounts[locationId] || 0) + 1;
+                });
+                
+                log('📊 LocationId Distribution:');
+                Object.entries(locationCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([locationId, count]) => {
+                        log(`  ${locationId}: ${count} therapists`);
+                    });
+                
+                testFiltering();
+                
+            } catch (error) {
+                log(`❌ Error loading therapists: ${error.message}`);
+            }
+        }
+
+        function testFiltering() {
+            if (allTherapists.length === 0) {
+                log('⚠️ No therapists loaded. Click "Load Therapists" first.');
+                return;
+            }
+            
+            const selectedLocationId = document.getElementById('locationFilter').value;
+            const results = document.getElementById('results');
+            
+            // Clear previous results
+            const existingCards = results.querySelectorAll('.therapist-card');
+            existingCards.forEach(card => card.remove());
+            
+            log(`<br>🎯 Testing filter: "${selectedLocationId}"`);
+            
+            let matches = 0;
+            let nonMatches = 0;
+            
+            allTherapists.forEach(therapist => {
+                const therapistLocationId = extractLocationId(therapist);
+                const isMatch = selectedLocationId === 'all' || matchesLocationId(therapist, selectedLocationId);
+                
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `therapist-card ${!isMatch ? 'no-match' : ''}`;
+                
+                cardDiv.innerHTML = `
+                    <strong>${therapist.name}</strong> ${isMatch ? '✅' : '❌'}<br>
+                    Location: "${therapist.location || 'NULL'}"<br>
+                    LocationId Field: "${therapist.locationId || 'NULL'}"<br>
+                    Extracted LocationId: "${therapistLocationId}"<br>
+                    Matches Filter "${selectedLocationId}": ${isMatch ? 'YES' : 'NO'}
+                `;
+                
+                results.appendChild(cardDiv);
+                
+                if (isMatch) matches++;
+                else nonMatches++;
+            });
+            
+            log(`<br>📊 Filter Results:`);
+            log(`✅ Matches: ${matches}`);
+            log(`❌ Non-matches: ${nonMatches}`);
+            log(`📱 Total shown: ${selectedLocationId === 'all' ? matches : matches} (filtering ${selectedLocationId === 'all' ? 'disabled' : 'enabled'})`);
+        }
+
+        // Auto-load on page load
+        window.onload = () => {
+            log('🎯 LocationId Filtering Test Ready');
+            loadTherapists();
+        };
+    </script>
+</body>
+</html>

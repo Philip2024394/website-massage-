@@ -96,6 +96,59 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         generateShareUrl();
     }, [therapist]);
 
+    // 🌍 DISTANCE CALCULATION for display
+    const calculateDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
+        const R = 6371000; // Earth's radius in meters
+        const φ1 = point1.lat * Math.PI/180;
+        const φ2 = point2.lat * Math.PI/180;
+        const Δφ = (point2.lat-point1.lat) * Math.PI/180;
+        const Δλ = (point2.lng-point1.lng) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c; // Distance in meters
+    };
+    
+    const therapistDistance = React.useMemo(() => {
+        if (!userLocation) return null;
+        
+        let therapistCoords = null;
+        try {
+            if (therapist.geopoint && therapist.geopoint.lat && therapist.geopoint.lng) {
+                therapistCoords = therapist.geopoint;
+            } else if (therapist.coordinates) {
+                if (Array.isArray(therapist.coordinates)) {
+                    therapistCoords = { lat: therapist.coordinates[1], lng: therapist.coordinates[0] };
+                } else if (typeof therapist.coordinates === 'string') {
+                    const parsed = JSON.parse(therapist.coordinates);
+                    if (Array.isArray(parsed)) {
+                        therapistCoords = { lat: parsed[1], lng: parsed[0] };
+                    } else if (parsed.lat && parsed.lng) {
+                        therapistCoords = parsed;
+                    }
+                } else if (therapist.coordinates.lat && therapist.coordinates.lng) {
+                    therapistCoords = therapist.coordinates;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to parse therapist coordinates:', e);
+        }
+        
+        if (!therapistCoords) return null;
+        
+        const distanceMeters = calculateDistance(userLocation, therapistCoords);
+        const distanceKm = distanceMeters / 1000;
+        
+        if (distanceKm < 1) {
+            return `${Math.round(distanceMeters)}m away`;
+        } else {
+            return `${distanceKm.toFixed(1)}km away`;
+        }
+    }, [userLocation, therapist.geopoint, therapist.coordinates]);
+
     // Parse pricing
     const getPricing = () => {
         const hasValidSeparateFields = (
@@ -282,14 +335,21 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 )}
             </div>
 
-            {/* Location - Below image on the right side */}
+            {/* Location & Distance - Below image on the right side */}
             <div className="px-4 mt-2 mb-1 flex justify-end">
-                <div className="flex items-center gap-1.5">
-                    <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="text-xs font-medium text-gray-700">{(therapist.location || 'Bali').split(',')[0].trim()}</span>
+                <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs font-medium text-gray-700">{(therapist.location || 'Bali').split(',')[0].trim()}</span>
+                    </div>
+                    {therapistDistance && (
+                        <div className="text-xs text-orange-500 font-medium">
+                            {therapistDistance}
+                        </div>
+                    )}
                 </div>
             </div>
 

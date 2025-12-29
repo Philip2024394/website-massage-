@@ -8,7 +8,8 @@ import { loadGoogleMapsScript } from '../../../../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
 import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
-import { extractLocation, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalization';
+import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalizationV2';
+import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../utils/geoDistance';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
@@ -106,10 +107,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>(() => {
-    // � PRODUCTION HARDENING: Use centralized location extraction
-    const location = extractLocation(therapist);
-    console.log('🔍 LOCATION LOAD (normalized):', location);
-    return location;
+    // 🔒 PRODUCTION HARDENING: Use centralized locationId extraction
+    const locationId = extractLocationId(therapist);
+    console.log('🔍 LOCATION ID LOAD (normalized):', locationId);
+    return locationId;
   });
   
   // Location state
@@ -335,7 +336,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
-      if (selectedCity === 'all') missingFields.push('City/Location selection');
+      if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (required for marketplace)');
       
       if (missingFields.length > 0) {
         showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
@@ -375,10 +376,32 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       }
 
-      // 🔒 PRODUCTION HARDENING: Use centralized location normalization
-      const normalizedLocation = normalizeLocationForSave(selectedCity, coordinates);
+      // 🌍 GEO-BASED SAVE LOGIC (MANDATORY GEOPOINT)
+      console.log('🌍 Validating geopoint requirement...');
       
-      console.log('📍 Normalized location for save:', normalizedLocation);
+      // STEP 1: Validate geopoint is present (MANDATORY)
+      if (!coordinates || !coordinates.lat || !coordinates.lng) {
+        showToast('❌ GPS location is required. Please set your location on the map.', 'error');
+        setSaving(false);
+        return;
+      }
+      
+      const geopoint = { lat: coordinates.lat, lng: coordinates.lng };
+      console.log('📍 Geopoint for save:', geopoint);
+      
+      // STEP 2: Auto-derive locationId from geopoint (no manual override)
+      const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
+      console.log('🏷️ Auto-derived locationId:', derivedLocationId);
+      
+      // STEP 3: Validate geopoint bounds
+      const validation = validateTherapistGeopoint({ geopoint });
+      if (!validation.isValid) {
+        showToast(`❌ Invalid location: ${validation.error}`, 'error');
+        setSaving(false);
+        return;
+      }
+      
+      console.log('✅ Geopoint validation passed');
 
       const updateData: any = {
         name: name.trim(),
@@ -391,8 +414,17 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
-        ...normalizedLocation,  // 🔒 Spread normalized location fields
-        isLive: true,
+        
+        // 🌍 GEO-BASED FIELDS (SOURCE OF TRUTH)
+        geopoint: geopoint,  // Primary: lat/lng coordinates
+        locationId: derivedLocationId,  // Secondary: UI grouping only
+        
+        // Legacy compatibility (keep for display)
+        coordinates: JSON.stringify(geopoint),
+        location: selectedCity !== 'all' ? selectedCity : null,
+        
+        // 🚨 DATABASE ENFORCEMENT: Prevent isLive=true without geopoint
+        isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
         status: therapist.status || 'available',
         availability: therapist.availability || 'Available',
         isOnline: true,
@@ -406,20 +438,28 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const savedTherapist = await therapistService.update(String(therapist.$id || therapist.id), updateData);
       console.log('✅ Profile saved to Appwrite:', savedTherapist);
       
-      // 🔒 PRODUCTION ASSERTION: Verify saved data
-      assertValidLocationData(savedTherapist, 'TherapistDashboard.save');
+      // 🌍 GEO-BASED VERIFICATION
+      const savedGeopoint = extractGeopoint(savedTherapist);
+      if (savedGeopoint && 
+          Math.abs(savedGeopoint.lat - geopoint.lat) < 0.001 && 
+          Math.abs(savedGeopoint.lng - geopoint.lng) < 0.001) {
+        console.log('✅ GEOPOINT SAVE VERIFIED:', savedGeopoint);
+      } else {
+        console.error('❌ GEOPOINT SAVE FAILED!', {
+          expected: geopoint,
+          saved: savedGeopoint
+        });
+      }
       
-      console.log('✅ Profile saved to Appwrite:', savedTherapist);
-      
-      // Verify location persist
-        if (savedTherapist.location === selectedCity) {
-          console.log('✅ LOCATION SAVE VERIFIED:', selectedCity);
-        } else {
-          console.error('❌ LOCATION SAVE FAILED!', {
-            expected: selectedCity,
-            savedLocation: savedTherapist.location
-          });
-        }
+      // Verify locationId
+      if (savedTherapist.locationId === derivedLocationId) {
+        console.log('✅ LOCATION ID SAVE VERIFIED:', derivedLocationId);
+      } else {
+        console.error('❌ LOCATION ID SAVE FAILED!', {
+          expected: derivedLocationId,
+          savedLocationId: savedTherapist.locationId
+        });
+      }
       }
 
       // Wait a moment for database to fully commit changes
@@ -473,10 +513,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }));
       
       console.log('🎉 About to show success toast...');
-      showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
-      setProfileSaved(true);
-      console.log('✅ Toast dispatched - Profile saved successfully');
-      console.log('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
+      
+      // 🚨 DATABASE ENFORCEMENT: Warn about geopoint requirement
+      if (!geopoint || !geopoint.lat || !geopoint.lng) {
+        showToast('⚠️ Profile saved but NOT LIVE: GPS location required for marketplace visibility', 'warning');
+        console.warn('🚨 PRODUCTION SAFETY: Therapist saved with isLive=false due to missing geopoint');
+      } else {
+        showToast('✅ Profile saved and LIVE! Visit the main homepage to see your card.', 'success');
+        console.log('✅ isLive set to true - visible on HomePage at https://www.indastreetmassage.com');
+      }
       
       // Don't auto-navigate away from profile page after saving
       // Let user stay on profile to continue editing if needed
@@ -765,14 +810,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     <p className="text-green-100 text-sm">Customers can see and book you on the homepage</p>
                   </div>
                 </div>
-                <a
-                  href="/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    // 🔐 PREVIEW MODE: Generate URL with previewTherapistId to show listing regardless of GPS
+                    const therapistId = therapist.$id || therapist.id;
+                    const previewUrl = `/?previewTherapistId=${therapistId}`;
+                    window.open(previewUrl, '_blank');
+                  }}
                   className="px-4 py-2 bg-white text-green-600 rounded-lg font-bold hover:bg-green-50 transition-all shadow-sm text-sm"
+                  title="View your live listing with preview mode (bypasses GPS restrictions)"
                 >
-                  View on Homepage →
-                </a>
+                  👁️ View Listing Live
+                </button>
               </div>
             </div>
           )}

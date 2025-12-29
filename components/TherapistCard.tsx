@@ -287,6 +287,60 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Location parsing for display (show city / first segment)
     const locationCity = therapist.location ? String(therapist.location).split(',')[0].trim() : '';
     
+    // 🌍 DISTANCE CALCULATION - Import required utility
+    const calculateDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
+        const R = 6371000; // Earth's radius in meters
+        const φ1 = point1.lat * Math.PI/180;
+        const φ2 = point2.lat * Math.PI/180;
+        const Δφ = (point2.lat-point1.lat) * Math.PI/180;
+        const Δλ = (point2.lng-point1.lng) * Math.PI/180;
+
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+        return R * c; // Distance in meters
+    };
+    
+    // Extract therapist coordinates and calculate distance
+    const therapistDistance = useMemo(() => {
+        if (!userLocation) return null;
+        
+        let therapistCoords = null;
+        try {
+            if (therapist.geopoint && therapist.geopoint.lat && therapist.geopoint.lng) {
+                therapistCoords = therapist.geopoint;
+            } else if (therapist.coordinates) {
+                if (Array.isArray(therapist.coordinates)) {
+                    therapistCoords = { lat: therapist.coordinates[1], lng: therapist.coordinates[0] };
+                } else if (typeof therapist.coordinates === 'string') {
+                    const parsed = JSON.parse(therapist.coordinates);
+                    if (Array.isArray(parsed)) {
+                        therapistCoords = { lat: parsed[1], lng: parsed[0] };
+                    } else if (parsed.lat && parsed.lng) {
+                        therapistCoords = parsed;
+                    }
+                } else if (therapist.coordinates.lat && therapist.coordinates.lng) {
+                    therapistCoords = therapist.coordinates;
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to parse therapist coordinates:', e);
+        }
+        
+        if (!therapistCoords) return null;
+        
+        const distanceMeters = calculateDistance(userLocation, therapistCoords);
+        const distanceKm = distanceMeters / 1000;
+        
+        if (distanceKm < 1) {
+            return `${Math.round(distanceMeters)}m away`;
+        } else {
+            return `${distanceKm.toFixed(1)}km away`;
+        }
+    }, [userLocation, therapist.geopoint, therapist.coordinates]);
+    
     // Countdown timer for active discount
     useEffect(() => {
         if (!activeDiscount) return;
@@ -953,14 +1007,17 @@ ${locationInfo}${coordinatesInfo}
                         
                         {/* Name and Status Column */}
                         <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                            {/* Location Display - Above name on mobile only */}
-                            {therapist.location && (
+                            {/* Location & Distance Display - Above name on mobile only */}
+                            {(therapist.location || therapistDistance) && (
                                 <div className="block sm:hidden mb-1 mt-2">
                                     <div className="flex items-center text-xs text-gray-600">
                                         <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                                         </svg>
                                         <span>{locationCity || therapist.location}</span>
+                                        {therapistDistance && (
+                                            <span className="ml-2 text-orange-500 font-medium">• {therapistDistance}</span>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -1007,14 +1064,21 @@ ${locationInfo}${coordinatesInfo}
                         </div>
                     </div>
                     
-                    {/* Right side: Location - Desktop only */}
-                    {therapist.location && (
+                    {/* Right side: Location & Distance - Desktop only */}
+                    {(therapist.location || therapistDistance) && (
                         <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
-                            <div className="flex items-center text-sm text-gray-600">
-                                <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                <span>{locationCity || therapist.location}</span>
+                            <div className="flex flex-col items-end text-sm text-gray-600">
+                                <div className="flex items-center">
+                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>{locationCity || therapist.location}</span>
+                                </div>
+                                {therapistDistance && (
+                                    <div className="text-xs text-orange-500 font-medium mt-1">
+                                        {therapistDistance}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Budi & Aditia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .therapist-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .therapist-card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .info-row {
+            display: flex;
+            margin: 8px 0;
+        }
+        .label {
+            font-weight: bold;
+            width: 150px;
+            color: #555;
+        }
+        .value {
+            color: #333;
+            flex: 1;
+        }
+        .duplicate-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .duplicate-warning h3 {
+            color: #ff9800;
+            margin-top: 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Check Budi & Aditia</h1>
+        
+        <button onclick="checkBudiBandung()">Check Budi in Bandung</button>
+        <button onclick="checkAditiaLocation()">Check Aditia Location</button>
+        <button onclick="checkBoth()">Check Both</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script type="module">
+        import { Client, Databases, Query } from 'https://cdn.jsdelivr.net/npm/appwrite@16.0.2/+esm';
+
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        window.checkBudiBandung = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading"></div> Checking for Budi in Bandung...';
+
+            try {
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    [Query.limit(500)]
+                );
+
+                const budiTherapists = response.documents.filter(t => 
+                    t.name && t.name.toLowerCase().includes('budi')
+                );
+
+                const bandungBudi = budiTherapists.filter(t => 
+                    t.location && t.location.toLowerCase().includes('bandung')
+                );
+
+                let html = `<h2>🔍 Budi Search Results</h2>`;
+                html += `<p>Found ${budiTherapists.length} therapist(s) with "Budi" in name</p>`;
+                html += `<p>Found ${bandungBudi.length} Budi in Bandung</p>`;
+
+                if (bandungBudi.length > 1) {
+                    html += `<div class="duplicate-warning">`;
+                    html += `<h3>⚠️ DUPLICATE DETECTED!</h3>`;
+                    html += `<p>Found ${bandungBudi.length} Budi therapists in Bandung. This should be 1!</p>`;
+                    html += `</div>`;
+                }
+
+                bandungBudi.forEach((therapist, index) => {
+                    html += `<div class="therapist-card">`;
+                    html += `<h3>Budi #${index + 1}</h3>`;
+                    html += `<div class="info-row"><span class="label">Document ID:</span><span class="value">${therapist.$id}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Name:</span><span class="value">${therapist.name}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Email:</span><span class="value">${therapist.email || 'N/A'}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Location:</span><span class="value"><strong>${therapist.location || 'NOT SET'}</strong></span></div>`;
+                    html += `<div class="info-row"><span class="label">IsLive:</span><span class="value">${therapist.isLive}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Coordinates:</span><span class="value">${therapist.coordinates || 'N/A'}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Created:</span><span class="value">${new Date(therapist.$createdAt).toLocaleString()}</span></div>`;
+                    html += `</div>`;
+                });
+
+                if (bandungBudi.length === 0) {
+                    html += `<div class="error">❌ No Budi therapists found in Bandung!</div>`;
+                }
+
+                results.innerHTML = html;
+
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        };
+
+        window.checkAditiaLocation = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading"></div> Checking Aditia location...';
+
+            try {
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    [Query.limit(500)]
+                );
+
+                const aditiaByEmail = response.documents.find(t => 
+                    t.email === 'indastreet29@gmail.com'
+                );
+
+                let html = `<h2>🔍 Aditia Search Results</h2>`;
+
+                if (aditiaByEmail) {
+                    const isBandung = aditiaByEmail.location && aditiaByEmail.location.toLowerCase().includes('bandung');
+                    
+                    if (isBandung) {
+                        html += `<div class="success">✅ Aditia is set to Bandung location</div>`;
+                    } else {
+                        html += `<div class="error">❌ Aditia is NOT set to Bandung (Location: ${aditiaByEmail.location || 'NOT SET'})</div>`;
+                    }
+
+                    html += `<div class="therapist-card">`;
+                    html += `<h3>Aditia (indastreet29@gmail.com)</h3>`;
+                    html += `<div class="info-row"><span class="label">Document ID:</span><span class="value">${aditiaByEmail.$id}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Name:</span><span class="value">${aditiaByEmail.name}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Email:</span><span class="value">${aditiaByEmail.email}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Location:</span><span class="value"><strong style="font-size: 1.2em; color: ${isBandung ? '#28a745' : '#dc3545'}">${aditiaByEmail.location || 'NOT SET'}</strong></span></div>`;
+                    html += `<div class="info-row"><span class="label">IsLive:</span><span class="value">${aditiaByEmail.isLive}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Coordinates:</span><span class="value">${aditiaByEmail.coordinates || 'N/A'}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Created:</span><span class="value">${new Date(aditiaByEmail.$createdAt).toLocaleString()}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Updated:</span><span class="value">${new Date(aditiaByEmail.$updatedAt).toLocaleString()}</span></div>`;
+                    html += `</div>`;
+                } else {
+                    html += `<div class="error">❌ No therapist found with email: indastreet29@gmail.com</div>`;
+                    
+                    const allAditia = response.documents.filter(t => 
+                        t.name && t.name.toLowerCase().includes('aditia')
+                    );
+                    
+                    if (allAditia.length > 0) {
+                        html += `<p>Found ${allAditia.length} therapist(s) with "Aditia" in name:</p>`;
+                        allAditia.forEach((therapist, index) => {
+                            html += `<div class="therapist-card">`;
+                            html += `<h3>Aditia #${index + 1}</h3>`;
+                            html += `<div class="info-row"><span class="label">ID:</span><span class="value">${therapist.$id}</span></div>`;
+                            html += `<div class="info-row"><span class="label">Name:</span><span class="value">${therapist.name}</span></div>`;
+                            html += `<div class="info-row"><span class="label">Email:</span><span class="value">${therapist.email || 'N/A'}</span></div>`;
+                            html += `<div class="info-row"><span class="label">Location:</span><span class="value">${therapist.location || 'NOT SET'}</span></div>`;
+                            html += `</div>`;
+                        });
+                    }
+                }
+
+                results.innerHTML = html;
+
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        };
+
+        window.checkBoth = async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="loading"></div> Checking both Budi and Aditia...';
+
+            try {
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    [Query.limit(500)]
+                );
+
+                let html = `<h2>🔍 Combined Results</h2>`;
+
+                // Check Budi
+                const budiTherapists = response.documents.filter(t => 
+                    t.name && t.name.toLowerCase().includes('budi')
+                );
+                const bandungBudi = budiTherapists.filter(t => 
+                    t.location && t.location.toLowerCase().includes('bandung')
+                );
+
+                html += `<h3>📍 Budi in Bandung: ${bandungBudi.length}</h3>`;
+                
+                if (bandungBudi.length > 1) {
+                    html += `<div class="duplicate-warning">`;
+                    html += `<h3>⚠️ DUPLICATE BUDI DETECTED!</h3>`;
+                    html += `<p>Found ${bandungBudi.length} Budi therapists in Bandung!</p>`;
+                    html += `</div>`;
+                }
+
+                bandungBudi.forEach((therapist, index) => {
+                    html += `<div class="therapist-card">`;
+                    html += `<h3>Budi #${index + 1}</h3>`;
+                    html += `<div class="info-row"><span class="label">ID:</span><span class="value">${therapist.$id}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Name:</span><span class="value">${therapist.name}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Email:</span><span class="value">${therapist.email || 'N/A'}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Location:</span><span class="value">${therapist.location}</span></div>`;
+                    html += `<div class="info-row"><span class="label">IsLive:</span><span class="value">${therapist.isLive}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Created:</span><span class="value">${new Date(therapist.$createdAt).toLocaleString()}</span></div>`;
+                    html += `</div>`;
+                });
+
+                // Check Aditia
+                const aditiaByEmail = response.documents.find(t => 
+                    t.email === 'indastreet29@gmail.com'
+                );
+
+                html += `<h3>📍 Aditia (indastreet29@gmail.com)</h3>`;
+
+                if (aditiaByEmail) {
+                    const isBandung = aditiaByEmail.location && aditiaByEmail.location.toLowerCase().includes('bandung');
+                    
+                    if (isBandung) {
+                        html += `<div class="success">✅ Aditia is set to Bandung</div>`;
+                    } else {
+                        html += `<div class="error">❌ Aditia is NOT in Bandung (Location: ${aditiaByEmail.location || 'NOT SET'})</div>`;
+                    }
+
+                    html += `<div class="therapist-card">`;
+                    html += `<h3>Aditia</h3>`;
+                    html += `<div class="info-row"><span class="label">ID:</span><span class="value">${aditiaByEmail.$id}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Name:</span><span class="value">${aditiaByEmail.name}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Email:</span><span class="value">${aditiaByEmail.email}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Location:</span><span class="value"><strong style="font-size: 1.2em; color: ${isBandung ? '#28a745' : '#dc3545'}">${aditiaByEmail.location || 'NOT SET'}</strong></span></div>`;
+                    html += `<div class="info-row"><span class="label">IsLive:</span><span class="value">${aditiaByEmail.isLive}</span></div>`;
+                    html += `<div class="info-row"><span class="label">Coordinates:</span><span class="value">${aditiaByEmail.coordinates || 'N/A'}</span></div>`;
+                    html += `</div>`;
+                } else {
+                    html += `<div class="error">❌ No therapist found with email indastreet29@gmail.com</div>`;
+                }
+
+                results.innerHTML = html;
+
+            } catch (error) {
+                results.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>

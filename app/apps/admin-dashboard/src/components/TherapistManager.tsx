@@ -219,7 +219,7 @@ const TherapistManager: React.FC<TherapistManagerProps> = ({ onBack }) => {
   const filteredTherapists = therapists.filter(therapist => {
     const matchesSearch = therapist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          therapist.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (therapist.city || '').toLowerCase().includes(searchQuery.toLowerCase());
+                         (therapist.location || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || therapist.status === statusFilter;
     
