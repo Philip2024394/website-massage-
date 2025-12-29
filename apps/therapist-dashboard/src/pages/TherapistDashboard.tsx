@@ -105,18 +105,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   });
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>(() => {
-    // 🐛 FIX: Check BOTH city AND location fields to prevent data loss
-    // Priority: city field > location field > auto-detect from coordinates > default 'all'
+    // 🐛 FIX: Use ONLY location field (city field doesn't exist in Appwrite schema!)
+    // Priority: location field > auto-detect from coordinates > default 'all'
     console.log('🔍 LOCATION LOAD DEBUG:', {
-      city: therapist?.city,
       location: therapist?.location,
       coordinates: therapist?.coordinates
     });
-    
-    if (therapist?.city) {
-      console.log('✅ Loaded from city field:', therapist.city);
-      return therapist.city;
-    }
     
     if (therapist?.location) {
       console.log('✅ Loaded from location field:', therapist.location);
@@ -420,8 +414,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         coordinates: coordinates && coordinates.lat !== 0 && coordinates.lng !== 0 ? JSON.stringify(coordinates) : null,
-        city: selectedCity !== 'all' ? selectedCity : null,
-        location: selectedCity !== 'all' ? selectedCity : null, // Location matches city for dropdown filtering
+        location: selectedCity !== 'all' ? selectedCity : null, // 🐛 FIX: Only location field exists (city doesn't exist in schema!)
         isLive: true, // 🔥 ALWAYS TRUE - therapists visible even when offline/busy (same as Yogyakarta)
         // 🎯 Preserve existing status - don't overwrite unless it's a new profile
         status: therapist.status || 'available',
@@ -443,7 +436,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         availability: savedTherapist.availability,
         whatsappNumber: savedTherapist.whatsappNumber,
         coordinates: savedTherapist.coordinates,
-        city: savedTherapist.city,
         location: savedTherapist.location,
         languages: savedTherapist.languages,
         massageTypes: savedTherapist.massageTypes
@@ -451,12 +443,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       
       // 🐛 CRITICAL: Verify location was actually saved
       if (selectedCity !== 'all') {
-        if (savedTherapist.city === selectedCity && savedTherapist.location === selectedCity) {
+        if (savedTherapist.location === selectedCity) {
           console.log('✅ LOCATION SAVE VERIFIED:', selectedCity);
         } else {
           console.error('❌ LOCATION SAVE FAILED!', {
             expected: selectedCity,
-            savedCity: savedTherapist.city,
             savedLocation: savedTherapist.location
           });
         }

@@ -860,17 +860,12 @@ const HomePage: React.FC<HomePageProps> = ({
             const debugInfo = {
                 name: t.name,
                 location: t.location,
-                city: t.city,
                 selectedCity: selectedCity
             };
             
-            // 1. Direct location OR city field name match
+            // 1. Direct location field name match (🐛 FIX: city field doesn't exist in Appwrite schema!)
             if (t.location && t.location.toLowerCase().includes(selectedCity.toLowerCase())) {
                 console.log(`✅ Location match for ${t.name}:`, debugInfo);
-                return true;
-            }
-            if (t.city && t.city.toLowerCase().includes(selectedCity.toLowerCase())) {
-                console.log(`✅ City match for ${t.name}:`, debugInfo);
                 return true;
             }
             
