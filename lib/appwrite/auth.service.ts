@@ -113,8 +113,6 @@ export const authService = {
             // Provide specific error messages based on Appwrite error codes
             if (error.code === 409 || error.message?.includes('already exists')) {
                 throw new Error('An account with this email already exists');
-            } else if (error.code === 400 || error.message?.toLowerCase().includes('invalid email')) {
-                throw new Error('Invalid email format');
             } else if (error.code === 400 || error.message?.toLowerCase().includes('password')) {
                 throw new Error('Password must be at least 8 characters long');
             } else if (error.code === 429 || error.message?.includes('rate limit')) {

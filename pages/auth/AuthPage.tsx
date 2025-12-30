@@ -217,8 +217,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             // Provide specific error messages based on error type
             if (error.code === 409 || error.message?.includes('already exists')) {
                 throw new Error('An account with this email already exists. Please sign in instead.');
-            } else if (error.code === 400 || error.message?.includes('Invalid email')) {
-                throw new Error('Invalid email format. Please check and try again.');
             } else if (error.code === 400 || error.message?.includes('Password')) {
                 throw new Error('Password must be at least 8 characters long.');
             } else if (error.code === 429 || error.message?.includes('rate limit')) {
