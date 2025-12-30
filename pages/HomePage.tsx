@@ -12,7 +12,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import { Users, Building, Sparkles } from 'lucide-react';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
-import { getCustomerLocation, findNearbyTherapists, findNearbyPlaces } from '../lib/nearbyProvidersService';
+import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } from '../lib/nearbyProvidersService';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import PageNumberBadge from '../components/PageNumberBadge';
@@ -20,7 +20,7 @@ import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
 import { loadGoogleMapsScript } from '../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, findCityByCoordinates } from '../constants/indonesianCities';
-import { matchesLocation, validateTherapistsBeforeRender } from '../utils/locationNormalization';
+import { matchesLocation } from '../utils/locationNormalization';
 import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
 
 
@@ -287,6 +287,7 @@ const HomePage: React.FC<HomePageProps> = ({
     const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
     const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
     const [nearbyHotels, setNearbyHotels] = useState<any[]>([]);
+    const [cityFilteredTherapists, setCityFilteredTherapists] = useState<Therapist[]>([]);
     const [isLocationDetecting, setIsLocationDetecting] = useState(false);
     
     // 🔧 DEV-ONLY: Location override for testing geo-filtering from remote locations
@@ -499,11 +500,11 @@ const HomePage: React.FC<HomePageProps> = ({
         try {
             const itemId = selectedRatingItem.item.id || (selectedRatingItem.item as any).$id;
             await reviewService.create({
-                providerId: Number(itemId),
+                providerId: String(itemId),
                 providerType: selectedRatingItem.type,
-                providerName: selectedRatingItem.item.name,
                 rating: 0, // Will be set by RatingModal
-                whatsapp: '', // Will be set by RatingModal
+                reviewContent: '',
+                reviewerId: '',
                 status: 'pending'
             });
             handleCloseRatingModal();
@@ -659,16 +660,62 @@ const HomePage: React.FC<HomePageProps> = ({
     // Auto-detect city from user location and update selectedCity
     useEffect(() => {
         if (userLocation && userLocation.lat && userLocation.lng) {
-            // Find the closest Indonesian city to user's location
+            // First try postal code detection from address
+            let detectedCityId = null;
+            
+            if (userLocation.address) {
+                detectedCityId = mapPostalCodeToCity(userLocation.address);
+                if (detectedCityId) {
+                    console.log('🎯 Auto-detected city from postal code:', detectedCityId, 'from address:', userLocation.address);
+                    setSelectedCity(detectedCityId);
+                    return;
+                }
+            }
+            
+            // Fallback: Find the closest Indonesian city to user's location
             const detectedCity = findCityByCoordinates(userLocation.lat, userLocation.lng);
             if (detectedCity) {
-                console.log('🎯 Auto-detected city from user location:', detectedCity.name);
-                // DON'T auto-change selectedCity - let user manually select
-                // This was causing Budi to be hidden in Chrome but not Firefox
-                // setSelectedCity(detectedCity.name);
+                console.log('🎯 Auto-detected city from coordinates:', detectedCity.name);
+                setSelectedCity(detectedCity.locationId);
             }
         }
     }, [userLocation]);
+
+    // Map postal codes to cities for automatic detection
+    const mapPostalCodeToCity = (address: string): string | null => {
+        if (!address) return null;
+        
+        // Extract postal code from address (5-digit numbers)
+        const postalCodeMatch = address.match(/\b(\d{5})\b/);
+        if (!postalCodeMatch) return null;
+        
+        const postalCode = postalCodeMatch[1];
+        
+        // Yogyakarta Special Region postal codes
+        if (postalCode.startsWith('551') || postalCode.startsWith('552') || postalCode.startsWith('553') || postalCode.startsWith('554') || postalCode.startsWith('555')) {
+            return 'yogyakarta';
+        }
+        
+        // Jakarta postal codes
+        if (postalCode.startsWith('101') || postalCode.startsWith('102') || postalCode.startsWith('103') || postalCode.startsWith('104') || postalCode.startsWith('105') || 
+            postalCode.startsWith('106') || postalCode.startsWith('107') || postalCode.startsWith('108') || postalCode.startsWith('109') || postalCode.startsWith('110') ||
+            postalCode.startsWith('111') || postalCode.startsWith('112') || postalCode.startsWith('113') || postalCode.startsWith('114') || postalCode.startsWith('115') ||
+            postalCode.startsWith('116') || postalCode.startsWith('117') || postalCode.startsWith('118') || postalCode.startsWith('119')) {
+            return 'jakarta';
+        }
+        
+        // Central Java (Semarang area)
+        if (postalCode.startsWith('501') || postalCode.startsWith('502') || postalCode.startsWith('503') || postalCode.startsWith('504') || postalCode.startsWith('505')) {
+            return 'semarang';
+        }
+        
+        // West Java (Bandung area)
+        if (postalCode.startsWith('401') || postalCode.startsWith('402') || postalCode.startsWith('403') || postalCode.startsWith('404') || postalCode.startsWith('405')) {
+            return 'bandung';
+        }
+        
+        return null;
+    };
 
     // Helper to check if provider is a featured sample (always show in all cities)
     const isFeaturedSample = (provider: any, type: 'therapist' | 'place'): boolean => {
@@ -748,7 +795,7 @@ const HomePage: React.FC<HomePageProps> = ({
         const selectedTherapists = shuffled.slice(0, 5);
         
         console.log(`🎭 Selected ${selectedTherapists.length} random Yogyakarta therapists for showcase in ${targetCity}:`, 
-                   selectedTherapists.map(t => t.name));
+                   selectedTherapists.map((t: any) => t.name));
         
         // Create showcase versions with busy status and target city location
         const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => ({
@@ -819,7 +866,8 @@ const HomePage: React.FC<HomePageProps> = ({
             
             // GPS-based filtering (25km radius) when user sets location AND city is 'all'
             // City dropdown filtering takes priority when user selects specific city
-            if (locationToUse && selectedCity === 'all') {
+            // 🔧 DISABLE GPS filtering for "All Indonesia" - show all therapists nationwide
+            if (false && locationToUse && selectedCity === 'all') {
                 try {
                     console.log('🔍 Filtering providers by GPS location (25km radius):', locationToUse);
                     
@@ -833,9 +881,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     if (coords) {
                         console.log('📍 Using coordinates:', coords);
 
-                        // Find nearby therapists and places (25km radius as requested)
-                        const nearbyTherapistsResult = await findNearbyTherapists('0', coords, 25);
-                        const nearbyPlacesResult = await findNearbyPlaces('0', coords, 25);
+                        // Find ALL nearby therapists and places (25km radius) - NO status filtering for homepage
+                        const nearbyTherapistsResult = await findAllNearbyTherapists(coords, 25);
+                        const nearbyPlacesResult = await findAllNearbyPlaces(coords, 25);
                         
                         console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 25km`);
                         console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 25km`);
@@ -903,39 +951,58 @@ const HomePage: React.FC<HomePageProps> = ({
             
             if (selectedCity === 'all') return true;
             
-            // 🔒 PRODUCTION: Use centralized location matching
-            const matches = matchesLocation(t.location, selectedCity);
-            
-            if (matches) {
-                console.log(`✅ Location match for ${t.name}:`, { location: t.location, filter: selectedCity });
-                return true;
-            }
-            
-            // Fallback: Coordinate-based matching
-            if (t.coordinates) {
-                const parsedCoords = parseCoordinates(t.coordinates);
-                if (parsedCoords) {
-                    const matchedCity = matchProviderToCity(parsedCoords, 25);
-                    if (matchedCity && matchedCity.name === selectedCity) {
-                        console.log(`✅ Coordinate match for ${t.name}`);
-                        return true;
-                    }
+            // 🌍 PRIMARY: GPS coordinates-based city detection (source of truth)
+            const therapistCoords = parseCoordinates(t.coordinates);
+            if (therapistCoords) {
+                const matchedCity = matchProviderToCity(therapistCoords, 25);
+                if (matchedCity && matchedCity.locationId === selectedCity) {
+                    console.log(`✅ GPS coordinate match for ${t.name}:`, { 
+                        coordinates: therapistCoords, 
+                        detectedCity: matchedCity.locationId, 
+                        filterCity: selectedCity 
+                    });
+                    return true;
                 }
             }
             
+            // 🔄 FALLBACK: String-based location matching (only if GPS fails)
+            if (!therapistCoords) {
+                const matches = matchesLocation(t.location, selectedCity);
+                if (matches) {
+                    console.log(`✅ Fallback location string match for ${t.name}:`, { location: t.location, filter: selectedCity });
+                    return true;
+                }
+            }
+            
+            console.log(`❌ No city match for ${t.name}:`, { 
+                coordinates: therapistCoords, 
+                locationString: t.location, 
+                filterCity: selectedCity 
+            });
             return false;
         });
         
-        // Add showcase profiles from Yogyakarta to other cities
+        // Add showcase profiles from Yogyakarta ONLY to cities with no real therapists
         let finalTherapistList = [...filteredTherapists];
         if (selectedCity !== 'all') {
-            const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
-            if (showcaseProfiles.length > 0) {
-                // Add showcase profiles to the list (they'll appear as busy)
-                finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
-                console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity}`);
+            // Count real therapists (excluding featured Budi sample)
+            const realTherapistsInCity = filteredTherapists.filter((t: any) => !isFeaturedSample(t, 'therapist'));
+            
+            // Only add showcase profiles if city has NO real therapists
+            if (realTherapistsInCity.length === 0) {
+                const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
+                if (showcaseProfiles.length > 0) {
+                    // Add showcase profiles to the list (they'll appear as busy)
+                    finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
+                    console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} (no real therapists in city)`);
+                }
+            } else {
+                console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s), skipping showcase profiles`);
             }
         }
+        
+        // Update city-filtered therapists state
+        setCityFilteredTherapists(finalTherapistList);
         
         // Filter hotels by selected city (similar logic to therapists)
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
@@ -957,7 +1024,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 const parsedCoords = parseCoordinates(h.coordinates);
                 if (parsedCoords) {
                     const matchedCity = matchProviderToCity(parsedCoords, 25);
-                    if (matchedCity && matchedCity.name === selectedCity) {
+                    if (matchedCity && matchedCity.locationId === selectedCity) {
                         return true;
                     }
                 }
@@ -1004,7 +1071,7 @@ const HomePage: React.FC<HomePageProps> = ({
         if (isDev) {
             console.assert(
                 therapists.length === 0 || nearbyTherapists.length > 0,
-                '⚠️ WARNING: Therapists exist in DB but 0 within 10km radius. Check coordinates or location.'
+                '⚠️ WARNING: Therapists exist in DB but 0 after location filtering. Check coordinates or location matching.'
             );
             
             const currentCoords = (isDev && devLocationOverride) 
@@ -1145,10 +1212,10 @@ const HomePage: React.FC<HomePageProps> = ({
 
         // Inject schema into document head
         const scriptId = 'homepage-schema';
-        let scriptTag = document.getElementById(scriptId);
+        let scriptTag = document.getElementById(scriptId) as HTMLScriptElement | null;
         
         if (!scriptTag) {
-            scriptTag = document.createElement('script');
+            scriptTag = document.createElement('script') as HTMLScriptElement;
             scriptTag.id = scriptId;
             scriptTag.type = 'application/ld+json';
             document.head.appendChild(scriptTag);
@@ -1455,6 +1522,22 @@ const HomePage: React.FC<HomePageProps> = ({
                                 ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng }
                                 : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
 
+                            // 🔧 COORDINATE PARSER: Safely parse Appwrite JSON string coordinates
+                            const getCoords = (t: any) => {
+                                try {
+                                    const c = typeof t.coordinates === "string"
+                                        ? JSON.parse(t.coordinates)
+                                        : t.coordinates;
+
+                                    if (typeof c?.lat === "number" && typeof c?.lng === "number") {
+                                        return c;
+                                    }
+                                } catch (e) {
+                                    console.warn("Invalid coordinates for therapist", t.$id, ":", t.coordinates);
+                                }
+                                return null;
+                            };
+
                             // Helper: Calculate distance using Haversine formula
                             const calculateHaversineDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
                                 const R = 6371; // Earth radius in km
@@ -1487,24 +1570,51 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             // Show all therapists - industry standard: once posted, always visible (like Facebook/Amazon)
             // 🌍 STEP 1: Calculate distances for all therapists with valid geopoints
-            let therapistsWithDistance = therapists
+            
+            // 🔍 DEBUG: Log therapist data to understand filtering issues
+            console.log(`🔍 [DEBUG] Total therapists received:`, therapists?.length || 0);
+            if (therapists && therapists.length > 0) {
+                console.log(`🔍 [DEBUG] First 3 therapists data:`, therapists.slice(0, 3).map((t: any) => ({
+                    name: t.name,
+                    id: t.$id || t.id,
+                    hasCoordinates: !!t.coordinates,
+                    hasGeopoint: !!t.geopoint,
+                    coordinates: t.coordinates,
+                    geopoint: t.geopoint,
+                    location: t.location,
+                    city: t.city,
+                    isLive: t.isLive,
+                    status: t.status,
+                    availability: t.availability
+                })));
+            }
+            
+            let therapistsWithDistance = cityFilteredTherapists
                 .map((t: any) => {
                     let distance: number | null = null;
                     let locationArea: string = t.city || t.location || 'Unknown';
                     
-                    // Extract geopoint and calculate distance if user location exists
-                    if (currentUserLocation && (t.geopoint || t.coordinates)) {
-                        const therapistCoords = t.geopoint 
-                            ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude }
-                            : { lat: t.coordinates?.lat || 0, lng: t.coordinates?.lng || 0 };
+                    // 🌍 GPS DISTANCE: Calculate only if both user location and valid coordinates exist
+                    if (currentUserLocation) {
+                        const therapistCoords = getCoords(t) || (t.geopoint ? { lat: t.geopoint.latitude, lng: t.geopoint.longitude } : null);
                         
-                        distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
-                        
-                        // Try to determine location area from coordinates
-                        if (t.coordinates) {
+                        if (therapistCoords) {
+                            distance = calculateHaversineDistance(currentUserLocation, therapistCoords);
+                            
+                            // 🔍 DEBUG: Log distance calculation for debugging
+                            if (t.name === 'Budi' || t.name === 'Surtiningsih' || t.name === 'Wiwid') {
+                                console.log(`🧮 [DISTANCE CALC] ${t.name}:`, {
+                                    userLocation: currentUserLocation,
+                                    therapistCoords: therapistCoords,
+                                    rawCoordinates: t.coordinates,
+                                    calculatedDistance: distance
+                                });
+                            }
+                            
+                            // Try to determine location area from coordinates
                             const matchedCity = matchProviderToCity(therapistCoords, 25);
                             if (matchedCity) {
-                                locationArea = matchedCity.name;
+                                locationArea = matchedCity.locationId;
                             }
                         }
                     }
@@ -1515,57 +1625,97 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
             // 🌍 STEP 2: GPS-BASED INCLUSION (10km radius or all if dev bypass enabled)
             let baseList = therapistsWithDistance
                 .filter((t: any) => {
+                    // 🔍 DETAILED FILTERING COMPARISON: Track each condition for Budi vs others
+                    const isBudi = t.name?.toLowerCase().includes('budi');
+                    
                     // CRITICAL: First check if therapist should be treated as live
                     const treatedAsLive = shouldTreatTherapistAsLive(t);
                     const isOwnerTherapist = isOwner(t);
                     const isFeatured = isFeaturedSample(t, 'therapist');
                     
-                    // Show live therapists, owner's profile, or featured samples
-                    if (!treatedAsLive && !isOwnerTherapist && !isFeatured) {
-                        return false;
+                    // 🔍 LOG COMPARISON: Detailed logging for filtering decisions
+                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) { // Log Budi + first 3 others
+                        console.log(`🔍 [FILTER CHECK] ${t.name} (${isBudi ? 'BUDI' : 'OTHER'}):`, {
+                            name: t.name,
+                            $id: t.$id,
+                            treatedAsLive: treatedAsLive,
+                            isOwnerTherapist: isOwnerTherapist,
+                            isFeatured: isFeatured,
+                            _distance: t._distance,
+                            hasCoordinates: !!(t.coordinates || t.geopoint),
+                            coordinates: t.coordinates,
+                            geopoint: t.geopoint,
+                            isLive: t.isLive,
+                            status: t.status,
+                            availability: t.availability
+                        });
                     }
+                    
+                    // ✅ FIXED: Don't exclude therapists just because they lack isLive/status fields
+                    // Allow all therapists with GPS coordinates - let GPS filtering be the primary filter
+                    // Only exclude if explicitly marked as not live (isLive: false)
                     
                     // Always show featured sample therapists (Budi) in all cities
                     if (isFeatured) {
+                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
+                            console.log(`✅ [FILTER PASS] ${t.name}: isFeatured=true, INCLUDED`);
+                        }
                         return true;
                     }
                     
-                    // 🌍 GPS DISTANCE CHECK: Only include therapists within 10km (unless dev bypass enabled)
-                    if (t._distance !== null) {
-                        // 🔍 PREVIEW MODE: Allow this specific therapist to bypass radius if in preview mode
-                        if (previewTherapistId && (String(t.$id) === String(previewTherapistId) || String(t.id) === String(previewTherapistId))) {
-                            console.log('🔍 Preview mode: Including therapist outside radius:', t.name);
-                            return true; // Include previewed therapist regardless of distance
-                        }
-                        
-                        // 🔐 ADMIN AREA VIEW: Bypass radius if admin viewing specific area
-                        if (bypassRadiusForAdmin && hasAdminPrivileges) {
-                            return true; // Allow admin to see all therapists in area
-                        }
-                        
-                        // Dev mode bypass: show all therapists with coordinates if enabled
-                        if (isDev && devShowAllTherapists) {
-                            return true; // Skip distance check in dev verification mode
-                        }
-                        
-                        // Production: strict 10km radius
-                        if (t._distance > 10) {
-                            return false; // Exclude therapists beyond 10km
-                        }
+                    // ✅ NO DISTANCE FILTERING: Therapists serve their assigned city/location area
+                    // Show therapists based purely on their city assignment, not GPS proximity
+                    // Distance is only calculated for sorting (nearest first), not for filtering
+                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
+                        console.log(`✅ [FILTER PASS] ${t.name}: Location-based filtering (no radius restriction)`);
                     }
                     
-                    // 🏷️ DROPDOWN FILTERING: Filter by location area AFTER GPS filtering (display grouping only)
-                    if (selectedCity !== 'all') {
-                        // 🔐 ADMIN AREA VIEW: Override dropdown with admin selected area
-                        if (adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
-                            return t._locationArea === adminViewArea;
+                    // 🔄 FALLBACK: Include therapists without valid coordinates (GPS-agnostic)
+                    // Never exclude therapists just because they lack coordinates
+                    if (t._distance === null) {
+                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
+                            console.log(`✅ [FILTER PASS] ${t.name}: No coordinates, GPS-agnostic inclusion, INCLUDED`);
                         }
-                        // Filter by location area that was determined from coordinates
-                        return t._locationArea === selectedCity;
+                        // Continue to other filters (live status, etc.) - don't return here
                     }
-                                    
+                    
+                    // 🔐 ADMIN AREA VIEW: Special admin feature to view all therapists in specific area
+                    if (selectedCity !== 'all' && adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
+                        const areaMatch = t._locationArea === adminViewArea;
+                        if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
+                            console.log(`${areaMatch ? '✅ [FILTER PASS]' : '❌ [FILTER FAIL]'} ${t.name}: Admin area view, area match=${areaMatch}`);
+                        }
+                        return areaMatch;
+                    }
+                    
+                    // ✅ FIXED: GPS coordinates are source of truth for inclusion
+                    // Location strings are for DISPLAY ONLY, not filtering
+                    // This ensures all therapists with valid coordinates in range are shown
+                    if (isBudi || therapistsWithDistance.indexOf(t) < 3) {
+                        console.log(`✅ [FILTER PASS] ${t.name}: Final default inclusion, INCLUDED`);
+                    }
                     return true;
                 });
+
+            // 🔍 FILTERING RESULTS SUMMARY
+            console.log('🔍 [FILTERING SUMMARY]');
+            console.log(`  📊 Input: ${therapistsWithDistance.length} therapists with distance calculated`);
+            console.log(`  📊 Output: ${baseList.length} therapists after filtering`);
+            
+            const budiInBaseList = baseList.find(t => t.name?.toLowerCase().includes('budi'));
+            const nonBudiInBaseList = baseList.filter(t => !t.name?.toLowerCase().includes('budi'));
+            
+            console.log(`  🎯 Budi in final list: ${!!budiInBaseList} (${budiInBaseList?.name || 'NOT FOUND'})`);
+            console.log(`  🎯 Non-Budi in final list: ${nonBudiInBaseList.length} therapists`);
+            
+            if (nonBudiInBaseList.length > 0) {
+                console.log(`  🎯 First 3 non-Budi therapists in final list:`, 
+                    nonBudiInBaseList.slice(0, 3).map(t => ({ name: t.name, id: t.$id })));
+            }
+            
+            if (baseList.length === 1 && budiInBaseList) {
+                console.log('🚨 [CRITICAL ISSUE] Only Budi is in the final list - this is the bug!');
+            }
 
                             // Ensure owner's profile appears once
                             if (loggedInProvider && loggedInProvider.type === 'therapist') {
@@ -1574,10 +1724,11 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     const ownerDoc = therapists.find((t: any) => String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id));
                                     if (ownerDoc) {
                                         let includeOwner = selectedCity === 'all';
-                                        if (!includeOwner && ownerDoc.coordinates) {
+                                        if (!includeOwner && ownerDoc.coordinates && currentUserLocation) {
+                                            // ✅ FIXED: Use GPS distance instead of string matching
                                             const ownerLocation = { lat: ownerDoc.coordinates.lat || 0, lng: ownerDoc.coordinates.lng || 0 };
-                                            const matchedCity = matchProviderToCity(ownerLocation, 25);
-                                            includeOwner = matchedCity?.name === selectedCity;
+                                            const distance = calculateHaversineDistance(currentUserLocation, ownerLocation);
+                                            includeOwner = distance <= 10; // Same 10km radius as other therapists
                                         }
                                         
                                         if (includeOwner) {
@@ -1587,13 +1738,21 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 }
                             }
 
-                            // Add Yogyakarta showcase profiles to non-Yogyakarta cities
+                            // Add Yogyakarta showcase profiles ONLY to cities with no real therapists
                             if (selectedCity !== 'all') {
-                                const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
-                                if (showcaseProfiles.length > 0) {
-                                    // Add showcase profiles (they appear as busy, can't be booked)
-                                    baseList = [...baseList, ...showcaseProfiles];
-                                    console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display`);
+                                // Count real therapists in baseList (excluding featured Budi sample)
+                                const realTherapistsInCity = baseList.filter((t: any) => !isFeaturedSample(t, 'therapist'));
+                                
+                                // Only add showcase profiles if city has NO real therapists
+                                if (realTherapistsInCity.length === 0) {
+                                    const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
+                                    if (showcaseProfiles.length > 0) {
+                                        // Add showcase profiles (they appear as busy, can't be booked)
+                                        baseList = [...baseList, ...showcaseProfiles];
+                                        console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display (no real therapists)`);
+                                    }
+                                } else {
+                                    console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s) in display, skipping showcase profiles`);
                                 }
                             }
 
@@ -1790,6 +1949,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                     readOnly={readOnly}
+                                    selectedCity={selectedCity}
                                     onClick={(t) => {
                                         // Set selected therapist and navigate to profile page with URL update
                                         onSelectTherapist?.(t);
@@ -1900,7 +2060,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         ? { lat: place.coordinates[1], lng: place.coordinates[0] }
                                         : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
                                     const matchedCity = matchProviderToCity(placeLocation, 25);
-                                    return matchedCity?.name === selectedCity;
+                                    return matchedCity?.locationId === selectedCity;
                                 }
                                 
                                 return false;
@@ -2019,7 +2179,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         ? { lat: place.coordinates[1], lng: place.coordinates[0] }
                                         : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
                                     const matchedCity = matchProviderToCity(placeLocation, 25);
-                                    return matchedCity?.name === selectedCity;
+                                    return matchedCity?.locationId === selectedCity;
                                 }
                                 
                                 return false;

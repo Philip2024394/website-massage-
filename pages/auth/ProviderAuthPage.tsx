@@ -1,8 +1,8 @@
 // File deleted as part of unified login refactor.
 import React, { useState, useEffect } from 'react';
-import { therapistService, placesService as placeService } from '../lib/appwriteService';
+import { therapistService, placesService as placeService } from '../../lib/appwriteService';
 import { LogIn, UserPlus } from 'lucide-react';
-import PasswordInput from '../components/PasswordInput';
+import PasswordInput from '../../components/PasswordInput';
 
 
 interface ProviderAuthPageProps {

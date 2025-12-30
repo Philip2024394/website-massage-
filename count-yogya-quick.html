@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Yogyakarta Count</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        #result {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 18px;
+        }
+        .count {
+            font-size: 48px;
+            font-weight: bold;
+            color: #1976d2;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .error {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Yogyakarta Therapists Count</h1>
+    <button onclick="countNow()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">Count Now</button>
+    <div id="result"></div>
+
+    <script>
+        const { Client, Databases, Query } = Appwrite;
+
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+
+        const databases = new Databases(client);
+
+        async function countNow() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Loading...</p>';
+            
+            try {
+                const response = await databases.listDocuments(
+                    '68f76ee1000e64ca8d05',
+                    'therapists_collection_id',
+                    [Query.limit(500)]
+                );
+                
+                const yogyaTherapists = response.documents.filter(t => {
+                    const location = (t.location || '').toLowerCase();
+                    const city = (t.city || '').toLowerCase();
+                    return location.includes('yogya') || location.includes('jogja') || 
+                           city.includes('yogya') || city.includes('jogja');
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="count">${yogyaTherapists.length}</div>
+                    <p><strong>Yogyakarta Therapists in Appwrite</strong></p>
+                    <hr>
+                    <p>Total therapists in database: ${response.documents.length}</p>
+                    <p style="margin-top: 20px;">Names:</p>
+                    <ul style="text-align: left;">
+                        ${yogyaTherapists.map(t => `<li>${t.name} (ID: ${t.$id.substring(0, 8)}...)</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+            }
+        }
+        
+        // Auto-run on page load
+        window.addEventListener('load', countNow);
+    </script>
+</body>
+</html>

@@ -70,5 +70,6 @@
       "protocol": "web+indastreet",
       "url": "/?booking=%s"
     }
-  ]
+  ],
+  "gcm_sender_id": "103953800507"
 }

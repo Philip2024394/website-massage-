@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Building2, Sparkles } from 'lucide-react';
-import { membershipSignupService, type PortalType } from '../lib/services/membershipSignup.service';
-import { useLanguage } from '../hooks/useLanguage';
-import { translations } from '../translations';
+import { membershipSignupService, type PortalType } from '../../lib/services/membershipSignup.service';
+import { useLanguage } from '../../hooks/useLanguage';
+import { translations } from '../../translations';
 
 interface SignupPageProps {
   onNavigate?: (page: string) => void;

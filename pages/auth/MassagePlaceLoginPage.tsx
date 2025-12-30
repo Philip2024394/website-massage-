@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { placeAuth } from '../lib/auth';
-import { saveSessionCache } from '../lib/sessionManager';
-import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../lib/rateLimitUtils';
+import { placeAuth } from '../../lib/auth';
+import { saveSessionCache } from '../../lib/sessionManager';
+import { checkRateLimit, handleAppwriteError, resetRateLimit } from '../../lib/rateLimitUtils';
 import { LogIn, UserPlus, Eye, EyeOff, Mail, Lock, Home, Star, CheckCircle } from 'lucide-react';
-import PageNumberBadge from '../components/PageNumberBadge';
+import PageNumberBadge from '../../components/PageNumberBadge';
 
 interface MassagePlaceLoginPageProps {
     onSuccess: (placeId: string) => void;
@@ -60,7 +60,7 @@ const MassagePlaceLoginPage: React.FC<MassagePlaceLoginPageProps> = ({ onSuccess
         (window as any).checkMassageSpa = async () => {
             console.log('🔍 Checking for massage spa in database...');
             try {
-                const { databases, DATABASE_ID, COLLECTIONS } = await import('../lib/appwrite');
+                const { databases, DATABASE_ID, COLLECTIONS } = await import('../../lib/appwrite');
                 const places = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
                 const massageSpas = places.documents.filter((place: any) => 
                     place.name?.toLowerCase().includes('massage spa') ||

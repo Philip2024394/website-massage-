@@ -8,7 +8,7 @@ let cachedYogyaTherapists: Array<{ id: string; name: string }> | null = null;
 
 /**
  * Get all Yogyakarta therapists from therapist data
- * This function looks for therapists in the global context or returns a default list
+ * This function looks for therapists in the global context or returns empty array
  */
 export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
     // If we have cached data, return it
@@ -23,23 +23,11 @@ export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
         return cachedYogyaTherapists;
     }
     
-    // Fallback to hardcoded list (UPDATE THIS WHEN NEW YOGYAKARTA THERAPISTS JOIN)
-    // To add a new therapist: 
-    // 1. Find their ID in Appwrite therapists collection  
-    // 2. Add { id: 'THEIR_ID', name: 'Their Name' } to this list
-    // 3. Redeploy the app
-    const fallbackList = [
-        { id: '692467a3001f6f05aaa1', name: 'Budi' },
-        { id: '69499239000c90bfd283', name: 'ww' },
-        { id: '694a02cd0036089583db', name: 'ww' },
-        { id: '694ed78e002b0c06171e', name: 'Wiwid' },
-        { id: '694fa14f54e047d47576', name: 'Ela' }, // ✅ ADDED - Ela in Yogyakarta
-        { id: '694fa81cd8ff39b89351', name: 'Biman' }, // ✅ ADDED - Biman in Yogyakarta
-    ];
-    
-    console.log(`⚠️ Using fallback list of ${fallbackList.length} Yogyakarta therapists`);
-    console.log('💡 To dynamically load therapists, call updateYogyakartaTherapists() with your therapist data');
-    return fallbackList;
+    // 🚨 CRITICAL FIX: Return empty array instead of fallback to prevent overriding real data
+    // Fallback should only be used if Appwrite fetch fails completely
+    console.log(`⚠️ No Yogyakarta therapists loaded yet - returning empty array`);
+    console.log('💡 Therapists will be populated when updateYogyakartaTherapists() is called with fetched data');
+    return [];
 }
 
 /**

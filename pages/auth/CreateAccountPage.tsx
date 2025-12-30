@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Building, Sparkles, Mail, Lock, CheckCircle, ArrowLeft, Home } from 'lucide-react';
-import { account, ID } from '../lib/appwrite';
-import { therapistAuth, placeAuth } from '../lib/auth';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import PageNumberBadge from '../components/PageNumberBadge';
-import { AppDrawer } from '../components/AppDrawerClean';
+import { account, ID } from '../../lib/appwrite';
+import { therapistAuth, placeAuth } from '../../lib/auth';
+import BurgerMenuIcon from '../../components/icons/BurgerMenuIcon';
+import PageNumberBadge from '../../components/PageNumberBadge';
+import { AppDrawer } from '../../components/AppDrawerClean';
 
 type AccountType = 'massage_therapist' | 'massage_place' | 'facial_place';
 

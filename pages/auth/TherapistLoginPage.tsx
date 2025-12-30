@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { therapistAuth } from '../lib/auth';
+import { therapistAuth } from '../../lib/auth';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Home, CheckCircle, Star } from 'lucide-react';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { AppDrawer } from '../components/AppDrawerClean';
-import { React19SafeWrapper } from '../components/React19SafeWrapper';
-import PageNumberBadge from '../components/PageNumberBadge';
+import BurgerMenuIcon from '../../components/icons/BurgerMenuIcon';
+import { AppDrawer } from '../../components/AppDrawerClean';
+import { React19SafeWrapper } from '../../components/React19SafeWrapper';
+import PageNumberBadge from '../../components/PageNumberBadge';
 
 
 interface TherapistLoginPageProps {

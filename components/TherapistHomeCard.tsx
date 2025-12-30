@@ -7,6 +7,7 @@ import SocialSharePopup from './SocialSharePopup';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import TherapistJoinPopup from './TherapistJoinPopup';
+import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
 interface TherapistHomeCardProps {
     therapist: Therapist;
@@ -15,6 +16,7 @@ interface TherapistHomeCardProps {
     userLocation?: { lat: number; lng: number } | null;
     readOnly?: boolean; // Lock card to read-only mode
     onNavigate?: (page: string) => void; // Add navigation prop
+    selectedCity?: string; // Add selectedCity prop for area display
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -29,7 +31,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     onIncrementAnalytics,
     userLocation,
     readOnly = false, // Default to editable unless specified
-    onNavigate // Add navigation prop
+    onNavigate, // Add navigation prop
+    selectedCity // Add selectedCity prop
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -117,8 +120,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         
         let therapistCoords = null;
         try {
-            if (therapist.geopoint && therapist.geopoint.lat && therapist.geopoint.lng) {
-                therapistCoords = therapist.geopoint;
+            if ((therapist as any).geopoint && (therapist as any).geopoint.lat && (therapist as any).geopoint.lng) {
+                therapistCoords = (therapist as any).geopoint;
             } else if (therapist.coordinates) {
                 if (Array.isArray(therapist.coordinates)) {
                     therapistCoords = { lat: therapist.coordinates[1], lng: therapist.coordinates[0] };
@@ -129,7 +132,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     } else if (parsed.lat && parsed.lng) {
                         therapistCoords = parsed;
                     }
-                } else if (therapist.coordinates.lat && therapist.coordinates.lng) {
+                } else if ((therapist.coordinates as any)?.lat && (therapist.coordinates as any)?.lng) {
                     therapistCoords = therapist.coordinates;
                 }
             }
@@ -147,7 +150,30 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         } else {
             return `${distanceKm.toFixed(1)}km away`;
         }
-    }, [userLocation, therapist.geopoint, therapist.coordinates]);
+    }, [userLocation, (therapist as any).geopoint, therapist.coordinates]);
+
+    // Determine if we should show "Serves [Area] area" instead of distance
+    const getLocationDisplay = () => {
+        // If no specific city selected (showing "All Indonesia"), show distance if available
+        if (!selectedCity || selectedCity === 'all') {
+            return therapistDistance;
+        }
+
+        // If same city/area is selected, show "Serves [Area] area"
+        const therapistLocationArea = (therapist as any)._locationArea;
+        if (therapistLocationArea === selectedCity) {
+            // Find the display name for the selected city
+            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+            const cityData = allCities.find(city => city.locationId === selectedCity);
+            const displayName = cityData?.name || selectedCity;
+            return `Serves ${displayName} area`;
+        }
+
+        // Different city/area selected, show distance if available
+        return therapistDistance;
+    };
+
+    const locationDisplay = getLocationDisplay();
 
     // Parse pricing
     const getPricing = () => {
@@ -345,9 +371,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </svg>
                         <span className="text-xs font-medium text-gray-700">{(therapist.location || 'Bali').split(',')[0].trim()}</span>
                     </div>
-                    {therapistDistance && (
+                    {locationDisplay && (
                         <div className="text-xs text-orange-500 font-medium">
-                            {therapistDistance}
+                            {locationDisplay}
                         </div>
                     )}
                 </div>

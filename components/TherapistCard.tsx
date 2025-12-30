@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
@@ -309,8 +309,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         
         let therapistCoords = null;
         try {
-            if (therapist.geopoint && therapist.geopoint.lat && therapist.geopoint.lng) {
-                therapistCoords = therapist.geopoint;
+            if ((therapist as any).geopoint && (therapist as any).geopoint.lat && (therapist as any).geopoint.lng) {
+                therapistCoords = (therapist as any).geopoint;
             } else if (therapist.coordinates) {
                 if (Array.isArray(therapist.coordinates)) {
                     therapistCoords = { lat: therapist.coordinates[1], lng: therapist.coordinates[0] };
@@ -321,7 +321,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     } else if (parsed.lat && parsed.lng) {
                         therapistCoords = parsed;
                     }
-                } else if (therapist.coordinates.lat && therapist.coordinates.lng) {
+                } else if ((therapist.coordinates as any)?.lat && (therapist.coordinates as any)?.lng) {
                     therapistCoords = therapist.coordinates;
                 }
             }
@@ -339,7 +339,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         } else {
             return `${distanceKm.toFixed(1)}km away`;
         }
-    }, [userLocation, therapist.geopoint, therapist.coordinates]);
+    }, [userLocation, (therapist as any).geopoint, therapist.coordinates]);
     
     // Countdown timer for active discount
     useEffect(() => {

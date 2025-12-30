@@ -539,10 +539,15 @@ export const bookingService = {
      */
     async getBookingsCount(providerId: string, providerType: 'therapist' | 'place' = 'therapist'): Promise<number> {
         try {
+            // Skip if bookings collection is disabled
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                return 0;
+            }
+
             const attribute = providerType === 'therapist' ? 'therapistId' : 'placeId';
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                APPWRITE_CONFIG.collections.bookings,
                 [
                     Query.equal(attribute, providerId),
                     Query.limit(1) // We only need the count, not the documents

@@ -186,6 +186,12 @@ export const customLinksService = {
     
     async create(link: { name: string; url: string; icon: string }): Promise<any> {
         try {
+            // Check if custom links collection is enabled
+            if (!APPWRITE_CONFIG.collections.customLinks) {
+                console.warn('⚠️ Custom links collection is disabled');
+                return null;
+            }
+            
             // Upload icon to storage first if it's a base64 image
             let iconUrl = link.icon;
             if (link.icon.startsWith('data:image')) {
@@ -221,6 +227,12 @@ export const customLinksService = {
     },
     async getAll(): Promise<any[]> {
         try {
+            // Check if custom links collection is enabled
+            if (!APPWRITE_CONFIG.collections.customLinks) {
+                console.warn('⚠️ Custom links collection is disabled - returning empty array');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.customLinks
@@ -233,6 +245,12 @@ export const customLinksService = {
     },
     async delete(id: string): Promise<void> {
         try {
+            // Check if custom links collection is enabled
+            if (!APPWRITE_CONFIG.collections.customLinks) {
+                console.warn('⚠️ Custom links collection is disabled');
+                return;
+            }
+            
             // First, try to update permissions before deleting (in case they weren't set properly)
             try {
                 await databases.updateDocument(
@@ -881,6 +899,16 @@ export const therapistService = {
 export const placesService = {
     async getAllPlaces(): Promise<any[]> {
         try {
+            // Check if user is authenticated to avoid 401 errors
+            let isAuthenticated = false;
+            try {
+                await account.get();
+                isAuthenticated = true;
+            } catch {
+                // User not authenticated, will use seed data
+                isAuthenticated = false;
+            }
+
             // Fetch complete places from Appwrite
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
@@ -891,8 +919,8 @@ export const placesService = {
             // Enrich with analytics from leads collection if available
             for (const place of response.documents) {
                 try {
-                    // Only query leads if collection exists (not empty string)
-                    if (APPWRITE_CONFIG.collections.leads) {
+                    // Only query leads if user is authenticated AND collection exists
+                    if (isAuthenticated && APPWRITE_CONFIG.collections.leads) {
                         const leadsData = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             APPWRITE_CONFIG.collections.leads,
@@ -900,10 +928,11 @@ export const placesService = {
                         );
                         place.analytics = JSON.stringify({ bookings: leadsData.total });
                     } else {
-                        // Use seed data if leads collection doesn't exist
-                        throw new Error('Leads collection disabled');
+                        // Use seed data if not authenticated or collection doesn't exist
+                        throw new Error('Leads not accessible');
                     }
                 } catch {
+                    // Silently fallback to seed data (no console errors)
                     const seedBookings = 32 + Math.floor(Math.random() * 19);
                     place.analytics = JSON.stringify({ bookings: seedBookings });
                 }
@@ -1370,7 +1399,7 @@ export const facialPlaceService = {
             console.log('🔍 Database ID:', APPWRITE_CONFIG.databaseId);
             
             if (!collectionId || collectionId === '') {
-                console.error('❌ Facial places collection ID is EMPTY!');
+                console.warn('⚠️ Facial places collection ID is EMPTY - returning empty array');
                 return [];
             }
             
@@ -1465,7 +1494,18 @@ export const facialPlaceService = {
             
             return mappedFacialPlaces;
         } catch (error) {
-            console.error('❌ Error fetching facial places:', error);
+            // Handle specific error cases gracefully
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            const errorCode = (error as any)?.code;
+            
+            if (errorCode === 404) {
+                console.warn('⚠️ Facial places collection not found - collection may not exist yet');
+            } else if (errorCode === 401 || errorCode === 403) {
+                console.warn('⚠️ No permission to access facial places collection');
+            } else {
+                console.error('❌ Error fetching facial places:', errorMessage);
+            }
+            
             return [];
         }
     }
@@ -1477,6 +1517,12 @@ export const facialPlaceService = {
 export const hotelService = {
     async getHotels(): Promise<any[]> {
         try {
+            // Check if hotels collection is enabled
+            if (!APPWRITE_CONFIG.collections.hotels) {
+                console.warn('⚠️ Hotels collection is disabled - returning empty array');
+                return [];
+            }
+            
             console.log('🏨 Fetching hotels from collection:', APPWRITE_CONFIG.collections.hotels);
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
@@ -1503,6 +1549,12 @@ export const hotelService = {
     },
     async getHotelById(id: string): Promise<any> {
         try {
+            // Check if hotels collection is enabled
+            if (!APPWRITE_CONFIG.collections.hotels) {
+                console.warn('⚠️ Hotels collection is disabled');
+                return null;
+            }
+            
             const response = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.hotels,
@@ -1950,8 +2002,10 @@ export const translationsService = {
             // Check if translations collection is disabled
             const translationsCollection = APPWRITE_CONFIG.collections.translations;
             if (!translationsCollection) {
-                console.log('🔄 Translations collection disabled, using fallback translations');
-                return null; // Will trigger fallback in useTranslations
+                console.log('🔄 Translations collection disabled, using local fallback translations');
+                // Import and return local fallback immediately instead of null
+                const { translations: localTranslations } = await import('../translations/index');
+                return localTranslations || null; // Will trigger fallback in useTranslations
             }
             
             const response = await databases.listDocuments(

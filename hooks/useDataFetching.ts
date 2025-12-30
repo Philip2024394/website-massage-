@@ -9,6 +9,7 @@ import { therapistService, placesService, hotelService, facialPlaceService } fro
 import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 import { robustCollectionQuery } from '../lib/robustApiWrapper';
+import { updateYogyakartaTherapists } from '../lib/therapistListProvider';
 
 export const useDataFetching = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +81,13 @@ export const useDataFetching = () => {
                 }
                 return initialized;
             });
+            
+            // ✅ CRITICAL FIX: Update therapist list provider state when real data arrives
+            if (therapistsWithReviews && therapistsWithReviews.length > 0) {
+                console.log('🔄 Updating therapist list provider with fetched data...');
+                updateYogyakartaTherapists(therapistsWithReviews);
+                console.log('✅ Therapist list provider updated - fallback data replaced with fetched data');
+            }
             
             const placesWithReviews = (placesData || []).map((place: Place) => 
                 reviewService.initializeProvider(place) as Place

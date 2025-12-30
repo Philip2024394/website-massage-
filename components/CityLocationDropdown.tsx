@@ -12,6 +12,7 @@ interface CityLocationDropdownProps {
   showLabel?: boolean;
   disabled?: boolean;
   includeAll?: boolean;
+  onCoordinatesChange?: (coordinates: { lat: number; lng: number } | null) => void; // NEW: Auto-populate coordinates
 }
 
 const CityLocationDropdown = ({
@@ -22,18 +23,55 @@ const CityLocationDropdown = ({
   label = 'City / Tourist Location',
   showLabel = false,
   disabled = false,
-  includeAll = true
+  includeAll = true,
+  onCoordinatesChange // NEW: Auto-populate coordinates callback
 }: CityLocationDropdownProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState(INDONESIAN_CITIES_CATEGORIZED); // Start with static fallback
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [baliExpanded, setBaliExpanded] = useState(false);
+  const [lombokExpanded, setLombokExpanded] = useState(false);
+  const [floresExpanded, setFloresExpanded] = useState(false);
+  const [sumatraExpanded, setSumatraExpanded] = useState(false);
+  const [easternExpanded, setEasternExpanded] = useState(false);
+  const [beachExpanded, setBeachExpanded] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const portalRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
 
   // Removed auto-close timer to prevent dropdown from closing unexpectedly
+
+  // Auto-expand sections when cities from those regions are selected
+  useEffect(() => {
+    const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+    const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+    if (selectedCityData) {
+      // Reset all expanded states
+      setBaliExpanded(false);
+      setLombokExpanded(false);
+      setFloresExpanded(false);
+      setSumatraExpanded(false);
+      setEasternExpanded(false);
+      setBeachExpanded(false);
+      
+      // Expand relevant section
+      if (selectedCityData.province === 'Bali') {
+        setBaliExpanded(true);
+      } else if (selectedCityData.province === 'West Nusa Tenggara') {
+        setLombokExpanded(true);
+      } else if (selectedCityData.province === 'East Nusa Tenggara') {
+        setFloresExpanded(true);
+      } else if (['North Sumatra', 'South Sumatra', 'West Sumatra', 'Riau', 'Lampung', 'Aceh'].includes(selectedCityData.province)) {
+        setSumatraExpanded(true);
+      } else if (['South Sulawesi', 'North Sulawesi', 'Southeast Sulawesi', 'Papua', 'West Papua', 'Maluku'].includes(selectedCityData.province)) {
+        setEasternExpanded(true);
+      } else if (['Riau Islands', 'Bangka Belitung', 'East Kalimantan', 'DKI Jakarta'].includes(selectedCityData.province) && selectedCityData.isTouristDestination) {
+        setBeachExpanded(true);
+      }
+    }
+  }, [selectedCity]);
 
   // DEV-ONLY: Validate city data on mount
   useEffect(() => {
@@ -117,8 +155,11 @@ const CityLocationDropdown = ({
 
   const handleCitySelect = (city: CityLocation | string) => {
     if (typeof city === 'string') {
-      // Handle 'all' option
+      // Handle 'all' option - clear coordinates
       onCityChange(city);
+      if (onCoordinatesChange) {
+        onCoordinatesChange(null); // Clear coordinates for "All Indonesia"
+      }
     } else {
       // 🔒 STRICT: locationId must come from data, no runtime fallback
       if (!city.locationId) {
@@ -128,8 +169,18 @@ const CityLocationDropdown = ({
         }
         return; // Don't proceed without locationId
       }
+      
       console.log(`🎯 City selected: ${city.name} → locationId: ${city.locationId}`);
       onCityChange(city.locationId);
+      
+      // 📍 NEW: Auto-populate coordinates from city data (convenience feature)
+      if (onCoordinatesChange && city.coordinates) {
+        console.log(`📍 Auto-populating coordinates for ${city.name}:`, city.coordinates);
+        onCoordinatesChange({
+          lat: city.coordinates.lat,
+          lng: city.coordinates.lng
+        });
+      }
     }
     setIsOpen(false);
     setSearchQuery('');
@@ -259,31 +310,102 @@ const CityLocationDropdown = ({
                   />
                 </div>
 
-                {filteredCities.length === 0 ? (
+                                {filteredCities.length === 0 ? (
                   <div className="px-4 py-3 text-sm text-gray-500 text-center">
                     No locations found. Try "Other Location" below.
                   </div>
                 ) : (
-                  filteredCities.map((category, categoryIndex) => (
+                  filteredCities.map((category, categoryIndex) => {
+                    // Determine if this category should be hierarchical
+                    const getHierarchicalConfig = (categoryName: string) => {
+                      switch (categoryName) {
+                        case "🏝️ Bali":
+                          return { expanded: baliExpanded, setExpanded: setBaliExpanded, icon: "🏖️" };
+                        case "🌊 Lombok & Gili":
+                          return { expanded: lombokExpanded, setExpanded: setLombokExpanded, icon: "🏝️" };
+                        case "🦎 Flores & Komodo":
+                          return { expanded: floresExpanded, setExpanded: setFloresExpanded, icon: "🦎" };
+                        case "🦀 Sumatra":
+                          return { expanded: sumatraExpanded, setExpanded: setSumatraExpanded, icon: "🌋" };
+                        case "🏝️ Eastern Indonesia":
+                          return { expanded: easternExpanded, setExpanded: setEasternExpanded, icon: "🌺" };
+                        case "🏖️ Beach Destinations":
+                          return { expanded: beachExpanded, setExpanded: setBeachExpanded, icon: "🏖️" };
+                        default:
+                          return null;
+                      }
+                    };
+                    
+                    const hierarchicalConfig = getHierarchicalConfig(category.category);
+                    
+                    return (
                     <div key={`${category.category}-${categoryIndex}`}>
-                      <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                        {category.category}
-                      </div>
-                      {category.cities.map((city: CityLocation, cityIndex: number) => (
-                        <button
-                          key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
-                          type="button"
-                          onClick={() => handleCitySelect(city)}
-                          className={`
-                            w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
-                            ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
-                          `}
-                        >
-                          {city.name}
-                        </button>
-                      ))}
+                      {/* Hierarchical categories */}
+                      {hierarchicalConfig ? (
+                        <div>
+                          {/* Expandable Header */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              hierarchicalConfig.setExpanded(!hierarchicalConfig.expanded);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm font-semibold text-gray-700 bg-gray-50 border-b border-gray-100 hover:bg-gray-100 transition-colors duration-150 flex items-center justify-between"
+                          >
+                            <span>{category.category}</span>
+                            <svg 
+                              className={`w-4 h-4 transition-transform duration-200 ${hierarchicalConfig.expanded ? 'rotate-180' : ''}`}
+                              fill="none" 
+                              stroke="currentColor" 
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          
+                          {/* Sub-areas - Collapsible */}
+                          {hierarchicalConfig.expanded && (
+                            <div className="border-l-2 border-orange-200">
+                              {category.cities.map((city: CityLocation, cityIndex: number) => (
+                                <button
+                                  key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
+                                  type="button"
+                                  onClick={() => handleCitySelect(city)}
+                                  className={`
+                                    w-full px-6 py-2 text-left text-sm hover:bg-orange-50 transition-colors duration-150 pl-8
+                                    ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-100 text-orange-800 font-medium border-r-2 border-orange-500' : 'text-gray-700'}
+                                  `}
+                                >
+                                  {hierarchicalConfig.icon} {city.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Regular categories - flat structure */
+                        <div>
+                          <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                            {category.category}
+                          </div>
+                          {category.cities.map((city: CityLocation, cityIndex: number) => (
+                            <button
+                              key={`${category.category}-${city.name}-${categoryIndex}-${cityIndex}`}
+                              type="button"
+                              onClick={() => handleCitySelect(city)}
+                              className={`
+                                w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors duration-150
+                                ${selectedCity === (city.locationId || city.name.toLowerCase()) ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-900'}
+                              `}
+                            >
+                              {city.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))
+                    );
+                  })
                 )}
                 
                 {/* Custom Location Option */}

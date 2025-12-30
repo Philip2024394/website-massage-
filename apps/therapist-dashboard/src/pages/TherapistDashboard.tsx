@@ -460,7 +460,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           savedLocationId: savedTherapist.locationId
         });
       }
-      }
 
       // Wait a moment for database to fully commit changes
       console.log('⏳ Waiting for database to commit changes...');

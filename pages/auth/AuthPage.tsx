@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, User, Lock, Mail, CheckSquare, Square } from 'lucide-react';
-import HomeIcon from '../components/icons/HomeIcon';
-import { authService, userService, therapistService, placesService } from '../lib/appwriteService';
-import { ID } from '../lib/appwrite';
+import HomeIcon from '../../components/icons/HomeIcon';
+import { authService, userService, therapistService, placesService } from '../../lib/appwriteService';
+import { ID } from '../../lib/appwrite';
 
 interface AuthPageProps {
     onAuthSuccess: (userType: string) => void;
