@@ -117,6 +117,9 @@ export const authService = {
                 throw new Error('Password must be at least 8 characters long');
             } else if (error.code === 429 || error.message?.includes('rate limit')) {
                 throw new Error('Too many registration attempts. Please wait a moment');
+            } else if (error.code === 400) {
+                // Generic 400 error - don't expose technical details about email format
+                throw new Error('Unable to create account. Please try a different email or contact support.');
             } else {
                 throw new Error(error.message || 'Registration failed. Please try again');
             }
