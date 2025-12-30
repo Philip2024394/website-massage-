@@ -242,16 +242,8 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             // Normalize email
             const normalizedEmail = email.toLowerCase().trim();
             
-            // Check if user already exists in any collection
-            const existingUser = await userService.getByEmail(normalizedEmail);
-            
             if (mode === 'signin') {
-                // Sign in mode - user must exist
-                if (!existingUser) {
-                    setError('No account found with this email. Please create an account first.');
-                    return;
-                }
-                
+                // Sign in mode - try to login first, then get user profile
                 try {
                     const user = await authService.login(normalizedEmail, password);
                     console.log('✅ Sign in successful');
@@ -260,26 +252,45 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     sessionStorage.removeItem('start_fresh');
                     console.log('✅ Cleared start_fresh flag - session can now be restored');
                     
-                    // Determine user type from existing record
+                    // Get user profile to determine account type
+                    const existingUser = await userService.getByEmail(normalizedEmail);
+                    
+                    // Determine user type from profile
                     let userType = 'therapist'; // default
-                    if (existingUser.role || existingUser.userType) {
-                        const role = existingUser.role || existingUser.userType;
-                        if (role === 'therapist') userType = 'therapist';
-                        else if (role === 'massage_place' || role === 'massage-place') userType = 'massage-place';
-                        else if (role === 'facial_place' || role === 'facial-place') userType = 'facial-place';
+                    if (existingUser) {
+                        if (existingUser.role || existingUser.userType) {
+                            const role = existingUser.role || existingUser.userType;
+                            if (role === 'therapist') userType = 'therapist';
+                            else if (role === 'massage_place' || role === 'massage-place') userType = 'massage-place';
+                            else if (role === 'facial_place' || role === 'facial-place') userType = 'facial-place';
+                        }
                     }
                     
                     onAuthSuccess(userType);
                 } catch (error: any) {
                     console.error('❌ Sign in failed:', error);
-                    setError('Incorrect password. Please try again.');
+                    
+                    // Provide specific error messages
+                    if (error.message?.includes('Invalid credentials') || error.message?.includes('Invalid email or password')) {
+                        setError('Incorrect email or password. Please try again.');
+                    } else if (error.message?.includes('user') && error.message?.includes('not found')) {
+                        setError('No account found with this email. Please create an account first.');
+                    } else {
+                        setError(error.message || 'Sign in failed. Please try again.');
+                    }
                 }
             } 
             else if (mode === 'signup') {
-                // Signup mode - create account (even if user exists, we'll try to create and handle the conflict)
-                if (existingUser) {
-                    setError('An account with this email already exists. Please sign in instead.');
-                    return;
+                // Signup mode - check if user already exists first
+                try {
+                    const existingUser = await userService.getByEmail(normalizedEmail);
+                    if (existingUser) {
+                        setError('An account with this email already exists. Please sign in instead.');
+                        return;
+                    }
+                } catch (error) {
+                    // User doesn't exist, continue with signup
+                    console.log('✅ Email is available for signup');
                 }
                 
                 try {
@@ -301,7 +312,14 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 }
             }
             else {
-                // Unified mode - smart detection
+                // Unified mode - check if user exists first
+                let existingUser;
+                try {
+                    existingUser = await userService.getByEmail(normalizedEmail);
+                } catch (error) {
+                    existingUser = null;
+                }
+                
                 if (existingUser) {
                     // User exists - attempt sign in
                     console.log('📧 User exists, attempting sign in');
