@@ -15,3 +15,48 @@ esbuild/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+
+# Test/Debug HTML files (53 files causing crashes)
+*-debug*.html
+*-test*.html
+check-*.html
+test-*.html
+diagnose-*.html
+populate-*.html
+verify-*.html
+migrate-*.html
+fix-*.html
+find-*.html
+enable-*.html
+create-*.html
+count-*.html
+add-*.html
+force-*.html
+share-link-*.html
+therapist-*-debug.html
+url-debug*.html
+wiwid-*.html
+review-*.html
+cors-*.html
+auth-env-*.html
+appwrite-collections-test.html
+live-site-*.html
+search-*.html
+bulk-*.html
+
+# Backup files
+*-backup.*
+*-old.*
+*.disabled
+deleted/
+__deleted__/
+
+# Large generated files
+eslint-report.json
+file-size-report.json
+pnpm-lock.yaml
+
+# Documentation (reduces indexing load)
+*.md
+!README.md
+docs/*.md

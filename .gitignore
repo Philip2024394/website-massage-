@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Build artifacts and cache (CRITICAL: Prevents VS Code crashes)
+.vite
+.cache
+.turbo
+build
+coverage
+out
+.next
+esbuild
+*.tsbuildinfo
+*.map
+
 # Environment variables (IMPORTANT: Never commit these!)
 .env
 .env.local
@@ -22,6 +34,7 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -29,3 +42,49 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backup and deleted files
+*-backup.*
+*-old.*
+*.disabled
+deleted/
+__deleted__/
+
+# Test/Debug HTML files (53 files causing file watcher overload)
+*-debug*.html
+*-test*.html
+check-*.html
+test-*.html
+diagnose-*.html
+populate-*.html
+verify-*.html
+migrate-*.html
+fix-*.html
+find-*.html
+enable-*.html
+create-*.html
+count-*.html
+add-*.html
+force-*.html
+share-link-*.html
+therapist-*-debug.html
+url-debug*.html
+wiwid-*.html
+review-*.html
+cors-*.html
+auth-env-*.html
+appwrite-collections-test.html
+live-site-*.html
+search-*.html
+bulk-*.html
+
+# Keep essential HTML files
+!index.html
+!admin.html
+!public/**/*.html
+!apps/**/index.html
+
+# Large generated files
+eslint-report.json
+file-size-report.json
+file-size-report.txt

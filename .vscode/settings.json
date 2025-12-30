@@ -1,0 +1,32 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.next/**": true,
+    "**/out/**": true,
+    "**/coverage/**": true,
+    "**/tests/html-debug/**": true
+  },
+
+  "search.exclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.next/**": true,
+    "**/out/**": true,
+    "**/tests/html-debug/**": true
+  },
+
+  "files.exclude": {
+    "**/tests/html-debug/**": true
+  },
+
+  "typescript.tsserver.maxTsServerMemory": 8192,
+
+  "editor.codeLens": false,
+  "npm.enableScriptExplorer": false,
+  "git.autorefresh": false,
+  "typescript.surveys.enabled": false
+}
+
