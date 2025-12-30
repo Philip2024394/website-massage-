@@ -50,10 +50,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             return false;
         }
         
-        // Validate email format - more lenient regex that accepts most valid emails
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-        if (!emailRegex.test(email.trim())) {
-            setError('Please enter a valid email address');
+        // Accept any email input - no format validation
+        if (!email || !email.trim()) {
+            setError('Please enter an email address');
             return false;
         }
         

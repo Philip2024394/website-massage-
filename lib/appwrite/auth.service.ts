@@ -61,9 +61,8 @@ export const authService = {
             
             // Validate inputs - trim whitespace from email
             const trimmedEmail = email.trim();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-            if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-                throw new Error('Invalid email format');
+            if (!trimmedEmail) {
+                throw new Error('Email is required');
             }
             if (!password || password.length < 8) {
                 throw new Error('Password must be at least 8 characters long');
