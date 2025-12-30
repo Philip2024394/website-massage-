@@ -59,8 +59,10 @@ export const authService = {
         try {
             console.log('🔵 auth.service: Starting registration for:', email);
             
-            // Validate inputs
-            if (!email || !email.includes('@')) {
+            // Validate inputs - trim whitespace from email
+            const trimmedEmail = email.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+            if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
                 throw new Error('Invalid email format');
             }
             if (!password || password.length < 8) {
@@ -84,7 +86,7 @@ export const authService = {
             
             console.log('🔵 Creating Appwrite account...');
             const response = await retryWithBackoff(
-                () => appwriteAccount.create('unique()', email, password, name),
+                () => appwriteAccount.create('unique()', trimmedEmail, password, name),
                 'account_create'
             );
             console.log('✅ Appwrite account created:', response.$id);
@@ -94,7 +96,7 @@ export const authService = {
             if (shouldAutoLogin) {
                 console.log('🔵 Auto-logging in...');
                 await retryWithBackoff(
-                    () => appwriteAccount.createEmailPasswordSession(email, password),
+                    () => appwriteAccount.createEmailPasswordSession(trimmedEmail, password),
                     'account_login_after_register'
                 );
                 console.log('✅ Auto-login successful');
