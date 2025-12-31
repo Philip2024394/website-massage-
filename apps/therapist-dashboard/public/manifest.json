@@ -1,7 +1,7 @@
 {
   "short_name": "IndaStreet Therapist",
   "name": "IndaStreet - Therapist Dashboard",
-  "description": "Manage your massage therapy bookings, leads, and earnings",
+  "description": "Manage your massage therapy bookings, leads, and earnings with persistent chat support",
   "icons": [
     {
       "src": "/icons/therapist-icon-72.png",
@@ -36,10 +36,38 @@
   ],
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#FF6B35",
   "background_color": "#ffffff",
   "orientation": "portrait",
   "scope": "/",
   "categories": ["business", "productivity", "health"],
-  "screenshots": []
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your therapist dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Bookings",
+      "short_name": "Bookings",
+      "description": "Manage your bookings",
+      "url": "/bookings",
+      "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Support Chat",
+      "short_name": "Chat",
+      "description": "Contact support (Premium)",
+      "url": "/chat",
+      "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }

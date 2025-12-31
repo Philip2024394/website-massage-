@@ -14,6 +14,20 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
+    <!-- PWA Debug Helper for Testing -->
+    <script>
+      // Only load debug helper on localhost
+      if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        const debugScript = document.createElement('script');
+        debugScript.src = '/pwa-debug.js';
+        debugScript.onload = () => {
+          console.log('🔧 PWA debug tools available in console:');
+          console.log('   window.testPWAFeatures.runAllTests()');
+        };
+        document.head.appendChild(debugScript);
+      }
+    </script>
+    
     <!-- Service Worker Registration (disabled on localhost to prevent stale-cache white screens) -->
     <script>
       if ('serviceWorker' in navigator) {

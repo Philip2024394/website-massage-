@@ -768,7 +768,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   // Navigation handler for TherapistLayout menu
   const handleNavigate = (pageId: string) => {
-    console.log('🔄 Navigating to:', pageId);
+    console.log('🔄 TherapistDashboard handleNavigate called with:', pageId);
+    console.log('🔄 Available navigation handlers:', {
+      onNavigateToMenu: !!onNavigateToMenu,
+      onNavigateToStatus: !!onNavigateToStatus,
+      onNavigateToBookings: !!onNavigateToBookings,
+      onNavigateToChat: !!onNavigateToChat
+    });
     switch (pageId) {
       case 'status':
         onNavigateToStatus?.();
@@ -798,7 +804,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         onNavigateToPremium?.();
         break;
       case 'custom-menu':
-        onNavigateToMenu?.();
+        console.log('🍽️ Navigating to custom-menu, onNavigateToMenu available:', !!onNavigateToMenu);
+        if (onNavigateToMenu) {
+          console.log('✅ Calling onNavigateToMenu()');
+          onNavigateToMenu();
+        } else {
+          console.error('❌ onNavigateToMenu handler is undefined!');
+        }
         break;
       case 'chat':
         onNavigateToChat?.();

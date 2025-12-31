@@ -21,8 +21,10 @@ import TherapistSchedule from './pages/TherapistSchedule';
 import TherapistLayout from './components/TherapistLayout';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
+import FloatingChat from './components/FloatingChat';
 import { LanguageProvider } from '../../../context/LanguageContext';
 import { useTranslations } from '../../../lib/useTranslations';
+import { PWALifecycleManager, isPWAMode } from './lib/pwaFeatures';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule';
 
@@ -106,6 +108,12 @@ function App() {
   useEffect(() => {
     // Always rely on server state to decide onboarding
     console.log('🔄 App mounted - checking auth...');
+    
+    // Initialize PWA features
+    console.log('📱 Initializing PWA features...');
+    PWALifecycleManager.init();
+    console.log('✅ PWA features initialized');
+    
     checkAuth();
   }, []);
 
@@ -266,6 +274,7 @@ function App() {
 
   // Render page content
   const renderPage = () => {
+    console.log('🎨 App.tsx renderPage called with currentPage:', currentPage);
     switch (currentPage) {
       case 'status':
         return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} onRefresh={refreshUser} onNavigate={setCurrentPage} />;
@@ -304,7 +313,10 @@ function App() {
       case 'payment-status':
         return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'custom-menu':
+        console.log('🍽️ App.tsx renderPage: Rendering TherapistMenu');
         return <TherapistMenu therapist={user} onNavigate={setCurrentPage} />;
+      case 'premium-upgrade':
+        return <PremiumUpgrade therapist={user} onNavigate={setCurrentPage} />;
       case 'commission-payment':
         return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'schedule':
@@ -322,7 +334,15 @@ function App() {
             onNavigateToNotifications={() => setCurrentPage('notifications')}
             onNavigateToLegal={() => setCurrentPage('legal')}
             onNavigateToCalendar={() => setCurrentPage('calendar')}
-            onNavigateToMenu={() => setCurrentPage('custom-menu')}
+            onNavigateToPayment={() => setCurrentPage('payment')}
+            onNavigateToPaymentStatus={() => setCurrentPage('payment-status')}
+            onNavigateToCommission={() => setCurrentPage('commission-payment')}
+            onNavigateToPremium={() => setCurrentPage('premium-upgrade')}
+            onNavigateToSchedule={() => setCurrentPage('schedule')}
+            onNavigateToMenu={() => {
+              console.log('🍽️ App.tsx: Setting currentPage to custom-menu');
+              setCurrentPage('custom-menu');
+            }}
           />
         );
     }
@@ -344,6 +364,14 @@ function App() {
       >
         {renderPage()}
       </TherapistLayout>
+      
+      {/* Persistent Floating Chat - Always visible when authenticated */}
+      {isAuthenticated && user && (
+        <FloatingChat 
+          therapist={user} 
+          isPWA={isPWAMode()} 
+        />
+      )}
     </LanguageProvider>
   );
 }

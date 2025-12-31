@@ -7,6 +7,7 @@ import { showToast } from '../../../../utils/showToastPortal';
 
 interface PremiumUpgradeProps {
   therapist: Therapist | null;
+  onNavigate?: (page: string) => void;
 }
 
 // Admin payment details - these will be fetched from admin settings
@@ -17,7 +18,7 @@ interface AdminPaymentDetails {
   swiftCode?: string;
 }
 
-const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist }) => {
+const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }) => {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
