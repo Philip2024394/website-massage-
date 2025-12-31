@@ -167,7 +167,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
 
     return (
         <div className="relative">
-            {/* External meta bar (Joined Date / Partner Portal / Orders) */}
+            {/* External meta bar (Joined Date) */}
             <div className="flex justify-between items-center mb-2 px-2">
                 <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,25 +175,18 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                     </svg>
                     {joinedDisplay}
                 </span>
-                <span className="text-[11px] text-blue-600 font-semibold flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    Partner Portal
-                </span>
-                {!readOnly && displayBookingsCount > 0 && (
-                    <span className="text-[11px] text-gray-600 font-medium flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                        {displayBookingsCount}
-                    </span>
-                )}
-                {readOnly && (
-                    <span className="text-[11px] text-gray-500 font-medium bg-gray-200 px-2 py-0.5 rounded-full">
-                        Read Only
-                    </span>
-                )}
+                <div className="flex items-center gap-2">
+                    {!readOnly && (
+                        <span className="text-[11px] text-green-600 font-semibold">
+                            Massage Spa Join Free
+                        </span>
+                    )}
+                    {readOnly && (
+                        <span className="text-[11px] text-gray-500 font-medium bg-gray-200 px-2 py-0.5 rounded-full">
+                            Read Only
+                        </span>
+                    )}
+                </div>
             </div>
             
             <div 
@@ -241,6 +234,8 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                         </div>
                     );
                 })()}
+
+                {/* Status badge removed from main image */}
 
                 {/* Orders Badge - Top Right */}
                 {displayBookingsCount > 0 && (

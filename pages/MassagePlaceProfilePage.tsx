@@ -3,6 +3,7 @@ import MassagePlaceCard from '../components/MassagePlaceCard';
 import RotatingReviews from '../components/RotatingReviews';
 import { AppDrawer } from '../components/AppDrawerClean';
 import SocialMediaLinks from '../components/SocialMediaLinks';
+import PageContainer from '../components/layout/PageContainer';
 import { Building, Sparkles } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HomeIcon from '../components/icons/HomeIcon';
@@ -448,59 +449,43 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     return (
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             {/* Header with Brand, Language, and Menu */}
-            <header className="sticky top-0 z-50 bg-white shadow-sm">
-                <div className="px-4 py-3">
-                    <div className="flex justify-between items-center max-w-7xl mx-auto">
-                        {/* Brand Name with Back Button */}
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => {
-                                    if (onNavigate) {
-                                        onNavigate('home');
-                                    } else if (typeof window !== 'undefined') {
-                                        window.location.href = '/';
-                                    }
-                                }}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                title="Back"
-                            >
-                                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                            <h1 className="text-xl sm:text-2xl font-bold">
-                                <span className="text-black">Inda</span>
-                                <span className="text-orange-500">Street</span>
-                            </h1>
-                        </div>
-                        
-                        {/* Language & Menu */}
-                        <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
-                            {/* Language Selector */}
-                            <button 
-                                onClick={() => {
-                                    const currentLang = language || 'id';
-                                    const newLanguage = currentLang === 'id' ? 'en' : 'id';
-                                    onLanguageChange?.(newLanguage);
-                                }} 
-                                className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
-                                title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-                            >
-                                <span className="text-xl sm:text-2xl">
-                                    {language === 'id' ? '🇮🇩' : '🇬🇧'}
-                                </span>
-                            </button>
-
-                            <button 
-                                onClick={() => setIsMenuOpen(true)} 
-                                title="Menu" 
-                                className="hover:bg-orange-50 rounded-full transition-colors text-orange-500 flex-shrink-0 min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center"
-                            >
-                               <BurgerMenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />
-                            </button>
-                        </div>
+            <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
+                <PageContainer className="py-2 sm:py-3 max-w-full">
+                <div className="flex justify-between items-center max-w-full">
+                    {/* Brand Name with Menu Button */}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsMenuOpen(true)}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            title="Menu"
+                        >
+                            <BurgerMenuIcon className="w-5 h-5 text-gray-700" />
+                        </button>
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
+                            <span className="text-black">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </h1>
+                    </div>
+                    
+                    {/* Language & Menu */}
+                    <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
+                        {/* Language Selector */}
+                        <button 
+                            onClick={() => {
+                                const currentLang = language || 'id';
+                                const newLanguage = currentLang === 'id' ? 'en' : 'id';
+                                onLanguageChange?.(newLanguage);
+                            }} 
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                            title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                        >
+                            <span className="text-xl sm:text-2xl">
+                                {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                            </span>
+                        </button>
                     </div>
                 </div>
+                </PageContainer>
             </header>
 
             {/* Hero Section with Location & Controls */}

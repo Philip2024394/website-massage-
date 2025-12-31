@@ -442,13 +442,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                 : languagesValue)
                             : [];
                         
-                        // Debug logging
-                        console.log('🏠 TherapistHomeCard languages debug:', {
-                            therapistName: therapist.name,
-                            languagesValue,
-                            parsedLanguages: languages,
-                            languagesType: typeof languagesValue
-                        });
+                        // Languages parsed successfully
                         
                         if (!languages || !Array.isArray(languages) || languages.length === 0) {
                             // Fallback: show Indonesian and English flags if no languages specified

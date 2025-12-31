@@ -2122,9 +2122,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                             const placeId = place.id || (place as any).$id;
                                             
                                             return (
-                                                <>
+                                                <React.Fragment key={placeId}>
                                                 <MassagePlaceHomeCard
-                                                    key={placeId}
                                                     place={place}
                                                     onClick={(p) => {
                                                         console.log('🟢 HOMEPAGE ONCLICK HANDLER:', {
@@ -2159,7 +2158,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                         <span className="font-medium">{translationsObject?.home?.accommodationMassageService || 'Accommodation With Massage Service'}</span>
                                                     </button>
                                                 </div>
-                                                </>
+                                                </React.Fragment>
                                             );
                                         })}
                                 </div>
