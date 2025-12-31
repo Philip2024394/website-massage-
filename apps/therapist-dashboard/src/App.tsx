@@ -84,12 +84,9 @@ function App() {
     localStorage.setItem('indastreet_language', lang);
   };
 
-  // Refresh user data when page changes (to keep status in sync)
-  useEffect(() => {
-    if (user?.$id) {
-      refreshUser();
-    }
-  }, [currentPage]);
+  // Don't refresh on page change - it causes status buttons to jump
+  // Status component will handle its own data loading
+  // Removed: useEffect with [currentPage] dependency
 
   // Listen for profile update events and refresh user data
   useEffect(() => {

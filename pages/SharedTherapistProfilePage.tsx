@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from 'react';
 import TherapistCard from '../components/TherapistCard';
 import RotatingReviews from '../components/RotatingReviews';
+import SocialMediaLinks from '../components/SocialMediaLinks';
 import type { Therapist, UserLocation } from '../types';
 import { useTranslations } from '../lib/useTranslations';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -440,6 +441,11 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
+                </div>
+
+                {/* Social Media Icons */}
+                <div className="mt-8">
+                    <SocialMediaLinks />
                 </div>
 
                 {/* Optional bottom space for custom messaging */}

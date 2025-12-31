@@ -130,7 +130,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     name: profileData.name,
                     therapistId: therapistId,
                     id: therapistId,
-                    hotelId: '',
                     countryCode: '+62',
                     whatsappNumber: '',
                     specialization: 'General Massage',
@@ -169,7 +168,6 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     openingTime: '09:00',
                     closingTime: '21:00',
                     coordinates: [106.8456, -6.2088],
-                    hotelId: '',
                     location: 'Bali, Indonesia',
                     description: '',
                     whatsappnumber: '',
@@ -244,25 +242,40 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 try {
                     const user = await authService.login(normalizedEmail, password);
                     console.log('✅ Sign in successful');
+                    console.log('✅ User ID:', user.$id);
+                    console.log('✅ User email:', user.email);
                     
                     // Clear the start_fresh flag to allow session restoration
                     sessionStorage.removeItem('start_fresh');
                     console.log('✅ Cleared start_fresh flag - session can now be restored');
                     
-                    // Get user profile to determine account type
-                    const existingUser = await userService.getByEmail(normalizedEmail);
+                    // DIRECT THERAPIST LOOKUP - Check therapists collection directly
+                    console.log('🔍 Looking up therapist by email:', normalizedEmail);
+                    let userType = 'therapist'; // default assumption
                     
-                    // Determine user type from profile
-                    let userType = 'therapist'; // default
-                    if (existingUser) {
-                        if (existingUser.role || existingUser.userType) {
-                            const role = existingUser.role || existingUser.userType;
-                            if (role === 'therapist') userType = 'therapist';
-                            else if (role === 'massage_place' || role === 'massage-place') userType = 'massage-place';
-                            else if (role === 'facial_place' || role === 'facial-place') userType = 'facial-place';
+                    try {
+                        const therapistData = await therapistService.getByEmail(normalizedEmail);
+                        if (therapistData) {
+                            console.log('✅ Found therapist profile:', therapistData.name);
+                            userType = 'therapist';
+                        } else {
+                            console.log('⚠️ No therapist found, checking places...');
+                            // Try massage place
+                            try {
+                                const placeData = await placesService.getByEmail(normalizedEmail);
+                                if (placeData) {
+                                    console.log('✅ Found place profile:', placeData.name);
+                                    userType = 'massage-place';
+                                }
+                            } catch (e) {
+                                console.log('⚠️ Not a massage place either');
+                            }
                         }
+                    } catch (error) {
+                        console.warn('⚠️ Error checking therapist/place:', error);
                     }
                     
+                    console.log('✅ Final user type:', userType);
                     onAuthSuccess(userType);
                 } catch (error: any) {
                     console.error('❌ Sign in failed:', error);

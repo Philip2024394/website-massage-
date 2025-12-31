@@ -141,6 +141,85 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     { code: 'es', label: '🇪🇸 Spanish' },
   ];
 
+  // Refresh therapist data from database when component mounts
+  useEffect(() => {
+    const loadLatestTherapistData = async () => {
+      if (!therapist?.$id && !therapist?.id) return;
+      
+      try {
+        const therapistId = String(therapist.$id || therapist.id);
+        console.log('🔄 Loading latest therapist data from database...', therapistId);
+        
+        const latestData = await therapistService.getById(therapistId);
+        console.log('✅ Latest therapist data loaded:', latestData);
+        
+        // Update form fields with latest data
+        if (latestData.name) setName(latestData.name);
+        if (latestData.description) setDescription(latestData.description);
+        if (latestData.whatsappNumber) setWhatsappNumber(latestData.whatsappNumber);
+        if (latestData.price60) setPrice60(String(latestData.price60));
+        if (latestData.price90) setPrice90(String(latestData.price90));
+        if (latestData.price120) setPrice120(String(latestData.price120));
+        if (latestData.yearsOfExperience) setYearsOfExperience(String(latestData.yearsOfExperience));
+        if (latestData.clientPreferences) setClientPreferences(latestData.clientPreferences);
+        
+        // Load profile picture
+        if (latestData.profilePicture) {
+          setProfileImageDataUrl(latestData.profilePicture);
+          console.log('✅ Profile picture loaded:', latestData.profilePicture);
+        }
+        
+        // Handle languages
+        if (latestData.languages) {
+          try {
+            const langs = typeof latestData.languages === 'string' 
+              ? JSON.parse(latestData.languages) 
+              : latestData.languages;
+            if (Array.isArray(langs)) setSelectedLanguages(langs.slice(0, 3));
+          } catch (e) {
+            console.warn('Failed to parse languages:', e);
+          }
+        }
+        
+        // Handle massage types
+        if (latestData.massageTypes) {
+          try {
+            const types = typeof latestData.massageTypes === 'string' 
+              ? JSON.parse(latestData.massageTypes) 
+              : latestData.massageTypes;
+            if (Array.isArray(types)) setSelectedMassageTypes(types.slice(0, 5));
+          } catch (e) {
+            console.warn('Failed to parse massage types:', e);
+          }
+        }
+        
+        // Handle coordinates
+        if (latestData.coordinates) {
+          try {
+            const coords = typeof latestData.coordinates === 'string' 
+              ? JSON.parse(latestData.coordinates) 
+              : latestData.coordinates;
+            if (coords?.lat && coords?.lng) {
+              setCoordinates({ lat: coords.lat, lng: coords.lng });
+              setLocationSet(true);
+            }
+          } catch (e) {
+            console.warn('Failed to parse coordinates:', e);
+          }
+        }
+        
+        // Handle location/city
+        const locationId = extractLocationId(latestData);
+        if (locationId) setSelectedCity(locationId);
+        
+      } catch (error) {
+        console.error('❌ Failed to load latest therapist data:', error);
+      }
+    };
+    
+    loadLatestTherapistData();
+  }, [therapist?.$id, therapist?.id]);
+
   // Detect package from localStorage
   useEffect(() => {
     try {

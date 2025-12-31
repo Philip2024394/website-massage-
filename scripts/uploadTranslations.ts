@@ -5,7 +5,7 @@
  * Usage: ts-node scripts/uploadTranslations.ts
  */
 
-import { translationsService } from '../lib/appwrite/services/translation.service';
+import { translationsService } from '../lib/appwrite/services/translation.service.js';
 
 // ============================================
 // TRANSLATION DATA - ORGANIZED BY SECTION

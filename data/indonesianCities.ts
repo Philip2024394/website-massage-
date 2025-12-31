@@ -148,6 +148,15 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         aliases: ["Semarang Central Java"]
       },
       {
+        name: "Solo",
+        locationId: "solo",
+        province: "Central Java",
+        coordinates: { lat: -7.5755, lng: 110.8243 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Surakarta", "Solo Surakarta", "Solo Central Java"]
+      },
+      {
         name: "Malang",
         locationId: "malang",
         province: "East Java",
@@ -155,6 +164,15 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: false,
         isTouristDestination: true,
         aliases: ["Apple City", "Malang East Java"]
+      },
+      {
+        name: "Bekasi",
+        locationId: "bekasi",
+        province: "West Java",
+        coordinates: { lat: -6.2349, lng: 106.9896 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Bekasi West Java", "Bekasi City"]
       },
       {
         name: "Depok",

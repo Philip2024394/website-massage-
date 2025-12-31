@@ -15,9 +15,10 @@ export const APPWRITE_CONFIG = {
     // Core collections - Using actual collection IDs from Appwrite database
     therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id',
     places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id',
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || '67670371000c0bef1447', // Real production collection ID
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || '67670355000b2bc99d43', // Real production collection ID
-    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || 'Agents',
+    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'facial_places_collection', // ✅ Text-based collection ID
+    users: import.meta.env.VITE_USERS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
+    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
+    admins: import.meta.env.VITE_ADMINS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
     bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
     reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'reviews_collection_id',
     

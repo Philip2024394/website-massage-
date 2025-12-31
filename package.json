@@ -5,8 +5,8 @@
   "type": "module",
   "packageManager": "pnpm@10.21.0",
   "scripts": {
-    "dev": "pnpm run dev:main",
-    "dev:main": "cd app/apps/main-portal && pnpm run dev",
+    "dev": "vite",
+    "dev:main": "vite",
     "dev:therapist": "cd app/apps/therapist-dashboard && pnpm run dev",
     "dev:admin": "cd app/apps/admin-dashboard && pnpm run dev",
     "dev:place": "cd app/apps/place-dashboard && pnpm run dev", 

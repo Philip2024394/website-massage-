@@ -228,9 +228,27 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'home':
             return renderRoute(publicRoutes.home.component, {
+                onNavigate: props.onNavigate,
+                onBook: props.handleOpenBookingPopup,
+                therapists: props.therapists,
+                places: props.places,
+                facialPlaces: props.facialPlaces,
+                hotels: props.hotels,
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
+                onQuickBookWithChat: props.handleQuickBookWithChat,
+                onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onIncrementAnalytics: props.handleIncrementAnalytics,
                 onSelectTherapist: props.handleSetSelectedTherapist,
                 onSelectPlace: props.handleSetSelectedPlace,
-                onLoginClick: props.handleNavigateToTherapistLogin
+                onSetUserLocation: props.handleSetUserLocation,
+                selectedCity: props.selectedCity,
+                onCityChange: props.setSelectedCity,
+                onLoginClick: props.handleNavigateToTherapistLogin,
+                t: props.t,
+                language: props.language
             });
         
         case 'about':

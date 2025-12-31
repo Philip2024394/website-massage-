@@ -6,6 +6,9 @@ import BurgerMenuIcon from '../../components/icons/BurgerMenuIcon';
 import PageNumberBadge from '../../components/PageNumberBadge';
 import { AppDrawer } from '../../components/AppDrawerClean';
 
+// Email validation regex - safe standard pattern
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 type AccountType = 'massage_therapist' | 'massage_place' | 'facial_place';
 
 interface CreateAccountPageProps {
@@ -61,11 +64,21 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
     e.preventDefault();
     setError(null);
 
+    // Normalize email (trim and lowercase) BEFORE validation and submission
+    const normalizedEmail = formData.email.trim().toLowerCase();
+
     // Validation
-    if (!formData.email) {
+    if (!normalizedEmail) {
       setError('Please enter your email address');
       return;
     }
+    
+    // Email format validation - safe standard regex
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
     if (!formData.accountType) {
       setError('Please select a portal type');
       return;
@@ -89,44 +102,50 @@ const CreateAccountPage: React.FC<CreateAccountPageProps> = ({
       let response;
       
       if (formData.accountType === 'massage_therapist') {
-        // Use therapist auth service
-        response = await therapistAuth.signUp(formData.email, formData.password);
+        // Use therapist auth service with normalized email
+        response = await therapistAuth.signUp(normalizedEmail, formData.password);
         
         if (response.success) {
-          console.log('✅ Therapist account created successfully! Redirecting to therapist dashboard...');
-          // Navigate to therapist dashboard
+          console.log('✅ Therapist account created successfully! Please sign in...');
+          // Show success message and redirect to sign-in page
+          setError(null);
+          alert('Account created successfully! Please sign in to continue.');
           if (onNavigate) {
-            onNavigate('therapist-portal');
+            onNavigate('sign-in');
           } else {
-            window.location.href = '/dashboard/therapist';
+            window.location.href = '/login';
           }
           return;
         }
       } else if (formData.accountType === 'massage_place') {
-        // Use place auth service for massage place
-        response = await placeAuth.signUp(formData.email, formData.password);
+        // Use place auth service for massage place with normalized email
+        response = await placeAuth.signUp(normalizedEmail, formData.password);
         
         if (response.success) {
-          console.log('✅ Massage place account created successfully! Redirecting to place dashboard...');
-          // Navigate to massage place dashboard
+          console.log('✅ Massage place account created successfully! Please sign in...');
+          // Show success message and redirect to sign-in page
+          setError(null);
+          alert('Account created successfully! Please sign in to continue.');
           if (onNavigate) {
-            onNavigate('massage-place-portal');
+            onNavigate('sign-in');
           } else {
-            window.location.href = '/dashboard/massage-place';
+            window.location.href = '/login';
           }
           return;
         }
       } else if (formData.accountType === 'facial_place') {
-        // Use place auth service for facial place (similar to massage place but with different type)
-        response = await placeAuth.signUp(formData.email, formData.password);
+        // Use place auth service for facial place with normalized email
+        response = await placeAuth.signUp(normalizedEmail, formData.password);
         
         if (response.success) {
-          console.log('✅ Facial place account created successfully! Redirecting to facial dashboard...');
-          // Navigate to facial dashboard
+          console.log('✅ Facial place account created successfully! Please sign in...');
+          // Show success message and redirect to sign-in page
+          setError(null);
+          alert('Account created successfully! Please sign in to continue.');
           if (onNavigate) {
-            onNavigate('facial-portal');
+            onNavigate('sign-in');
           } else {
-            window.location.href = '/dashboard/facial-place';
+            window.location.href = '/login';
           }
           return;
         }

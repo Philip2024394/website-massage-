@@ -593,6 +593,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
                 {/* View Profile Button */}
                 <button 
+                    onClick={() => onClick(therapist)}
                     disabled={readOnly}
                     className={`w-full py-2.5 font-semibold rounded-lg transition-all ${
                         readOnly 

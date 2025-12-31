@@ -11,15 +11,15 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database  
     collections: {
-        admins: '', // Disabled - collection doesn't exist
+        admins: '', // ⚠️ DISABLED - Collection doesn't exist
         therapists: 'therapists_collection_id', // ✅ Text-based collection ID
         places: 'places_collection_id', // ✅ Text-based collection ID  
-        facial_places: '67670371000c0bef1447', // ✅ Real production collection ID
-        agents: 'Agents', // ✅ Actual collection name
+        facial_places: 'facial_places_collection', // ✅ Text-based collection ID
+        agents: '', // ⚠️ DISABLED - Collection doesn't exist
         bookings: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
         reviews: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
         notifications: 'Notifications', // ✅ Therapist notification system
-        users: 'users_collection_id', // ✅ Text-based collection ID
+        users: '', // ⚠️ DISABLED - Collection doesn't exist
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'agent_visits',

@@ -22,10 +22,12 @@ export const appwriteAccount = account;
 export const APPWRITE_CONFIG = {
   databaseId: '68f76ee1000e64ca8d05',
   collections: {
-    therapists: 'THERAPISTS_COLLECTION_ID', // ✅ Real production collection ID
-    places: 'PLACES_COLLECTION_ID', // ✅ Real production collection ID
-    users: 'users_collection_id', // ✅ Real production collection ID
-    bookings: 'bookings_collection_id', // ✅ Real production collection ID
+    therapists: 'therapists_collection_id', // ✅ Text-based collection ID
+    places: 'places_collection_id', // ✅ Text-based collection ID
+    users: '', // ⚠️ DISABLED - Collection doesn't exist
+    admins: '', // ⚠️ DISABLED - Collection doesn't exist
+    agents: '', // ⚠️ DISABLED - Collection doesn't exist
+    bookings: '', // ⚠️ DISABLED - Collection doesn't exist
     reviews: '', // Disabled - collection doesn't exist
     messages: '', // Disabled - collection doesn't exist
     notifications: '', // Disabled - collection doesn't exist

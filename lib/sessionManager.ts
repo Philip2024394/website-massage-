@@ -93,25 +93,29 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Hotels with timeout
         try {
-            const hotels = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.HOTELS,
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('Hotel query timeout')), 3000)
-                )
-            ]);
-            if (hotels.documents.length > 0) {
-                const hotel = hotels.documents[0];
-                return {
-                    type: 'hotel',
-                    id: userId,
-                    email,
-                    documentId: hotel.$id,
-                    data: hotel
-                };
+            if (!COLLECTIONS.HOTELS) {
+                console.log('ℹ️ Hotels collection not configured - skipping hotels check');
+            } else {
+                const hotels = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.HOTELS,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) => 
+                        setTimeout(() => reject(new Error('Hotel query timeout')), 3000)
+                    )
+                ]);
+                if (hotels.documents.length > 0) {
+                    const hotel = hotels.documents[0];
+                    return {
+                        type: 'hotel',
+                        id: userId,
+                        email,
+                        documentId: hotel.$id,
+                        data: hotel
+                    };
+                }
             }
         } catch {
             console.warn('⚠️ Hotel check failed or timeout, skipping');
@@ -149,25 +153,29 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Agents with timeout
         try {
-            const agents = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.AGENTS,
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('Agent query timeout')), 3000)
-                )
-            ]);
-            if (agents.documents.length > 0) {
-                const agent = agents.documents[0];
-                return {
-                    type: 'agent',
-                    id: userId,
-                    email,
-                    documentId: agent.$id,
-                    data: agent
-                };
+            if (!COLLECTIONS.AGENTS) {
+                console.log('ℹ️ Agents collection not configured - skipping agents check');
+            } else {
+                const agents = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.AGENTS,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) => 
+                        setTimeout(() => reject(new Error('Agent query timeout')), 3000)
+                    )
+                ]);
+                if (agents.documents.length > 0) {
+                    const agent = agents.documents[0];
+                    return {
+                        type: 'agent',
+                        id: userId,
+                        email,
+                        documentId: agent.$id,
+                        data: agent
+                    };
+                }
             }
         } catch {
             console.warn('⚠️ Agent check failed or timeout, skipping');
@@ -175,6 +183,10 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Therapists with timeout
         try {
+            console.log('🔍 Starting therapist check for:', email);
+            console.log('🔍 COLLECTIONS.THERAPISTS:', COLLECTIONS.THERAPISTS);
+            console.log('🔍 DATABASE_ID:', DATABASE_ID);
+            
             const therapists = await Promise.race([
                 databases.listDocuments(
                     DATABASE_ID,
@@ -185,8 +197,10 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     setTimeout(() => reject(new Error('Therapist query timeout')), 3000)
                 )
             ]);
+            console.log('✅ Therapists query result:', therapists.documents.length, 'documents');
             if (therapists.documents.length > 0) {
                 const therapist = therapists.documents[0];
+                console.log('✅ Found therapist:', therapist.name);
                 return {
                     type: 'therapist',
                     id: therapist.$id,
@@ -195,8 +209,8 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     data: therapist
                 };
             }
-        } catch {
-            console.warn('⚠️ Therapist check failed or timeout, skipping');
+        } catch (error) {
+            console.error('⚠️ Therapist check failed or timeout:', error);
         }
 
         // Check Places (Massage Places) with timeout
@@ -227,25 +241,29 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Regular Users with timeout
         try {
-            const users = await Promise.race([
-                databases.listDocuments(
-                    DATABASE_ID,
-                    COLLECTIONS.USERS,
-                    [Query.equal('email', email)]
-                ),
-                new Promise<any>((_, reject) => 
-                    setTimeout(() => reject(new Error('User query timeout')), 3000)
-                )
-            ]);
-            if (users.documents.length > 0) {
-                const regularUser = users.documents[0];
-                return {
-                    type: 'user',
-                    id: userId,
-                    email,
-                    documentId: regularUser.$id,
-                    data: regularUser
-                };
+            if (!COLLECTIONS.USERS) {
+                console.log('ℹ️ Users collection not configured - skipping users check');
+            } else {
+                const users = await Promise.race([
+                    databases.listDocuments(
+                        DATABASE_ID,
+                        COLLECTIONS.USERS,
+                        [Query.equal('email', email)]
+                    ),
+                    new Promise<any>((_, reject) => 
+                        setTimeout(() => reject(new Error('User query timeout')), 3000)
+                    )
+                ]);
+                if (users.documents.length > 0) {
+                    const regularUser = users.documents[0];
+                    return {
+                        type: 'user',
+                        id: userId,
+                        email,
+                        documentId: regularUser.$id,
+                        data: regularUser
+                    };
+                }
             }
         } catch {
             console.warn('⚠️ User check failed or timeout, skipping');

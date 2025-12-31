@@ -29,10 +29,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
     setError(null);
 
     try {
-      console.log('🔑 Signing in user:', formData.email);
+      // Normalize email (trim and lowercase) BEFORE submission
+      const normalizedEmail = formData.email.trim().toLowerCase();
       
-      // Sign in using existing service
-      const session = await membershipSignupService.signIn(formData.email, formData.password);
+      console.log('🔑 Signing in user:', normalizedEmail);
+      
+      // Sign in using existing service with normalized email
+      const session = await membershipSignupService.signIn(normalizedEmail, formData.password);
       
       console.log('✅ Sign in successful:', session);
       

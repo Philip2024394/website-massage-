@@ -10,6 +10,7 @@ import PageContainer from '../components/layout/PageContainer';
 import { customLinksService, reviewService } from '../lib/appwriteService';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { Users, Building, Sparkles } from 'lucide-react';
+import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } from '../lib/nearbyProvidersService';
@@ -298,7 +299,12 @@ const HomePage: React.FC<HomePageProps> = ({
         'yogyakarta': { lat: -7.797068, lng: 110.370529, label: 'Yogyakarta Center' },
         'bandung': { lat: -6.917464, lng: 107.619123, label: 'Bandung Center' },
         'denpasar': { lat: -8.670458, lng: 115.212629, label: 'Denpasar Center' },
-        'jakarta': { lat: -6.2088, lng: 106.8456, label: 'Jakarta Center' }
+        'jakarta': { lat: -6.2088, lng: 106.8456, label: 'Jakarta Center' },
+        'solo': { lat: -7.5755, lng: 110.8243, label: 'Solo Center' },
+        'surabaya': { lat: -7.2575, lng: 112.7521, label: 'Surabaya Center' },
+        'bekasi': { lat: -6.2349, lng: 106.9896, label: 'Bekasi Center' },
+        'medan': { lat: 3.5952, lng: 98.6722, label: 'Medan Center' },
+        'depok': { lat: -6.4025, lng: 106.7942, label: 'Depok Center' }
     };
     
     // 🔐 ADMIN/PREVIEW MODE: Parse query params for special viewing modes
@@ -2120,7 +2126,24 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                 <MassagePlaceHomeCard
                                                     key={placeId}
                                                     place={place}
-                                                    onClick={onSelectPlace}
+                                                    onClick={(p) => {
+                                                        console.log('🟢 HOMEPAGE ONCLICK HANDLER:', {
+                                                            placeId: p.id || p.$id,
+                                                            placeName: p.name
+                                                        });
+                                                        // Set selected place first (for AppRouter to access)
+                                                        onSelectPlace(p);
+                                                        
+                                                        // Build URL with ID and slug
+                                                        const placeId = p.id || p.$id;
+                                                        const slug = p.name?.toLowerCase().replace(/\s+/g, '-') || 'place';
+                                                        const profileUrl = `/profile/place/${placeId}-${slug}`;
+                                                        console.log('🔗 PUSHING URL:', profileUrl);
+                                                        window.history.pushState({}, '', profileUrl);
+                                                        
+                                                        // Note: onSelectPlace already triggers navigation to massage-place-profile
+                                                        // via useNavigation.handleSetSelectedPlace
+                                                    }}
                                                     onIncrementAnalytics={(metric) => onIncrementAnalytics(placeId, 'place', metric)}
                                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                                 />
@@ -2320,6 +2343,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         Privacy
                     </button>
                 </div>
+                {/* Social Media Icons */}
+                <SocialMediaLinks className="mt-2" />
             </div>
             
             {/* Coming Soon Modal */}

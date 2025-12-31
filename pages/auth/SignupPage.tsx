@@ -75,10 +75,13 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
     try {
       console.log('🚀 Creating account with role:', role);
       
+      // Normalize email (trim and lowercase) BEFORE submission
+      const normalizedEmail = formData.email.trim().toLowerCase();
+      
       // Create account with automatic Pro plan (30% commission)
       const result = await membershipSignupService.createAccountSimplified({
         name: formData.name,
-        email: formData.email,
+        email: normalizedEmail,
         password: formData.password,
         portalType: role
       });

@@ -26,6 +26,8 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'placeDashboard': '/dashboard/massage-place',
         'massagePlacePortal': '/dashboard/massage-place',
         'massagePlaceProfile': '/dashboard/massage-place/profile',
+        'massage-place-profile': '/profile/place',
+        'facial-place-profile': '/profile/facial',
         'facialPlaceDashboard': '/dashboard/facial-place',
         'facialPlaceProfile': '/dashboard/facial-place/profile',
         'shared-therapist-profile': '/therapist-profile',
@@ -82,6 +84,8 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
             page === 'share-therapist' || 
             page === 'share-place' || 
             page === 'share-facial' ||
+            page === 'massage-place-profile' ||
+            page === 'facial-place-profile' ||
             page === 'mobile-terms-and-conditions') {
             return;
         }

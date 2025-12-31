@@ -1,5 +1,18 @@
 packages:
-  - 'apps/*'
+  - 'app/apps/*'
+  - 'app/packages/*'
 
 ignoredBuiltDependencies:
   - esbuild
+
+# TypeScript project references
+projects:
+  - 'app/packages/auth'
+  - 'app/packages/ui'  
+  - 'app/packages/config'
+  - 'app/apps/main-portal'
+  - 'app/apps/admin-dashboard'
+  - 'app/apps/therapist-dashboard'
+  - 'app/apps/place-dashboard'
+  - 'app/apps/facial-dashboard'
+  - 'app/apps/auth-app'

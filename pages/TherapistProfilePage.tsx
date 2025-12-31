@@ -4,6 +4,7 @@ import RotatingReviews from '../components/RotatingReviews';
 import HomeIcon from '../components/icons/HomeIcon';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CityLocationDropdown from '../components/CityLocationDropdown';
+import SocialMediaLinks from '../components/SocialMediaLinks';
 import { Building, Sparkles } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 
@@ -281,6 +282,11 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
+                </div>
+
+                {/* Social Media Icons */}
+                <div className="mt-8">
+                    <SocialMediaLinks />
                 </div>
             </div>
         </div>

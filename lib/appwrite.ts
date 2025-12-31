@@ -22,14 +22,14 @@ export const DATABASE_ID = '68f76ee1000e64ca8d05';
 export const COLLECTIONS = {
     THERAPISTS: 'therapists_collection_id', // ✅ Text-based collection ID
     PLACES: 'places_collection_id', // ✅ Text-based collection ID
-    FACIAL_PLACES: '67670371000c0bef1447', // ✅ Real production collection ID (facial places)
-    USERS: 'users_collection_id', // ✅ Text-based collection ID
-    AGENTS: '67670355000b2bc99d43', // Using users collection
+    FACIAL_PLACES: 'facial_places_collection', // ✅ Text-based collection ID
+    USERS: '', // ⚠️ DISABLED - Collection doesn't exist
+    AGENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     BOOKINGS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
     REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
     ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
     ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
-    ADMINS: '67670355000b2bc99d43', // Using users collection
+    ADMINS: '', // ⚠️ DISABLED - Collection doesn't exist
     HOTELS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
     VILLAS: '', // ⚠️ DISABLED - Collection doesn't exist
     PARTNERS: '', // ⚠️ DISABLED - Collection doesn't exist

@@ -42,7 +42,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     );
   }
   
-  const [status, setStatus] = useState<OnlineStatus>('offline');
+  const [status, setStatus] = useState<OnlineStatus>(() => {
+    // Initialize status from therapist prop on mount
+    const savedStatus = therapist?.status || therapist?.availability || 'Offline';
+    const statusStr = String(savedStatus).toLowerCase();
+    if (statusStr === 'available' || statusStr === 'active') {
+      return 'available';
+    } else if (statusStr === 'busy') {
+      return 'busy';
+    }
+    return 'offline';
+  });
   const [autoOfflineTime, setAutoOfflineTime] = useState<string>('22:00');
   const [saving, setSaving] = useState(false);
   // All therapists have access to all features - no premium restrictions
@@ -50,6 +60,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [onlineHoursThisMonth, setOnlineHoursThisMonth] = useState<number>(0);
   const [busyStartTime, setBusyStartTime] = useState<string | null>(therapist?.busyStartTime || null);
   const [busyTimeRemaining, setBusyTimeRemaining] = useState<number | null>(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
   
   // Discount badge states
   const [discountPercentage, setDiscountPercentage] = useState<number>(0);
@@ -60,6 +71,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
 
+  // Load initial data once on mount
   useEffect(() => {
     if (!therapist?.$id) return;
     
@@ -84,36 +96,20 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       setOnlineHoursThisMonth(therapist.onlineHoursThisMonth);
     }
     
-    // Load current status from therapist data (prioritize status field)
-    const savedStatus = therapist?.status || therapist?.availability || 'Offline';
-    devLog('🔍 Status loading debug:', {
-      savedStatus,
-      therapistStatus: therapist?.status,
-      therapistAvailability: therapist?.availability,
-      therapistIsLive: therapist?.isLive
-    });
-    
-    // Map Appwrite status values to UI status
-    let uiStatus: OnlineStatus = 'offline';
-    const statusStr = String(savedStatus).toLowerCase();
-    if (statusStr === 'available' || statusStr === 'active') {
-      uiStatus = 'available';
-    } else if (statusStr === 'busy') {
-      uiStatus = 'busy';
-    } else {
-      uiStatus = 'offline';
-    }
-    
-    devLog('⚙️ Setting UI status to:', uiStatus, 'from savedStatus:', savedStatus);
-    setStatus(uiStatus);
+    // Load auto-offline time
     setAutoOfflineTime(therapist?.autoOfflineTime || '22:00');
-  }, [therapist?.$id, therapist?.status, therapist?.availability]);
+  }, []); // Only run once on mount
 
-  // Load fresh status from Appwrite on mount
+  // REMOVED: Sync effect that was causing button jumping
+  // The status is loaded once on mount and updated locally when user clicks buttons
+  // We don't need to sync with prop updates since we save directly to Appwrite
+  
+  // Load fresh status from Appwrite on mount (only once)
   useEffect(() => {
     const loadFreshStatus = async () => {
-      if (!therapist?.$id) return;
+      if (!therapist?.$id || isLoadingStatus) return;
       
+      setIsLoadingStatus(true);
       try {
         devLog('🔄 Loading fresh status from Appwrite...');
         const freshData = await therapistService.getById(therapist.$id);
@@ -126,13 +122,21 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         
         // Update UI with fresh status
         const freshStatus = freshData?.status || freshData?.availability || 'Offline';
-        const freshUIStatus = freshStatus.toLowerCase();
-        if (freshUIStatus === 'available' || freshUIStatus === 'busy' || freshUIStatus === 'offline') {
-          devLog('✅ Setting status from Appwrite:', freshUIStatus);
-          setStatus(freshUIStatus as OnlineStatus);
+        const freshUIStatus = String(freshStatus).toLowerCase();
+        if (freshUIStatus === 'available' || freshUIStatus === 'active') {
+          devLog('✅ Setting status from Appwrite: available');
+          setStatus('available');
+        } else if (freshUIStatus === 'busy') {
+          devLog('✅ Setting status from Appwrite: busy');
+          setStatus('busy');
+        } else {
+          devLog('✅ Setting status from Appwrite: offline');
+          setStatus('offline');
         }
       } catch (error) {
         console.error('❌ Failed to load fresh status:', error);
+      } finally {
+        setIsLoadingStatus(false);
       }
     };
 
@@ -312,6 +316,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   }, [therapist?.$id, isPremium, status, busyStartTime]);
 
   const handleStatusChange = async (newStatus: OnlineStatus) => {
+    // Prevent multiple rapid clicks
+    if (saving || isLoadingStatus) return;
+    
     setSaving(true);
     try {
       devLog('💾 Saving status to Appwrite:', {
@@ -320,6 +327,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         therapistEmail: therapist.email,
         therapistName: therapist.name
       });
+      
+      // Update local state immediately for instant UI feedback
+      setStatus(newStatus);
       
       // Update status in Appwrite (using proper AvailabilityStatus enum values)
       const properStatusValue = newStatus === 'available' ? AvailabilityStatus.Available :
@@ -360,9 +370,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       devLog('✅ Appwrite update result:', result);
       
-      // Update local state immediately for UI feedback
-      setStatus(newStatus);
-      
       // Verify the save by refetching from Appwrite
       const updatedTherapist = await therapistService.getById(therapist.$id);
       devLog('🔄 Verified saved status from Appwrite:', {
@@ -370,17 +377,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         availability: updatedTherapist.availability,
         isLive: updatedTherapist.isLive
       });
-      
-      // Show toast notification
-      const statusMessages = {
-        available: '✅ You are now AVAILABLE for bookings',
-        active: '✅ You are now ACTIVE and ready for bookings',
-        busy: '🟡 Status set to BUSY - customers can still view your profile',
-        offline: '⚫ You are now OFFLINE - profile hidden from search'
-      };
-      
-      devLog('✅ Status saved:', statusMessages[newStatus]);
-      alert(statusMessages[newStatus]);
       
       // 🔄 Trigger global data refresh for HomePage to update therapist cards
       devLog('🔄 Triggering global data refresh after status update...');
@@ -393,14 +389,35 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         }
       }));
       
-      // Refresh parent component state to persist across page navigation
-      if (onRefresh) {
-        await onRefresh();
-        devLog('🔄 Parent component state refreshed - status will persist across pages');
-      }
+      // DON'T refresh parent - it causes button jumping when clicking OK
+      // The status is already saved to Appwrite and displayed correctly
+      // Parent will refresh on next page load if needed
+      
+      // Show toast notification
+      const statusMessages = {
+        available: '✅ You are now AVAILABLE for bookings',
+        active: '✅ You are now ACTIVE and ready for bookings',
+        busy: '🟡 Status set to BUSY - customers can still view your profile',
+        offline: '⚫ You are now OFFLINE - profile hidden from search'
+      };
+      
+      devLog('✅ Status saved:', statusMessages[newStatus]);
+      alert(statusMessages[newStatus]);
       
     } catch (error) {
       console.error('❌ Failed to update status:', error);
+      
+      // Revert to database status on error
+      try {
+        const freshData = await therapistService.getById(therapist.$id);
+        const revertStatus = String(freshData?.status || 'Offline').toLowerCase();
+        if (revertStatus === 'available' || revertStatus === 'busy' || revertStatus === 'offline') {
+          setStatus(revertStatus as OnlineStatus);
+          devLog('🔄 Status reverted to database value:', revertStatus);
+        }
+      } catch (revertError) {
+        console.error('❌ Failed to revert status:', revertError);
+      }
       
       // Revert UI status on error
       const revertStatus = status === 'available' ? 'offline' : 
@@ -479,7 +496,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       devLog('✅ Discount badge activated');
       alert(`✅ ${discountPercentage}% discount badge activated for ${discountDuration} hours!`);
       
-      if (onRefresh) await onRefresh();
+      // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
       console.error('❌ Failed to save discount:', error);
       alert('Failed to save discount. Please try again.');
@@ -503,7 +520,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       devLog('✅ Discount badge cancelled');
       alert('✅ Discount badge removed');
       
-      if (onRefresh) await onRefresh();
+      // Don't refresh here - it causes button jumping when clicking OK on alert
     } catch (error) {
       console.error('❌ Failed to cancel discount:', error);
       alert('Failed to cancel discount. Please try again.');
