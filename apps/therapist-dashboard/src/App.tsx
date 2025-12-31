@@ -22,9 +22,11 @@ import TherapistLayout from './components/TherapistLayout';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
 import FloatingChat from './components/FloatingChat';
+import PersistentBookingAlerts from './components/PersistentBookingAlerts';
+import BookingNotificationBar from './components/BookingNotificationBar';
 import { LanguageProvider } from '../../../context/LanguageContext';
 import { useTranslations } from '../../../lib/useTranslations';
-import { PWALifecycleManager, isPWAMode } from './lib/pwaFeatures';
+import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule';
 
@@ -34,6 +36,7 @@ function App() {
   const [user, setUser] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('status');
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [showBookingAlerts, setShowBookingAlerts] = useState(true);
   const [language, setLanguage] = useState<'en' | 'id'>(() => {
     // Try to get language from localStorage or default to 'id'
     const stored = localStorage.getItem('indastreet_language');
@@ -109,13 +112,101 @@ function App() {
     // Always rely on server state to decide onboarding
     console.log('🔄 App mounted - checking auth...');
     
-    // Initialize PWA features
-    console.log('📱 Initializing PWA features...');
-    PWALifecycleManager.init();
-    console.log('✅ PWA features initialized');
-    
     checkAuth();
   }, []);
+
+  // Separate effect for PWA initialization when user is available
+  useEffect(() => {
+    if (user?.$id) {
+      console.log('📱 Initializing enhanced PWA features for therapist:', user.$id);
+      
+      // Initialize both lifecycle and notification managers
+      Promise.all([
+        PWALifecycleManager.init(user.$id),
+        PWANotificationManager.init(user.$id)
+      ]).catch(error => {
+        console.error('❌ PWA initialization failed:', error);
+      });
+      
+      console.log('✅ Enhanced PWA features initialization started');
+    }
+  }, [user?.$id]);
+
+  // Listen for service worker messages (booking notifications, etc.)
+  useEffect(() => {
+    if (!user?.$id) return;
+
+    const handleServiceWorkerMessage = (event: MessageEvent) => {
+      const { type, payload } = event.data;
+      
+      switch (type) {
+        case 'NEW_BOOKING':
+          console.log('📋 New booking received:', payload);
+          handleNewBookingAlert(payload);
+          break;
+          
+        case 'ACCEPT_BOOKING':
+          console.log('✅ Accept booking request:', payload);
+          handleAcceptBooking(payload.bookingId);
+          break;
+          
+        case 'OPEN_BOOKING_DETAILS':
+          console.log('👁️ Open booking details:', payload);
+          handleOpenBookingDetails(payload.bookingId);
+          break;
+          
+        default:
+          console.log('Unknown service worker message:', event.data);
+      }
+    };
+
+    // Listen for service worker messages
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      };
+    }
+  }, [user?.$id]);
+
+  // Listen for service worker messages (booking notifications, etc.)
+  useEffect(() => {
+    if (!user?.$id) return;
+
+    const handleServiceWorkerMessage = (event: MessageEvent) => {
+      const { type, payload } = event.data;
+      
+      switch (type) {
+        case 'NEW_BOOKING':
+          console.log('📋 New booking received:', payload);
+          handleNewBookingAlert(payload);
+          break;
+          
+        case 'ACCEPT_BOOKING':
+          console.log('✅ Accept booking request:', payload);
+          handleAcceptBooking(payload.bookingId);
+          break;
+          
+        case 'OPEN_BOOKING_DETAILS':
+          console.log('👁️ Open booking details:', payload);
+          handleOpenBookingDetails(payload.bookingId);
+          break;
+          
+        default:
+          console.log('Unknown service worker message:', event.data);
+      }
+    };
+
+    // Listen for service worker messages
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      
+      return () => {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      };
+    }
+  }, [user?.$id]);
 
   const checkAuth = async () => {
     try {
@@ -195,11 +286,70 @@ function App() {
 
 
 
+  // Booking notification handlers
+  const handleNewBookingAlert = (booking: any) => {
+    console.log('🔔 Processing new booking alert:', booking);
+    
+    // Show PWA notification with multi-layer alerts
+    PWANotificationManager.showBookingNotification({
+      id: booking.id || booking.$id,
+      customerName: booking.customerName || booking.userName,
+      serviceType: booking.serviceType || booking.service,
+      duration: booking.duration,
+      location: booking.location,
+      date: booking.date || new Date(booking.startTime).toLocaleDateString(),
+      time: booking.time || new Date(booking.startTime).toLocaleTimeString(),
+      status: booking.status,
+      therapistId: user?.$id
+    });
+  };
+  
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      console.log('✅ Accepting booking:', bookingId);
+      
+      // Here you would call your booking service to accept the booking
+      // await bookingService.acceptBooking(bookingId, user.$id);
+      
+      // For now, just navigate to bookings page
+      setCurrentPage('bookings');
+      
+      // Show success message
+      alert('Booking accepted successfully!');
+      
+    } catch (error) {
+      console.error('❌ Failed to accept booking:', error);
+      alert('Failed to accept booking. Please try again.');
+    }
+  };
+  
+  const handleOpenBookingDetails = (bookingId: string) => {
+    console.log('👁️ Opening booking details:', bookingId);
+    setCurrentPage('bookings');
+    // You could add a selectedBookingId state to highlight the specific booking
+  };
+  
+  const handleViewBooking = (bookingId: string) => {
+    handleOpenBookingDetails(bookingId);
+  };
+  
+  const handleNavigateToBookings = () => {
+    setCurrentPage('bookings');
+  };
+
   const handleLogout = async () => {
     try {
       // 🛑 STOP SYSTEM HEALTH MONITORING
       systemHealthService.stopHealthMonitoring();
       console.log('🛑 System health monitoring stopped');
+      
+      // 🛑 STOP PWA BACKGROUND MESSAGE CHECKING
+      await PWANotificationManager.stopBackgroundMessageCheck();
+      console.log('🛑 PWA background message checking stopped');
+      
+      // 🛑 CLEANUP PWA NOTIFICATIONS
+      PWANotificationManager.cleanup();
+      console.log('🛑 PWA notifications cleanup complete');
       
       await authService.logout();
       setIsAuthenticated(false);
@@ -210,6 +360,57 @@ function App() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  // Booking notification handlers
+  const handleNewBookingAlert = (booking: any) => {
+    console.log('🔔 Processing new booking alert:', booking);
+    
+    // Show PWA notification with multi-layer alerts
+    PWANotificationManager.showBookingNotification({
+      id: booking.id || booking.$id,
+      customerName: booking.customerName || booking.userName,
+      serviceType: booking.serviceType || booking.service,
+      duration: booking.duration,
+      location: booking.location,
+      date: booking.date || new Date(booking.startTime).toLocaleDateString(),
+      time: booking.time || new Date(booking.startTime).toLocaleTimeString(),
+      status: booking.status,
+      therapistId: user?.$id
+    });
+  };
+  
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      console.log('✅ Accepting booking:', bookingId);
+      
+      // Here you would call your booking service to accept the booking
+      // await bookingService.acceptBooking(bookingId, user.$id);
+      
+      // For now, just navigate to bookings page
+      setCurrentPage('bookings');
+      
+      // Show success message
+      alert('Booking accepted successfully!');
+      
+    } catch (error) {
+      console.error('❌ Failed to accept booking:', error);
+      alert('Failed to accept booking. Please try again.');
+    }
+  };
+  
+  const handleOpenBookingDetails = (bookingId: string) => {
+    console.log('👁️ Opening booking details:', bookingId);
+    setCurrentPage('bookings');
+    // You could add a selectedBookingId state to highlight the specific booking
+  };
+  
+  const handleViewBooking = (bookingId: string) => {
+    handleOpenBookingDetails(bookingId);
+  };
+  
+  const handleNavigateToBookings = () => {
+    setCurrentPage('bookings');
   };
 
   if (isLoading) {
@@ -353,6 +554,20 @@ function App() {
 
   return (
     <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+      {/* Booking Notification System */}
+      {showBookingAlerts && (
+        <PersistentBookingAlerts
+          therapist={user}
+          onAcceptBooking={handleAcceptBooking}
+          onViewBooking={handleViewBooking}
+        />
+      )}
+      
+      <BookingNotificationBar
+        onViewBooking={handleViewBooking}
+        onNavigateToBookings={handleNavigateToBookings}
+      />
+      
       <PWAInstallPrompt dashboardName="Therapist Dashboard" />
       <ToastContainer />
       <TherapistLayout

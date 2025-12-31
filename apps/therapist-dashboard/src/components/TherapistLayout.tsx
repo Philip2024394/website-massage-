@@ -4,6 +4,7 @@ import {
   Menu, X, User, Calendar, DollarSign, MessageCircle, 
   Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet
 } from 'lucide-react';
+import BookingBadge from './BookingBadge';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -244,6 +245,11 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                     <span className={`text-sm font-medium ${item.id === 'premium-upgrade' && isPremium ? 'text-green-700' : 'text-gray-700'}`}>
                       {item.label}
                     </span>
+                    
+                    {/* Booking Badge for Bookings Menu Item */}
+                    {item.id === 'bookings' && (
+                      <BookingBadge className="ml-auto" size="sm" />
+                    )}
                   </button>
                 );
               })}

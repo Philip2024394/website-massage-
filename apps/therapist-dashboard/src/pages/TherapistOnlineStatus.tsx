@@ -70,6 +70,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   // PWA Install states
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -198,6 +199,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       const isInstalled = localStorage.getItem('pwa-installed') === 'true' || 
                          window.matchMedia('(display-mode: standalone)').matches;
       setIsAppInstalled(isInstalled);
+      
+      // Detect iOS device
+      const isiOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(isiOSDevice);
     };
     
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -528,6 +533,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   };
 
   const handleInstallApp = async () => {
+    if (isAppInstalled) {
+      alert('App is already installed on your device!');
+      return;
+    }
+    
     if (deferredPrompt) {
       try {
         await deferredPrompt.prompt();
@@ -540,6 +550,22 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       } catch (error) {
         console.error('Error installing app:', error);
       }
+    } else if (isIOS) {
+      // iOS specific instructions
+      alert(
+        '📱 To install this app on your iPhone/iPad:\n\n' +
+        '1. Tap the Share button (⬆️) at the bottom\n' +
+        '2. Scroll down and tap "Add to Home Screen"\n' +
+        '3. Tap "Add" to confirm\n\n' +
+        'The app will appear on your home screen!'
+      );
+    } else {
+      alert(
+        '📱 To install this app:\n\n' +
+        '• On Chrome: Look for the install icon (⬇️) in the address bar\n' +
+        '• On Edge: Click the Apps menu and select "Install this site as an app"\n' +
+        '• On other browsers: Add this page to bookmarks for quick access'
+      );
     }
   };
 
@@ -962,7 +988,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <p className="text-sm text-gray-600">
                 {isAppInstalled 
                   ? 'IndaStreet app is installed on your device' 
-                  : 'Select this if you have not downloaded the app to your phone. This will allow easy access to your dashboard from home screen'
+                  : deferredPrompt
+                    ? 'Install the app for quick access from your home screen'
+                    : isIOS
+                      ? 'Add this app to your home screen for easy access'
+                      : 'Get instructions to install this app on your device'
                 }
               </p>
             </div>
@@ -970,13 +1000,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           
           <button
             onClick={handleInstallApp}
-            disabled={isAppInstalled || !deferredPrompt}
+            disabled={isAppInstalled}
             className={`w-full py-3 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 ${
               isAppInstalled 
                 ? 'bg-gray-100 text-gray-500 cursor-not-allowed border border-gray-200'
-                : deferredPrompt
-                  ? 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md'
-                  : 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md'
+                : 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md'
             }`}
           >
             <Download className="w-5 h-5" />
@@ -984,7 +1012,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               ? 'App Installed ✓' 
               : deferredPrompt 
                 ? 'Download App'
-                : 'Download App'
+                : isIOS
+                  ? 'Add to Home Screen'
+                  : 'Install Instructions'
             }
           </button>
         </div>

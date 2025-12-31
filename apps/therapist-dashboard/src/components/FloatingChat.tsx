@@ -61,11 +61,36 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
         }
     }, [unreadCount, isInPWAMode]);
 
-    // Listen for PWA events
+    // Listen for PWA events and service worker messages
     useEffect(() => {
-        const handlePWAOpenChat = () => {
+        const handlePWAOpenChat = (event: CustomEvent) => {
+            console.log('🔔 PWA open chat event received:', event.detail);
             setIsOpen(true);
             setIsMinimized(false);
+            
+            // If there's a specific message ID, scroll to it or highlight it
+            if (event.detail?.messageId) {
+                console.log('📨 Opening chat for message ID:', event.detail.messageId);
+                // You could implement scrolling to specific message here
+            }
+        };
+
+        const handleNewChatMessage = (event: CustomEvent) => {
+            console.log('📨 New chat message event received:', event.detail);
+            
+            // Refresh messages to include the new one
+            if (isOpen && isPremium) {
+                fetchMessages();
+            } else {
+                // Update unread count
+                checkUnreadMessages();
+            }
+            
+            // Show visual indicator if chat is closed
+            if (!isOpen) {
+                // Could add a pulsing animation or notification badge here
+                console.log('💬 New message received while chat was closed');
+            }
         };
 
         const handleVisibilityChange = (event: CustomEvent) => {
@@ -74,14 +99,17 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             }
         };
 
-        window.addEventListener('pwa-open-chat', handlePWAOpenChat);
+        // Listen for both PWA events and service worker messages
+        window.addEventListener('pwa-open-chat', handlePWAOpenChat as EventListener);
+        window.addEventListener('newChatMessage', handleNewChatMessage as EventListener);
         window.addEventListener('pwa-visibility-change', handleVisibilityChange as EventListener);
 
         return () => {
-            window.removeEventListener('pwa-open-chat', handlePWAOpenChat);
+            window.removeEventListener('pwa-open-chat', handlePWAOpenChat as EventListener);
+            window.removeEventListener('newChatMessage', handleNewChatMessage as EventListener);
             window.removeEventListener('pwa-visibility-change', handleVisibilityChange as EventListener);
         };
-    }, [isPremium]);
+    }, [isPremium, isOpen]);
 
     // Load messages when chat opens
     useEffect(() => {
@@ -152,7 +180,9 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                     PWANotificationManager.showChatNotification({
                         title: 'New Support Message',
                         body: latestMessage.content || latestMessage.message || 'You have a new message from support',
-                        tag: 'support-chat'
+                        tag: 'support-chat',
+                        messageId: latestMessage.$id,
+                        therapistId: therapist.$id
                     });
                 }
             }
