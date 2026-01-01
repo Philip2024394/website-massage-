@@ -63,6 +63,7 @@ const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
 const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
 const MobileTermsAndConditionsPage = React.lazy(() => import('./pages/MobileTermsAndConditionsPage'));
+const TherapistTermsAndConditions = React.lazy(() => import('./src/pages/TherapistTermsAndConditions'));
 
 // Blog posts
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));
@@ -626,6 +627,10 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'mobile-terms-and-conditions':
             return renderRoute(MobileTermsAndConditionsPage);
+        
+        case 'therapist-terms-and-conditions':
+        case 'therapist-terms':
+            return renderRoute(TherapistTermsAndConditions);
 
         // ===== BLOG ROUTES =====
         case 'blog':

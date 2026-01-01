@@ -1,0 +1,427 @@
+/**
+ * Therapist Registration with Terms - Styles
+ */
+
+.therapist-registration-with-terms {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.registration-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+/* Registration Header */
+.registration-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.registration-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.registration-header p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+/* Registration Form */
+.registration-form {
+  padding: 40px;
+}
+
+.form-section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section h2 {
+  margin: 0 0 25px 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input.error,
+.form-group select.error {
+  border-color: #ef4444;
+}
+
+.error-message {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* Terms Section - CRITICAL */
+.terms-section {
+  background: #f0f9ff;
+  border: 3px solid #3b82f6 !important;
+  border-radius: 12px;
+  padding: 30px !important;
+  margin-bottom: 30px !important;
+}
+
+.terms-section h2 {
+  color: #1e40af;
+  font-size: 24px;
+}
+
+.terms-preview {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.terms-preview h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #111827;
+}
+
+.terms-preview ul {
+  margin: 0 0 20px 0;
+  padding-left: 20px;
+}
+
+.terms-preview li {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.terms-preview li strong {
+  color: #1e40af;
+}
+
+.btn-read-terms {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-read-terms:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Terms Acceptance Checkbox */
+.terms-acceptance {
+  background: white;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+
+.terms-acceptance.error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.terms-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.terms-checkbox {
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-text {
+  font-size: 15px;
+  color: #111827;
+  line-height: 1.6;
+}
+
+.checkbox-text a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.checkbox-text a:hover {
+  text-decoration: underline;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 12px;
+  background: #fef2f2;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+}
+
+.error-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.error-text {
+  font-size: 14px;
+  color: #991b1b;
+  font-weight: 600;
+}
+
+/* Terms Notice */
+.terms-notice {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.terms-notice p {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #78350f;
+}
+
+.terms-notice ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.terms-notice li {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+/* Form Actions */
+.form-actions {
+  text-align: center;
+}
+
+.btn-submit {
+  padding: 16px 48px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Terms Modal */
+.terms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.terms-modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.terms-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.terms-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.close-modal {
+  width: 36px;
+  height: 36px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.close-modal:hover {
+  background: #e5e7eb;
+}
+
+.terms-modal-body {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+}
+
+.terms-iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+  border: none;
+}
+
+.terms-modal-footer {
+  display: flex;
+  gap: 15px;
+  padding: 25px 30px;
+  border-top: 2px solid #e5e7eb;
+  justify-content: flex-end;
+}
+
+.btn-accept-terms {
+  padding: 12px 32px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-accept-terms:hover {
+  background: #059669;
+}
+
+.btn-cancel {
+  padding: 12px 32px;
+  background: white;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #f3f4f6;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .therapist-registration-with-terms {
+    padding: 20px 10px;
+  }
+
+  .registration-header {
+    padding: 30px 20px;
+  }
+
+  .registration-header h1 {
+    font-size: 24px;
+  }
+
+  .registration-form {
+    padding: 25px 20px;
+  }
+
+  .terms-section {
+    padding: 20px !important;
+  }
+
+  .btn-submit {
+    width: 100%;
+  }
+
+  .terms-modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .terms-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn-accept-terms,
+  .btn-cancel {
+    width: 100%;
+  }
+}

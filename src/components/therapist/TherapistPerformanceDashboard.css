@@ -1,0 +1,676 @@
+/**
+ * Therapist Performance Dashboard Styles
+ * User-facing dashboard with psychological design
+ */
+
+.therapist-performance-dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 32px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.header-subtitle {
+  margin: 0;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* Section 1: Availability Score Card */
+.score-card-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.score-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  border-radius: 16px;
+  padding: 35px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.score-main {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.score-label {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-display {
+  font-size: 96px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 15px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.score-display.elite {
+  color: #ffd700;
+  animation: pulse-elite 2s ease-in-out infinite;
+}
+
+.score-display.excellent {
+  color: #60d394;
+}
+
+.score-display.good {
+  color: #ffffff;
+}
+
+.score-display.fair {
+  color: #ffd93d;
+}
+
+.score-display.poor {
+  color: #ff6b6b;
+}
+
+@keyframes pulse-elite {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.score-max {
+  font-size: 36px;
+  opacity: 0.7;
+}
+
+.score-badge {
+  font-size: 24px;
+  font-weight: 600;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.score-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.detail-label {
+  display: block;
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+
+.detail-value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.detail-value.positive {
+  color: #60d394;
+}
+
+.detail-value.negative {
+  color: #ff6b6b;
+}
+
+.score-tooltip {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  border-left: 4px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Score Range Guide */
+.score-range-guide {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.score-range-guide h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.range-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.range-item.elite {
+  background: #fffbeb;
+  border-color: #fbbf24;
+}
+
+.range-item.excellent {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.range-item.good {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.range-item.fair {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.range-item.poor {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.range-emoji {
+  font-size: 20px;
+}
+
+.range-label {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.range-effect {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+/* Section 2: Performance Metrics */
+.performance-metrics-section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.performance-metrics-section h2 {
+  margin: 0 0 25px 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.metric-card {
+  background: #f9fafb;
+  border: 3px solid;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.positive {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.metric-card.neutral {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.metric-card.negative {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.metric-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.metric-value {
+  font-size: 48px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 5px;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.metric-target {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Section 3: History Table */
+.history-section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.history-section h2 {
+  margin: 0 0 25px 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.history-table-container {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th {
+  background: #f9fafb;
+  padding: 15px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.history-table td {
+  padding: 15px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.history-table tr.response-accepted {
+  background: #f0fdf4;
+}
+
+.history-table tr.response-declined {
+  background: #fffbeb;
+}
+
+.history-table tr.response-missed {
+  background: #fef2f2;
+}
+
+.response-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.response-badge.accepted {
+  background: #10b981;
+  color: white;
+}
+
+.response-badge.declined {
+  background: #f59e0b;
+  color: white;
+}
+
+.response-badge.missed {
+  background: #ef4444;
+  color: white;
+}
+
+.impact-positive {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.impact-negative {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.impact-neutral {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* Section 4: Improvement Tips */
+.improvement-section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.improvement-section h2 {
+  margin: 0 0 25px 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.tips-grid {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.tip-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f0fdf4;
+  border-left: 4px solid #10b981;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.tip-number {
+  width: 32px;
+  height: 32px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 15px;
+  color: #065f46;
+  font-weight: 500;
+}
+
+/* Scoring Guide */
+.scoring-guide {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.scoring-guide h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.scoring-table {
+  display: grid;
+  gap: 8px;
+}
+
+.scoring-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-radius: 6px;
+}
+
+.scoring-row.positive {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.scoring-row.neutral {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.scoring-row.negative {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.scoring-row.negative-severe {
+  background: #7f1d1d;
+  color: white;
+}
+
+.scoring-action {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.scoring-points {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Section 5: Earnings Correlation */
+.earnings-section {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 35px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.earnings-section h2 {
+  margin: 0 0 25px 0;
+  font-size: 28px;
+  text-align: center;
+}
+
+.earnings-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.earnings-card {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.earnings-card.your-earnings {
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.earnings-label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.earnings-value {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.earnings-insight {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.insight-icon {
+  font-size: 64px;
+  flex-shrink: 0;
+}
+
+.insight-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.insight-content p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.insight-content strong {
+  color: #fcd34d;
+  font-size: 18px;
+}
+
+/* Dashboard Footer */
+.dashboard-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.dashboard-footer a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dashboard-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Loading/Error States */
+.loading, .error {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .score-card-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .therapist-performance-dashboard {
+    padding: 15px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .score-display {
+    font-size: 72px;
+  }
+
+  .score-details {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-table {
+    font-size: 12px;
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: 10px 8px;
+  }
+
+  .earnings-comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .earnings-insight {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .insight-content h3 {
+    font-size: 18px;
+  }
+
+  .insight-content p {
+    font-size: 14px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .therapist-performance-dashboard {
+    background: white;
+  }
+
+  .score-card,
+  .earnings-section {
+    background: white;
+    color: black;
+    border: 2px solid #e5e7eb;
+  }
+
+  .metric-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
