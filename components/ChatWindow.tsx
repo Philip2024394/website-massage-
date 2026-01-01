@@ -894,7 +894,10 @@ export default function ChatWindow({
             const guestId = 'guest_' + Date.now();
             setCustomerId(guestId);
 
+            console.log('🔑 Generated guest ID:', guestId);
+
             // Generate conversation ID using messagingService method
+            console.log('🔄 About to generate conversation ID...');
             const conversationId = messagingService.generateConversationId(
                 { id: guestId, role: 'user' },
                 { id: providerId, role: providerRole }
@@ -933,13 +936,30 @@ export default function ChatWindow({
             const welcomeMsg = `Chat activated! You've selected ${serviceDuration} min massage (${priceText}). ${providerName} is currently ${statusText}.\n\n👤 Customer: ${customerName.trim()}\n${locationText}\n⏱️ Duration: ${serviceDuration} minutes\n\nType your message below...`;
             
             // Send as first message in conversation with service metadata
-            await messagingService.sendMessage({
-                senderId: 'system',
-                recipientId: guestId,
-                content: welcomeMsg,
-                type: 'text',
-                conversationId: conversationId
-            });
+            console.log('📤 About to send welcome message...');
+            try {
+                await messagingService.sendMessage({
+                    conversationId: conversationId,
+                    senderId: 'system',
+                    senderType: 'user',
+                    senderName: 'Indastreet System',
+                    receiverId: guestId,
+                    receiverType: 'user',
+                    receiverName: customerName.trim(),
+                    content: welcomeMsg
+                });
+                console.log('✅ Welcome message sent successfully');
+            } catch (msgError) {
+                console.error('❌ Failed to send welcome message:', msgError);
+                console.error('Message parameters:', {
+                    conversationId,
+                    senderId: 'system',
+                    receiverId: guestId,
+                    customerName: customerName.trim(),
+                    welcomeMsgLength: welcomeMsg.length
+                });
+                throw msgError;
+            }
 
             // Keep chat expanded on activation
             setIsMinimized(false);
@@ -949,11 +969,14 @@ export default function ChatWindow({
                 const lockedPrice = Math.max(0, Math.round(basePrice * (1 - discountPercentage / 100)));
                 const lockMsg = `Offer confirmed and locked: ${discountPercentage}% OFF for ${serviceDuration} min. Locked price: Rp ${lockedPrice.toLocaleString()}. This discount was active at booking time and remains valid for this booking.`;
                 await messagingService.sendMessage({
+                    conversationId: conversationId,
                     senderId: 'system',
-                    recipientId: guestId,
-                    content: lockMsg,
-                    type: 'text',
-                    conversationId: conversationId
+                    senderType: 'user',
+                    senderName: 'Indastreet System',
+                    receiverId: guestId,
+                    receiverType: 'user',
+                    receiverName: customerName.trim(),
+                    content: lockMsg
                 });
 
                 // Admin copy of lock confirmation
@@ -963,11 +986,14 @@ export default function ChatWindow({
                         { id: 'admin', role: 'admin' }
                     );
                     await messagingService.sendMessage({
+                        conversationId: adminConversationId,
                         senderId: 'system',
-                        recipientId: 'admin',
-                        content: `[COPY] ${lockMsg}`,
-                        type: 'text',
-                        conversationId: adminConversationId
+                        senderType: 'user',
+                        senderName: 'Indastreet System',
+                        receiverId: 'admin',
+                        receiverType: 'user',
+                        receiverName: 'Admin',
+                        content: `[COPY] ${lockMsg}`
                     });
                 } catch (copyErr) {
                     console.warn('⚠️ Failed to send admin copy of lock confirmation:', copyErr);
