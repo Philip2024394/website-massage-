@@ -1,0 +1,143 @@
+/* Music Player - 3 Bar Animation */
+.music-player-container {
+  position: fixed;
+  top: 70px;
+  left: 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 28px;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.2s ease;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.music-player-container:hover {
+  transform: scale(1.1);
+}
+
+.music-bar {
+  width: 5px;
+  background: linear-gradient(to top, #ff6b35, #ff8c5a);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 4px rgba(255, 107, 53, 0.4);
+}
+
+/* Default heights when not playing */
+.music-bar.bar1 {
+  height: 40%;
+}
+
+.music-bar.bar2 {
+  height: 25%;
+}
+
+.music-bar.bar3 {
+  height: 50%;
+}
+
+/* Animated heights when playing */
+.music-bar.bar1.playing {
+  animation: equalize-bar1 0.6s ease-in-out infinite;
+}
+
+.music-bar.bar2.playing {
+  animation: equalize-bar2 0.6s ease-in-out infinite;
+  animation-delay: 0.2s;
+}
+
+.music-bar.bar3.playing {
+  animation: equalize-bar3 0.6s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+/* Keyframes for Bar 1 */
+@keyframes equalize-bar1 {
+  0%, 100% {
+    height: 40%;
+  }
+  20% {
+    height: 80%;
+  }
+  40% {
+    height: 30%;
+  }
+  60% {
+    height: 70%;
+  }
+  80% {
+    height: 50%;
+  }
+}
+
+/* Keyframes for Bar 2 */
+@keyframes equalize-bar2 {
+  0%, 100% {
+    height: 25%;
+  }
+  20% {
+    height: 60%;
+  }
+  40% {
+    height: 85%;
+  }
+  60% {
+    height: 35%;
+  }
+  80% {
+    height: 45%;
+  }
+}
+
+/* Keyframes for Bar 3 */
+@keyframes equalize-bar3 {
+  0%, 100% {
+    height: 50%;
+  }
+  20% {
+    height: 35%;
+  }
+  40% {
+    height: 75%;
+  }
+  60% {
+    height: 90%;
+  }
+  80% {
+    height: 40%;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .music-player-container {
+    top: 60px;
+    left: 12px;
+    height: 24px;
+    gap: 3px;
+    padding: 3px;
+  }
+  
+  .music-bar {
+    width: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .music-player-container {
+    top: 56px;
+    left: 8px;
+    height: 20px;
+    gap: 2px;
+    padding: 3px;
+  }
+  
+  .music-bar {
+    width: 3px;
+  }
+}
