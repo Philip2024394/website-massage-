@@ -9,6 +9,7 @@ import { SharedProfileLayout } from './SharedProfileLayout';
 import { useSharedProfile } from './hooks/useSharedProfile';
 import TherapistCard from '../../components/TherapistCard';
 import RotatingReviews from '../../components/RotatingReviews';
+import SocialMediaLinks from '../../components/SocialMediaLinks';
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL, generateShareText } from './utils/shareUrlBuilder';
 import { analyticsService } from '../../services/analyticsService';
@@ -296,6 +297,11 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
+                </div>
+
+                {/* Social Media Icons */}
+                <div className="mt-8">
+                    <SocialMediaLinks />
                 </div>
 
                 {/* Optional bottom space */}

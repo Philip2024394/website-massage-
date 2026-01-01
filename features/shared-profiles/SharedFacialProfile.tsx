@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { SharedProfileLayout } from './SharedProfileLayout';
 import { useSharedProfile } from './hooks/useSharedProfile';
 import FacialPlaceCard from '../../components/FacialPlaceCard';
+import SocialMediaLinks from '../../components/SocialMediaLinks';
 import type { Place, UserLocation } from '../../types';
 import { generateFacialShareURL, generateShareText } from './utils/shareUrlBuilder';
 import { analyticsService } from '../../services/analyticsService';
@@ -135,6 +136,11 @@ export const SharedFacialProfile: React.FC<SharedFacialProfileProps> = ({
                                 📋 Copy Link
                             </button>
                         </div>
+                    </div>
+
+                    {/* Social Media Icons */}
+                    <div className="mt-8">
+                        <SocialMediaLinks />
                     </div>
                 </div>
             )}
