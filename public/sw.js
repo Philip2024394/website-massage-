@@ -12,7 +12,7 @@
 
 const CACHE_VERSION = 'v5';
 const CACHE_NAME = `indastreet-${CACHE_VERSION}`;
-const NOTIFICATION_SOUND_URL = '/sounds/booking-alert.mp3';
+const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3'; // ✅ Fixed: Using actual file name
 
 // Install service worker
 self.addEventListener('install', (event) => {
@@ -111,8 +111,8 @@ self.addEventListener('push', (event) => {
             // Show visual notification
             self.registration.showNotification(notificationData.title, notificationData),
             
-            // Play sound if possible (limited on mobile but tries)
-            playNotificationSound(),
+            // Play sound via all open clients
+            playNotificationSoundInClients(),
             
             // Store notification for retry if missed
             storeNotificationForRetry(notificationData)
@@ -165,17 +165,22 @@ self.addEventListener('notificationclose', (event) => {
     );
 });
 
-// Play notification sound (limited capability in service worker but tries)
-async function playNotificationSound() {
+// Play notification sound through all open clients (tabs/windows)
+async function playNotificationSoundInClients() {
     try {
-        // This has limited support but worth trying
-        if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
-            // Register background sync for sound playing
-            const registration = await navigator.serviceWorker.ready;
-            return registration.sync.register('play-notification-sound');
-        }
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        
+        // Send message to all clients to play sound
+        clients.forEach(client => {
+            client.postMessage({
+                type: 'play-notification-sound',
+                soundUrl: NOTIFICATION_SOUND_URL
+            });
+        });
+        
+        console.log(`🔊 Sound play message sent to ${clients.length} client(s)`);
     } catch (error) {
-        console.log('Sound play failed in service worker (expected limitation)');
+        console.error('Failed to send sound play message to clients:', error);
     }
 }
 

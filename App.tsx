@@ -31,6 +31,26 @@ import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapp
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering...');
     
+    // Service Worker sound playback listener
+    useEffect(() => {
+        console.log('🔊 Setting up service worker sound playback listener');
+        
+        const handleServiceWorkerMessage = (event: MessageEvent) => {
+            if (event.data && event.data.type === 'play-notification-sound') {
+                console.log('🔊 Playing notification sound from service worker:', event.data.soundUrl);
+                const audio = new Audio(event.data.soundUrl);
+                audio.volume = 1.0; // Max volume
+                audio.play().catch(err => console.error('Sound play failed:', err));
+            }
+        };
+        
+        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+        
+        return () => {
+            navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+        };
+    }, []);
+    
     // Booking popup state
     const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
     const [bookingProviderInfo, setBookingProviderInfo] = useState<{
