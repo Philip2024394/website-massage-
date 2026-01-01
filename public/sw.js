@@ -3,38 +3,63 @@
  * 
  * CRITICAL: Handles background push notifications when app is closed/phone on standby
  * This ensures therapists NEVER miss booking notifications - essential for business revenue
+ * 
+ * VERSION: 5.0 - Updated Jan 1, 2026
+ * - Fixed VAPID key validation
+ * - Fixed messagingService format
+ * - Improved cache invalidation
  */
 
-const CACHE_NAME = 'indastreet-v4';
+const CACHE_VERSION = 'v5';
+const CACHE_NAME = `indastreet-${CACHE_VERSION}`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-alert.mp3';
 
 // Install service worker
 self.addEventListener('install', (event) => {
-    console.log('✅ Service Worker v4: Installing...');
+    console.log(`✅ Service Worker ${CACHE_VERSION}: Installing...`);
     
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
-            console.log('✅ Service Worker v4: Caching assets');
+            console.log(`✅ Service Worker ${CACHE_VERSION}: Caching assets`);
             try {
                 // Cache only the root - don't cache manifest to avoid errors
                 await cache.add('/').catch((err) => {
                     console.log('⚠️ SW: Root cache failed:', err);
                 });
-                console.log('✅ Service Worker v4: Assets cached successfully');
+                console.log(`✅ Service Worker ${CACHE_VERSION}: Assets cached successfully`);
             } catch (err) {
                 console.log('⚠️ SW: Cache error:', err);
             }
         })
     );
     
-    // Force activation immediately
+    // Force activation immediately - bypass waiting
     self.skipWaiting();
 });
 
-// Activate service worker
+// Activate service worker and clear old caches
 self.addEventListener('activate', (event) => {
-    console.log('✅ IndaStreet Service Worker activated');
-    event.waitUntil(self.clients.claim());
+    console.log(`✅ Service Worker ${CACHE_VERSION}: Activating...`);
+    
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    // Delete all old cache versions
+                    if (cacheName !== CACHE_NAME) {
+                        console.log(`🗑️ Deleting old cache: ${cacheName}`);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            console.log(`✅ Service Worker ${CACHE_VERSION}: Old caches cleared`);
+            // Take control of all clients immediately
+            return self.clients.claim();
+        }).then(() => {
+            console.log(`✅ Service Worker ${CACHE_VERSION}: Activated and controlling all clients`);
+        })
+    );
 });
 
 // Handle background push notifications - CRITICAL FOR BUSINESS
