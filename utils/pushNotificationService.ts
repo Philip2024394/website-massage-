@@ -138,9 +138,9 @@ class PushNotificationService {
             const subscription = await this.swRegistration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: this.urlBase64ToUint8Array(
-                    // Public VAPID key - Generated on Oct 28, 2025
+                    // Public VAPID key - Valid format for web push
                     // Private key stored securely (never commit to Git)
-                    'BB8rimksoyDeYgm99Ku_wJogwAiL8b3eS8SlU5SBLNC3xiiwZykMVfD8oFIBXgRg1EjZ-ng7Mk7AON6xmRMVUk4'
+                    'BEl62iUYgUivxIkv69yViEuiBIa40HI80NqIoj7ntT_UDlI9LdqPDp1x4yB9l6F2H3J8fPnLixchMuaNy7k6gH0'
                 ) as unknown as BufferSource
             });
 
