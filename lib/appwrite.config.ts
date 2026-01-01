@@ -43,7 +43,7 @@ export const APPWRITE_CONFIG = {
         paymentTransactions: 'payment_transactions',
         premiumPayments: 'premium_payments',
         therapistMenus: 'therapist_menus', // 🛡️ CRITICAL: Must use underscores, NOT spaces. 'Therapist Menus' causes 400 errors!
-        messages: 'Messages',
+        messages: 'messages', // 🔧 Fixed: lowercase to match Appwrite collection ID
         packages: 'Packages',
         pushSubscriptions: 'push_subscriptions',
         loyaltyWallets: 'loyalty_wallets',

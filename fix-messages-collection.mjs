@@ -16,7 +16,7 @@ const client = new Client()
 
 const databases = new Databases(client);
 const DATABASE_ID = '68f76ee1000e64ca8d05';
-const COLLECTION_ID = 'Messages'; // From appwrite.config.ts line 46
+const COLLECTION_ID = 'messages'; // Lowercase - matches actual Appwrite collection
 
 console.log('🔍 MESSAGES COLLECTION SCHEMA VALIDATOR');
 console.log('=' .repeat(60));

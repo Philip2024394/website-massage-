@@ -3127,8 +3127,8 @@ export const messagingService = {
                     receiverId: message.receiverId,
                     receiverName: message.receiverName,
                     receiverRole: message.receiverType,
-                    message: message.content,
-                    content: message.content,
+                    message: message.content, // Full message (10000 char limit)
+                    content: message.content.substring(0, 1000), // Truncate to 1000 chars for Appwrite limit
                     messageType: 'text',
                     bookingId: message.bookingId || null,
                     metadata: null,
