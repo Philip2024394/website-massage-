@@ -11,28 +11,29 @@ export const APPWRITE_CONFIG = {
     
     // Collection IDs from your Appwrite database  
     collections: {
-        admins: '', // ⚠️ DISABLED - Collection doesn't exist
+        // Disabled collections to prevent 401/404 errors
+        admins: null, // ⚠️ DISABLED - Collection doesn't exist
         therapists: 'therapists_collection_id', // ✅ Text-based collection ID
         places: 'places_collection_id', // ✅ Text-based collection ID  
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
-        agents: '', // ⚠️ DISABLED - Collection doesn't exist
-        bookings: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
-        reviews: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+        agents: null, // ⚠️ DISABLED - Collection doesn't exist
+        bookings: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+        reviews: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
         notifications: 'Notifications', // ✅ Therapist notification system
-        users: '', // ⚠️ DISABLED - Collection doesn't exist
+        users: null, // ⚠️ DISABLED - Collection doesn't exist
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'agent_visits',
         hotelBookings: 'hotel_bookings',
-        hotels: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
-        cities: '', // Disabled - collection doesn't exist (causes 404 errors)
-        villas: '', // Disabled - collection doesn't exist
+        hotels: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+        cities: null, // Disabled - collection doesn't exist (causes 404 errors)
+        villas: null, // Disabled - collection doesn't exist
         massageTypes: 'massage_types',
         membershipPricing: 'membership_pricing',
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-        customLinks: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
-        translations: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+        customLinks: null, // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+        translations: null, // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
         commissionRecords: 'commission_records',
         attributes: 'ATTRIBUTES',
         analyticsEvents: 'analytics_events',
@@ -52,10 +53,10 @@ export const APPWRITE_CONFIG = {
         chatRooms: 'chat_rooms',
         chatMessages: 'chat_messages',
         chatSessions: 'chat_sessions',
-        chatTranslations: '', // Disabled - collection doesn't exist (causes 404 errors)
+        chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)
         payments: 'Payments',
         // Lead Generation System
-        leads: '', // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
+        leads: null, // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
         leadGenerations: 'lead_generations',
         leadBillingSummary: 'lead_billing_summary',
         // Membership Agreement System
@@ -70,7 +71,7 @@ export const APPWRITE_CONFIG = {
         affiliateClicks: 'affiliate_clicks',
         affiliateAttributions: 'affiliate_attributions',
         memberships: 'Memberships',
-        uiConfig: '', // Disabled - collection doesn't exist (causes 404 errors)
+        uiConfig: null, // Disabled - collection doesn't exist (causes 404 errors)
     },
     
     // Storage bucket IDs

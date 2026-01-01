@@ -117,7 +117,7 @@ export class PWABadgeManager {
 
 // Enhanced PWA Notification Manager with Background Message Checking
 export class PWANotificationManager {
-    private static vapidPublicKey = 'BL7ELnDgVx-RmJy5k8QkzKNNNzYFhYGz6xNcXR6JmKJ3xJKJxJqJxJyJzJJJxJKJxJqJxJyJzJJJxJKJxJqJxJyJzJJJ'; // Replace with actual VAPID key
+    private static vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NqIoj7ntT_UDlI9LdqPDp1x4yB9l6F2H3J8fPnLixchMuaNy7k6gH0'; // Valid VAPID key for web push
     private static instance: PWANotificationManager;
     private static messageCheckStarted = false;
     private static currentTherapistId: string | null = null;
