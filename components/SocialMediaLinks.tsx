@@ -48,7 +48,7 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ className = '' }) =
                         <img 
                             src={social.imgSrc} 
                             alt={social.name}
-                            className="w-8 h-8 object-contain"
+                            className="w-12 h-12 object-contain"
                         />
                     </a>
                 );
