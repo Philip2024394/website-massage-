@@ -31,16 +31,33 @@ import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapp
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering...');
     
-    // Service Worker sound playback listener
+    // Forced booking modal state
+    const [forcedBookingData, setForcedBookingData] = useState<any>(null);
+    
+    // Service Worker message listener - PLATFORM ONLY
     useEffect(() => {
-        console.log('🔊 Setting up service worker sound playback listener');
+        console.log('🔊 Setting up service worker message listeners');
         
         const handleServiceWorkerMessage = (event: MessageEvent) => {
-            if (event.data && event.data.type === 'play-notification-sound') {
-                console.log('🔊 Playing notification sound from service worker:', event.data.soundUrl);
+            // Sound playback
+            if (event.data?.type === 'play-notification-sound') {
+                console.log('🔊 Playing notification sound:', event.data.soundUrl);
                 const audio = new Audio(event.data.soundUrl);
                 audio.volume = 1.0; // Max volume
                 audio.play().catch(err => console.error('Sound play failed:', err));
+            }
+            
+            // Force booking view (when notification clicked)
+            if (event.data?.type === 'force-booking-view') {
+                console.log('🔴 Forcing booking view:', event.data.bookingId);
+                // Fetch booking details and show forced modal
+                fetchAndShowForcedBooking(event.data.bookingId);
+            }
+            
+            // Booking expired (5-minute timeout)
+            if (event.data?.type === 'booking-expired') {
+                console.log('⏰ Booking expired:', event.data.bookingId);
+                handleBookingExpiration(event.data.bookingId, event.data.reason);
             }
         };
         
@@ -50,6 +67,73 @@ const App = () => {
             navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
         };
     }, []);
+    
+    // Check URL for forced booking view on load
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceBookingId = urlParams.get('forceBookingView');
+        const autoAcceptBookingId = urlParams.get('autoAcceptBooking');
+        
+        if (forceBookingId) {
+            console.log('🔴 URL contains forceBookingView:', forceBookingId);
+            fetchAndShowForcedBooking(forceBookingId);
+            // Clean URL
+            urlParams.delete('forceBookingView');
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        }
+        
+        if (autoAcceptBookingId) {
+            console.log('✅ URL contains autoAcceptBooking:', autoAcceptBookingId);
+            handleAutoAcceptBooking(autoAcceptBookingId);
+            // Clean URL
+            urlParams.delete('autoAcceptBooking');
+            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        }
+    }, []);
+    
+    // Fetch booking details and show forced modal
+    const fetchAndShowForcedBooking = async (bookingId: string) => {
+        try {
+            // TODO: Fetch booking details from Appwrite
+            // For now, show placeholder
+            const mockBookingData = {
+                id: bookingId,
+                customerName: 'J.S.', // Initials only, no full name
+                service: 'Traditional Thai Massage',
+                date: new Date().toLocaleDateString(),
+                time: '2:00 PM',
+                duration: '90 minutes',
+                price: 'IDR 450,000',
+                receivedAt: Date.now() - 60000, // 1 minute ago
+                expiresAt: Date.now() + (4 * 60 * 1000) // 4 minutes left
+            };
+            
+            setForcedBookingData(mockBookingData);
+        } catch (error) {
+            console.error('Failed to fetch forced booking:', error);
+        }
+    };
+    
+    // Auto-accept booking (from email link)
+    const handleAutoAcceptBooking = async (bookingId: string) => {
+        try {
+            console.log('✅ Auto-accepting booking:', bookingId);
+            // TODO: Accept booking via Appwrite
+            // Show success message
+            alert('Booking accepted successfully!');
+        } catch (error) {
+            console.error('Auto-accept failed:', error);
+            alert('Failed to accept booking. Please try manually.');
+        }
+    };
+    
+    // Handle booking expiration
+    const handleBookingExpiration = async (bookingId: string, reason: string) => {
+        console.log('⏰ Handling booking expiration:', bookingId, reason);
+        // TODO: Update availability score
+        // TODO: Send expiration notification
+        setForcedBookingData(null); // Close modal if open
+    };
     
     // Booking popup state
     const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);

@@ -67,29 +67,30 @@ self.addEventListener('push', (event) => {
     console.log('🚨 CRITICAL: Background push notification received!', event.data?.text());
     
     let notificationData = {
-        title: '🏨 New Booking Request!',
-        body: 'You have a new massage booking request. Tap to view.',
+        title: '🔴 URGENT: New Booking Request!',
+        body: 'TAP NOW to respond! Auto-expires in 5 minutes. Your availability score depends on this.',
         icon: '/icon-192.png',
         badge: '/icon-72.png',
         tag: 'booking-request',
         requireInteraction: true, // CRITICAL: Keeps notification until user acts
         persistent: true,
-        vibrate: [200, 100, 200, 100, 200], // Strong vibration pattern
+        vibrate: [300, 100, 300, 100, 300, 100, 300], // INTENSE vibration pattern
         sound: NOTIFICATION_SOUND_URL,
         data: {
             type: 'booking',
             timestamp: Date.now(),
-            url: '/?page=therapist-dashboard'
+            expiresAt: Date.now() + (5 * 60 * 1000), // 5 minutes from now
+            url: '/?page=therapist-dashboard&forceBookingView=true'
         },
         actions: [
             {
-                action: 'view',
-                title: '👁️ View Booking',
+                action: 'accept-now',
+                title: '✅ ACCEPT NOW',
                 icon: '/icon-72.png'
             },
             {
-                action: 'whatsapp', 
-                title: '💬 Open WhatsApp',
+                action: 'view-details', 
+                title: '📋 View Details',
                 icon: '/icon-72.png'
             }
         ]
@@ -120,32 +121,40 @@ self.addEventListener('push', (event) => {
     );
 });
 
-// Handle notification clicks
+// Handle notification clicks - PLATFORM ONLY
 self.addEventListener('notificationclick', (event) => {
     console.log('🖱️ Notification clicked:', event.action);
     
     event.notification.close();
+    
+    const bookingData = event.notification.data;
+    const bookingId = bookingData.bookingId || 'unknown';
 
-    if (event.action === 'view') {
-        // Open dashboard
+    if (event.action === 'accept-now') {
+        // Direct accept - open with auto-accept flag
         event.waitUntil(
-            self.clients.openWindow('/?page=therapist-dashboard')
+            self.clients.openWindow(`/?page=therapist-dashboard&autoAcceptBooking=${bookingId}&forceView=true`)
         );
-    } else if (event.action === 'whatsapp') {
-        // Open WhatsApp web
+    } else if (event.action === 'view-details') {
+        // View details - open forced booking screen
         event.waitUntil(
-            self.clients.openWindow('https://web.whatsapp.com/')
+            self.clients.openWindow(`/?page=therapist-dashboard&forceBookingView=${bookingId}`)
         );
     } else {
-        // Default action - open app
+        // Default action - force booking screen
         event.waitUntil(
             self.clients.matchAll().then((clients) => {
-                // If app is already open, focus it
+                const url = `/?page=therapist-dashboard&forceBookingView=${bookingId}`;
+                // If app is already open, navigate it
                 if (clients.length > 0) {
+                    clients[0].postMessage({
+                        type: 'force-booking-view',
+                        bookingId: bookingId
+                    });
                     return clients[0].focus();
                 }
-                // Otherwise open new window
-                return self.clients.openWindow('/');
+                // Otherwise open new window with forced view
+                return self.clients.openWindow(url);
             })
         );
     }
@@ -199,7 +208,7 @@ async function storeNotificationForRetry(notificationData) {
     }
 }
 
-// Schedule retry notification - repeats every 2 minutes
+// Schedule retry notification - ESCALATION: 0min, 2min, 4min only
 async function scheduleRetryNotification(notificationData, tag) {
     try {
         // Store retry data
@@ -212,23 +221,65 @@ async function scheduleRetryNotification(notificationData, tag) {
             retryCount = data.retryCount || 0;
         }
         
-        // Max 10 retries (20 minutes total: 2min × 10)
-        if (retryCount >= 10) {
-            console.log('📵 Max retries reached for notification:', tag);
+        // Check if booking expired (5 minutes total)
+        const expiresAt = notificationData.expiresAt || (Date.now() + 5 * 60 * 1000);
+        if (Date.now() >= expiresAt) {
+            console.log('⏰ Booking expired (5 minutes) - stopping retries');
+            // Send expiration message to all clients to update availability score
+            const clients = await self.clients.matchAll();
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'booking-expired',
+                    bookingId: notificationData.bookingId,
+                    reason: 'timeout'
+                });
+            });
             return;
         }
         
-        // Schedule next notification in 2 minutes
+        // Escalation schedule: Retry at 2min and 4min only (total 3 notifications: 0, 2, 4)
+        if (retryCount >= 2) {
+            console.log('📵 Max retries reached (2 retries = 3 total notifications)');
+            return;
+        }
+        
+        // Calculate next retry time: 2min for first retry, 2min for second (total 4min)
+        const retryDelay = 2 * 60 * 1000; // Always 2 minutes between retries
+        
         setTimeout(async () => {
-            const retryData = {
-                ...notificationData,
-                title: '🔔 REMINDER: Unread Booking Request!',
-                body: 'You still have an unread booking request. Please check your dashboard.',
-                tag: `retry-${notificationData.tag}`
-            };
+            // Check again if expired before showing retry
+            if (Date.now() >= expiresAt) {
+                console.log('⏰ Booking expired before retry');
+                return;
+            }
             
-            await self.registration.showNotification(retryData.title, retryData);
-        }, 5 * 60 * 1000); // 5 minutes
+            // Increment retry count
+            await cache.put(`retry-${tag}`, new Response(JSON.stringify({
+                ...notificationData,
+                retryCount: retryCount + 1,
+                lastRetry: Date.now()
+            })));
+            
+            // Calculate remaining time
+            const remainingMs = expiresAt - Date.now();
+            const remainingMin = Math.ceil(remainingMs / 60000);
+            
+            // Show escalated notification
+            const escalationLevel = retryCount + 1;
+            await self.registration.showNotification(
+                `🚨 FINAL WARNING (${escalationLevel}/2): Booking Expires Soon!`,
+                {
+                    ...notificationData,
+                    body: `⏰ ${remainingMin} minutes left to respond! Your availability score will drop if you miss this. TAP NOW!`,
+                    vibrate: [400, 150, 400, 150, 400, 150, 400, 150, 400], // MORE INTENSE
+                    tag: tag,
+                    renotify: true
+                }
+            );
+            
+            // Schedule next retry recursively
+            scheduleRetryNotification(notificationData, tag);
+        }, retryDelay);
         
     } catch (error) {
         console.error('Failed to schedule retry notification:', error);
