@@ -159,8 +159,9 @@ self.addEventListener('notificationclose', (event) => {
     console.log('⚠️ WARNING: User dismissed notification without viewing!', event.notification.tag);
     
     // CRITICAL: Reschedule notification to prevent missed bookings
+    // Retry every 2 minutes up to 10 times (20 minutes total)
     event.waitUntil(
-        scheduleRetryNotification(event.notification.data)
+        scheduleRetryNotification(event.notification.data, event.notification.tag)
     );
 });
 
@@ -193,10 +194,26 @@ async function storeNotificationForRetry(notificationData) {
     }
 }
 
-// Schedule retry notification
-async function scheduleRetryNotification(notificationData) {
+// Schedule retry notification - repeats every 2 minutes
+async function scheduleRetryNotification(notificationData, tag) {
     try {
-        // Use setTimeout for retry (limited in service worker)
+        // Store retry data
+        const cache = await caches.open('notifications-retry');
+        const retryData = await cache.match(`retry-${tag}`);
+        let retryCount = 0;
+        
+        if (retryData) {
+            const data = await retryData.json();
+            retryCount = data.retryCount || 0;
+        }
+        
+        // Max 10 retries (20 minutes total: 2min × 10)
+        if (retryCount >= 10) {
+            console.log('📵 Max retries reached for notification:', tag);
+            return;
+        }
+        
+        // Schedule next notification in 2 minutes
         setTimeout(async () => {
             const retryData = {
                 ...notificationData,
