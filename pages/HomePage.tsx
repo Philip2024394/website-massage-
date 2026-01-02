@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistHomeCard from '../components/TherapistHomeCard';
 import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
+import { DirectoryRelatedLinks } from '../components/seo/InternalLinks';
 import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
@@ -23,6 +24,8 @@ import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, findCityByCoordinates } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
+import MusicPlayer from '../components/MusicPlayer';
+import { useSEO } from '../hooks/useSEO';
 
 
 interface HomePageProps {
@@ -258,6 +261,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Development mode toggle (press Ctrl+Shift+D to toggle)
     const [isDevelopmentMode, setIsDevelopmentMode] = useState(() => {
         return localStorage.getItem('massage_dev_mode') === 'true';
+    });
+    
+    // SEO Metadata for HomePage
+    useSEO({
+        title: 'Find Professional Massage Therapists & Spas in Indonesia | IndaStreet',
+        description: 'Book verified massage therapists and spa services in Yogyakarta, Bali, Jakarta, and across Indonesia. Home massage services, traditional Balinese massage, deep tissue therapy, and spa treatments available.',
+        keywords: 'massage Indonesia, massage Yogyakarta, massage Bali, spa services, professional massage therapist, home massage, Balinese massage, deep tissue massage, spa Indonesia',
+        canonical: 'https://www.indastreetmassage.com/home',
+        ogImage: 'https://ik.imagekit.io/7grri5v7d/logo%20yoga.png'
     });
     
     // Add keyboard shortcut to toggle dev mode
@@ -1345,6 +1357,7 @@ const HomePage: React.FC<HomePageProps> = ({
                             {userLocation ? (
                                 <div className="flex flex-col items-center gap-0.5">
                                 <div className="flex items-center justify-center gap-2">
+                                    <MusicPlayer autoPlay={true} />
                                     <svg 
                                         className="w-4 h-4 text-gray-600" 
                                         fill="none" 
@@ -1419,18 +1432,9 @@ const HomePage: React.FC<HomePageProps> = ({
                             <span className="whitespace-nowrap overflow-hidden text-ellipsis">{translationsObject?.home?.homeServiceTab || 'Home Service'}</span>
                         </button>
                         <button 
-                            onClick={() => {
-                                if (isDevelopmentMode) {
-                                    setActiveTab('places');
-                                } else {
-                                    setComingSoonSection('Massage Places');
-                                    setShowComingSoonModal(true);
-                                }
-                            }} 
+                            onClick={() => setActiveTab('places')} 
                             className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${
-                                isDevelopmentMode 
-                                    ? (activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100')
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600 hover:bg-gray-100'
                             }`}
                         >
                             <Building className="w-4 h-4 flex-shrink-0" />
@@ -1468,19 +1472,10 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="flex justify-end flex-shrink-0">
                             <button
                                 onClick={() => {
-                                    if (isDevelopmentMode) {
-                                        console.log('🏨 Facial button clicked - switching to facials tab');
-                                        setActiveTab('facials');
-                                    } else {
-                                        setComingSoonSection('Facial Places');
-                                        setShowComingSoonModal(true);
-                                    }
+                                    console.log('🏨 Facial button clicked - switching to facials tab');
+                                    setActiveTab('facials');
                                 }}
-                                className={`px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm ${
-                                    isDevelopmentMode 
-                                        ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                                        : 'bg-gray-500 text-white hover:bg-gray-600'
-                                }`}
+                                className="px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm bg-orange-500 text-white hover:bg-orange-600"
                                 title="Facials Indonesia"
                                 aria-label="Browse Facial Spas"
                             >
@@ -2025,7 +2020,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     />
                 )}
 
-                {activeTab === (isDevelopmentMode ? 'places' : 'places-disabled') && (
+                {activeTab === 'places' && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.massagePlacesTitle || 'Featured Massage Spas'}</h3>
@@ -2168,7 +2163,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 )}
 
                 {/* Facials Tab - Show facial places */}
-                {activeTab === (isDevelopmentMode ? 'facials' : 'facials-disabled') && (
+                {activeTab === 'facials' && (
                     <div className="max-w-full overflow-x-hidden">
                         <div className="mb-3 text-center">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.facialClinics || 'Facial Clinics'}</h3>
@@ -2327,6 +2322,10 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     min-width: 0;
                 }
             `}</style>
+            
+            {/* SEO Internal Linking */}
+            <DirectoryRelatedLinks providerType="therapist" />
+            
             {/* Directory footer: Terms & Privacy with brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
                 <div className="font-bold text-lg">
