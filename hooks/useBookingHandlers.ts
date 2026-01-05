@@ -1,6 +1,7 @@
 import type { Booking, Therapist, Place, User } from '../types';
 import { BookingStatus } from '../types';
 import type { Language, Page } from '../types/pageTypes';
+import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 
 // Helper function to convert Language to chat-compatible language
 const getChatLanguage = (lang: Language): 'en' | 'id' => {
@@ -185,7 +186,6 @@ export const useBookingHandlers = ({
             setPage('home');
 
             // 🔔 STEP 5: Start continuous notifications for therapist
-            const { startContinuousNotifications } = await import('../lib/continuousNotificationService');
             startContinuousNotifications(newBooking.id.toString());
 
             // ⏰ STEP 6: Start 10-minute countdown with auto-reassignment
@@ -205,7 +205,6 @@ export const useBookingHandlers = ({
                     
                     try {
                         // Stop continuous notifications for original provider
-                        const { stopContinuousNotifications } = await import('../lib/continuousNotificationService');
                         stopContinuousNotifications(newBooking.id.toString());
                         
                         // 🚨 APPLY AUTOMATIC PENALTY to non-responsive therapist
@@ -357,10 +356,8 @@ export const useBookingHandlers = ({
         // 🔔 STOP CONTINUOUS NOTIFICATIONS: When booking is accepted/confirmed
         if (newStatus === BookingStatus.Confirmed || newStatus === BookingStatus.OnTheWay) {
             try {
-                const { stopContinuousNotifications } = await import('../lib/continuousNotificationService');
-                const { stopBookingCountdown } = await import('../lib/countdownTimerService');
-                
                 stopContinuousNotifications(bookingId.toString());
+                const { stopBookingCountdown } = await import('../lib/countdownTimerService');
                 stopBookingCountdown(bookingId.toString());
                 
                 console.log('✅ Stopped continuous notifications and countdown for accepted booking:', bookingId);

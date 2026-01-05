@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react';
+import { MessageCircle, X, ChevronDown } from 'lucide-react';
 import { messagingService } from '../../../../lib/appwriteService';
 import { 
     ChatPersistenceManager, 
@@ -40,7 +40,6 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     const [sending, setSending] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const isPremium = therapist?.membershipTier === 'premium';
     const isInPWAMode = isPWA || isPWAMode();
 
     // Save state changes to PWA persistence
@@ -79,7 +78,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             console.log('📨 New chat message event received:', event.detail);
             
             // Refresh messages to include the new one
-            if (isOpen && isPremium) {
+            if (isOpen) {
                 fetchMessages();
             } else {
                 // Update unread count
@@ -94,7 +93,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
         };
 
         const handleVisibilityChange = (event: CustomEvent) => {
-            if (event.detail.visible && isPremium) {
+            if (event.detail.visible) {
                 checkUnreadMessages();
             }
         };
@@ -109,25 +108,23 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             window.removeEventListener('newChatMessage', handleNewChatMessage as EventListener);
             window.removeEventListener('pwa-visibility-change', handleVisibilityChange as EventListener);
         };
-    }, [isPremium, isOpen]);
+    }, [isOpen]);
 
     // Load messages when chat opens
     useEffect(() => {
-        if (isOpen && isPremium) {
+        if (isOpen) {
             fetchMessages();
             const interval = setInterval(fetchMessages, 10000); // Poll every 10 seconds
             return () => clearInterval(interval);
         }
-    }, [isOpen, isPremium]);
+    }, [isOpen]);
 
     // Check for unread messages periodically
     useEffect(() => {
-        if (isPremium) {
-            checkUnreadMessages();
-            const interval = setInterval(checkUnreadMessages, 30000); // Check every 30 seconds
-            return () => clearInterval(interval);
-        }
-    }, [isPremium]);
+        checkUnreadMessages();
+        const interval = setInterval(checkUnreadMessages, 30000); // Check every 30 seconds
+        return () => clearInterval(interval);
+    }, []);
 
     const fetchMessages = async () => {
         if (!therapist?.$id) return;
@@ -250,30 +247,21 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
                 <button
                     onClick={toggleChat}
-                    disabled={!isPremium}
                     className={`
                         relative bg-gradient-to-r from-orange-500 to-amber-500 
                         hover:from-orange-600 hover:to-amber-600 
                         text-white rounded-full shadow-2xl 
                         transition-all transform hover:scale-110 active:scale-95
-                        ${!isPremium ? 'opacity-50 cursor-not-allowed' : ''}
                         ${isInPWAMode ? 'w-16 h-16 p-4' : 'w-14 h-14 p-4'}
                     `}
-                    title={isPremium ? 'Open Support Chat' : 'Premium Feature - Support Chat'}
+                    title="Open Support Chat"
                 >
                     <MessageCircle className={`${isInPWAMode ? 'w-8 h-8' : 'w-6 h-6'}`} />
                     
                     {/* Unread Badge */}
-                    {unreadCount > 0 && isPremium && (
+                    {unreadCount > 0 && (
                         <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] h-6 flex items-center justify-center px-1 animate-pulse">
                             {unreadCount > 99 ? '99+' : unreadCount}
-                        </div>
-                    )}
-
-                    {/* Premium Lock Icon */}
-                    {!isPremium && (
-                        <div className="absolute -top-1 -right-1 bg-yellow-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                            <span className="text-xs">👑</span>
                         </div>
                     )}
                 </button>
@@ -318,11 +306,6 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                     <div className="flex items-center gap-2">
                         <MessageCircle className="w-5 h-5" />
                         <span className="font-medium">Support Chat</span>
-                        {isPremium && (
-                            <span className="bg-yellow-400 text-yellow-900 text-xs px-2 py-0.5 rounded-full font-medium">
-                                Premium
-                            </span>
-                        )}
                     </div>
                     <div className="flex items-center gap-1">
                         <button
@@ -330,7 +313,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                             className="p-1 hover:bg-white/20 rounded transition-colors"
                             title="Minimize"
                         >
-                            <Minimize2 className="w-4 h-4" />
+                            <ChevronDown className="w-4 h-4" />
                         </button>
                         <button
                             onClick={closeChat}
@@ -343,29 +326,13 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                 </div>
 
                 {/* Content */}
-                {!isPremium ? (
-                    // Premium Upgrade Prompt
-                    <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
-                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
-                            <span className="text-2xl">👑</span>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Premium Feature</h3>
-                        <p className="text-sm text-gray-600 mb-4">
-                            Upgrade to Premium to access 24/7 customer support chat with 2-hour response time.
-                        </p>
-                        <button className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-lg font-medium hover:from-orange-600 hover:to-amber-600 transition-colors">
-                            Upgrade to Premium
-                        </button>
-                    </div>
-                ) : (
-                    <>
-                        {/* Messages */}
-                        <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                            {loading && messages.length === 0 ? (
-                                <div className="text-center text-gray-500 text-sm">Loading messages...</div>
-                            ) : messages.length === 0 ? (
-                                <div className="text-center text-gray-500 text-sm">
-                                    No messages yet. Start a conversation with our support team!
+                {/* Messages */}
+                <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                    {loading && messages.length === 0 ? (
+                        <div className="text-center text-gray-500 text-sm">Loading messages...</div>
+                    ) : messages.length === 0 ? (
+                        <div className="text-center text-gray-500 text-sm">
+                            No messages yet. Start a conversation with our support team!
                                 </div>
                             ) : (
                                 messages.map((message) => (
@@ -416,8 +383,6 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                                 </button>
                             </div>
                         </div>
-                    </>
-                )}
             </div>
         </div>
     );

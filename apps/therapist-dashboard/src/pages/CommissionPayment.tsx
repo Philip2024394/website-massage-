@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check, ArrowLeft } from 'lucide-react';
+import { Wallet, Upload, Clock, AlertCircle, CheckCircle, Building2, User, Hash, Copy, Check } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 import { Therapist } from '../../../../types';
 import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
@@ -171,20 +172,12 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="w-full bg-white sticky top-0 z-10">
-        <div className="flex items-center gap-3 py-4 px-5">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-black">Payments 30%</h1>
-              <p className="text-xs text-gray-600">Pay commission per booking</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TherapistPageHeader
+        title="Payments 30%"
+        subtitle="Pay commission per booking"
+        onBackToStatus={onBack || (() => {})}
+        icon={<div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center"><Wallet className="w-5 h-5 text-white" /></div>}
+      />
 
       <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
 

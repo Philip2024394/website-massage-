@@ -17,6 +17,8 @@ Allow: /how-it-works
 Allow: /blog
 Allow: /about
 Allow: /contact
+Allow: /privacy-policy
+Allow: /service-terms
 
 # Disallow admin and portal areas
 Disallow: /admin

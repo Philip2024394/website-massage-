@@ -24,7 +24,13 @@
   # VITE_BANK_ACCOUNT_NUMBER = "1234567890"
   # VITE_BANK_ACCOUNT_NAME = "IndaStreet Platform"
 
-# SPA redirect - must handle all client-side routes
+# Therapist dashboard SPA redirect (must come before catch-all)
+[[redirects]]
+  from = "/therapist/*"
+  to = "/therapist/index.html"
+  status = 200
+
+# Main app SPA redirect - must handle all client-side routes
 [[redirects]]
   from = "/*"
   to = "/index.html"

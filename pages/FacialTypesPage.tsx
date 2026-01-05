@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FACIAL_TYPES_CATEGORIZED } from '../constants/rootConstants';
+import { FACIAL_TYPE_DETAILS, getFacialTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
@@ -89,14 +90,15 @@ const FacialTypesPage: React.FC<FacialTypesPageProps> = ({
     // Initialize facial types with popularity ratings
     const [facialTypes, setFacialTypes] = useState<FacialType[]>(
         allFacialTypes.map((name, index) => {
+            const details = getFacialTypeDetails(name);
             return {
                 name,
-                description: getFacialDescription(name),
-                fullDescription: getFacialFullDescription(name),
-                benefits: getFacialBenefits(name),
-                duration: '60-90 minutes',
-                intensity: 'Gentle',
-                bestFor: getFacialBestFor(name),
+                description: details?.shortDescription || getFacialDescription(name),
+                fullDescription: details?.fullDescription || getFacialFullDescription(name),
+                benefits: details?.benefits || getFacialBenefits(name),
+                duration: details?.duration || '60-90 minutes',
+                intensity: details?.intensity || 'Gentle',
+                bestFor: details?.bestFor || getFacialBestFor(name),
                 image: getFacialImage(name),
                 popularity: baseRatings[index % baseRatings.length],
                 expanded: false

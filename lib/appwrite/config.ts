@@ -32,6 +32,7 @@ export const APPWRITE_CONFIG = {
     notifications: 'Notifications',
     chatMessages: 'Chat Messages',
     chatRooms: 'Chat Rooms',
+    chatAuditLogs: 'chat_audit_logs',
     chatSessions: import.meta.env.VITE_CHAT_SESSIONS_COLLECTION_ID || 'chat_sessions',
     chatTranslations: 'Chat Translations',
     

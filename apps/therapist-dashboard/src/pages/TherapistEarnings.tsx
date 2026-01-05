@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 import { analyticsService } from '../../../../lib/services/analyticsService';
 
 interface Payment {
@@ -135,14 +136,14 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <TherapistPageHeader
+        title="Earnings & Payments"
+        subtitle="Track your income and payment history"
+        onBackToStatus={onBack}
+        icon={<BarChart3 className="w-6 h-6 text-purple-600" />}
+      />
+
       <main className="max-w-sm mx-auto px-4 py-6">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Banknote className="w-6 h-6 text-orange-500" />
-            <h1 className="text-2xl font-bold text-gray-900">Earnings & Payments</h1>
-          </div>
-          <p className="text-sm text-gray-600">Track your income and payment history</p>
-        </div>
         <div className="space-y-4">
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3">

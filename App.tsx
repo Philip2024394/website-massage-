@@ -10,6 +10,7 @@ import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import ChatWindow from './components/ChatWindow';
+import FloatingChat from './apps/therapist-dashboard/src/components/FloatingChat';
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
@@ -1016,6 +1017,19 @@ const App = () => {
                 />
                 </Suspense>
             </div>
+
+            {/* Floating Chat for Therapist Dashboard Pages */}
+            {state.loggedInProvider?.type === 'therapist' && (
+                state.page?.toString().startsWith('therapist') || 
+                state.page === 'status' || 
+                state.page === 'schedule' || 
+                state.page === 'bookings'
+            ) && (
+                <FloatingChat 
+                    therapist={state.loggedInProvider as any}
+                    isPWA={false}
+                />
+            )}
 
             <AppFooterLayout
                 showFooter={derived.showFooter}

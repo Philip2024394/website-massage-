@@ -17,6 +17,32 @@ import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent
 import { BookingStatus } from './types';
 import LoadingSpinner from './components/LoadingSpinner';
 
+// Error Boundary for lazy loading failures
+class LazyLoadErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[LAZY LOAD ERROR]', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
 // Route configurations
 import { publicRoutes } from './router/routes/publicRoutes';
 import { authRoutes } from './router/routes/authRoutes';
@@ -185,7 +211,7 @@ interface AppRouterProps {
  */
 export const AppRouter: React.FC<AppRouterProps> = (props) => {
     const { page, language, handleLanguageSelect } = props;
-    const { t } = useTranslations();
+    const { t, dict, loading: translationsLoading } = useTranslations();
 
     const resolveTherapistProfile = () => {
         if (props.loggedInProvider?.type !== 'therapist') return null;
@@ -205,23 +231,57 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
     /**
      * Render route with suspense boundary and proper language props
+     * Includes error boundary to catch lazy loading failures
      */
-    const renderRoute = (Component: React.LazyExoticComponent<any>, componentProps: any = {}) => (
-        <Suspense fallback={<LoadingSpinner />}>
-            <Component 
-                {...props} 
-                {...componentProps} 
-                t={t}
-                language={language}
-                onLanguageChange={handleLanguageSelect}
-                onNavigate={props.setPage}
-            />
-        </Suspense>
-    );
+    const renderRoute = (Component: React.LazyExoticComponent<any>, componentProps: any = {}, routeName?: string) => {
+        const ErrorFallback = () => (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                    <div className="text-6xl mb-4">⚠️</div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error</h2>
+                    <p className="text-gray-600 mb-4">Failed to load page component</p>
+                    <div className="bg-gray-100 rounded p-3 mb-4">
+                        <code className="text-sm text-gray-700">Route: {routeName || page}</code>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-4">
+                        The component file may be missing or have a syntax error. Check the console for details.
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors mr-2"
+                    >
+                        Reload Page
+                    </button>
+                    <button
+                        onClick={() => props.onNavigate?.('home')}
+                        className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                        Go Home
+                    </button>
+                </div>
+            </div>
+        );
+
+        return (
+            <LazyLoadErrorBoundary fallback={<ErrorFallback />}>
+                <Suspense fallback={<LoadingSpinner />}>
+                    <Component 
+                        {...props} 
+                        {...componentProps} 
+                        t={t}
+                        language={language}
+                        onLanguageChange={handleLanguageSelect}
+                        onNavigate={props.setPage}
+                    />
+                </Suspense>
+            </LazyLoadErrorBoundary>
+        );
+    };
 
     /**
      * Route matcher - Enterprise pattern for clean routing
      */
+    console.log('[ROUTER] Resolving page:', page, '| Type:', typeof page);
     switch (page) {
         // ===== PUBLIC ROUTES =====
         case 'landing':
@@ -405,6 +465,49 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         console.error('Unknown user type:', userType);
                         props.onNavigate('home');
                     }
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
+        case 'therapist-signup':
+            // Redirect to unified signup with therapist role
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'therapist',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    props.onNavigate('therapist-status');
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
+        case 'massage-place-signup':
+        case 'place-signup':
+            // Redirect to unified signup with massage place role
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'massage-place',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    props.onNavigate('massage-place-dashboard');
+                },
+                onBack: () => props.onNavigate('home')
+            });
+            
+        case 'facial-place-signup':
+            // Redirect to unified signup with facial place role
+            return renderRoute(authRoutes.signup.component, {
+                mode: 'signup',
+                defaultRole: 'facial-place',
+                onAuthSuccess: async (userType: string) => {
+                    if (props.restoreUserSession) {
+                        await props.restoreUserSession();
+                    }
+                    props.onNavigate('facial-place-dashboard');
                 },
                 onBack: () => props.onNavigate('home')
             });
@@ -608,13 +711,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== LEGAL ROUTES =====
         case 'privacy-policy':
-            return renderRoute(legalRoutes.privacy.component);
+        case 'privacy':
+            return renderRoute(legalRoutes.privacy.component, {
+                onBack: () => props.onNavigate?.('home'),
+                t: dict?.privacyPolicy
+            });
         
         case 'cookies-policy':
             return renderRoute(legalRoutes.cookies.component);
         
         case 'service-terms':
-            return renderRoute(legalRoutes.serviceTerms.component);
+        case 'serviceTerms':
+            return renderRoute(legalRoutes.serviceTerms.component, {
+                onBack: () => props.onNavigate?.('home'),
+                t: dict?.serviceTerms,
+                contactNumber: '+62 812-3456-7890'
+            });
         
         case 'place-terms':
             return renderRoute(legalRoutes.placeTerms.component);
@@ -810,7 +922,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
                         onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
                         onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
-                        onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
                         onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
                         onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
                         onNavigateHome: () => props.onNavigate?.('home'),
@@ -852,9 +963,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
 
         // ===== THERAPIST DASHBOARD ROUTES =====
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist':
         case 'therapistDashboard':
         case 'therapist-dashboard':
+            console.log('[ROUTE RESOLVE] therapist-dashboard → TherapistDashboard');
             return renderRoute(therapistRoutes.dashboard.component, {
                 therapist: props.user,
                 onLogout: props.handleLogout,
@@ -868,14 +981,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onNavigateToPayment: () => props.onNavigate?.('therapist-payment'),
                 onNavigateToPaymentStatus: () => props.onNavigate?.('therapist-payment-status'),
                 onNavigateToCommission: () => props.onNavigate?.('therapist-commission'),
-                onNavigateToPremium: () => props.onNavigate?.('therapist-premium'),
                 onNavigateToSchedule: () => props.onNavigate?.('therapist-schedule'),
                 onNavigateToMenu: () => props.onNavigate?.('therapist-menu'),
                 onNavigateHome: () => props.onNavigate?.('home'),
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'status':
         case 'therapist-status':
+            console.log('[ROUTE RESOLVE] therapist-status → TherapistOnlineStatus');
             return renderRoute(therapistRoutes.status.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
@@ -883,101 +998,131 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'bookings':
         case 'therapist-bookings':
+            console.log('[ROUTE RESOLVE] therapist-bookings → TherapistBookings');
+            console.log('[ROUTER OK] therapist-bookings', '/dashboard/therapist/bookings');
             return renderRoute(therapistRoutes.bookings.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
                 language: props.language
-            });
+            }, 'therapist-bookings');
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'earnings':
         case 'therapist-earnings':
+            console.log('[ROUTE RESOLVE] therapist-earnings → TherapistEarnings');
             return renderRoute(therapistRoutes.earnings.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'chat':
         case 'therapist-chat':
+            console.log('[ROUTE RESOLVE] therapist-chat → TherapistChat');
             return renderRoute(therapistRoutes.chat.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'therapist-notifications':
+            console.log('[ROUTE RESOLVE] therapist-notifications → TherapistNotifications');
             return renderRoute(therapistRoutes.notifications.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'legal':
         case 'therapist-legal':
+            console.log('[ROUTE RESOLVE] therapist-legal → TherapistLegal');
             return renderRoute(therapistRoutes.legal.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'calendar':
         case 'therapist-calendar':
+            console.log('[ROUTE RESOLVE] therapist-calendar → TherapistCalendar');
             return renderRoute(therapistRoutes.calendar.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'payment':
         case 'therapist-payment':
+            console.log('[ROUTE RESOLVE] therapist-payment → TherapistPaymentInfo');
             return renderRoute(therapistRoutes.payment.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'payment-status':
         case 'therapist-payment-status':
-            return renderRoute(therapistRoutes.paymentStatus.component, {
+            console.log('[ROUTE RESOLVE] payment-status/therapist-payment-status → TherapistPaymentStatus');
+            const paymentStatusComponent = renderRoute(therapistRoutes.paymentStatus.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
+            console.log('[ROUTER OK] ✅ payment-status component bound successfully');
+            return paymentStatusComponent;
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'custom-menu':
         case 'therapist-menu':
-            return renderRoute(therapistRoutes.menu.component, {
+            console.log('[ROUTE RESOLVE] custom-menu/therapist-menu → TherapistMenu');
+            const menuComponent = renderRoute(therapistRoutes.menu.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
+            console.log('[ROUTER OK] ✅ therapist-menu component bound successfully');
+            return menuComponent;
         
-        case 'therapist-premium':
-            return renderRoute(therapistRoutes.premium.component, {
-                therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
-                onNavigate: props.onNavigate,
-                language: props.language
-            });
-        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'commission-payment':
         case 'therapist-commission':
+            console.log('[ROUTE RESOLVE] therapist-commission → CommissionPayment');
             return renderRoute(therapistRoutes.commission.component, {
                 therapist: props.user,
-                onBack: () => props.onNavigate?.('therapist-dashboard'),
+                onBack: () => props.onNavigate?.('therapist-status'),
                 onNavigate: props.onNavigate,
                 language: props.language
             });
         
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'schedule':
         case 'therapist-schedule':
+            console.log('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');
+            console.log('[ROUTER OK] therapist-schedule', '/dashboard/therapist/schedule');
             return renderRoute(therapistRoutes.schedule.component, {
                 therapist: props.user,
                 onBack: () => props.onNavigate?.('therapist-dashboard'),
                 onNavigate: props.onNavigate,
                 language: props.language
-            });
+            }, 'therapist-schedule');
         
         case 'therapist-package-terms':
             return renderRoute(therapistRoutes.packageTerms.component, {
@@ -1002,8 +1147,32 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
 
         // ===== FALLBACK =====
+        // 🚫 DO NOT REDIRECT — FAIL VISIBLE
         default:
-            return renderRoute(publicRoutes.home.component);
+            console.error('[ROUTE RESOLVE] ❌ Unknown route:', page);
+            console.error('[ROUTE RESOLVE] ❌ Route type:', typeof page);
+            console.error('[ROUTE RESOLVE] ❌ props.currentPage:', props.currentPage);
+            console.error('[ROUTE RESOLVE] ❌ All props keys:', Object.keys(props));
+            return (
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                        <div className="text-6xl mb-4">⚠️</div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Route Not Found</h2>
+                        <p className="text-gray-600 mb-4">Page exists but component not implemented yet</p>
+                        <div className="bg-gray-100 rounded p-3 mb-4">
+                            <code className="text-sm text-gray-700">Route: {page}</code>
+                            <br />
+                            <code className="text-sm text-gray-700">Type: {typeof page}</code>
+                        </div>
+                        <button
+                            onClick={() => props.onNavigate?.('home')}
+                            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                            Go to Home
+                        </button>
+                    </div>
+                </div>
+            );
     }
 };
 

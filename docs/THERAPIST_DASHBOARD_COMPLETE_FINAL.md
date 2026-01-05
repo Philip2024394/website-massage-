@@ -98,7 +98,7 @@
   1. Introduction & Acceptance
   2. Therapist Account Requirements (eligibility, profile info, one account policy)
   3. Service Provision (booking acceptance, professional standards, pricing)
-  4. Payments & Commission (15% to admin, 85% to therapist, weekly payments)
+  4. Payments & Commission (30% to admin, 70% to therapist, weekly payments)
   5. Premium Membership (Free vs Premium tiers, benefits, renewal)
   6. Code of Conduct (prohibited activities, customer interactions, platform rules)
   7. Liability & Insurance (independent contractor, platform liability, indemnification)
@@ -221,7 +221,7 @@
    - `$id, therapistId, customerName, customerPhone, serviceType, duration, price, location, date, time, status, notes, createdAt, reminderSent`
 
 3. **payments** (new):
-   - `$id, therapistId, bookingId, customerName, amount, adminCommission (15%), netEarning (85%), status, date, paymentMethod, paidAt`
+   - `$id, therapistId, bookingId, customerName, amount, adminCommission (30%), netEarning (70%), status, date, paymentMethod, paidAt`
 
 4. **messages** (new):
    - `$id, therapistId, senderId, senderName, senderType ('therapist' | 'admin'), message, timestamp, read`

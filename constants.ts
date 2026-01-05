@@ -17,6 +17,17 @@ export interface MassageTypeInfo {
     bestFor: string[];
 }
 
+// Detailed facial type information for SEO
+export interface FacialTypeInfo {
+    name: string;
+    shortDescription: string;
+    fullDescription: string;
+    benefits: string[];
+    duration: string;
+    intensity: 'Gentle' | 'Light' | 'Moderate' | 'Deep';
+    bestFor: string[];
+}
+
 export const MASSAGE_TYPE_DETAILS: MassageTypeInfo[] = [
     {
         name: 'Swedish Massage',
@@ -188,6 +199,51 @@ export const MASSAGE_TYPE_DETAILS: MassageTypeInfo[] = [
         duration: '60-90 minutes',
         intensity: 'Moderate',
         bestFor: ['Low energy', 'Fatigue', 'Mental fog', 'Sluggishness']
+    },
+    {
+        name: 'Traditional',
+        shortDescription: 'Authentic Indonesian massage combining time-honored techniques for deep relaxation and healing.',
+        fullDescription: 'Traditional Indonesian massage is a comprehensive healing therapy that has been practiced for centuries across the archipelago. This therapeutic massage combines deep tissue work, acupressure, gentle stretching, and rhythmic movements to release muscle tension, improve circulation, and restore energy balance. Using natural oils often infused with local herbs and spices, the therapist applies firm but soothing pressure along energy meridians and muscle groups. This holistic approach treats both physical discomfort and promotes spiritual well-being, embodying Indonesia\'s rich wellness heritage.',
+        benefits: ['Releases deep muscle tension', 'Improves blood circulation', 'Reduces stress and anxiety', 'Balances body energy', 'Relieves chronic pain', 'Enhances flexibility'],
+        duration: '60-90 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Muscle tension', 'Stress relief', 'Cultural experience', 'Overall wellness']
+    },
+    {
+        name: 'Feet',
+        shortDescription: 'Specialized foot massage targeting pressure points to promote relaxation and overall body wellness.',
+        fullDescription: 'Foot massage is a therapeutic treatment focusing exclusively on the feet, which contain thousands of nerve endings connected to every part of the body. This specialized therapy combines reflexology techniques, deep tissue work, and acupressure to relieve foot pain, reduce tension, and promote healing throughout the entire body. The therapist uses thumbs, fingers, and knuckles to apply varying pressure to specific reflex zones, improving circulation, releasing toxins, and restoring balance. Often incorporating warm oils or foot soaks, this treatment is both deeply relaxing and therapeutically beneficial.',
+        benefits: ['Relieves foot pain and fatigue', 'Improves overall circulation', 'Reduces stress and tension', 'Promotes better sleep', 'Supports full-body healing', 'Enhances mobility'],
+        duration: '30-60 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Foot pain', 'Standing jobs', 'Relaxation', 'Reflexology benefits']
+    },
+    {
+        name: 'Hands',
+        shortDescription: 'Therapeutic hand massage relieving tension, improving circulation, and addressing repetitive strain.',
+        fullDescription: 'Hand massage is a specialized treatment targeting the intricate muscles, tendons, and pressure points of the hands and wrists. This therapeutic session is particularly beneficial for those who use their hands extensively - office workers, musicians, craftspeople, or anyone experiencing hand fatigue or discomfort. Using a combination of gentle stretching, kneading, pressure point therapy, and joint mobilization, the therapist works to relieve carpal tunnel symptoms, arthritis pain, and repetitive strain injuries. Hand reflexology principles are often incorporated, as specific points on the hands correspond to various organs and body systems.',
+        benefits: ['Relieves hand and wrist pain', 'Reduces carpal tunnel symptoms', 'Improves hand flexibility', 'Enhances circulation', 'Reduces arthritis discomfort', 'Promotes relaxation'],
+        duration: '20-45 minutes',
+        intensity: 'Light',
+        bestFor: ['Office workers', 'Arthritis', 'Carpal tunnel', 'Hand fatigue']
+    },
+    {
+        name: 'Body Scrub',
+        shortDescription: 'Exfoliating body treatment using natural scrubs to remove dead skin, detoxify, and reveal smooth, glowing skin.',
+        fullDescription: 'Body scrub, also known as body polish or exfoliation treatment, is a luxurious spa therapy that revitalizes the skin from head to toe. Using natural exfoliants such as sea salt, sugar, coffee grounds, rice powder, or ground herbs mixed with nourishing oils, the therapist gently massages the scrub over the entire body in circular motions. This process removes dead skin cells, unclogs pores, stimulates circulation, and promotes cell renewal. After rinsing, the skin is left incredibly soft, smooth, and radiant. Many Indonesian spas use traditional ingredients like turmeric, lulur (yellow rice powder), or boreh (spice paste) for added therapeutic benefits.',
+        benefits: ['Removes dead skin cells', 'Improves skin texture and tone', 'Boosts circulation', 'Detoxifies skin', 'Reduces ingrown hairs', 'Prepares skin for tanning'],
+        duration: '45-60 minutes',
+        intensity: 'Light',
+        bestFor: ['Skin rejuvenation', 'Dry skin', 'Pre-event prep', 'Spa experience']
+    },
+    {
+        name: 'Facial',
+        shortDescription: 'Comprehensive facial treatment cleansing, nourishing, and rejuvenating skin for a healthy, radiant complexion.',
+        fullDescription: 'Facial massage and treatment is a multi-step skincare therapy designed to cleanse, exfoliate, nourish, and rejuvenate facial skin. A typical facial includes deep cleansing, steam treatment, exfoliation, extractions (if needed), facial massage using upward and outward strokes to improve circulation and tone facial muscles, application of serums and masks tailored to your skin type, and moisturization. The facial massage component promotes lymphatic drainage, reduces puffiness, smooths fine lines, and creates a healthy glow. This relaxing treatment not only improves skin health but also provides stress relief and promotes overall well-being.',
+        benefits: ['Deep cleanses pores', 'Improves skin texture', 'Reduces fine lines', 'Promotes even skin tone', 'Boosts circulation', 'Provides deep relaxation'],
+        duration: '45-90 minutes',
+        intensity: 'Light',
+        bestFor: ['All skin types', 'Anti-aging', 'Acne treatment', 'Skin health']
     }
 ];
 
@@ -195,6 +251,179 @@ export const MASSAGE_TYPE_DETAILS: MassageTypeInfo[] = [
 export const getMassageTypeDetails = (massageType: string): MassageTypeInfo | undefined => {
     return MASSAGE_TYPE_DETAILS.find(
         m => m.name.toLowerCase() === massageType.toLowerCase()
+    );
+};
+
+// Facial Type Details Array
+export const FACIAL_TYPE_DETAILS: FacialTypeInfo[] = [
+    {
+        name: 'Anti-Aging Facial',
+        shortDescription: 'Advanced anti-aging treatment targeting fine lines, wrinkles, and age spots to rejuvenate and firm skin.',
+        fullDescription: 'Anti-aging facial is a comprehensive treatment combining cutting-edge techniques and premium products to combat visible signs of aging. This luxurious facial uses potent serums containing retinol, peptides, and antioxidants to stimulate collagen production, improve skin elasticity, and reduce fine lines and wrinkles. The treatment includes deep cleansing, gentle exfoliation, facial massage to promote circulation, application of specialized anti-aging masks, and intensive hydration. Regular sessions can significantly improve skin texture, tone, and firmness, restoring a more youthful, radiant appearance.',
+        benefits: ['Reduces fine lines and wrinkles', 'Firms and lifts skin', 'Improves skin elasticity', 'Evens skin tone', 'Boosts collagen production', 'Restores youthful glow'],
+        duration: '75-90 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Mature skin', 'Fine lines', 'Wrinkles', 'Loss of firmness']
+    },
+    {
+        name: 'Collagen Facial',
+        shortDescription: 'Intensive collagen-boosting treatment that enhances skin elasticity and reduces wrinkles for firmer, younger-looking skin.',
+        fullDescription: 'Collagen facial is a specialized treatment designed to replenish and boost collagen levels in the skin. As we age, our natural collagen production decreases, leading to sagging skin and wrinkles. This facial uses collagen-rich masks, serums, and creams along with techniques that stimulate the skin\'s own collagen production. The treatment may include gentle microcurrent therapy or LED light therapy to enhance results. Collagen facials deeply hydrate, plump the skin, minimize fine lines, and restore elasticity, leaving your complexion looking firmer, smoother, and more youthful.',
+        benefits: ['Boosts skin elasticity', 'Reduces wrinkles and fine lines', 'Firms sagging skin', 'Deeply hydrates', 'Plumps skin', 'Improves skin texture'],
+        duration: '60-90 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Aging skin', 'Loss of firmness', 'Wrinkles', 'Dehydrated skin']
+    },
+    {
+        name: 'Microdermabrasion',
+        shortDescription: 'Exfoliating treatment using fine crystals or diamond tips to remove dead skin cells and reveal smoother, brighter skin.',
+        fullDescription: 'Microdermabrasion is a non-invasive mechanical exfoliation technique that removes the outermost layer of dead skin cells using fine crystals or a diamond-tipped wand. This controlled exfoliation stimulates cell renewal, improves skin texture, and enhances product absorption. The treatment is effective for reducing fine lines, age spots, acne scars, and hyperpigmentation while promoting a more even skin tone. The procedure also stimulates blood flow and collagen production, resulting in fresher, healthier-looking skin. With no downtime, this treatment is perfect for those seeking immediate radiance and long-term skin improvement.',
+        benefits: ['Exfoliates dead skin cells', 'Reduces fine lines', 'Minimizes pore size', 'Fades age spots and hyperpigmentation', 'Improves skin texture', 'Enhances product absorption'],
+        duration: '45-60 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Uneven texture', 'Fine lines', 'Sun damage', 'Age spots']
+    },
+    {
+        name: 'Chemical Peel',
+        shortDescription: 'Advanced exfoliation treatment using carefully selected acids to remove damaged outer layers for fresh, youthful skin.',
+        fullDescription: 'Chemical peel is a professional skincare treatment that uses various acids (such as glycolic, salicylic, lactic, or TCA) to chemically exfoliate the skin. Depending on the strength - light, medium, or deep - peels can address different concerns from mild texture issues to significant sun damage and scarring. The treatment removes damaged outer layers, stimulating new cell growth and collagen production. This results in smoother, more even-toned skin with reduced appearance of fine lines, acne scars, and hyperpigmentation. Post-treatment, skin may peel for several days as it reveals the fresh, rejuvenated complexion underneath.',
+        benefits: ['Removes damaged skin layers', 'Reduces acne scars', 'Evens skin tone', 'Minimizes fine lines', 'Treats hyperpigmentation', 'Stimulates cell renewal'],
+        duration: '30-60 minutes',
+        intensity: 'Deep',
+        bestFor: ['Acne scars', 'Hyperpigmentation', 'Sun damage', 'Wrinkles']
+    },
+    {
+        name: 'LED Light Therapy',
+        shortDescription: 'Non-invasive treatment using different colored LED lights to treat various skin concerns and promote healing.',
+        fullDescription: 'LED light therapy facial uses different wavelengths of light to penetrate the skin at varying depths, triggering specific cellular responses. Red light stimulates collagen production and reduces inflammation, blue light kills acne-causing bacteria, and near-infrared light promotes healing and reduces redness. This painless, non-invasive treatment has no downtime and is suitable for all skin types. Regular sessions can significantly improve skin texture, reduce breakouts, minimize fine lines, and promote overall skin health. Often combined with other facial treatments, LED therapy enhances results and accelerates healing.',
+        benefits: ['Reduces acne and breakouts', 'Stimulates collagen production', 'Minimizes inflammation', 'Improves skin tone', 'Accelerates healing', 'No downtime'],
+        duration: '30-45 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Acne', 'Anti-aging', 'Redness', 'All skin types']
+    },
+    {
+        name: 'Hydrating Facial',
+        shortDescription: 'Intensive moisture treatment for dry, dehydrated skin leaving it plump, supple, and radiant.',
+        fullDescription: 'Hydrating facial is a deeply moisturizing treatment specifically designed for dry, dehydrated, or dull skin. This luxurious facial uses hydrating serums rich in hyaluronic acid, glycerin, and vitamins to replenish moisture levels and restore the skin\'s natural barrier. The treatment typically includes gentle cleansing, light exfoliation to remove dry patches, a hydrating massage to boost circulation, and application of intensive moisture masks. The result is plump, dewy skin with improved elasticity and a healthy glow. Perfect for all ages and particularly beneficial in dry climates or after sun exposure.',
+        benefits: ['Deep moisture replenishment', 'Plumps and softens skin', 'Reduces dryness and flakiness', 'Restores skin barrier', 'Improves elasticity', 'Creates dewy glow'],
+        duration: '60-75 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Dry skin', 'Dehydrated skin', 'Tight skin', 'Dull complexion']
+    },
+    {
+        name: 'Brightening Facial',
+        shortDescription: 'Illuminating treatment that reduces dark spots, evens skin tone, and reveals a luminous, radiant complexion.',
+        fullDescription: 'Brightening facial is a specialized treatment targeting hyperpigmentation, dark spots, and uneven skin tone. Using powerful ingredients like vitamin C, kojic acid, licorice extract, and niacinamide, this facial inhibits melanin production while gently exfoliating to reveal brighter skin. The treatment includes deep cleansing, enzymatic or chemical exfoliation, brightening serums and masks, and protective antioxidants. Regular sessions can fade sun spots, age spots, and post-inflammatory hyperpigmentation while preventing new discoloration. The result is a more even, luminous complexion with a healthy, radiant glow.',
+        benefits: ['Reduces dark spots and hyperpigmentation', 'Evens skin tone', 'Adds luminous radiance', 'Prevents future discoloration', 'Improves overall complexion', 'Boosts skin clarity'],
+        duration: '60-75 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Dark spots', 'Uneven tone', 'Sun damage', 'Dull skin']
+    },
+    {
+        name: 'Acne Treatment Facial',
+        shortDescription: 'Deep cleansing treatment specifically targeting breakouts, clearing pores, and preventing future acne.',
+        fullDescription: 'Acne treatment facial is a comprehensive therapy designed to address active breakouts, congested pores, and acne-prone skin. This clinical treatment begins with deep cleansing to remove excess oil and impurities, followed by gentle exfoliation to unclog pores. Steam softens blackheads and whiteheads for safe extraction, performed by trained professionals. Antibacterial and anti-inflammatory treatments including salicylic acid, benzoyl peroxide, or tea tree oil are applied to kill acne-causing bacteria and reduce inflammation. A soothing mask calms redness and irritation, while final products help regulate oil production and prevent future breakouts.',
+        benefits: ['Clears active breakouts', 'Unclogs pores', 'Reduces inflammation and redness', 'Controls excess oil', 'Prevents future acne', 'Fades acne scars'],
+        duration: '60-75 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Oily skin', 'Active acne', 'Clogged pores', 'Acne-prone skin']
+    },
+    {
+        name: 'Deep Cleansing Facial',
+        shortDescription: 'Thorough purifying treatment that cleanses pores, removes impurities, and refreshes congested skin.',
+        fullDescription: 'Deep cleansing facial is a fundamental skincare treatment that thoroughly purifies the skin by removing dirt, oil, makeup residue, and environmental pollutants that accumulate in pores. This essential treatment includes double cleansing, steam to open pores, gentle exfoliation to remove dead skin cells, professional extractions to clear blackheads and congestion, and a purifying mask to draw out impurities. The facial concludes with toner, serum, and moisturizer to balance and protect the skin. Ideal for all skin types, this treatment leaves skin feeling fresh, clean, and rejuvenated while preventing breakouts and maintaining skin health.',
+        benefits: ['Deeply cleanses pores', 'Removes blackheads and congestion', 'Eliminates impurities', 'Refreshes skin', 'Prevents breakouts', 'Balances oil production'],
+        duration: '60 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Congested skin', 'Blackheads', 'Oily skin', 'Urban environment'],
+    },
+    {
+        name: 'Sensitive Skin Facial',
+        shortDescription: 'Gentle, soothing treatment specially formulated for delicate, reactive, and easily irritated skin.',
+        fullDescription: 'Sensitive skin facial is a carefully designed treatment using gentle, hypoallergenic products and techniques to care for delicate, reactive skin. This calming facial avoids harsh ingredients, strong acids, and aggressive techniques that could trigger irritation. Instead, it uses mild cleansers, soothing ingredients like chamomile, aloe vera, and calendula, and cooling masks to reduce redness and inflammation. The gentle massage promotes circulation without causing stress to the skin. This nurturing treatment strengthens the skin barrier, reduces sensitivity over time, and leaves skin feeling comfortable, calm, and nourished without any irritation.',
+        benefits: ['Calms irritation and redness', 'Strengthens skin barrier', 'Reduces sensitivity', 'Gentle nourishment', 'Soothes inflammation', 'No harsh ingredients'],
+        duration: '60 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Sensitive skin', 'Reactive skin', 'Rosacea', 'Easily irritated skin']
+    },
+    {
+        name: 'Oxygen Facial',
+        shortDescription: 'Revitalizing treatment infusing pure oxygen for instant glow, plump skin, and enhanced radiance.',
+        fullDescription: 'Oxygen facial is an innovative treatment that uses pressurized oxygen to deliver vitamins, minerals, and botanical extracts deep into the skin. This infusion of pure oxygen and nourishing serums hydrates, plumps, and revitalizes the skin instantly. The treatment stimulates cellular respiration, boosts collagen production, and accelerates cell turnover while providing powerful antioxidant protection. Oxygen facials are particularly popular before special events as they create an immediate luminous glow with no downtime. The treatment is gentle yet effective for all skin types, detoxifying the skin while promoting a healthy, radiant complexion.',
+        benefits: ['Instant luminous glow', 'Deeply hydrates', 'Plumps fine lines', 'Boosts circulation', 'Detoxifies skin', 'Enhances product absorption'],
+        duration: '45-60 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Dull skin', 'Special events', 'All skin types', 'Pre-event glow']
+    },
+    {
+        name: 'Gold Facial',
+        shortDescription: 'Luxurious treatment using 24K gold particles to brighten, firm, and rejuvenate skin with opulent radiance.',
+        fullDescription: 'Gold facial is an indulgent luxury treatment incorporating 24-karat gold particles or gold-infused products for their remarkable anti-aging and skin-enhancing properties. Gold has been used in skincare for centuries due to its ability to improve blood circulation, stimulate cellular renewal, and provide antioxidant protection. This opulent facial includes gold-enriched cleansers, serums, masks, and massage techniques that help firm skin, reduce fine lines, and create a luminous, radiant glow. The treatment is anti-inflammatory, improves skin elasticity, and leaves the complexion looking healthy, bright, and rejuvenated with a golden goddess glow.',
+        benefits: ['Firms and lifts skin', 'Reduces fine lines', 'Brightens complexion', 'Improves elasticity', 'Provides antioxidant protection', 'Creates luxurious glow'],
+        duration: '75-90 minutes',
+        intensity: 'Light',
+        bestFor: ['Special occasions', 'Anti-aging', 'Dull skin', 'Luxury treatment']
+    },
+    {
+        name: 'Vitamin C Facial',
+        shortDescription: 'Powerful antioxidant treatment for brightening, protecting, and rejuvenating skin with vitamin C.',
+        fullDescription: 'Vitamin C facial is a potent antioxidant treatment utilizing high concentrations of vitamin C (ascorbic acid) to brighten, protect, and rejuvenate the skin. Vitamin C is essential for collagen synthesis, making it a powerful anti-aging ingredient. This facial neutralizes free radicals from sun exposure and pollution, fades hyperpigmentation and sun spots, evens skin tone, and boosts radiance. The treatment typically includes vitamin C-infused cleansers, exfoliants, serums, and masks, often combined with other antioxidants like vitamin E and ferulic acid for enhanced effectiveness. Regular treatments result in brighter, more even-toned, protected, and youthful-looking skin.',
+        benefits: ['Brightens skin tone', 'Fades dark spots', 'Boosts collagen production', 'Provides antioxidant protection', 'Evens complexion', 'Protects against environmental damage'],
+        duration: '60 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Dull skin', 'Sun damage', 'Uneven tone', 'Anti-aging']
+    },
+    {
+        name: 'Organic/Natural Facial',
+        shortDescription: 'Pure, eco-friendly treatment using only natural, chemical-free ingredients for gentle, effective skincare.',
+        fullDescription: 'Organic/natural facial is a wholesome treatment using only certified organic, natural, and plant-based ingredients free from synthetic chemicals, parabens, sulfates, and artificial fragrances. This eco-conscious facial harnesses the power of botanical extracts, essential oils, natural clays, and fruit enzymes to cleanse, nourish, and rejuvenate the skin. Each product is carefully selected for its purity and efficacy, providing gentle yet effective skincare suitable for all skin types, especially sensitive skin. This treatment not only benefits your skin but also supports environmental sustainability, offering a natural path to healthy, beautiful skin without harsh chemicals.',
+        benefits: ['Chemical-free skincare', 'Gentle and nourishing', 'Suitable for sensitive skin', 'Environmentally friendly', 'Rich in natural vitamins', 'No harsh ingredients'],
+        duration: '60-75 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Sensitive skin', 'Natural beauty', 'Eco-conscious', 'Chemical sensitivity']
+    },
+    {
+        name: 'Men\'s Facial',
+        shortDescription: 'Tailored facial treatment addressing men\'s specific skin concerns including oil control and shaving irritation.',
+        fullDescription: 'Men\'s facial is specifically designed to address the unique skincare needs of male skin, which tends to be thicker, oilier, and more prone to irritation from daily shaving. This targeted treatment includes deep cleansing to remove excess oil and impurities, exfoliation to prevent ingrown hairs, steam and extractions to clear congested pores, and a purifying mask. Special attention is given to the beard area and neck to soothe shaving irritation and razor burn. The facial concludes with products that control oil, minimize pores, and protect against environmental damage. This treatment helps men maintain healthy, clear, well-groomed skin.',
+        benefits: ['Deep pore cleansing', 'Controls excess oil', 'Prevents ingrown hairs', 'Soothes shaving irritation', 'Reduces breakouts', 'Refreshes and invigorates'],
+        duration: '60 minutes',
+        intensity: 'Moderate',
+        bestFor: ['Men\'s skin', 'Oily skin', 'Shaving irritation', 'Congested pores']
+    },
+    {
+        name: 'Lulur Facial',
+        shortDescription: 'Traditional Indonesian beauty treatment using turmeric and rice powder for glowing, radiant skin.',
+        fullDescription: 'Lulur facial is an authentic Indonesian beauty ritual that has been used by Javanese royalty for centuries. This traditional treatment uses a blend of finely ground rice, turmeric, sandalwood, and aromatic spices to exfoliate, brighten, and nourish the skin. The golden paste is gently massaged onto the face, providing gentle exfoliation while the turmeric\'s anti-inflammatory and brightening properties work their magic. After the paste is removed, a cooling yogurt mask soothes and hydrates the skin. This time-honored treatment leaves skin incredibly smooth, bright, and glowing with a healthy radiance, embodying Indonesia\'s rich wellness heritage.',
+        benefits: ['Natural skin brightening', 'Gentle exfoliation', 'Anti-inflammatory benefits', 'Improves skin tone', 'Traditional healing', 'Creates golden glow'],
+        duration: '60-75 minutes',
+        intensity: 'Gentle',
+        bestFor: ['All skin types', 'Dull skin', 'Cultural experience', 'Natural beauty']
+    },
+    {
+        name: 'Javanese Facial',
+        shortDescription: 'Ancient Indonesian beauty ritual combining traditional herbs, massage, and healing techniques for holistic skin wellness.',
+        fullDescription: 'Javanese facial is an ancient Indonesian healing and beauty treatment that combines herbal remedies, gentle massage, and spiritual wellness practices. This holistic facial uses traditional Indonesian medicinal herbs, flowers, and spices known for their healing and beautifying properties. The treatment includes cleansing with natural ingredients, gentle facial massage using techniques passed down through generations, application of herbal masks made from freshly ground ingredients, and aromatherapy with Indonesian essential oils. This deeply relaxing and culturally rich treatment not only improves skin health but also promotes inner peace and spiritual balance, offering a complete mind-body-skin experience.',
+        benefits: ['Holistic skin wellness', 'Natural herbal healing', 'Promotes relaxation', 'Improves circulation', 'Cultural authenticity', 'Balances mind and body'],
+        duration: '75-90 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Holistic wellness', 'Stress relief', 'Cultural experience', 'Sensitive skin']
+    },
+    {
+        name: 'Herbal Facial',
+        shortDescription: 'Natural healing treatment using medicinal herbs and botanical extracts for rejuvenation and skin health.',
+        fullDescription: 'Herbal facial is a therapeutic treatment harnessing the healing power of medicinal herbs, plants, and botanical extracts. This natural approach to skincare uses fresh or dried herbs specifically selected for their individual skin benefits - chamomile for soothing, lavender for calming, green tea for antioxidants, rosemary for stimulation, and many others. The treatment includes herbal steam to open pores and allow botanical essences to penetrate deeply, application of herbal-infused products, and fresh herbal masks tailored to your skin\'s needs. This gentle yet effective treatment provides vitamin-rich nourishment, healing properties, and aromatic therapy for complete skin wellness.',
+        benefits: ['Natural healing properties', 'Rich in antioxidants', 'Soothes and calms', 'Addresses specific concerns', 'Aromatherapy benefits', 'Chemical-free treatment'],
+        duration: '60-75 minutes',
+        intensity: 'Gentle',
+        bestFor: ['Natural skincare', 'Sensitive skin', 'Stressed skin', 'Holistic health']
+    }
+];
+
+// Helper function to get detailed information for a facial type
+export const getFacialTypeDetails = (facialType: string): FacialTypeInfo | undefined => {
+    return FACIAL_TYPE_DETAILS.find(
+        f => f.name.toLowerCase() === facialType.toLowerCase()
     );
 };
 
@@ -305,6 +534,26 @@ export const MASSAGE_TYPES_WITH_IMAGES: MassageTypeWithImage[] = [
     { 
         name: 'Vitality Massage', 
         imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20image%206.png?updatedAt=1760187126997'
+    },
+    { 
+        name: 'Feet', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/foot%20massage.png?updatedAt=1767211778688'
+    },
+    { 
+        name: 'Hands', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/hand%20massage.png?updatedAt=1767211549476'
+    },
+    { 
+        name: 'Facial', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/facial%202.png?updatedAt=1766551253328'
+    },
+    { 
+        name: 'Traditional', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/massage%20deep%20tissue%20indoniseas.png?updatedAt=1762579867409'
+    },
+    { 
+        name: 'Body Scrub', 
+        imageUrl: 'https://ik.imagekit.io/7grri5v7d/body%20scrube.png'
     }
 ];
 

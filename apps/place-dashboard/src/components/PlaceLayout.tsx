@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  Menu, 
-  X, 
+import {
+  Menu,
+  X,
   Home,
   Calendar,
-  BarChart3,
+  BarChart,
   CreditCard,
   MessageCircle,
   Bell,
@@ -31,7 +31,7 @@ const PlaceLayout: React.FC<PlaceLayoutProps> = ({ children, activePage, onNavig
     { id: 'bookings', name: 'Bookings', icon: Calendar, color: 'text-purple-600' },
     { id: 'earnings', name: 'Earnings', icon: DollarSign, color: 'text-orange-600' },
     { id: 'payment-history', name: 'Payment History', icon: CreditCard, color: 'text-indigo-600' },
-    { id: 'analytics', name: 'Analytics', icon: BarChart3, color: 'text-cyan-600' },
+    { id: 'analytics', name: 'Analytics', icon: BarChart, color: 'text-cyan-600' },
     { id: 'menu-pricing', name: 'Menu & Pricing', icon: Menu, color: 'text-pink-600' },
     { id: 'chat', name: 'Messages', icon: MessageCircle, color: 'text-teal-600' },
     { id: 'notifications', name: 'Notifications', icon: Bell, color: 'text-yellow-600' },

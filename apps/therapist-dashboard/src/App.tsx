@@ -404,20 +404,6 @@ function App() {
     }
   };
   
-  const handleOpenBookingDetails = (bookingId: string) => {
-    console.log('👁️ Opening booking details:', bookingId);
-    setCurrentPage('bookings');
-    // You could add a selectedBookingId state to highlight the specific booking
-  };
-  
-  const handleViewBooking = (bookingId: string) => {
-    handleOpenBookingDetails(bookingId);
-  };
-  
-  const handleNavigateToBookings = () => {
-    setCurrentPage('bookings');
-  };
-
   const handleLogout = async () => {
     try {
       // 🛑 STOP SYSTEM HEALTH MONITORING
@@ -443,43 +429,6 @@ function App() {
     }
   };
 
-  // Booking notification handlers
-  const handleNewBookingAlert = (booking: any) => {
-    console.log('🔔 Processing new booking alert:', booking);
-    
-    // Show PWA notification with multi-layer alerts
-    PWANotificationManager.showBookingNotification({
-      id: booking.id || booking.$id,
-      customerName: booking.customerName || booking.userName,
-      serviceType: booking.serviceType || booking.service,
-      duration: booking.duration,
-      location: booking.location,
-      date: booking.date || new Date(booking.startTime).toLocaleDateString(),
-      time: booking.time || new Date(booking.startTime).toLocaleTimeString(),
-      status: booking.status,
-      therapistId: user?.$id
-    });
-  };
-  
-  const handleAcceptBooking = async (bookingId: string) => {
-    try {
-      console.log('✅ Accepting booking:', bookingId);
-      
-      // Here you would call your booking service to accept the booking
-      // await bookingService.acceptBooking(bookingId, user.$id);
-      
-      // For now, just navigate to bookings page
-      setCurrentPage('bookings');
-      
-      // Show success message
-      alert('Booking accepted successfully!');
-      
-    } catch (error) {
-      console.error('❌ Failed to accept booking:', error);
-      alert('Failed to accept booking. Please try again.');
-    }
-  };
-  
   const handleOpenBookingDetails = (bookingId: string) => {
     console.log('👁️ Opening booking details:', bookingId);
     setCurrentPage('bookings');
@@ -509,7 +458,10 @@ function App() {
   // Auth check complete - NOW safe to check authentication status
   if (!isAuthenticated) {
     // Redirect to auth app for unified sign in/create account flow
-    const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+    const authUrl = window.location.origin.includes('localhost') 
+      ? 'http://localhost:3001' 
+      : window.location.origin; // Production: same origin, will redirect to /signin
+    
     window.location.href = `${authUrl}/signin`;
     return (
       <div className="flex items-center justify-center min-h-screen">

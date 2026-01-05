@@ -66,7 +66,7 @@ Built a comprehensive therapist dashboard with **tiered membership system** (Fre
 **Free Features:**
 - ✅ Stats cards: Your Earnings, Due to Admin, Paid, This Month
 - ✅ Payment history list with all transactions
-- ✅ Commission breakdown (15% to admin, 85% to therapist)
+- ✅ Commission breakdown (30% to admin, 70% to therapist)
 - ✅ Payment schedule information banner
 - ✅ Status tracking (Pending, Processing, Paid)
 - ✅ Detailed payment cards with booking ID, customer name, amounts
@@ -188,8 +188,8 @@ Built a comprehensive therapist dashboard with **tiered membership system** (Fre
   bookingId: string,
   customerName: string,
   amount: number, // Total booking amount
-  adminCommission: number, // 15% of amount
-  netEarning: number, // 85% of amount
+  adminCommission: number, // 30% of amount
+  netEarning: number, // 70% of amount
   status: 'pending' | 'processing' | 'paid',
   date: string,
   paymentMethod: 'bank_transfer' | 'cash' | 'mobile_payment',
@@ -307,9 +307,10 @@ All pages are mobile-optimized:
 ## 💡 Business Logic
 
 ### Commission Structure:
-- **Admin Commission:** 15% of booking amount
-- **Therapist Earning:** 85% of booking amount
-- **Premium Membership:** 200k IDR/month (paid to admin)
+- **Admin Commission:** 30% of ALL booking amounts (Book Now and Scheduled)
+- **Therapist Earning:** 70% of booking amount
+- **No Premium Tiers:** Single 30% commission rate applies to all therapists
+- **Privacy Policy:** Customer WhatsApp numbers are NEVER shared with therapists (admin only)
 
 ### Status Behavior:
 - **Available:** Profile visible in search, bookings enabled

@@ -104,8 +104,14 @@ export const useNavigation = ({
         setPage('simpleSignup');
     }, [setPage]);
     
-    const handleNavigateToServiceTerms = useCallback(() => setPage('serviceTerms'), [setPage]);
-    const handleNavigateToPrivacyPolicy = useCallback(() => setPage('privacy'), [setPage]);
+    const handleNavigateToServiceTerms = useCallback(() => {
+        console.log('📜 Terms navigation triggered');
+        setPage('serviceTerms');
+    }, [setPage]);
+    const handleNavigateToPrivacyPolicy = useCallback(() => {
+        console.log('🔒 Privacy navigation triggered');
+        setPage('privacy');
+    }, [setPage]);
     const handleNavigateToNotifications = useCallback(() => setPage('notifications'), [setPage]);
     
     // Portal handlers - for LOGIN (existing users)

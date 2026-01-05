@@ -6,6 +6,7 @@
 import { databases, storage, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
 import { validateBookingCreation, logAuthViolation } from '../../guards/bookingAuthGuards';
+import { commissionTrackingService } from '../../services/commissionTrackingService';
 
 // Import services with proper fallbacks
 let notificationService: any;
@@ -287,29 +288,6 @@ export const bookingService = {
                 update.providerResponseStatus = 'Confirmed';
             } else if (status === 'Completed') {
                 update.completedAt = nowIso;
-                
-                // 🔒 CRITICAL: Create commission record for PRO therapists
-                if (response.providerType === 'therapist') {
-                    console.log('💰 Creating commission record for completed booking');
-                    try {
-                        const { commissionTrackingService } = await import('../../services/commissionTrackingService');
-                        
-                        await commissionTrackingService.createCommissionRecord(
-                            response.providerId,
-                            response.providerName,
-                            bookingId,
-                            nowIso, // bookingDate = completion time
-                            undefined, // no scheduled date for immediate
-                            response.totalCost || 0
-                        );
-                        
-                        console.log('✅ Commission record created successfully');
-                    } catch (commissionError) {
-                        console.error('❌ CRITICAL: Failed to create commission record:', commissionError);
-                        // Don't throw - booking completion shouldn't fail if commission creation fails
-                        // But log this as critical for manual review
-                    }
-                }
             } else if (status === 'Cancelled') {
                 update.cancelledAt = nowIso;
                 update.providerResponseStatus = 'Declined';
@@ -322,6 +300,25 @@ export const bookingService = {
                 update
             );
             console.log(`✅ Booking ${bookingId} status updated to ${status}`);
+
+            if (status === 'Completed' && response.providerType === 'therapist') {
+                console.log('💰 Creating commission record for completed booking');
+                try {
+                    await commissionTrackingService.createCommissionRecord(
+                        response.providerId,
+                        response.providerName,
+                        bookingId,
+                        nowIso, // bookingDate = completion time
+                        undefined, // no scheduled date for immediate
+                        response.totalCost || 0
+                    );
+                    console.log('✅ Commission record created successfully');
+                } catch (commissionError) {
+                    console.error('❌ CRITICAL: Failed to create commission record:', commissionError);
+                    // Don't throw - booking completion shouldn't fail if commission creation fails
+                    // But log this as critical for manual review
+                }
+            }
 
             // Fire analytics only on Confirmed and Completed
             if (status === 'Confirmed' || status === 'Completed') {

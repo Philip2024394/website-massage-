@@ -27,6 +27,9 @@ export const homeTranslations = {
       updateLocation: 'Update',
       locationError: 'Could not get location. Please enable permissions and try again.',
       gettingLocation: 'Getting location...',
+      browseRegionNote: 'Browse Region dropdown (distance still applies)',
+      viewProfile: 'View Profile',
+      viewOnly: 'View Only',
       therapistCard: {
         orderNow: 'Estimated Arrival',
         schedule: 'Schedule',
@@ -237,6 +240,9 @@ export const homeTranslations = {
       updateLocation: 'Perbarui',
       locationError: 'Tidak dapat mendapatkan lokasi. Silakan aktifkan izin dan coba lagi.',
       gettingLocation: 'Mendapatkan lokasi...',
+      browseRegionNote: 'Jelajahi wilayah (jarak tetap berlaku)',
+      viewProfile: 'Lihat Profil',
+      viewOnly: 'Lihat Saja',
       therapistCard: {
         orderNow: 'Pesan Sekarang',
         schedule: 'Jadwalkan',

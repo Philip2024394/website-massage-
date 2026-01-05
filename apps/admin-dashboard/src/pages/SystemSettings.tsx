@@ -5,6 +5,7 @@ import {
     AlertCircle, CheckCircle, Shield, DollarSign, Percent, Clock,
     Globe, Mail, Bell, Lock, Eye, EyeOff, Copy, Check, Trash2
 } from 'lucide-react';
+import { auditLoggingService, type AuditLogEntry } from '../../../../lib/appwrite/services/auditLogging.service';
 
 interface SystemConfig {
     // Commission & Fees
@@ -61,7 +62,7 @@ interface SystemSettingsProps {
 
 const SystemSettings: React.FC<SystemSettingsProps> = ({ onBack }) => {
     const [config, setConfig] = useState<SystemConfig>({
-        commissionRate: 15,
+        commissionRate: 30, // 30% standard commission for all bookings
         serviceFee: 5,
         minimumBookingAmount: 50000,
         cancellationFee: 25,
@@ -97,16 +98,24 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onBack }) => {
 
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'general' | 'api' | 'features' | 'backup'>('general');
+    const [activeTab, setActiveTab] = useState<'general' | 'api' | 'features' | 'backup' | 'compliance'>('general');
     const [showApiKeys, setShowApiKeys] = useState<{[key: string]: boolean}>({});
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [backupInProgress, setBackupInProgress] = useState(false);
     const [restoreInProgress, setRestoreInProgress] = useState(false);
     const [newAdminEmail, setNewAdminEmail] = useState('');
+    const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+    const [logsLoading, setLogsLoading] = useState(false);
 
     useEffect(() => {
         loadSettings();
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'compliance') {
+            fetchAuditLogs();
+        }
+    }, [activeTab]);
 
     const loadSettings = async () => {
         try {
@@ -118,6 +127,18 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onBack }) => {
             console.error('Error loading settings:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAuditLogs = async () => {
+        try {
+            setLogsLoading(true);
+            const logs = await auditLoggingService.getRecentLogs(40);
+            setAuditLogs(logs);
+        } catch (error) {
+            console.error('Error loading compliance logs:', error);
+        } finally {
+            setLogsLoading(false);
         }
     };
 
@@ -315,6 +336,17 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onBack }) => {
                     >
                         <Shield className="w-5 h-5 inline mr-2" />
                         Feature Toggles
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('compliance')}
+                        className={`flex-1 px-6 py-4 font-medium transition-colors ${
+                            activeTab === 'compliance'
+                                ? 'text-orange-600 border-b-2 border-orange-600'
+                                : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
+                        <AlertCircle className="w-5 h-5 inline mr-2" />
+                        Compliance Logs
                     </button>
                     <button
                         onClick={() => setActiveTab('backup')}
@@ -866,6 +898,64 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({ onBack }) => {
                             {restoreInProgress ? 'Restoring...' : 'Restore from File'}
                         </label>
                     </div>
+                </div>
+            )}
+
+            {activeTab === 'compliance' && (
+                <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-900">Compliance Logs</h2>
+                            <p className="text-sm text-gray-600">
+                                Review every blocked attempt to share contact data from customer or therapist chats.
+                            </p>
+                        </div>
+                        <button
+                            onClick={fetchAuditLogs}
+                            disabled={logsLoading}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-700 rounded-lg text-xs font-semibold hover:bg-orange-200 disabled:opacity-60"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                            {logsLoading ? 'Refreshing…' : 'Refresh logs'}
+                        </button>
+                    </div>
+
+                    {logsLoading ? (
+                        <p className="text-sm text-gray-500">Loading compliance logs…</p>
+                    ) : auditLogs.length === 0 ? (
+                        <p className="text-sm text-gray-500">No blocked attempts recorded yet.</p>
+                    ) : (
+                        <div className="space-y-3">
+                            {auditLogs.map((log) => (
+                                <div
+                                    key={log.$id ?? `${log.context}-${log.createdAt}-${log.userId}`}
+                                    className="border border-gray-200 rounded-xl p-4 shadow-sm space-y-1"
+                                >
+                                    <div className="flex justify-between items-center text-[11px] uppercase text-gray-500">
+                                        <span className="font-semibold text-gray-700">
+                                            {log.detectedType?.toUpperCase() ?? 'PII'} blocked
+                                        </span>
+                                        <span>{new Date(log.createdAt).toLocaleString('en-US')}</span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-gray-900">
+                                        <span>{log.role}</span>
+                                        <span className="text-xs text-gray-500">Booking: {log.bookingId || 'N/A'}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">Context: {log.context}</div>
+                                    {log.reason && <div className="text-sm text-gray-700">{log.reason}</div>}
+                                    {log.excerpt && (
+                                        <div className="text-xs text-gray-500">Excerpt: {log.excerpt}</div>
+                                    )}
+                                    <details className="text-xs text-gray-600">
+                                        <summary className="font-semibold text-orange-600 cursor-pointer">
+                                            View original content
+                                        </summary>
+                                        <p className="mt-1 whitespace-pre-wrap break-words">{log.fullContent}</p>
+                                    </details>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
         </div>

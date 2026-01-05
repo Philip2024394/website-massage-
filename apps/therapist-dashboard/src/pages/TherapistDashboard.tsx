@@ -28,7 +28,6 @@ interface TherapistPortalPageProps {
   onNavigateToPayment?: () => void;
   onNavigateToPaymentStatus?: () => void;
   onNavigateToCommission?: () => void;
-  onNavigateToPremium?: () => void;
   onNavigateToSchedule?: () => void;
   onNavigateToMenu?: () => void;
   onLogout?: () => void;
@@ -44,7 +43,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   onNavigateToPayment,
   onNavigateToPaymentStatus,
   onNavigateToCommission,
-  onNavigateToPremium,
   onNavigateToSchedule,
   onNavigateToChat,
   onNavigateToMembership,
@@ -768,67 +766,84 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   // Navigation handler for TherapistLayout menu
   const handleNavigate = (pageId: string) => {
-    console.log('🔄 TherapistDashboard handleNavigate called with:', pageId);
-    console.log('🔄 Available navigation handlers:', {
+    console.log('[NAV CLICK] TherapistDashboard \u2192', pageId);
+    console.log('[NAV CLICK] Available handlers:', {
       onNavigateToMenu: !!onNavigateToMenu,
       onNavigateToStatus: !!onNavigateToStatus,
       onNavigateToBookings: !!onNavigateToBookings,
-      onNavigateToChat: !!onNavigateToChat
+      onNavigateToChat: !!onNavigateToChat,
+      onNavigateToSchedule: !!onNavigateToSchedule,
+      onNavigateToEarnings: !!onNavigateToEarnings,
+      onNavigateToPayment: !!onNavigateToPayment,
+      onNavigateToPaymentStatus: !!onNavigateToPaymentStatus,
+      onNavigateToCommission: !!onNavigateToCommission,
+      onNavigateToNotifications: !!onNavigateToNotifications,
+      onNavigateToCalendar: !!onNavigateToCalendar,
+      onNavigateToLegal: !!onNavigateToLegal
     });
     switch (pageId) {
       case 'status':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToStatus()');
         onNavigateToStatus?.();
         break;
       case 'schedule':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToSchedule()');
         onNavigateToSchedule?.();
         break;
       case 'dashboard':
+        console.log('[NAV CLICK] \u2192 Already on dashboard');
         // Already on dashboard, do nothing or refresh
         break;
       case 'bookings':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToBookings()');
         onNavigateToBookings?.();
         break;
       case 'earnings':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToEarnings()');
         onNavigateToEarnings?.();
         break;
       case 'payment':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToPayment()');
         onNavigateToPayment?.();
         break;
       case 'payment-status':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToPaymentStatus()');
         onNavigateToPaymentStatus?.();
         break;
       case 'commission-payment':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToCommission()');
         onNavigateToCommission?.();
         break;
-      case 'premium-upgrade':
-        onNavigateToPremium?.();
-        break;
       case 'custom-menu':
-        console.log('🍽️ Navigating to custom-menu, onNavigateToMenu available:', !!onNavigateToMenu);
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToMenu()');
         if (onNavigateToMenu) {
-          console.log('✅ Calling onNavigateToMenu()');
           onNavigateToMenu();
         } else {
-          console.error('❌ onNavigateToMenu handler is undefined!');
+          console.error('[NAV CLICK] \u274c onNavigateToMenu handler is undefined!');
         }
         break;
       case 'chat':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToChat()');
         onNavigateToChat?.();
         break;
       case 'notifications':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToNotifications()');
         onNavigateToNotifications?.();
         break;
       case 'calendar':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToCalendar()');
         onNavigateToCalendar?.();
         break;
       case 'legal':
+        console.log('[NAV CLICK] \u2192 Calling onNavigateToLegal()');
         onNavigateToLegal?.();
         break;
       case 'logout':
+        console.log('[NAV CLICK] \u2192 Calling onLogout()');
         onLogout?.();
         break;
       default:
-        console.warn('Unknown navigation:', pageId);
+        console.warn('[NAV CLICK] \u26a0\ufe0f Unknown navigation:', pageId);
     }
   };
 
@@ -1342,7 +1357,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 </div>
                 <ul className="text-sm text-gray-700 space-y-1">
                   <li>✅ 0% commission on all bookings</li>
-                  <li>✅ Premium profile badge</li>
+                  <li>✅ Verified profile badge</li>
                   <li>✅ Priority placement in search</li>
                   <li>✅ Advanced booking features</li>
                 </ul>

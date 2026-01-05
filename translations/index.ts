@@ -491,28 +491,28 @@ translations.en.notificationsPage = {
   markAllRead: 'Mark All as Read',
 };
 translations.en.serviceTerms = {
-  title: 'Service Policy',
-  effectiveDate: 'Effective Date: January 1, 2025 | Last Updated: October 25, 2025',
-  intro: 'Welcome to IndoStreet Massage Platform. These Terms and Conditions ("Terms") constitute a legally binding agreement between you ("User", "You", or "Your") and IndoStreet Massage ("IndoStreet", "We", "Us", or "Our"). By accessing or using our platform, website, mobile application, or any services provided by IndoStreet, you acknowledge that you have read, understood, and agree to be bound by these Terms in their entirety. If you do not agree to these Terms, you must immediately cease all use of our platform and services.',
+  title: 'Terms of Service',
+  effectiveDate: 'Effective Date: January 5, 2026 | Last Updated: January 5, 2026',
+  intro: 'Welcome to IndaStreet ("indastreet.id", "indastreetmassage.com", and other platforms operated by IndaStreet). These Terms of Service ("Terms") constitute a legally binding agreement between you ("User", "You", or "Your") and IndaStreet ("We", "Us", or "Our"). By accessing or using any of our platforms, websites, mobile applications, or services, you acknowledge that you have read, understood, and agree to be bound by these Terms in their entirety. If you do not agree to these Terms, you must immediately cease all use of our platforms and services.',
   acceptance: {
     title: '1. Acceptance of Terms',
-    content: 'By creating an account, browsing our platform, or engaging with any service provider listed on IndoStreet, you expressly agree to comply with and be legally bound by these Terms and Conditions, our Privacy Policy, and all applicable laws and regulations of the Republic of Indonesia. Your continued use of the platform constitutes ongoing acceptance of any modifications or updates to these Terms. We reserve the right to update, modify, or replace any part of these Terms at our sole discretion without prior notice. It is your responsibility to review these Terms periodically for changes.'
+    content: 'By creating an account, browsing any of our platforms (indastreet.id, indastreetmassage.com, or other sites), or engaging with any service provider listed on our network, you expressly agree to comply with and be legally bound by these Terms of Service, our Privacy Policy, and all applicable laws and regulations of the Republic of Indonesia. Your continued use of any platform constitutes ongoing acceptance of any modifications or updates to these Terms. We reserve the right to update, modify, or replace any part of these Terms at our sole discretion without prior notice. It is your responsibility to review these Terms periodically for changes.'
   },
   platformNature: {
     title: '2. Nature of Platform and Services',
-    content: 'IndoStreet operates exclusively as an online directory and connection platform. We provide a technological interface that allows users to discover and connect with independent massage therapists and massage establishments ("Service Providers"). IndoStreet does not employ, contract with, supervise, direct, or control any Service Providers listed on our platform. All Service Providers are independent contractors or independent business entities operating under their own business licenses and legal authority. IndoStreet does not provide massage services, wellness services, or any therapeutic services directly. We are solely a technology platform facilitating connections between users and independent service providers.'
+    content: 'IndaStreet operates indastreet.id as our primary platform along with sister websites including indastreetmassage.com and other sites currently in development. We provide an online directory and connection platform that allows users to discover and connect with independent massage therapists and massage establishments ("Service Providers"). IndaStreet does not employ, contract with, supervise, direct, or control any Service Providers listed on any of our platforms. All Service Providers are independent contractors or independent business entities operating under their own business licenses and legal authority. IndaStreet does not provide massage services, wellness services, or any therapeutic services directly. We are solely a technology platform facilitating connections between users and independent service providers across our network of websites.'
   },
   governingLaw: {
     title: '3. Governing Law and Jurisdiction',
-    content: 'These Terms and Conditions, and all transactions, operations, services, and activities conducted through or facilitated by the IndoStreet platform, are governed exclusively by and construed in accordance with the laws of the Republic of Indonesia. All business operations, commercial transactions, service agreements, and disputes arising from or related to the use of IndoStreet shall be subject to Indonesian trade laws, commercial regulations, consumer protection laws, and business policies as enacted and enforced by the Government of the Republic of Indonesia. Any legal proceedings, disputes, or claims arising from these Terms must be filed exclusively in the courts of Jakarta, Indonesia, and you hereby consent to the exclusive jurisdiction and venue of such courts. By using our platform, you acknowledge and agree that Indonesian law shall apply to all aspects of your use of our services, regardless of your physical location or residence.'
+    content: 'These Terms of Service apply to all IndaStreet platforms including indastreet.id and sister sites. All transactions, operations, services, and activities conducted through or facilitated by any IndaStreet platform are governed exclusively by and construed in accordance with the laws of the Republic of Indonesia. Any legal proceedings, disputes, or claims arising from these Terms must be filed exclusively in the courts of Jakarta, Indonesia, and you hereby consent to the exclusive jurisdiction and venue of such courts. By using our platforms, you acknowledge and agree that Indonesian law shall apply to all aspects of your use of our services, regardless of your physical location or residence.'
   },
   userRights: {
     title: '4. User Account Management and Platform Access Rights',
-    content: 'IndoStreet reserves the absolute and unconditional right to suspend, terminate, deactivate, or permanently ban any user account at any time, for any reason or no reason whatsoever, without prior notice, without explanation, and without liability to the user or any third party. This right includes, but is not limited to, situations where we suspect or determine (in our sole discretion) that a user has violated these Terms, engaged in fraudulent activity, abused the platform, harassed service providers or other users, provided false information, engaged in illegal activities, or for any other reason we deem appropriate for the protection of our platform, our business interests, other users, or service providers. IndoStreet is under no obligation to provide reasons for account suspension or termination. Users whose accounts have been terminated are prohibited from creating new accounts without our express written permission. We reserve the right to refuse service to anyone for any reason at any time. All decisions regarding account status are final and not subject to appeal.'
+    content: 'IndaStreet reserves the absolute and unconditional right to suspend, terminate, deactivate, or permanently ban any user account across all our platforms (indastreet.id, indastreetmassage.com, and other sites) at any time, for any reason or no reason whatsoever, without prior notice, without explanation, and without liability to the user or any third party. This right includes situations where we suspect or determine that a user has violated these Terms, engaged in fraudulent activity, abused any platform, harassed service providers or other users, provided false information, engaged in illegal activities, or for any other reason we deem appropriate. Account termination applies across all IndaStreet platforms. Users whose accounts have been terminated are prohibited from creating new accounts on any of our platforms without our express written permission. We reserve the right to refuse service to anyone for any reason at any time. All decisions regarding account status are final and not subject to appeal.'
   },
   confidentiality: {
     title: '5. Confidentiality and Data Privacy',
-    content: 'All information, personal data, correspondence, and materials submitted by users to IndoStreet, including but not limited to registration information, profile data, communications, payment information, usage data, and any other information provided through our platform, shall be treated as confidential and proprietary information shared exclusively between the user and IndoStreet management. This information will be collected, stored, processed, and used in accordance with our Privacy Policy and Indonesian data protection regulations. IndoStreet implements reasonable security measures to protect user information; however, no method of transmission or electronic storage is 100% secure. By using our platform, you acknowledge the inherent risks of providing information online. IndoStreet will not sell, rent, or share your personal information with third parties except as outlined in our Privacy Policy or as required by Indonesian law. We may use aggregated, anonymized data for business analytics and platform improvement purposes. You grant IndoStreet a perpetual, irrevocable, worldwide license to use any feedback, suggestions, or ideas you provide regarding our platform without compensation or attribution.'
+    content: 'All information, personal data, correspondence, and materials submitted by users to any IndaStreet platform shall be treated as confidential and proprietary information. This information will be collected, stored, processed, and used in accordance with our Privacy Policy and Indonesian data protection regulations across all our platforms. Data may be shared between our platforms (indastreet.id, indastreetmassage.com, and other sites) to provide seamless service. IndaStreet implements reasonable security measures to protect user information; however, no method of transmission or electronic storage is 100% secure. By using our platforms, you acknowledge the inherent risks of providing information online. We will not sell, rent, or share your personal information with third parties except as outlined in our Privacy Policy or as required by Indonesian law. You grant IndaStreet a perpetual, irrevocable, worldwide license to use any feedback, suggestions, or ideas you provide regarding any of our platforms without compensation or attribution.'
   },
   therapistRightsTitle: '6. Service Provider Rights and Safety',
   therapistRightsContent: 'All services facilitated through IndoStreet are strictly for professional, legitimate massage therapy and wellness services only. Service Providers, as independent contractors, retain the absolute right to refuse service, decline appointments, or terminate any session at any time if they feel uncomfortable, unsafe, threatened, or if they determine that the client is under the influence of alcohol or controlled substances, if there is an unauthorized person present in the service location, if the client makes inappropriate requests or displays inappropriate behavior, or for any other reason the Service Provider deems appropriate. IndoStreet fully supports Service Providers in exercising their professional judgment and personal safety rights. Users who demonstrate disrespectful, threatening, or inappropriate behavior toward Service Providers will have their accounts immediately terminated and may be reported to local law enforcement authorities. The safety and professional integrity of Service Providers are paramount priorities.',
@@ -549,7 +549,7 @@ translations.en.serviceTerms = {
     content: 'All content, features, functionality, designs, logos, trademarks, service marks, graphics, photographs, text, software, and all other materials available on the IndoStreet platform ("Platform Content") are owned by IndoStreet Massage, our licensors, or other content providers and are protected by Indonesian and international copyright, trademark, patent, trade secret, and other intellectual property laws. The IndoStreet name, logo, and all related names, logos, product and service names, designs, images, and slogans are trademarks of IndoStreet or our affiliates. You may not use these marks without our prior written permission. All rights not expressly granted to you in these Terms are reserved by IndoStreet. Unauthorized use of Platform Content may violate copyright, trademark, and other laws and may subject you to civil and criminal penalties.'
   },
   disclaimerTitle: '14. Comprehensive Disclaimer of Warranties and Liabilities',
-  disclaimerContent: 'INDOSTREET MASSAGE IS A DIRECTORY AND CONNECTION PLATFORM ONLY. WE DO NOT EMPLOY, SUPERVISE, DIRECT, CONTROL, VERIFY, VET, BACKGROUND CHECK, CERTIFY, OR GUARANTEE ANY SERVICE PROVIDERS LISTED ON OUR PLATFORM. ALL SERVICE PROVIDERS ARE INDEPENDENT CONTRACTORS OPERATING THEIR OWN BUSINESSES. WE MAKE NO REPRESENTATIONS, WARRANTIES, OR GUARANTEES REGARDING THE QUALIFICATIONS, SKILLS, LICENSING, INSURANCE, BACKGROUND, CONDUCT, SAFETY, RELIABILITY, QUALITY, OR LEGALITY OF ANY SERVICE PROVIDER. YOU ENGAGE WITH SERVICE PROVIDERS ENTIRELY AT YOUR OWN RISK AND DISCRETION. INDOSTREET IS NOT RESPONSIBLE AND SHALL NOT BE LIABLE FOR ANY ACTIONS, CONDUCT, OMISSIONS, SERVICES, QUALITY OF SERVICES, SAFETY ISSUES, INJURIES, DAMAGES, LOSSES, DISPUTES, CLAIMS, OR ANY OTHER MATTERS ARISING FROM OR RELATED TO YOUR INTERACTIONS WITH, SERVICES RECEIVED FROM, OR CONDUCT OF ANY SERVICE PROVIDER. BY USING OUR PLATFORM, YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT INDOSTREET PROVIDES THE PLATFORM "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR ANY WARRANTIES ARISING FROM COURSE OF DEALING OR USAGE OF TRADE.',
+  disclaimerContent: 'INDASTREET (OPERATING INDASTREET.ID, INDASTREETMASSAGE.COM, AND OTHER PLATFORMS) IS A DIRECTORY AND CONNECTION PLATFORM ONLY. WE DO NOT EMPLOY, SUPERVISE, DIRECT, CONTROL, VERIFY, VET, BACKGROUND CHECK, CERTIFY, OR GUARANTEE ANY SERVICE PROVIDERS LISTED ON ANY OF OUR PLATFORMS. ALL SERVICE PROVIDERS ARE INDEPENDENT CONTRACTORS OPERATING THEIR OWN BUSINESSES. WE MAKE NO REPRESENTATIONS, WARRANTIES, OR GUARANTEES REGARDING THE QUALIFICATIONS, SKILLS, LICENSING, INSURANCE, BACKGROUND, CONDUCT, SAFETY, RELIABILITY, QUALITY, OR LEGALITY OF ANY SERVICE PROVIDER. YOU ENGAGE WITH SERVICE PROVIDERS ENTIRELY AT YOUR OWN RISK AND DISCRETION. INDASTREET IS NOT RESPONSIBLE AND SHALL NOT BE LIABLE FOR ANY ACTIONS, CONDUCT, OMISSIONS, SERVICES, QUALITY OF SERVICES, SAFETY ISSUES, INJURIES, DAMAGES, LOSSES, DISPUTES, CLAIMS, OR ANY OTHER MATTERS ARISING FROM OR RELATED TO YOUR INTERACTIONS WITH, SERVICES RECEIVED FROM, OR CONDUCT OF ANY SERVICE PROVIDER FOUND THROUGH ANY OF OUR PLATFORMS. BY USING ANY INDASTREET PLATFORM, YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT WE PROVIDE THE PLATFORMS "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND.',
   limitationOfLiability: {
     title: '15. Limitation of Liability and Damages',
     content: 'TO THE MAXIMUM EXTENT PERMITTED BY INDONESIAN LAW, INDOSTREET, ITS PARENT COMPANIES, SUBSIDIARIES, AFFILIATES, OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, PARTNERS, LICENSORS, AND SERVICE PROVIDERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES, INCLUDING BUT NOT LIMITED TO DAMAGES FOR LOSS OF PROFITS, GOODWILL, USE, DATA, OR OTHER INTANGIBLE LOSSES, ARISING FROM OR RELATED TO YOUR USE OR INABILITY TO USE THE PLATFORM OR SERVICES, UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR TRANSMISSIONS OR DATA, STATEMENTS OR CONDUCT OF ANY SERVICE PROVIDER OR THIRD PARTY ON THE PLATFORM, ANY SERVICES RECEIVED THROUGH THE PLATFORM, OR ANY OTHER MATTER RELATING TO THE PLATFORM OR SERVICES, WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE), OR ANY OTHER LEGAL THEORY, EVEN IF INDOSTREET HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. IN NO EVENT SHALL INDOSTREET\'S TOTAL LIABILITY TO YOU FOR ALL DAMAGES, LOSSES, AND CAUSES OF ACTION EXCEED THE AMOUNT PAID BY YOU TO INDOSTREET IN THE SIX (6) MONTHS PRECEDING THE CLAIM, OR IDR 100,000 (ONE HUNDRED THOUSAND INDONESIAN RUPIAH), WHICHEVER IS LESS.'
@@ -576,56 +576,58 @@ translations.en.serviceTerms = {
   },
   contactInformation: {
     title: '21. Contact Information and Customer Support',
-    content: 'If you have any questions, concerns, complaints, or inquiries regarding these Terms and Conditions, our services, your account, billing matters, technical support, or any other issues related to the IndoStreet platform, please contact our customer service team through the official customer service channels provided within the application. We strive to respond to all legitimate inquiries within 48-72 business hours. For urgent safety concerns or to report violations of these Terms, please use our priority reporting system available through the app.'
+    content: 'If you have any questions, concerns, complaints, or inquiries regarding these Terms of Service, our services across any platform (indastreet.id, indastreetmassage.com, or other sites), your account, billing matters, technical support, or any other issues, please contact our customer service team at: Email: indastreet.id@gmail.com | WhatsApp: +62 XXX-XXXX-XXXX | Address: Jakarta, Indonesia. We strive to respond to all legitimate inquiries within 48-72 business hours. For urgent safety concerns or to report violations of these Terms, please use our priority reporting system available through the app.'
   },
   customerServiceButton: 'Contact Customer Service',
 };
 translations.en.privacyPolicy = {
   title: 'Privacy Policy',
-  lastUpdated: 'Last Updated: January 1, 2025',
+  lastUpdated: 'Last Updated: January 5, 2026',
   introduction: {
     title: '1. Introduction',
-    content: 'IndoStreet ("we", "our", or "us") respects your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and share your information when you use our platform. By using IndoStreet, you agree to the collection and use of information in accordance with this policy. This policy is governed by Indonesian Law including but not limited to Law No. 27 of 2022 on Personal Data Protection (UU PDP).',
+    content: 'IndaStreet ("we", "our", or "us") operates indastreet.id as our primary platform along with sister websites including indastreetmassage.com and other sites currently in development. We respect your privacy and are committed to protecting your personal data across all our platforms. This Privacy Policy explains how we collect, use, store, and share your information when you use any of our services. By using IndaStreet\'s platforms, you agree to the collection and use of information in accordance with this policy. This policy is governed by Indonesian Law including but not limited to Law No. 27 of 2022 on Personal Data Protection (UU PDP).',
   },
   dataCollection: {
     title: '2. Information We Collect',
-    personal: 'Personal Information: Name, email address, phone number, WhatsApp number, and payment information you provide during registration or booking',
-    usage: 'Usage Data: IP address, browser type, device information, pages visited, time spent on pages, and other diagnostic data',
-    location: 'Location Data: GPS coordinates and address information when you use location-based features to find nearby therapists and massage places',
-    photos: 'Photos and Media: Profile pictures, business photos, and other images you upload to the platform',
-    communications: 'Communications: Messages, reviews, ratings, and feedback you provide through our platform',
+    personal: 'Personal Information: Name, email address, phone number, WhatsApp number, and payment information you provide during registration or booking across any of our platforms',
+    usage: 'Usage Data: IP address, browser type, device information, pages visited, time spent on pages, and other diagnostic data collected across our network of sites',
+    location: 'Location Data: GPS coordinates and address information when you use location-based features to find nearby therapists and massage places on any of our platforms',
+    photos: 'Photos and Media: Profile pictures, business photos, and other images you upload to any of our platforms',
+    communications: 'Communications: Messages, reviews, ratings, and feedback you provide through any of our platforms',
   },
   dataUsage: {
     title: '3. How We Use Your Information',
-    content: 'We use the collected information for the following purposes:',
+    content: 'We use the collected information across all our platforms for the following purposes:',
     points: [
-      'To provide and maintain our directory and booking services',
+      'To provide and maintain our directory and booking services across indastreet.id and sister sites',
       'To process your bookings and facilitate connections between users and service providers',
       'To calculate distances between your location and therapists/massage places',
       'To send booking confirmations, notifications, and important updates',
-      'To improve our platform and develop new features',
+      'To improve our platforms and develop new features',
       'To detect, prevent, and address technical issues and fraudulent activity',
       'To comply with legal obligations under Indonesian law',
-      'To enforce our Terms and Conditions',
+      'To enforce our Terms and Conditions across all platforms',
+      'To provide seamless service across our network of websites',
     ],
   },
   dataSharing: {
     title: '4. Information Sharing and Disclosure',
-    content: 'We may share your information with:',
+    content: 'We may share your information across our platforms and with:',
     points: [
+      'Sister Sites: Your data may be shared between indastreet.id, indastreetmassage.com, and our other platforms to provide seamless service',
       'Service Providers: Therapists and massage places you book with will receive your name, contact information, and booking details',
       'Agents: Our authorized agents may access user data to facilitate connections and manage the platform',
       'Payment Processors: Third-party payment services to process your transactions',
       'Government Authorities: When required by Indonesian law or legal proceedings',
       'Business Transfers: In the event of a merger, acquisition, or sale of assets',
     ],
-    note: 'We do not sell your personal data to third parties for marketing purposes.',
+    note: 'We do not sell your personal data to third parties for marketing purposes. Data shared between our platforms is for operational purposes only.',
   },
   legalBasis: {
     title: '5. Legal Basis for Processing (Indonesian Law)',
-    content: 'Under Indonesian Personal Data Protection Law (UU PDP), we process your data based on:',
+    content: 'Under Indonesian Personal Data Protection Law (UU PDP), we process your data across all our platforms based on:',
     points: [
-      'Consent: You have given clear consent for us to process your personal data',
+      'Consent: You have given clear consent for us to process your personal data across our network',
       'Contract: Processing is necessary to fulfill our service agreement with you',
       'Legal Obligation: To comply with Indonesian laws and regulations',
       'Legitimate Interest: To operate and improve our platform services',
@@ -633,47 +635,47 @@ translations.en.privacyPolicy = {
   },
   dataRetention: {
     title: '6. Data Retention',
-    content: 'We retain your personal data for as long as necessary to provide our services and comply with legal obligations. Specifically: Active accounts are retained indefinitely; Inactive accounts may be deleted after 2 years of inactivity; Booking records are kept for 5 years for legal and tax purposes; Communications and reviews are retained for platform integrity.',
+    content: 'We retain your personal data across all our platforms for as long as necessary to provide our services and comply with legal obligations. Specifically: Active accounts are retained indefinitely; Inactive accounts may be deleted after 2 years of inactivity; Booking records are kept for 5 years for legal and tax purposes; Communications and reviews are retained for platform integrity. Your data may be accessible across indastreet.id and our sister sites.',
   },
   security: {
     title: '7. Data Security',
-    content: 'We implement appropriate technical and organizational security measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure. While we strive to protect your information, we cannot guarantee absolute security. You are responsible for maintaining the confidentiality of your account credentials.',
+    content: 'We implement appropriate technical and organizational security measures to protect your personal data across all our platforms against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure. While we strive to protect your information, we cannot guarantee absolute security. You are responsible for maintaining the confidentiality of your account credentials across all our platforms.',
   },
   yourRights: {
     title: '8. Your Rights Under Indonesian Law',
-    content: 'Under UU PDP and applicable Indonesian regulations, you have the right to: Access your personal data; Correct inaccurate or incomplete data; Request deletion of your data (subject to legal retention requirements); Object to processing of your data; Withdraw consent at any time; Request data portability; File complaints with Indonesian authorities (Kementerian Komunikasi dan Informatika). To exercise these rights, contact us at the details provided below. Note: IndoStreet reserves the right to suspend or ban any user account at our sole discretion, with or without cause, as stated in our Terms and Conditions.',
+    content: 'Under UU PDP and applicable Indonesian regulations, you have the right to: Access your personal data across all our platforms; Correct inaccurate or incomplete data; Request deletion of your data from all our platforms (subject to legal retention requirements); Object to processing of your data; Withdraw consent at any time; Request data portability; File complaints with Indonesian authorities (Kementerian Komunikasi dan Informatika). To exercise these rights, contact us at the details provided below. Note: IndaStreet reserves the right to suspend or ban any user account across all our platforms at our sole discretion, with or without cause, as stated in our Terms and Conditions.',
   },
   cookies: {
     title: '9. Cookies and Tracking Technologies',
-    content: 'We use cookies and similar tracking technologies to enhance your experience, analyze usage patterns, and improve our services. You can control cookies through your browser settings, but disabling cookies may affect platform functionality.',
+    content: 'We use cookies and similar tracking technologies across indastreet.id and our sister websites to enhance your experience, analyze usage patterns, and improve our services. Cookies may be shared between our platforms to provide seamless service. You can control cookies through your browser settings, but disabling cookies may affect platform functionality.',
   },
   thirdPartyServices: {
     title: '10. Third-Party Services',
-    content: 'Our platform may contain links to third-party websites or services (including Google Maps, payment gateways, and WhatsApp). We are not responsible for the privacy practices of these third parties. We encourage you to review their privacy policies.',
+    content: 'Our platforms (indastreet.id, indastreetmassage.com, and other sites) may contain links to third-party websites or services (including Google Maps, payment gateways, and WhatsApp). We are not responsible for the privacy practices of these third parties. We encourage you to review their privacy policies.',
   },
   childrenPrivacy: {
     title: '11. Children\'s Privacy',
-    content: 'IndoStreet is not intended for users under the age of 18. We do not knowingly collect personal data from children. If you believe a child has provided us with personal information, please contact us immediately.',
+    content: 'IndaStreet\'s platforms, including indastreet.id and sister sites, are not intended for users under the age of 18. We do not knowingly collect personal data from children across any of our platforms. If you believe a child has provided us with personal information, please contact us immediately.',
   },
   dataTransfer: {
     title: '12. International Data Transfers',
-    content: 'Your data is primarily stored and processed in Indonesia. If we transfer data outside Indonesia, we will ensure appropriate safeguards are in place as required by Indonesian law.',
+    content: 'Your data is primarily stored and processed in Indonesia across our network of platforms. Data may be transferred between our platforms (indastreet.id, indastreetmassage.com, and other sites) as needed to provide services. If we transfer data outside Indonesia, we will ensure appropriate safeguards are in place as required by Indonesian law.',
   },
   policyChanges: {
     title: '13. Changes to This Privacy Policy',
-    content: 'We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last Updated" date. Continued use of IndoStreet after changes constitutes acceptance of the updated policy. For material changes, we will provide prominent notice.',
+    content: 'We may update this Privacy Policy from time to time. Changes will be posted across all our platforms with an updated "Last Updated" date. Continued use of any IndaStreet platform after changes constitutes acceptance of the updated policy. For material changes, we will provide prominent notice across our network.',
   },
   governing: {
     title: '14. Governing Law and Jurisdiction',
-    content: 'This Privacy Policy is governed by and construed in accordance with the laws of the Republic of Indonesia. Any disputes arising from this policy shall be subject to the exclusive jurisdiction of the courts in Jakarta, Indonesia.',
+    content: 'This Privacy Policy applies to all IndaStreet platforms including indastreet.id and sister sites. It is governed by and construed in accordance with the laws of the Republic of Indonesia. Any disputes arising from this policy shall be subject to the exclusive jurisdiction of the courts in Jakarta, Indonesia.',
   },
   disclaimer: {
     title: '15. Disclaimer',
-    content: 'IndoStreet is a directory and connection platform only. We are not responsible for the actions, services, or privacy practices of therapists, massage places, or other users. All interactions between users and service providers are at your own risk.',
+    content: 'IndaStreet (operating indastreet.id, indastreetmassage.com, and other platforms) is a directory and connection platform only. We are not responsible for the actions, services, or privacy practices of therapists, massage places, or other users. All interactions between users and service providers are at your own risk.',
   },
   contact: {
     title: '16. Contact Us',
-    content: 'If you have questions about this Privacy Policy, wish to exercise your rights, or have privacy concerns, please contact us at: Email: privacy@indostreet.com | WhatsApp: +62 XXX-XXXX-XXXX | Address: Jakarta, Indonesia',
+    content: 'If you have questions about this Privacy Policy, wish to exercise your rights, or have privacy concerns regarding any of our platforms (indastreet.id, indastreetmassage.com, or other sites), please contact us at: Email: indastreet.id@gmail.com | WhatsApp: +62 XXX-XXXX-XXXX | Address: Jakarta, Indonesia',
   },
 };
 

@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, Clock, MapPin, User, Phone, Crown, Lock, ChevronLeft, ChevronRight, Bell } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface Booking {
   $id: string;
@@ -284,74 +285,64 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
 
   // Premium calendar view
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <button 
-              onClick={onBack}
-              className="text-white hover:bg-white/20 rounded-lg px-3 py-2 transition-colors"
-            >
-              ← Back
-            </button>
-            <div className="flex items-center gap-2">
-              <CalendarIcon className="w-6 h-6" />
-              <h1 className="text-2xl font-bold">Booking Calendar</h1>
-              <span className="px-2 py-1 bg-yellow-500 text-white text-xs font-bold rounded-full">
-                PREMIUM
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Bell className="w-4 h-4" />
-              <span>3-hour reminders ON</span>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Minimalistic Header */}
+      <TherapistPageHeader
+        title="Booking Calendar"
+        subtitle="View your upcoming appointments"
+        onBackToStatus={onBack}
+        icon={
+          <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+            <CalendarIcon className="w-5 h-5 text-white" />
           </div>
-
-          <p className="text-blue-100 text-sm">
-            Automatic booking detection with 3-hour advance notifications for all confirmed appointments
-          </p>
-        </div>
-      </div>
+        }
+        actions={
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm">
+            <Bell className="w-4 h-4" />
+            <span className="hidden sm:inline">Reminders ON</span>
+          </div>
+        }
+      />
 
       {/* Calendar Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <button
               onClick={previousMonth}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ChevronLeft className="w-6 h-6 text-gray-600" />
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
               {monthNames[month]} {year}
             </h2>
             <button
               onClick={nextMonth}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ChevronRight className="w-6 h-6 text-gray-600" />
+              <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
           </div>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading calendar...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-600">Loading calendar...</p>
           </div>
         ) : (
           <>
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
               {/* Day Headers */}
               <div className="grid grid-cols-7 border-b bg-gray-50">
                 {dayNames.map(day => (
-                  <div key={day} className="p-3 text-center font-semibold text-gray-700 text-sm">
-                    {day}
+                  <div key={day} className="p-2 sm:p-3 text-center font-medium text-gray-700 text-xs sm:text-sm">
+                    <span className="hidden sm:inline">{day}</span>
+                    <span className="sm:hidden">{day.charAt(0)}</span>
                   </div>
                 ))}
               </div>
@@ -360,7 +351,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
               <div className="grid grid-cols-7">
                 {/* Empty cells before first day */}
                 {Array.from({ length: startingDayOfWeek }).map((_, index) => (
-                  <div key={`empty-${index}`} className="p-3 border-b border-r bg-gray-50 min-h-24" />
+                  <div key={`empty-${index}`} className="p-2 border-b border-r bg-gray-50 min-h-20 sm:min-h-24" />
                 ))}
 
                 {/* Days of month */}
@@ -375,17 +366,17 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
                     <div
                       key={day}
                       onClick={() => setSelectedDate(dateKey)}
-                      className={`p-3 border-b border-r min-h-24 cursor-pointer transition-colors ${
-                        isToday ? 'bg-blue-50 border-blue-200' : ''
+                      className={`p-2 border-b border-r min-h-20 sm:min-h-24 cursor-pointer transition-all ${
+                        isToday ? 'bg-orange-50 border-orange-200' : ''
                       } ${
-                        isSelected ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-50'
+                        isSelected ? 'bg-orange-100 ring-2 ring-orange-400' : 'hover:bg-gray-50'
                       }`}
                     >
-                      <div className={`text-sm font-semibold mb-2 ${
-                        isToday ? 'text-blue-600' : 'text-gray-700'
+                      <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
+                        isToday ? 'text-orange-600' : 'text-gray-700'
                       }`}>
                         {day}
-                        {isToday && <span className="ml-1 text-xs bg-blue-500 text-white px-1 rounded">Today</span>}
+                        {isToday && <span className="ml-1 text-[10px] bg-orange-500 text-white px-1 rounded">Today</span>}
                       </div>
 
                       {dayBookings.length > 0 && (
@@ -393,11 +384,11 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
                           {dayBookings.slice(0, 2).map(booking => (
                             <div
                               key={booking.$id}
-                              className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded truncate"
+                              className="text-[10px] sm:text-xs bg-green-50 text-green-700 border border-green-200 px-1.5 py-1 rounded truncate"
                               title={`${booking.time} - ${booking.customerName} (${booking.serviceType})`}
                             >
                               <div className="font-semibold">{booking.time}</div>
-                              <div className="truncate">{booking.customerName}</div>
+                              <div className="truncate hidden sm:block">{booking.customerName}</div>
                             </div>
                           ))}
                           {dayBookings.length > 2 && (
@@ -415,66 +406,66 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
 
             {/* Selected Date Details */}
             {selectedDate && (
-              <div className="mt-6 bg-white rounded-lg shadow-sm border p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  Bookings for {new Date(selectedDate).toLocaleDateString('en-US', { 
+              <div className="mt-6 bg-white rounded-xl shadow-sm border p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+                  {new Date(selectedDate).toLocaleDateString('en-US', { 
                     weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
                   })}
                 </h3>
 
                 {getBookingsForDate(selectedDate).length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No bookings for this date</p>
+                  <p className="text-gray-500 text-center py-8 text-sm">No bookings for this date</p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {getBookingsForDate(selectedDate)
                       .sort((a, b) => a.time.localeCompare(b.time))
                       .map(booking => (
-                        <div key={booking.$id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-200">
+                        <div key={booking.$id} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors">
                           <div className="flex items-start justify-between gap-4 mb-3">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                              <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-700 font-semibold">
                                 {booking.customerName.charAt(0)}
                               </div>
                               <div>
-                                <h4 className="font-bold text-gray-900">{booking.customerName}</h4>
-                                <p className="text-sm text-gray-600">{booking.serviceType}</p>
+                                <h4 className="font-semibold text-gray-900 text-sm">{booking.customerName}</h4>
+                                <p className="text-xs text-gray-500">{booking.serviceType}</p>
                               </div>
                             </div>
                             {booking.reminderSent && (
-                              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                              <span className="px-2 py-1 bg-green-50 text-green-600 rounded-md text-[10px] font-medium flex items-center gap-1">
                                 <Bell className="w-3 h-3" />
-                                Reminder Sent
+                                <span className="hidden sm:inline">Sent</span>
                               </span>
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Clock className="w-4 h-4 text-gray-500" />
-                              <span>{booking.time} ({booking.duration} min)</span>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              <span>{booking.time} · {booking.duration} min</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-700">
-                              <Phone className="w-4 h-4 text-gray-500" />
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <Phone className="w-4 h-4 text-gray-400" />
                               <span>{booking.customerPhone}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-700 col-span-2">
-                              <MapPin className="w-4 h-4 text-gray-500" />
-                              <span>{booking.location}</span>
+                            <div className="flex items-start gap-2 text-gray-600">
+                              <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
+                              <span className="flex-1">{booking.location}</span>
                             </div>
                           </div>
 
-                          <div className="mt-3 pt-3 border-t border-green-200 flex items-center justify-between">
-                            <span className="font-bold text-green-700">Rp {booking.price.toLocaleString()}</span>
+                          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                            <span className="font-semibold text-gray-900">Rp {booking.price.toLocaleString()}</span>
                             <a
                               href={`https://wa.me/${booking.customerPhone.replace(/\D/g, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-sm"
+                              className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-xs sm:text-sm transition-colors"
                             >
-                              Contact via WhatsApp
+                              WhatsApp
                             </a>
                           </div>
                         </div>
@@ -485,17 +476,15 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
             )}
 
             {/* Reminder Info Banner */}
-            <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bell className="w-5 h-5 text-white" />
+            <div className="mt-6 bg-orange-50 border border-orange-200 rounded-xl p-4 sm:p-6">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Bell className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-blue-900 mb-2">Automatic Reminder System</h3>
-                  <p className="text-sm text-blue-800 leading-relaxed">
-                    As a Premium member, you'll automatically receive notifications 3 hours before each confirmed booking. 
-                    This helps you prepare and ensures you never miss an appointment. Reminders are sent via push notification 
-                    and shown in your notifications center.
+                  <h3 className="font-semibold text-orange-900 mb-1 text-sm">Automatic Reminders</h3>
+                  <p className="text-xs text-orange-700 leading-relaxed">
+                    Receive notifications 3 hours before each confirmed booking to help you prepare.
                   </p>
                 </div>
               </div>

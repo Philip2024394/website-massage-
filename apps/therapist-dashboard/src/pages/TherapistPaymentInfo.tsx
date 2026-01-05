@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
-import { ArrowLeft, Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import PaymentCard from '../../../../components/PaymentCard';
@@ -109,23 +110,12 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-sm mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onBack}
-              className="p-3 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Payment Information</h1>
-              <p className="text-sm text-gray-600">Manage your bank details for receiving payments</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TherapistPageHeader
+        title="Payment Information"
+        subtitle="Manage your bank details"
+        onBackToStatus={onBack}
+        icon={<CreditCard className="w-6 h-6 text-blue-600" />}
+      />
 
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">

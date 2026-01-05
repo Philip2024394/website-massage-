@@ -22,6 +22,23 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'therapistStatus': '/dashboard/therapist/status',
         'therapistAvailability': '/dashboard/therapist/availability',
         'therapistProfile': '/dashboard/therapist/profile',
+        
+        // 🚫 ENTERPRISE ROUTING — All 14 Therapist Dashboard Pages
+        'therapist-dashboard': '/dashboard/therapist',
+        'therapist-status': '/dashboard/therapist/status',
+        'therapist-schedule': '/dashboard/therapist/schedule',
+        'therapist-bookings': '/dashboard/therapist/bookings',
+        'therapist-earnings': '/dashboard/therapist/earnings',
+        'therapist-payment': '/dashboard/therapist/payment',
+        'therapist-payment-status': '/dashboard/therapist/payment-status',
+        'therapist-commission-payment': '/dashboard/therapist/commission',
+        'therapist-premium-upgrade': '/dashboard/therapist/premium',
+        'therapist-menu': '/dashboard/therapist/menu',
+        'therapist-chat': '/dashboard/therapist/chat',
+        'therapist-notifications': '/dashboard/therapist/notifications',
+        'therapist-calendar': '/dashboard/therapist/calendar',
+        'therapist-legal': '/dashboard/therapist/legal',
+        
         'massagePlaceLogin': '/place-login',
         'placeDashboard': '/dashboard/massage-place',
         'massagePlacePortal': '/dashboard/massage-place',
@@ -144,6 +161,59 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 }
                 
                 // Handle dashboard routes
+                // 🚫 ENTERPRISE ROUTING — Therapist Dashboard Sub-Routes
+                if (path === '/dashboard/therapist/status') {
+                    setPage('therapist-status');
+                    return;
+                }
+                if (path === '/dashboard/therapist/schedule') {
+                    setPage('therapist-schedule');
+                    return;
+                }
+                if (path === '/dashboard/therapist/bookings') {
+                    setPage('therapist-bookings');
+                    return;
+                }
+                if (path === '/dashboard/therapist/earnings') {
+                    setPage('therapist-earnings');
+                    return;
+                }
+                if (path === '/dashboard/therapist/payment') {
+                    setPage('therapist-payment');
+                    return;
+                }
+                if (path === '/dashboard/therapist/payment-status') {
+                    setPage('therapist-payment-status');
+                    return;
+                }
+                if (path === '/dashboard/therapist/commission') {
+                    setPage('therapist-commission-payment');
+                    return;
+                }
+                if (path === '/dashboard/therapist/premium') {
+                    setPage('therapist-premium-upgrade');
+                    return;
+                }
+                if (path === '/dashboard/therapist/menu') {
+                    setPage('therapist-menu');
+                    return;
+                }
+                if (path === '/dashboard/therapist/chat') {
+                    setPage('therapist-chat');
+                    return;
+                }
+                if (path === '/dashboard/therapist/notifications') {
+                    setPage('therapist-notifications');
+                    return;
+                }
+                if (path === '/dashboard/therapist/calendar') {
+                    setPage('therapist-calendar');
+                    return;
+                }
+                if (path === '/dashboard/therapist/legal') {
+                    setPage('therapist-legal');
+                    return;
+                }
                 if (path === '/dashboard/therapist') {
                     setPage('therapist-dashboard');
                     return;

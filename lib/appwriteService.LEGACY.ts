@@ -229,7 +229,7 @@ export const customLinksService = {
         try {
             // Check if custom links collection is enabled
             if (!APPWRITE_CONFIG.collections.customLinks) {
-                console.warn('⚠️ Custom links collection is disabled - returning empty array');
+                // Return empty array silently - collection is intentionally disabled
                 return [];
             }
             
@@ -238,8 +238,13 @@ export const customLinksService = {
                 APPWRITE_CONFIG.collections.customLinks
             );
             return response.documents;
-        } catch (error) {
-            console.error('Error fetching custom links:', error);
+        } catch (error: any) {
+            // Handle 401 permission errors and 404 not found gracefully
+            if (error?.code === 401 || error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                // Collection doesn't exist or no permissions - return empty array silently
+                return [];
+            }
+            console.warn('⚠️ Custom links unavailable:', error?.message || error);
             return [];
         }
     },
@@ -3312,8 +3317,8 @@ export const pricingService = {
             const totalSurcharges = surcharges.reduce((sum, s) => sum + s.amount, 0);
             const finalPrice = Math.round(basePrice - totalDiscounts + totalSurcharges);
             
-            // Platform commission (15%)
-            const commission = Math.round(finalPrice * 0.15);
+            // Platform commission (30% - standard rate for all bookings)
+            const commission = Math.round(finalPrice * 0.30);
             const providerEarnings = finalPrice - commission;
             
             return {

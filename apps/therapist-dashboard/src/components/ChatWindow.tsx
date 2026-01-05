@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { simpleChatService, simpleBookingService } from '../../../../lib/appwriteService';
 import { commissionTrackingService } from '../../../../lib/services/commissionTrackingService';
-import { detectPhoneNumber, getBlockedMessage } from '../../../../utils/phoneBlocker';
+import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../../../utils/piiDetector';
+import { auditLoggingService, AuditContext } from '../../../../lib/appwrite/services/auditLogging.service';
 import PaymentCard from '../../../../components/PaymentCard';
 
 interface Message {
@@ -126,6 +127,7 @@ export default function ChatWindow({
     // Language is now managed globally - therapist dashboard uses Indonesian by default
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messageHistoryBufferRef = useRef<string[]>([]);
     // const therapistLanguage = 'id'; // Therapist dashboard uses Indonesian (unused)
 
     // Load initial messages
@@ -159,6 +161,50 @@ export default function ChatWindow({
     // Auto-scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const pushToMessageHistory = (text: string) => {
+        const normalized = text.trim();
+        if (!normalized) return;
+        messageHistoryBufferRef.current = [...messageHistoryBufferRef.current, normalized].slice(-8);
+    };
+
+    const logBlockedContent = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
+        const payload = {
+            userId: providerId,
+            role: 'therapist' as const,
+            bookingId,
+            conversationId: `customer_${customerId}_therapist_${providerId}`,
+            detectedType: detection.type || 'phone',
+            detectedPattern: detection.detectedPattern,
+            reason: detection.reason,
+            excerpt: detection.excerpt || content.slice(0, 140),
+            fullContent: content,
+            context
+        };
+        void auditLoggingService.logBlockedAttempt(payload);
+    };
+
+    const blockAndAlert = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
+        logBlockedContent(detection, context, content);
+        alert(getBlockedMessage('id'));
+    };
+
+    const handleTextareaPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        const payload = event.clipboardData.getData('text/plain');
+        const detection = detectPIIContent(payload);
+        if (detection.isBlocked) {
+            event.preventDefault();
+            blockAndAlert(detection, 'paste', payload);
+        }
+    };
+
+    useEffect(() => {
+        const recentMessages = messages
+            .map((msg) => (msg.message || '').trim())
+            .filter(Boolean)
+            .slice(-8);
+        messageHistoryBufferRef.current = recentMessages;
     }, [messages]);
 
     const loadMessages = async () => {
@@ -664,14 +710,15 @@ export default function ChatWindow({
         }
 
         try {
-            const originalText = newMessage.trim();
-            
-            // Check for phone numbers/WhatsApp in message
-            const phoneCheck = detectPhoneNumber(originalText);
-            if (phoneCheck.isBlocked) {
+            const trimmedText = newMessage.trim();
+            const slidingWindow = [...messageHistoryBufferRef.current.slice(-4), trimmedText]
+                .join(' ')
+                .trim();
+            const detection = detectPIIContent(slidingWindow);
+            if (detection.isBlocked) {
                 setSending(false);
-                alert(getBlockedMessage('id')); // Therapist dashboard uses Indonesian
-                console.warn('🚫 Message blocked:', phoneCheck.detectedPattern);
+                blockAndAlert(detection, 'message_send', slidingWindow);
+                console.warn('🚫 Message blocked across history:', detection.detectedPattern);
                 return;
             }
             
@@ -695,7 +742,7 @@ export default function ChatWindow({
             }
 
             // No translation needed - therapist dashboard uses Indonesian
-            const translatedForTherapist = originalText;
+            const translatedForTherapist = trimmedText;
 
             // Save message to database
             await simpleChatService.sendMessage({
@@ -706,7 +753,7 @@ export default function ChatWindow({
                 receiverId: customerId,
                 receiverName: customerName,
                 receiverRole: 'customer',
-                message: originalText,
+                message: trimmedText,
                 messageType: 'text',
                 bookingId,
                 metadata: {
@@ -716,6 +763,7 @@ export default function ChatWindow({
             });
 
             setNewMessage('');
+            pushToMessageHistory(trimmedText);
             console.log('✅ Message saved to database');
             
         } catch (error) {
@@ -1098,6 +1146,7 @@ export default function ChatWindow({
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
                                 onKeyPress={handleKeyPress}
+                                onPaste={handleTextareaPaste}
                                 placeholder="Type a message..."
                                 className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none text-sm"
                                 rows={2}

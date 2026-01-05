@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ClipboardEvent as ReactClipboardEvent, type ReactNode } from 'react';
 import { messagingService } from '../lib/appwriteService';
 import { translationService } from '../lib/translationService';
 import { useLanguageContext } from '../context/LanguageContext';
@@ -6,10 +6,42 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
-import { detectPhoneNumber, getBlockedMessage } from '../utils/phoneBlocker';
+import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../utils/piiDetector';
+import { auditLoggingService, AuditContext } from '../lib/appwrite/services/auditLogging.service';
 import { AVATAR_OPTIONS, Message, ChatWindowProps, BookingStatus, SchedulingStep, ARRIVAL_RADIUS_METERS, DEFAULT_REMINDER_VOLUME } from '../constants/chatWindowConstants';
 import { createProximityTracker, metersBetween } from '../services/proximityTrackingService';
 import PaymentCard from './PaymentCard';
+import { sanitizeClipboardText } from '../utils/clipboardControl';
+
+const copyFieldClassName = 'text-xs text-gray-600 flex items-center gap-2';
+
+type CopyFieldProps = {
+    label: string;
+    value: string;
+    children?: ReactNode;
+};
+
+const CopyField = ({ label, value, children }: CopyFieldProps) => {
+    if (!value) return null;
+    return (
+        <div className={copyFieldClassName}>
+            <span className="font-semibold text-gray-800">{label}:</span>
+            <span
+                data-allow-copy="true"
+                onCopy={(event) => {
+                    // Privacy safeguard: only allow clipboard writes for explicitly marked booking fields.
+                    event.stopPropagation();
+                    event.preventDefault();
+                    const sanitized = sanitizeClipboardText(value);
+                    event.clipboardData?.setData('text/plain', sanitized);
+                }}
+                className="flex-1 cursor-pointer"
+            >
+                {children ?? value}
+            </span>
+        </div>
+    );
+};
 
 /**
  * ChatWindow - Simple chat with registration flow
@@ -95,6 +127,12 @@ export default function ChatWindow({
     const [customerWhatsApp, setCustomerWhatsApp] = useState(initialCustomerWhatsApp || '');
     const [customerLocation, setCustomerLocation] = useState('');
     const [customerCoordinates, setCustomerCoordinates] = useState<{lat: number, lng: number} | null>(null);
+    const locationLink = customerCoordinates 
+        ? `https://www.google.com/maps?q=${customerCoordinates.lat},${customerCoordinates.lng}`
+        : null;
+    const locationText = locationLink 
+        ? `📍 Location: ${customerLocation}\n🗺️ View on map: ${locationLink}`
+        : `📍 Location: ${customerLocation}`;
     const [gettingLocation, setGettingLocation] = useState(false);
     const [serviceDuration, setServiceDuration] = useState<'60' | '90' | '120'>(
         selectedService?.duration as '60' | '90' | '120' || '60'
@@ -117,6 +155,8 @@ export default function ChatWindow({
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [lastMessageCount, setLastMessageCount] = useState(0);
     const [hasUnread, setHasUnread] = useState(false);
+    const chatMessagesRef = useRef<HTMLDivElement>(null);
+    const messageHistoryBufferRef = useRef<string[]>([]);
     
     // Booking status tracking
     const [bookingStatus, setBookingStatus] = useState<BookingStatus>('none');
@@ -129,6 +169,121 @@ export default function ChatWindow({
     const lastCustomerSampleRef = useRef<{ coords: {lat: number; lng: number}; accuracy?: number | null } | null>(null);
     const arrivalRecordedRef = useRef(false);
     const [arrivalDistanceMeters, setArrivalDistanceMeters] = useState<number | null>(null);
+    const [bookingMetadata, setBookingMetadata] = useState<{
+        id: string;
+        location: string;
+        locationLink: string | null;
+        datetime: string;
+        duration: string;
+        price: string;
+    } | null>(null);
+
+    const getElementFromNode = (node: Node | null): HTMLElement | null => {
+        if (!node) return null;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            return node as HTMLElement;
+        }
+        return (node as ChildNode).parentElement;
+    };
+
+    const isSelectionAllowed = (node: Node | null) => {
+        const element = getElementFromNode(node);
+        if (!element) return false;
+        if (element.closest('[data-allow-copy="true"]')) return true;
+        return Boolean(element.closest('[data-chat-copy-role="user-message"]'));
+    };
+
+    const pushToMessageHistory = (text: string) => {
+        const normalized = text.trim();
+        if (!normalized) return;
+        messageHistoryBufferRef.current = [...messageHistoryBufferRef.current, normalized].slice(-8);
+    };
+
+    const logBlockedContent = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
+        const payload = {
+            userId: customerId || 'guest',
+            role: 'customer',
+            bookingId: pendingBookingId || bookingId,
+            conversationId: chatRoomId,
+            detectedType: detection.type || 'phone',
+            detectedPattern: detection.detectedPattern,
+            reason: detection.reason,
+            excerpt: detection.excerpt || content.slice(0, 140),
+            fullContent: content,
+            context
+        };
+        void auditLoggingService.logBlockedAttempt(payload);
+    };
+
+    const blockAndAlert = (detection: PiiDetectionResult, context: AuditContext, content: string) => {
+        logBlockedContent(detection, context, content);
+        alert(getBlockedMessage(chatLang));
+    };
+
+    const handleClipboardCopy = (event: ClipboardEvent) => {
+        const selection = window.getSelection();
+        const rawText = selection?.toString() || '';
+        if (!selection || !rawText.trim()) {
+            event.preventDefault();
+            return;
+        }
+
+        if (!isSelectionAllowed(selection.anchorNode)) {
+            event.preventDefault();
+            return;
+        }
+
+        const sanitized = sanitizeClipboardText(rawText);
+        if (!sanitized) {
+            event.preventDefault();
+            return;
+        }
+
+        const anchorElement = getElementFromNode(selection.anchorNode);
+        const isMetadataCopy = Boolean(anchorElement?.closest('[data-allow-copy="true"]'));
+        if (!isMetadataCopy) {
+            const detection = detectPIIContent(sanitized);
+            if (detection.isBlocked) {
+                event.preventDefault();
+                blockAndAlert(detection, 'copy', sanitized);
+                return;
+            }
+        }
+
+        // Replace clipboard payload with sanitized text so metadata never leaves the UI.
+        event.preventDefault();
+        event.clipboardData?.setData('text/plain', sanitized);
+    };
+
+    const handleClipboardPaste = (event: ClipboardEvent) => {
+        const payload = event.clipboardData?.getData('text/plain') || '';
+        const detection = detectPIIContent(payload);
+        if (detection.isBlocked) {
+            event.preventDefault();
+            blockAndAlert(detection, 'paste', payload);
+        }
+    };
+
+    const handleMessageInputPaste = (event: ReactClipboardEvent<HTMLInputElement>) => {
+        const payload = event.clipboardData.getData('text/plain');
+        const detection = detectPIIContent(payload);
+        if (detection.isBlocked) {
+            event.preventDefault();
+            blockAndAlert(detection, 'paste', payload);
+        }
+    };
+
+    useEffect(() => {
+        const container = chatMessagesRef.current;
+        if (!container) return;
+
+        container.addEventListener('copy', handleClipboardCopy);
+        container.addEventListener('paste', handleClipboardPaste);
+        return () => {
+            container.removeEventListener('copy', handleClipboardCopy);
+            container.removeEventListener('paste', handleClipboardPaste);
+        };
+    }, []);
 
     // Payment/deposit handling
     const [providerBankDetails, setProviderBankDetails] = useState<{ bankName: string; accountHolderName: string; accountNumber: string } | null>(null);
@@ -260,6 +415,14 @@ export default function ChatWindow({
     // Auto-scroll to bottom
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    useEffect(() => {
+        const recentMessages = messages
+            .map((msg) => (msg.message || msg.content || '').trim())
+            .filter(Boolean)
+            .slice(-8);
+        messageHistoryBufferRef.current = recentMessages;
     }, [messages]);
 
     // Load payout details when booking is accepted
@@ -771,14 +934,13 @@ export default function ChatWindow({
             setCustomerId('guest_' + bookingResponse.$id);
             console.log('✅ Chat room created successfully');
 
-            // Send system message
+            // Send system message (WhatsApp NEVER shared with member - admin only)
             const bookingDate = scheduledTime.toLocaleDateString('en-US', { 
                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
             });
             const message = `🎯 NEW SCHEDULED BOOKING
 
 👤 Customer: ${customerName}
-📱 WhatsApp: ${formattedWhatsApp}
 📅 Date: ${bookingDate}
 ⏰ Time: ${selectedTime.label}
 ⏱️ Duration: ${selectedDuration} minutes
@@ -787,7 +949,9 @@ export default function ChatWindow({
 
 ✅ Please confirm availability.
 
-⏰ You have 5 minutes to respond.`;
+⏰ You have 5 minutes to respond.
+
+💬 Use in-app chat to communicate with customer.`;
 
             // Send system message
             await sendSystemMessage(chatRoom.$id || '', {
@@ -807,6 +971,17 @@ export default function ChatWindow({
             setBookingStatus('pending');
             setPendingBookingId(bookingResponse.$id);
             setWaitingForResponse(true);
+
+            const durationKey = (selectedDuration?.toString() || '60') as '60' | '90' | '120';
+            const metadataDatetime = scheduledTime.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+            setBookingMetadata({
+                id: bookingResponse.$id,
+                location: customerLocation || 'Location not provided',
+                locationLink,
+                datetime: metadataDatetime,
+                duration: `${durationKey} minutes`,
+                price: formatPriceString(durationKey)
+            });
             
             // Store booking lock to prevent duplicate bookings until resolved
             const deadline = new Date();
@@ -924,16 +1099,8 @@ export default function ChatWindow({
                 : `Rp ${basePrice.toLocaleString()}`;
             
             // Create location link if coordinates available
-            const locationLink = customerCoordinates 
-                ? `https://www.google.com/maps?q=${customerCoordinates.lat},${customerCoordinates.lng}`
-                : null;
-            
-            const locationText = locationLink 
-                ? `📍 Location: ${customerLocation}\n🗺️ View on map: ${locationLink}`
-                : `📍 Location: ${customerLocation}`;
-            
-            // Pro members NEVER get WhatsApp - Plus members get full access
-            const welcomeMsg = `Chat activated! You've selected ${serviceDuration} min massage (${priceText}). ${providerName} is currently ${statusText}.\n\n👤 Customer: ${customerName.trim()}\n${locationText}\n⏱️ Duration: ${serviceDuration} minutes\n\nType your message below...`;
+            // WhatsApp NEVER shared with member - admin only for privacy
+            const welcomeMsg = `Chat activated! You've selected ${serviceDuration} min massage (${priceText}). ${providerName} is currently ${statusText}.\n\n👤 Customer: ${customerName.trim()}\n${locationText}\n⏱️ Duration: ${serviceDuration} minutes\n\n💬 Use in-app chat to communicate. Customer contact info is private.\n\nType your message below...`;
             
             // Send as first message in conversation with service metadata
             console.log('📤 About to send welcome message...');
@@ -1161,28 +1328,29 @@ export default function ChatWindow({
         setSending(true);
 
         try {
-            // Check for phone numbers/WhatsApp in message
-            const phoneCheck = detectPhoneNumber(newMessage.trim());
-            if (phoneCheck.isBlocked) {
+            const trimmedInput = newMessage.trim();
+            const slidingWindow = [...messageHistoryBufferRef.current.slice(-4), trimmedInput]
+                .join(' ')
+                .trim();
+            const combinedDetection = detectPIIContent(slidingWindow);
+            if (combinedDetection.isBlocked) {
                 setSending(false);
-                alert(getBlockedMessage(chatLang));
-                console.warn('🚫 Message blocked:', phoneCheck.detectedPattern);
+                blockAndAlert(combinedDetection, 'message_send', slidingWindow);
+                console.warn('🚫 Message blocked across history:', combinedDetection.detectedPattern);
                 return;
             }
 
-            // Translate message to Indonesian (member's language) before sending
-            let messageContent = newMessage.trim();
+            let messageContent = trimmedInput;
             if (chatLang !== 'id') {
                 const translated = await translationService.translate(messageContent, 'id', chatLang);
                 console.log('🌐 Message translated:', { original: messageContent, translated: translated.translatedText });
                 messageContent = translated.translatedText;
-                
-                // Double-check translated message for phone numbers (in case translation reveals numbers)
-                const translatedCheck = detectPhoneNumber(messageContent);
-                if (translatedCheck.isBlocked) {
+
+                const translatedDetection = detectPIIContent(messageContent);
+                if (translatedDetection.isBlocked) {
                     setSending(false);
-                    alert(getBlockedMessage(chatLang));
-                    console.warn('🚫 Translated message blocked:', translatedCheck.detectedPattern);
+                    blockAndAlert(translatedDetection, 'message_send', messageContent);
+                    console.warn('🚫 Translated message blocked:', translatedDetection.detectedPattern);
                     return;
                 }
             }
@@ -1223,6 +1391,7 @@ export default function ChatWindow({
             }
 
             setNewMessage('');
+            pushToMessageHistory(trimmedInput);
             await loadMessages();
         } catch (error) {
             console.error('Error sending message:', error);
@@ -1552,6 +1721,16 @@ export default function ChatWindow({
                 </span>
             </div>
         );
+    };
+
+    const formatPriceString = (duration: '60'|'90'|'120') => {
+        const base = pricing[duration];
+        const hasDiscount = !!discountActive && !!discountPercentage && discountPercentage > 0;
+        if (!hasDiscount) {
+            return `Rp ${base.toLocaleString()}`;
+        }
+        const discounted = Math.max(0, Math.round(base * (1 - (discountPercentage as number) / 100)));
+        return `Rp ${discounted.toLocaleString()}`;
     };
 
     // REGISTRATION SCREEN
@@ -2177,6 +2356,31 @@ export default function ChatWindow({
                 </div>
             </div>
 
+            {bookingMetadata && (
+                <div className="px-4 py-3 border-b border-gray-100 bg-white/80 space-y-1 text-xs text-gray-600">
+                    <CopyField label="Booking ID" value={bookingMetadata.id} />
+                    <CopyField label="Location" value={bookingMetadata.location}>
+                        <div className="flex items-center gap-2">
+                            <span className="truncate">{bookingMetadata.location}</span>
+                            {bookingMetadata.locationLink && (
+                                <a
+                                    href={bookingMetadata.locationLink}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 underline text-[11px]"
+                                    onClick={(event) => event.stopPropagation()}
+                                >
+                                    View map
+                                </a>
+                            )}
+                        </div>
+                    </CopyField>
+                    <CopyField label="Date & Time" value={bookingMetadata.datetime} />
+                    <CopyField label="Duration" value={bookingMetadata.duration} />
+                    <CopyField label="Price" value={bookingMetadata.price} />
+                </div>
+            )}
+
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
                 {paymentDeadline && (
@@ -2398,13 +2602,16 @@ export default function ChatWindow({
                                     />
                                 )}
                                 
-                                <div className={`max-w-[70%] ${
-                                    isSystemMessage 
-                                        ? 'bg-blue-50 border border-blue-200 text-blue-800 text-center w-full' 
-                                        : isOwnMessage
-                                        ? 'bg-orange-500 text-white'
-                                        : 'bg-white border border-gray-200 text-gray-900'
-                                } rounded-lg px-4 py-2 shadow-sm`}>
+                                <div
+                                    className={`max-w-[70%] ${
+                                        isSystemMessage 
+                                            ? 'bg-blue-50 border border-blue-200 text-blue-800 text-center w-full' 
+                                            : isOwnMessage
+                                            ? 'bg-orange-500 text-white'
+                                            : 'bg-white border border-gray-200 text-gray-900'
+                                    } rounded-lg px-4 py-2 shadow-sm`}
+                                    data-chat-copy-role={isOwnMessage ? 'user-message' : undefined}
+                                >
                                     {!isSystemMessage && (
                                         <div className="text-xs font-semibold mb-1 opacity-70">
                                             {msg.senderName}
@@ -2527,6 +2734,7 @@ export default function ChatWindow({
                                 type="text"
                                 value={newMessage}
                                 onChange={(e) => setNewMessage(e.target.value)}
+                                onPaste={handleMessageInputPaste}
                                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                                 placeholder="Type your message..."
                                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-500 transition-colors"

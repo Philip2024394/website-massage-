@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, AlertCircle, Calendar, CreditCard, DollarSign, FileText, RefreshCw } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 import { paymentConfirmationService } from '../../../../lib/appwriteService';
 import type { Therapist } from '../../../../types';
 
@@ -93,18 +94,12 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
-            <div className="w-full bg-white sticky top-0 z-10">
-                <div className="flex items-center gap-3 py-4 px-5">
-                    <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                            <CreditCard className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-base font-bold text-black">Payment History</h1>
-                            <p className="text-xs text-gray-600">Track payment submissions</p>
-                        </div>
-                    </div>
+            <TherapistPageHeader
+                title="Payment History"
+                subtitle="Track payment submissions"
+                onBackToStatus={onBack}
+                icon={<div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center"><CreditCard className="w-5 h-5 text-white" /></div>}
+                actions={
                     <button
                         onClick={loadPayments}
                         className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
@@ -112,8 +107,8 @@ const TherapistPaymentStatus: React.FC<TherapistPaymentStatusProps> = ({ therapi
                     >
                         <RefreshCw className="w-5 h-5 text-black" />
                     </button>
-                </div>
-            </div>
+                }
+            />
 
             <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
                 {/* Info Banner */}

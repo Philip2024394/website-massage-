@@ -8,19 +8,13 @@ const SocialMediaLinks: React.FC<SocialMediaLinksProps> = ({ className = '' }) =
     const socialLinks = [
         {
             name: 'TikTok',
-            url: 'https://www.tiktok.com/@indastreet.id',
+            url: 'https://www.tiktok.com/@indastreet.team?is_from_webapp=1&sender_device=pc',
             imgSrc: 'https://ik.imagekit.io/7grri5v7d/tik%20tok.png',
             color: 'hover:opacity-80'
         },
         {
-            name: 'X',
-            url: 'https://twitter.com/indastreet_id',
-            imgSrc: 'https://ik.imagekit.io/7grri5v7d/x.png',
-            color: 'hover:opacity-80'
-        },
-        {
             name: 'Facebook',
-            url: 'https://www.facebook.com/indastreet.id',
+            url: 'https://www.facebook.com/share/g/1C2QCPTp62/',
             imgSrc: 'https://ik.imagekit.io/7grri5v7d/facebook.png',
             color: 'hover:opacity-80'
         },

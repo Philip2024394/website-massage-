@@ -1,6 +1,8 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink } from 'lucide-react';
+import { Bell, Calendar, MessageCircle, AlertCircle, CheckCircle, Clock, X, ExternalLink, TrendingUp, User } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
+import ChatWindow from '../components/ChatWindow';
 
 interface Notification {
   $id: string;
@@ -32,6 +34,12 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'unread' | 'booking' | 'message' | 'system'>('all');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showChatWindow, setShowChatWindow] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<{
+    customerId: string;
+    customerName: string;
+    bookingId?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -168,8 +176,15 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
     // Navigate based on type
     if (notification.type === 'booking' && onNavigateToBookings) {
       onNavigateToBookings();
-    } else if (notification.type === 'message' && onNavigateToChat) {
-      onNavigateToChat();
+    } else if (notification.type === 'message') {
+      // Open chat window with customer details
+      // TODO: Fetch actual customer ID from notification/booking
+      setSelectedChat({
+        customerId: notification.relatedId || 'customer-001',
+        customerName: notification.message.split(' ')[0] || 'Customer', // Extract name from message
+        bookingId: notification.relatedId
+      });
+      setShowChatWindow(true);
     } else if (notification.actionUrl) {
       window.open(notification.actionUrl, '_blank');
     }
@@ -231,37 +246,38 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
   const filteredNotifications = getFilteredNotifications();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6">
-        <div className="max-w-sm mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <button 
-              onClick={onBack}
-              className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-            >
-              ← Back
-            </button>
-            <div className="flex items-center gap-2">
-              <Bell className="w-6 h-6" />
-              <h1 className="text-2xl font-bold">Notifications</h1>
-              {unreadCount > 0 && (
-                <span className="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Minimalistic Header */}
+      <TherapistPageHeader
+        title="Notifications"
+        subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+        onBackToStatus={onBack}
+        icon={
+          <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center relative">
+            <Bell className="w-5 h-5 text-white" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </div>
+        }
+        actions={
+          unreadCount > 0 && (
             <button 
               onClick={handleMarkAllAsRead}
-              className="text-sm text-white hover:bg-white/20 rounded-lg px-3 py-2 transition-colors"
-              disabled={unreadCount === 0}
+              className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-medium px-2 py-1 hover:bg-orange-50 rounded-lg transition-colors"
             >
               Mark all read
             </button>
-          </div>
+          )
+        }
+      />
 
-          {/* Filter Buttons */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
+      {/* Filter Buttons */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
             {[
               { value: 'all', label: 'All', count: notifications.length },
               { value: 'unread', label: 'Unread', count: unreadCount },
@@ -272,13 +288,13 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
               <button
                 key={f.value}
                 onClick={() => setFilter(f.value as any)}
-                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
                   filter === f.value
-                    ? 'bg-white text-orange-500'
-                    : 'bg-white/20 text-white hover:bg-white/30'
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {f.label} ({f.count})
+                {f.label} <span className="opacity-75">({f.count})</span>
               </button>
             ))}
           </div>
@@ -286,16 +302,16 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
       </div>
 
       {/* Notifications List */}
-      <div className="max-w-sm mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading notifications...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-sm text-gray-600">Loading notifications...</p>
           </div>
         ) : filteredNotifications.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white rounded-xl border">
             <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg font-medium">No notifications</p>
+            <p className="text-gray-900 text-lg font-semibold">No notifications</p>
             <p className="text-gray-500 text-sm mt-2">
               {filter === 'unread' 
                 ? "You're all caught up!" 
@@ -303,100 +319,214 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredNotifications.map(notification => (
-              <div
-                key={notification.$id}
-                className={`bg-white rounded-lg shadow-sm border-2 transition-all hover:shadow-md ${
-                  notification.read 
-                    ? 'border-gray-100' 
-                    : 'border-orange-200 bg-orange-50/50'
-                }`}
-              >
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    {/* Icon */}
-                    <div className={`flex-shrink-0 p-2 rounded-full ${
-                      notification.read ? 'bg-gray-100' : 'bg-white'
-                    }`}>
-                      {getNotificationIcon(notification.type)}
-                    </div>
+          <>
+            {/* Stats Summary - Enhanced with gradients and details */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {/* Total Notifications */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <Bell className="w-5 h-5 text-gray-600" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-500 bg-white px-2 py-0.5 rounded-full">All</span>
+                </div>
+                <p className="text-3xl font-bold text-gray-900 mb-1">{notifications.length}</p>
+                <p className="text-xs text-gray-600 font-medium">Total Notifications</p>
+              </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-gray-900">{notification.title}</h3>
-                          {getNotificationBadge(notification.priority)}
-                          {!notification.read && (
-                            <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => handleDeleteNotification(notification.$id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                          title="Delete notification"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+              {/* Unread Notifications */}
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 p-4 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm relative">
+                    <AlertCircle className="w-5 h-5 text-orange-500" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-orange-700 bg-white px-2 py-0.5 rounded-full">New</span>
+                </div>
+                <p className="text-3xl font-bold text-orange-600 mb-1">{unreadCount}</p>
+                <p className="text-xs text-orange-700 font-medium">Unread Messages</p>
+              </div>
+
+              {/* Booking Notifications */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 p-4 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <Calendar className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <TrendingUp className="w-4 h-4 text-blue-500" />
+                </div>
+                <p className="text-3xl font-bold text-blue-600 mb-1">{notifications.filter(n => n.type === 'booking').length}</p>
+                <p className="text-xs text-blue-700 font-medium">Booking Updates</p>
+              </div>
+
+              {/* Message Notifications */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 p-4 hover:shadow-lg transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
+                    <MessageCircle className="w-5 h-5 text-purple-500" />
+                  </div>
+                  <User className="w-4 h-4 text-purple-500" />
+                </div>
+                <p className="text-3xl font-bold text-purple-600 mb-1">{notifications.filter(n => n.type === 'message').length}</p>
+                <p className="text-xs text-purple-700 font-medium">Customer Messages</p>
+              </div>
+            </div>
+
+            {/* Notifications - Enhanced Cards */}
+            <div className="space-y-3">
+              {filteredNotifications.map(notification => (
+                <div
+                  key={notification.$id}
+                  className={`bg-white rounded-xl border-2 transition-all hover:shadow-xl hover:-translate-y-0.5 ${
+                    notification.read 
+                      ? 'border-gray-200' 
+                      : 'border-orange-300 shadow-md bg-gradient-to-r from-orange-50/30 to-white'
+                  }`}
+                >
+                  <div className="p-5">
+                    <div className="flex items-start gap-4">
+                      {/* Icon with Enhanced Styling */}
+                      <div className={`flex-shrink-0 p-3 rounded-xl shadow-sm ${
+                        notification.read 
+                          ? 'bg-gray-50 border border-gray-200' 
+                          : 'bg-gradient-to-br from-orange-100 to-orange-200 border-2 border-orange-300'
+                      }`}>
+                        {getNotificationIcon(notification.type)}
                       </div>
 
-                      <p className="text-gray-700 text-sm mb-2">{notification.message}</p>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Header Row */}
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-bold text-gray-900 text-base sm:text-lg">{notification.title}</h3>
+                            {!notification.read && (
+                              <div className="flex items-center gap-1">
+                                <span className="w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse"></span>
+                                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-0.5 rounded-full">NEW</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getNotificationBadge(notification.priority)}
+                            <button
+                              onClick={() => handleDeleteNotification(notification.$id)}
+                              className="text-gray-400 hover:text-red-500 transition-all p-1.5 hover:bg-red-50 rounded-lg hover:scale-110"
+                              title="Delete notification"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
 
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <span className="text-xs text-gray-500">
-                          {formatTimestamp(notification.timestamp)}
-                        </span>
+                        {/* Message */}
+                        <p className="text-gray-700 text-sm sm:text-base mb-4 leading-relaxed">{notification.message}</p>
 
-                        <div className="flex items-center gap-2">
+                        {/* Metadata Bar */}
+                        <div className="flex items-center gap-3 mb-4 flex-wrap">
+                          {/* Related ID Badge */}
+                          {notification.relatedId && (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors">
+                              <span className="text-gray-500">ID:</span>
+                              <span className="font-mono font-bold">#{notification.relatedId}</span>
+                            </div>
+                          )}
+                          
+                          {/* Timestamp */}
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-lg border border-blue-200 text-xs font-medium text-blue-700">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{formatTimestamp(notification.timestamp)}</span>
+                          </div>
+
+                          {/* Type Badge */}
+                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold capitalize ${
+                            notification.type === 'booking' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                            notification.type === 'message' ? 'bg-purple-50 border-purple-200 text-purple-700' :
+                            notification.type === 'payment' ? 'bg-green-50 border-green-200 text-green-700' :
+                            notification.type === 'reminder' ? 'bg-red-50 border-red-200 text-red-700' :
+                            'bg-gray-50 border-gray-200 text-gray-700'
+                          }`}>
+                            {notification.type}
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2 flex-wrap">
                           {!notification.read && (
                             <button
                               onClick={() => handleMarkAsRead(notification.$id)}
-                              className="text-xs text-orange-600 hover:text-orange-700 font-medium"
+                              className="text-sm text-gray-700 hover:text-gray-900 font-semibold px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all border border-gray-200 hover:border-gray-300 hover:shadow-sm"
                             >
-                              Mark as read
+                              <CheckCircle className="w-4 h-4 inline mr-1.5" />
+                              Mark as Read
                             </button>
                           )}
                           {notification.actionLabel && (
                             <button
                               onClick={() => handleNotificationAction(notification)}
-                              className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center gap-1"
+                              className="text-sm px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg hover:scale-105"
                             >
                               {notification.actionLabel}
-                              <ExternalLink className="w-3 h-3" />
+                              <ExternalLink className="w-4 h-4" />
                             </button>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Read Status Indicator Bar */}
+                  {!notification.read && (
+                    <div className="h-1.5 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600"></div>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* Quick Action Panel */}
-      {unreadCount > 0 && (
-        <div className="fixed bottom-6 right-6 bg-white rounded-lg shadow-lg border-2 border-orange-200 p-4 max-w-sm">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-              <Bell className="w-5 h-5 text-orange-500" />
+      {/* Chat Window Modal */}
+      {showChatWindow && selectedChat && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl h-[600px] flex flex-col">
+            {/* Chat Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <MessageCircle className="w-6 h-6 text-purple-500" />
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900">Chat with {selectedChat.customerName}</h3>
+                  <p className="text-sm text-gray-500">Real-time conversation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowChatWindow(false);
+                  setSelectedChat(null);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900">{unreadCount} Unread</p>
-              <p className="text-xs text-gray-600">You have pending notifications</p>
+            
+            {/* Chat Window Component */}
+            <div className="flex-1 overflow-hidden">
+              <ChatWindow
+                providerId={therapist.$id}
+                providerRole="therapist"
+                providerName={therapist.name}
+                customerId={selectedChat.customerId}
+                customerName={selectedChat.customerName}
+                bookingId={selectedChat.bookingId}
+              />
             </div>
           </div>
-          <button
-            onClick={handleMarkAllAsRead}
-            className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
-          >
-            Mark All as Read
-          </button>
         </div>
       )}
+
     </div>
   );
 };

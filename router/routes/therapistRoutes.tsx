@@ -22,6 +22,9 @@ const CommissionPayment = React.lazy(() => import('../../apps/therapist-dashboar
 const TherapistSchedule = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistSchedule'));
 const PackageTermsPage = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/PackageTermsPage'));
 
+// Placeholder component for routes under construction
+const TherapistPlaceholderPage = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPlaceholderPage'));
+
 export const therapistRoutes = {
   dashboard: {
     path: '/therapist',
@@ -112,5 +115,11 @@ export const therapistRoutes = {
     component: PackageTermsPage,
     name: 'therapist-package-terms',
     requiresAuth: true
+  },
+  placeholder: {
+    path: '/therapist/placeholder',
+    component: TherapistPlaceholderPage,
+    name: 'therapist-placeholder',
+    requiresAuth: false
   }
 };

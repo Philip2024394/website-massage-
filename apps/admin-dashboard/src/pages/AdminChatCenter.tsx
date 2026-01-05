@@ -162,20 +162,22 @@ const AdminChatCenter: React.FC = () => {
             const formatted: Message[] = dbMessages.map((msg: any) => ({
                 $id: msg.$id || Date.now().toString(),
                 senderId: msg.senderId,
-                receiverId: msg.receiverId,
+                receiverId: msg.recipientId || msg.receiverId, // Support both field names
                 content: msg.content,
                 timestamp: new Date(msg.createdAt || new Date()),
-                read: msg.isRead,
+                read: msg.read || msg.isRead, // Support both field names
                 senderName: msg.senderName,
                 deliveredAt: new Date(msg.createdAt || new Date()),
-                readAt: msg.isRead ? new Date(msg.createdAt || new Date()) : undefined
+                readAt: (msg.read || msg.isRead) ? new Date(msg.createdAt || new Date()) : undefined
             }));
             
             setMessages(formatted);
             
             // Mark unread messages as read
             for (const msg of dbMessages) {
-                if (!msg.isRead && msg.receiverId === 'admin') {
+                const isUnread = !(msg.read || msg.isRead);
+                const isForAdmin = (msg.recipientId === 'admin' || msg.receiverId === 'admin');
+                if (isUnread && isForAdmin) {
                     await messagingService.markAsRead(msg.$id);
                 }
             }
@@ -204,9 +206,9 @@ const AdminChatCenter: React.FC = () => {
                 senderId: 'admin',
                 senderType: 'user', // Use 'user' for admin
                 senderName: 'Support Team',
-                receiverId: selectedMember.$id,
-                receiverType: memberRole,
-                receiverName: selectedMember.name,
+                recipientId: selectedMember.$id,
+                recipientType: memberRole,
+                recipientName: selectedMember.name,
                 content: newMessage.trim(),
             });
 

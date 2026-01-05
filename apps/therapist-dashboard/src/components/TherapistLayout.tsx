@@ -41,7 +41,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       calendar: 'Calendar',
       legal: 'Legal',
       'custom-menu': 'Menu Prices',
-      'premium-upgrade': 'Upgrade Premium',
       'commission-payment': 'Payments 30%',
       menu: 'Menu',
       logout: 'Logout',
@@ -59,7 +58,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       notifications: 'Notifikasi',
       calendar: 'Kalender',
       legal: 'Hukum',
-      'premium-upgrade': 'Upgrade Premium',
       'custom-menu': 'Harga Menu',
       'commission-payment': 'Pembayaran 30%',
       menu: 'Menu',
@@ -68,27 +66,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   };
 
   const labels = menuLabels[language] || menuLabels.id;
-
-  const isPremium = therapist?.membershipTier === 'premium';
-  const isPending = therapist?.premiumPaymentStatus === 'pending' && isPremium;
-  const isDeclined = therapist?.premiumPaymentStatus === 'declined';
-  
-  // Determine premium menu label and color
-  let premiumLabel = labels['premium-upgrade'];
-  let premiumColor = 'text-orange-600';
-  
-  if (isPremium && !isPending) {
-    // Fully approved premium
-    premiumLabel = language === 'id' ? 'Premium Aktif' : 'Premium Active';
-    premiumColor = 'text-green-600';
-  } else if (isPending) {
-    // Premium active but under review
-    premiumLabel = language === 'id' ? 'Premium (Ditinjau)' : 'Premium (Reviewing)';
-    premiumColor = 'text-green-600'; // Green because features are active
-  } else if (isDeclined) {
-    premiumLabel = language === 'id' ? 'Ditolak - Coba Lagi' : 'Declined - Retry';
-    premiumColor = 'text-red-600';
-  }
   
   const menuItems = [
     { id: 'status', label: labels.status, icon: Clock, color: 'text-green-600' },
@@ -99,12 +76,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
-    { 
-      id: 'premium-upgrade', 
-      label: premiumLabel, 
-      icon: Crown, 
-      color: premiumColor 
-    },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-600' },
     { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
@@ -142,7 +113,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             </div>
           </div>
           
-          {/* Right side - Language, Membership Badge, and Burger Menu */}
+          {/* Right side - Language and Burger Menu */}
           <div className="flex items-center gap-3">
             {/* Language Toggle */}
             <button
@@ -242,7 +213,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                     }`}
                   >
                     <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
-                    <span className={`text-sm font-medium ${item.id === 'premium-upgrade' && isPremium ? 'text-green-700' : 'text-gray-700'}`}>
+                    <span className="text-sm font-medium text-gray-700">
                       {item.label}
                     </span>
                     

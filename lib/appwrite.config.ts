@@ -17,22 +17,22 @@ export const APPWRITE_CONFIG = {
         places: 'places_collection_id', // ✅ Text-based collection ID  
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
-        bookings: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
-        reviews: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+        bookings: 'bookings_collection_id', // ✅ CONNECTED - Booking management system
+        reviews: 'reviews_collection_id', // ✅ CONNECTED - Review and rating system
         notifications: 'Notifications', // ✅ Therapist notification system
         users: null, // ⚠️ DISABLED - Collection doesn't exist
         share_links: 'share_links', // ✅ Short URL mappings (#12345 format)
         // Keep the rest as-is
         agentVisits: 'agent_visits',
         hotelBookings: 'hotel_bookings',
-        hotels: null, // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+        hotels: null, // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 401 errors). To fix: Create collection or set permissions in Appwrite Console
         cities: null, // Disabled - collection doesn't exist (causes 404 errors)
         villas: null, // Disabled - collection doesn't exist
         massageTypes: 'massage_types',
         membershipPricing: 'membership_pricing',
         imageAssets: 'image_assets',
         loginBackgrounds: 'login_backgrounds',
-        customLinks: null, // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+        customLinks: 'custom_links_collection_id', // ✅ CONNECTED - Custom drawer menu links
         translations: null, // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
         commissionRecords: 'commission_records',
         attributes: 'ATTRIBUTES',
@@ -52,9 +52,10 @@ export const APPWRITE_CONFIG = {
         userRegistrations: 'user_registrations',
         chatRooms: 'chat_rooms',
         chatMessages: 'chat_messages',
+        chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)
-        payments: 'Payments',
+        payments: 'Payments', // ⚠️ WARNING: May have permission issues (401 Unauthorized). To fix: Set 'Any' role permissions in Appwrite Console
         // Lead Generation System
         leads: null, // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
         leadGenerations: 'lead_generations',

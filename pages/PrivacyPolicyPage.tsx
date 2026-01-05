@@ -17,6 +17,7 @@ const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onBack, t }) => {
     // Defensive translation guards to prevent runtime crashes if namespace shape changes
     const tp = t || {};
     const safeArr = (arr: any) => (Array.isArray(arr) ? arr : []);
+    
     return (
         <div className="min-h-screen bg-gray-50">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">

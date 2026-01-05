@@ -1,6 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface Booking {
   $id: string;
@@ -213,23 +214,16 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <TherapistPageHeader
+        title="Scheduled Orders"
+        subtitle="Manage your appointments and schedule"
+        onBackToStatus={onBack}
+      />
+
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <button
-              onClick={onBack}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <Calendar className="w-6 h-6 text-orange-500" />
-            <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
-          </div>
-          <p className="text-sm text-gray-600">Manage all your appointments</p>
-        </div>
-
-        {/* Important Notice */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+          {/* Important Notice */}
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-2">
             <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
             <div>
@@ -260,6 +254,8 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           />
+        </div>
+
         </div>
 
         {/* Add Manual Booking Button */}

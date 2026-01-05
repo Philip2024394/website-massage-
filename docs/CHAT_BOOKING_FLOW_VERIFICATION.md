@@ -36,18 +36,20 @@ Type your message below...
 
 #### **Member Receives:**
 - ✅ Message in their chat dashboard
-- ✅ Customer name
-- ✅ WhatsApp number
+- ✅ Customer name (first name only for privacy)
 - ✅ Location with clickable Google Maps link
 - ✅ Service duration
 - ✅ Price (with discount if active)
-- ✅ Can chat directly with customer
+- ✅ Can chat directly with customer via in-app chat
+- ❌ WhatsApp number (NEVER shared with member - admin only)
 
 #### **Admin Receives:**
 - ✅ Copy of welcome message sent to admin conversation
-- ✅ All customer details
+- ✅ All customer details (including WhatsApp number)
+- ✅ Customer WhatsApp number (ONLY admin has access)
 - ✅ Location information
 - ✅ Booking metadata
+- ✅ Full payment and commission tracking
 
 ---
 

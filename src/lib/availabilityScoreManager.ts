@@ -16,7 +16,7 @@
  * - 0-39: Very low visibility, "Improve Responsiveness" flag
  */
 
-import { databases } from './appwrite.config';
+import { databases } from '../../lib/appwrite.config';
 import { ID, Query } from 'appwrite';
 
 const APPWRITE_CONFIG = {
@@ -26,6 +26,7 @@ const APPWRITE_CONFIG = {
 };
 
 interface AvailabilityScore {
+  $id?: string;
   therapistId: string;
   score: number; // 0-100
   totalRequests: number;

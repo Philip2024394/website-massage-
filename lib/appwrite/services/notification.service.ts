@@ -3,7 +3,8 @@
  * Handles email notifications, admin alerts, and messaging
  */
 
-import { functions } from '../config';
+import { databases, APPWRITE_CONFIG } from '../config';
+import { ID, Query } from 'appwrite';
 
 interface AdminNotificationData {
     type: 'therapist' | 'massage-place';
@@ -169,8 +170,6 @@ Thank you for your payment!
 
     // Additional notification methods for database operations
     async create(notification: any): Promise<any> {
-        const { databases, APPWRITE_CONFIG } = await import('../config');
-        const { ID } = await import('appwrite');
         try {
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
@@ -186,8 +185,6 @@ Thank you for your payment!
     },
 
     async getAll(userId?: string): Promise<any[]> {
-        const { databases, APPWRITE_CONFIG } = await import('../config');
-        const { Query } = await import('appwrite');
         try {
             const queries = userId ? 
                 [Query.equal('userId', userId), Query.orderDesc('createdAt'), Query.limit(100)] :
@@ -205,8 +202,6 @@ Thank you for your payment!
     },
 
     async getUnread(userId: string): Promise<any[]> {
-        const { databases, APPWRITE_CONFIG } = await import('../config');
-        const { Query } = await import('appwrite');
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
@@ -225,7 +220,6 @@ Thank you for your payment!
     },
 
     async update(id: string, data: any): Promise<any> {
-        const { databases, APPWRITE_CONFIG } = await import('../config');
         try {
             const response = await databases.updateDocument(
                 APPWRITE_CONFIG.databaseId,

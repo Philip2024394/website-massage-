@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../components/ChatWindow';
+import { devLog, devWarn } from '../../../../utils/devMode';
 
 interface Booking {
   $id: string;
@@ -378,20 +379,10 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-lg">{booking.customerName}</h3>
-                      {isPremium ? (
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          {booking.customerPhone}
-                        </p>
-                      ) : (
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm text-gray-400 flex items-center gap-1">
-                            <Lock className="w-3 h-3" />
-                            +62 ••• •••• ••••
-                          </p>
-                          <Crown className="w-3 h-3 text-yellow-500" />
-                        </div>
-                      )}
+                      <p className="text-sm text-gray-500 flex items-center gap-1">
+                        <MessageCircle className="w-3 h-3" />
+                        Use in-app chat to contact
+                      </p>
                     </div>
                   </div>
                   <span className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide shadow-sm ${getStatusBadge(booking.status)}`}>
@@ -476,31 +467,27 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 text-white rounded-2xl hover:from-orange-600 hover:via-orange-700 hover:to-orange-800 font-bold transition-all shadow-lg shadow-orange-300/50 hover:shadow-xl hover:shadow-orange-400/60 hover:-translate-y-0.5"
                       >
                         <MessageCircle className="w-5 h-5" />
-                        Chat
-                      </button>
-                      <button
-                        onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white rounded-2xl hover:from-green-600 hover:via-green-700 hover:to-green-800 font-bold transition-all shadow-lg shadow-green-300/50 hover:shadow-xl hover:shadow-green-400/60 hover:-translate-y-0.5"
-                      >
-                        <Phone className="w-5 h-5" />
-                        WhatsApp
+                        Chat Customer
                       </button>
                       <button
                         onClick={() => handleCompleteBooking(booking.$id)}
                         className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white rounded-2xl hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
                       >
                         <CheckCircle className="w-5 h-5" />
-                        Complete
+                        Mark Complete
                       </button>
                     </>
                   )}
                   {booking.status === 'completed' && (
                     <button
-                      onClick={() => window.open(`https://wa.me/${booking.customerPhone.replace('+', '')}`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 text-gray-700 rounded-2xl hover:from-gray-200 hover:via-gray-300 hover:to-gray-400 font-bold transition-all shadow-lg shadow-gray-300/50 hover:shadow-xl hover:shadow-gray-400/60 hover:-translate-y-0.5"
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setChatOpen(true);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 text-blue-700 rounded-2xl hover:from-blue-200 hover:via-blue-300 hover:to-blue-400 font-bold transition-all shadow-lg shadow-blue-300/50 hover:shadow-xl hover:shadow-blue-400/60 hover:-translate-y-0.5"
                     >
-                      <Phone className="w-5 h-5" />
-                      Contact Again
+                      <MessageCircle className="w-5 h-5" />
+                      View Chat
                     </button>
                   )}
                 </div>
@@ -518,7 +505,6 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           providerName={therapist.name}
           customerId={selectedBooking.customerId || 'customer-' + selectedBooking.$id}
           customerName={selectedBooking.customerName}
-          customerWhatsApp={selectedBooking.customerPhone}
           bookingId={selectedBooking.$id}
           bookingDetails={{
             date: selectedBooking.date,

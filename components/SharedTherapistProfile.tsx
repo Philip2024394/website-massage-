@@ -200,7 +200,7 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             
             // Calculate commission (same logic as main app)
             const serviceCost = pricing[bookingData.duration] || 0;
-            const commissionRate = 0.15; // 15% platform commission (adjust as needed)
+            const commissionRate = 0.30; // 30% platform commission (standard rate)
             const platformCommission = Math.round(serviceCost * commissionRate);
             const therapistEarnings = serviceCost - platformCommission;
             

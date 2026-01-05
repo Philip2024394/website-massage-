@@ -33,6 +33,19 @@ export type Page =
     | 'therapist' // Therapist portal/dashboard
     | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
     | 'therapist-profile' // Hyphenated variant for routing
+    | 'therapist-status'
+    | 'therapist-schedule'
+    | 'therapist-bookings'
+    | 'therapist-earnings'
+    | 'therapist-payment'
+    | 'therapist-payment-status'
+    | 'therapist-commission-payment'
+    | 'therapist-premium-upgrade'
+    | 'therapist-menu'
+    | 'therapist-chat'
+    | 'therapist-notifications'
+    | 'therapist-calendar'
+    | 'therapist-legal'
     | 'facial-place-profile' // Facial place profile page
     | 'profile' // 🎯 NEW: Guest profile page for non-registered users
     | 'qr-code' // QR Code sharing page

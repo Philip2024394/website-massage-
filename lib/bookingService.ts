@@ -517,9 +517,14 @@ export const bookingService = {
      */
     async getTherapistBookings(therapistId: string): Promise<Booking[]> {
         try {
+            // Skip if bookings collection is disabled
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                return [];
+            }
+
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                APPWRITE_CONFIG.collections.bookings,
                 [
                     Query.equal('therapistId', therapistId),
                     Query.orderDesc('createdAt'),
@@ -528,8 +533,45 @@ export const bookingService = {
             );
 
             return response.documents as unknown as Booking[];
-        } catch (error) {
-            console.error('❌ Error fetching therapist bookings:', error);
+        } catch (error: any) {
+            // Handle 404 gracefully
+            if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                return [];
+            }
+            console.warn('⚠️ Therapist bookings unavailable:', error?.message || error);
+            return [];
+        }
+    },
+
+    /**
+     * Get bookings by provider (therapist or place)
+     * Used by TherapistCard and FacialPlaceCard components
+     */
+    async getByProvider(providerId: string, providerType: 'therapist' | 'place'): Promise<Booking[]> {
+        try {
+            // Skip if bookings collection is disabled
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                return [];
+            }
+
+            const attribute = providerType === 'therapist' ? 'therapistId' : 'placeId';
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal(attribute, providerId),
+                    Query.orderDesc('createdAt'),
+                    Query.limit(100)
+                ]
+            );
+
+            return response.documents as unknown as Booking[];
+        } catch (error: any) {
+            // Handle 404 gracefully
+            if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                return [];
+            }
+            console.warn('⚠️ Provider bookings unavailable:', error?.message || error);
             return [];
         }
     },
@@ -541,6 +583,7 @@ export const bookingService = {
         try {
             // Skip if bookings collection is disabled
             if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                // Return 0 silently - collection doesn't exist yet
                 return 0;
             }
 
@@ -555,8 +598,14 @@ export const bookingService = {
             );
 
             return response.total || 0;
-        } catch (error) {
-            console.error(`❌ Error fetching ${providerType} bookings count:`, error);
+        } catch (error: any) {
+            // Handle 404 (collection not found) gracefully
+            if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                // Collection doesn't exist - return 0 silently
+                return 0;
+            }
+            // Log other errors but still return 0 to prevent UI breaking
+            console.warn(`⚠️ Bookings count unavailable for ${providerType}:`, error?.message || error);
             return 0;
         }
     },
@@ -592,6 +641,45 @@ export const bookingService = {
             return () => console.log('Unsubscribed from booking:', bookingId);
         } catch (error) {
             console.error('❌ Error subscribing to booking:', error);
+            return () => {};
+        }
+    },
+
+    /**
+     * Subscribe to all bookings for a provider (therapist/place)
+     * Used by provider dashboards for real-time booking notifications
+     */
+    subscribeToProviderBookings(
+        providerId: string,
+        callback: (booking: Booking) => void
+    ): () => void {
+        try {
+            // Import client for real-time subscription
+            const { Client } = require('appwrite');
+            const client = new Client()
+                .setEndpoint(APPWRITE_CONFIG.endpoint)
+                .setProject(APPWRITE_CONFIG.projectId);
+
+            // Subscribe to all bookings collection changes
+            const unsubscribe = client.subscribe(
+                `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings || 'bookings'}.documents`,
+                (response: any) => {
+                    // Filter for bookings where therapistId matches
+                    if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+                        const booking = response.payload as Booking;
+                        if (booking.therapistId === providerId) {
+                            console.log('🔔 New booking received for provider:', providerId);
+                            callback(booking);
+                        }
+                    }
+                }
+            );
+
+            console.log('✅ Subscribed to provider bookings:', providerId);
+            return unsubscribe;
+        } catch (error) {
+            console.error('❌ Error subscribing to provider bookings:', error);
+            // Return a no-op function to prevent crashes
             return () => {};
         }
     }

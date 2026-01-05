@@ -3,9 +3,11 @@ import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, A
 import { Therapist, Booking } from '../../../../types';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface TherapistScheduleProps {
   therapist: Therapist | null;
+  onBack?: () => void;
 }
 
 interface DaySchedule {
@@ -32,7 +34,7 @@ interface ManualBooking {
   note: string;
 }
 
-const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist }) => {
+const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [manualBookings, setManualBookings] = useState<ManualBooking[]>([]);
@@ -308,28 +310,21 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist }) => {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* Header */}
-      <div className="w-full bg-white border-b border-black sticky top-0 z-10">
-        <div className="max-w-sm mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-black">My Bookings</h1>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowScheduleSettings(true)}
-              className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
-            >
-              <Clock className="w-5 h-5 text-orange-500" />
-            </button>
-          </div>
-          <p className="text-xs text-gray-600 ml-13">Manage your appointments and schedule</p>
-        </div>
-      </div>
+      <TherapistPageHeader
+        title="Scheduled Orders"
+        subtitle="Manage your appointments and schedule"
+        onBackToStatus={onBack || (() => {})}
+        icon={<Calendar className="w-6 h-6 text-orange-500" />}
+        actions={
+          <button
+            onClick={() => setShowScheduleSettings(true)}
+            className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+            aria-label="Schedule settings"
+          >
+            <Clock className="w-5 h-5 text-orange-500" />
+          </button>
+        }
+      />
 
       <div className="max-w-sm mx-auto px-4 py-4 space-y-4">
         {/* Monthly Calendar */}

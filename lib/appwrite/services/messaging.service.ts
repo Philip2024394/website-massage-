@@ -29,7 +29,7 @@ export const messagingService = {
                 APPWRITE_CONFIG.collections.messages,
                 [
                     Query.equal('conversationId', conversationId),
-                    Query.orderAsc('createdAt'),
+                    Query.orderAsc('$createdAt'),
                     Query.limit(100)
                 ]
             );
@@ -67,12 +67,24 @@ export const messagingService = {
 
     async sendMessage(messageData: any): Promise<any> {
         try {
+            console.log('[MESSAGING SERVICE] sendMessage called with:', messageData);
+            
             // Normalize ids in case callers pass objects with { id, role }
             const senderId = typeof messageData?.senderId === 'object' ? messageData.senderId.id : messageData.senderId;
             const recipientId = typeof messageData?.recipientId === 'object' ? messageData.recipientId.id : messageData.recipientId;
 
             const conversationId = messageData.conversationId || this.generateConversationId(senderId, recipientId);
+            
+            console.log('[MESSAGING SERVICE] Normalized IDs - sender:', senderId, 'recipient:', recipientId);
+            console.log('[MESSAGING SERVICE] Conversation ID:', conversationId);
+            console.log('[MESSAGING SERVICE] Database ID:', APPWRITE_CONFIG.databaseId);
+            console.log('[MESSAGING SERVICE] Messages Collection ID:', APPWRITE_CONFIG.collections.messages);
+            
+            // Generate messageId if not provided
+            const messageId = messageData.messageId || ID.unique();
+            
             const message = {
+                messageId,  // Required by Messages collection
                 senderId,
                 recipientId,
                 conversationId,
@@ -82,9 +94,14 @@ export const messagingService = {
                 createdAt: new Date().toISOString(),
                 ...messageData
             };
-            return await this.create(message);
+            
+            console.log('[MESSAGING SERVICE] Message object to be created:', message);
+            
+            const result = await this.create(message);
+            console.log('[MESSAGING SERVICE] Message created successfully:', result);
+            return result;
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('[MESSAGING SERVICE] Error sending message:', error);
             throw error;
         }
     },
@@ -99,7 +116,7 @@ export const messagingService = {
                         Query.equal('senderId', userId),
                         Query.equal('recipientId', userId)
                     ]),
-                    Query.orderDesc('createdAt'),
+                    Query.orderDesc('$createdAt'),
                     Query.limit(100)
                 ]
             );

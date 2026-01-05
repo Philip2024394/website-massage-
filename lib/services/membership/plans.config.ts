@@ -31,17 +31,18 @@ export const MEMBERSHIP_PLANS: Record<PlanType, MembershipPlan> = {
   },
   plus: {
     id: 'plus', 
-    name: 'Plus Therapist',
+    name: 'Standard Therapist',
     monthlyFee: 0, // Free monthly
-    commissionRate: 15, // 15% commission
+    commissionRate: 30, // 30% commission on ALL bookings
     features: [
       'No monthly fees',
-      '15% commission on bookings',
+      '30% commission on all bookings',
       'Basic analytics',
-      'Customer messaging',
-      'Standard listing'
+      'Customer messaging via in-app chat only',
+      'Standard listing',
+      'Customer WhatsApp never shared (privacy protected)'
     ],
-    description: 'Great for new therapists getting started'
+    description: 'Standard plan for all therapists - 30% commission rate'
   }
 };
 
