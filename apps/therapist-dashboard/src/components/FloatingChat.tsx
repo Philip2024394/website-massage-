@@ -203,12 +203,9 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             await messagingService.sendMessage({
                 conversationId,
                 senderId: String(therapist.$id),
-                senderName: therapist.name || 'Therapist',
-                senderRole: 'therapist',
-                receiverId: 'admin',
-                receiverName: 'Support Team',
-                receiverRole: 'admin',
+                recipientId: 'admin',  // Fixed: was 'receiverId', now matches schema
                 content: newMessage.trim(),
+                type: 'text',
             });
 
             setNewMessage('');
