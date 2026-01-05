@@ -93,6 +93,7 @@ export const messagingService = {
             // Generate messageId if not provided
             const messageId = messageData.messageId || ID.unique();
             
+            // CRITICAL: Only include schema-compliant fields (no spread operator)
             const message = {
                 messageId,  // Required by Messages collection
                 senderId,
@@ -101,8 +102,7 @@ export const messagingService = {
                 content: messageData.content,
                 type: messageData.type || 'text',
                 read: false,
-                createdAt: new Date().toISOString(),
-                ...messageData
+                createdAt: new Date().toISOString()
             };
             
             console.log('[MESSAGING SERVICE] Message object to be created:', message);
