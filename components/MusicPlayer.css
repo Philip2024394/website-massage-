@@ -116,15 +116,15 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .music-player-container {
-    top: 76px;
-    left: 14px;
-    height: 32px;
-    gap: 4px;
-    padding: 5px;
+    top: 86px;
+    left: 24px;
+    height: 64px;
+    gap: 8px;
+    padding: 10px;
   }
   
   .music-bar {
-    width: 6px;
+    width: 12px;
   }
 }
 
