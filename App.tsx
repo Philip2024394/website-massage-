@@ -323,7 +323,8 @@ const App = () => {
                         } else {
                             // Create new persistent session
                             console.log('💾 Creating new persistent chat session');
-                            sessionData = await chatSessionService.createSession({
+                            
+                            const sessionPayload = {
                                 customerId: customerName || undefined,
                                 customerName,
                                 customerWhatsApp,
@@ -340,7 +341,11 @@ const App = () => {
                                 bookingId,
                                 chatRoomId,
                                 isActive: true
-                            });
+                            };
+                            
+                            console.log('📤 Session payload:', JSON.stringify(sessionPayload, null, 2));
+                            
+                            sessionData = await chatSessionService.createSession(sessionPayload);
                             console.log('✅ Persistent chat session created:', sessionData.sessionId);
                         }
                         
