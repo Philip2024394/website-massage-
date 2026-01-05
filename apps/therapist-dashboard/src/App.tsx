@@ -32,6 +32,7 @@ type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);  // Auth check completion flag
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<Page>('status');
@@ -359,6 +360,8 @@ function App() {
       }
     } finally {
       setIsLoading(false);
+      setIsAuthReady(true);  // Auth check complete - safe to render/redirect now
+      console.log('✅ Auth check completed - isAuthReady set to true');
     }
   };
 
@@ -491,17 +494,19 @@ function App() {
     setCurrentPage('bookings');
   };
 
-  if (isLoading) {
+  // Show loading screen UNTIL auth check completes
+  if (!isAuthReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600">Checking authentication...</p>
         </div>
       </div>
     );
   }
 
+  // Auth check complete - NOW safe to check authentication status
   if (!isAuthenticated) {
     // Redirect to auth app for unified sign in/create account flow
     const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
