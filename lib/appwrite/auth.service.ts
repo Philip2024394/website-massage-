@@ -40,10 +40,26 @@ export const authService = {
                 () => appwriteAccount.createEmailPasswordSession(email, password),
                 'account_login'
             );
-            return await retryWithBackoff(
+            const user = await retryWithBackoff(
                 () => appwriteAccount.get(),
                 'account_get_after_login'
             );
+            
+            // Store user info in localStorage as fallback for when cookies fail
+            if (user?.$id) {
+                try {
+                    localStorage.setItem('therapist_session_backup', JSON.stringify({
+                        userId: user.$id,
+                        email: user.email,
+                        timestamp: Date.now()
+                    }));
+                    console.log('✅ Session backup saved to localStorage');
+                } catch (err) {
+                    console.warn('⚠️ Failed to save session backup:', err);
+                }
+            }
+            
+            return user;
         } catch (error) {
             console.error('Error logging in:', error);
             throw error;
@@ -98,6 +114,18 @@ export const authService = {
                     () => appwriteAccount.createEmailPasswordSession(trimmedEmail, password),
                     'account_login_after_register'
                 );
+                
+                // Store user info in localStorage as fallback
+                try {
+                    localStorage.setItem('therapist_session_backup', JSON.stringify({
+                        userId: response.$id,
+                        email: trimmedEmail,
+                        timestamp: Date.now()
+                    }));
+                    console.log('✅ Session backup saved to localStorage');
+                } catch (err) {
+                    console.warn('⚠️ Failed to save session backup:', err);
+                }
                 console.log('✅ Auto-login successful');
             }
             return response;
@@ -132,6 +160,13 @@ export const authService = {
                 () => appwriteAccount.deleteSession('current'),
                 'account_logout'
             );
+            // Clear localStorage session backup
+            try {
+                localStorage.removeItem('therapist_session_backup');
+                console.log('🗑️ Session backup cleared from localStorage');
+            } catch (err) {
+                console.warn('⚠️ Failed to clear session backup:', err);
+            }
         } catch (error) {
             console.error('Error logging out:', error);
             throw error;

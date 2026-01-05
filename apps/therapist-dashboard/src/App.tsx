@@ -131,6 +131,37 @@ function App() {
       console.log('✅ Enhanced PWA features initialization started');
     }
   }, [user?.$id]);
+  
+  // Session refresh mechanism - keep Appwrite session alive
+  useEffect(() => {
+    if (!isAuthenticated || !user?.$id) return;
+    
+    console.log('⏰ Starting session refresh timer...');
+    
+    const refreshSession = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          console.log('✅ Session refreshed successfully');
+        } else {
+          console.warn('⚠️ Session refresh failed - user logged out');
+          setIsAuthenticated(false);
+          setUser(null);
+          localStorage.removeItem('therapist_session_backup');
+        }
+      } catch (error) {
+        console.warn('⚠️ Session refresh error:', error);
+      }
+    };
+    
+    // Refresh session every 15 minutes
+    const interval = setInterval(refreshSession, 15 * 60 * 1000);
+    
+    return () => {
+      clearInterval(interval);
+      console.log('⏰ Session refresh timer stopped');
+    };
+  }, [isAuthenticated, user?.$id]);
 
   // Listen for service worker messages (booking notifications, etc.)
   useEffect(() => {
@@ -210,7 +241,42 @@ function App() {
 
   const checkAuth = async () => {
     try {
-      const currentUser = await authService.getCurrentUser();
+      let currentUser = await authService.getCurrentUser();
+      
+      // If Appwrite session failed, try localStorage fallback
+      if (!currentUser) {
+        console.log('⚠️ Appwrite session not found, checking localStorage backup...');
+        try {
+          const backupStr = localStorage.getItem('therapist_session_backup');
+          if (backupStr) {
+            const backup = JSON.parse(backupStr);
+            const age = Date.now() - backup.timestamp;
+            const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+            
+            if (age < maxAge && backup.userId) {
+              console.log('🔄 Restoring session from localStorage backup...');
+              // Fetch therapist directly from database
+              const therapist = await therapistService.getById(backup.userId);
+              if (therapist) {
+                console.log('✅ Session restored from localStorage:', therapist.email);
+                setUser(therapist);
+                setIsAuthenticated(true);
+                setIsLoading(false);
+                
+                // Start system health monitoring
+                systemHealthService.startHealthMonitoring(therapist.$id);
+                return;
+              }
+            } else {
+              console.log('⚠️ localStorage backup expired or invalid');
+              localStorage.removeItem('therapist_session_backup');
+            }
+          }
+        } catch (err) {
+          console.warn('⚠️ Failed to restore from localStorage:', err);
+        }
+      }
+      
       if (currentUser) {
         console.log('✅ Authenticated user:', currentUser.email);
         
@@ -236,6 +302,18 @@ function App() {
           console.log('✅ Found therapist document:', therapistDoc.$id);
           setUser(therapistDoc);
           setIsAuthenticated(true);
+          
+          // Store session backup in localStorage
+          try {
+            localStorage.setItem('therapist_session_backup', JSON.stringify({
+              userId: therapistDoc.$id,
+              email: therapistDoc.email,
+              timestamp: Date.now()
+            }));
+            console.log('✅ Session backup saved to localStorage');
+          } catch (err) {
+            console.warn('⚠️ Failed to save session backup:', err);
+          }
           
           // Package selection now happens on main site during signup flow
           // Skip membership setup check and go directly to dashboard
@@ -580,8 +658,8 @@ function App() {
         {renderPage()}
       </TherapistLayout>
       
-      {/* Persistent Floating Chat - Always visible when authenticated */}
-      {isAuthenticated && user && (
+      {/* Persistent Floating Chat - Always visible when user data exists */}
+      {user && (
         <FloatingChat 
           therapist={user} 
           isPWA={isPWAMode()} 
