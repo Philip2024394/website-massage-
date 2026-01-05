@@ -93,14 +93,14 @@ export const analyticsService = {
    */
   async getBusiestDays(therapistId: string, days: number = 30): Promise<BusyDayData[]> {
     try {
-      // Guard: Check if bookings collection exists
+      // FORCE-FAIL: Throw if collection is empty
       if (!APPWRITE_CONFIG.collections.bookings) {
-        console.warn('⚠️ bookings collection not configured - returning empty data');
-        return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
-          day,
-         FORCE-FAIL: Throw if collection is empty
-      if (!APPWRITE_CONFIG.collections.bookings) {
-        throw new Error('bookings collection ID is empty - cannot get busiest days'
+        throw new Error('bookings collection ID is empty - cannot get busiest days');
+      }
+
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
       const response = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,
