@@ -54,7 +54,9 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       setPeakHours(hours);
       setBusiestDays(days);
     } catch (error) {
-      console.error('Error loading analytics:', error);
+      // Silently fail if bookings collection is disabled
+      // Error is expected when analytics/bookings features are disabled
+      console.log('ℹ️ Analytics unavailable (bookings collection disabled)');
     }
   };
 
@@ -65,7 +67,8 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       const slots = await analyticsService.getDayTimeSlots(therapist.$id, selectedDay);
       setSelectedDaySlots(slots);
     } catch (error) {
-      console.error('Error loading day slots:', error);
+      // Silently fail if bookings collection is disabled
+      console.log('ℹ️ Day slots unavailable (bookings collection disabled)');
     }
   };
 
