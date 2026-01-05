@@ -67,10 +67,9 @@ const getCustomersWhoChatted = async (
     providerType: 'therapist' | 'place'
 ): Promise<string[]> => {
     try {
-        // Guard: Check if collection exists
+        // FORCE-FAIL: Throw if collection is empty
         if (!CHAT_ROOMS_COLLECTION_ID || CHAT_ROOMS_COLLECTION_ID === '') {
-            console.warn('⚠️ chat_rooms collection not configured - skipping customer lookup');
-            return [];
+            throw new Error('chat_rooms collection ID is empty - cannot get customers');
         }
 
         // Query chat_rooms collection for all rooms involving this provider
@@ -111,10 +110,9 @@ const createDiscountNotification = async (
     duration: number
 ): Promise<void> => {
     try {
-        // Guard: Check if collection exists
+        // FORCE-FAIL: Throw if collection is empty
         if (!NOTIFICATIONS_COLLECTION_ID || NOTIFICATIONS_COLLECTION_ID === '') {
-            console.warn('⚠️ notifications collection not configured - skipping notification creation');
-            return;
+            throw new Error('notifications collection ID is empty - cannot create notification');
         }
 
         const expiresAt = new Date();
@@ -194,10 +192,9 @@ export const broadcastViaWhatsApp = async (
  */
 export const getCustomerPhoneNumbers = async (customerIds: string[]): Promise<string[]> => {
     try {
-        // Guard: Check if collection exists
+        // FORCE-FAIL: Throw if collection is empty
         if (!USERS_COLLECTION_ID || USERS_COLLECTION_ID === '') {
-            console.warn('⚠️ users collection not configured - skipping phone number lookup');
-            return [];
+            throw new Error('users collection ID is empty - cannot get phone numbers');
         }
 
         const phoneNumbers: string[] = [];

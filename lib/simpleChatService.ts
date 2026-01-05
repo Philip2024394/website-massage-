@@ -184,11 +184,10 @@ export const simpleBookingService = {
      */
     async notifyAdmin(message: string, data?: any): Promise<void> {
         try {
-            // Guard: Check if notifications collection exists
+            // FORCE-FAIL: Throw if collection is empty
             const notificationsCollection = APPWRITE_CONFIG.collections.notifications;
             if (!notificationsCollection || notificationsCollection === '') {
-                console.warn('⚠️ notifications collection not configured - skipping admin notification');
-                return;
+                throw new Error('notifications collection ID is empty - cannot notify admin');
             }
 
             const timestamp = new Date().toISOString();

@@ -634,20 +634,27 @@ class AnalyticsService {
         endDate: string
     ): Promise<PlatformAnalytics> {
         try {
-            // Guard: Check if collections exist before querying
-            const therapistsData = COLLECTIONS.THERAPISTS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS) : { documents: [] };
-            const placesData = COLLECTIONS.PLACES ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES) : { documents: [] };
-            const usersData = COLLECTIONS.USERS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS) : { documents: [] };
-            const bookingsData = COLLECTIONS.BOOKINGS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.BOOKINGS, [
+            // FORCE-FAIL: Throw if collections are empty (expose hidden callers)
+            if (!COLLECTIONS.THERAPISTS) throw new Error('THERAPISTS collection ID is empty');
+            if (!COLLECTIONS.PLACES) throw new Error('PLACES collection ID is empty');
+            if (!COLLECTIONS.USERS) throw new Error('USERS collection ID is empty');
+            if (!COLLECTIONS.BOOKINGS) throw new Error('BOOKINGS collection ID is empty');
+
+            // Get counts from collections
+            const therapistsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS);
+            const placesData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
+            const usersData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS);
+            const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.BOOKINGS, [
                 Query.greaterThanEqual('createdAt', startDate),
                 Query.lessThanEqual('createdAt', endDate)
-            ]) : { documents: [] };
+            ]);
 
             const liveTherapists = therapistsData.documents.filter((t: any) => t.isLive).length;
             const livePlaces = placesData.documents.filter((p: any) => p.isLive).length;
 
-            // Get revenue events (skip if collection doesn't exist)
-            const revenueEvents = this.EVENTS_COLLECTION ? await databases.listDocuments(
+            // Get revenue events
+            if (!this.EVENTS_COLLECTION) throw new Error('EVENTS_COLLECTION is empty');
+            const revenueEvents = await databases.listDocuments(
                 DATABASE_ID,
                 this.EVENTS_COLLECTION,
                 [
@@ -655,7 +662,7 @@ class AnalyticsService {
                     Query.greaterThanEqual('timestamp', startDate),
                     Query.lessThanEqual('timestamp', endDate)
                 ]
-            ) : { documents: [] };
+            );
 
             const totalRevenue = revenueEvents.documents.reduce((sum, e) => sum + (e.amount || 0), 0);
             const completedBookingsCount = bookings.documents.filter((b: any) => b.status === 'Completed').length;
@@ -729,9 +736,9 @@ class AnalyticsService {
 
     private async getTherapistData(therapistId: number | string): Promise<any> {
         try {
+            // FORCE-FAIL: Throw if collection is empty
             if (!COLLECTIONS.THERAPISTS) {
-                console.warn('⚠️ THERAPISTS collection not configured');
-                return null;
+                throw new Error('THERAPISTS collection ID is empty - cannot fetch therapist data');
             }
             const docs = await databases.listDocuments(
                 DATABASE_ID,
@@ -741,15 +748,15 @@ class AnalyticsService {
             return docs.documents[0];
         } catch (error) {
             console.error('Error fetching therapist:', error);
-            return null;
+            throw error;
         }
     }
 
     private async getPlaceData(placeId: number | string): Promise<any> {
         try {
+            // FORCE-FAIL: Throw if collection is empty
             if (!COLLECTIONS.PLACES) {
-                console.warn('⚠️ PLACES collection not configured');
-                return null;
+                throw new Error('PLACES collection ID is empty - cannot fetch place data');
             }
             const docs = await databases.listDocuments(
                 DATABASE_ID,
@@ -759,7 +766,7 @@ class AnalyticsService {
             return docs.documents[0];
         } catch (error) {
             console.error('Error fetching place:', error);
-            return null;
+            throw error;
         }
     }
 }
