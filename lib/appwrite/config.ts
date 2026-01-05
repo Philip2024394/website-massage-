@@ -29,7 +29,7 @@ export const APPWRITE_CONFIG = {
     
     // Communication
     messages: import.meta.env.VITE_MESSAGES_COLLECTION_ID || 'chat_messages',
-    notifications: 'Notifications',
+    notifications: import.meta.env.VITE_NOTIFICATIONS_COLLECTION_ID || '', // ⚠️ DISABLED - Check if collection exists with correct schema
     chatMessages: import.meta.env.VITE_CHAT_MESSAGES_COLLECTION_ID || 'chat_messages',
     chatRooms: import.meta.env.VITE_CHAT_ROOMS_COLLECTION_ID || 'chat_rooms',
     chatAuditLogs: import.meta.env.VITE_CHAT_AUDIT_LOGS_COLLECTION_ID || 'chat_audit_logs',

@@ -184,12 +184,19 @@ export const simpleBookingService = {
      */
     async notifyAdmin(message: string, data?: any): Promise<void> {
         try {
+            // Guard: Check if notifications collection exists
+            const notificationsCollection = APPWRITE_CONFIG.collections.notifications;
+            if (!notificationsCollection || notificationsCollection === '') {
+                console.warn('⚠️ notifications collection not configured - skipping admin notification');
+                return;
+            }
+
             const timestamp = new Date().toISOString();
             const notifId = ID.unique();
             
             await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.notifications || 'notifications',
+                notificationsCollection,
                 notifId,
                 {
                     // Primary fields (matching your Appwrite schema)

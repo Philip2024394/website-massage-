@@ -377,10 +377,17 @@ class CommissionTrackingService {
      */
     private async notifyAdminForVerification(commissionId: string): Promise<void> {
         try {
+            // Guard: Check if notifications collection exists
+            const notificationsCollection = APPWRITE_CONFIG.collections.notifications;
+            if (!notificationsCollection || notificationsCollection === '') {
+                console.warn('⚠️ notifications collection not configured - skipping admin notification');
+                return;
+            }
+
             // Create admin notification
             await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.notifications, // Using notifications collection
+                notificationsCollection,
                 ID.unique(),
                 {
                     type: 'payment_verification',

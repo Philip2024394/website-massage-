@@ -67,6 +67,12 @@ const getCustomersWhoChatted = async (
     providerType: 'therapist' | 'place'
 ): Promise<string[]> => {
     try {
+        // Guard: Check if collection exists
+        if (!CHAT_ROOMS_COLLECTION_ID || CHAT_ROOMS_COLLECTION_ID === '') {
+            console.warn('⚠️ chat_rooms collection not configured - skipping customer lookup');
+            return [];
+        }
+
         // Query chat_rooms collection for all rooms involving this provider
         const response = await databases.listDocuments(
             DATABASE_ID,
@@ -105,6 +111,12 @@ const createDiscountNotification = async (
     duration: number
 ): Promise<void> => {
     try {
+        // Guard: Check if collection exists
+        if (!NOTIFICATIONS_COLLECTION_ID || NOTIFICATIONS_COLLECTION_ID === '') {
+            console.warn('⚠️ notifications collection not configured - skipping notification creation');
+            return;
+        }
+
         const expiresAt = new Date();
         expiresAt.setHours(expiresAt.getHours() + duration);
 
@@ -182,6 +194,12 @@ export const broadcastViaWhatsApp = async (
  */
 export const getCustomerPhoneNumbers = async (customerIds: string[]): Promise<string[]> => {
     try {
+        // Guard: Check if collection exists
+        if (!USERS_COLLECTION_ID || USERS_COLLECTION_ID === '') {
+            console.warn('⚠️ users collection not configured - skipping phone number lookup');
+            return [];
+        }
+
         const phoneNumbers: string[] = [];
 
         for (const customerId of customerIds) {
