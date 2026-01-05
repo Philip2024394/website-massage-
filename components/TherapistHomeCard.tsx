@@ -17,6 +17,7 @@ interface TherapistHomeCardProps {
     readOnly?: boolean; // Lock card to read-only mode
     onNavigate?: (page: string) => void; // Add navigation prop
     selectedCity?: string; // Add selectedCity prop for area display
+    t?: any; // Add translations prop
 }
 
 const StarIcon: React.FC<{className?: string}> = ({ className }) => (
@@ -32,7 +33,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     userLocation,
     readOnly = false, // Default to editable unless specified
     onNavigate, // Add navigation prop
-    selectedCity // Add selectedCity prop
+    selectedCity, // Add selectedCity prop
+    t // Add translations prop
 }) => {
     const [bookingsCount, setBookingsCount] = useState<number>(() => {
         try {
@@ -64,7 +66,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 const count = await bookingService.getBookingsCount(providerId, 'therapist');
                 setBookingsCount(count);
             } catch (error) {
-                console.error('Failed to load bookings count:', error);
+                // Silent fail - bookings collection may be disabled
             }
         };
 
@@ -380,7 +382,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* Profile Section - Match TherapistCard positioning */}
-            <div className="px-4 -mt-10 sm:-mt-16 pb-4 relative z-20 overflow-visible">
+            <div className="px-4 -mt-12 sm:-mt-16 pb-4 relative z-20 overflow-visible">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture - Match TherapistCard styling */}
                     <div className="flex-shrink-0 relative z-20">
@@ -595,7 +597,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
                     }`}
                 >
-                    {readOnly ? 'View Only' : 'View Profile'}
+                    {readOnly ? (t?.home?.viewOnly || 'View Only') : (t?.home?.viewProfile || 'View Profile')}
                 </button>
             </div>
             </div>
