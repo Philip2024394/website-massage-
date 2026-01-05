@@ -5,67 +5,90 @@
 
 import { Client, Databases, Account, Storage, Functions } from 'appwrite';
 
+/**
+ * Get required environment variable or throw
+ */
+function requireEnv(key: string, fallback?: string): string {
+  const value = import.meta.env[key] || fallback;
+  if (!value || value === '') {
+    throw new Error(`❌ MISSING CONFIG: ${key} is required but not set in environment variables`);
+  }
+  return value;
+}
+
+/**
+ * Get optional environment variable (for disabled collections)
+ * Returns empty string if not configured
+ */
+function optionalEnv(key: string): string {
+  return import.meta.env[key] || '';
+}
+
 // Appwrite configuration
 export const APPWRITE_CONFIG = {
-  endpoint: import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://syd.cloud.appwrite.io/v1',
-  projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID || '68f23b11000d25eb3664',
-  databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID || '68f76ee1000e64ca8d05',
-  bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID || '68f76bdd002387590584',
+  endpoint: requireEnv('VITE_APPWRITE_ENDPOINT', 'https://syd.cloud.appwrite.io/v1'),
+  projectId: requireEnv('VITE_APPWRITE_PROJECT_ID', '68f23b11000d25eb3664'),
+  databaseId: requireEnv('VITE_APPWRITE_DATABASE_ID', '68f76ee1000e64ca8d05'),
+  bucketId: requireEnv('VITE_APPWRITE_BUCKET_ID', '68f76bdd002387590584'),
   collections: {
-    // Core collections - Using actual collection IDs from Appwrite database
-    therapists: import.meta.env.VITE_THERAPISTS_COLLECTION_ID || 'therapists_collection_id',
-    places: import.meta.env.VITE_PLACES_COLLECTION_ID || 'places_collection_id',
-    facial_places: import.meta.env.VITE_FACIAL_PLACES_COLLECTION_ID || 'facial_places_collection', // ✅ Text-based collection ID
-    users: import.meta.env.VITE_USERS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
-    agents: import.meta.env.VITE_AGENTS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
-    admins: import.meta.env.VITE_ADMINS_COLLECTION_ID || '', // ⚠️ DISABLED - Collection doesn't exist
-    bookings: import.meta.env.VITE_BOOKINGS_COLLECTION_ID || 'bookings_collection_id',
-    reviews: import.meta.env.VITE_REVIEWS_COLLECTION_ID || 'reviews_collection_id',
+    // Core collections - REQUIRED
+    therapists: requireEnv('VITE_THERAPISTS_COLLECTION_ID', 'therapists_collection_id'),
+    places: requireEnv('VITE_PLACES_COLLECTION_ID', 'places_collection_id'),
+    facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
+    bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings_collection_id'),
+    reviews: requireEnv('VITE_REVIEWS_COLLECTION_ID', 'reviews_collection_id'),
     
-    // Analytics
+    // Communication - REQUIRED
+    messages: requireEnv('VITE_MESSAGES_COLLECTION_ID', 'chat_messages'),
+    chatMessages: requireEnv('VITE_CHAT_MESSAGES_COLLECTION_ID', 'chat_messages'),
+    chatRooms: requireEnv('VITE_CHAT_ROOMS_COLLECTION_ID', 'chat_rooms'),
+    chatAuditLogs: requireEnv('VITE_CHAT_AUDIT_LOGS_COLLECTION_ID', 'chat_audit_logs'),
+    chatSessions: requireEnv('VITE_CHAT_SESSIONS_COLLECTION_ID', 'chat_sessions'),
+    
+    // Analytics - REQUIRED
     analytics: 'Analytics',
     analyticsEvents: 'Analytics Events',
     agentVisits: 'Agent Visits',
     
-    // Communication
-    messages: import.meta.env.VITE_MESSAGES_COLLECTION_ID || 'chat_messages',
-    notifications: import.meta.env.VITE_NOTIFICATIONS_COLLECTION_ID || '', // ⚠️ DISABLED - Check if collection exists with correct schema
-    chatMessages: import.meta.env.VITE_CHAT_MESSAGES_COLLECTION_ID || 'chat_messages',
-    chatRooms: import.meta.env.VITE_CHAT_ROOMS_COLLECTION_ID || 'chat_rooms',
-    chatAuditLogs: import.meta.env.VITE_CHAT_AUDIT_LOGS_COLLECTION_ID || 'chat_audit_logs',
-    chatSessions: import.meta.env.VITE_CHAT_SESSIONS_COLLECTION_ID || 'chat_sessions',
+    // Communication - OPTIONAL
     chatTranslations: 'Chat Translations',
     
-    // Business  
-    hotels: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors)
+    // Core collections - DISABLED (return empty string, force-fail will catch usage)
+    users: optionalEnv('VITE_USERS_COLLECTION_ID'),
+    agents: optionalEnv('VITE_AGENTS_COLLECTION_ID'),
+    admins: optionalEnv('VITE_ADMINS_COLLECTION_ID'),
+    notifications: optionalEnv('VITE_NOTIFICATIONS_COLLECTION_ID'),
+    
+    // Business - OPTIONAL
+    hotels: optionalEnv('VITE_HOTELS_COLLECTION_ID'),
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
-    // Content
+    // Content - OPTIONAL
     massageTypes: import.meta.env.VITE_MASSAGE_TYPES_COLLECTION_ID || 'Massage Types',
-    customLinks: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+    customLinks: optionalEnv('VITE_CUSTOM_LINKS_COLLECTION_ID'),
     imageAssets: import.meta.env.VITE_IMAGE_ASSETS_COLLECTION_ID || 'Image Assets',
     loginBackgrounds: import.meta.env.VITE_LOGIN_BACKGROUNDS_COLLECTION_ID || 'Login Backgrounds',
-    translations: '', // ⚠️ DISABLED - Collection doesn't exist or lacks permissions (causes 404 errors)
+    translations: optionalEnv('VITE_TRANSLATIONS_COLLECTION_ID'),
     
-    // Pricing & Payments
+    // Pricing & Payments - OPTIONAL
     membershipPricing: 'Membership Pricing',
     pricing: 'Pricing',
     commissionRecords: 'Commission Records',
     payments: 'Payments',
     
-    // Membership & Leads
+    // Membership & Leads - OPTIONAL
     leadGenerations: import.meta.env.VITE_LEAD_GENERATIONS_COLLECTION_ID || 'Lead Generations',
     membershipAgreements: import.meta.env.VITE_MEMBERSHIP_AGREEMENTS_COLLECTION_ID || 'Membership Agreements',
     membershipUpgrades: import.meta.env.VITE_MEMBERSHIP_UPGRADES_COLLECTION_ID || 'Membership Upgrades',
     deactivationRequests: import.meta.env.VITE_DEACTIVATION_REQUESTS_COLLECTION_ID || 'Deactivation Requests',
-    leads: '', // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)
+    leads: optionalEnv('VITE_LEADS_COLLECTION_ID'),
     
-    // Jobs
+    // Jobs - OPTIONAL
     employerJobPostings: 'Employer Job Postings',
     therapistJobListings: 'Therapist Job Listings',
-    therapistMenus: 'therapist_menus',  // ✅ Fixed: was 'Therapist Menus' (with space), now using actual collection ID
+    therapistMenus: 'therapist_menus',
     
-    // Other
+    // Other - OPTIONAL
     verifications: 'Verifications',
     pushSubscriptions: 'Push Subscriptions',
     appConfig: 'App Config',

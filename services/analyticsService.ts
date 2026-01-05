@@ -5,8 +5,21 @@
  * Integrates with Appwrite for real-time data storage and aggregation
  */
 
-import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
+import { databases, DATABASE_ID } from '../lib/appwrite';
+import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { ID, Query } from 'appwrite';
+
+// Use APPWRITE_CONFIG as single source of truth for collection IDs
+const COLLECTIONS = {
+    THERAPISTS: APPWRITE_CONFIG.collections.therapists,
+    PLACES: APPWRITE_CONFIG.collections.places,
+    USERS: APPWRITE_CONFIG.collections.users,
+    BOOKINGS: APPWRITE_CONFIG.collections.bookings,
+    REVIEWS: APPWRITE_CONFIG.collections.reviews,
+    ANALYTICS: APPWRITE_CONFIG.collections.analytics,
+    ANALYTICS_EVENTS: APPWRITE_CONFIG.collections.analyticsEvents,
+    EVENTS_COLLECTION: APPWRITE_CONFIG.collections.analyticsEvents
+};
 
 // ============================================================================
 // TYPES & INTERFACES
