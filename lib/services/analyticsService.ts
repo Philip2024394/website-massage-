@@ -157,14 +157,14 @@ export const analyticsService = {
    */
   async getDayTimeSlots(therapistId: string, dayName: string, days: number = 30): Promise<DayTimeSlot[]> {
     try {
-      // Guard: Check if bookings collection exists
+      // FORCE-FAIL: Throw if collection is empty
       if (!APPWRITE_CONFIG.collections.bookings) {
-        console.warn('⚠️ bookings collection not configured - returning empty data');
-        return [
-          { time: '9:00 - 11:00 AM', bookings: 0, percentage: 0 },
-         FORCE-FAIL: Throw if collection is empty
-      if (!APPWRITE_CONFIG.collections.bookings) {
-        throw new Error('bookings collection ID is empty - cannot get day time slots')
+        throw new Error('bookings collection ID is empty - cannot get day time slots');
+      }
+
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
       const response = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,
@@ -231,14 +231,14 @@ export const analyticsService = {
    */
   async getAnalyticsSummary(therapistId: string, days: number = 30) {
     try {
-      // Guard: Check if bookings collection exists
+      // FORCE-FAIL: Throw if collection is empty
       if (!APPWRITE_CONFIG.collections.bookings) {
-        console.warn('⚠️ bookings collection not configured');
-        return {
-          totalBookings: 0,
-         FORCE-FAIL: Throw if collection is empty
-      if (!APPWRITE_CONFIG.collections.bookings) {
-        throw new Error('bookings collection ID is empty - cannot get analytics summary')
+        throw new Error('bookings collection ID is empty - cannot get analytics summary');
+      }
+
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+
       const response = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,
