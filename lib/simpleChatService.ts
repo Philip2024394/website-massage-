@@ -73,17 +73,33 @@ export const simpleChatService = {
                 messageData.bookingId = data.bookingId;
             }
 
+            console.log('📤 Creating message document:', {
+                databaseId: APPWRITE_CONFIG.databaseId,
+                collectionId: APPWRITE_CONFIG.collections.chatMessages,
+                messageData: {
+                    conversationId: messageData.conversationId,
+                    senderId: messageData.senderId,
+                    senderRole: messageData.senderRole
+                }
+            });
+            
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages',
+                APPWRITE_CONFIG.collections.chatMessages,
                 ID.unique(),
                 messageData
             );
 
             console.log('✅ Message saved to database:', response.$id);
             return response as unknown as ChatMessage;
-        } catch (error) {
-            console.error('❌ Error sending message:', error);
+        } catch (error: any) {
+            console.error('❌ Error sending message:', {
+                message: error?.message,
+                code: error?.code,
+                type: error?.type,
+                response: error?.response,
+                collectionId: APPWRITE_CONFIG.collections.chatMessages
+            });
             throw error;
         }
     },
@@ -95,7 +111,7 @@ export const simpleChatService = {
         try {
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages',
+                APPWRITE_CONFIG.collections.chatMessages,
                 [
                     Query.equal('conversationId', conversationId),
                     Query.orderDesc('$createdAt'),
@@ -120,7 +136,7 @@ export const simpleChatService = {
      */
     subscribeToMessages(conversationId: string, callback: (message: ChatMessage) => void): () => void {
         try {
-            const collectionId = APPWRITE_CONFIG.collections.messages || 'messages';
+            const collectionId = APPWRITE_CONFIG.collections.chatMessages;
             const channelName = `databases.${APPWRITE_CONFIG.databaseId}.collections.${collectionId}.documents`;
             
             const unsubscribe = client.subscribe(channelName, (response: any) => {

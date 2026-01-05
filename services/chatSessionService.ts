@@ -1,5 +1,5 @@
 import { databases, ID, Query } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { APPWRITE_CONFIG } from '../lib/appwrite/config';
 import { appwriteHealthMonitor } from './appwriteHealthMonitor';
 
 // Connection and retry configuration
@@ -158,16 +158,21 @@ export const chatSessionService = {
             const now = new Date().toISOString();
             const expiresAt = new Date(Date.now() + CONFIG.SESSION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
-            const session: Omit<ChatSession, '$id'> = {
-                sessionId,
-                ...sessionData,
-                isActive: true,
-                createdAt: now,
-                updatedAt: now,
-                expiresAt
+            // Ensure session data matches Appwrite schema exactly
+            const session = {
+                bookingId: sessionData.bookingId || sessionId,
+                therapistId: sessionData.providerId,
+                status: 'active',
+                startedAt: now
             };
 
-            console.log('💾 Creating chat session:', { sessionId, providerId: session.providerId });
+            console.log('💾 Creating chat session:', { 
+                sessionId, 
+                bookingId: session.bookingId,
+                therapistId: session.therapistId,
+                databaseId: APPWRITE_CONFIG.databaseId,
+                collectionId: APPWRITE_CONFIG.collections.chatSessions
+            });
 
             const result = await retryOperation(async () => {
                 return await databases.createDocument(
@@ -180,14 +185,29 @@ export const chatSessionService = {
 
             console.log('✅ Chat session created successfully:', result.$id);
             return result as unknown as ChatSession;
-        } catch (error) {
-            console.error('❌ Failed to create chat session:', error);
+        } catch (error: any) {
+            console.error('❌ Failed to create chat session:', {
+                message: error?.message,
+                code: error?.code,
+                type: error?.type,
+                response: error?.response,
+                databaseId: APPWRITE_CONFIG.databaseId,
+                collectionId: APPWRITE_CONFIG.collections.chatSessions,
+                sessionData: {
+                    bookingId: sessionData.bookingId,
+                    providerId: sessionData.providerId
+                }
+            });
             
             // Enhanced error reporting
             if (error instanceof AppwriteConnectionError) {
                 throw new Error('Unable to connect to chat service. Please check your internet connection and try again.');
-            } else if (error instanceof Error && error.message.includes('Invalid collection ID')) {
-                throw new Error('Chat service configuration error. Please contact support.');
+            } else if (error?.message?.includes('Invalid collection ID') || error?.message?.includes('collection')) {
+                throw new Error(`Chat service configuration error: ${error.message}. Collection ID: ${APPWRITE_CONFIG.collections.chatSessions}`);
+            } else if (error?.code === 401) {
+                throw new Error('Permission denied. Please ensure guest users can create chat sessions.');
+            } else if (error?.code === 400) {
+                throw new Error(`Invalid data format: ${error.message}. Please check schema requirements.`);
             }
             
             throw error;

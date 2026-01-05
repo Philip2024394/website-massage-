@@ -9,6 +9,11 @@ import { ID, Query } from 'appwrite';
 export const messagingService = {
     async create(message: any): Promise<any> {
         try {
+            console.log('📝 Creating message document:', {
+                databaseId: APPWRITE_CONFIG.databaseId,
+                collectionId: APPWRITE_CONFIG.collections.messages,
+                messageKeys: Object.keys(message)
+            });
             const response = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.messages,
@@ -16,8 +21,13 @@ export const messagingService = {
                 message
             );
             return response;
-        } catch (error) {
-            console.error('Error creating message:', error);
+        } catch (error: any) {
+            console.error('❌ Error creating message:', {
+                message: error?.message,
+                code: error?.code,
+                type: error?.type,
+                response: error?.response
+            });
             throw error;
         }
     },
@@ -100,8 +110,14 @@ export const messagingService = {
             const result = await this.create(message);
             console.log('[MESSAGING SERVICE] Message created successfully:', result);
             return result;
-        } catch (error) {
-            console.error('[MESSAGING SERVICE] Error sending message:', error);
+        } catch (error: any) {
+            console.error('[MESSAGING SERVICE] ❌ Error sending message:', {
+                message: error?.message,
+                code: error?.code,
+                type: error?.type,
+                response: error?.response,
+                collectionId: APPWRITE_CONFIG.collections.messages
+            });
             throw error;
         }
     },
