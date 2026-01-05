@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
 import TherapistHomeCard from '../components/TherapistHomeCard';
 import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
-import { DirectoryRelatedLinks } from '../components/seo/InternalLinks';
 import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
@@ -25,7 +24,6 @@ import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, fin
 import { matchesLocation } from '../utils/locationNormalization';
 import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
 import MusicPlayer from '../components/MusicPlayer';
-import { useSEO } from '../hooks/useSEO';
 
 
 interface HomePageProps {
@@ -261,15 +259,6 @@ const HomePage: React.FC<HomePageProps> = ({
     // Development mode toggle (press Ctrl+Shift+D to toggle)
     const [isDevelopmentMode, setIsDevelopmentMode] = useState(() => {
         return localStorage.getItem('massage_dev_mode') === 'true';
-    });
-    
-    // SEO Metadata for HomePage
-    useSEO({
-        title: 'Find Professional Massage Therapists & Spas in Indonesia | IndaStreet',
-        description: 'Book verified massage therapists and spa services in Yogyakarta, Bali, Jakarta, and across Indonesia. Home massage services, traditional Balinese massage, deep tissue therapy, and spa treatments available.',
-        keywords: 'massage Indonesia, massage Yogyakarta, massage Bali, spa services, professional massage therapist, home massage, Balinese massage, deep tissue massage, spa Indonesia',
-        canonical: 'https://www.indastreetmassage.com/home',
-        ogImage: 'https://ik.imagekit.io/7grri5v7d/logo%20yoga.png'
     });
     
     // Add keyboard shortcut to toggle dev mode
@@ -1121,7 +1110,7 @@ const HomePage: React.FC<HomePageProps> = ({
                 const links = await customLinksService.getAll();
                 setCustomLinks(links);
             } catch (error) {
-                console.error('Error fetching custom links:', error);
+                // Silent fail - custom links are optional feature
             }
         };
         fetchCustomLinks();
@@ -1222,9 +1211,9 @@ const HomePage: React.FC<HomePageProps> = ({
                 "query-input": "required name=search_term"
             },
             "sameAs": [
-                "https://www.facebook.com/indastreet",
+                "https://www.facebook.com/share/g/1C2QCPTp62/",
                 "https://www.instagram.com/indastreet",
-                "https://twitter.com/indastreet"
+                "https://www.instagram.com/indastreet.id/"
             ]
         };
 
@@ -1289,10 +1278,11 @@ const HomePage: React.FC<HomePageProps> = ({
                                     console.error('❌ No language change handler provided');
                                 }
                             }} 
-                            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
+                            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0 border-0 outline-none" 
+                            style={{ border: 'none', textDecoration: 'none' }}
                             title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
                         >
-                            <span className="text-xl sm:text-2xl">
+                            <span className="text-xl sm:text-2xl leading-none" style={{ textDecoration: 'none', border: 'none' }}>
                                 {language === 'id' ? '🇮🇩' : '🇬🇧'}
                             </span>
                         </button>
@@ -1413,15 +1403,6 @@ const HomePage: React.FC<HomePageProps> = ({
                         )}
                     </div>
 
-                    {/* Development Mode Indicator */}
-                    {isDevelopmentMode && (
-                        <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-2 mb-3 mx-auto max-w-md">
-                            <p className="text-yellow-800 text-xs font-semibold text-center">
-                                🛠️ DEV MODE: Press Ctrl+Shift+D to toggle
-                            </p>
-                        </div>
-                    )}
-
                     {/* Toggle Buttons - Standard Height */}
                     <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto">
                         <button 
@@ -1505,7 +1486,7 @@ const HomePage: React.FC<HomePageProps> = ({
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                                Browse Region dropdown (distance still applies)
+                                {t?.home?.browseRegionNote || 'Browse Region dropdown (distance still applies)'}
                             </p>
                         </div>
                         
@@ -1951,11 +1932,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
                                     readOnly={readOnly}
                                     selectedCity={selectedCity}
-                                    onClick={(t) => {
+                                    t={t}
+                                    onClick={(selectedTherapist) => {
                                         // Set selected therapist and navigate to profile page with URL update
-                                        onSelectTherapist?.(t);
-                                        const therapistId = t.id || t.$id;
-                                        const slug = t.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                        onSelectTherapist?.(selectedTherapist);
+                                        const therapistId = selectedTherapist.id || selectedTherapist.$id;
+                                        const slug = selectedTherapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
                                         const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
                                         window.history.pushState({}, '', profileUrl);
                                         onNavigate?.('therapist-profile');
@@ -2323,26 +2305,51 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 }
             `}</style>
             
-            {/* SEO Internal Linking */}
-            <DirectoryRelatedLinks providerType="therapist" />
-            
-            {/* Directory footer: Terms & Privacy with brand */}
+            {/* Directory footer: Brand */}
             <div className="mt-12 mb-6 flex flex-col items-center gap-2">
                 <div className="font-bold text-lg">
                     <span className="text-black">Inda</span>
                     <span className="text-orange-500">Street</span>
                 </div>
-                <div className="flex justify-center gap-4">
-                    <button onClick={() => onTermsClick && onTermsClick()} className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
-                        Terms
-                    </button>
-                    <span className="text-sm text-gray-400">•</span>
-                    <button onClick={() => onPrivacyClick && onPrivacyClick()} className="text-sm text-orange-500 hover:text-orange-600 font-semibold">
-                        Privacy
-                    </button>
-                </div>
                 {/* Social Media Icons */}
                 <SocialMediaLinks className="mt-2" />
+
+                {/* Quick Links for SEO */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                    <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
+                    <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
+                        <button
+                            onClick={() => onNavigate?.('massage-types')}
+                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                        >
+                            Massage Types
+                        </button>
+                        <button
+                            onClick={() => onNavigate?.('facial-types')}
+                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                        >
+                            Facial Types
+                        </button>
+                        <button
+                            onClick={() => onNavigate?.('therapist-signup')}
+                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                        >
+                            Join as a Therapist Today
+                        </button>
+                        <button
+                            onClick={() => onNavigate?.('place-signup')}
+                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                        >
+                            Join Massage Place Today
+                        </button>
+                        <button
+                            onClick={() => onNavigate?.('facial-place-signup')}
+                            className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                        >
+                            Join Facial Place Today
+                        </button>
+                    </div>
+                </div>
             </div>
             
             {/* Coming Soon Modal */}
