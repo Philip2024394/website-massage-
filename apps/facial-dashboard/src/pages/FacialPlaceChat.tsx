@@ -89,12 +89,9 @@ const FacialPlaceChat: React.FC<FacialPlaceChatProps> = ({ place, onBack }) => {
       await messagingService.sendMessage({
         conversationId,
         senderId: String(place.$id || place.id),
-        senderType: 'facial-place',
-        senderName: place.name,
         recipientId: 'admin',
-        recipientType: 'admin',
-        message: newMessage.trim(),
-        read: false
+        content: newMessage.trim(),
+        type: 'text',
       });
 
       console.log('✅ Message sent successfully');

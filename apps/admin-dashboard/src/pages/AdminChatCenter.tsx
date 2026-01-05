@@ -204,12 +204,9 @@ const AdminChatCenter: React.FC = () => {
             const savedMsg = await messagingService.sendMessage({
                 conversationId,
                 senderId: 'admin',
-                senderType: 'user', // Use 'user' for admin
-                senderName: 'Support Team',
                 recipientId: selectedMember.$id,
-                recipientType: memberRole,
-                recipientName: selectedMember.name,
                 content: newMessage.trim(),
+                type: 'text',
             });
 
             // Add to local messages immediately

@@ -103,12 +103,9 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
       const result = await messagingService.sendMessage({
         conversationId,
         senderId: String(therapist.$id || therapist.id),
-        senderType: 'therapist',
-        senderName: therapist.name || 'Therapist',
         recipientId: 'admin',
-        recipientType: 'user', // Use 'user' type for admin
-        recipientName: 'Support Team',
         content: newMessage.trim(),
+        type: 'text',
       });
       
       console.log('[THERAPIST CHAT] Message sent successfully:', result);
