@@ -417,12 +417,29 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
             ? APPWRITE_CONFIG.collections.therapists 
             : APPWRITE_CONFIG.collections.facial_places;
           
+          console.log('🔍 Fetching therapist data for commission check:', {
+            collectionId,
+            therapistId,
+            therapistType
+          });
+          
           if (collectionId && therapistId) {
             const therapist = await databases.getDocument(
               APPWRITE_CONFIG.databaseId,
               collectionId,
               therapistId
             );
+
+            if (!therapist) {
+              console.warn('⚠️ Therapist document returned null/undefined');
+              throw new Error('Therapist account is null. Please contact support.');
+            }
+
+            console.log('✅ Therapist data fetched:', {
+              id: therapist.$id,
+              name: (therapist as any).name,
+              membershipTier: (therapist as any).membershipTier
+            });
 
             // Check if therapist is on Pro plan (free tier with 30% commission)
             // 'free' = Pro plan, 'plus' = Plus plan (no commission)
