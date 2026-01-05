@@ -159,9 +159,8 @@ export const chatSessionService = {
             const now = new Date().toISOString();
             const expiresAt = new Date(Date.now() + CONFIG.SESSION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
-            // TEMPORARY BYPASS: Construct full payload from sessionData
-            // Appwrite enforces schema; pass through all fields caller provides
-            const validatedSession = {
+            // CRITICAL FIX: Convert pricing object to JSON string (Appwrite doesn't support nested objects)
+            const appwritePayload: any = {
                 sessionId,
                 ...sessionData,  // Include all fields from caller
                 bookingId: sessionData.bookingId || sessionId,
@@ -170,11 +169,17 @@ export const chatSessionService = {
                 updatedAt: now,
                 expiresAt
             };
+            
+            // Convert pricing object to JSON string if it exists
+            if (appwritePayload.pricing && typeof appwritePayload.pricing === 'object') {
+                appwritePayload.pricing = JSON.stringify(appwritePayload.pricing);
+            }
 
             console.log('💾 Creating chat session:', { 
                 sessionId, 
-                bookingId: validatedSession.bookingId,
-                providerId: validatedSession.providerId,
+                bookingId: appwritePayload.bookingId,
+                providerId: appwritePayload.providerId,
+                pricingType: typeof appwritePayload.pricing,
                 databaseId: APPWRITE_CONFIG.databaseId,
                 collectionId: APPWRITE_CONFIG.collections.chatSessions
             });
@@ -184,7 +189,7 @@ export const chatSessionService = {
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.chatSessions,
                     sessionId,
-                    validatedSession  // Use validated payload
+                    appwritePayload  // Use payload with stringified pricing
                 );
             });
 
