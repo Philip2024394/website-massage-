@@ -175,6 +175,15 @@ export const chatSessionService = {
                 appwritePayload.pricing = JSON.stringify(appwritePayload.pricing);
             }
 
+            // LOG EVERY FIELD AND ITS TYPE
+            console.log('🔬 FULL PAYLOAD DEBUG:', JSON.stringify(appwritePayload, null, 2));
+            console.log('🔬 FIELD TYPES:', Object.keys(appwritePayload).map(key => ({
+                field: key,
+                type: typeof appwritePayload[key],
+                value: appwritePayload[key],
+                isObject: typeof appwritePayload[key] === 'object' && appwritePayload[key] !== null
+            })));
+
             console.log('💾 Creating chat session:', { 
                 sessionId, 
                 bookingId: appwritePayload.bookingId,
@@ -196,6 +205,9 @@ export const chatSessionService = {
             console.log('✅ Chat session created successfully:', result.$id);
             return result as unknown as ChatSession;
         } catch (error: any) {
+            console.error('❌ CHAT SESSION CREATION FAILED - FULL ERROR:', error);
+            console.error('❌ Error message:', error?.message);
+            console.error('❌ Error response:', error?.response);
             console.error('❌ Failed to create chat session:', {
                 message: error?.message,
                 code: error?.code,
