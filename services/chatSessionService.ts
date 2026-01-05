@@ -1,6 +1,7 @@
 import { databases, ID, Query } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite/config';
 import { appwriteHealthMonitor } from './appwriteHealthMonitor';
+import { validateChatSession } from '../lib/appwrite/schemas/validators';
 
 // Connection and retry configuration
 const CONFIG = {
@@ -158,18 +159,27 @@ export const chatSessionService = {
             const now = new Date().toISOString();
             const expiresAt = new Date(Date.now() + CONFIG.SESSION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
-            // Ensure session data matches Appwrite schema exactly
-            const session = {
+            // Prepare untrusted input from UI
+            const untrustedPayload = {
                 bookingId: sessionData.bookingId || sessionId,
                 therapistId: sessionData.providerId,
-                status: 'active',
+                status: 'active' as const,
                 startedAt: now
             };
 
+            // SCHEMA VALIDATION: Treat UI as untrusted, validate at service boundary
+            let validatedSession;
+            try {
+                validatedSession = validateChatSession(untrustedPayload);
+            } catch (validationError: any) {
+                console.error('💥 chat_sessions validation failed:', validationError.message);
+                throw new Error(`Failed to create session: ${validationError.message}`);
+            }
+
             console.log('💾 Creating chat session:', { 
                 sessionId, 
-                bookingId: session.bookingId,
-                therapistId: session.therapistId,
+                bookingId: validatedSession.bookingId,
+                therapistId: validatedSession.therapistId,
                 databaseId: APPWRITE_CONFIG.databaseId,
                 collectionId: APPWRITE_CONFIG.collections.chatSessions
             });
@@ -179,7 +189,7 @@ export const chatSessionService = {
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.chatSessions,
                     sessionId,
-                    session
+                    validatedSession  // Use validated payload
                 );
             });
 

@@ -8,6 +8,7 @@ import { Client, Databases, ID, Query } from 'appwrite';
 import { APPWRITE_CONFIG } from './appwrite.config';
 import { ChatRoom, ChatMessage, ChatRoomStatus, MessageSenderType } from '../types';
 import { translateText } from './translationService';
+import { validateChatRoom } from './appwrite/schemas/validators';
 
 // Initialize Appwrite client
 const client = new Client()
@@ -37,27 +38,39 @@ export async function createChatRoom(data: {
     expiresAt: string;
 }): Promise<ChatRoom> {
     try {
+        // Prepare untrusted input from caller
+        const untrustedPayload = {
+            bookingId: data.bookingId,
+            customerId: data.customerId,
+            customerName: data.customerName,
+            customerLanguage: data.customerLanguage,
+            customerPhoto: data.customerPhoto || '',
+            therapistId: data.therapistId,
+            therapistName: data.therapistName,
+            therapistLanguage: data.therapistLanguage,
+            therapistType: data.therapistType,
+            therapistPhoto: data.therapistPhoto || '',
+            status: ChatRoomStatus.Pending,
+            expiresAt: data.expiresAt,
+            unreadCount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        // SCHEMA VALIDATION: Treat caller input as untrusted
+        let validatedRoom;
+        try {
+            validatedRoom = validateChatRoom(untrustedPayload);
+        } catch (validationError: any) {
+            console.error('💥 chat_rooms validation failed:', validationError.message);
+            throw new Error(`Failed to create chat room: ${validationError.message}`);
+        }
+
         const chatRoom = await databases.createDocument(
             DATABASE_ID,
             CHAT_ROOMS_COLLECTION,
             ID.unique(),
-            {
-                bookingId: data.bookingId,
-                customerId: data.customerId,
-                customerName: data.customerName,
-                customerLanguage: data.customerLanguage,
-                customerPhoto: data.customerPhoto || '',
-                therapistId: data.therapistId,
-                therapistName: data.therapistName,
-                therapistLanguage: data.therapistLanguage,
-                therapistType: data.therapistType,
-                therapistPhoto: data.therapistPhoto || '',
-                status: ChatRoomStatus.Pending,
-                expiresAt: data.expiresAt,
-                unreadCount: 0,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            }
+            validatedRoom  // Use validated payload
         );
 
         return chatRoom as unknown as ChatRoom;

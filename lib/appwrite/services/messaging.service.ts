@@ -5,6 +5,7 @@
 
 import { databases, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
+import { validateChatMessage } from '../schemas/validators';
 
 export const messagingService = {
     async create(message: any): Promise<any> {
@@ -93,9 +94,9 @@ export const messagingService = {
             // Generate messageId if not provided
             const messageId = messageData.messageId || ID.unique();
             
-            // CRITICAL: Only include schema-compliant fields (no spread operator)
-            const message = {
-                messageId,  // Required by Messages collection
+            // Prepare untrusted input from UI
+            const untrustedPayload = {
+                messageId,
                 senderId,
                 recipientId,
                 conversationId,
@@ -105,9 +106,18 @@ export const messagingService = {
                 createdAt: new Date().toISOString()
             };
             
-            console.log('[MESSAGING SERVICE] Message object to be created:', message);
+            // SCHEMA VALIDATION: Treat UI as untrusted, validate at service boundary
+            let validatedMessage;
+            try {
+                validatedMessage = validateChatMessage(untrustedPayload);
+            } catch (validationError: any) {
+                console.error('[MESSAGING SERVICE] ❌ Schema validation failed:', validationError.message);
+                throw new Error(`Failed to send message: ${validationError.message}`);
+            }
             
-            const result = await this.create(message);
+            console.log('[MESSAGING SERVICE] ✅ Payload validated, sending to Appwrite:', validatedMessage);
+            
+            const result = await this.create(validatedMessage);
             console.log('[MESSAGING SERVICE] Message created successfully:', result);
             return result;
         } catch (error: any) {
