@@ -26,6 +26,16 @@ export const analyticsService = {
    */
   async getPeakBookingHours(therapistId: string, days: number = 30): Promise<PeakHourData[]> {
     try {
+      // Guard: Check if bookings collection exists
+      if (!APPWRITE_CONFIG.collections.bookings) {
+        console.warn('⚠️ bookings collection not configured - returning mock data');
+        return [
+          { hour: '9:00 - 11:00 AM', bookings: 0, percentage: 0 },
+          { hour: '2:00 - 4:00 PM', bookings: 0, percentage: 0 },
+          { hour: '5:00 - 7:00 PM', bookings: 0, percentage: 0 },
+        ];
+      }
+
       // Get all bookings for therapist in last X days
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
@@ -88,6 +98,16 @@ export const analyticsService = {
    */
   async getBusiestDays(therapistId: string, days: number = 30): Promise<BusyDayData[]> {
     try {
+      // Guard: Check if bookings collection exists
+      if (!APPWRITE_CONFIG.collections.bookings) {
+        console.warn('⚠️ bookings collection not configured - returning empty data');
+        return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => ({
+          day,
+          bookingCount: 0,
+          intensity: 0
+        }));
+      }
+
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
 
@@ -147,6 +167,18 @@ export const analyticsService = {
    */
   async getDayTimeSlots(therapistId: string, dayName: string, days: number = 30): Promise<DayTimeSlot[]> {
     try {
+      // Guard: Check if bookings collection exists
+      if (!APPWRITE_CONFIG.collections.bookings) {
+        console.warn('⚠️ bookings collection not configured - returning empty data');
+        return [
+          { time: '9:00 - 11:00 AM', bookings: 0, percentage: 0 },
+          { time: '11:00 - 1:00 PM', bookings: 0, percentage: 0 },
+          { time: '2:00 - 4:00 PM', bookings: 0, percentage: 0 },
+          { time: '4:00 - 6:00 PM', bookings: 0, percentage: 0 },
+          { time: '6:00 - 8:00 PM', bookings: 0, percentage: 0 },
+        ];
+      }
+
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
 
@@ -216,6 +248,16 @@ export const analyticsService = {
    */
   async getAnalyticsSummary(therapistId: string, days: number = 30) {
     try {
+      // Guard: Check if bookings collection exists
+      if (!APPWRITE_CONFIG.collections.bookings) {
+        console.warn('⚠️ bookings collection not configured');
+        return {
+          totalBookings: 0,
+          avgPerDay: 0,
+          period: `Last ${days} days`
+        };
+      }
+
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - days);
 

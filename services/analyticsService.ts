@@ -634,22 +634,20 @@ class AnalyticsService {
         endDate: string
     ): Promise<PlatformAnalytics> {
         try {
-            // Get counts from collections
-            const [therapists, places, users, bookings] = await Promise.all([
-                databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS),
-                databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES),
-                databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS),
-                databases.listDocuments(DATABASE_ID, COLLECTIONS.BOOKINGS, [
-                    Query.greaterThanEqual('createdAt', startDate),
-                    Query.lessThanEqual('createdAt', endDate)
-                ])
-            ]);
+            // Guard: Check if collections exist before querying
+            const therapistsData = COLLECTIONS.THERAPISTS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS) : { documents: [] };
+            const placesData = COLLECTIONS.PLACES ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES) : { documents: [] };
+            const usersData = COLLECTIONS.USERS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS) : { documents: [] };
+            const bookingsData = COLLECTIONS.BOOKINGS ? await databases.listDocuments(DATABASE_ID, COLLECTIONS.BOOKINGS, [
+                Query.greaterThanEqual('createdAt', startDate),
+                Query.lessThanEqual('createdAt', endDate)
+            ]) : { documents: [] };
 
-            const liveTherapists = therapists.documents.filter((t: any) => t.isLive).length;
-            const livePlaces = places.documents.filter((p: any) => p.isLive).length;
+            const liveTherapists = therapistsData.documents.filter((t: any) => t.isLive).length;
+            const livePlaces = placesData.documents.filter((p: any) => p.isLive).length;
 
-            // Get revenue events
-            const revenueEvents = await databases.listDocuments(
+            // Get revenue events (skip if collection doesn't exist)
+            const revenueEvents = this.EVENTS_COLLECTION ? await databases.listDocuments(
                 DATABASE_ID,
                 this.EVENTS_COLLECTION,
                 [
@@ -657,7 +655,7 @@ class AnalyticsService {
                     Query.greaterThanEqual('timestamp', startDate),
                     Query.lessThanEqual('timestamp', endDate)
                 ]
-            );
+            ) : { documents: [] };
 
             const totalRevenue = revenueEvents.documents.reduce((sum, e) => sum + (e.amount || 0), 0);
             const completedBookingsCount = bookings.documents.filter((b: any) => b.status === 'Completed').length;
@@ -731,6 +729,10 @@ class AnalyticsService {
 
     private async getTherapistData(therapistId: number | string): Promise<any> {
         try {
+            if (!COLLECTIONS.THERAPISTS) {
+                console.warn('⚠️ THERAPISTS collection not configured');
+                return null;
+            }
             const docs = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTIONS.THERAPISTS,
@@ -745,6 +747,10 @@ class AnalyticsService {
 
     private async getPlaceData(placeId: number | string): Promise<any> {
         try {
+            if (!COLLECTIONS.PLACES) {
+                console.warn('⚠️ PLACES collection not configured');
+                return null;
+            }
             const docs = await databases.listDocuments(
                 DATABASE_ID,
                 COLLECTIONS.PLACES,
