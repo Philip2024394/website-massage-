@@ -302,10 +302,10 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                     </div>
 
                     {/* Duration Containers + Delete Button Row */}
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-1.5 overflow-x-auto">
                       {/* 60 Minutes Container */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-center gap-1 mb-1">
+                      <div className="flex-1 min-w-[80px]">
+                        <div className="flex items-center justify-center gap-0.5 mb-1">
                           <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
                           <input
                             type="text"
@@ -319,7 +319,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                 updateService(service.id, 'min60', '60');
                               }
                             }}
-                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              className="w-12 border-2 border-orange-300 rounded px-1 py-0.5 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
                                               placeholder="60"
                                               maxLength={3}
                                             />
@@ -332,7 +332,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price60', value);
                                             }}
-                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="150"
                                             maxLength={3}
                                           />
@@ -340,8 +340,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                         </div>
 
                                         {/* 90 Minutes Container */}
-                                        <div className="flex-1">
-                                          <div className="flex items-center justify-center gap-1 mb-1">
+                                        <div className="flex-1 min-w-[80px]">
+                                          <div className="flex items-center justify-center gap-0.5 mb-1">
                                             <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
                                             <input
                                               type="text"
@@ -355,7 +355,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                                   updateService(service.id, 'min90', '90');
                                                 }
                                               }}
-                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              className="w-12 border-2 border-orange-300 rounded px-1 py-0.5 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
                                               placeholder="90"
                                               maxLength={3}
                                             />
@@ -368,7 +368,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price90', value);
                                             }}
-                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="200"
                                             maxLength={3}
                                           />
@@ -376,8 +376,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                         </div>
 
                                         {/* 120 Minutes Container */}
-                                        <div className="flex-1">
-                                          <div className="flex items-center justify-center gap-1 mb-1">
+                                        <div className="flex-1 min-w-[80px]">
+                                          <div className="flex items-center justify-center gap-0.5 mb-1">
                                             <span className="text-[10px] text-gray-600 font-semibold">Min:</span>
                                             <input
                                               type="text"
@@ -391,7 +391,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                                   updateService(service.id, 'min120', '120');
                                                 }
                                               }}
-                                              className="w-14 border-2 border-orange-300 rounded px-2 py-1 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
+                                              className="w-12 border-2 border-orange-300 rounded px-1 py-0.5 text-xs font-bold text-center focus:border-orange-500 focus:outline-none bg-white"
                                               placeholder="120"
                                               maxLength={3}
                                             />
@@ -404,7 +404,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                               const value = e.target.value.replace(/\D/g, '').slice(0, 3);
                                               updateService(service.id, 'price120', value);
                                             }}
-                                            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
+                                            className="w-full border border-gray-300 rounded px-1.5 py-1.5 text-sm font-bold text-center focus:border-orange-500 focus:outline-none"
                                             placeholder="250"
                                             maxLength={3}
                                           />
@@ -414,7 +414,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
                                         {/* Delete Button */}
                                         <button
                                           onClick={() => removeService(service.id)}
-                                          className="flex items-center justify-center p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                                          className="flex-shrink-0 flex items-center justify-center p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg"
                                           aria-label="Delete service"
                                         >
                                           <Trash2 className="w-5 h-5" />
