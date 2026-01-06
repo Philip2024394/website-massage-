@@ -23,6 +23,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
     name: '',
     email: '',
     password: '',
+    whatsappNumber: '', // WhatsApp number without +62 prefix
     termsAccepted: false,
   });
 
@@ -69,6 +70,20 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
       return;
     }
 
+    // Validate WhatsApp number
+    if (!formData.whatsappNumber || formData.whatsappNumber.trim() === '') {
+      setError('WhatsApp number is required');
+      return;
+    }
+
+    // Remove any non-digit characters from WhatsApp number
+    const cleanedWhatsApp = formData.whatsappNumber.replace(/\D/g, '');
+    
+    if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
+      setError('Please enter a valid WhatsApp number (8-15 digits)');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -78,11 +93,15 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
       // Normalize email (trim and lowercase) BEFORE submission
       const normalizedEmail = formData.email.trim().toLowerCase();
       
+      // Format WhatsApp with +62 prefix
+      const formattedWhatsApp = `+62${cleanedWhatsApp}`;
+      
       // Create account with automatic Pro plan (30% commission)
       const result = await membershipSignupService.createAccountSimplified({
         name: formData.name,
         email: normalizedEmail,
         password: formData.password,
+        whatsappNumber: formattedWhatsApp,
         portalType: role
       });
 
@@ -196,6 +215,35 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 placeholder="Enter your email"
               />
+            </div>
+
+            <div>
+              <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700">
+                WhatsApp Number <span className="text-red-500">*</span>
+              </label>
+              <div className="mt-1 flex">
+                <span className="inline-flex items-center px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-md text-gray-700 font-medium text-sm">
+                  +62
+                </span>
+                <input
+                  id="whatsapp"
+                  name="whatsapp"
+                  type="tel"
+                  required
+                  value={formData.whatsappNumber}
+                  onChange={(e) => {
+                    // Only allow digits
+                    const value = e.target.value.replace(/\D/g, '');
+                    setFormData(prev => ({ ...prev, whatsappNumber: value }));
+                  }}
+                  className="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-r-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                  placeholder="812345678"
+                  maxLength={13}
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Enter your number without the country code (+62)
+              </p>
             </div>
 
             <div>

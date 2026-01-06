@@ -194,6 +194,27 @@ export const bookingService = {
                     console.error('⚠️ Failed to create payment record:', paymentError);
                     // Don't throw - booking was successful, payment tracking failed
                 }
+
+                // ✅ AUDIT FIX: Commission tracking for Pro members
+                try {
+                    // Check if therapist is Pro member (has membershipLevel === 'Pro')
+                    // For now, create commission record for ALL therapist bookings
+                    // TODO: Add membership check when therapist schema includes membershipLevel field
+                    const { commissionTrackingService } = await import('../../services/commissionTrackingService');
+                    
+                    await commissionTrackingService.createCommissionRecord(
+                        booking.providerId,
+                        booking.providerName,
+                        response.$id,
+                        response.createdAt || new Date().toISOString(),
+                        booking.startTime, // scheduledDate
+                        booking.totalCost
+                    );
+                    console.log('✅ Commission record created (30% tracked)');
+                } catch (commissionError) {
+                    console.error('⚠️ Failed to create commission record:', commissionError);
+                    // Don't throw - booking successful, commission tracking is supplementary
+                }
             }
             
             return response;

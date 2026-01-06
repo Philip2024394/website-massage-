@@ -1,5 +1,4 @@
 name: Block Legacy Edits
-
 on:
   pull_request:
     branches:

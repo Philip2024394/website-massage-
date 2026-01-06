@@ -397,7 +397,40 @@ class ReviewService {
             localStorage.setItem(this.localStorageKey, JSON.stringify(this.reviews));
             console.log(`💾 Saved ${this.reviews.length} reviews to localStorage`);
         } catch (error) {
-            console.error('Error saving reviews:', error);
+            // Handle QuotaExceededError by trimming old reviews
+            if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                console.warn('⚠️ localStorage quota exceeded. Trimming old reviews...');
+                
+                // Keep only the last 500 reviews (most recent)
+                const MAX_REVIEWS = 500;
+                if (this.reviews.length > MAX_REVIEWS) {
+                    const trimmedCount = this.reviews.length - MAX_REVIEWS;
+                    this.reviews = this.reviews.slice(-MAX_REVIEWS);
+                    console.log(`✂️ Trimmed ${trimmedCount} old reviews, keeping ${this.reviews.length} most recent`);
+                    
+                    // Retry saving with trimmed data
+                    try {
+                        localStorage.setItem(this.localStorageKey, JSON.stringify(this.reviews));
+                        console.log(`💾 Successfully saved ${this.reviews.length} reviews after trimming`);
+                    } catch (retryError) {
+                        // If still failing, clear all auto-generated reviews and keep only real ones
+                        console.warn('⚠️ Still exceeding quota. Removing auto-generated reviews...');
+                        this.reviews = this.reviews.filter(r => !r.userId.startsWith('auto_'));
+                        try {
+                            localStorage.setItem(this.localStorageKey, JSON.stringify(this.reviews));
+                            console.log(`💾 Saved ${this.reviews.length} real reviews (auto-reviews removed)`);
+                        } catch (finalError) {
+                            // Last resort: fail silently
+                            console.error('❌ Unable to save reviews even after cleanup. Continuing without save.');
+                        }
+                    }
+                } else {
+                    // Already at or below max, can't trim further - fail silently
+                    console.error('❌ localStorage quota exceeded with minimal reviews. Skipping save.');
+                }
+            } else {
+                console.error('Error saving reviews:', error);
+            }
         }
     }
 

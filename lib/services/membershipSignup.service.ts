@@ -1104,6 +1104,7 @@ class MembershipSignupService {
         name: string; 
         email: string; 
         password: string; 
+        whatsappNumber: string;
         portalType: PortalType 
     }): Promise<{ user: any; memberId: string }> {
         try {
@@ -1122,6 +1123,17 @@ class MembershipSignupService {
             await account.createEmailPasswordSession(accountData.email, accountData.password);
             console.log('✅ User auto-logged in');
             
+            // Store WhatsApp number in user preferences
+            try {
+                await account.updatePrefs({
+                    whatsappNumber: accountData.whatsappNumber
+                });
+                console.log('✅ WhatsApp number stored in user preferences:', accountData.whatsappNumber);
+            } catch (prefError) {
+                console.warn('⚠️ Could not store WhatsApp in preferences:', prefError);
+                // Continue even if preferences update fails
+            }
+            
             // Automatically set to Pro plan (30% commission)
             const planType: PlanType = 'pro';
             
@@ -1129,7 +1141,8 @@ class MembershipSignupService {
             const memberData = this.prepareMemberDataSimplified(
                 user.$id, 
                 accountData.name,
-                accountData.email, 
+                accountData.email,
+                accountData.whatsappNumber,
                 accountData.portalType,
                 planType
             );
@@ -1162,12 +1175,15 @@ class MembershipSignupService {
         userId: string,
         name: string, 
         email: string,
+        whatsappNumber: string,
         portalType: PortalType,
         planType: PlanType
     ): any {
         const baseMemberData = {
             email,
             name,
+            whatsappNumber, // Store WhatsApp in member profile
+            phoneNumber: whatsappNumber, // Also store as phoneNumber for compatibility
             planType,
             membershipPlan: planType,
             isLive: true, // Automatically set to live

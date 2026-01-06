@@ -268,15 +268,25 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     if (!isImmediateBooking && (!selectedDuration || !selectedTime)) return;
     if (!customerName || !customerWhatsApp) return;
 
+    // Validate WhatsApp number length (8-15 digits)
+    const cleanedWhatsApp = customerWhatsApp.replace(/\D/g, '');
+    if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
+      setError('Please enter a valid WhatsApp number (8-15 digits)');
+      return;
+    }
+
+    // Format WhatsApp with +62 prefix
+    const formattedWhatsApp = `+62${cleanedWhatsApp}`;
+
     // Check for existing pending bookings with this WhatsApp number
-    console.log('🔍 Checking for existing pending bookings for WhatsApp:', customerWhatsApp);
+    console.log('🔍 Checking for existing pending bookings for WhatsApp:', formattedWhatsApp);
     
     try {
       const existingBookings = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings || 'bookings',
         [
-          Query.equal('customerWhatsApp', customerWhatsApp),
+          Query.equal('customerWhatsApp', formattedWhatsApp),
           Query.equal('status', 'Pending'),
           Query.orderDesc('$createdAt'),
           Query.limit(1)
@@ -317,6 +327,20 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
 
     try {
       setIsCreating(true);
+
+      // ✅ ENSURE AUTHENTICATION: Scheduled booking requires valid session
+      // This is a protected Appwrite operation (createDocument)
+      const { ensureAuthSession } = await import('../lib/authSessionHelper');
+      const authResult = await ensureAuthSession('scheduled booking creation');
+      
+      if (!authResult.success) {
+        console.error('❌ Cannot create scheduled booking without authentication');
+        showToast('Unable to authenticate. Please try again.', 'error');
+        setIsCreating(false);
+        return;
+      }
+      
+      console.log(`✅ Authentication confirmed for scheduled booking (userId: ${authResult.userId})`);
 
       // For immediate bookings, use current time; for scheduled, use selected time
       const scheduledTime = new Date();
@@ -379,7 +403,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         paymentMethod: 'Unpaid', // Optional string (default: 'Unpaid')
         scheduledTime: scheduledTime.toISOString(), // Optional datetime
         customerName: customerName, // Optional string
-        customerWhatsApp: customerWhatsApp, // Optional string - WhatsApp contact
+        customerWhatsApp: formattedWhatsApp, // Optional string - WhatsApp contact with +62 prefix
         bookingType: isImmediateBooking ? 'immediate' : 'scheduled', // Optional string
         
         // Legacy fields (optional, can be null) - for compatibility
@@ -483,7 +507,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
           bookingId: bookingResponse.$id,
           therapistId: therapistId,
           therapistName: therapistName,
-          customerWhatsApp: customerWhatsApp,
+          customerWhatsApp: formattedWhatsApp,
           deadline: deadline.toISOString(),
           type: isImmediateBooking ? 'immediate' : 'scheduled'
         }));
@@ -527,7 +551,7 @@ ${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Locati
         const plusMessage = `⭐ NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING (Plus Member)
 
 👤 Customer: ${customerName}
-📱 WhatsApp: ${customerWhatsApp}
+📱 WhatsApp: ${formattedWhatsApp}
 📅 Date: ${bookingDate}
 ⏰ Time: ${bookingTime}
 ⏱️ Duration: ${finalDuration} minutes
@@ -558,7 +582,7 @@ You can contact the customer immediately!`;
             customerName: customerName,
             customerLanguage: 'en', // Default to English for scheduled bookings
             customerPhoto: selectedAvatar, // Use selected avatar for chat profile
-            therapistId: parseInt(therapistId) || 0,
+            therapistId: therapistId.toString(), // ✅ Always string type
             therapistName: therapistName,
             therapistLanguage: 'id', // Default to Indonesian for providers
             therapistType: therapistType,
@@ -593,21 +617,25 @@ You can contact the customer immediately!`;
               }
             }));
             
-            // Then open the chat window
-            window.dispatchEvent(new CustomEvent('openChat', {
-              detail: {
-                therapistId: therapistId,
-                therapistName: therapistName,
-                therapistType: therapistType,
-                bookingId: bookingResponse.$id,
-                chatRoomId: chatRoom.$id,
-                therapistStatus: therapistStatus,
-                profilePicture: profilePicture,
-                pricing: pricing,
-                discountPercentage: discountPercentage,
-                discountActive: discountActive
-              }
-            }));
+            // Then open the chat window with standardized payload
+            const openChatPayload = {
+              chatSessionId: chatRoom.$id,
+              therapistName: therapistName,
+              therapistPhoto: profilePicture || '',
+              therapistId: therapistId.toString(), // ✅ Always string
+              providerId: therapistId.toString(),
+              providerName: therapistName,
+              providerPhoto: profilePicture || '',
+              providerStatus: therapistStatus || 'available' as const,
+              providerRating: providerRating || 0,
+              pricing: pricing || { '60': 250000, '90': 350000, '120': 450000 },
+              bookingId: bookingResponse.$id,
+              customerName: customerName,
+              customerWhatsApp: customerWhatsApp
+            };
+            
+            console.log('🔥 Dispatching openChat event with payload:', openChatPayload);
+            window.dispatchEvent(new CustomEvent('openChat', { detail: openChatPayload }));
             console.log('✅ scheduledBookingCreated and openChat events dispatched');
           }, 100);
           
@@ -850,17 +878,26 @@ You can contact the customer immediately!`;
                   <svg className="inline w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  WhatsApp Number
+                  WhatsApp Number <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="tel"
-                  value={customerWhatsApp}
-                  onChange={(e) => setCustomerWhatsApp(e.target.value)}
-                  placeholder="e.g., +62 812 3456 7890"
-                  className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
-                />
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 py-2 border-2 border-r-0 border-gray-200 bg-gray-50 text-gray-700 rounded-l-lg text-sm font-medium">
+                    +62
+                  </span>
+                  <input
+                    type="tel"
+                    value={customerWhatsApp}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setCustomerWhatsApp(value);
+                    }}
+                    placeholder="812345678"
+                    maxLength={15}
+                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-r-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  For direct communication and booking updates
+                  Enter your number without the country code (+62)
                 </p>
               </div>
 

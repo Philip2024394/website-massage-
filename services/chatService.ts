@@ -125,6 +125,16 @@ export const chatService = {
     // Send message as admin
     async sendMessage(recipientId: string, message: string, isAdmin: boolean = true): Promise<ChatMessage | null> {
         try {
+            // ✅ ENSURE AUTHENTICATION: Chat operations require valid session
+            // Admin/therapist chat needs authentication for real-time permissions
+            const { ensureAuthSession } = await import('../lib/authSessionHelper');
+            const authResult = await ensureAuthSession('chat messaging');
+            
+            if (!authResult.success) {
+                console.error('❌ Cannot send chat message without authentication');
+                return null;
+            }
+            
             const currentUser = await account.get();
             
             // ✅ USE CENTRALIZED MESSAGING SERVICE - Single source of truth

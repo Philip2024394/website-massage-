@@ -52,31 +52,15 @@ function showThrottledNotification(error: any, context: string) {
         userMessage = 'Server is busy. Please wait a moment and try again.';
         type = 'warning';
     } else if (error?.code === 401) {
-        // 401 without a current session. Previously we attempted automatic anonymous session creation here.
-        // Anonymous auth is DISABLED on this project (501 responses observed), so skip auto-create to prevent spam.
-        console.warn(`🔐 Authentication required for: ${context} (anonymous auth disabled – skipping auto-session)`);
+        // ⚠️ REMOVED: Automatic anonymous session creation on 401 errors
+        // Authentication is now handled explicitly when user takes protected actions:
+        // - Clicking "Book Now" → ensureAuthSession('booking')
+        // - Opening chat → ensureAuthSession('chat')
+        // - Any protected operation → ensureAuthSession(reason)
+        // See: lib/authSessionHelper.ts for on-demand authentication
+        console.warn(`🔐 Authentication required for: ${context} (use ensureAuthSession() for protected actions)`);
         showThrottledNotification(error, context);
         return true;
-        userMessage = 'Session expired. Refreshing automatically...';
-        type = 'info';
-        
-        // Try to create anonymous session automatically (with protection against multiple attempts)
-        if (!isCreatingAnonymousSession) {
-            isCreatingAnonymousSession = true;
-            setTimeout(async () => {
-                try {
-                    const { account } = await import('./appwrite');
-                    await account.createAnonymousSession();
-                    console.log('🔄 Auto-created anonymous session after 401 error');
-                } catch (authError: any) {
-                    if (!authError.message?.includes('already exists') && !authError.message?.includes('429')) {
-                        console.log('⚠️ Could not auto-create session:', authError.message);
-                    }
-                } finally {
-                    isCreatingAnonymousSession = false;
-                }
-            }, 1000);
-        }
     } else if (error?.code === 'timeout' || error?.message?.includes('timeout')) {
         userMessage = 'Request timed out. Please try again.';
         type = 'warning';

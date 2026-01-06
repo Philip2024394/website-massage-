@@ -1,32 +1,35 @@
 /**
- * IndaStreet Service Worker
+ * SERVICE WORKER - PUSH NOTIFICATIONS
+ * Handles push events and displays notifications even when app is closed
  * 
- * CRITICAL: Handles background push notifications when app is closed/phone on standby
- * This ensures therapists NEVER miss booking notifications - essential for business revenue
+ * Purpose: Enable real-time booking + chat notifications
+ * Architecture: Web Push API + VAPID
+ * Integrates with: systemNotificationMapper.ts, Appwrite booking statuses
  * 
- * VERSION: 5.0 - Updated Jan 1, 2026
- * - Fixed VAPID key validation
- * - Fixed messagingService format
- * - Improved cache invalidation
+ * CRITICAL: This file runs in service worker context (no DOM access)
+ * VERSION: 6.0 - Updated Jan 6, 2026
+ * - Integrated with systemNotificationMapper
+ * - Standardized booking status notifications
+ * - Added click routing to chat/booking pages
+ * - PWA-ready for future enhancements
  */
 
-const CACHE_VERSION = 'v5';
-const CACHE_NAME = `indastreet-${CACHE_VERSION}`;
-const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3'; // ✅ Fixed: Using actual file name
+const SW_VERSION = '6.0.0';
+const CACHE_NAME = `push-notifications-v6`;
+const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
 self.addEventListener('install', (event) => {
-    console.log(`✅ Service Worker ${CACHE_VERSION}: Installing...`);
+    console.log(`✅ Service Worker ${SW_VERSION} installing...`);
     
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
-            console.log(`✅ Service Worker ${CACHE_VERSION}: Caching assets`);
+            console.log(`✅ Service Worker ${SW_VERSION}: Caching assets`);
             try {
-                // Cache only the root - don't cache manifest to avoid errors
                 await cache.add('/').catch((err) => {
                     console.log('⚠️ SW: Root cache failed:', err);
                 });
-                console.log(`✅ Service Worker ${CACHE_VERSION}: Assets cached successfully`);
+                console.log(`✅ Service Worker ${SW_VERSION}: Assets cached successfully`);
             } catch (err) {
                 console.log('⚠️ SW: Cache error:', err);
             }
@@ -39,7 +42,7 @@ self.addEventListener('install', (event) => {
 
 // Activate service worker and clear old caches
 self.addEventListener('activate', (event) => {
-    console.log(`✅ Service Worker ${CACHE_VERSION}: Activating...`);
+    console.log(`✅ Service Worker ${SW_VERSION}: Activating...`);
     
     event.waitUntil(
         caches.keys().then((cacheNames) => {
@@ -53,128 +56,184 @@ self.addEventListener('activate', (event) => {
                 })
             );
         }).then(() => {
-            console.log(`✅ Service Worker ${CACHE_VERSION}: Old caches cleared`);
+            console.log(`✅ Service Worker ${SW_VERSION}: Old caches cleared`);
             // Take control of all clients immediately
             return self.clients.claim();
         }).then(() => {
-            console.log(`✅ Service Worker ${CACHE_VERSION}: Activated and controlling all clients`);
+            console.log(`✅ Service Worker ${SW_VERSION}: Activated and controlling all clients`);
         })
     );
 });
 
-// Handle background push notifications - CRITICAL FOR BUSINESS
+/**
+ * PUSH EVENT HANDLER
+ * Receives push notifications from server and displays them
+ * Integrates with systemNotificationMapper.ts for consistent messaging
+ */
 self.addEventListener('push', (event) => {
-    console.log('🚨 CRITICAL: Background push notification received!', event.data?.text());
-    
-    let notificationData = {
-        title: '🔴 URGENT: New Booking Request!',
-        body: 'TAP NOW to respond! Auto-expires in 5 minutes. Your availability score depends on this.',
-        icon: '/icon-192.png',
-        badge: '/icon-72.png',
-        tag: 'booking-request',
-        requireInteraction: true, // CRITICAL: Keeps notification until user acts
-        persistent: true,
-        vibrate: [300, 100, 300, 100, 300, 100, 300], // INTENSE vibration pattern
-        sound: NOTIFICATION_SOUND_URL,
-        data: {
-            type: 'booking',
-            timestamp: Date.now(),
-            expiresAt: Date.now() + (5 * 60 * 1000), // 5 minutes from now
-            url: '/?page=therapist-dashboard&forceBookingView=true'
-        },
-        actions: [
-            {
-                action: 'accept-now',
-                title: '✅ ACCEPT NOW',
-                icon: '/icon-72.png'
+    console.log('📬 Push notification received');
+
+    if (!event.data) {
+        console.warn('⚠️ Push event has no data');
+        return;
+    }
+
+    try {
+        const data = event.data.json();
+        console.log('📦 Push data:', data);
+
+        // Extract notification details from systemNotificationMapper format
+        const {
+            title = 'New Notification',
+            body = 'You have a new notification',
+            icon = '/icon-192.png',
+            badge = '/badge-72.png',
+            bookingId = '',
+            status = '',
+            priority = 'normal',
+            targetUrl = '/',
+            role = 'customer'
+        } = data;
+
+        // Vibration patterns based on priority (from systemNotificationMapper)
+        const vibrationPatterns = {
+            low: [100],
+            normal: [200],
+            high: [200, 100, 200],
+            critical: [300, 100, 300, 100, 300]
+        };
+
+        // Notification options
+        const options = {
+            body,
+            icon,
+            badge,
+            vibrate: vibrationPatterns[priority] || vibrationPatterns.normal,
+            tag: bookingId ? `booking-${bookingId}` : `notification-${Date.now()}`,
+            requireInteraction: priority === 'critical',
+            data: {
+                bookingId,
+                status,
+                role,
+                targetUrl: targetUrl || (bookingId ? `/chat?bookingId=${bookingId}` : '/'),
+                timestamp: Date.now()
             },
-            {
-                action: 'view-details', 
-                title: '📋 View Details',
-                icon: '/icon-72.png'
-            }
-        ]
-    };
-
-    // Parse data if available
-    if (event.data) {
-        try {
-            const pushData = event.data.json();
-            notificationData = { ...notificationData, ...pushData };
-        } catch (e) {
-            console.log('Using default notification data');
-        }
-    }
-
-    // Show notification - works even when phone is locked/on standby
-    event.waitUntil(
-        Promise.all([
-            // Show visual notification
-            self.registration.showNotification(notificationData.title, notificationData),
-            
-            // Play sound via all open clients
-            playNotificationSoundInClients(),
-            
-            // Store notification for retry if missed
-            storeNotificationForRetry(notificationData)
-        ])
-    );
-});
-
-// Handle notification clicks - PLATFORM ONLY
-self.addEventListener('notificationclick', (event) => {
-    console.log('🖱️ Notification clicked:', event.action);
-    
-    event.notification.close();
-    
-    const bookingData = event.notification.data;
-    const bookingId = bookingData.bookingId || 'unknown';
-
-    if (event.action === 'accept-now') {
-        // Direct accept - open with auto-accept flag
-        event.waitUntil(
-            self.clients.openWindow(`/?page=therapist-dashboard&autoAcceptBooking=${bookingId}&forceView=true`)
-        );
-    } else if (event.action === 'view-details') {
-        // View details - open forced booking screen
-        event.waitUntil(
-            self.clients.openWindow(`/?page=therapist-dashboard&forceBookingView=${bookingId}`)
-        );
-    } else {
-        // Default action - force booking screen
-        event.waitUntil(
-            self.clients.matchAll().then((clients) => {
-                const url = `/?page=therapist-dashboard&forceBookingView=${bookingId}`;
-                // If app is already open, navigate it
-                if (clients.length > 0) {
-                    clients[0].postMessage({
-                        type: 'force-booking-view',
-                        bookingId: bookingId
-                    });
-                    return clients[0].focus();
+            actions: bookingId ? [
+                {
+                    action: 'open-chat',
+                    title: 'Open Chat',
+                    icon: '/icons/chat.png'
+                },
+                {
+                    action: 'dismiss',
+                    title: 'Dismiss',
+                    icon: '/icons/close.png'
                 }
-                // Otherwise open new window with forced view
-                return self.clients.openWindow(url);
-            })
+            ] : []
+        };
+
+        // Show notification - works even when app closed
+        event.waitUntil(
+            Promise.all([
+                self.registration.showNotification(title, options),
+                playNotificationSoundInClients()
+            ])
         );
+
+        console.log(`✅ Push notification displayed: ${title}`);
+    } catch (error) {
+        console.error('❌ Push event handler error:', error);
     }
-    
-    // Mark notification as acknowledged
-    markNotificationAsRead(event.notification.tag);
 });
 
-// Handle notification close (user dismissed without action)
-self.addEventListener('notificationclose', (event) => {
-    console.log('⚠️ WARNING: User dismissed notification without viewing!', event.notification.tag);
+/**
+ * NOTIFICATION CLICK HANDLER
+ * Routes user to correct page based on notification type
+ */
+self.addEventListener('notificationclick', (event) => {
+    console.log('👆 Notification clicked:', event.action);
+
+    const notification = event.notification;
+    const action = event.action;
+    const data = notification.data || {};
+
+    // Close notification
+    notification.close();
+
+    // Handle action
+    if (action === 'dismiss') {
+        console.log('❌ Notification dismissed by user');
+        return;
+    }
+
+    // Determine target URL based on role and booking ID
+    let targetUrl = data.targetUrl || '/';
     
-    // CRITICAL: Reschedule notification to prevent missed bookings
-    // Retry every 2 minutes up to 10 times (20 minutes total)
+    if (action === 'open-chat' && data.bookingId) {
+        targetUrl = `/chat?bookingId=${data.bookingId}`;
+    } else if (data.bookingId && data.role === 'therapist') {
+        targetUrl = `/?page=therapist-dashboard&bookingId=${data.bookingId}`;
+    } else if (data.bookingId && data.role === 'admin') {
+        targetUrl = `/admin/chat-monitor?bookingId=${data.bookingId}`;
+    } else if (data.bookingId) {
+        targetUrl = `/chat?bookingId=${data.bookingId}`;
+    }
+
+    console.log(`🔗 Opening URL: ${targetUrl}`);
+
+    // Open or focus window
     event.waitUntil(
-        scheduleRetryNotification(event.notification.data, event.notification.tag)
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                // Check if window is already open
+                for (const client of clientList) {
+                    try {
+                        const clientUrl = new URL(client.url);
+                        const targetUrlObj = new URL(targetUrl, client.url);
+
+                        // If same origin, focus and navigate
+                        if (clientUrl.origin === targetUrlObj.origin) {
+                            if (client.focus) {
+                                client.focus();
+                            }
+                            if (client.navigate) {
+                                return client.navigate(targetUrl);
+                            }
+                            return client;
+                        }
+                    } catch (urlError) {
+                        console.warn('URL parsing error:', urlError);
+                    }
+                }
+
+                // No window open, open new one
+                if (clients.openWindow) {
+                    return clients.openWindow(targetUrl);
+                }
+            })
+            .catch((error) => {
+                console.error('❌ Failed to handle notification click:', error);
+            })
     );
 });
 
-// Play notification sound through all open clients (tabs/windows)
+/**
+ * NOTIFICATION CLOSE HANDLER
+ * Track when user closes notification without clicking
+ */
+self.addEventListener('notificationclose', (event) => {
+    console.log('🚫 Notification closed by user');
+    
+    const notification = event.notification;
+    const data = notification.data || {};
+
+    // Optional: Send analytics or tracking event
+    console.log(`📊 Notification closed: ${data.bookingId || 'unknown'}`);
+});
+
+/**
+ * Play notification sound through all open clients (tabs/windows)
+ */
 async function playNotificationSoundInClients() {
     try {
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
@@ -193,120 +252,67 @@ async function playNotificationSoundInClients() {
     }
 }
 
-// Store notification for retry if user doesn't respond
-async function storeNotificationForRetry(notificationData) {
-    try {
-        const cache = await caches.open('notifications-retry');
-        await cache.put(`notification-${Date.now()}`, new Response(JSON.stringify({
-            ...notificationData,
-            retryCount: 0,
-            maxRetries: 3,
-            nextRetry: Date.now() + (5 * 60 * 1000) // Retry in 5 minutes
-        })));
-    } catch (error) {
-        console.error('Failed to store notification for retry:', error);
-    }
-}
+/**
+ * MESSAGE HANDLER
+ * Handles messages from main app (e.g., sync requests, test notifications)
+ */
+self.addEventListener('message', (event) => {
+    console.log('📨 Message received from client:', event.data);
 
-// Schedule retry notification - ESCALATION: 0min, 2min, 4min only
-async function scheduleRetryNotification(notificationData, tag) {
-    try {
-        // Store retry data
-        const cache = await caches.open('notifications-retry');
-        const retryData = await cache.match(`retry-${tag}`);
-        let retryCount = 0;
-        
-        if (retryData) {
-            const data = await retryData.json();
-            retryCount = data.retryCount || 0;
-        }
-        
-        // Check if booking expired (5 minutes total)
-        const expiresAt = notificationData.expiresAt || (Date.now() + 5 * 60 * 1000);
-        if (Date.now() >= expiresAt) {
-            console.log('⏰ Booking expired (5 minutes) - stopping retries');
-            // Send expiration message to all clients to update availability score
-            const clients = await self.clients.matchAll();
-            clients.forEach(client => {
-                client.postMessage({
-                    type: 'booking-expired',
-                    bookingId: notificationData.bookingId,
-                    reason: 'timeout'
-                });
-            });
-            return;
-        }
-        
-        // Escalation schedule: Retry at 2min and 4min only (total 3 notifications: 0, 2, 4)
-        if (retryCount >= 2) {
-            console.log('📵 Max retries reached (2 retries = 3 total notifications)');
-            return;
-        }
-        
-        // Calculate next retry time: 2min for first retry, 2min for second (total 4min)
-        const retryDelay = 2 * 60 * 1000; // Always 2 minutes between retries
-        
-        setTimeout(async () => {
-            // Check again if expired before showing retry
-            if (Date.now() >= expiresAt) {
-                console.log('⏰ Booking expired before retry');
-                return;
-            }
-            
-            // Increment retry count
-            await cache.put(`retry-${tag}`, new Response(JSON.stringify({
-                ...notificationData,
-                retryCount: retryCount + 1,
-                lastRetry: Date.now()
-            })));
-            
-            // Calculate remaining time
-            const remainingMs = expiresAt - Date.now();
-            const remainingMin = Math.ceil(remainingMs / 60000);
-            
-            // Show escalated notification
-            const escalationLevel = retryCount + 1;
-            await self.registration.showNotification(
-                `🚨 FINAL WARNING (${escalationLevel}/2): Booking Expires Soon!`,
-                {
-                    ...notificationData,
-                    body: `⏰ ${remainingMin} minutes left to respond! Your availability score will drop if you miss this. TAP NOW!`,
-                    vibrate: [400, 150, 400, 150, 400, 150, 400, 150, 400], // MORE INTENSE
-                    tag: tag,
-                    renotify: true
-                }
-            );
-            
-            // Schedule next retry recursively
-            scheduleRetryNotification(notificationData, tag);
-        }, retryDelay);
-        
-    } catch (error) {
-        console.error('Failed to schedule retry notification:', error);
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
     }
-}
 
-// Mark notification as read
-function markNotificationAsRead(tag) {
-    // Send message to main app that notification was acknowledged
-    self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-            client.postMessage({
-                type: 'notification-acknowledged',
-                tag: tag,
-                timestamp: Date.now()
-            });
+    if (event.data && event.data.type === 'skip-waiting') {
+        self.skipWaiting();
+    }
+
+    if (event.data && event.data.type === 'GET_VERSION') {
+        event.ports[0].postMessage({ version: SW_VERSION });
+    }
+
+    if (event.data && event.data.type === 'test-notification') {
+        // Test notification functionality
+        self.registration.showNotification('🧪 Test Notification', {
+            body: 'Push notifications are working perfectly!',
+            icon: '/icon-192.png',
+            badge: '/badge-72.png',
+            vibrate: [100, 50, 100],
+            requireInteraction: false,
+            tag: 'test'
         });
-    });
-}
+    }
+});
 
-// Handle background sync (for sound and data sync)
+/**
+ * FETCH HANDLER (Optional)
+ * Pass through all requests (no caching for now)
+ * Can implement caching strategy here if needed for PWA offline support
+ */
+self.addEventListener('fetch', (event) => {
+    // Pass through all requests - no caching currently
+    event.respondWith(fetch(event.request).catch(() => {
+        // Could return cached fallback here for offline support
+        return new Response('Offline');
+    }));
+});
+
+/**
+ * SYNC HANDLER (Optional - Future Enhancement)
+ * Can be used for background sync when connection is restored
+ */
 self.addEventListener('sync', (event) => {
-    console.log('🔄 Background sync triggered:', event.tag);
-    
+    console.log('🔄 Background sync event:', event.tag);
+
+    if (event.tag === 'sync-notifications') {
+        event.waitUntil(
+            // Could sync missed notifications from Appwrite here
+            Promise.resolve()
+        );
+    }
+
     if (event.tag === 'play-notification-sound') {
         event.waitUntil(
-            // Try to communicate with main thread for sound playing
             self.clients.matchAll().then(clients => {
                 clients.forEach(client => {
                     client.postMessage({
@@ -319,23 +325,33 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-// Handle messages from main app
-self.addEventListener('message', (event) => {
-    console.log('📨 Service worker received message:', event.data);
-    
-    if (event.data && event.data.type === 'skip-waiting') {
-        self.skipWaiting();
-    }
-    
-    if (event.data && event.data.type === 'test-notification') {
-        // Test notification functionality
-        self.registration.showNotification('🧪 Test Notification', {
-            body: 'IndaStreet notifications are working perfectly!',
-            icon: '/icon-192.png',
-            badge: '/icon-72.png',
-            vibrate: [100, 50, 100],
-            requireInteraction: false,
-            tag: 'test'
-        });
-    }
+/**
+ * PUSH SUBSCRIPTION CHANGE HANDLER
+ * Handles when push subscription changes or expires
+ */
+self.addEventListener('pushsubscriptionchange', (event) => {
+    console.log('🔄 Push subscription changed');
+
+    event.waitUntil(
+        // Re-subscribe with new subscription
+        self.registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: null // Should use stored VAPID key
+        })
+        .then((subscription) => {
+            console.log('✅ Re-subscribed with new subscription');
+            
+            // TODO: Update subscription in Appwrite
+            // Send to backend endpoint to update push_subscriptions collection
+            
+            return subscription;
+        })
+        .catch((error) => {
+            console.error('❌ Re-subscription failed:', error);
+        })
+    );
 });
+
+// Log service worker readiness
+console.log(`🚀 Service Worker ${SW_VERSION} loaded and ready for push notifications`);
+console.log('✅ Integrated with systemNotificationMapper for consistent messaging');

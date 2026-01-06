@@ -36,6 +36,38 @@ import {
   SearchStatus, 
   BookingConfirmed 
 } from './SystemMessage'
+import { 
+  captureLiveLocation, 
+  saveBookingLocation, 
+  updateBookingWithLocation, 
+  updateChatRoomLocation,
+  cancelBookingLocationDenied,
+  scheduleLocationTimeout,
+  formatAccuracy,
+  isAccuracyAcceptable
+} from '../lib/locationVerificationService'
+import { sendSystemMessage } from '../lib/chatService'
+import { databases } from '../lib/appwrite'
+import { APPWRITE_CONFIG } from '../lib/appwrite.config'
+import { 
+  getSystemNotification, 
+  getBannerClasses, 
+  isUrgentStatus,
+  getStatusLabel,
+  SystemBanner,
+  shouldSendPush,
+  getTargetRole,
+  getPushPriority
+} from '../lib/systemNotificationMapper'
+import { playBookingStatusSound } from '../lib/soundNotificationService'
+import { 
+  initializePushNotifications,
+  enablePushNotifications,
+  isTabVisible,
+  triggerLocalNotification,
+  isPushSupported,
+  getPermissionState
+} from '../lib/pushNotificationService'
 
 interface ChatWindowProps {
   providerId: string
@@ -47,6 +79,7 @@ interface ChatWindowProps {
   selectedService?: { duration: string }
   customerName?: string
   customerWhatsApp?: string
+  bookingId?: string  // ✅ AUDIT FIX: Enables chat ↔ booking traceability
   isOpen: boolean
   onClose: () => void
 }
@@ -64,6 +97,7 @@ export default function ChatWindow({
   selectedService,
   customerName: initialCustomerName = '',
   customerWhatsApp: initialCustomerWhatsApp = '',
+  bookingId,  // ✅ AUDIT FIX: Now receives bookingId from parent
   isOpen,
   onClose
 }: ChatWindowProps) {
@@ -96,6 +130,20 @@ export default function ChatWindow({
   // UI state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // 🔒 LOCATION VERIFICATION STATE
+  const [requiresLocation, setRequiresLocation] = useState(false)
+  const [locationVerified, setLocationVerified] = useState(false)
+  const [sharingLocation, setSharingLocation] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(null)
+  const [chatRoomId, setChatRoomId] = useState<string | null>(null)
+  const locationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 🔔 SYSTEM NOTIFICATION STATE
+  const [bookingStatusState, setBookingStatusState] = useState<string>('pending')
+  const [systemBanner, setSystemBanner] = useState<SystemBanner | null>(null)
+  const [lastProcessedStatus, setLastProcessedStatus] = useState<string>('')
+  const statusPollingRef = useRef<NodeJS.Timeout | null>(null)
 
   // Refs for cleanup
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -371,11 +419,23 @@ export default function ChatWindow({
     try {
       setSending(true)
       
+      // ✅ ENSURE AUTHENTICATION: Chat messaging requires valid session
+      // Real-time chat operations need authentication for Appwrite permissions
+      const { ensureAuthSession } = await import('../lib/authSessionHelper');
+      const authResult = await ensureAuthSession('chat message send');
+      
+      if (!authResult.success) {
+        console.error('❌ Cannot send chat message without authentication');
+        setError('Unable to authenticate. Please refresh and try again.');
+        setSending(false);
+        return;
+      }
+      
       const userMessage: ChatMessage = {
         id: `user_${Date.now()}`,
         conversationId: currentBooking?.id || 'temp',
         senderType: 'user',
-        senderId: `guest_${Date.now()}`,
+        senderId: authResult.userId || `guest_${Date.now()}`, // Use authenticated userId
         senderName: customerName,
         content: newMessage.trim(),
         timestamp: new Date().toISOString()
@@ -395,11 +455,328 @@ export default function ChatWindow({
     }
   }, [newMessage, sending, bookingStatus, currentBooking, customerName])
 
+  // ===== LOCATION VERIFICATION HANDLING =====
+
+  /**
+   * Check if booking requires location verification on mount
+   */
+  useEffect(() => {
+    const checkLocationRequirement = async () => {
+      if (!bookingId || !isOpen) return;
+
+      try {
+        console.log('🔍 Checking location requirement for booking:', bookingId);
+        
+        // Fetch booking status
+        const booking = await databases.getDocument(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.bookings,
+          bookingId
+        );
+
+        // Check if waiting for location
+        if (booking.status === 'waiting_for_location') {
+          console.log('🔒 Location verification required');
+          setRequiresLocation(true);
+          setLocationVerified(false);
+
+          // Find chat room ID
+          const chatRooms = await databases.listDocuments(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.chatRooms,
+            [`bookingId="${bookingId}"`]
+          );
+
+          if (chatRooms.documents.length > 0) {
+            const chatRoom = chatRooms.documents[0];
+            setChatRoomId(chatRoom.$id);
+
+            // Send location request system message
+            const locationMessage = `🔒 Security Check Required
+
+Please share your LIVE location so the therapist can verify the service address (home, villa, or hotel).
+
+This is a one-time security measure to prevent spam bookings.`;
+
+            await sendSystemMessage(chatRoom.$id, { en: locationMessage, id: locationMessage });
+
+            // Start 5-minute timeout
+            const timeout = scheduleLocationTimeout(
+              bookingId,
+              chatRoom.$id,
+              () => {
+                console.log('⏰ Location timeout - booking cancelled');
+                setLocationError('Booking cancelled: Location not shared within 5 minutes');
+                setRequiresLocation(false);
+                onClose();
+              },
+              5
+            );
+
+            locationTimeoutRef.current = timeout;
+          }
+        } else if (booking.status === 'location_shared') {
+          console.log('✅ Location already verified');
+          setLocationVerified(true);
+          setRequiresLocation(false);
+        }
+      } catch (error) {
+        console.error('❌ Failed to check location requirement:', error);
+      }
+    };
+
+    checkLocationRequirement();
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current);
+      }
+    };
+  }, [bookingId, isOpen, onClose]);
+
+  /**
+   * Handle live location sharing
+   */
+  const handleShareLocation = useCallback(async () => {
+    if (!bookingId || !chatRoomId) {
+      setLocationError('Booking information missing');
+      return;
+    }
+
+    try {
+      setSharingLocation(true);
+      setLocationError(null);
+
+      console.log('📍 Capturing live GPS location...');
+
+      // Capture GPS location
+      const location = await captureLiveLocation();
+
+      console.log('💾 Saving location to database...');
+
+      // Save to Appwrite
+      await saveBookingLocation({
+        bookingId,
+        chatRoomId,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracy,
+        timestamp: location.timestamp,
+        source: 'user'
+      });
+
+      // Update booking status
+      await updateBookingWithLocation(bookingId, location.accuracy);
+
+      // Update chat room
+      await updateChatRoomLocation(chatRoomId, true, location.accuracy);
+
+      // Clear timeout
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current);
+        locationTimeoutRef.current = null;
+      }
+
+      // Send success system message
+      const successMessage = `📍 Location received. Therapist is reviewing the address.
+
+Accuracy: ${formatAccuracy(location.accuracy)}
+${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low. Therapist may request verification.' : ''}`;
+
+      await sendSystemMessage(chatRoomId, { en: successMessage, id: successMessage });
+
+      // Update UI state
+      setLocationVerified(true);
+      setRequiresLocation(false);
+
+      console.log('✅ Location verification complete');
+
+    } catch (error: any) {
+      console.error('❌ Location sharing failed:', error);
+
+      if (error.code === error.PERMISSION_DENIED) {
+        // User denied GPS permission - auto-cancel booking
+        console.log('🚫 User denied GPS permission - cancelling booking');
+        
+        await cancelBookingLocationDenied(bookingId, chatRoomId);
+
+        const cancelMessage = '🚫 Booking cancelled: GPS permission denied. Location sharing is required for security purposes.';
+        await sendSystemMessage(chatRoomId, { en: cancelMessage, id: cancelMessage });
+
+        setLocationError('Booking cancelled: GPS permission required');
+        setTimeout(() => onClose(), 3000);
+      } else {
+        setLocationError('Failed to capture location. Please try again.');
+      }
+    } finally {
+      setSharingLocation(false);
+    }
+  }, [bookingId, chatRoomId, onClose]);
+
+  // ===== 🔔 BOOKING STATUS POLLING & NOTIFICATIONS =====
+
+  /**
+   * Poll booking status every 3 seconds and trigger system notifications
+   */
+  useEffect(() => {
+    const pollBookingStatus = async () => {
+      if (!bookingId || !isOpen) return;
+
+      try {
+        // Fetch current booking status
+        const booking = await databases.getDocument(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.bookings,
+          bookingId
+        );
+
+        const currentStatus = booking.status;
+
+        // Update status state
+        setBookingStatusState(currentStatus);
+
+        // Check if status changed (new notification needed)
+        if (currentStatus !== lastProcessedStatus && lastProcessedStatus !== '') {
+          console.log(`🔔 Booking status changed: ${lastProcessedStatus} → ${currentStatus}`);
+
+          // Get system notification config
+          const notification = getSystemNotification(currentStatus);
+
+          // Update banner
+          if (notification.banner) {
+            setSystemBanner(notification.banner);
+          }
+
+          // Send system message to chat
+          if (notification.chatMessage && notification.chatMessage.shouldSendToChat && chatRoomId) {
+            try {
+              await sendSystemMessage(chatRoomId, {
+                en: notification.chatMessage.text,
+                id: notification.chatMessage.text
+              });
+              console.log('✅ System message sent to chat:', notification.chatMessage.text);
+            } catch (error) {
+              console.error('❌ Failed to send system message:', error);
+            }
+          }
+
+          // Play sound notification (customer view for now)
+          playBookingStatusSound(currentStatus, 'customer');
+
+          // 🆕 SEND PUSH NOTIFICATION (if tab not visible and push enabled)
+          if (notification.pushNotification && shouldSendPush(currentStatus)) {
+            const { pushTitle, pushBody, pushPriority } = notification.pushNotification;
+            
+            // Only send push if tab is not visible (user won't see in-app banner)
+            if (!isTabVisible()) {
+              try {
+                await triggerLocalNotification(
+                  pushTitle,
+                  pushBody,
+                  bookingId,
+                  pushPriority
+                );
+                console.log(`🔔 Push notification sent: ${pushTitle}`);
+              } catch (error) {
+                console.error('❌ Push notification failed:', error);
+                // Fail silently - user still sees in-app notification
+              }
+            } else {
+              console.log('🔕 Tab visible, skipping push notification (showing banner instead)');
+            }
+          }
+
+          // Mark status as processed
+          setLastProcessedStatus(currentStatus);
+        } else if (lastProcessedStatus === '') {
+          // First load - set banner without sound
+          const notification = getSystemNotification(currentStatus);
+          if (notification.banner) {
+            setSystemBanner(notification.banner);
+          }
+          setLastProcessedStatus(currentStatus);
+        }
+
+      } catch (error) {
+        console.error('❌ Failed to poll booking status:', error);
+      }
+    };
+
+    // Initial poll
+    pollBookingStatus();
+
+    // Set up polling interval (every 3 seconds)
+    statusPollingRef.current = setInterval(pollBookingStatus, 3000);
+
+    // Cleanup
+    return () => {
+      if (statusPollingRef.current) {
+        clearInterval(statusPollingRef.current);
+      }
+    };
+  }, [bookingId, isOpen, lastProcessedStatus, chatRoomId]);
+
   // ===== AUTO-SCROLL EFFECT =====
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // ===== 🔔 PUSH NOTIFICATION INITIALIZATION =====
+
+  /**
+   * Initialize push notifications on mount (if supported and permission granted)
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const initPush = async () => {
+      // Check if push is supported
+      if (!isPushSupported()) {
+        console.log('ℹ️ Push notifications not supported in this browser');
+        return;
+      }
+
+      // Check current permission
+      const permission = getPermissionState();
+      
+      if (permission === 'granted') {
+        // Auto-initialize if already granted
+        console.log('✅ Push permission already granted, initializing...');
+        try {
+          // For now, using 'customer' role - should be dynamic based on user type
+          const success = await initializePushNotifications(
+            providerId || 'guest',
+            'customer'
+          );
+          
+          if (success) {
+            console.log('✅ Push notifications initialized successfully');
+          }
+        } catch (error) {
+          console.error('❌ Push initialization failed:', error);
+          // Fail silently - app still works without push
+        }
+      } else if (permission === 'default') {
+        console.log('ℹ️ Push permission not requested yet. User can enable via settings.');
+        // Don't auto-request on mount - wait for user action
+      } else {
+        console.log('🚫 Push permission denied by user');
+      }
+    };
+
+    initPush();
+  }, [isOpen, providerId]);
+
+  // ===== SYSTEM ACTIVATION LOG =====
+
+  useEffect(() => {
+    if (isOpen) {
+      console.log('✅ Chat system notifications & sounds fully active and enforced');
+      console.log('✅ Push notifications integrated (Web Push API + systemNotificationMapper)');
+    }
+  }, [isOpen]);
 
   // ===== CLEANUP ON UNMOUNT =====
 
@@ -490,6 +867,27 @@ export default function ChatWindow({
             {/* MESSAGES AREA */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               
+              {/* 🔔 SYSTEM BANNER (CRITICAL NOTIFICATIONS) */}
+              {systemBanner && (
+                <div className={getBannerClasses(systemBanner.severity)}>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 text-2xl">{systemBanner.icon}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold mb-1">{systemBanner.title}</h3>
+                      {systemBanner.message && (
+                        <p className="text-sm whitespace-pre-line">{systemBanner.message}</p>
+                      )}
+                      {isUrgentStatus(bookingStatusState) && (
+                        <div className="mt-2 flex items-center gap-2 text-sm font-semibold">
+                          <span className="animate-pulse">⚠️</span>
+                          <span>Immediate attention required</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {/* ERROR MESSAGE */}
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -500,6 +898,47 @@ export default function ChatWindow({
                   >
                     Dismiss
                   </button>
+                </div>
+              )}
+
+              {/* 🔒 LOCATION VERIFICATION PROMPT */}
+              {requiresLocation && !locationVerified && (
+                <div className="bg-orange-50 border-2 border-orange-500 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 text-2xl">🔒</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-orange-800 mb-2">Security Check Required</h3>
+                      <p className="text-sm text-orange-700 mb-3">
+                        Please share your LIVE location so the therapist can verify the service address.
+                        This is a one-time security measure to prevent spam bookings.
+                      </p>
+                      {locationError && (
+                        <div className="bg-red-100 border border-red-300 rounded-lg p-2 mb-3">
+                          <p className="text-xs text-red-700">{locationError}</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleShareLocation}
+                        disabled={sharingLocation}
+                        className="w-full px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 font-medium transition-colors flex items-center justify-center gap-2"
+                      >
+                        {sharingLocation ? (
+                          <>
+                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                            <span>Capturing Location...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>📍</span>
+                            <span>Share Live Location</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-xs text-orange-600 mt-2 text-center">
+                        ⏱️ You have 5 minutes to share your location
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 

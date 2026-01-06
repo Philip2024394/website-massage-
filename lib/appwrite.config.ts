@@ -58,6 +58,7 @@ export const APPWRITE_CONFIG = {
         chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)
+        booking_locations: 'booking_locations', // ✅ Location verification system
         payments: 'Payments', // ⚠️ WARNING: May have permission issues (401 Unauthorized). To fix: Set 'Any' role permissions in Appwrite Console
         // Lead Generation System
         leads: null, // ⚠️ DISABLED - Collection lacks 'Any' role read permissions (causes 401 errors)

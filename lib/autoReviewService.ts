@@ -12,19 +12,44 @@ class AutoReviewService {
     
     /**
      * Start auto-generating reviews for a therapist every 5 minutes
+     * ONLY in development mode and NOT on landing page
      */
     startAutoReviews(therapistId: string, therapistName: string, language: 'en' | 'id' = 'en') {
+        // SAFETY CHECK 1: Only run in development
+        if (import.meta.env.PROD) {
+            console.log('🚫 Auto-reviews disabled in production');
+            return;
+        }
+        
+        // SAFETY CHECK 2: Never run on landing page
+        if (typeof window !== 'undefined' && window.location.pathname === '/') {
+            console.log('🚫 Auto-reviews disabled on landing page');
+            return;
+        }
+        
+        // SAFETY CHECK 3: Check localStorage size before starting
+        if (!this.canSafelyGenerateReviews()) {
+            console.warn('⚠️ localStorage near capacity. Skipping auto-review initialization.');
+            return;
+        }
+        
         // Clear existing interval if any
         this.stopAutoReviews(therapistId);
         
-        console.log(`🔄 Starting auto-reviews for ${therapistName} (${therapistId}) - every 5 minutes [${language.toUpperCase()}]`);
+        console.log(`🔄 [DEV ONLY] Starting auto-reviews for ${therapistName} (${therapistId}) - every 5 minutes [${language.toUpperCase()}]`);
         
         // Generate first review immediately
         this.generateRandomReview(therapistId, therapistName, language);
         
         // Then continue every 5 minutes
         const intervalId = setInterval(() => {
-            this.generateRandomReview(therapistId, therapistName, language);
+            // Re-check capacity before each generation
+            if (this.canSafelyGenerateReviews()) {
+                this.generateRandomReview(therapistId, therapistName, language);
+            } else {
+                console.warn(`⚠️ localStorage capacity reached. Stopping auto-reviews for ${therapistName}`);
+                this.stopAutoReviews(therapistId);
+            }
         }, 5 * 60 * 1000); // 5 minutes
         
         this.intervals.set(therapistId, intervalId);
@@ -52,6 +77,44 @@ class AutoReviewService {
         });
         this.intervals.clear();
         console.log('🛑 All auto-review intervals stopped');
+    }
+    
+    /**
+     * Check if localStorage has enough space for safe review generation
+     * Returns false if reviews exceed 5000 (safety limit)
+     */
+    private canSafelyGenerateReviews(): boolean {
+        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+            return false;
+        }
+        
+        try {
+            const reviewData = localStorage.getItem('massage_app_reviews');
+            if (!reviewData) return true;
+            
+            const reviews = JSON.parse(reviewData);
+            const reviewCount = Array.isArray(reviews) ? reviews.length : 0;
+            
+            // Safety limit: stop generating if we have 5000+ reviews
+            if (reviewCount >= 5000) {
+                console.warn(`⚠️ Review count (${reviewCount}) exceeds safety limit (5000)`);
+                return false;
+            }
+            
+            // Check actual localStorage usage (rough estimate)
+            const storageSize = new Blob([reviewData]).size;
+            const maxSize = 5 * 1024 * 1024; // 5MB typical limit
+            
+            if (storageSize > maxSize * 0.8) { // Stop at 80% capacity
+                console.warn(`⚠️ localStorage usage (${(storageSize / 1024 / 1024).toFixed(2)}MB) near limit`);
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error checking localStorage capacity:', error);
+            return false; // Fail safe
+        }
     }
     
     /**

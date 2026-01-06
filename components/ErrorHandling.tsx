@@ -252,7 +252,8 @@ export const useRetry = (maxAttempts = 3, initialDelay = 1000) => {
   const [attempts, setAttempts] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
 
-  const retry = async <T>(operation: () => Promise<T>): Promise<T> => {
+  // ✅ FIX: Use function declaration to avoid JSX generic syntax errors
+  async function retry<T>(operation: () => Promise<T>): Promise<T> {
     let lastError: Error
 
     for (let attempt = 0; attempt <= maxAttempts; attempt++) {

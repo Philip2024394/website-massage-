@@ -14,6 +14,7 @@ import {
 import { analyticsService } from '@/services/analyticsService';
 import PageNumberBadge from '@/components/PageNumberBadge';
 import AdminChatCenter from './AdminChatCenter';
+import AdminChatMonitor from './AdminChatMonitor';
 import GlobalAnalytics from './GlobalAnalytics';
 import EmailMarketing from './EmailMarketing';
 import PaymentManagement from './PaymentManagement';
@@ -128,7 +129,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics'>('dashboard');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -424,6 +425,11 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 <AdminChatCenter />
             </div>
         );
+    }
+
+    // ✅ AUDIT FIX: Admin Chat Monitor View
+    if (activeView === 'chat-monitor') {
+        return <AdminChatMonitor onBack={() => setActiveView('dashboard')} />;
     }
 
     if (activeView === 'analytics') {
@@ -1164,6 +1170,16 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span className="hidden sm:inline">Chat Center</span>
                                 <span className="sm:hidden">Chat</span>
+                            </button>
+
+                            {/* ✅ NEW: Chat Monitor button */}
+                            <button
+                                onClick={() => setActiveView('chat-monitor')}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-xs sm:text-sm"
+                            >
+                                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">👁️ Monitor</span>
+                                <span className="sm:hidden">👁️</span>
                             </button>
 
                             {/* Analytics button */}

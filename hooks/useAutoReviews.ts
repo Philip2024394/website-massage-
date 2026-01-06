@@ -16,10 +16,22 @@ export const useAutoReviews = () => {
     const currentLanguage: 'en' | 'id' = language === 'gb' ? 'en' : language as 'en' | 'id';
     
     const initializeAutoReviews = () => {
+        // SAFETY CHECK 1: Only run in development mode
+        if (import.meta.env.PROD) {
+            console.log('🚫 Auto-reviews disabled in production');
+            return;
+        }
+        
+        // SAFETY CHECK 2: Never run on landing page
+        if (typeof window !== 'undefined' && window.location.pathname === '/') {
+            console.log('🚫 Auto-reviews disabled on landing page');
+            return;
+        }
+        
         // Get dynamic list of Yogyakarta therapists
         const YOGYAKARTA_THERAPISTS = getYogyakartaTherapists();
         
-        console.log(`🚀 Starting auto-review system for Yogyakarta therapists [${currentLanguage.toUpperCase()}]...`);
+        console.log(`🚀 [DEV ONLY] Starting auto-review system for Yogyakarta therapists [${currentLanguage.toUpperCase()}]...`);
         console.log(`📋 Will initialize ${YOGYAKARTA_THERAPISTS.length} therapists:`, YOGYAKARTA_THERAPISTS);
         
         // Only reinitialize if therapist count has changed (meaning real data arrived)

@@ -89,6 +89,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [userReferralCode, setUserReferralCode] = useState<string>('');
     const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
     const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
+    const [priceSliderBookingSource, setPriceSliderBookingSource] = useState<string>('quick-book'); // Track if from price slider
     const [highlightedCell, setHighlightedCell] = useState<{serviceIndex: number, duration: '60' | '90' | '120'} | null>(null);
     const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
     const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
@@ -695,137 +696,26 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             }
         }
         
-        // Check if therapist is busy
-        if (displayStatus === AvailabilityStatus.Busy) {
-            setShowBusyModal(true);
-        } else {
-            // Show booking form popup
-            setShowBookingForm(true);
-        }
+        // OBSOLETE: This function is no longer used
+        // BookingPopup component handles all booking flows now
     };
-
-    const handleBookingSubmit = async (bookingData: BookingData) => {
-        devLog('✅ Booking submitted:', bookingData);
-        
-        // Check if there's already a pending booking
-        const pendingBooking = sessionStorage.getItem('pending_booking');
-        if (pendingBooking) {
-            const parsed = JSON.parse(pendingBooking);
-            const deadline = new Date(parsed.deadline);
-            if (deadline > new Date()) {
-                alert(`⚠️ You have a pending booking with ${parsed.therapistName}. Please wait for their response before booking with another therapist.`);
-                setShowBookingForm(false);
-                return;
-            } else {
-                // Expired, clear it
-                sessionStorage.removeItem('pending_booking');
-            }
-        }
-        
-        // Close booking form
-        setShowBookingForm(false);
-
-        // Create booking message with all details
-        const locationInfo = bookingData.locationType === 'hotel'
-            ? `🏨 Hotel/Villa: ${bookingData.address}\n🚪 Room: ${bookingData.roomNumber}`
-            : `🏠 Home Address: ${bookingData.address}`;
-
-        const coordinatesInfo = bookingData.coordinates
-            ? `\n📍 GPS: ${bookingData.coordinates.lat.toFixed(6)}, ${bookingData.coordinates.lng.toFixed(6)}`
-            : '';
-
-        const bookingMessage = `🎯 NEW BOOKING REQUEST
-
-👤 Customer: ${bookingData.customerName}
-⏱️ Duration: ${bookingData.duration} minutes
-💰 Price: ${bookingData.price}
-
-📍 Location:
-${locationInfo}${coordinatesInfo}
-
-📝 Please confirm availability and arrival time.`;
-
-        try {
-            // Send notification to therapist with sound
-            const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-            
-            // Set 15-minute deadline
-            const deadline = new Date();
-            deadline.setMinutes(deadline.getMinutes() + 15);
-            
-            // Create booking in database
-            const booking = await bookingService.create({
-                providerId: therapistIdNum.toString(),
-                providerType: 'therapist' as const,
-                providerName: therapist.name,
-                userId: loggedInProviderId?.toString(),
-                userName: bookingData.customerName,
-                service: bookingData.duration.toString() as '60' | '90' | '120',
-                startTime: new Date().toISOString(),
-                duration: bookingData.duration,
-                totalCost: parseFloat(bookingData.price),
-                paymentMethod: 'Unpaid'
-            });
-
-            // Lock booking - store pending booking info
-            sessionStorage.setItem('pending_booking', JSON.stringify({
-                bookingId: booking.$id || booking.id,
-                therapistId: therapistIdNum,
-                therapistName: therapist.name,
-                deadline: deadline.toISOString(),
-                type: 'immediate'
-            }));
-            
-            devLog('🔒 Booking locked until:', deadline.toISOString());
-
-            // Increment bookings count for UI display
-            setBookingsCount(prev => prev + 1);
-
-            // Send notification to therapist
-            await notificationService.create({
-                providerId: therapistIdNum,
-                message: `New booking request from ${bookingData.customerName} for ${bookingData.duration} minutes`,
-                type: 'booking_request'
-            });
-            
-            devLog('🔔 Booking notification sent to therapist with MP3 sound');
-
-            // Open in-app chat window with booking message and lock indication
-            if (onQuickBookWithChat) {
-                setTimeout(() => {
-                    devLog('💬 Opening in-app chat with booking details (locked until response)');
-                    onQuickBookWithChat(therapist);
-                }, 300);
-            } else {
-                // Fallback: dispatch event to open chat
-                const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-                window.dispatchEvent(new CustomEvent('openChat', {
-                    detail: {
-                        therapistId: therapistIdNum,
-                        therapistName: therapist.name,
-                        therapistStatus: normalizedStatus,
-                        initialMessage: bookingMessage,
-                        profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-                        pricing: pricing
-                    }
-                }));
-            }
-
-        } catch (error) {
-            console.error('❌ Error creating booking:', error);
-            alert('Failed to create booking. Please try again.');
-        }
-    };
-
-    // REMOVED: handleConfirmedBooking - obsolete with original BookingPopup flow
-    // The original BookingPopup handles Appwrite booking creation and chat opening directly
 
     // Handle booking clicks from price list
     const handleBookingClick = (e: React.MouseEvent, status: 'available' | 'busy' | 'offline', pricing: any) => {
         e.preventDefault();
         e.stopPropagation();
         
+        console.log('🎯 PRICE SLIDER → handleBookingClick triggered', {
+            status,
+            selectedDuration,
+            selectedServiceIndex,
+            pricing
+        });
+        
         if (status === 'available') {
+            // Set booking source to track price slider bookings
+            setPriceSliderBookingSource('price-slider');
+            console.log('✅ Opening BookingPopup with pre-selected duration:', selectedDuration);
             // Allow booking without login - BookingPopup collects user info
             setShowBookingPopup(true);
         } else if (status === 'busy') {
@@ -1615,7 +1505,10 @@ ${locationInfo}${coordinatesInfo}
             {showBookingPopup && (
                 <BookingPopup
                     isOpen={showBookingPopup}
-                    onClose={() => setShowBookingPopup(false)}
+                    onClose={() => {
+                        setShowBookingPopup(false);
+                        setPriceSliderBookingSource('quick-book'); // Reset source
+                    }}
                     therapistId={String(therapist.id)}
                     therapistName={therapist.name}
                     profilePicture={therapist.profilePicture || therapist.mainImage}
@@ -1627,6 +1520,8 @@ ${locationInfo}${coordinatesInfo}
                     }}
                     discountPercentage={therapist.discountPercentage || 0}
                     discountActive={isDiscountActive(therapist)}
+                    initialDuration={selectedDuration ? parseInt(selectedDuration) : undefined}
+                    bookingSource={priceSliderBookingSource}
                 />
             )}
 
@@ -1822,6 +1717,15 @@ ${locationInfo}${coordinatesInfo}
                                                                 if (service.price90) availableDurations.push('90');
                                                                 if (service.price120) availableDurations.push('120');
                                                                 
+                                                                console.log('🎯 PRICE SLIDER: User clicked "Book Now"', {
+                                                                    serviceName: service.name,
+                                                                    serviceIndex: index,
+                                                                    selectedDuration,
+                                                                    availableDurations,
+                                                                    therapistId: therapist.id,
+                                                                    therapistName: therapist.name
+                                                                });
+                                                                
                                                                 if (availableDurations.length > 0) {
                                                                     handleSelectService(index, availableDurations[0] as '60' | '90' | '120');
                                                                     
@@ -1831,6 +1735,12 @@ ${locationInfo}${coordinatesInfo}
                                                                     // Get pricing info
                                                                     const pricing = getPricing();
                                                                     const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                                    
+                                                                    console.log('🚀 PRICE SLIDER → Calling handleBookingClick with:', {
+                                                                        duration: selectedDuration,
+                                                                        status: normalizedStatus,
+                                                                        pricing
+                                                                    });
                                                                     
                                                                     // Handle booking based on status
                                                                     handleBookingClick(e, normalizedStatus, pricing);
@@ -1904,12 +1814,24 @@ ${locationInfo}${coordinatesInfo}
                                                     }`}
                                                     onClick={(e) => {
                                                         if (selectedServiceIndex === 0 && selectedDuration) {
+                                                            console.log('🎯 PRICE SLIDER (Fallback): User clicked "Book Now"', {
+                                                                selectedDuration,
+                                                                therapistId: therapist.id,
+                                                                therapistName: therapist.name
+                                                            });
+                                                            
                                                             // Close the price list modal
                                                             setShowPriceListModal(false);
 
                                                             // Get pricing info
                                                             const pricing = getPricing();
                                                             const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
+                                                            
+                                                            console.log('🚀 PRICE SLIDER (Fallback) → Calling handleBookingClick with:', {
+                                                                duration: selectedDuration,
+                                                                status: normalizedStatus,
+                                                                pricing
+                                                            });
                                                             
                                                             // Handle booking
                                                             handleBookingClick(e, normalizedStatus, pricing);

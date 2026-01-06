@@ -493,14 +493,31 @@ export default function ChatWindow({
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      required
                     />
-                    <input
-                      type="tel"
-                      placeholder="WhatsApp Number"
-                      value={customerWhatsApp}
-                      onChange={(e) => setCustomerWhatsApp(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        WhatsApp Number <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex">
+                        <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-700 rounded-l-lg text-sm font-medium">
+                          +62
+                        </span>
+                        <input
+                          type="tel"
+                          placeholder="812345678"
+                          value={customerWhatsApp}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '');
+                            setCustomerWhatsApp(value);
+                          }}
+                          maxLength={13}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                          required
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Enter your number without the country code (+62)</p>
+                    </div>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -529,7 +546,18 @@ export default function ChatWindow({
                     </select>
                     <button
                       onClick={() => {
-                        if (customerName && customerWhatsApp && customerLocation) {
+                        // Validate WhatsApp number
+                        const cleanedWhatsApp = customerWhatsApp.replace(/\D/g, '');
+                        if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
+                          setError('Please enter a valid WhatsApp number (8-15 digits)');
+                          return;
+                        }
+                        
+                        // Format WhatsApp with +62 prefix
+                        const formattedWhatsApp = `+62${cleanedWhatsApp}`;
+                        setCustomerWhatsApp(formattedWhatsApp);
+                        
+                        if (customerName && customerLocation) {
                           setIsRegistered(true)
                           handleStartBooking()
                         }

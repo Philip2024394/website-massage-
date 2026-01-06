@@ -31,7 +31,7 @@ export async function createChatRoom(data: {
     customerName: string;
     customerLanguage: 'en' | 'id';
     customerPhoto?: string;
-    therapistId: string | number;
+    therapistId: string | number; // Accept both, normalize to string
     therapistName: string;
     therapistLanguage: 'en' | 'id';
     therapistType: 'therapist' | 'place';
@@ -39,6 +39,13 @@ export async function createChatRoom(data: {
     expiresAt: string;
 }): Promise<ChatRoom> {
     try {
+        // Normalize therapistId to string for consistency
+        const normalizedTherapistId = typeof data.therapistId === 'number' 
+            ? data.therapistId.toString() 
+            : data.therapistId;
+        
+        console.log('🔧 Creating chat room with therapistId:', normalizedTherapistId, '(type:', typeof normalizedTherapistId, ')');
+        
         // Prepare untrusted input from caller
         const untrustedPayload = {
             bookingId: data.bookingId,
@@ -46,7 +53,7 @@ export async function createChatRoom(data: {
             customerName: data.customerName,
             customerLanguage: data.customerLanguage,
             customerPhoto: data.customerPhoto || '',
-            therapistId: data.therapistId,
+            therapistId: normalizedTherapistId, // ✅ Always string
             therapistName: data.therapistName,
             therapistLanguage: data.therapistLanguage,
             therapistType: data.therapistType,

@@ -173,6 +173,24 @@ export const authService = {
         }
     },
     
+    /**
+     * Create anonymous session for guest users
+     * 
+     * ⚠️ WHEN TO USE:
+     * - User clicks "Book Now" and needs to create a booking
+     * - User opens chat window and needs to send messages
+     * - User performs any protected Appwrite operation (create, update, delete)
+     * 
+     * ❌ DO NOT USE:
+     * - On app initialization
+     * - On landing page load
+     * - For read-only operations (viewing therapists, places, reviews)
+     * 
+     * RECOMMENDED: Use ensureAuthSession() from lib/authSessionHelper.ts instead
+     * This method is lower-level and requires manual error handling.
+     * 
+     * @returns User object or null if session creation fails
+     */
     async createAnonymousSession(): Promise<any> {
         try {
             // Check if already logged in with timeout

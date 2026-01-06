@@ -4,6 +4,8 @@ import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
+import { createChatRoom, sendSystemMessage } from '../lib/chatService';
+import { showToast } from '../utils/showToastPortal';
 
 // Extend window type for global booking tracker
 declare global {
@@ -37,6 +39,8 @@ interface BookingPopupProps {
   pricing?: { [key: string]: number };
   discountPercentage?: number;
   discountActive?: boolean;
+  initialDuration?: number; // Prefill duration from price slider
+  bookingSource?: string; // Track booking origin (e.g., 'price-slider', 'quick-book')
 }
 
 const BookingPopup: React.FC<BookingPopupProps> = ({
@@ -52,11 +56,13 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   hotelVillaLocation,
   pricing,
   discountPercentage = 0,
-  discountActive = false
+  discountActive = false,
+  initialDuration, // Prefill from price slider
+  bookingSource = 'quick-book' // Default source
 }) => {
   const { language } = useLanguage();
   const [showWarning, setShowWarning] = useState(true);
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
+  const [selectedDuration, setSelectedDuration] = useState<number | null>(initialDuration || null);
   const [isCreating, setIsCreating] = useState(false);
   
   // User information fields
@@ -107,9 +113,24 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
     }
 
     console.log('🚀 Starting booking creation process...');
+    console.log(`📍 Booking source: ${bookingSource}${initialDuration ? ` | Pre-selected duration: ${initialDuration}min` : ''}`);
 
     try {
       setIsCreating(true);
+
+      // ✅ ENSURE AUTHENTICATION: Anonymous session required for booking creation
+      // This is a protected Appwrite operation that requires a valid session
+      const { ensureAuthSession } = await import('../lib/authSessionHelper');
+      const authResult = await ensureAuthSession('booking creation');
+      
+      if (!authResult.success) {
+        console.error('❌ Cannot create booking without authentication');
+        alert('Unable to authenticate. Please try again.');
+        setIsCreating(false);
+        return;
+      }
+      
+      console.log(`✅ Authentication confirmed for booking (userId: ${authResult.userId})`);
 
       // If booking a place (venue), ensure current time is within opening hours
       const isPlace = (providerType || 'therapist') === 'place';
@@ -188,6 +209,15 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         customerName: customerName.trim(),
         customerWhatsApp: `${countryCode}${customerWhatsApp.trim()}`.replace(/\s/g, ''),
         
+        // Location Information - NEW: Save customer's location details
+        locationType: locationType, // 'hotel', 'villa', or 'home'
+        ...(locationType === 'home' && homeAddress && { address: homeAddress.trim() }),
+        ...(locationType !== 'home' && hotelVillaNameInput && { 
+          hotelVillaName: hotelVillaNameInput.trim(),
+          hotelVillaType: locationType // 'hotel' or 'villa'
+        }),
+        ...(locationType !== 'home' && roomNumber && { roomNumber: roomNumber.trim() }),
+        
         ...(hotelVillaId && { hotelVillaId }),
         ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
         ...(hotelVillaName && { hotelVillaName }),
@@ -201,7 +231,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         })
       };
 
-      console.log('📝 Creating immediate booking with data:', bookingData);
+      console.log('� STEP 1: Creating immediate booking with data:', bookingData);
 
       // Create the document using the generated bookingId  
       if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
@@ -218,6 +248,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         return;
       }
       
+      console.log('🔥 STEP 2: Calling Appwrite databases.createDocument...');
       const booking = await databases.createDocument(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,
@@ -225,7 +256,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         bookingData
       );
 
-      console.log('✅ Booking created successfully:', booking);
+      console.log('✅ STEP 2 COMPLETE: Booking created successfully:', booking.$id);
 
       const acceptUrl = `${window.location.origin}/accept-booking/${booking.$id}`;
       
@@ -282,8 +313,131 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       window.open(whatsappUrl, '_blank');
 
       // Show success message before closing
-      console.log('✅ Booking created successfully, opening status tracker');
+      console.log('✅ Booking created successfully, creating chat room...');
 
+      // 🔥 CHAT FLOW RESTORATION: Create chat room and open chat window
+      try {
+        // Create chat room for the booking
+        console.log('� STEP 3: Creating chat room for immediate booking...');
+        
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 minutes for response
+        
+        const chatRoom = await createChatRoom({
+          bookingId: booking.$id,
+          customerId: 'guest', // Guest user for immediate bookings
+          customerName: customerName,
+          customerLanguage: 'en', // Default to English
+          customerPhoto: '', // No avatar for immediate bookings
+          therapistId: therapistId.toString(), // ✅ Always string type
+          therapistName: therapistName,
+          therapistLanguage: 'id', // Default to Indonesian for providers
+          therapistType: (providerType || 'therapist') as 'therapist' | 'place',
+          therapistPhoto: profilePicture || '',
+          expiresAt: expiresAt.toISOString()
+        });
+        
+        console.log('✅ STEP 3 COMPLETE: Chat room created:', chatRoom.$id);
+        
+        // 🔒 STEP 3.5: Update booking and chat room for location verification
+        console.log('🔒 STEP 3.5: Setting up location verification requirement...');
+        try {
+          await databases.updateDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.bookings,
+            booking.$id,
+            {
+              status: 'waiting_for_location'
+            }
+          );
+          
+          await databases.updateDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.chatRooms,
+            chatRoom.$id,
+            {
+              requiresLocation: true,
+              locationVerified: false
+            }
+          );
+          
+          console.log('✅ STEP 3.5 COMPLETE: Location verification enabled');
+        } catch (locationSetupError) {
+          console.error('⚠️ Non-critical: Failed to set location requirement:', locationSetupError);
+          // Continue - this is not a blocking error
+        }
+        
+        // Create booking confirmation system message
+        console.log('🔥 STEP 4: Creating system message...');
+        const serviceType = providerType === 'place' && therapistName.toLowerCase().includes('facial') 
+          ? 'facial treatment' 
+          : 'massage';
+        
+        const systemMessage = `🚨 NEW IMMEDIATE BOOKING REQUEST
+
+⏱️ YOU HAVE 5 MINUTES TO ACCEPT OR REJECT
+
+👤 Customer: ${customerName}
+📱 WhatsApp: ${countryCode}${customerWhatsApp}
+📅 Time: ${now.toLocaleString()}
+⏱️ Duration: ${selectedDuration} minutes
+💰 Price: IDR ${Math.round(selectedOption.price / 1000)}K
+${
+  locationType === 'home' 
+    ? `📍 Location: Home Address\n🏠 Address: ${homeAddress}\n` 
+    : `📍 Location: ${locationType === 'hotel' ? 'Hotel' : 'Villa'}\n🏨 ${locationType === 'hotel' ? 'Hotel' : 'Villa'}: ${hotelVillaNameInput}\n🚪 Room: ${roomNumber}\n`
+}
+📝 Booking ID: ${booking.$id}
+
+⚠️ WARNING: You have 5 minutes to respond. If no response, booking will be sent to all available providers.`;
+
+        // Send system message to chat room
+        console.log('🔥 STEP 5: Sending system message to chat room...');
+        if (chatRoom?.$id) {
+          await sendSystemMessage(chatRoom.$id, { en: systemMessage, id: systemMessage });
+          console.log('✅ STEP 5 COMPLETE: System message sent successfully');
+        } else {
+          console.error('❌ STEP 5 FAILED: Chat room ID is null');
+        }
+        
+        // Show success toast
+        showToast('✅ Booking created! Opening chat...', 'success');
+        
+        // 🔥 STEP 6: Dispatch openChat event with standardized payload
+        setTimeout(() => {
+          const openChatPayload = {
+            chatSessionId: chatRoom.$id,
+            therapistName: therapistName,
+            therapistPhoto: profilePicture || '',
+            therapistId: therapistId.toString(), // ✅ Always string
+            providerId: therapistId.toString(),
+            providerName: therapistName,
+            providerPhoto: profilePicture || '',
+            providerStatus: 'available' as const,
+            providerRating: 0,
+            pricing: pricing || { '60': 250000, '90': 350000, '120': 450000 },
+            bookingId: booking.$id,
+            customerName: customerName,
+            customerWhatsApp: `${countryCode}${customerWhatsApp}`.replace(/\s/g, '')
+          };
+          
+          console.log('🔥 STEP 6: Dispatching openChat event with payload:', openChatPayload);
+          window.dispatchEvent(new CustomEvent('openChat', { detail: openChatPayload }));
+          console.log('✅ openChat event dispatched successfully');
+        }, 100);
+        
+      } catch (chatError: any) {
+        console.error('❌ Error creating chat room:', chatError);
+        console.error('Chat error details:', {
+          message: chatError.message,
+          code: chatError.code,
+          type: chatError.type
+        });
+        // Still show success for booking, but note chat issue
+        showToast('✅ Booking created! (Chat setup pending)', 'warning');
+      }
+
+      // Open booking status tracker (optional, in addition to chat)
       if (window.openBookingStatusTracker) {
         window.openBookingStatusTracker({
           bookingId: booking.$id,
@@ -294,8 +448,10 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         });
       }
 
-      // Close the booking popup
-      onClose();
+      // Close the booking popup after delay to allow chat to open
+      setTimeout(() => {
+        onClose();
+      }, 1000);
 
     } catch (error: any) {
       console.error('❌ Error creating booking:', error);
@@ -482,6 +638,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
                   value={customerWhatsApp}
                   onChange={(e) => setCustomerWhatsApp(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="812 3456 7890"
+                  maxLength={15}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm text-gray-900"
                 />
               </div>
@@ -619,6 +776,16 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              
+              // Validate WhatsApp number length (8-15 digits)
+              const cleanedWhatsApp = customerWhatsApp.replace(/\D/g, '');
+              if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
+                alert(language === 'id' 
+                  ? 'Mohon masukkan nomor WhatsApp yang valid (8-15 digit)' 
+                  : 'Please enter a valid WhatsApp number (8-15 digits)');
+                return;
+              }
+              
               createBookingRecord();
             }}
             disabled={
@@ -626,6 +793,8 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
               isCreating || 
               !customerName.trim() || 
               !customerWhatsApp.trim() ||
+              customerWhatsApp.replace(/\D/g, '').length < 8 ||
+              customerWhatsApp.replace(/\D/g, '').length > 15 ||
               (locationType !== 'home' && (!hotelVillaNameInput.trim() || !roomNumber.trim())) ||
               (locationType === 'home' && !homeAddress.trim())
             }
@@ -634,6 +803,8 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
               !isCreating && 
               customerName.trim() && 
               customerWhatsApp.trim() &&
+              customerWhatsApp.replace(/\D/g, '').length >= 8 &&
+              customerWhatsApp.replace(/\D/g, '').length <= 15 &&
               ((locationType !== 'home' && hotelVillaNameInput.trim() && roomNumber.trim()) ||
                (locationType === 'home' && homeAddress.trim()))
                 ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'

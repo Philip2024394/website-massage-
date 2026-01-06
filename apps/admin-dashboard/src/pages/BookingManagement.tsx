@@ -55,31 +55,33 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ onBack }) => {
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            // TODO: Integrate with Appwrite bookings collection
-            // const bookingsData = await bookingService.getAll();
+            // ✅ AUDIT FIX: Replaced mock data with real Appwrite queries
+            const { bookingService } = await import('@/lib/appwriteService');
+            const bookingsData = await bookingService.getAll();
             
-            // Mock data for now
-            const mockBookings: Booking[] = [
-                {
-                    $id: '1',
-                    customerName: 'John Doe',
-                    customerWhatsApp: '+62812345678',
-                    therapistId: 'therapist1',
-                    therapistName: 'Sarah Johnson',
-                    serviceType: 'Thai Massage',
-                    duration: 60,
-                    price: 150000,
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 min from now
-                    location: 'Hotel Room 302',
-                    chatWindowOpen: true,
-                    attemptedMembers: [],
-                    currentMemberOffered: 'therapist1'
-                }
-            ];
+            // Map Appwrite documents to Booking interface
+            const mappedBookings: Booking[] = bookingsData.map((doc: any) => ({
+                $id: doc.$id,
+                customerName: doc.userName || doc.customerName || 'Unknown',
+                customerWhatsApp: doc.customerWhatsApp || doc.userWhatsApp || 'N/A',
+                therapistId: doc.providerType === 'therapist' ? doc.providerId : undefined,
+                therapistName: doc.providerType === 'therapist' ? doc.providerName : undefined,
+                placeId: doc.providerType === 'place' ? doc.providerId : undefined,
+                placeName: doc.providerType === 'place' ? doc.providerName : undefined,
+                serviceType: doc.service ? `${doc.service} min massage` : 'Massage',
+                duration: doc.duration || parseInt(doc.service) || 60,
+                price: doc.totalCost || doc.price * 1000 || 0,
+                status: doc.status?.toLowerCase() || 'pending',
+                createdAt: doc.$createdAt || doc.createdAt,
+                acceptedAt: doc.acceptedAt,
+                expiresAt: doc.responseDeadline || doc.expiresAt,
+                location: doc.location || 'Not specified',
+                chatWindowOpen: false, // Default - can be enhanced with chat_rooms lookup
+                attemptedMembers: doc.attemptedMembers || [],
+                currentMemberOffered: doc.currentMemberOffered || doc.providerId
+            }));
             
-            setBookings(mockBookings);
+            setBookings(mappedBookings);
         } catch (error) {
             console.error('Error fetching bookings:', error);
         } finally {

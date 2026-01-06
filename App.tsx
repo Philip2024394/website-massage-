@@ -147,18 +147,19 @@ const App = () => {
     // Chat Window state - ONLY opens on explicit openChat events (no auto-opening)
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [chatInfo, setChatInfo] = useState<{
+        chatSessionId: string;
         therapistId: string;
         therapistName: string;
-        therapistType: 'therapist' | 'place';
-        therapistStatus?: 'available' | 'busy' | 'offline';
-        pricing?: any;
-        profilePicture?: string;
-        providerRating?: number;
-        discountPercentage?: number;
-        discountActive?: boolean;
-        mode?: 'immediate' | 'scheduled';
-        bookingId?: string;
-        chatRoomId?: string;
+        therapistPhoto: string;
+        providerId: string;
+        providerName: string;
+        providerPhoto: string;
+        providerStatus: 'available' | 'busy' | 'offline';
+        providerRating: number;
+        pricing: { '60': number; '90': number; '120': number };
+        bookingId: string;
+        customerName: string;
+        customerWhatsApp: string;
     } | null>(null);
 
     // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
@@ -213,9 +214,12 @@ const App = () => {
     // Listen for openChat events from booking system
     useEffect(() => {
         const handleOpenChat = (event: CustomEvent) => {
-            console.log('💬 App.tsx: openChat event received:', event.detail);
+            console.log('� STEP 7: App.tsx openChat event received');
+            console.log('📦 Event detail payload:', event.detail);
+            console.log('✅ Setting chatInfo state...');
             setChatInfo(event.detail);
             setIsChatOpen(true);
+            console.log('✅ STEP 7 COMPLETE: Chat window state updated (isChatOpen=true)');
         };
 
         window.addEventListener('openChat' as any, handleOpenChat);
@@ -281,18 +285,13 @@ const App = () => {
                 } catch (sessionError: any) {
                     sessionCache.setNoSession();
                     
-                    // Create anonymous session for data access if no user session exists
-                    try {
-                        console.log('🔑 Creating anonymous session for data access...');
-                        await account.createAnonymousSession();
-                        const anonymousUser = await account.get();
-                        sessionCache.set(true, anonymousUser);
-                        console.log('✅ Anonymous session created for data access');
-                    } catch (anonError: any) {
-                        if (!anonError.message?.includes('already exists') && !anonError.message?.includes('429')) {
-                            console.log('⚠️ Could not create anonymous session:', anonError.message);
-                        }
-                    }
+                    // ⚠️ REMOVED: Automatic anonymous session creation on app init
+                    // Anonymous sessions are now created ONLY when needed:
+                    // - When user clicks "Book Now" (see BookingPopup.tsx)
+                    // - When user opens chat (see ChatWindow.tsx)
+                    // - For protected actions requiring authentication
+                    // This prevents unnecessary user creation on landing page load.
+                    // See: lib/authSessionHelper.ts for on-demand session creation
                     
                     if (sessionError?.code !== 401 && sessionError?.message !== 'timeout') {
                         console.log('ℹ️ Session check:', sessionError.message || 'No active session');
@@ -816,25 +815,24 @@ const App = () => {
             )}
 
             {/* Global Chat Window - ONLY opens on explicit openChat events */}
+            {/* 🔥 STEP 8: Global Chat Window - ONLY opens on explicit openChat events */}
             {isChatOpen && chatInfo && (
                 <ChatWindow
                     isOpen={isChatOpen}
                     onClose={() => {
+                        console.log('🔴 Closing chat window');
                         setIsChatOpen(false);
                         setChatInfo(null);
                     }}
-                    therapistId={chatInfo.therapistId}
-                    therapistName={chatInfo.therapistName}
-                    therapistType={chatInfo.therapistType}
-                    therapistStatus={chatInfo.therapistStatus}
-                    pricing={chatInfo.pricing}
-                    profilePicture={chatInfo.profilePicture}
+                    providerId={chatInfo.providerId}
+                    providerName={chatInfo.providerName}
+                    providerPhoto={chatInfo.providerPhoto}
+                    providerStatus={chatInfo.providerStatus}
                     providerRating={chatInfo.providerRating}
-                    discountPercentage={chatInfo.discountPercentage}
-                    discountActive={chatInfo.discountActive}
-                    mode={chatInfo.mode}
+                    pricing={chatInfo.pricing}
+                    customerName={chatInfo.customerName}
+                    customerWhatsApp={chatInfo.customerWhatsApp}
                     bookingId={chatInfo.bookingId}
-                    chatRoomId={chatInfo.chatRoomId}
                 />
             )}
         </DeviceStylesProvider>
