@@ -659,7 +659,7 @@ export interface ChatNotification {
     roomId: string;
     bookingId: number;
     recipientId: string;
-    recipientType: 'customer' | 'therapist' | 'place';
+    recipientType: 'admin' | 'therapist' | 'place' | 'hotel' | 'villa' | 'user' | 'agent';  // ✅ Match Appwrite schema
     message: string;
     soundFile?: string;        // Optional sound file to play
 }

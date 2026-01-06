@@ -1,0 +1,13 @@
+{
+  "name": "send-system-chat-message",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "echo \"No build step required\"",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.1"
+  }
+}

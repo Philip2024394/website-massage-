@@ -178,7 +178,7 @@ export const therapistAuth = {
                     id: therapistId, // Required by Appwrite schema - document ID
                     email: normalizedEmail,
                     name: normalizedEmail.split('@')[0],
-                    ...(INCLUDE_USER_ID ? { userId: user.$id } : {}),
+                    userId: user.$id, // ✅ ALWAYS link therapist to auth user ID
                     whatsappNumber: '',
                     countryCode: '+66', // Required by Appwrite schema - default Thailand
                     location: '',
@@ -357,6 +357,7 @@ export const placeAuth = {
                 // CORE REQUIRED ATTRIBUTES (verified to exist in Appwrite)
                 id: generatedPlaceId,                          // ✅ Required: Document identifier
                 placeId: generatedPlaceId,                     // ✅ Required: Place-specific ID field
+                userId: user.$id,                              // ✅ ALWAYS link place to auth user ID
                 name: email.split('@')[0],                     // ✅ Required: Business name
                 category: 'massage-place',                     // ✅ Required: Business category
                 email,                                         // ✅ Required: Email address
@@ -428,6 +429,7 @@ export const placeAuth = {
                     const placeData = {
                         id: generatedPlaceId,
                         placeId: generatedPlaceId,
+                        userId: user.$id, // ✅ ALWAYS link place to auth user ID
                         name: email.split('@')[0],
                         category: 'massage-place',
                         email,
@@ -578,6 +580,7 @@ export const agentAuth = {
                 ID.unique(),
                 {
                     // Required fields per schema
+                    userId: user.$id, // ✅ ALWAYS link agent to auth user ID
                     name: email.split('@')[0],
                     email,
                     password: '', // Password handled by Appwrite auth

@@ -173,11 +173,8 @@ export default function MessageCenter({
             const message = await messagingService.sendMessage({
                 conversationId: conversation.conversationId,
                 senderId: currentUserId,
-                senderType: 'user',
                 senderName: currentUserName,
-                receiverId: conversation.otherUserId,
-                receiverType: 'user',
-                receiverName: conversation.otherUserName,
+                recipientId: conversation.otherUserId,
                 content: newMessage.trim()
             });
 

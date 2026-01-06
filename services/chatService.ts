@@ -127,27 +127,20 @@ export const chatService = {
         try {
             const currentUser = await account.get();
             
-            const messageData = {
+            // ✅ USE CENTRALIZED MESSAGING SERVICE - Single source of truth
+            const { messagingService } = await import('../lib/appwrite/services/messaging.service');
+            
+            const conversationId = [recipientId, currentUser.$id].sort().join('_');
+            
+            const response = await messagingService.sendMessage({
+                conversationId,
                 senderId: isAdmin ? 'admin' : currentUser.$id,
                 senderName: isAdmin ? 'Admin' : currentUser.name,
-                senderType: isAdmin ? 'admin' : 'user',
                 recipientId: recipientId,
                 recipientName: '', // Will be populated from user data
-                recipientType: 'user',
-                message: message,
-                createdAt: new Date().toISOString(),
-                read: false,
+                content: message,
                 messageType: 'text',
-                roomId: [recipientId, currentUser.$id].sort().join('_'),
-                isSystemMessage: false
-            };
-
-            const response = await databases.createDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.chatMessages,
-                ID.unique(),
-                messageData
-            );
+            });
 
             return response as unknown as ChatMessage;
         } catch (error) {

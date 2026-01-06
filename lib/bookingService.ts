@@ -8,6 +8,7 @@ import { APPWRITE_CONFIG } from './appwrite.config';
 import { MessageSenderType } from '../types';
 import * as chatService from './chatService';
 import { commissionTrackingService } from './services/commissionTrackingService';
+import { systemMessageService } from './services/systemMessage.service';
 
 export interface Booking {
     $id?: string;

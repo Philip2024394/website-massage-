@@ -1,0 +1,12 @@
+{
+  "name": "cancel-booking",
+  "version": "1.0.0",
+  "description": "Cancel booking safely",
+  "main": "src/main.js",
+  "scripts": {
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "node-appwrite": "^20.3.0"
+  }
+}

@@ -10,9 +10,18 @@ import { Client, Databases, Account, Storage, Functions } from 'appwrite';
  */
 function requireEnv(key: string, fallback?: string): string {
   const value = import.meta.env[key] || fallback;
+  
+  // STEP 1: ENVIRONMENT VARIABLES CHECK - Log all checks
+  console.log(`[APPWRITE CONFIG] Checking ${key}:`, value ? '✅ LOADED' : '❌ MISSING');
+  
   if (!value || value === '') {
-    throw new Error(`❌ MISSING CONFIG: ${key} is required but not set in environment variables`);
+    const error = `❌ MISSING CONFIG: ${key} is required but not set in environment variables`;
+    console.error(`[APPWRITE CONFIG] ${error}`);
+    console.error(`[APPWRITE CONFIG] Available env keys:`, Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+    throw new Error(error);
   }
+  
+  console.log(`[APPWRITE CONFIG] ${key} = ${value}`);
   return value;
 }
 
@@ -102,11 +111,32 @@ export const client = new Client()
   .setEndpoint(APPWRITE_CONFIG.endpoint)
   .setProject(APPWRITE_CONFIG.projectId);
 
+// STEP 2: APPWRITE CLIENT AUTH CHECK - Log client initialization
+console.log('[APPWRITE CONFIG] ✅ Appwrite Client initialized');
+console.log('[APPWRITE CONFIG] Endpoint:', APPWRITE_CONFIG.endpoint);
+console.log('[APPWRITE CONFIG] Project ID:', APPWRITE_CONFIG.projectId);
+console.log('[APPWRITE CONFIG] Database ID:', APPWRITE_CONFIG.databaseId);
+
 // Initialize services
 export const databases = new Databases(client);
 export const account = new Account(client);
 export const storage = new Storage(client);
 export const functions = new Functions(client);
+
+// Verify user session before any database operations
+async function validateSession() {
+  try {
+    const session = await account.get();
+    console.log('[APPWRITE CONFIG] ✅ User session active - User ID:', session.$id);
+    return session;
+  } catch (error) {
+    console.warn('[APPWRITE CONFIG] ⚠️ No active session - Guest mode');
+    return null;
+  }
+}
+
+// Export session validator
+export { validateSession };
 
 // Rate-limited database instance (alias for databases)
 export const rateLimitedDb = databases;

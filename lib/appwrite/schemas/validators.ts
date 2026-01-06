@@ -7,45 +7,121 @@
  * Each validator:
  * - Whitelists allowed fields
  * - Enforces required fields
- * - Validates types
+ * - Validates types with compile-time safety
  * - Rejects unknown keys
  */
 
+import { 
+  RecipientType,
+  SenderType,
+  MessageType,
+  type RecipientTypeValue,
+  type SenderTypeValue,
+  type MessageTypeValue,
+  isValidRecipientType,
+  isValidSenderType,
+  isValidMessageType
+} from '../constants';
+
 // ============================================================================
-// CHAT_MESSAGES SCHEMA
+// CHAT_MESSAGES SCHEMA - Type-safe with enum validation
 // ============================================================================
 
 export interface ChatMessagePayload {
     conversationId: string;
+    roomId: string;
     senderId: string;
+    senderName: string;
+    senderType: SenderTypeValue;  // ✅ Compile-time type safety
     recipientId: string;
+    recipientName: string;
+    recipientType: RecipientTypeValue;  // ✅ Compile-time type safety
+    receiverId: string;
+    receivername: string;
     content: string;
-    type: 'text' | 'system' | 'booking' | 'auto-reply' | 'status-update' | 'fallback';
-    messageId: string;
+    message: string;
+    messageType: MessageTypeValue;  // ✅ Compile-time type safety
+    originalLanguage: string;
+    isSystemMessage: boolean;
+    bookingid: string;
+    originalMessageId: string;
+    expiresat: string;
+    archivedBy: string;
+    sessionId: string;
     read: boolean;
+    readAt?: string;
+    translatedText?: string;
+    translatedLanguage?: string;
+    fileUrl?: string;
+    fileName?: string;
+    location?: string;
+    keepForever: boolean;
+    markedForSave: boolean;
+    savedby?: string;
+    savedat?: string;
+    metadata?: string;
     createdAt: string;
 }
 
 const CHAT_MESSAGE_ALLOWED_FIELDS = new Set([
     'conversationId',
+    'roomId',
     'senderId',
+    'senderName',
+    'senderType',
     'recipientId',
+    'recipientName',
+    'recipientType',
+    'receiverId',
+    'receivername',
     'content',
+    'message',
+    'messageType',
     'type',
-    'messageId',
+    'originalLanguage',
+    'isSystemMessage',
+    'bookingid',
+    'originalMessageId',
+    'expiresat',
+    'archivedBy',
+    'sessionId',
     'read',
+    'readAt',
+    'translatedText',
+    'translatedLanguage',
+    'fileUrl',
+    'fileName',
+    'location',
+    'keepForever',
+    'markedForSave',
+    'savedby',
+    'savedat',
+    'metadata',
     'createdAt'
 ]);
 
 const CHAT_MESSAGE_REQUIRED_FIELDS = [
     'conversationId',
+    'roomId',
     'senderId',
+    'senderName',
+    'senderType',
     'recipientId',
+    'recipientName',
+    'recipientType',
+    'receiverId',
+    'receivername',
     'content',
-    'type'
+    'message',
+    'messageType',
+    'originalLanguage',
+    'isSystemMessage',
+    'expiresat',
+    'archivedBy',
+    'sessionId',
+    'read',
+    'createdAt'
 ];
-
-const CHAT_MESSAGE_TYPES = ['text', 'system', 'booking', 'auto-reply', 'status-update', 'fallback'];
 
 export function validateChatMessage(data: unknown): ChatMessagePayload {
     if (!data || typeof data !== 'object') {
@@ -62,7 +138,7 @@ export function validateChatMessage(data: unknown): ChatMessagePayload {
 
     // Check required fields
     for (const field of CHAT_MESSAGE_REQUIRED_FIELDS) {
-        if (!obj[field]) {
+        if (obj[field] === undefined || obj[field] === null) {
             throw new Error(`chat_messages validation failed: missing required field '${field}'`);
         }
     }
@@ -71,29 +147,151 @@ export function validateChatMessage(data: unknown): ChatMessagePayload {
     if (typeof obj.conversationId !== 'string') {
         throw new Error('chat_messages validation failed: conversationId must be a string');
     }
+    if (typeof obj.roomId !== 'string') {
+        throw new Error('chat_messages validation failed: roomId must be a string');
+    }
     if (typeof obj.senderId !== 'string') {
         throw new Error('chat_messages validation failed: senderId must be a string');
+    }
+    if (typeof obj.senderName !== 'string') {
+        throw new Error('chat_messages validation failed: senderName must be a string');
+    }
+    if (typeof obj.senderType !== 'string') {
+        throw new Error('chat_messages validation failed: senderType must be a string');
+    }
+    // ✅ ENUM VALIDATION: Enforce valid senderType values
+    if (!isValidSenderType(obj.senderType)) {
+        throw new Error(`chat_messages validation failed: senderType "${obj.senderType}" is invalid. Must be one of: ${Object.values(SenderType).join(', ')}`);
     }
     if (typeof obj.recipientId !== 'string') {
         throw new Error('chat_messages validation failed: recipientId must be a string');
     }
+    if (typeof obj.recipientName !== 'string') {
+        throw new Error('chat_messages validation failed: recipientName must be a string');
+    }
+    if (typeof obj.recipientType !== 'string') {
+        throw new Error('chat_messages validation failed: recipientType must be a string');
+    }
+    // ✅ ENUM VALIDATION: Enforce valid recipientType values
+    if (!isValidRecipientType(obj.recipientType)) {
+        throw new Error(`chat_messages validation failed: recipientType "${obj.recipientType}" is invalid. Must be one of: ${Object.values(RecipientType).join(', ')}`);
+    }
+    if (typeof obj.receiverId !== 'string') {
+        throw new Error('chat_messages validation failed: receiverId must be a string');
+    }
+    if (typeof obj.receivername !== 'string') {
+        throw new Error('chat_messages validation failed: receivername must be a string');
+    }
     if (typeof obj.content !== 'string') {
         throw new Error('chat_messages validation failed: content must be a string');
     }
-    if (!CHAT_MESSAGE_TYPES.includes(obj.type)) {
-        throw new Error(`chat_messages validation failed: type must be one of [${CHAT_MESSAGE_TYPES.join(', ')}]`);
+    if (typeof obj.message !== 'string') {
+        throw new Error('chat_messages validation failed: message must be a string');
+    }
+    if (typeof obj.messageType !== 'string') {
+        throw new Error('chat_messages validation failed: messageType must be a string');
+    }
+    // ✅ ENUM VALIDATION: Enforce valid messageType values
+    if (!isValidMessageType(obj.messageType)) {
+        throw new Error(`chat_messages validation failed: messageType "${obj.messageType}" is invalid. Must be one of: ${Object.values(MessageType).join(', ')}`);
+    }
+    if (typeof obj.originalLanguage !== 'string') {
+        throw new Error('chat_messages validation failed: originalLanguage must be a string');
+    }
+    if (typeof obj.isSystemMessage !== 'boolean') {
+        throw new Error('chat_messages validation failed: isSystemMessage must be a boolean');
+    }
+    if (obj.bookingid !== undefined && typeof obj.bookingid !== 'string') {
+        throw new Error('chat_messages validation failed: bookingid must be a string');
+    }
+    if (obj.originalMessageId !== undefined && typeof obj.originalMessageId !== 'string') {
+        throw new Error('chat_messages validation failed: originalMessageId must be a string');
+    }
+    if (typeof obj.expiresat !== 'string') {
+        throw new Error('chat_messages validation failed: expiresat must be a string');
+    }
+    if (typeof obj.archivedBy !== 'string') {
+        throw new Error('chat_messages validation failed: archivedBy must be a string');
+    }
+    if (typeof obj.sessionId !== 'string') {
+        throw new Error('chat_messages validation failed: sessionId must be a string');
+    }
+    if (typeof obj.read !== 'boolean') {
+        throw new Error('chat_messages validation failed: read must be a boolean');
+    }
+    if (typeof obj.createdAt !== 'string') {
+        throw new Error('chat_messages validation failed: createdAt must be a string');
+    }
+    if (typeof obj.keepForever !== 'boolean') {
+        throw new Error('chat_messages validation failed: keepForever must be a boolean');
+    }
+    if (typeof obj.markedForSave !== 'boolean') {
+        throw new Error('chat_messages validation failed: markedForSave must be a boolean');
+    }
+    // Optional field validations
+    if (obj.readAt !== undefined && typeof obj.readAt !== 'string') {
+        throw new Error('chat_messages validation failed: readAt must be a string');
+    }
+    if (obj.translatedText !== undefined && typeof obj.translatedText !== 'string') {
+        throw new Error('chat_messages validation failed: translatedText must be a string');
+    }
+    if (obj.translatedLanguage !== undefined && typeof obj.translatedLanguage !== 'string') {
+        throw new Error('chat_messages validation failed: translatedLanguage must be a string');
+    }
+    if (obj.fileUrl !== undefined && typeof obj.fileUrl !== 'string') {
+        throw new Error('chat_messages validation failed: fileUrl must be a string');
+    }
+    if (obj.fileName !== undefined && typeof obj.fileName !== 'string') {
+        throw new Error('chat_messages validation failed: fileName must be a string');
+    }
+    if (obj.location !== undefined && typeof obj.location !== 'string') {
+        throw new Error('chat_messages validation failed: location must be a string');
+    }
+    if (obj.savedby !== undefined && typeof obj.savedby !== 'string') {
+        throw new Error('chat_messages validation failed: savedby must be a string');
+    }
+    if (obj.savedat !== undefined && typeof obj.savedat !== 'string') {
+        throw new Error('chat_messages validation failed: savedat must be a string');
+    }
+    if (obj.metadata !== undefined && typeof obj.metadata !== 'string') {
+        throw new Error('chat_messages validation failed: metadata must be a string');
     }
 
     // Construct clean payload (whitelist only)
     return {
         conversationId: obj.conversationId,
+        roomId: obj.roomId,
         senderId: obj.senderId,
+        senderName: obj.senderName,
+        senderType: obj.senderType,
         recipientId: obj.recipientId,
+        recipientName: obj.recipientName,
+        recipientType: obj.recipientType,
+        receiverId: obj.receiverId,
+        receivername: obj.receivername,
         content: obj.content,
-        type: obj.type,
-        messageId: obj.messageId || '',
-        read: obj.read ?? false,
-        createdAt: obj.createdAt || new Date().toISOString()
+        message: obj.message,
+        messageType: obj.messageType,
+        originalLanguage: obj.originalLanguage,
+        isSystemMessage: obj.isSystemMessage,
+        bookingid: obj.bookingid || '',
+        originalMessageId: obj.originalMessageId || '',
+        expiresat: obj.expiresat,
+        archivedBy: obj.archivedBy,
+        sessionId: obj.sessionId,
+        read: obj.read,
+        readAt: obj.readAt,
+        translatedText: obj.translatedText,
+        translatedLanguage: obj.translatedLanguage,
+        fileUrl: obj.fileUrl,
+        fileName: obj.fileName,
+        location: obj.location,
+        keepForever: obj.keepForever,
+        markedForSave: obj.markedForSave,
+        savedby: obj.savedby,
+        savedat: obj.savedat,
+        metadata: obj.metadata,
+        createdAt: obj.createdAt
     };
 }
 

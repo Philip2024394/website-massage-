@@ -6,6 +6,7 @@ import { startContinuousNotifications, stopContinuousNotifications } from '../li
 import { broadcastDecline } from '../lib/bookingAssignment';
 import { playSound } from '../lib/notificationSounds';
 import { showToast } from '../utils/showToastPortal';
+import { bookingSoundService } from '../services/bookingSound.service';
 
 const DeclineBookingPage: React.FC = () => {
   let { bookingId } = useParams<{ bookingId: string }>();
@@ -43,11 +44,20 @@ const DeclineBookingPage: React.FC = () => {
     fetchBooking();
   }, [bookingId]);
 
-  // Start notification sound until decision
+  // CRITICAL: Start notification sound until decision
   useEffect(() => {
     if (bookingId && booking && !declined) {
+      // Enable autoplay preparation
+      bookingSoundService.enableAutoplay();
+      
+      // Start both sound systems for maximum alerting
       startContinuousNotifications(bookingId);
-      return () => { stopContinuousNotifications(bookingId); };
+      bookingSoundService.startBookingAlert(bookingId, 'pending');
+      
+      return () => { 
+        stopContinuousNotifications(bookingId); 
+        bookingSoundService.stopBookingAlert(bookingId);
+      };
     }
   }, [bookingId, booking, declined]);
 
@@ -68,8 +78,9 @@ const DeclineBookingPage: React.FC = () => {
           }
         );
       }
-      // Stop sound
+      // CRITICAL: Stop all sounds immediately on decline
       stopContinuousNotifications(bookingId);
+      bookingSoundService.stopBookingAlert(bookingId);
       playSound('bookingDeclined');
       setDeclined(true);
       showToast('Booking declined', 'success');

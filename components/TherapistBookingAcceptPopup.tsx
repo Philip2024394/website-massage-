@@ -5,6 +5,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { startContinuousNotifications, stopContinuousNotifications } from '../lib/continuousNotificationService';
 import { playSound, playSequence } from '../lib/notificationSounds';
 import { broadcastDecline } from '../lib/bookingAssignment';
+import { bookingSoundService } from '../services/bookingSound.service';
 
 interface TherapistBookingAcceptPopupProps {
   isOpen: boolean;
@@ -38,12 +39,20 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
   const [isAccepting, setIsAccepting] = useState(false);
   const [isAccepted, setIsAccepted] = useState(false);
 
-  // Loud continuous alert until therapist acts
+  // CRITICAL: Loud continuous alert until therapist acts
   useEffect(() => {
     if (!isOpen || !bookingId) return;
+    
+    // Enable autoplay on component mount (requires user interaction)
+    bookingSoundService.enableAutoplay();
+    
+    // Start both old and new sound systems
     startContinuousNotifications(bookingId);
+    bookingSoundService.startBookingAlert(bookingId, 'pending');
+    
     return () => {
       stopContinuousNotifications(bookingId);
+      bookingSoundService.stopBookingAlert(bookingId);
     };
   }, [isOpen, bookingId]);
 
@@ -94,8 +103,59 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
       }
 
       console.log('✅ Booking accepted:', bookingId);
+      
+      // STEP 4: CHAT SESSION CREATION VALIDATION
+      console.log('[BOOKING ACCEPT] Creating chat session for booking:', bookingId);
+      console.log('[BOOKING ACCEPT] Buyer ID: customer (derived from booking)');
+      console.log('[BOOKING ACCEPT] Therapist ID:', therapistId);
+      
+      try {
+        // Create chat session with validated payload
+        const chatSessionPayload = {
+          buyerId: 'customer', // Will be replaced with actual customer ID from booking
+          therapistId: String(therapistId),
+          bookingId: String(bookingId),
+          status: 'pending', // Will be set to 'accepted' when therapist opens chat
+          createdAt: new Date().toISOString()
+        };
+        
+        console.log('[BOOKING ACCEPT] Chat session payload:', chatSessionPayload);
+        console.log('[BOOKING ACCEPT] STEP 4 VALIDATION:');
+        console.log('[BOOKING ACCEPT]   - buyerId:', chatSessionPayload.buyerId ? '✅' : '❌');
+        console.log('[BOOKING ACCEPT]   - therapistId:', chatSessionPayload.therapistId ? '✅' : '❌');
+        console.log('[BOOKING ACCEPT]   - bookingId:', chatSessionPayload.bookingId ? '✅' : '❌');
+        console.log('[BOOKING ACCEPT]   - status:', chatSessionPayload.status === 'pending' ? '✅' : '❌');
+        console.log('[BOOKING ACCEPT]   - createdAt:', chatSessionPayload.createdAt ? '✅' : '❌');
+        
+        // Create chat session in Appwrite
+        if (APPWRITE_CONFIG.collections.chatSessions && APPWRITE_CONFIG.collections.chatSessions !== '') {
+          const chatSession = await databases.createDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.chatSessions,
+            bookingId, // Use bookingId as document ID for easy lookup
+            chatSessionPayload
+          );
+          
+          console.log('[BOOKING ACCEPT] ✅ Chat session created:', chatSession.$id);
+          console.log('[BOOKING ACCEPT] Therapist can now access chat for this booking');
+        } else {
+          console.warn('[BOOKING ACCEPT] ⚠️ Chat sessions collection disabled');
+        }
+      } catch (chatError: any) {
+        console.error('[BOOKING ACCEPT] ❌ Failed to create chat session:', {
+          message: chatError?.message,
+          code: chatError?.code,
+          type: chatError?.type,
+          response: chatError?.response
+        });
+        // Don't fail the booking acceptance if chat session creation fails
+      }
+      
       setIsAccepted(true);
+      
+      // CRITICAL: Stop all booking alerts immediately on accept
       stopContinuousNotifications(bookingId);
+      bookingSoundService.stopBookingAlert(bookingId);
       playSound('bookingAccepted');
 
       // Close popup after showing success
@@ -238,6 +298,10 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
                 onClick={async () => {
                   if (isAccepting) return;
                   try {
+                    // CRITICAL: Stop all booking alerts immediately on decline
+                    stopContinuousNotifications(bookingId);
+                    bookingSoundService.stopBookingAlert(bookingId);
+                    
                     // Update booking status to 'rejected'
                     if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
                       await databases.updateDocument(

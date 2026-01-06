@@ -1,0 +1,16 @@
+{
+  "name": "search-therapists-function",
+  "version": "1.0.0",
+  "description": "Secure Appwrite function for searching available therapists",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "node --version"
+  },
+  "dependencies": {
+    "node-appwrite": "^12.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "accept-therapist",
+  "version": "1.0.0",
+  "description": "Accept therapist for booking",
+  "main": "src/main.js",
+  "scripts": {
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "node-appwrite": "^20.3.0"
+  }
+}

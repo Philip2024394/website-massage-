@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Check, X, AlertTriangle, Volume2, VolumeX } from 'lucide-react';
 import { bookingAcknowledgmentService } from '../../../../lib/services/bookingAcknowledgmentService';
+import { bookingSoundService } from '../../../../services/bookingSound.service';
 
 interface BookingRequest {
     $id: string;
@@ -99,7 +100,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         const { bookingId, therapistId: notificationTherapistId } = event.detail;
         
         if (notificationTherapistId === therapistId && soundEnabled) {
+            // Start both old and new sound systems for maximum alerting
             playNotificationSound();
+            bookingSoundService.startBookingAlert(bookingId, 'pending');
         }
         
         // Reload bookings
@@ -139,8 +142,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         try {
             await bookingAcknowledgmentService.acceptBooking(acknowledgmentId, therapistId);
             
-            // Stop notification sound
+            // CRITICAL: Stop all notification sounds immediately
             stopNotificationSound();
+            bookingSoundService.stopBookingAlert(acknowledgmentId);
             
             // Remove from pending list
             setPendingBookings(prev => prev.filter(b => b.$id !== acknowledgmentId));
@@ -170,8 +174,9 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         try {
             await bookingAcknowledgmentService.rejectBooking(acknowledgmentId, therapistId, reason || undefined);
             
-            // Stop notification sound
+            // CRITICAL: Stop all notification sounds immediately
             stopNotificationSound();
+            bookingSoundService.stopBookingAlert(acknowledgmentId);
             
             // Remove from pending list
             setPendingBookings(prev => prev.filter(b => b.$id !== acknowledgmentId));

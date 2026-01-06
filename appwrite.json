@@ -22,6 +22,54 @@
       "events": [],
       "schedule": "",
       "timeout": 15
+    },
+    {
+      "functionId": "createBooking",
+      "name": "Create Booking",
+      "runtime": "node-18.0",
+      "path": "functions/createBooking",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "execute": ["guests"]
+    },
+    {
+      "functionId": "searchTherapists",
+      "name": "Search Therapists",
+      "runtime": "node-18.0", 
+      "path": "functions/searchTherapists",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "execute": ["guests"]
+    },
+    {
+      "functionId": "acceptTherapist",
+      "name": "Accept Therapist",
+      "runtime": "node-18.0",
+      "path": "functions/acceptTherapist", 
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["guests"]
+    },
+    {
+      "functionId": "cancelBooking",
+      "name": "Cancel Booking",
+      "runtime": "node-18.0",
+      "path": "functions/cancelBooking",
+      "entrypoint": "src/main.js", 
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["guests"]
     }
   ],
   "collections": [],

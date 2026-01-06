@@ -89,7 +89,10 @@ const PlaceChat: React.FC<PlaceChatProps> = ({ place, onBack }) => {
       await messagingService.sendMessage({
         conversationId,
         senderId: String(place.$id || place.id),
+        senderName: place.name || 'Place',
         recipientId: 'admin',
+        recipientName: 'Admin',
+        recipientType: 'admin',
         content: newMessage.trim(),
         type: 'text',
       });

@@ -1,4 +1,4 @@
-import { Client, Databases, Account, Storage, ID, Permission, Role, Query } from 'appwrite';
+import { Client, Databases, Account, Storage, Functions, ID, Permission, Role, Query } from 'appwrite';
 
 const client = new Client();
 
@@ -9,6 +9,7 @@ client
 export const databases = new Databases(client);
 export const account = new Account(client);
 export const storage = new Storage(client);
+export const functions = new Functions(client);
 
 // Export both old and new names for backward compatibility
 export { client, ID, Permission, Role, Query };
@@ -16,6 +17,7 @@ export { client as appwriteClient };
 export { databases as appwriteDatabases };
 export { account as appwriteAccount };
 export { storage as appwriteStorage };
+export { functions as appwriteFunctions };
 
 // Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
@@ -25,8 +27,11 @@ export const COLLECTIONS = {
     FACIAL_PLACES: 'facial_places_collection', // ✅ Text-based collection ID
     USERS: '', // ⚠️ DISABLED - Collection doesn't exist
     AGENTS: '', // ⚠️ DISABLED - Collection doesn't exist
-    BOOKINGS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
+    BOOKINGS: 'bookings', // ✅ Production booking collection
     REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
+    // Production Booking System
+    THERAPIST_MATCHES: 'therapist_matches', // ✅ Therapist search results  
+    CHAT_SESSIONS: 'chat_sessions', // ✅ Active chat sessions
     ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
     ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     ADMINS: '', // ⚠️ DISABLED - Collection doesn't exist

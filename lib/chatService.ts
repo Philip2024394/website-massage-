@@ -9,6 +9,7 @@ import { APPWRITE_CONFIG } from './appwrite.config';
 import { ChatRoom, ChatMessage, ChatRoomStatus, MessageSenderType } from '../types';
 import { translateText } from './translationService';
 import { validateChatRoom } from './appwrite/schemas/validators';
+import { systemMessageService } from './services/systemMessage.service';
 
 // Initialize Appwrite client
 const client = new Client()
@@ -93,6 +94,50 @@ export async function sendMessage(data: {
     recipientLanguage: 'en' | 'id';
 }): Promise<ChatMessage> {
     try {
+        // 🔒 ENTERPRISE SECURITY: Route system messages through backend function
+        if (data.senderId === 'system' || data.senderType === MessageSenderType.System) {
+            console.log('🔒 [CHAT SERVICE] Routing system message through backend function');
+            
+            // Auto-translate message if languages are different
+            let finalText = data.text;
+            if (data.senderLanguage !== data.recipientLanguage) {
+                finalText = await translateText(
+                    data.text,
+                    data.senderLanguage,
+                    data.recipientLanguage
+                ) || data.text;
+            }
+
+            // Use system message service for backend routing
+            const result = await systemMessageService.sendSystemMessage({
+                conversationId: data.roomId,
+                recipientId: 'customer', // This seems to be a different chat structure
+                recipientName: 'Customer',
+                recipientType: 'user',
+                content: finalText
+            });
+
+            if (!result.success) {
+                throw new Error(`System message failed: ${result.message}`);
+            }
+
+            // Return a ChatMessage-compatible object
+            return {
+                $id: result.messageId || 'system-' + Date.now(),
+                $createdAt: result.createdAt || new Date().toISOString(),
+                roomId: data.roomId,
+                senderId: 'system',
+                senderType: MessageSenderType.System,
+                senderName: 'System',
+                originalText: data.text,
+                originalLanguage: data.senderLanguage,
+                translatedText: finalText,
+                translatedLanguage: data.recipientLanguage,
+                isRead: false
+            } as ChatMessage;
+        }
+
+        // Regular user/therapist messages - continue with normal flow
         // Auto-translate message if languages are different
         let translatedText: string | undefined;
         if (data.senderLanguage !== data.recipientLanguage) {

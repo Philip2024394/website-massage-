@@ -4,6 +4,7 @@ import { Clock, CheckCircle, XCircle, AlertTriangle, Search, User, MessageCircle
 import { showToast } from '../utils/showToastPortal';
 import { databases, client } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import { bookingSoundService } from '../services/bookingSound.service';
 
 interface BookingStatusTrackerProps {
   isOpen: boolean;
@@ -179,8 +180,11 @@ const BookingStatusTracker: React.FC<BookingStatusTrackerProps> = ({
     try {
       // Update therapist status to busy (replace with real Appwrite update)
       console.log('Setting therapist status to busy:', acceptedTherapist.therapistId);
-      // Stop notifications on accept
-      if (bookingId) stopContinuousNotifications(bookingId);
+      // CRITICAL: Stop notifications on accept
+      if (bookingId) {
+        stopContinuousNotifications(bookingId);
+        bookingSoundService.stopBookingAlert(bookingId);
+      }
       
       // Send WhatsApp confirmation to therapist
       const message = `✅ BOOKING CONFIRMED!\n\nCustomer has accepted your service.\nBooking Ref: Indastreet-${bookingId.slice(0, 5)}\nDuration: ${duration} min\nPrice: Rp ${(price * 15000).toLocaleString()}\n\nPlease start your journey to the customer.\nEstimated arrival: ${acceptedTherapist.estimatedArrival} minutes\n\nINDASTREET TEAM`;

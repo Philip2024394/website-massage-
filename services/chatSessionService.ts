@@ -1,4 +1,4 @@
-import { databases, ID, Query } from '../lib/appwrite';
+import { databases, ID, Query, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite/config';
 import { appwriteHealthMonitor } from './appwriteHealthMonitor';
 import { validateChatSession } from '../lib/appwrite/schemas/validators';
@@ -29,6 +29,8 @@ class SessionNotFoundError extends Error {
 interface ChatSession {
     $id?: string;
     sessionId: string;
+    chatId?: string;  // ✅ Added: Required by Appwrite schema
+    userId?: string;  // ✅ Added: Required by Appwrite schema - ID of logged-in user
     customerId?: string;
     customerName?: string;
     customerWhatsApp?: string;
@@ -159,12 +161,28 @@ export const chatSessionService = {
             const now = new Date().toISOString();
             const expiresAt = new Date(Date.now() + CONFIG.SESSION_EXPIRY_HOURS * 60 * 60 * 1000).toISOString();
 
+            // ✅ FIX: Get current user ID (required by Appwrite schema)
+            let userId = '';
+            try {
+                const currentUser = await account.get();
+                userId = currentUser.$id;
+                console.log('✅ Got current user ID:', userId);
+            } catch (error) {
+                console.warn('⚠️ Could not get user ID, session creation may fail:', error);
+                // Continue anyway - Appwrite will reject if userId is required
+            }
+
             // CRITICAL FIX: Convert pricing object to JSON string (Appwrite doesn't support nested objects)
             const appwritePayload: any = {
                 sessionId,
+                chatId: sessionId,  // ✅ FIX: Add required chatId field
+                userId,  // ✅ FIX: Add required userId field
                 ...sessionData,  // Include all fields from caller
+                therapistId: sessionData.providerId,  // ✅ FIX: Add required therapistId field (same as providerId)
                 bookingId: sessionData.bookingId || sessionId,
                 isActive: true,
+                startTime: now,  // ✅ FIX: Add required startTime field
+                messagesCount: 0,  // ✅ FIX: Add required messagesCount field (starts at 0)
                 createdAt: now,
                 updatedAt: now,
                 expiresAt
@@ -173,6 +191,39 @@ export const chatSessionService = {
             // Convert pricing object to JSON string if it exists
             if (appwritePayload.pricing && typeof appwritePayload.pricing === 'object') {
                 appwritePayload.pricing = JSON.stringify(appwritePayload.pricing);
+            }
+
+            // ✅ FIX: Convert profilePicture to array if it's a string (Appwrite schema requires array)
+            if (appwritePayload.profilePicture) {
+                if (typeof appwritePayload.profilePicture === 'string') {
+                    appwritePayload.profilePicture = [appwritePayload.profilePicture];
+                    console.log('✅ Converted profilePicture string to array:', appwritePayload.profilePicture);
+                } else if (!Array.isArray(appwritePayload.profilePicture)) {
+                    // If it's not a string and not an array, remove it to prevent errors
+                    delete appwritePayload.profilePicture;
+                    console.warn('⚠️ Removed invalid profilePicture (not string or array)');
+                }
+            }
+
+            // ✅ FIX: Validate discountPercentage (must be 1-100 or removed)
+            if (appwritePayload.discountPercentage !== undefined) {
+                const discount = Number(appwritePayload.discountPercentage);
+                if (isNaN(discount) || discount < 1 || discount > 100) {
+                    delete appwritePayload.discountPercentage;
+                    delete appwritePayload.discountActive;  // Remove discountActive if percentage is invalid
+                    console.log('✅ Removed invalid discountPercentage and discountActive:', appwritePayload.discountPercentage);
+                } else {
+                    appwritePayload.discountPercentage = discount;
+                }
+            } else if (appwritePayload.discountActive) {
+                // If discountActive is true but no percentage provided, remove discountActive
+                delete appwritePayload.discountActive;
+                console.log('✅ Removed discountActive (no discountPercentage provided)');
+            }
+
+            // ✅ FIX: Validate discountActive (must be boolean)
+            if (appwritePayload.discountActive !== undefined && typeof appwritePayload.discountActive !== 'boolean') {
+                appwritePayload.discountActive = Boolean(appwritePayload.discountActive);
             }
 
             // LOG EVERY FIELD AND ITS TYPE
@@ -311,10 +362,48 @@ export const chatSessionService = {
             // Prevent updating system fields
             const { $id, sessionId: _, createdAt, expiresAt, ...allowedUpdates } = updates as any;
             
-            const updatedData = {
+            const updatedData: any = {
                 ...allowedUpdates,
                 updatedAt: new Date().toISOString()
             };
+
+            // ✅ FIX: Convert pricing object to JSON string if it exists (Appwrite requires string)
+            if (updatedData.pricing && typeof updatedData.pricing === 'object') {
+                updatedData.pricing = JSON.stringify(updatedData.pricing);
+                console.log('✅ Stringified pricing for update:', updatedData.pricing);
+            }
+
+            // ✅ FIX: Convert profilePicture to array if it's a string (Appwrite schema requires array)
+            if (updatedData.profilePicture) {
+                if (typeof updatedData.profilePicture === 'string') {
+                    updatedData.profilePicture = [updatedData.profilePicture];
+                    console.log('✅ Converted profilePicture string to array for update');
+                } else if (!Array.isArray(updatedData.profilePicture)) {
+                    delete updatedData.profilePicture;
+                    console.warn('⚠️ Removed invalid profilePicture from update');
+                }
+            }
+
+            // ✅ FIX: Validate discountPercentage (must be 1-100 or removed)
+            if (updatedData.discountPercentage !== undefined) {
+                const discount = Number(updatedData.discountPercentage);
+                if (isNaN(discount) || discount < 1 || discount > 100) {
+                    delete updatedData.discountPercentage;
+                    delete updatedData.discountActive;  // Remove discountActive if percentage is invalid
+                    console.log('✅ Removed invalid discountPercentage and discountActive from update:', updatedData.discountPercentage);
+                } else {
+                    updatedData.discountPercentage = discount;
+                }
+            } else if (updatedData.discountActive) {
+                // If discountActive is true but no percentage provided, remove discountActive
+                delete updatedData.discountActive;
+                console.log('✅ Removed discountActive from update (no discountPercentage provided)');
+            }
+
+            // ✅ FIX: Validate discountActive (must be boolean)
+            if (updatedData.discountActive !== undefined && typeof updatedData.discountActive !== 'boolean') {
+                updatedData.discountActive = Boolean(updatedData.discountActive);
+            }
 
             const result = await retryOperation(async () => {
                 return await databases.updateDocument(

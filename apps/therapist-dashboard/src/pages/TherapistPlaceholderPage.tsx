@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { ArrowLeft, FileText, Wrench } from 'lucide-react';
+import { ArrowLeft, FileText, Settings } from 'lucide-react';
 
 interface TherapistPlaceholderPageProps {
   title: string;
@@ -45,7 +45,7 @@ const TherapistPlaceholderPage: React.FC<TherapistPlaceholderPageProps> = ({
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <div className="flex justify-center mb-6">
               <div className="relative">
-                <Wrench className="w-20 h-20 text-orange-500" />
+                <Settings className="w-20 h-20 text-orange-500" />
               <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
                 <span className="text-xs font-bold text-yellow-900">!</span>
               </div>

@@ -982,8 +982,16 @@ ${locationInfo}${coordinatesInfo}
                                         key={(therapist as any).profilePicture}
                                         className="w-full h-full rounded-full object-cover aspect-square" 
                                         src={(therapist as any).profilePicture.includes('?') ? `${(therapist as any).profilePicture}&t=${Date.now()}` : `${(therapist as any).profilePicture}?t=${Date.now()}`}
-                                        alt={`${therapist.name} profile`} 
+                                        alt={`${therapist.name} profile`}
+                                        loading="lazy"
+                                        decoding="async"
+                                        width="96"
+                                        height="96"
+                                        onLoad={(e) => {
+                                            console.log(`🖼️ Loaded profile image: ${therapist.name}`);
+                                        }}
                                         onError={(e) => {
+                                            console.warn(`⚠️ Failed to load profile image for ${therapist.name}, showing fallback`);
                                             const imgElement = e.target as HTMLImageElement;
                                             imgElement.style.display = 'none';
                                             const placeholder = imgElement.parentElement?.querySelector('.profile-placeholder') as HTMLElement;
@@ -1121,6 +1129,10 @@ ${locationInfo}${coordinatesInfo}
                         src="https://ik.imagekit.io/7grri5v7d/massage%20oil%20image.png" 
                         alt="Menu"
                         className="w-12 h-12 object-contain"
+                        loading="lazy"
+                        decoding="async"
+                        width="48"
+                        height="48"
                     />
                     <span className="font-bold text-black text-sm">{chatLang === 'id' ? 'Menu Harga' : 'Price Menu'}</span>
                 </button>
@@ -1556,6 +1568,10 @@ ${locationInfo}${coordinatesInfo}
                                     src="https://ik.imagekit.io/7grri5v7d/refer%20a%20friend.png"
                                     alt="Refer a Friend"
                                     className="w-full h-full object-contain"
+                                    loading="lazy"
+                                    decoding="async"
+                                    width="128"
+                                    height="128"
                                 />
                             </div>
                             
@@ -1604,6 +1620,10 @@ ${locationInfo}${coordinatesInfo}
                                             src="https://ik.imagekit.io/7grri5v7d/whats%20app%20icon.png?updatedAt=1761844859402" 
                                             alt="WhatsApp"
                                             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="40"
+                                            height="40"
                                         />
                                         <span className="text-xs font-medium text-gray-700">WhatsApp</span>
                                     </button>
@@ -1618,6 +1638,10 @@ ${locationInfo}${coordinatesInfo}
                                             src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761844676576" 
                                             alt="Facebook"
                                             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="40"
+                                            height="40"
                                         />
                                         <span className="text-xs font-medium text-gray-700">Facebook</span>
                                     </button>
@@ -1634,6 +1658,10 @@ ${locationInfo}${coordinatesInfo}
                                             src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
                                             alt="Instagram"
                                             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="40"
+                                            height="40"
                                         />
                                         <span className="text-xs font-medium text-gray-700">Instagram</span>
                                     </button>
@@ -1650,6 +1678,10 @@ ${locationInfo}${coordinatesInfo}
                                             src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
                                             alt="TikTok"
                                             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                                            loading="lazy"
+                                            decoding="async"
+                                            width="40"
+                                            height="40"
                                         />
                                         <span className="text-xs font-medium text-gray-700">TikTok</span>
                                     </button>
@@ -1770,7 +1802,17 @@ ${locationInfo}${coordinatesInfo}
                                     src={((therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg').includes('?') ? `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}&t=${Date.now()}` : `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}?t=${Date.now()}`}
                                     alt={therapist.name}
                                     className="w-11 h-11 rounded-full border-2 border-white object-cover"
-                                    onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}
+                                    loading="lazy"
+                                    decoding="async"
+                                    width="44"
+                                    height="44"
+                                    onError={(e) => {
+                                        const img = e.target as HTMLImageElement;
+                                        if (!img.src.includes('default-avatar.jpg')) {
+                                            console.warn(`⚠️ Failed to load modal profile image for ${therapist.name}, using fallback`);
+                                            img.src = '/default-avatar.jpg';
+                                        }
+                                    }}
                                 />
                                 <div>
                                     <h2 className="text-lg font-bold text-white leading-tight">{therapist.name}</h2>

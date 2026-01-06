@@ -204,7 +204,10 @@ const AdminChatCenter: React.FC = () => {
             const savedMsg = await messagingService.sendMessage({
                 conversationId,
                 senderId: 'admin',
+                senderName: 'Admin',
                 recipientId: selectedMember.$id,
+                recipientName: selectedMember.name,
+                recipientType: selectedMember.category === 'therapist' ? 'therapist' : 'place',
                 content: newMessage.trim(),
                 type: 'text',
             });

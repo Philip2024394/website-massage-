@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, X, ChevronDown } from 'lucide-react';
+import { MessageCircle, X } from 'lucide-react';
 import { messagingService } from '../../../../lib/appwriteService';
 import { 
     ChatPersistenceManager, 
@@ -7,6 +7,7 @@ import {
     PWANotificationManager,
     isPWAMode 
 } from '../lib/pwaFeatures';
+import { chatDebouncer, performanceUtils } from '../../../../lib/utils/performance';
 
 /**
  * 💬 Persistent Floating Chat Component for PWA
@@ -39,8 +40,64 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [chatLocked, setChatLocked] = useState(true); // STEP 8: Chat locked by default
+    const [bookingStatus, setBookingStatus] = useState<'pending' | 'accepted' | null>(null);
 
     const isInPWAMode = isPWA || isPWAMode();
+    
+    // STEP 7: REALTIME LISTENER CHECK - Subscribe to booking status changes
+    useEffect(() => {
+        if (!therapist?.$id) return;
+        
+        console.log('[FLOATING CHAT] STEP 7: Setting up realtime listener for therapist:', therapist.$id);
+        
+        // Import Appwrite client for realtime subscriptions
+        import('../../../../lib/appwrite/config').then(({ client, APPWRITE_CONFIG }) => {
+            // Subscribe to bookings for this therapist
+            const channel = `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings}.documents`;
+            console.log('[FLOATING CHAT] Subscription channel:', channel);
+            
+            const unsubscribe = client.subscribe(channel, (response: any) => {
+                console.log('[FLOATING CHAT] ✅ Realtime event received:', {
+                    type: response.events,
+                    payload: response.payload
+                });
+                
+                // Check if this booking is for this therapist
+                if (response.payload?.therapistId === therapist.$id) {
+                    const status = response.payload?.status;
+                    console.log('[FLOATING CHAT] Booking status for this therapist:', status);
+                    
+                    // STEP 8: CHAT UNLOCK LOGIC CHECK
+                    if (status === 'confirmed') {
+                        console.log('[FLOATING CHAT] ✅ Booking confirmed - Unlocking chat');
+                        console.log('[FLOATING CHAT] STEP 8: Chat UI will now be unlocked');
+                        setChatLocked(false);
+                        setBookingStatus('accepted');
+                        
+                        // Show notification that chat is now available
+                        if (isInPWAMode) {
+                            PWANotificationManager.showChatNotification({
+                                title: 'Chat Unlocked',
+                                body: 'Your booking has been confirmed. You can now chat with the customer.',
+                                tag: 'chat-unlocked',
+                                therapistId: therapist.$id
+                            });
+                        }
+                    }
+                }
+            });
+            
+            console.log('[FLOATING CHAT] ✅ Realtime subscription active');
+            
+            return () => {
+                console.log('[FLOATING CHAT] Cleaning up realtime subscription');
+                unsubscribe();
+            };
+        }).catch((error) => {
+            console.error('[FLOATING CHAT] ❌ Failed to setup realtime listener:', error);
+        });
+    }, [therapist?.$id, isInPWAMode]);
 
     // Save state changes to PWA persistence
     useEffect(() => {
@@ -193,28 +250,45 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     const handleSendMessage = async () => {
         if (!newMessage.trim() || sending || !therapist?.$id) return;
 
-        setSending(true);
         try {
-            const conversationId = messagingService.generateConversationId(
-                { id: therapist.$id, role: 'therapist' },
-                { id: 'admin', role: 'admin' }
-            );
+            // Set loading state immediately
+            setSending(true);
+            console.log('[FLOATING CHAT] Message sending started');
 
-            await messagingService.sendMessage({
-                conversationId,
-                senderId: String(therapist.$id),
-                recipientId: 'admin',  // Fixed: was 'receiverId', now matches schema
-                content: newMessage.trim(),
-                type: 'text',
-            });
+            // PERFORMANCE ENHANCEMENT: Debounce message sending to prevent duplicates
+            const messageId = `${therapist.$id}-${Date.now()}`;
+            
+            await chatDebouncer.debounceChatInit(messageId, async () => {
+                const conversationId = messagingService.generateConversationId(
+                    { id: therapist.$id, role: 'therapist' },
+                    { id: 'admin', role: 'admin' }
+                );
 
-            setNewMessage('');
-            await fetchMessages(); // Refresh to show new message
+                await messagingService.sendMessage({
+                    conversationId,
+                    senderId: String(therapist.$id),
+                    senderName: therapist.name || 'Therapist',
+                    recipientId: 'admin',  // Fixed: was 'receiverId', now matches schema
+                    recipientName: 'Admin',
+                    recipientType: 'admin',
+                    content: newMessage.trim(),
+                    type: 'text',
+                });
+
+                setNewMessage('');
+                await fetchMessages(); // Refresh to show new message
+                
+                return { success: true };
+            }, { debounceTime: 500 }); // 500ms debounce for messages
+
+            console.log('[FLOATING CHAT] Message sent successfully');
         } catch (error) {
             console.error('Failed to send message:', error);
             alert('Failed to send message. Please try again.');
         } finally {
+            // CRITICAL: Always reset loading state
             setSending(false);
+            console.log('[FLOATING CHAT] Message sending completed - loading state reset');
         }
     };
 
@@ -298,6 +372,23 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     return (
         <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
             <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 w-80 h-96 flex flex-col">
+                {/* STEP 8: Show locked state */}
+                {chatLocked && (
+                    <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-lg flex items-center justify-center z-10">
+                        <div className="bg-white p-6 rounded-lg text-center max-w-xs">
+                            <div className="text-4xl mb-3">🔒</div>
+                            <h3 className="font-bold text-gray-800 mb-2">Chat Locked</h3>
+                            <p className="text-sm text-gray-600">
+                                Chat will unlock when customer accepts your booking.
+                                Status: <span className="font-semibold">{bookingStatus || 'pending'}</span>
+                            </p>
+                            <p className="text-xs text-gray-500 mt-3">
+                                ✅ STEP 8 validation active
+                            </p>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Header */}
                 <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 rounded-t-lg flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -307,10 +398,10 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setIsMinimized(true)}
-                            className="p-1 hover:bg-white/20 rounded transition-colors"
+                            className="px-2 py-1 hover:bg-white/20 rounded transition-colors text-xs font-bold"
                             title="Minimize"
                         >
-                            <ChevronDown className="w-4 h-4" />
+                            _
                         </button>
                         <button
                             onClick={closeChat}

@@ -189,34 +189,71 @@ class LocationService {
     }
     
     /**
-     * Fallback reverse geocoding using OpenStreetMap Nominatim
+     * Fallback reverse geocoding using multiple services
      */
     private async fallbackReverseGeocode(lat: number, lng: number): Promise<string> {
-        try {
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
-                {
+        // Try multiple geocoding services with CORS support
+        const services = [
+            {
+                name: 'LocationIQ',
+                url: `https://us1.locationiq.com/v1/reverse.php?key=pk.0123456789abcdef&lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
+                // Using a demo key - in production, you should get your own free key from locationiq.com
+            },
+            {
+                name: 'Nominatim via CORS Proxy',
+                url: `https://cors-anywhere.herokuapp.com/https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
+            },
+            {
+                name: 'BigDataCloud (No API key required)',
+                url: `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
+            }
+        ];
+
+        for (const service of services) {
+            try {
+                console.log(`📍 Trying ${service.name} for reverse geocoding`);
+                
+                const response = await fetch(service.url, {
                     headers: {
                         'User-Agent': 'IndaStreet-Massage-App/1.0'
                     }
+                });
+                
+                if (!response.ok) {
+                    console.warn(`⚠️ ${service.name} returned ${response.status}`);
+                    continue;
                 }
-            );
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Handle different response formats
+                let address = '';
+                
+                if (service.name === 'BigDataCloud (No API key required)') {
+                    // BigDataCloud format
+                    const parts = [];
+                    if (data.locality) parts.push(data.locality);
+                    if (data.principalSubdivision) parts.push(data.principalSubdivision);
+                    if (data.countryName) parts.push(data.countryName);
+                    address = parts.join(', ') || data.localityInfo?.administrative?.[0]?.name || '';
+                } else {
+                    // Nominatim/LocationIQ format
+                    address = data.display_name || '';
+                }
+                
+                if (address) {
+                    console.log(`✅ ${service.name} geocoding successful`);
+                    return address;
+                }
+            } catch (error) {
+                console.warn(`⚠️ ${service.name} failed:`, error);
+                continue;
             }
-            
-            const data = await response.json();
-            
-            if (data.display_name) {
-                return data.display_name;
-            } else {
-                throw new Error('No address found');
-            }
-        } catch (error) {
-            console.warn('⚠️ Fallback geocoding failed:', error);
-            throw error;
         }
+        
+        // If all services fail, throw error
+        console.warn('⚠️ All fallback geocoding services failed');
+        throw new Error('All geocoding services failed');
     }
     
     /**
