@@ -24,6 +24,7 @@ export const BOOKING_SCHEMA = {
   providerType: { type: 'string', required: true, maxLength: 16 },
   providerName: { type: 'string', required: true, maxLength: 255 },
   service: { type: 'string', required: true, maxLength: 16, enum: ['60', '90', '120'] },
+  serviceDuration: { type: 'enum', required: true, enum: ['60', '90', '120'] },
   startTime: { type: 'datetime', required: true },
   price: { type: 'integer', required: true, min: 0, max: 1000 },
   createdAt: { type: 'datetime', required: true },

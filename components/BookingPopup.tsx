@@ -212,6 +212,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         providerType: providerType || 'therapist',
         providerName: therapistName,
         service: String(selectedOption.duration),
+        serviceDuration: String(selectedOption.duration),
         startTime: now.toISOString(),
         price: Math.round(selectedOption.price / 1000),
         createdAt: now.toISOString(),

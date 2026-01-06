@@ -404,6 +404,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         providerType: String(therapistType), // Required string(16)
         providerName: String(therapistName), // Required string(255)
         service: String(finalDuration), // Required string(16) - '60', '90', or '120'
+        serviceDuration: String(finalDuration), // Required enum - '60', '90', or '120'
         startTime: scheduledTime.toISOString(), // Required datetime
         price: Number(Math.round(finalPrice / 1000)), // Required integer(0-1000)
         createdAt: new Date().toISOString(), // Required datetime
