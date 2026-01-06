@@ -206,23 +206,34 @@ export async function sendSystemMessage(
     message: { en: string; id: string }
 ): Promise<void> {
     try {
-        // Send in both languages
+        // Send in both languages - all required fields for Appwrite chat_messages collection
         await databases.createDocument(
             DATABASE_ID,
             CHAT_MESSAGES_COLLECTION,
             ID.unique(),
             {
                 roomId,
+                conversationId: roomId, // Required field - use roomId as conversationId
                 senderId: 'system',
-                senderType: MessageSenderType.System,
+                senderType: 'system', // Required field - must be one of: customer, therapist, place, system
                 senderName: 'System',
+                recipientId: 'all', // Required field for Appwrite
+                recipientName: 'All', // Required field for Appwrite
+                recipientType: 'admin', // Required field for Appwrite - must be one of: admin/therapist/place/hotel/villa/user/agent
+                receiverId: 'all', // Required field for Appwrite
+                receivername: 'All', // Required field for Appwrite
+                messageType: 'text', // Required field for Appwrite
                 message: message.en, // Required field for Appwrite
-                originalText: message.en,
+                content: message.en, // Required field for Appwrite
+                bookingid: '', // Required field for Appwrite
+                originalMessageId: '', // Required field for Appwrite
+                expiresat: '', // Required field for Appwrite
+                archivedBy: '', // Required field for Appwrite
+                sessionId: '', // Required field for Appwrite
                 originalLanguage: 'en',
                 translatedText: message.id,
                 translatedLanguage: 'id',
                 read: false, // Changed from isRead to read
-                isRead: false,
                 isSystemMessage: true,
                 createdAt: new Date().toISOString()
             }
