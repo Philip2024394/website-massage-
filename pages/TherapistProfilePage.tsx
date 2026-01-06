@@ -76,7 +76,17 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     const [activeTab, setActiveTab] = useState('home');
     const [cityState, setCityState] = useState<string>(selectedCity);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    
+    // 🔥 CRITICAL LOG: Track TherapistProfilePage mount
+    console.log('🎯 TherapistProfilePage MOUNTED:', {
+        therapistExists: !!therapist,
+        therapistId: therapist?.id || therapist?.$id,
+        therapistName: therapist?.name,
+        currentPath: window.location.pathname
+    });
+    
     if (!therapist) {
+        console.error('🚨 TherapistProfilePage rendered WITHOUT therapist!');
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
@@ -259,7 +269,6 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                     onRate={() => {
                         console.log('Rate therapist:', therapist);
                     }}
-                    onBook={() => onBook?.(therapist, 'therapist')}
                     onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
                     onChatWithBusyTherapist={onChatWithBusyTherapist}
                     onShowRegisterPrompt={onShowRegisterPrompt}

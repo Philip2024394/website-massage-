@@ -27,6 +27,7 @@ import MusicPlayer from '../components/MusicPlayer';
 
 
 interface HomePageProps {
+    page?: string; // Current page from routing system
     user: User | null;
     loggedInAgent: Agent | null;
     loggedInProvider?: { id: number | string; type: 'therapist' | 'place' } | null; // Add logged in provider
@@ -108,6 +109,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 );
 
 const HomePage: React.FC<HomePageProps> = ({ 
+    page, // Current page from routing system
     loggedInAgent: _loggedInAgent,
     loggedInProvider,
     loggedInCustomer,
@@ -146,6 +148,14 @@ const HomePage: React.FC<HomePageProps> = ({
     t,
     language
 }) => {
+    // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
+    // Use the page prop from the routing system instead of React Router DOM
+    // This prevents HomePage from rendering on therapist profile routes and causing permission errors
+    if (page !== 'home' && page !== 'landing') {
+        console.warn('🚫 HomePage: Blocked render outside home route. Current page:', page);
+        return null;
+    }
+    
     console.log('🏠 HomePage: Component is being called!');
     // Enhanced debug logging for translations
     // Memoize translation conversion to prevent re-renders

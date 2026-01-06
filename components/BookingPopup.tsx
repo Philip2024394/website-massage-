@@ -312,6 +312,21 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   };
 
   if (!isOpen) return null;
+  
+  // CRITICAL FIX: Defensive checks to prevent white screen
+  if (!therapistId || !therapistName) {
+    console.warn('⚠️ BookingPopup rendered without required data:', { therapistId, therapistName });
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading booking details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showWarning) {
     return (

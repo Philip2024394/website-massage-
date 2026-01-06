@@ -6,8 +6,8 @@ import { getDisplayRating, getDisplayReviewCount, formatRating } from '../../uti
 import { isDiscountActive } from '../../utils/therapistCardHelpers';
 import { StarIcon } from './TherapistIcons';
 import AnonymousReviewModal from '../AnonymousReviewModal';
-import BookingConfirmationPopup from '../BookingConfirmationPopup';
-import BookingFormPopup, { BookingData } from '../BookingFormPopup';
+// REMOVED: BookingConfirmationPopup - using original booking system
+// REMOVED: BookingFormPopup - using original booking system
 import SocialSharePopup from '../SocialSharePopup';
 import { generateShareableURL } from '../../utils/seoSlugGenerator';
 
@@ -126,40 +126,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                 </div>
             )}
 
-            {/* Booking Confirmation Popup */}
-            <BookingConfirmationPopup
-                isOpen={showBookingConfirmation}
-                onClose={onCloseBookingConfirmation}
-                onOpenChat={onConfirmedBooking}
-                providerName={therapist.name}
-                language={currentLanguage}
-                bookingAmount={typeof therapist.pricing?.[60] === 'string' ? parseInt(therapist.pricing[60]) : (therapist.pricing?.[60] || 300000)}
-                duration={60}
-                therapistBankDetails={{
-                    bankName: (therapist as any).bankName,
-                    bankAccountNumber: (therapist as any).bankAccountNumber,
-                    bankAccountName: (therapist as any).bankAccountName,
-                    mobilePaymentNumber: (therapist as any).mobilePaymentNumber,
-                    mobilePaymentType: (therapist as any).mobilePaymentType
-                }}
-            />
-
-            {/* Booking Form Popup */}
-            <BookingFormPopup
-                isOpen={showBookingForm}
-                onClose={onCloseBookingForm}
-                onSubmit={onSubmitBookingForm}
-                therapistName={therapist.name}
-                therapistId={String(therapist.id)}
-                pricing={{
-                    price60: pricing['60'].toString(),
-                    price90: pricing['90'].toString(),
-                    price120: pricing['120'].toString()
-                }}
-                rating={therapist.rating}
-                reviewCount={therapist.reviewCount}
-                language={currentLanguage}
-            />
+            {/* REMOVED: BookingConfirmationPopup and BookingFormPopup - using original BookingPopup and ScheduleBookingPopup system */}
 
             {/* Price List Bottom Sheet Slider */}
             {showPriceListModal && (

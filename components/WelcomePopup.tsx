@@ -4,10 +4,22 @@ interface WelcomePopupProps {
   language: 'en' | 'id';
   isAdmin?: boolean; // Allow admins to always see the popup for design purposes
   isAnyUserLoggedIn?: boolean; // Hide popup if any user/member is logged in
+  isOpen?: boolean; // External control of popup visibility
+  onClose?: () => void; // External close handler
 }
 
-const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, isAnyUserLoggedIn = false }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const WelcomePopup: React.FC<WelcomePopupProps> = ({ 
+  language, 
+  isAdmin = false, 
+  isAnyUserLoggedIn = false, 
+  isOpen: externalIsOpen, 
+  onClose: externalOnClose 
+}) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = externalOnClose ? () => {} : setInternalIsOpen;
 
   const translations = {
     en: {
@@ -41,21 +53,25 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, 
   useEffect(() => {
     const hasVisited = localStorage.getItem('has-visited');
     
+    // DISABLED: Auto-opening popup behavior completely disabled
+    // The popup should only open when explicitly triggered by user interaction
+    // (e.g., Book Now or Schedule buttons)
+    
     // Don't show popup if any user/member is logged in (except admins for preview)
     if (isAnyUserLoggedIn && !isAdmin) {
       return;
     }
     
-    // Always show for admins (for design purposes)
-    if (isAdmin) {
-      setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
-      return;
-    }
+    // DISABLED: Admin auto-show for design purposes - only open via explicit trigger
+    // if (isAdmin) {
+    //   setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
+    //   return;
+    // }
     
-    // Show popup immediately when arriving at home page for first-time visitors
-    if (!hasVisited) {
-      setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
-    }
+    // DISABLED: Auto-show for first-time visitors - only open via explicit trigger
+    // if (!hasVisited) {
+    //   setTimeout(() => setIsOpen(true), 1000); // Show after 1 second
+    // }
   }, [isAdmin, isAnyUserLoggedIn]);
 
   const handleClose = (action: string) => {
@@ -65,7 +81,13 @@ const WelcomePopup: React.FC<WelcomePopupProps> = ({ language, isAdmin = false, 
       localStorage.setItem('welcome-dismissed-date', new Date().toISOString());
       localStorage.setItem('welcome-action', action);
     }
-    setIsOpen(false);
+    
+    // Use external close handler if provided, otherwise use internal state
+    if (externalOnClose) {
+      externalOnClose();
+    } else {
+      setIsOpen(false);
+    }
     
     // Play sound
     const audio = new Audio('/sounds/booking-notification.mp3');

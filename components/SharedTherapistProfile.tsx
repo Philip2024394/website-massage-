@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Star, Heart, MessageCircle, Phone, MapPin, ArrowLeft, Share2, Calendar, ExternalLink } from 'lucide-react';
+import { Star, Heart, MessageCircle, Phone, MapPin, ArrowLeft, Share2, Calendar, ExternalLink, Clock } from 'lucide-react';
 import type { Therapist, UserLocation } from '../types';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import DistanceDisplay from './DistanceDisplay';
-import BookingFormPopup, { BookingData } from './BookingFormPopup';
+import BookingPopup from './BookingPopup';
+import ScheduleBookingPopup from './ScheduleBookingPopup';
 
 interface SharedTherapistProfileProps {
     therapist: Therapist;
@@ -24,8 +25,8 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     currentLanguage = 'en' // Default to English
 }) => {
     const [showSharePopup, setShowSharePopup] = useState(false);
-    const [showBookingForm, setShowBookingForm] = useState(false);
-    const [isBooking, setIsBooking] = useState(false);
+    const [showBookingPopup, setShowBookingPopup] = useState(false);
+    const [showScheduleBookingPopup, setShowScheduleBookingPopup] = useState(false);
     
     // Track shared link analytics for admin dashboard - identical to main app
     React.useEffect(() => {
@@ -193,116 +194,7 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         }
     };
 
-    const handleBookingSubmit = async (bookingData: BookingData) => {
-        setIsBooking(true);
-        try {
-            console.log('🎯 [Shared Link] Booking initiated:', bookingData);
-            
-            // Calculate commission (same logic as main app)
-            const serviceCost = pricing[bookingData.duration] || 0;
-            const commissionRate = 0.30; // 30% platform commission (standard rate)
-            const platformCommission = Math.round(serviceCost * commissionRate);
-            const therapistEarnings = serviceCost - platformCommission;
-            
-            // Complete booking data with all main app metrics
-            const completeBookingData = {
-                // Customer info
-                customerName: bookingData.customerName,
-                customerPhone: bookingData.phoneNumber,
-                customerId: loggedInCustomer?.id || null,
-                
-                // Booking details
-                therapistId: therapist.id || (therapist as any).$id,
-                therapistName: therapist.name,
-                selectedDate: bookingData.selectedDate,
-                selectedTime: bookingData.selectedTime,
-                duration: bookingData.duration,
-                massageType: bookingData.massageType,
-                
-                // Location
-                locationType: bookingData.locationType,
-                address: bookingData.address,
-                roomNumber: bookingData.roomNumber || null,
-                coordinates: bookingData.coordinates || null,
-                
-                // Pricing and commission (same as main app)
-                serviceCost: serviceCost,
-                platformCommission: platformCommission,
-                therapistEarnings: therapistEarnings,
-                commissionRate: commissionRate,
-                
-                // Tracking (marked as shared link)
-                source: 'shared_link',
-                visitSessionId: sessionStorage.getItem('shared_link_visit'),
-                timestamp: new Date().toISOString(),
-                
-                // Analytics metadata (same as main app)
-                deviceType: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-                userLocation: userLocation,
-                referrer: document.referrer || 'direct',
-                
-                // Therapist data
-                therapistStatus: therapist.status,
-                therapistRating: displayRating,
-                membershipTier: membershipTier,
-                
-                // Additional notes
-                specialRequests: bookingData.specialRequests || null,
-                
-                // Status
-                bookingStatus: 'pending',
-                paymentStatus: 'pending'
-            };
-            
-            // Store booking for analytics and commission tracking
-            const bookings = JSON.parse(localStorage.getItem('shared_link_bookings') || '[]');
-            bookings.push(completeBookingData);
-            localStorage.setItem('shared_link_bookings', JSON.stringify(bookings));
-            
-            console.log(`💰 [Shared Link Commission] Service: Rp${serviceCost.toLocaleString()} | Platform: Rp${platformCommission.toLocaleString()} | Therapist: Rp${therapistEarnings.toLocaleString()}`);
-            console.log(`📊 [Shared Link Stats] Total bookings via shared link: ${bookings.length}`);
-            
-            // TODO: Send to backend (same endpoint as main app)
-            // await bookingService.createBooking(completeBookingData);
-            // await analyticsService.incrementAnalytics(therapist.id, 'bookings', { source: 'shared_link' });
-            // await commissionService.recordCommission(completeBookingData);
-            
-            // Create booking message for chat system
-            const bookingMessage = `🌟 NEW BOOKING via Shared Link\n` +
-                `👤 Customer: ${bookingData.customerName}\n` +
-                `📱 Phone: ${bookingData.phoneNumber}\n` +
-                `📅 Date & Time: ${bookingData.selectedDate} at ${bookingData.selectedTime}\n` +
-                `⏱️ Duration: ${bookingData.duration} minutes\n` +
-                `💆‍♂️ Service: ${bookingData.massageType}\n` +
-                `📍 Location: ${bookingData.locationType === 'hotel' ? `🏨 ${bookingData.address}, Room: ${bookingData.roomNumber}` : `🏠 ${bookingData.address}`}\n` +
-                `💬 Notes: ${bookingData.specialRequests || 'None'}\n\n` +
-                `Please confirm your availability. Customer is waiting for response!`;
-
-            // Open chat with therapist using internal chat system
-            window.dispatchEvent(new CustomEvent('openChat', {
-                detail: {
-                    therapistId: therapist.id || (therapist as any).$id,
-                    therapistName: therapist.name,
-                    therapistType: 'therapist',
-                    therapistStatus: therapist.status || 'available',
-                    pricing: getPricing(),
-                    profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-                    mode: 'booking',
-                    initialMessage: bookingMessage,
-                    bookingData: bookingData
-                }
-            }));
-
-            setShowBookingForm(false);
-            // Chat window will open automatically
-            
-        } catch (error) {
-            console.error('Booking failed:', error);
-            alert('Booking failed. Please try again or contact the therapist directly.');
-        } finally {
-            setIsBooking(false);
-        }
-    };
+    // REMOVED: handleBookingSubmit - BookingPopup and ScheduleBookingPopup handle Appwrite submission internally
 
     const handleQuickChat = () => {
         // Track chat initiation from shared link
@@ -542,19 +434,29 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                             </div>
                         </div>
 
-                        {/* Primary Booking Action */}
-                        <button
-                            onClick={() => setShowBookingForm(true)}
-                            disabled={displayStatus !== 'Available'}
-                            className={`w-full py-4 px-6 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-200 shadow-lg ${
-                                displayStatus === 'Available' 
-                                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-xl hover:scale-105' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            }`}
-                        >
-                            <Calendar size={24} />
-                            <span>{displayStatus === 'Available' ? '📅 Book Now - Direct' : `Currently ${displayStatus}`}</span>
-                        </button>
+                        {/* Primary Booking Actions */}
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => setShowBookingPopup(true)}
+                                disabled={displayStatus !== 'Available'}
+                                className={`w-full py-4 px-6 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all duration-200 shadow-lg ${
+                                    displayStatus === 'Available' 
+                                        ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-xl hover:scale-105' 
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                            >
+                                <Calendar size={24} />
+                                <span>{displayStatus === 'Available' ? '📅 Book Now - Immediate' : `Currently ${displayStatus}`}</span>
+                            </button>
+                            
+                            <button
+                                onClick={() => setShowScheduleBookingPopup(true)}
+                                className="w-full py-3 px-6 rounded-lg font-medium text-lg flex items-center justify-center gap-3 transition-all duration-200 bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg"
+                            >
+                                <Clock size={20} />
+                                <span>🗓️ Schedule for Later</span>
+                            </button>
+                        </div>
 
                         {/* Secondary Actions */}
                         <div className="grid grid-cols-2 gap-3 mt-3">
@@ -630,22 +532,43 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 </div>
             </div>
 
-            {/* Booking Form Popup - Identical to main site */}
-            <BookingFormPopup
-                isOpen={showBookingForm}
-                onClose={() => setShowBookingForm(false)}
-                onSubmit={handleBookingSubmit}
-                therapistName={therapist.name}
-                therapistId={String(therapist.id || (therapist as any).$id)}
-                pricing={{
-                    price60: pricing['60'].toString(),
-                    price90: pricing['90'].toString(),
-                    price120: pricing['120'].toString()
-                }}
-                rating={therapist.rating}
-                reviewCount={therapist.reviewCount}
-                language={currentLanguage}
-            />
+            {/* Original Booking Popup */}
+            {showBookingPopup && (
+                <BookingPopup
+                    isOpen={showBookingPopup}
+                    onClose={() => setShowBookingPopup(false)}
+                    therapistId={String(therapist.id || (therapist as any).$id)}
+                    therapistName={therapist.name}
+                    profilePicture={(therapist as any).profilePicture || (therapist as any).mainImage}
+                    providerType="therapist"
+                    pricing={{
+                        "60": pricing['60'],
+                        "90": pricing['90'],
+                        "120": pricing['120']
+                    }}
+                    discountPercentage={0}
+                    discountActive={false}
+                />
+            )}
+
+            {/* Schedule Booking Popup */}
+            {showScheduleBookingPopup && (
+                <ScheduleBookingPopup
+                    isOpen={showScheduleBookingPopup}
+                    onClose={() => setShowScheduleBookingPopup(false)}
+                    therapistId={String(therapist.id || (therapist as any).$id)}
+                    therapistName={therapist.name}
+                    therapistType="therapist"
+                    profilePicture={(therapist as any).profilePicture || (therapist as any).mainImage}
+                    pricing={{
+                        "60": pricing['60'],
+                        "90": pricing['90'],
+                        "120": pricing['120']
+                    }}
+                    discountPercentage={0}
+                    discountActive={false}
+                />
+            )}
         </div>
     );
 };

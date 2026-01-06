@@ -413,6 +413,27 @@ export default function ChatWindow({
   // ===== RENDER =====
 
   if (!isOpen) return null
+  
+  // CRITICAL FIX: Defensive checks to prevent white screen
+  if (!providerId || !providerName) {
+    console.warn('⚠️ ChatWindow rendered without required data:', { providerId, providerName })
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading chat...</p>
+            <button 
+              onClick={onClose}
+              className="mt-4 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {

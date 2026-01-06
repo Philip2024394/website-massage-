@@ -290,7 +290,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'home':
             return renderRoute(publicRoutes.home.component, {
                 onNavigate: props.onNavigate,
-                onBook: props.handleOpenBookingPopup,
                 therapists: props.therapists,
                 places: props.places,
                 facialPlaces: props.facialPlaces,
@@ -944,7 +943,6 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             // No user logged in - show home page
             return renderRoute(publicRoutes.home.component, {
                 onNavigate: props.onNavigate,
-                onBook: props.handleOpenBookingPopup,
                 therapists: props.therapists,
                 places: props.places,
                 facialPlaces: props.facialPlaces,

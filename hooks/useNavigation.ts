@@ -156,43 +156,24 @@ export const useNavigation = ({
         setPage('therapistJobRegistration');
     }, [setPage]);
 
-    // Booking navigation handlers - Updated to use advanced booking system
+    // ❌ REMOVED: Legacy booking navigation - use local modal in components instead
     const handleNavigateToBooking = useCallback((provider: Therapist | Place, type: 'therapist' | 'place') => {
-        // Use the global booking popup system with orange Indastreet branding
-        const globalBookingOpener = (window as any).openBookingPopup;
-        if (globalBookingOpener) {
-            console.log('🔥 Hotel/Villa booking using advanced system:', {
-                providerName: provider.name,
-                providerId: provider.id?.toString(),
-                providerType: type,
-                profilePicture: (provider as any).profilePicture || (provider as any).mainImage
-            });
-            
-            globalBookingOpener(
-                provider.name,
-                (provider as any).whatsappNumber || '+6281234567890', // Default WhatsApp
-                provider.id?.toString(),
-                type,
-                undefined, // hotelVillaId - will be handled by venue context
-                undefined, // hotelVillaName - will be handled by venue context  
-                undefined, // hotelVillaType - will be handled by venue context
-                (provider as any).profilePicture || (provider as any).mainImage
-            );
-        } else {
-            // Fallback: Open chat window directly
-            console.log('🔄 Global booking popup not available, opening chat directly');
-            window.dispatchEvent(new CustomEvent('openChat', {
-                detail: {
-                    therapistId: provider.id || (provider as any).$id,
-                    therapistName: provider.name,
-                    therapistType: type,
-                    therapistStatus: (provider as any).status || (provider as any).availability || 'available',
-                    pricing: (provider as any).pricing ? JSON.parse((provider as any).pricing) : { '60': 200000, '90': 300000, '120': 400000 },
-                    profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
-                    mode: 'immediate'
-                }
-            }));
-        }
+        console.warn('⚠️ DEPRECATED: handleNavigateToBooking called but window.openBookingPopup removed.');
+        console.log('ℹ️ Use local booking modals in TherapistCard or SharedTherapistProfile instead.');
+        console.log('🔄 Fallback: Opening chat window directly');
+        
+        // Legacy booking system removed - open chat instead
+        window.dispatchEvent(new CustomEvent('openChat', {
+            detail: {
+                therapistId: provider.id || (provider as any).$id,
+                therapistName: provider.name,
+                therapistType: type,
+                therapistStatus: (provider as any).status || (provider as any).availability || 'available',
+                pricing: (provider as any).pricing ? JSON.parse((provider as any).pricing) : { '60': 200000, '90': 300000, '120': 400000 },
+                profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
+                mode: 'immediate'
+            }
+        }));
     }, [setProviderForBooking, setPage]);
 
     const handleNavigateToBookingPage = useCallback((therapist: Therapist) => {

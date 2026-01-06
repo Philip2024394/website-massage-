@@ -169,20 +169,14 @@ const TodaysDiscountsPage: React.FC<TodaysDiscountsPageProps & { therapists?: an
                                     </div>
                                     <button 
                                         onClick={() => {
-                                            // Use global booking popup
-                                            const openBookingPopup = (window as any).openBookingPopup;
-                                            if (openBookingPopup) {
-                                                openBookingPopup(
-                                                    therapist.name,
-                                                    therapist.whatsappNumber || '',
-                                                    therapist.id,
-                                                    'therapist'
-                                                );
-                                            }
+                                            console.warn('⚠️ DEPRECATED: Book Now from TodaysDiscountsPage - global booking removed');
+                                            console.log('ℹ️ Navigate to therapist profile to use local booking modal');
+                                            // TODO: Navigate to therapist profile instead of broken global booking
                                         }}
                                         className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 hover:scale-105"
+                                        disabled
                                     >
-                                        Book Now
+                                        Book Now (Disabled)
                                     </button>
                                 </div>
                             </div>

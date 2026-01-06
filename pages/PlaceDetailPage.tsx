@@ -4,7 +4,7 @@ import Button from '../components/Button';
 import ReviewSystem from '../components/ReviewSystem';
 import { analyticsService } from '../services/analyticsService';
 import { notificationService } from '../lib/appwriteService';
-import BookingConfirmationPopup from '../components/BookingConfirmationPopup';
+// REMOVED: BookingConfirmationPopup - using original booking system
 
 interface PlaceDetailPageProps {
     place: Place;
@@ -42,7 +42,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
     agentCode
 }) => {
     const [currentMainImage, setCurrentMainImage] = useState(place.mainImage);
-    const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
+    // REMOVED: showBookingConfirmation - using original booking system
     
     // Detect language from translations object
     const currentLanguage: 'en' | 'id' = t?.contactButton === 'Contact' ? 'en' : 'id';
@@ -324,7 +324,8 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                             onShowRegisterPrompt?.();
                             return;
                         }
-                        setShowBookingConfirmation(true);
+                        // Direct chat opening - using original booking system
+                        onQuickBookWithChat?.(place);
                     }} 
                     className="w-1/2 shadow-md"
                 >
@@ -332,26 +333,7 @@ const PlaceDetailPage: React.FC<PlaceDetailPageProps> = ({
                 </Button>
             </div>
 
-            {/* Booking Confirmation Popup */}
-            <BookingConfirmationPopup
-                isOpen={showBookingConfirmation}
-                onClose={() => setShowBookingConfirmation(false)}
-                onOpenChat={() => {
-                    setShowBookingConfirmation(false);
-                    onQuickBookWithChat?.(place);
-                }}
-                providerName={place.name}
-                language={currentLanguage}
-                bookingAmount={typeof place.pricing?.[60] === 'string' ? parseInt(place.pricing[60]) : (place.pricing?.[60] || 350000)}
-                duration={60}
-                therapistBankDetails={{
-                    bankName: (place as any).bankName,
-                    bankAccountNumber: (place as any).bankAccountNumber,
-                    bankAccountName: (place as any).bankAccountName,
-                    mobilePaymentNumber: (place as any).mobilePaymentNumber,
-                    mobilePaymentType: (place as any).mobilePaymentType
-                }}
-            />
+            {/* REMOVED: BookingConfirmationPopup - using original booking system */}
         </div>
     );
 };

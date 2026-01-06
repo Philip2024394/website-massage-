@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
+import AppErrorBoundary from './components/AppErrorBoundary';
 import './index.css';
 
 // Initialize DOM error handler to prevent removeChild errors
@@ -53,7 +54,9 @@ if (isAdminMode) {
     reactRoot.render(
       <React.StrictMode>
         <ErrorBoundary>
-          <App />
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
         </ErrorBoundary>
       </React.StrictMode>
     );

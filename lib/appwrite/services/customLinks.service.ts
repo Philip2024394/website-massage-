@@ -73,12 +73,23 @@ export const customLinksService = {
     
     async getAll(): Promise<any[]> {
         try {
+            // 🚨 PERMISSION CHECK: Only fetch if collection ID exists
+            if (!APPWRITE_CONFIG.collections.customLinks) {
+                console.warn('⚠️ Custom links collection ID not configured - skipping fetch');
+                return [];
+            }
+            
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.customLinks
             );
             return response.documents;
-        } catch (error) {
+        } catch (error: any) {
+            // Gracefully handle permission errors instead of crashing
+            if (error?.code === 401 || error?.message?.includes('missing scopes')) {
+                console.warn('⚠️ Insufficient permissions to fetch custom links - user may not be admin. Returning empty array.');
+                return [];
+            }
             console.error('Error fetching custom links:', error);
             return [];
         }

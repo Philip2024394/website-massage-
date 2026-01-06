@@ -11,8 +11,9 @@ import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/ther
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
 import { statusStyles } from '../constants/therapistCardConstants';
-import BookingConfirmationPopup from './BookingConfirmationPopup';
-import BookingFormPopup, { BookingData } from './BookingFormPopup';
+
+import BookingPopup from './BookingPopup';
+import ScheduleBookingPopup from './ScheduleBookingPopup';
 import BusyCountdownTimer from './BusyCountdownTimer';
 import AnonymousReviewModal from './AnonymousReviewModal';
 import SocialSharePopup from './SocialSharePopup';
@@ -78,8 +79,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const [showBusyModal, setShowBusyModal] = useState(false);
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-    const [showBookingConfirmation, setShowBookingConfirmation] = useState(false);
-    const [showBookingForm, setShowBookingForm] = useState(false);
+    const [showBookingPopup, setShowBookingPopup] = useState(false);
+    const [showScheduleBookingPopup, setShowScheduleBookingPopup] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showSharePopup, setShowSharePopup] = useState(false);
     const [showPriceListModal, setShowPriceListModal] = useState(false);
@@ -816,55 +817,8 @@ ${locationInfo}${coordinatesInfo}
         }
     };
 
-    // Handle confirmed booking - called after BookingConfirmationPopup
-    const handleConfirmedBooking = () => {
-        devLog('✅ Booking confirmed - sending WhatsApp message and opening chat');
-        
-        // Send notification to therapist
-        const therapistIdNum = typeof therapist.id === 'string' ? parseInt(therapist.id) : therapist.id;
-        if (loggedInProviderId !== therapistIdNum) {
-            notificationService.createWhatsAppContactNotification(
-                therapistIdNum
-            ).catch(err => devLog('Notification failed:', err));
-        }
-
-        // Play booking confirmation sound
-        try {
-            const audio = new Audio('/sounds/booking-notification.mp3');
-            audio.volume = 0.3;
-            audio.play().catch(err => devLog('Sound play failed:', err));
-        } catch (error) {
-            devLog('Could not play confirmation sound:', error);
-        }
-
-        // Increment analytics
-        onIncrementAnalytics('whatsapp_clicks');
-        
-        // Create structured WhatsApp message with booking details
-        const currentTime = new Date().toLocaleString();
-        const message = `🎯 BOOKING REQUEST - INDASTREET
-
-👤 Customer: [Customer will provide name in chat]
-📱 Contact: [Customer WhatsApp]
-⏰ Requested Time: ${currentTime}
-💼 Service: Professional Massage
-🏆 Provider: ${therapist.name}
-⭐ Rating: ${displayRating}/5
-
-💬 NEXT STEP: Customer will confirm details in this chat.
-
-📞 INDASTREET SUPPORT: +62-XXX-XXXX`;
-
-        // Open WhatsApp with structured message
-        window.open(`https://wa.me/${therapist.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank');
-        
-        // Open chat window for real-time communication
-        if (onQuickBookWithChat) {
-            setTimeout(() => {
-                onQuickBookWithChat(therapist);
-            }, 500);
-        }
-    };
+    // REMOVED: handleConfirmedBooking - obsolete with original BookingPopup flow
+    // The original BookingPopup handles Appwrite booking creation and chat opening directly
 
     // Handle booking clicks from price list
     const handleBookingClick = (e: React.MouseEvent, status: 'available' | 'busy' | 'offline', pricing: any) => {
@@ -872,11 +826,8 @@ ${locationInfo}${coordinatesInfo}
         e.stopPropagation();
         
         if (status === 'available') {
-            if (!isCustomerLoggedIn) {
-                onShowRegisterPrompt?.();
-                return;
-            }
-            setShowBookingConfirmation(true);
+            // Allow booking without login - BookingPopup collects user info
+            setShowBookingPopup(true);
         } else if (status === 'busy') {
             setShowBusyModal(true);
         } else {
@@ -1387,47 +1338,13 @@ ${locationInfo}${coordinatesInfo}
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        devLog('🟢 Book Now button clicked - opening chat window');
+                        devLog('🟢 Book Now button clicked - opening immediate booking with chat');
                         const pricing = getPricing();
-                        devLog('👤 Therapist object:', { 
-                            id: therapist.id, 
-                            name: therapist.name, 
-                            status: therapist.status,
-                            pricing: pricing,
-                            fullObject: therapist 
-                        });
                         
-        // Final status debugging for Budi
-        if (therapist.name && (therapist.name.toLowerCase().includes('budi') || therapist.name === 'Budi')) {
-            console.log('🎯 BUDI STATUS DEBUG:');
-            console.log('  Raw Appwrite availability:', (therapist as any).availability);
-            console.log('  Raw Appwrite status:', therapist.status);
-            console.log('  Card calculates and shows:', displayStatus);
-            console.log('  ✅ FIXED: Converting', displayStatus, '→', displayStatus.toLowerCase(), 'for ChatWindow');
-        }                        // Open chat window directly with registration flow
-                        console.log('🔵 TherapistCard dispatching openChat:', { 
-                            therapistName: therapist.name, 
-                            displayStatus: displayStatus,
-                            availability: (therapist as any).availability,
-                            status: therapist.status 
-                        });
-                        // Convert displayStatus to lowercase format expected by ChatWindow
-                        const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-                        
-                        window.dispatchEvent(new CustomEvent('openChat', {
-                            detail: {
-                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                therapistName: therapist.name,
-                                therapistType: 'therapist',
-                                therapistStatus: normalizedStatus, // Use normalized lowercase status
-                                pricing: pricing,
-                                profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-                                providerRating: effectiveRating,
-                                discountPercentage: therapist.discountPercentage || 0,
-                                discountActive: isDiscountActive(therapist),
-                                mode: 'immediate'
-                            }
-                        }));
+                        // Open ScheduleBookingPopup in immediate mode (creates chat room)
+                        setShowScheduleBookingPopup(true);
+                        onIncrementAnalytics('bookings');
+                        setBookingsCount(prev => prev + 1);
                     }}
                     className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
                 >
@@ -1448,24 +1365,8 @@ ${locationInfo}${coordinatesInfo}
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        console.log('📅 Schedule button clicked - opening popup');
-                        
-                        // Open ChatWindow directly in scheduled mode
-                        console.log('📅 Schedule button clicked - opening chat in scheduled mode');
-                        window.dispatchEvent(new CustomEvent('openChat', {
-                            detail: {
-                                therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString(),
-                                therapistName: therapist.name,
-                                therapistType: 'therapist',
-                                therapistStatus: displayStatus.toLowerCase(),
-                                pricing: pricing,
-                                profilePicture: therapist.profilePicture || therapist.mainImage,
-                                providerRating: effectiveRating,
-                                discountPercentage: therapist.discountPercentage || 0,
-                                discountActive: isDiscountActive(therapist),
-                                mode: 'scheduled'
-                            }
-                        }));
+                        console.log('📅 Schedule button clicked - opening ScheduleBookingPopup');
+                        setShowScheduleBookingPopup(true);
                         onIncrementAnalytics('bookings');
                         // Increment bookings count for UI display
                         setBookingsCount(prev => prev + 1);
@@ -1711,32 +1612,42 @@ ${locationInfo}${coordinatesInfo}
                 />
             )}
 
-            {showBookingConfirmation && (
-                <BookingConfirmationPopup
-                    isOpen={showBookingConfirmation}
-                    onClose={() => setShowBookingConfirmation(false)}
-                    onOpenChat={() => {
-                        setShowBookingConfirmation(false);
-                        handleConfirmedBooking();
+            {showBookingPopup && (
+                <BookingPopup
+                    isOpen={showBookingPopup}
+                    onClose={() => setShowBookingPopup(false)}
+                    therapistId={String(therapist.id)}
+                    therapistName={therapist.name}
+                    profilePicture={therapist.profilePicture || therapist.mainImage}
+                    providerType="therapist"
+                    pricing={{
+                        "60": pricing["60"],
+                        "90": pricing["90"],
+                        "120": pricing["120"]
                     }}
-                    providerName={therapist.name}
-                    language={currentLanguage}
+                    discountPercentage={therapist.discountPercentage || 0}
+                    discountActive={isDiscountActive(therapist)}
                 />
             )}
 
-            {showBookingForm && (
-                <BookingFormPopup
-                    isOpen={showBookingForm}
-                    onClose={() => setShowBookingForm(false)}
-                    onSubmit={handleBookingSubmit}
-                    therapistName={therapist.name}
+            {showScheduleBookingPopup && (
+                <ScheduleBookingPopup
+                    isOpen={showScheduleBookingPopup}
+                    onClose={() => setShowScheduleBookingPopup(false)}
                     therapistId={String(therapist.id)}
+                    therapistName={therapist.name}
+                    therapistType="therapist"
+                    therapistStatus={displayStatus.toLowerCase() as 'available' | 'busy' | 'offline'}
+                    profilePicture={therapist.profilePicture || therapist.mainImage}
+                    isImmediateBooking={true}
                     pricing={{
-                        price60: String(pricing["60"]),
-                        price90: String(pricing["90"]),
-                        price120: String(pricing["120"])
+                        "60": pricing["60"],
+                        "90": pricing["90"],
+                        "120": pricing["120"]
                     }}
-                    language={currentLanguage}
+                    providerRating={effectiveRating}
+                    discountPercentage={therapist.discountPercentage || 0}
+                    discountActive={isDiscountActive(therapist)}
                 />
             )}
 

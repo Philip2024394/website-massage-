@@ -57,6 +57,18 @@ export const useAppState = () => {
         }
       }
       
+      // ✅ NEW: Customer-facing therapist profile URL: /profile/therapist/:id-slug
+      if (pathname.startsWith('/profile/therapist/')) {
+        console.log('🎯 CUSTOMER THERAPIST PROFILE URL DETECTED:', pathname);
+        return 'therapist-profile';
+      }
+      
+      // ✅ NEW: Customer-facing place profile URL: /profile/place/:id-slug
+      if (pathname.startsWith('/profile/place/')) {
+        console.log('🎯 CUSTOMER PLACE PROFILE URL DETECTED:', pathname);
+        return 'massage-place-profile';
+      }
+      
       // Legacy therapist profile URL
       if (pathname.startsWith('/therapist-profile/')) {
         const parts = pathname.split('/').filter(Boolean);
@@ -93,16 +105,17 @@ export const useAppState = () => {
       // Restore last page from session if available
       const sessionPage = sessionStorage.getItem('current_page') as Page | null;
       
-      // 🔧 FIX: Always clear session on fresh page loads to ensure landing page shows
-      // This prevents the app from getting stuck on 'home' after browser refresh
+      // 🔧 FIX: Only clear session for ROOT PATH loads, NOT for deep links
+      // Deep links like /profile/therapist/:id must be respected
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
       const isPageReload = navigation?.type === 'reload' || navigation?.type === 'navigate';
+      const isRootPath = pathname === '/' || pathname === '' || pathname === '/home';
       
-      if (isPageReload && !pageParam) {
-        console.log('🔄 Fresh page load detected - clearing session to show landing page');
+      if (isPageReload && !pageParam && isRootPath) {
+        console.log('🔄 Fresh ROOT page load detected - clearing session to show landing page');
         sessionStorage.removeItem('has_entered_app');
         sessionStorage.removeItem('current_page');
-      } else if (sessionPage && typeof sessionPage === 'string') {
+      } else if (sessionPage && typeof sessionPage === 'string' && isRootPath) {
         console.log('↩️ Restoring session page:', sessionPage);
         return sessionPage as Page;
       }

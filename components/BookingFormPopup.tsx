@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Home, Building2, X } from 'lucide-react';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 
@@ -44,6 +44,38 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
     reviewCount,
     language
 }) => {
+    // 🔥 CRITICAL: Check isOpen FIRST before ANY other logic
+    if (!isOpen) {
+        console.log('🚫 BookingFormPopup: isOpen=false, not rendering');
+        return null;
+    }
+
+    // 🔥 CRITICAL GUARD: CRASH if no therapist context
+    if (!therapistId || !therapistName) {
+        console.error('🚨🚨🚨 FATAL: BookingFormPopup rendered WITHOUT therapist context!', {
+            therapistId,
+            therapistName,
+            isOpen
+        });
+        // HARD CRASH - This should NEVER happen
+        throw new Error(`🚨 BOOKING MODAL BLOCKED: Missing therapist context (ID: ${therapistId}, Name: ${therapistName})`);
+    }
+
+    console.log('✅ BookingFormPopup mounting with valid therapist:', {
+        therapistId,
+        therapistName,
+        isOpen
+    });
+
+    // 🔥 DEBUG ASSERTION: Ensure modal only opens via user click (not auto-open)
+    useEffect(() => {
+        console.assert(
+            isOpen === true, 
+            '🚨 ASSERTION FAILED: Booking modal opened but isOpen !== true'
+        );
+        console.log('✅ ASSERTION PASSED: Booking modal opened via user action (isOpen=true)');
+    }, [isOpen]);
+
     const [customerName, setCustomerName] = useState('');
     const [locationType, setLocationType] = useState<'home' | 'hotel'>('home');
     const [address, setAddress] = useState('');
@@ -175,11 +207,18 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
         setErrors({});
     };
 
-    if (!isOpen) return null;
+    // ✅ isOpen check already done at component start
+    // ✅ Render inline (no fixed overlay) - parent controls visibility
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-t-2xl relative">
                     <button

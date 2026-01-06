@@ -6,9 +6,7 @@ import { useAllHooks } from './hooks/useAllHooks';
 import { useAutoReviews } from './hooks/useAutoReviews';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
-import BookingPopup from './components/BookingPopup';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import ScheduleBookingPopup from './components/ScheduleBookingPopup';
 import ChatWindow from './components/ChatWindow';
 import FloatingChat from './apps/therapist-dashboard/src/components/FloatingChat';
 import { useState, useEffect, Suspense } from 'react';
@@ -23,8 +21,8 @@ import { analyticsService, AnalyticsEventType } from './services/analyticsServic
 import type { Therapist, Place, Analytics } from './types';
 import './lib/notificationSound'; // Initialize notification sound system
 import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwrite push notifications
-import { chatSessionService } from './services/chatSessionService';
-import ChatErrorBoundary from './components/ChatErrorBoundary';
+// REMOVED: chatSessionService import - no longer using global chat sessions
+// REMOVED: ChatErrorBoundary import - no longer using global ChatWindow
 import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
@@ -136,23 +134,6 @@ const App = () => {
         setForcedBookingData(null); // Close modal if open
     };
     
-    // Booking popup state
-    const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
-    const [bookingProviderInfo, setBookingProviderInfo] = useState<{
-        name: string;
-        whatsappNumber: string;
-        providerId: string;
-        providerType: 'therapist' | 'place';
-        profilePicture?: string;
-        hotelVillaId?: string;
-        hotelVillaName?: string;
-        hotelVillaType?: 'hotel' | 'villa';
-        hotelVillaLocation?: string;
-        pricing?: { [key: string]: number };
-        discountPercentage?: number;
-        discountActive?: boolean;
-    } | null>(null);
-
     // Booking Status Tracker state
     const [isStatusTrackerOpen, setIsStatusTrackerOpen] = useState(false);
     const [bookingStatusInfo, setBookingStatusInfo] = useState<{
@@ -163,45 +144,36 @@ const App = () => {
         responseDeadline: Date;
     } | null>(null);
 
-    // Schedule Booking Popup state
-    const [isScheduleBookingOpen, setIsScheduleBookingOpen] = useState(false);
-    const [scheduleBookingInfo, setScheduleBookingInfo] = useState<{
-        therapistId: string;
-        therapistName: string;
-        therapistType: 'therapist' | 'place';
-        profilePicture?: string;
-        hotelVillaId?: string;
-        hotelVillaName?: string;
-        hotelVillaType?: 'hotel' | 'villa';
-        hotelVillaLocation?: string;
-        pricing?: { [key: string]: number };
-        discountPercentage?: number;
-        discountActive?: boolean;
-    } | null>(null);
-
-    // Chat Window state
+    // Chat Window state - ONLY opens on explicit openChat events (no auto-opening)
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [chatInfo, setChatInfo] = useState<{
         therapistId: string;
         therapistName: string;
         therapistType: 'therapist' | 'place';
-        bookingId?: string;
-        chatRoomId?: string;
-        customerName?: string;
-        customerWhatsApp?: string;
         therapistStatus?: 'available' | 'busy' | 'offline';
-        pricing?: { [key: string]: number };
-        discountPercentage?: number;
-        discountActive?: boolean;
+        pricing?: any;
         profilePicture?: string;
         providerRating?: number;
+        discountPercentage?: number;
+        discountActive?: boolean;
         mode?: 'immediate' | 'scheduled';
-        selectedService?: {
-            name: string;
-            duration: string;
-            price: number;
-        };
+        bookingId?: string;
+        chatRoomId?: string;
     } | null>(null);
+
+    // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
+    // All hooks combined - MUST be called BEFORE any useEffect that depends on state
+    const hooks = useAllHooks();
+    const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
+    
+    // Initialize auto-review system for Yogyakarta therapists (5-minute updates)
+    useAutoReviews();
+    
+    // Use the actual language from hooks, not hardcoded
+    const { language, setLanguage } = state;
+    
+    // Get translations using the actual language state - provide to AppRouter
+    const { t: _t, dict } = useTranslations(language);
 
     // Analytics handler function
     const handleIncrementAnalytics = async (
@@ -238,214 +210,44 @@ const App = () => {
         }
     };
 
-    // Listen for openChat events from booking creation
+    // Listen for openChat events from booking system
     useEffect(() => {
-        console.log('🎧 App.tsx: Setting up openChat event listener');
-        
-        const handleOpenChat = async (event: CustomEvent) => {
-            console.log('📨 App.tsx: Received openChat event!', event.detail);
-            const { therapistId, therapistName, therapistType, bookingId, chatRoomId, therapistStatus, pricing, discountPercentage, discountActive, profilePicture, providerRating, mode, selectedService } = event.detail;
-            
-            console.log('💬 Opening chat window for booking:', bookingId);
-            console.log('📋 Chat info:', { therapistId, therapistName, therapistType, chatRoomId, therapistStatus, pricing });
-            
-            // IMMEDIATELY open the chat window with the available data
-            const immediateChatInfo = {
-                therapistId,
-                therapistName,
-                therapistType: therapistType || 'therapist',
-                therapistStatus: therapistStatus || 'available',
-                pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                discountPercentage,
-                discountActive,
-                profilePicture,
-                providerRating,
-                bookingId,
-                chatRoomId,
-                customerName: '',
-                customerWhatsApp: '',
-                mode: mode || 'immediate',
-                selectedService
-            };
-            
-            // Open chat immediately
-            setChatInfo(immediateChatInfo);
+        const handleOpenChat = (event: CustomEvent) => {
+            console.log('💬 App.tsx: openChat event received:', event.detail);
+            setChatInfo(event.detail);
             setIsChatOpen(true);
-            console.log('✅ Chat window opened immediately');
-            
-            // Handle session creation and customer details in background (non-blocking)
-            void (async () => {
-                try {
-                    // Try to get customer details from booking for scheduled bookings
-                    let customerName = '';
-                    let customerWhatsApp = '';
-                    
-                    if (bookingId) {
-                        try {
-                            const { databases } = await import('./lib/appwrite');
-                            const { APPWRITE_CONFIG } = await import('./lib/appwrite.config');
-                            
-                            const booking = await databases.getDocument(
-                                APPWRITE_CONFIG.databaseId,
-                                APPWRITE_CONFIG.collections.bookings || 'bookings',
-                                bookingId
-                            );
-                            
-                            if (booking.customerName) customerName = booking.customerName;
-                            if (booking.customerWhatsApp) customerWhatsApp = booking.customerWhatsApp;
-                            
-                            console.log('✅ Retrieved customer details from booking:', { customerName, customerWhatsApp });
-                            
-                            // Update chat info if we got customer details
-                            setChatInfo(prev => ({ ...prev, customerName, customerWhatsApp }));
-                        } catch (error) {
-                            console.warn('⚠️ Could not retrieve customer details from booking:', error);
-                        }
-                    }
-
-                    // Check for existing active session or create new one (in background)
-                    let sessionData;
-                    try {
-                        const existingSession = await chatSessionService.getActiveSession(therapistId).catch(() => null);
-                    
-                        if (existingSession && existingSession.isActive) {
-                            // Use existing session
-                            console.log('♻️ Reusing existing chat session:', existingSession.sessionId);
-                            sessionData = existingSession;
-                            
-                            // Update session with latest info if needed
-                            await chatSessionService.updateSession(existingSession.sessionId, {
-                                providerStatus: therapistStatus || existingSession.providerStatus,
-                                pricing: pricing || existingSession.pricing,
-                                discountPercentage: discountPercentage || existingSession.discountPercentage,
-                                discountActive: discountActive !== undefined ? discountActive : existingSession.discountActive
-                            });
-                        } else {
-                            // Create new persistent session
-                            console.log('💾 Creating new persistent chat session');
-                            
-                            const sessionPayload = {
-                                customerId: customerName || undefined,
-                                customerName,
-                                customerWhatsApp,
-                                providerId: therapistId,
-                                providerName: therapistName,
-                                providerType: therapistType || 'therapist',
-                                providerStatus: therapistStatus || 'available',
-                                mode: mode || 'immediate',
-                                pricing: pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                                discountPercentage,
-                                discountActive,
-                                profilePicture,
-                                providerRating,
-                                bookingId,
-                                chatRoomId,
-                                isActive: true
-                            };
-                            
-                            console.log('📤 Session payload:', JSON.stringify(sessionPayload, null, 2));
-                            
-                            sessionData = await chatSessionService.createSession(sessionPayload);
-                            console.log('✅ Persistent chat session created:', sessionData.sessionId);
-                        }
-                        
-                        // Update chat info with session data if we got it
-                        if (sessionData) {
-                            const updatedChatInfo = {
-                                therapistId: sessionData.providerId || therapistId,
-                                therapistName: sessionData.providerName || therapistName,
-                                therapistType: sessionData.providerType || therapistType || 'therapist',
-                                therapistStatus: sessionData.providerStatus || therapistStatus || 'available',
-                                pricing: sessionData.pricing || pricing || { '60': 200000, '90': 300000, '120': 400000 },
-                                discountPercentage: sessionData.discountPercentage,
-                                discountActive: sessionData.discountActive,
-                                profilePicture: sessionData.profilePicture,
-                                providerRating: sessionData.providerRating,
-                                bookingId: sessionData.bookingId,
-                                chatRoomId: sessionData.chatRoomId,
-                                customerName: sessionData.customerName || customerName,
-                                customerWhatsApp: sessionData.customerWhatsApp || customerWhatsApp,
-                                mode: sessionData.mode || mode || 'immediate'
-                            };
-                            setChatInfo(updatedChatInfo);
-                            console.log('✅ Chat info updated with session data');
-                        }
-                    } catch (sessionError) {
-                        console.warn('⚠️ Session handling failed:', sessionError);
-                    }
-                } catch (error) {
-                    console.error('❌ Failed to handle persistent session:', error);
-                }
-            })();
         };
 
         window.addEventListener('openChat' as any, handleOpenChat);
-        console.log('✅ Event listener attached');
         
         return () => {
             window.removeEventListener('openChat' as any, handleOpenChat);
-            console.log('🧹 Event listener cleaned up');
         };
     }, []);
 
-    // Listen for data refresh events to update ChatWindow status
+    // REMOVED: Listen for data refresh events - was for ChatWindow updates
+    // useEffect(() => {
+    //     const handleDataRefresh = (event: CustomEvent) => {
+    //         console.log('🔄 App.tsx: Data refresh detected:', event.detail);
+    //         // Chat refresh logic removed
+    //     };
+    // 
+    //     window.addEventListener('refreshData' as any, handleDataRefresh);
+    //     
+    //     return () => {
+    //         window.removeEventListener('refreshData' as any, handleDataRefresh);
+    //     };
+    // }, []);
+
+    // REMOVED: Session restoration - was auto-opening ChatWindow 
+    // useEffect(() => {
+    //     const restoreChatSession = async () => {
+    //         // Session restoration code removed to prevent auto-opening overlays
+    //     };
+    // }, []);
+
+    // Session initialization on startup
     useEffect(() => {
-        const handleDataRefresh = (event: CustomEvent) => {
-            console.log('🔄 App.tsx: Data refresh detected:', event.detail);
-            
-            // If ChatWindow is open and this refresh is for the current therapist
-            if (isChatOpen && chatInfo && event.detail?.therapistId === chatInfo.therapistId) {
-                console.log('🔄 Updating ChatWindow status for therapist:', chatInfo.therapistName);
-                setChatInfo(prev => prev ? {
-                    ...prev,
-                    therapistStatus: event.detail.newStatus?.toLowerCase() || 'available'
-                } : null);
-                console.log('✅ ChatWindow status updated to:', event.detail.newStatus);
-            }
-        };
-
-        window.addEventListener('refreshData' as any, handleDataRefresh);
-        
-        return () => {
-            window.removeEventListener('refreshData' as any, handleDataRefresh);
-        };
-    }, [isChatOpen, chatInfo]);
-
-    // Session restoration and app initialization on startup
-    useEffect(() => {
-        const restoreChatSession = async () => {
-            try {
-                const allSessions = await chatSessionService.listActiveSessions();
-
-                if (allSessions && allSessions.length > 0) {
-                    const latestSession = allSessions[0];
-                    console.log('🔄 Restoring active chat session from previous visit:', latestSession.sessionId);
-
-                    setChatInfo({
-                        therapistId: latestSession.providerId,
-                        therapistName: latestSession.providerName,
-                        therapistType: latestSession.providerType,
-                        therapistStatus: latestSession.providerStatus,
-                        pricing: latestSession.pricing,
-                        discountPercentage: latestSession.discountPercentage,
-                        discountActive: latestSession.discountActive,
-                        profilePicture: latestSession.profilePicture,
-                        providerRating: latestSession.providerRating,
-                        bookingId: latestSession.bookingId,
-                        chatRoomId: latestSession.chatRoomId,
-                        customerName: latestSession.customerName,
-                        customerWhatsApp: latestSession.customerWhatsApp,
-                        mode: latestSession.mode
-                    });
-                    setIsChatOpen(true);
-                }
-
-                await chatSessionService.cleanupExpiredSessions();
-            } catch (error) {
-                console.warn('⚠️ Failed to restore chat session:', error);
-            }
-        };
-
         const initializeAppwriteSession = async () => {
             try {
                 if (!(window as any).Appwrite) {
@@ -503,7 +305,7 @@ const App = () => {
             }
         };
 
-        void restoreChatSession();
+        // REMOVED: restoreChatSession call - no longer using global ChatWindow
         void initializeAppwriteSession();
         bookingExpirationService.start();
 
@@ -514,7 +316,7 @@ const App = () => {
         return () => {
             bookingExpirationService.stop();
         };
-    }, []);
+    }, [state.page]); // Re-run when page changes to allow restoration on non-landing pages
 
     // Inbound share click tracking via URL params (agent/provider/platform)
     useEffect(() => {
@@ -547,26 +349,25 @@ const App = () => {
         }
     }, []);
 
-    // All hooks combined - ALWAYS call this hook at the same point
-    const hooks = useAllHooks();
-    const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
-    
-    // Initialize auto-review system for Yogyakarta therapists (5-minute updates)
-    useAutoReviews();
-    
-    // Use the actual language from hooks, not hardcoded
-    const { language, setLanguage } = state;
-    
-    // Log current language state
+    // Log current language and page state
     console.log('🌐 App.tsx: Current language state:', language);
-    
-    // Get translations using the actual language state - provide to AppRouter
-    const { t: _t, dict } = useTranslations(language);
-    
-    // Log loaded translations
-    console.log('🌐 App.tsx: Loaded translations for language:', language);
-
     console.log('📄 App.tsx: Current page state:', state.page);
+
+    // ===== ROUTE CHANGE CLEANUP =====
+    // Close modals and reset temporary UI state on route change
+    useEffect(() => {
+        console.log('🔄 Route changed to:', state.page);
+        
+        // Close all modals on route change
+        setIsStatusTrackerOpen(false);
+        
+        // Reset modal data
+        setBookingStatusInfo(null);
+        
+        // Note: Chat is intentionally NOT closed on route change
+        // to allow users to continue conversations while navigating
+        
+    }, [state.page]);
 
     // ===== URL SYNCHRONIZATION SYSTEM =====
     // Sync browser URL with page state
@@ -786,48 +587,6 @@ const App = () => {
         return Promise.resolve();
     };
 
-    // Global booking popup handler - can be called from anywhere
-    const handleOpenBookingPopup = (
-        providerName: string, 
-        whatsappNumber?: string,
-        providerId?: string,
-        providerType?: 'therapist' | 'place',
-        hotelVillaId?: string,
-        hotelVillaName?: string,
-        hotelVillaType?: 'hotel' | 'villa',
-        profilePicture?: string,
-        hotelVillaLocation?: string,
-        pricing?: { [key: string]: number },
-        discountPercentage?: number,
-        discountActive?: boolean
-    ) => {
-        console.log('📱 Opening booking popup for:', {
-            providerName,
-            providerId,
-            providerType,
-            profilePicture,
-            hotelVillaId,
-            hotelVillaName,
-            hotelVillaType,
-            hotelVillaLocation
-        });
-        setBookingProviderInfo({
-            name: providerName,
-            whatsappNumber: whatsappNumber || '1234567890', // Default number
-            providerId: providerId || '',
-            providerType: providerType || 'therapist',
-            profilePicture,
-            hotelVillaId,
-            hotelVillaName,
-            hotelVillaType,
-            hotelVillaLocation,
-            pricing,
-            discountPercentage,
-            discountActive
-        });
-        setIsBookingPopupOpen(true);
-    };
-
     // Global booking status tracker handler
     const handleOpenBookingStatusTracker = (statusInfo: {
         bookingId: string;
@@ -841,31 +600,12 @@ const App = () => {
         setIsStatusTrackerOpen(true);
     };
 
-    // Global schedule booking handler
-    const handleOpenScheduleBookingPopup = (bookingInfo: {
-        therapistId: string;
-        therapistName: string;
-        therapistType: 'therapist' | 'place';
-        profilePicture?: string;
-        hotelVillaId?: string;
-        hotelVillaName?: string;
-        hotelVillaType?: 'hotel' | 'villa';
-        hotelVillaLocation?: string;
-        pricing?: { [key: string]: number }; // Pricing object (e.g., {"60": 250, "90": 350, "120": 450})
-        discountPercentage?: number; // Discount percentage if applicable
-        discountActive?: boolean; // Whether discount is currently active
-    }) => {
-        console.log('📅 Opening schedule booking popup:', bookingInfo);
-        setScheduleBookingInfo(bookingInfo);
-        setIsScheduleBookingOpen(true);
-    };
+
 
     // Register global booking functions in useEffect to ensure they're available
     useEffect(() => {
         console.log('📱 Registering global booking functions...');
-        (window as any).openBookingPopup = handleOpenBookingPopup;
         (window as any).openBookingStatusTracker = handleOpenBookingStatusTracker;
-        (window as any).openScheduleBookingPopup = handleOpenScheduleBookingPopup;
         
         // Register global navigation functions
         (window as any).setPage = state.setPage;
@@ -873,9 +613,7 @@ const App = () => {
         
         return () => {
             // Cleanup on unmount
-            delete (window as any).openBookingPopup;
             delete (window as any).openBookingStatusTracker;
-            delete (window as any).openScheduleBookingPopup;
             delete (window as any).setPage;
             delete (window as any).setLanguage;
         };
@@ -1060,102 +798,45 @@ const App = () => {
             </AppLayout>
             
             {/* Global Overlays - Outside AppLayout to prevent clipping */}
-            {/* Global Booking Popup */}
-            <BookingPopup
-                isOpen={isBookingPopupOpen}
-                onClose={() => setIsBookingPopupOpen(false)}
-                therapistId={bookingProviderInfo?.providerId || ''}
-                therapistName={bookingProviderInfo?.name || ''}
-                profilePicture={bookingProviderInfo?.profilePicture}
-                providerType={bookingProviderInfo?.providerType}
-                hotelVillaId={bookingProviderInfo?.hotelVillaId}
-                hotelVillaName={bookingProviderInfo?.hotelVillaName}
-                hotelVillaType={bookingProviderInfo?.hotelVillaType}
-                hotelVillaLocation={bookingProviderInfo?.hotelVillaLocation}
-                pricing={bookingProviderInfo?.pricing}
-                discountPercentage={bookingProviderInfo?.discountPercentage}
-                discountActive={bookingProviderInfo?.discountActive}
-            />
+            {/* Global Booking Status Tracker - ONLY mount when open AND has data */}
+            {isStatusTrackerOpen && bookingStatusInfo && (
+                <BookingStatusTracker
+                    isOpen={isStatusTrackerOpen}
+                    onClose={() => {
+                        setIsStatusTrackerOpen(false);
+                        setBookingStatusInfo(null);
+                    }}
+                    bookingId={bookingStatusInfo.bookingId}
+                    therapistName={bookingStatusInfo.therapistName}
+                    duration={bookingStatusInfo.duration}
+                    price={bookingStatusInfo.price}
+                    responseDeadline={bookingStatusInfo.responseDeadline}
+                    onFindNewTherapist={handleFindNewTherapist}
+                />
+            )}
 
-            {/* Global Booking Status Tracker */}
-            <BookingStatusTracker
-                isOpen={isStatusTrackerOpen}
-                onClose={() => setIsStatusTrackerOpen(false)}
-                bookingId={bookingStatusInfo?.bookingId || ''}
-                therapistName={bookingStatusInfo?.therapistName || ''}
-                duration={bookingStatusInfo?.duration || 60}
-                price={bookingStatusInfo?.price || 0}
-                responseDeadline={bookingStatusInfo?.responseDeadline || new Date()}
-                onFindNewTherapist={handleFindNewTherapist}
-            />
-
-            {/* Global Schedule Booking Popup */}
-            <ScheduleBookingPopup
-                isOpen={isScheduleBookingOpen}
-                onClose={() => setIsScheduleBookingOpen(false)}
-                therapistId={scheduleBookingInfo?.therapistId || ''}
-                therapistName={scheduleBookingInfo?.therapistName || ''}
-                therapistType={scheduleBookingInfo?.therapistType || 'therapist'}
-                profilePicture={scheduleBookingInfo?.profilePicture}
-                hotelVillaId={scheduleBookingInfo?.hotelVillaId}
-                hotelVillaName={scheduleBookingInfo?.hotelVillaName}
-                hotelVillaType={scheduleBookingInfo?.hotelVillaType}
-                pricing={scheduleBookingInfo?.pricing}
-                discountPercentage={scheduleBookingInfo?.discountPercentage}
-                discountActive={scheduleBookingInfo?.discountActive}
-            />
-
-            {/* Global Chat Window - Opens with registration flow */}
-            {(() => {
-                console.log('🔍 App.tsx render check - chatInfo:', chatInfo, 'isChatOpen:', isChatOpen);
-                
-                const handleCloseChat = async () => {
-                    try {
-                        // Close persistent session if it exists
-                        if (chatInfo && 'sessionId' in chatInfo) {
-                            await chatSessionService.closeSession(chatInfo.sessionId as string);
-                            console.log('✅ Persistent chat session closed');
-                        }
-                    } catch (error) {
-                        console.warn('Failed to close persistent chat session:', error);
-                        // Continue with local cleanup even if Appwrite fails
-                    }
-                    
-                    // Always close local chat
-                    setChatInfo(null);
-                    setIsChatOpen(false);
-                };
-                
-                return chatInfo && (
-                    <ChatErrorBoundary
-                        onError={(error, errorInfo) => {
-                            console.error('🚨 ChatWindow crashed:', error);
-                            console.error('Error context:', errorInfo);
-                            // Could also send to error tracking service
-                        }}
-                    >
-                        <ChatWindow
-                            isOpen={isChatOpen}
-                            onClose={handleCloseChat}
-                            providerId={chatInfo.therapistId}
-                            providerRole={chatInfo.therapistType}
-                            providerName={chatInfo.therapistName}
-                            providerStatus={chatInfo.therapistStatus || 'available'}
-                            pricing={chatInfo.pricing as { '60': number; '90': number; '120': number } | undefined}
-                            discountPercentage={chatInfo.discountPercentage}
-                            discountActive={chatInfo.discountActive}
-                            providerPhoto={chatInfo.profilePicture}
-                            providerRating={chatInfo.providerRating}
-                            bookingId={chatInfo.bookingId}
-                            chatRoomId={chatInfo.chatRoomId}
-                            customerName={chatInfo.customerName}
-                            customerWhatsApp={chatInfo.customerWhatsApp}
-                            mode={chatInfo.mode}
-                            selectedService={chatInfo.selectedService}
-                        />
-                    </ChatErrorBoundary>
-                );
-            })()}
+            {/* Global Chat Window - ONLY opens on explicit openChat events */}
+            {isChatOpen && chatInfo && (
+                <ChatWindow
+                    isOpen={isChatOpen}
+                    onClose={() => {
+                        setIsChatOpen(false);
+                        setChatInfo(null);
+                    }}
+                    therapistId={chatInfo.therapistId}
+                    therapistName={chatInfo.therapistName}
+                    therapistType={chatInfo.therapistType}
+                    therapistStatus={chatInfo.therapistStatus}
+                    pricing={chatInfo.pricing}
+                    profilePicture={chatInfo.profilePicture}
+                    providerRating={chatInfo.providerRating}
+                    discountPercentage={chatInfo.discountPercentage}
+                    discountActive={chatInfo.discountActive}
+                    mode={chatInfo.mode}
+                    bookingId={chatInfo.bookingId}
+                    chatRoomId={chatInfo.chatRoomId}
+                />
+            )}
         </DeviceStylesProvider>
         </LanguageProvider>
     );

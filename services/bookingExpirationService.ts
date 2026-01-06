@@ -61,13 +61,13 @@ class BookingExpirationService {
       
       console.log('🔍 Checking expired bookings with collection ID:', APPWRITE_CONFIG.collections.bookings);
 
-      // Query for pending bookings with expired deadlines
+      // Query for pending bookings only (responseDeadline field doesn't exist in schema)
       const expiredBookings = await databases.listDocuments(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings,
         [
-          Query.equal('status', 'pending'),
-          Query.lessThan('responseDeadline', now)
+          Query.equal('status', 'pending')
+          // Note: responseDeadline query removed - field not in schema
         ]
       );
 
