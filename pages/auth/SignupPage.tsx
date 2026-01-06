@@ -3,6 +3,7 @@ import { Eye, EyeOff, User, Building2, Sparkles } from 'lucide-react';
 import { membershipSignupService, type PortalType } from '../../lib/services/membershipSignup.service';
 import { useLanguage } from '../../hooks/useLanguage';
 import { translations } from '../../translations';
+import { LEGAL_TERMS } from '../../src/legal/terms';
 
 interface SignupPageProps {
   onNavigate?: (page: string) => void;
@@ -276,25 +277,46 @@ const SignupPage: React.FC<SignupPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <input
-              id="terms"
-              name="terms"
-              type="checkbox"
-              checked={formData.termsAccepted}
-              onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
-              className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-              I agree to the{' '}
-              <a href="/terms" className="text-orange-600 hover:text-orange-500">
-                Terms of Service
+          {/* Terms & Independent Contractor Agreement */}
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <input
+                id="terms"
+                name="terms"
+                type="checkbox"
+                required
+                checked={formData.termsAccepted}
+                onChange={(e) => setFormData(prev => ({ ...prev, termsAccepted: e.target.checked }))}
+                className="h-4 w-4 mt-1 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+              />
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+                <span className="font-medium">
+                  {normalizedLang === 'id' ? LEGAL_TERMS.CHECKBOX_LABEL.id : LEGAL_TERMS.CHECKBOX_LABEL.en}
+                  <span className="text-red-500"> *</span>
+                </span>
+              </label>
+            </div>
+            
+            {/* Key Terms Summary */}
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-xs text-gray-700">
+              <p className="font-semibold text-orange-800 mb-2">
+                {normalizedLang === 'id' ? 'Ringkasan Penting:' : 'Key Points:'}
+              </p>
+              <ul className="space-y-1 list-disc list-inside">
+                <li>{normalizedLang === 'id' ? 'Anda bergabung sebagai kontraktor independen (wiraswasta)' : 'You join as an independent contractor (self-employed)'}</li>
+                <li>{normalizedLang === 'id' ? 'IndaStreetMassage hanya platform pemesanan, bukan pemberi kerja' : 'IndaStreetMassage is a booking platform only, not an employer'}</li>
+                <li>{normalizedLang === 'id' ? 'Anda bertanggung jawab atas pajak, lisensi, dan kewajiban hukum' : 'You are responsible for taxes, licenses, and legal obligations'}</li>
+                <li>{normalizedLang === 'id' ? 'Komisi berlaku untuk semua pemesanan dari platform' : 'Commission applies to all platform-originated bookings'}</li>
+                <li>{normalizedLang === 'id' ? 'Pembayaran langsung antara Anda dan pelanggan' : 'Payments are direct between you and customers'}</li>
+              </ul>
+              <a 
+                href="/terms" 
+                target="_blank"
+                className="inline-block mt-2 text-orange-600 hover:text-orange-700 font-medium"
+              >
+                {normalizedLang === 'id' ? 'Baca Syarat Lengkap →' : 'Read Full Terms →'}
               </a>
-              {' '}and{' '}
-              <a href="/privacy" className="text-orange-600 hover:text-orange-500">
-                Privacy Policy
-              </a>
-            </label>
+            </div>
           </div>
 
           <div>

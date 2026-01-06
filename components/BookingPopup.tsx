@@ -186,6 +186,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         // Core required fields
         bookingId, // Required - unique identifier
         bookingDate: now.toISOString(), // Required - creation timestamp
+        userId: authResult.userId, // User ID from authenticated session
         providerId: therapistId, // Required - therapist/place ID
         providerType: providerType || 'therapist', // Required - 'therapist' or 'place'
         providerName: therapistName, // Required - name for notifications
@@ -767,6 +768,15 @@ ${
               </div>
             </button>
           ))}
+          </div>
+
+          {/* Commission Reminder */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700">
+            <p className="text-blue-800">
+              ℹ️ {language === 'id' 
+                ? 'Pemesanan ini tunduk pada komisi IndaStreetMassage dan aturan platform.'
+                : 'This booking is subject to IndaStreetMassage commission and platform rules.'}
+            </p>
           </div>
 
           {/* Remove old Hotel/Villa section since it's now in user info */}

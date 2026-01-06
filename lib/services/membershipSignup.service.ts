@@ -1191,6 +1191,9 @@ class MembershipSignupService {
             status: 'active', // Automatically active
             paymentStatus: 'active', // No payment required
             profileComplete: true, // Skip profile completion
+            termsAccepted: true, // Terms accepted during signup
+            termsAcceptedAt: new Date().toISOString(), // Timestamp of acceptance
+            independentContractor: true, // Independent contractor status confirmed
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };

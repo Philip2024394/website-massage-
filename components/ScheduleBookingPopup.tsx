@@ -387,6 +387,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         // Required fields matching Appwrite schema
         bookingId: bookingId,
         bookingDate: new Date().toISOString(), // Required datetime
+        userId: authResult.userId, // User ID from authenticated session
         status: 'Pending', // Required string (default: 'Pending')
         duration: finalDuration, // Required integer (1-365)
         providerId: therapistId, // Required - Full therapist/place ID (now 255 chars)
@@ -965,6 +966,15 @@ You can contact the customer immediately!`;
                     ? `You'll be connected directly with ${therapistName} via in-app chat to discuss availability and pricing.`
                     : `Your booking will be sent to ${therapistName} via in-app chat. They'll confirm availability and arrival time.`
                   }
+                </p>
+              </div>
+
+              {/* Commission Reminder */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-gray-700">
+                <p className="text-blue-800">
+                  ℹ️ {language === 'id' 
+                    ? 'Pemesanan ini tunduk pada komisi IndaStreetMassage dan aturan platform.'
+                    : 'This booking is subject to IndaStreetMassage commission and platform rules.'}
                 </p>
               </div>
 
