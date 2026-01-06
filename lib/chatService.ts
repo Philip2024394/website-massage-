@@ -31,7 +31,7 @@ export async function createChatRoom(data: {
     customerName: string;
     customerLanguage: 'en' | 'id';
     customerPhoto?: string;
-    therapistId: string | number; // Must be numeric userId (integer)
+    therapistId: string | number; // Document $id (string) - NOT numeric userId
     therapistName: string;
     therapistLanguage: 'en' | 'id';
     therapistType: 'therapist' | 'place';
@@ -39,21 +39,15 @@ export async function createChatRoom(data: {
     expiresAt: string;
 }): Promise<ChatRoom> {
     try {
-        // CRITICAL: therapistId MUST be integer (numeric Appwrite userId)
-        const therapistIdNumber = typeof data.therapistId === 'string' 
-            ? parseInt(data.therapistId, 10)
+        // Normalize therapistId to string (Appwrite document $id)
+        const therapistIdString = typeof data.therapistId === 'number' 
+            ? data.therapistId.toString()
             : data.therapistId;
         
-        // Validate therapistId is a valid integer
-        if (!Number.isInteger(therapistIdNumber) || therapistIdNumber <= 0) {
-            throw new Error(`Invalid therapistId: expected integer userId, got ${data.therapistId} (type: ${typeof data.therapistId})`);
-        }
-        
         console.debug('[CHAT ROOM CREATE]', {
-            therapistId: therapistIdNumber,
-            typeofTherapistId: typeof therapistIdNumber,
-            originalValue: data.therapistId,
-            isInteger: Number.isInteger(therapistIdNumber)
+            therapistId: therapistIdString,
+            typeofTherapistId: typeof therapistIdString,
+            originalValue: data.therapistId
         });
         
         // Prepare untrusted input from caller
@@ -63,7 +57,7 @@ export async function createChatRoom(data: {
             customerName: data.customerName,
             customerLanguage: data.customerLanguage,
             customerPhoto: data.customerPhoto || '',
-            therapistId: therapistIdNumber, // ✅ Always integer (numeric userId)
+            therapistId: therapistIdString, // ✅ String document $id
             therapistName: data.therapistName,
             therapistLanguage: data.therapistLanguage,
             therapistType: data.therapistType,
