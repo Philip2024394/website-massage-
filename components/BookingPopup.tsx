@@ -253,6 +253,15 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       }
 
       const bookingData = validation.payload!;
+      
+      // ===== CRITICAL: SANITIZE PAYLOAD (Remove undefined/null) =====
+      Object.keys(bookingData).forEach(key => {
+        if (bookingData[key] === undefined || bookingData[key] === null) {
+          delete bookingData[key];
+        }
+      });
+
+      console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
       logPayload(bookingData);
 
       console.log('📤 STEP 1: Creating immediate booking with validated data');

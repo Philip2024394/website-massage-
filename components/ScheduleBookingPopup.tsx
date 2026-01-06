@@ -430,7 +430,15 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       }
       if (roomNumber) bookingData.hotelRoomNumber = roomNumber;
 
+      // ===== CRITICAL: SANITIZE PAYLOAD (Remove undefined/null) =====
+      Object.keys(bookingData).forEach(key => {
+        if (bookingData[key] === undefined || bookingData[key] === null) {
+          delete bookingData[key];
+        }
+      });
+
       try {
+        console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
         console.log('📤 Attempting to save booking with data:', bookingData);
         console.log('📤 Database ID:', APPWRITE_CONFIG.databaseId);
         console.log('📤 Collection ID:', APPWRITE_CONFIG.collections.bookings);
