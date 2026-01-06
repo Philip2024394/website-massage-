@@ -17,7 +17,7 @@ export const APPWRITE_CONFIG = {
         places: 'places_collection_id', // ✅ Text-based collection ID  
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
-        bookings: 'bookings', // ✅ Production booking collection
+        bookings: 'bookings_collection_id', // ✅ Production booking collection
         reviews: 'reviews_collection_id', // ✅ CONNECTED - Review and rating system
         notifications: 'Notifications', // ✅ Therapist notification system
         users: null, // ⚠️ DISABLED - Collection doesn't exist

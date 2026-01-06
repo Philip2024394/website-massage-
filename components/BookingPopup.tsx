@@ -212,7 +212,6 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         providerType: providerType || 'therapist',
         providerName: therapistName,
         service: String(selectedOption.duration),
-        serviceDuration: String(selectedOption.duration),
         startTime: now.toISOString(),
         price: Math.round(selectedOption.price / 1000),
         createdAt: now.toISOString(),
@@ -230,9 +229,6 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       };
 
       // Add optional location fields if present
-      if (locationType === 'home' && homeAddress) {
-        rawBookingData.address = homeAddress.trim();
-      }
       if (locationType !== 'home' && hotelVillaNameInput) {
         rawBookingData.hotelGuestName = hotelVillaNameInput.trim();
       }
