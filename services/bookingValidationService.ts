@@ -43,6 +43,7 @@ export const BOOKING_SCHEMA = {
   scheduledTime: { type: 'datetime', required: false },
   customerName: { type: 'string', required: false, maxLength: 255 },
   customerWhatsApp: { type: 'string', required: false, maxLength: 50 },
+  address: { type: 'string', required: false, maxLength: 500 },
   bookingType: { type: 'string', required: false, maxLength: 50 },
   pending: { type: 'string', required: false, maxLength: 255 },
   confirmed: { type: 'string', required: false, maxLength: 255 },
