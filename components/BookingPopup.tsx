@@ -6,6 +6,16 @@ import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { createChatRoom, sendSystemMessage } from '../lib/chatService';
 import { showToast } from '../utils/showToastPortal';
+import { 
+  validateBookingPayload, 
+  validateUserInput,
+  normalizeWhatsApp,
+  generateBookingId,
+  calculateResponseDeadline,
+  logValidation,
+  logPayload,
+  logAppwriteResponse
+} from '../services/bookingValidationService';
 
 // Extend window type for global booking tracker
 declare global {
@@ -168,71 +178,84 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       const selectedOption = bookingOptions.find(opt => opt.duration === selectedDuration);
       if (!selectedOption) throw new Error('Invalid duration selected');
 
-      const now = new Date();
-      const responseDeadline = new Date(now.getTime() + 5 * 60 * 1000);
+      // ===== PRE-FLIGHT VALIDATION =====
+      const userInputValidation = validateUserInput({
+        customerName: customerName,
+        customerWhatsApp: customerWhatsApp,
+        duration: selectedDuration,
+        price: selectedOption.price
+      });
 
-      // Generate a client-side bookingId - required attribute
-      let bookingId: string;
-      try {
-        bookingId = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-          ? (crypto as any).randomUUID()
-          : `booking_${Date.now()}`;
-      } catch {
-        bookingId = `booking_${Date.now()}`;
+      if (!userInputValidation.valid) {
+        logValidation('User Input Failed', userInputValidation.errors);
+        alert(userInputValidation.errors!.join('\n'));
+        setIsCreating(false);
+        return;
       }
 
-      // Complete booking data with all required attributes matching APPWRITE_THERAPIST_BOOKINGS_COLLECTION_SCHEMA
-      const bookingData: any = {
-        // ===== REQUIRED FIELDS (Appwrite Schema) =====
-        bookingId, // Required string(36)
-        bookingDate: now.toISOString(), // Required datetime
-        userId: authResult.userId, // Required string(100)
-        status: 'Pending', // Required string(64), default: Pending
-        duration: Number(selectedOption.duration), // Required integer(1-365)
-        providerId: String(therapistId), // Required string(255)
-        providerType: String(providerType || 'therapist'), // Required string(16)
-        providerName: String(therapistName), // Required string(255)
-        service: String(selectedOption.duration), // Required string(16) - '60', '90', or '120'
-        startTime: now.toISOString(), // Required datetime
-        price: Number(Math.round(selectedOption.price / 1000)), // Required integer(0-1000)
-        createdAt: now.toISOString(), // Required datetime
-        responseDeadline: responseDeadline.toISOString(), // Required datetime
+      const now = new Date();
+      const responseDeadline = calculateResponseDeadline();
+      const bookingId = generateBookingId();
+
+      // Normalize WhatsApp
+      const normalizedWhatsApp = normalizeWhatsApp(`${countryCode}${customerWhatsApp}`);
+
+      // ===== BUILD RAW BOOKING DATA =====
+      const rawBookingData: any = {
+        // REQUIRED FIELDS
+        bookingId,
+        bookingDate: now.toISOString(),
+        userId: authResult.userId,
+        status: 'Pending',
+        duration: selectedOption.duration,
+        providerId: therapistId,
+        providerType: providerType || 'therapist',
+        providerName: therapistName,
+        service: String(selectedOption.duration),
+        startTime: now.toISOString(),
+        price: Math.round(selectedOption.price / 1000),
+        createdAt: now.toISOString(),
+        responseDeadline: responseDeadline.toISOString(),
         
-        // ===== OPTIONAL FIELDS =====
-        therapistId: String(therapistId), // Optional - backward compatibility
-        therapistName: String(therapistName), // Optional - backward compatibility
-        therapistType: String(providerType || 'therapist'), // Optional - backward compatibility
-        bookingType: 'immediate', // Optional - booking type
-        totalCost: selectedOption.price, // Optional - full cost before conversion
-        paymentMethod: 'Unpaid', // Optional - default payment status
-        
-        // Customer Information
+        // OPTIONAL FIELDS
+        therapistId: therapistId,
+        therapistName: therapistName,
+        therapistType: providerType || 'therapist',
+        bookingType: 'immediate',
+        totalCost: selectedOption.price,
+        paymentMethod: 'Unpaid',
         customerName: customerName.trim(),
-        customerWhatsApp: `${countryCode}${customerWhatsApp.trim()}`.replace(/\s/g, ''),
-        
-        // Location Information - NEW: Save customer's location details
-        locationType: locationType, // 'hotel', 'villa', or 'home'
-        ...(locationType === 'home' && homeAddress && { address: homeAddress.trim() }),
-        ...(locationType !== 'home' && hotelVillaNameInput && { 
-          hotelVillaName: hotelVillaNameInput.trim(),
-          hotelVillaType: locationType // 'hotel' or 'villa'
-        }),
-        ...(locationType !== 'home' && roomNumber && { roomNumber: roomNumber.trim() }),
-        
-        ...(hotelVillaId && { hotelVillaId }),
-        ...(hotelVillaId && { hotelId: hotelVillaId }), // Map to your hotelId field
-        ...(hotelVillaName && { hotelVillaName }),
-        ...(hotelVillaType && { hotelVillaType }),
-        ...(hotelVillaLocation && { hotelVillaLocation }),
-        
-        // Commission tracking for hotel/villa bookings
-        ...(isHotelVillaBooking && { 
-          commissionStatus: 'pending',
-          therapistStatusLocked: true // Therapist will be busy until commission confirmed
-        })
+        customerWhatsApp: normalizedWhatsApp
       };
 
-      console.log('� STEP 1: Creating immediate booking with data:', bookingData);
+      // Add optional location fields if present
+      if (locationType === 'home' && homeAddress) {
+        rawBookingData.address = homeAddress.trim();
+      }
+      if (locationType !== 'home' && hotelVillaNameInput) {
+        rawBookingData.hotelGuestName = hotelVillaNameInput.trim();
+      }
+      if (locationType !== 'home' && roomNumber) {
+        rawBookingData.hotelRoomNumber = roomNumber.trim();
+      }
+      if (hotelVillaId) {
+        rawBookingData.hotelId = hotelVillaId;
+      }
+
+      // ===== VALIDATE PAYLOAD =====
+      const validation = validateBookingPayload(rawBookingData);
+
+      if (!validation.valid) {
+        logValidation('Payload Validation Failed', validation.errors);
+        alert('Booking validation failed:\n' + validation.errors!.join('\n'));
+        setIsCreating(false);
+        return;
+      }
+
+      const bookingData = validation.payload!;
+      logPayload(bookingData);
+
+      console.log('📤 STEP 1: Creating immediate booking with validated data');
 
       // Create the document using the generated bookingId  
       if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {

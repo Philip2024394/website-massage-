@@ -234,21 +234,31 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
             return;
           }
           
-          const therapist = await databases.getDocument(
-            APPWRITE_CONFIG.databaseId,
-            collectionId,
-            therapistId
-          );
-          if (therapistType === 'place') {
-            if ((therapist as any).openingTime) setOpeningTime((therapist as any).openingTime);
-            if ((therapist as any).closingTime) setClosingTime((therapist as any).closingTime);
-          } else {
-            if (therapist.lastBookingTime) {
-              setLastBookingTime(therapist.lastBookingTime);
+          // Try to fetch schedule info, but don't fail if document not found
+          try {
+            const therapist = await databases.getDocument(
+              APPWRITE_CONFIG.databaseId,
+              collectionId,
+              therapistId
+            );
+            if (therapistType === 'place') {
+              if ((therapist as any).openingTime) setOpeningTime((therapist as any).openingTime);
+              if ((therapist as any).closingTime) setClosingTime((therapist as any).closingTime);
+            } else {
+              if (therapist.lastBookingTime) {
+                setLastBookingTime(therapist.lastBookingTime);
+              }
+            }
+          } catch (docError: any) {
+            // Document not found is OK - we can still create bookings without schedule info
+            if (docError?.code === 404) {
+              console.log('ℹ️ Therapist document not found, using default schedule');
+            } else {
+              console.warn('⚠️ Could not fetch therapist schedule:', docError?.message);
             }
           }
         } catch (error) {
-          console.error('Error fetching therapist schedule:', error);
+          console.error('Error in schedule fetch:', error);
         }
       };
 
