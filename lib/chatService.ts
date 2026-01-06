@@ -216,6 +216,7 @@ export async function sendSystemMessage(
                 senderId: 'system',
                 senderType: MessageSenderType.System,
                 senderName: 'System',
+                message: message.en, // Required field for Appwrite
                 originalText: message.en,
                 originalLanguage: 'en',
                 translatedText: message.id,
