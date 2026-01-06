@@ -183,25 +183,25 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
 
       // Complete booking data with all required attributes matching APPWRITE_THERAPIST_BOOKINGS_COLLECTION_SCHEMA
       const bookingData: any = {
-        // Core required fields
-        bookingId, // Required - unique identifier
-        bookingDate: now.toISOString(), // Required - creation timestamp
-        userId: authResult.userId, // User ID from authenticated session
-        providerId: therapistId, // Required - therapist/place ID
-        providerType: providerType || 'therapist', // Required - 'therapist' or 'place'
-        providerName: therapistName, // Required - name for notifications
-        service: selectedOption.duration.toString(), // Required - enum('60','90','120')
-        startTime: now.toISOString(), // Required - requested start time
-        duration: selectedOption.duration, // Required - numeric minutes
-        status: 'Pending', // Required - enum status value
+        // ===== REQUIRED FIELDS (Appwrite Schema) =====
+        bookingId, // Required string(36)
+        bookingDate: now.toISOString(), // Required datetime
+        userId: authResult.userId, // Required string(100)
+        status: 'Pending', // Required string(64), default: Pending
+        duration: Number(selectedOption.duration), // Required integer(1-365)
+        providerId: String(therapistId), // Required string(255)
+        providerType: String(providerType || 'therapist'), // Required string(16)
+        providerName: String(therapistName), // Required string(255)
+        service: String(selectedOption.duration), // Required string(16) - '60', '90', or '120'
+        startTime: now.toISOString(), // Required datetime
+        price: Number(Math.round(selectedOption.price / 1000)), // Required integer(0-1000)
+        createdAt: now.toISOString(), // Required datetime
+        responseDeadline: responseDeadline.toISOString(), // Required datetime
         
-        // Additional fields for compatibility
-        therapistId, // Keep for backward compatibility
-        therapistName, // Keep for backward compatibility  
-        therapistType: providerType || 'therapist', // Keep for backward compatibility
-        price: Math.round(selectedOption.price / 1000), // Convert to thousands (IDR to k)
-        createdAt: now.toISOString(), // Additional timestamp field
-        responseDeadline: responseDeadline.toISOString(), // SLA deadline
+        // ===== OPTIONAL FIELDS =====
+        therapistId: String(therapistId), // Optional - backward compatibility
+        therapistName: String(therapistName), // Optional - backward compatibility
+        therapistType: String(providerType || 'therapist'), // Optional - backward compatibility
         bookingType: 'immediate', // Optional - booking type
         totalCost: selectedOption.price, // Optional - full cost before conversion
         paymentMethod: 'Unpaid', // Optional - default payment status

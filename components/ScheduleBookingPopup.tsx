@@ -384,18 +384,18 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       // Match exact Appwrite schema: providerId, providerType, providerName, service, startTime are REQUIRED
       
       const bookingData: any = {
-        // Required fields matching Appwrite schema
-        bookingId: bookingId,
+        // ===== REQUIRED FIELDS (Appwrite Schema) =====
+        bookingId: String(bookingId), // Required string(36)
         bookingDate: new Date().toISOString(), // Required datetime
-        userId: authResult.userId, // User ID from authenticated session
-        status: 'Pending', // Required string (default: 'Pending')
-        duration: finalDuration, // Required integer (1-365)
-        providerId: therapistId, // Required - Full therapist/place ID (now 255 chars)
-        providerType: therapistType, // Required - 'therapist' or 'place'
-        providerName: therapistName, // Required - therapist/place name
-        service: String(finalDuration), // Required - '60', '90', or '120'
+        userId: String(authResult.userId), // Required string(100)
+        status: 'Pending', // Required string(64), default: Pending
+        duration: Number(finalDuration), // Required integer(1-365)
+        providerId: String(therapistId), // Required string(255)
+        providerType: String(therapistType), // Required string(16)
+        providerName: String(therapistName), // Required string(255)
+        service: String(finalDuration), // Required string(16) - '60', '90', or '120'
         startTime: scheduledTime.toISOString(), // Required datetime
-        price: Math.round(finalPrice / 1000), // Required integer (0-1000)
+        price: Number(Math.round(finalPrice / 1000)), // Required integer(0-1000)
         createdAt: new Date().toISOString(), // Required datetime
         responseDeadline: responseDeadline.toISOString(), // Required datetime
         
