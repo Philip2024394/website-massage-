@@ -359,7 +359,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
           customerName: customerName,
           customerLanguage: 'en', // Default to English
           customerPhoto: '', // No avatar for immediate bookings
-          therapistId: therapistId.toString(), // ✅ Always string type
+          therapistId: Number(therapistId), // ✅ CRITICAL: Must be integer (numeric userId)
           therapistName: therapistName,
           therapistLanguage: 'id', // Default to Indonesian for providers
           therapistType: (providerType || 'therapist') as 'therapist' | 'place',

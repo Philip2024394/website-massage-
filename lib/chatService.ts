@@ -31,7 +31,7 @@ export async function createChatRoom(data: {
     customerName: string;
     customerLanguage: 'en' | 'id';
     customerPhoto?: string;
-    therapistId: string | number; // Accept both, normalize to string
+    therapistId: string | number; // Must be numeric userId (integer)
     therapistName: string;
     therapistLanguage: 'en' | 'id';
     therapistType: 'therapist' | 'place';
@@ -39,12 +39,22 @@ export async function createChatRoom(data: {
     expiresAt: string;
 }): Promise<ChatRoom> {
     try {
-        // Normalize therapistId to string for consistency
-        const normalizedTherapistId = typeof data.therapistId === 'number' 
-            ? data.therapistId.toString() 
+        // CRITICAL: therapistId MUST be integer (numeric Appwrite userId)
+        const therapistIdNumber = typeof data.therapistId === 'string' 
+            ? parseInt(data.therapistId, 10)
             : data.therapistId;
         
-        console.log('🔧 Creating chat room with therapistId:', normalizedTherapistId, '(type:', typeof normalizedTherapistId, ')');
+        // Validate therapistId is a valid integer
+        if (!Number.isInteger(therapistIdNumber) || therapistIdNumber <= 0) {
+            throw new Error(`Invalid therapistId: expected integer userId, got ${data.therapistId} (type: ${typeof data.therapistId})`);
+        }
+        
+        console.debug('[CHAT ROOM CREATE]', {
+            therapistId: therapistIdNumber,
+            typeofTherapistId: typeof therapistIdNumber,
+            originalValue: data.therapistId,
+            isInteger: Number.isInteger(therapistIdNumber)
+        });
         
         // Prepare untrusted input from caller
         const untrustedPayload = {
@@ -53,7 +63,7 @@ export async function createChatRoom(data: {
             customerName: data.customerName,
             customerLanguage: data.customerLanguage,
             customerPhoto: data.customerPhoto || '',
-            therapistId: normalizedTherapistId, // ✅ Always string
+            therapistId: therapistIdNumber, // ✅ Always integer (numeric userId)
             therapistName: data.therapistName,
             therapistLanguage: data.therapistLanguage,
             therapistType: data.therapistType,

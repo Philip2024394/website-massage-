@@ -601,7 +601,7 @@ You can contact the customer immediately!`;
             customerName: customerName,
             customerLanguage: 'en', // Default to English for scheduled bookings
             customerPhoto: selectedAvatar, // Use selected avatar for chat profile
-            therapistId: therapistId.toString(), // ✅ Always string type
+            therapistId: Number(therapistId), // ✅ CRITICAL: Must be integer (numeric userId)
             therapistName: therapistName,
             therapistLanguage: 'id', // Default to Indonesian for providers
             therapistType: therapistType,
