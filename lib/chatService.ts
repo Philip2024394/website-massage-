@@ -201,43 +201,45 @@ export async function sendMessage(data: {
 /**
  * Send a system message (no translation needed)
  */
+/**
+ * Send a system message to a chat room
+ * Uses messagingService for proper field handling
+ */
 export async function sendSystemMessage(
     roomId: string,
     message: { en: string; id: string }
 ): Promise<void> {
     try {
-        // Send in both languages - all required fields for Appwrite chat_messages collection
-        await databases.createDocument(
-            DATABASE_ID,
-            CHAT_MESSAGES_COLLECTION,
-            ID.unique(),
-            {
-                roomId,
-                conversationId: roomId, // Required field - use roomId as conversationId
-                senderId: 'system',
-                senderType: 'system', // Required field - must be one of: customer, therapist, place, system
-                senderName: 'System',
-                recipientId: 'all', // Required field for Appwrite
-                recipientName: 'All', // Required field for Appwrite
-                recipientType: 'admin', // Required field for Appwrite - must be one of: admin/therapist/place/hotel/villa/user/agent
-                receiverId: 'all', // Required field for Appwrite
-                receivername: 'All', // Required field for Appwrite
-                messageType: 'text', // Required field for Appwrite
-                message: message.en, // Required field for Appwrite
-                content: message.en, // Required field for Appwrite
-                bookingid: '', // Required field for Appwrite
-                originalMessageId: '', // Required field for Appwrite
-                expiresat: '', // Required field for Appwrite
-                archivedBy: '', // Required field for Appwrite
-                sessionId: '', // Required field for Appwrite
-                originalLanguage: 'en',
-                translatedText: message.id,
-                translatedLanguage: 'id',
-                read: false, // Changed from isRead to read
-                isSystemMessage: true,
-                createdAt: new Date().toISOString()
-            }
-        );
+        const { messagingService } = await import('./appwrite/services/messaging.service');
+        
+        // Use the proper messaging service which handles all required fields
+        await messagingService.sendMessage({
+            roomId,
+            conversationId: roomId,
+            senderId: 'system',
+            senderType: 'system',
+            senderName: 'System',
+            recipientId: 'all',
+            recipientName: 'All',
+            recipientType: 'user',
+            receiverId: 'all',
+            receivername: 'All',
+            messageType: 'text',
+            content: message.en,
+            message: message.en,
+            originalLanguage: 'en',
+            translatedText: message.id,
+            translatedLanguage: 'id',
+            isSystemMessage: true,
+            bookingid: '',
+            originalMessageId: '',
+            expiresat: '',
+            archivedBy: '',
+            sessionId: roomId,
+            read: false
+        });
+        
+        console.log('✅ System message sent successfully');
     } catch (error) {
         console.error('Error sending system message:', error);
         throw error;
