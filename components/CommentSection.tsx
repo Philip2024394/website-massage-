@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Send, MoreHorizontal, ThumbsUp, ThumbsUp as ThumbsDown } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send, Menu, ThumbsUp } from 'lucide-react';
 
 interface Comment {
   id: string;
@@ -91,7 +91,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, postType, initi
         </div>
         
         <button className="p-1 hover:bg-gray-200 rounded-full transition-all text-gray-500">
-          <MoreVertical className="w-4 h-4" />
+          <Menu className="w-4 h-4" />
         </button>
       </div>
 

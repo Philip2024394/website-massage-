@@ -1,5 +1,5 @@
 // Google Maps API Configuration
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyBzcGi0AcIHpgJTayMdc06ayS_KwMsDqKU';
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyCQkZqabycPDi9F01BAmDYFL6toOGEStgI';
 
 // Appwrite Configuration
 export const APPWRITE_CONFIG = {

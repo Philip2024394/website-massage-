@@ -22,6 +22,12 @@ export const hotelService = {
                     name: error.name
                 });
                 
+                // Handle permission errors gracefully
+                if (error.message.includes('missing scopes') || error.message.includes('collections.read')) {
+                    console.warn('⚠️ Hotels collection access denied - user permissions insufficient. Returning empty array.');
+                    return [];
+                }
+                
                 if (error.message.includes('Collection with the requested ID could not be found')) {
                     console.error('💡 Hotels collection not found. Check collection ID in appwrite.config.ts');
                 }

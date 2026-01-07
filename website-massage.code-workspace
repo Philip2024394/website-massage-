@@ -1,7 +1,33 @@
 {
   "folders": [
-    { "path": "apps" },
-    { "path": "packages" }
+    { 
+      "path": ".",
+      "name": "Root"
+    }
   ],
-  "settings": {}
+  "settings": {
+    "files.watcherExclude": {
+      "**/app/apps/**": true,
+      "**/app/packages/**": true,
+      "**/node_modules/**": true,
+      "**/dist/**": true,
+      "**/build/**": true,
+      "**/.next/**": true,
+      "**/out/**": true,
+      "**/coverage/**": true,
+      "**/*-debug*.html": true,
+      "**/*-test*.html": true,
+      "**/check-*.html": true,
+      "**/test-*.html": true,
+      "**/diagnose-*.html": true,
+      "**/populate-*.html": true,
+      "**/debug-*.html": true,
+      "**/.cache/**": true,
+      "**/.vite/**": true
+    },
+    "files.exclude": {
+      "**/app/apps": true,
+      "**/app/packages": true
+    }
+  }
 }

@@ -124,7 +124,7 @@ export async function sendMessage(data: {
                 conversationId: data.roomId,
                 recipientId: 'customer', // This seems to be a different chat structure
                 recipientName: 'Customer',
-                recipientType: 'user',
+                recipientType: 'admin', // Try admin instead of user
                 content: finalText
             });
 
@@ -221,7 +221,7 @@ export async function sendSystemMessage(
             senderName: 'System',
             recipientId: 'all',
             recipientName: 'All',
-            recipientType: 'user',
+            recipientType: 'admin', // Try admin instead of user
             receiverId: 'all',
             receivername: 'All',
             messageType: 'text',

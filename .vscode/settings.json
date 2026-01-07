@@ -6,7 +6,20 @@
     "**/.next/**": true,
     "**/out/**": true,
     "**/coverage/**": true,
-    "**/tests/html-debug/**": true
+    "**/tests/html-debug/**": true,
+    "**/*-debug*.html": true,
+    "**/*-test*.html": true,
+    "**/check-*.html": true,
+    "**/test-*.html": true,
+    "**/diagnose-*.html": true,
+    "**/populate-*.html": true,
+    "**/debug-*.html": true,
+    "**/.cache/**": true,
+    "**/.vite/**": true,
+    "**/node_modules/.cache/**": true,
+    "**/.turbo/**": true,
+    "**/pnpm-lock.yaml": true,
+    "**/*.tsbuildinfo": true
   },
 
   "search.exclude": {
@@ -15,18 +28,38 @@
     "**/build/**": true,
     "**/.next/**": true,
     "**/out/**": true,
-    "**/tests/html-debug/**": true
+    "**/tests/html-debug/**": true,
+    "**/*-debug*.html": true,
+    "**/*-test*.html": true,
+    "**/check-*.html": true,
+    "**/test-*.html": true,
+    "**/diagnose-*.html": true,
+    "**/populate-*.html": true,
+    "**/debug-*.html": true,
+    "**/.cache/**": true,
+    "**/.vite/**": true,
+    "**/pnpm-lock.yaml": true
   },
 
   "files.exclude": {
-    "**/tests/html-debug/**": true
+    "**/tests/html-debug/**": true,
+    "**/*-debug*.html": true,
+    "**/*-test*.html": true,
+    "**/check-*.html": true,
+    "**/test-*.html": true,
+    "**/diagnose-*.html": true,
+    "**/populate-*.html": true,
+    "**/debug-*.html": true
   },
 
   "typescript.tsserver.maxTsServerMemory": 8192,
+  "files.maxMemoryForLargeFilesMB": 8192,
 
   "editor.codeLens": false,
-  "npm.enableScriptExplorer": false,
   "git.autorefresh": false,
-  "typescript.surveys.enabled": false
+  "typescript.surveys.enabled": false,
+  "editor.semanticHighlighting.enabled": false,
+  "editor.minimap.enabled": false,
+  "breadcrumbs.enabled": false
 }
 
