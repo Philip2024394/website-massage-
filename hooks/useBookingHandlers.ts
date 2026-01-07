@@ -162,7 +162,7 @@ export const useBookingHandlers = ({
 🔔 Jika tidak ada respon, kami akan cari terapis tersedia terdekat.`
             };
 
-            await sendSystemMessage(chatRoom.$id!, systemMessages);
+            await sendSystemMessage(chatRoom.$id!, systemMessages, provider.id, currentUserId);
             console.log('✅ Enhanced multilingual system message sent');
 
             // 🔊 STEP 3: Play professional notification sound sequence

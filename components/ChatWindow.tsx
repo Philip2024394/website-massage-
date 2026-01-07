@@ -498,7 +498,7 @@ Please share your LIVE location so the therapist can verify the service address 
 
 This is a one-time security measure to prevent spam bookings.`;
 
-            await sendSystemMessage(chatRoom.$id, { en: locationMessage, id: locationMessage });
+            await sendSystemMessage(chatRoom.$id, { en: locationMessage, id: locationMessage }, 'system', 'system');
 
             // Start 5-minute timeout
             const timeout = scheduleLocationTimeout(
@@ -584,7 +584,7 @@ This is a one-time security measure to prevent spam bookings.`;
 Accuracy: ${formatAccuracy(location.accuracy)}
 ${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low. Therapist may request verification.' : ''}`;
 
-      await sendSystemMessage(chatRoomId, { en: successMessage, id: successMessage });
+      await sendSystemMessage(chatRoomId, { en: successMessage, id: successMessage }, 'system', 'system');
 
       // Update UI state
       setLocationVerified(true);
@@ -602,7 +602,7 @@ ${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low.
         await cancelBookingLocationDenied(bookingId, chatRoomId);
 
         const cancelMessage = '🚫 Booking cancelled: GPS permission denied. Location sharing is required for security purposes.';
-        await sendSystemMessage(chatRoomId, { en: cancelMessage, id: cancelMessage });
+        await sendSystemMessage(chatRoomId, { en: cancelMessage, id: cancelMessage }, 'system', 'system');
 
         setLocationError('Booking cancelled: GPS permission required');
         setTimeout(() => onClose(), 3000);
@@ -654,7 +654,7 @@ ${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low.
               await sendSystemMessage(chatRoomId, {
                 en: notification.chatMessage.text,
                 id: notification.chatMessage.text
-              });
+              }, 'system', 'system');
               console.log('✅ System message sent to chat:', notification.chatMessage.text);
             } catch (error) {
               console.error('❌ Failed to send system message:', error);
@@ -822,9 +822,7 @@ ${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low.
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className={`bg-white rounded-lg shadow-xl w-full max-w-md h-full max-h-[600px] flex flex-col ${
-        isMinimized ? 'h-16' : ''
-      }`}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md h-full max-h-[600px] flex flex-col">
         
         {/* HEADER */}
         <div className="bg-orange-600 text-white px-4 py-4 rounded-t-lg flex items-center justify-between">
@@ -861,6 +859,19 @@ ${!isAccuracyAcceptable(location.accuracy) ? '\n⚠️ Location accuracy is low.
             </button>
           </div>
         </div>
+
+        {/* Booking Info Banner (if booking data available) */}
+        {(selectedService || currentBooking) && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-sm">
+            <div className="flex items-center justify-between text-amber-900">
+              <span>📅 Booking #{currentBooking?.$id?.slice(-6) || 'NEW'}</span>
+              <span>
+                {selectedService?.duration || currentBooking?.duration || '60'} min • 
+                Rp {(currentBooking?.totalPrice || 150000)?.toLocaleString('id-ID')}
+              </span>
+            </div>
+          </div>
+        )}
 
         {!isMinimized && (
           <>

@@ -5,7 +5,7 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
-import { createChatRoom, sendSystemMessage } from '../lib/chatService';
+import { createChatRoom, sendSystemMessage, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
 
 // Avatar options for customer chat profile
@@ -352,6 +352,15 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       
       console.log(`✅ Authentication confirmed for scheduled booking (userId: ${authResult.userId})`);
 
+      // 🔥 FIX 1: Define userId safely with guard
+      const userId = authResult.userId;
+      if (!userId) {
+        console.warn('⚠️ No userId available — skipping notification');
+        showToast('Authentication issue. Please try again.', 'error');
+        setIsCreating(false);
+        return;
+      }
+
       // For immediate bookings, use current time; for scheduled, use selected time
       const scheduledTime = new Date();
       if (!isImmediateBooking && selectedTime) {
@@ -587,17 +596,18 @@ You can contact the customer immediately!`;
 
         const message = therapistMembershipTier === 'free' ? proMessage : plusMessage;
 
-        // Create chat room and send booking notification
+        // 🔥 FIX 2: Chat creation MUST be isolated with try/catch
         console.log('💬 Creating chat room for booking...');
+        let chatRoom;
         
         try {
           // Create or get existing chat room
           const expiresAt = new Date();
           expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 minutes for response
           
-          const chatRoom = await createChatRoom({
+          chatRoom = await createChatRoom({
             bookingId: bookingResponse.$id,
-            customerId: 'guest', // Guest user for now
+            customerId: userId, // Use proper userId instead of 'guest'
             customerName: customerName,
             customerLanguage: 'en', // Default to English for scheduled bookings
             customerPhoto: selectedAvatar, // Use selected avatar for chat profile
@@ -611,66 +621,86 @@ You can contact the customer immediately!`;
           
           console.log('✅ Chat room created:', chatRoom.$id);
           
-          // Send system message with booking details to the chat room
-          if (chatRoom?.$id) await sendSystemMessage(chatRoom.$id, { en: message, id: message });
+          // RESTORED: Send welcome message first
+          try {
+            await sendWelcomeMessage(chatRoom.$id, therapistName, userId);
+            console.log('✅ Welcome message sent');
+          } catch (welcomeErr) {
+            console.warn('⚠️ Welcome message failed:', welcomeErr);
+          }
+
+          // RESTORED: Send booking received message automatically
+          try {
+            await sendBookingReceivedMessage(chatRoom.$id, userId);
+            console.log('✅ Booking received message sent');
+          } catch (bookingErr) {
+            console.warn('⚠️ Booking received message failed:', bookingErr);
+          }
           
-          console.log('✅ Booking notification sent to therapist');
-          
-          // Open in-app chat with booking details
-          console.log('💬 Dispatching openChat event with data:', {
-            therapistId,
-            therapistName,
-            bookingId: bookingResponse.$id,
-            chatRoomId: chatRoom.$id
-          });
-          
-          // Small delay to ensure App.tsx listener is ready
-          setTimeout(() => {
-            // First dispatch the scheduled booking event for chat status tracking
-            window.dispatchEvent(new CustomEvent('scheduledBookingCreated', {
+          // 🔥 FIX 3: Dispatch chat-open event IMMEDIATELY after chat creation
+          window.dispatchEvent(
+            new CustomEvent('openChat', {
               detail: {
-                bookingId: bookingResponse.$id,
-                therapistId: therapistId,
-                therapistName: therapistName,
-                bookingType: isImmediateBooking ? 'immediate' : 'scheduled'
+                roomId: chatRoom.$id,
+                bookingId: booking.$id,
+                providerId: therapistId,
+                providerName: therapistName,
+                providerImage: therapist?.profileImage || therapist?.photo || '',
+                therapistId,
+                therapistName,
+                source: 'booking',
+                autoOpen: true
               }
-            }));
-            
-            // Then open the chat window with standardized payload
-            const openChatPayload = {
-              chatSessionId: chatRoom.$id,
-              therapistName: therapistName,
-              therapistPhoto: profilePicture || '',
-              therapistId: therapistId.toString(), // ✅ Always string
-              providerId: therapistId.toString(),
-              providerName: therapistName,
-              providerPhoto: profilePicture || '',
-              providerStatus: therapistStatus || 'available' as const,
-              providerRating: providerRating || 0,
-              pricing: pricing || { '60': 250000, '90': 350000, '120': 450000 },
-              bookingId: bookingResponse.$id,
-              customerName: customerName,
-              customerWhatsApp: customerWhatsApp
-            };
-            
-            console.log('🔥 Dispatching openChat event with payload:', openChatPayload);
-            window.dispatchEvent(new CustomEvent('openChat', { detail: openChatPayload }));
-            console.log('✅ scheduledBookingCreated and openChat events dispatched');
-          }, 100);
+            })
+          );
+          console.log('✅ Chat window opened immediately via event dispatch');
           
-          showToast('✅ Booking saved! Opening chat...', 'success');
-          
-        } catch (chatError: any) {
-          console.error('❌ Error creating chat/notification:', chatError);
-          // Still show success for booking, but note chat issue
-          showToast('✅ Booking saved! (Chat setup pending)', 'success');
+        } catch (chatErr) {
+          console.error('❌ Chat creation failed', chatErr);
+          // Show toast but don't block the booking process
+          showToast('Booking saved but chat failed to open. Please contact support.', 'warning');
+          setIsCreating(false);
+          return;
         }
         
-        // Close popup after showing success message
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 2000);
+        // 🔥 FIX 4: Move notifications AFTER chat opens (non-blocking)
+        // Send system message and notifications in background (don't block chat)
+        setTimeout(async () => {
+          try {
+            if (userId && chatRoom?.$id) {
+              // RESTORED: Send booking received message using template
+              const { SYSTEM_MESSAGE_TEMPLATES } = await import('../lib/chatService');
+              await sendSystemMessage(chatRoom.$id, SYSTEM_MESSAGE_TEMPLATES.BOOKING_RECEIVED, therapistId, userId);
+              console.log('✅ Booking received message sent to chat');
+              
+              // Original booking notification to therapist still sent
+              await sendSystemMessage(chatRoom.$id, { en: message, id: message }, therapistId, userId);
+              console.log('✅ Booking notification sent to therapist');
+              
+              // Create chat notification if possible
+              // await createChatNotification(userId, chatRoom.$id);
+            }
+          } catch (notificationErr) {
+            console.warn('⚠️ Notification failed — chat already open', notificationErr);
+          }
+        }, 100); // Small delay to ensure chat is fully open
+          
+          console.log('✅ Booking and chat created successfully');
+          
+          // Success feedback
+          showToast(
+            isImmediateBooking 
+              ? t.bookingPage.bookingSuccessTitle 
+              : t.bookingPage.bookingSuccessTitle, 
+            'success'
+          );
+          
+          // Close popup after showing success message
+          setTimeout(() => {
+            onClose();
+            resetForm();
+          }, 2000);
+          
       } catch (saveError: any) {
         console.error('❌ Error saving scheduled booking to Appwrite:', saveError);
         console.error('❌ Error details:', {

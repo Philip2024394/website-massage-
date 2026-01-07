@@ -22,6 +22,83 @@ const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const CHAT_ROOMS_COLLECTION = APPWRITE_CONFIG.collections.chatRooms;
 const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
 
+// FIXED: Admin ID for system messages (required by Appwrite schema)
+const INDASTREET_ADMIN_ID = "693cfadf000997d3cd66"; // Use actual admin user ID
+
+/**
+ * RESTORED: Original system message templates
+ */
+export const SYSTEM_MESSAGE_TEMPLATES = {
+    WELCOME: (therapistName: string) => ({
+        en: `${therapistName}: Welcome to my chat`,
+        id: `${therapistName}: Selamat datang di chat saya`
+    }),
+    
+    BOOKING_RECEIVED: {
+        en: "Waiting for therapist response (5 minutes)",
+        id: "Menunggu respon terapis (5 menit)"
+    },
+    
+    TIMEOUT_SEARCHING: {
+        en: "Searching for a new therapist",
+        id: "Mencari terapis baru"
+    },
+    
+    THERAPIST_ACCEPTED: {
+        en: "Therapist on the way",
+        id: "Terapis dalam perjalanan"
+    },
+    
+    THERAPIST_ON_WAY: {
+        en: "Therapist is on the way. Please ensure location is correct and accessible.",
+        id: "Terapis sedang dalam perjalanan. Pastikan lokasi benar dan dapat diakses."
+    },
+    
+    BOOKING_CANCELLED: {
+        en: "This booking has been cancelled. If you need help, Indastreet Admin is available in this chat.",
+        id: "Booking ini telah dibatalkan. Jika Anda butuh bantuan, Admin Indastreet tersedia di chat ini."
+    },
+    
+    SERVICE_COMPLETED: {
+        en: "Service completed. Thank you for using Indastreet Massage.",
+        id: "Layanan selesai. Terima kasih telah menggunakan Indastreet Massage."
+    }
+};
+
+/**
+ * RESTORED: Send welcome message automatically when chat opens
+ */
+export async function sendWelcomeMessage(roomId: string, therapistName: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.WELCOME(therapistName), recipientUserId);
+}
+
+/**
+ * RESTORED: Booking status system message functions
+ */
+export async function sendBookingReceivedMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.BOOKING_RECEIVED, recipientUserId);
+}
+
+export async function sendTherapistSearchingMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.TIMEOUT_SEARCHING, recipientUserId);
+}
+
+export async function sendTherapistAcceptedMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.THERAPIST_ACCEPTED, recipientUserId);
+}
+
+export async function sendTherapistOnWayMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.THERAPIST_ON_WAY, recipientUserId);
+}
+
+export async function sendBookingCancelledMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.BOOKING_CANCELLED, recipientUserId);
+}
+
+export async function sendServiceCompletedMessage(roomId: string, recipientUserId?: string): Promise<void> {
+    await sendSystemMessage(roomId, SYSTEM_MESSAGE_TEMPLATES.SERVICE_COMPLETED, recipientUserId);
+}
+
 /**
  * Create a new chat room for a booking
  */
@@ -124,7 +201,7 @@ export async function sendMessage(data: {
                 conversationId: data.roomId,
                 recipientId: 'customer', // This seems to be a different chat structure
                 recipientName: 'Customer',
-                recipientType: 'admin', // Try admin instead of user
+                recipientType: 'user', // Fixed: use 'user' instead of 'admin' for Appwrite validation
                 content: finalText
             });
 
@@ -204,26 +281,47 @@ export async function sendMessage(data: {
 /**
  * Send a system message to a chat room
  * Uses messagingService for proper field handling
+ * CRITICAL: recipientId MUST be a real numeric userId, NEVER "all"
  */
 export async function sendSystemMessage(
     roomId: string,
-    message: { en: string; id: string }
+    message: { en: string; id: string },
+    recipientUserId?: string | number,
+    senderUserId?: string | number
 ): Promise<void> {
     try {
         const { messagingService } = await import('./appwrite/services/messaging.service');
         
-        // Use the proper messaging service which handles all required fields
+        // CRITICAL FIX: Use actual user IDs, never "all" or "system"
+        let actualRecipientId: string;
+        let actualSenderId: string;
+        
+        if (recipientUserId) {
+            actualRecipientId = String(recipientUserId);
+        } else {
+            // FIXED: Use admin ID instead of "system"
+            actualRecipientId = INDASTREET_ADMIN_ID;
+        }
+        
+        // FIXED: Always use admin ID for system messages
+        actualSenderId = INDASTREET_ADMIN_ID;
+        
+        // MANDATORY: Validate recipientId is not "all"
+        if (actualRecipientId === 'all') {
+            throw new Error('Invalid recipientId: "all" is not allowed. Must be a real numeric userId.');
+        }
+        
+        console.log('[SYSTEM MESSAGE] Using admin sender - recipientId:', actualRecipientId, 'senderId:', actualSenderId);
+        
+        // FIXED: Use admin sender for all system messages
         await messagingService.sendMessage({
             roomId,
-            conversationId: roomId,
-            senderId: 'system',
-            senderType: 'system',
-            senderName: 'System',
-            recipientId: 'all',
-            recipientName: 'All',
-            recipientType: 'admin', // Try admin instead of user
-            receiverId: 'all',
-            receivername: 'All',
+            senderId: actualSenderId,
+            senderType: 'admin', // FIXED: Use admin instead of system
+            senderName: 'Indastreet System',
+            recipientId: actualRecipientId,
+            recipientName: actualRecipientId === INDASTREET_ADMIN_ID ? 'Indastreet System' : 'User',
+            recipientType: actualRecipientId === INDASTREET_ADMIN_ID ? 'admin' : 'user', // FIXED: Valid enum values only
             messageType: 'text',
             content: message.en,
             message: message.en,

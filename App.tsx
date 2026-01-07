@@ -214,11 +214,36 @@ const App = () => {
     // Listen for openChat events from booking system
     useEffect(() => {
         const handleOpenChat = (event: CustomEvent) => {
-            console.log('� STEP 7: App.tsx openChat event received');
+            console.log('🔥 STEP 7: App.tsx openChat event received');
             console.log('📦 Event detail payload:', event.detail);
-            console.log('✅ Setting chatInfo state...');
-            setChatInfo(event.detail);
+            
+            const detail = event.detail;
+            const roomId = detail.roomId;
+            const providerId = detail.providerId || detail.therapistId;
+            const providerName = detail.providerName || detail.therapistName;
+            const providerImage = detail.providerImage || detail.therapistPhoto || '';
+            
+            // RESTORED: Build complete chat info with provider context
+            const chatInfo = {
+                chatSessionId: roomId,
+                therapistId: providerId,
+                therapistName: providerName,
+                therapistPhoto: providerImage,
+                providerId: providerId,
+                providerName: providerName,
+                providerPhoto: providerImage,
+                providerStatus: 'available' as const,
+                providerRating: 4.5,
+                pricing: { '60': 150000, '90': 225000, '120': 300000 },
+                bookingId: detail.bookingId || '',
+                customerName: detail.customerName || '',
+                customerWhatsApp: detail.customerWhatsApp || ''
+            };
+            
+            console.log('✅ Setting chatInfo with provider context:', chatInfo);
+            setChatInfo(chatInfo);
             setIsChatOpen(true);
+            
             console.log('✅ STEP 7 COMPLETE: Chat window state updated (isChatOpen=true)');
         };
 

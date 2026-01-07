@@ -32,13 +32,19 @@ export const SenderType = {
   CUSTOMER: 'customer',
   THERAPIST: 'therapist',
   PLACE: 'place',
+  ADMIN: 'admin', // FIXED: Use admin instead of system
+  TEXT: 'text',
+  IMAGE: 'image',
+  FILE: 'file',
+  BOOKING: 'booking',
   SYSTEM: 'system',
 } as const;
 
 export type SenderTypeValue = typeof SenderType[keyof typeof SenderType];
 
 /**
- * Message Type - Valid values for messageType attribute
+ * Message Type - Valid message content types
+ * Used in chat_messages collection messageType attribute
  */
 export const MessageType = {
   TEXT: 'text',
@@ -46,6 +52,7 @@ export const MessageType = {
   FILE: 'file',
   BOOKING: 'booking',
   SYSTEM: 'system',
+  NOTIFICATION: 'notification',
 } as const;
 
 export type MessageTypeValue = typeof MessageType[keyof typeof MessageType];
@@ -142,6 +149,7 @@ export function normalizeRecipientType(value: string | undefined): RecipientType
   
   // Common mistakes mapping
   const mappings: Record<string, RecipientTypeValue> = {
+    'system': RecipientType.ADMIN, // Map system to admin (system not allowed in Appwrite schema)
     'customer': RecipientType.USER,
     'buyer': RecipientType.USER,
     'client': RecipientType.USER,

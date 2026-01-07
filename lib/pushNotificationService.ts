@@ -24,7 +24,7 @@ const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05';
 
 // Subscription status types
 export type SubscriptionStatus = 'active' | 'revoked' | 'expired' | 'blocked';
-export type DeviceType = 'mobile' | 'desktop' | 'tablet' | 'unknown';
+export type DeviceType = 'mobile' | 'desktop' | 'tablet';
 export type Platform = 'web' | 'android' | 'ios' | 'desktop';
 export type SubscriptionType = 'customer' | 'therapist' | 'admin';
 
@@ -68,7 +68,9 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
-  return outputArray;
+  
+  // Ensure we return a proper Uint8Array with ArrayBuffer
+  return new Uint8Array(outputArray);
 }
 
 /**
@@ -190,7 +192,7 @@ export async function subscribeToPush(
     // Subscribe to push
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
     });
 
     console.log('✅ Subscribed to push notifications:', subscription.endpoint);
@@ -256,7 +258,7 @@ async function storePushSubscription(
     
     // Prepare subscription data matching Appwrite schema
     const subscriptionData: any = {
-      subscriptionId: Date.now(), // Unique subscription ID
+      subscriptionId: Math.floor(Math.random() * 1000000) + 1, // Random number 1-1,000,000 (Appwrite limit)
       userId: userId || null, // String type in Appwrite (nullable)
       subscriptionType: role,
       subscriptionStatus: 'active' as SubscriptionStatus,
@@ -580,7 +582,6 @@ export async function showTestNotification(): Promise<void> {
       body: 'Push notifications are working! 🎉',
       icon: '/icon-192.png',
       badge: '/badge-72.png',
-      vibrate: [200, 100, 200],
       tag: 'test-notification',
       requireInteraction: false
     });
@@ -640,7 +641,6 @@ export async function triggerLocalNotification(
       body,
       icon: '/icon-192.png',
       badge: '/badge-72.png',
-      vibrate: vibrationPatterns[priority],
       tag: `booking-${bookingId}`,
       requireInteraction: priority === 'critical',
       data: {

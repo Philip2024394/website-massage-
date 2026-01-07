@@ -126,6 +126,16 @@ export const messagingService = {
             const senderId = typeof messageData?.senderId === 'object' ? messageData.senderId.id : messageData.senderId;
             const recipientId = typeof messageData?.recipientId === 'object' ? messageData.recipientId.id : messageData.recipientId;
 
+            // CRITICAL FIX: Validate recipientId is never "all" and is properly formatted
+            if (recipientId === 'all') {
+                throw new Error('❌ MESSAGING SERVICE: recipientId cannot be "all". Must be a real numeric userId or "system".');
+            }
+            
+            // CRITICAL FIX: Validate recipientId is numeric or system
+            if (recipientId !== 'system' && !Number.isInteger(Number(recipientId))) {
+                throw new Error(`❌ MESSAGING SERVICE: Invalid recipientId "${recipientId}". Must be a numeric userId or "system".`);
+            }
+
             const conversationId = messageData.conversationId || this.generateConversationId(senderId, recipientId);
             
             console.log('[MESSAGING SERVICE] Normalized IDs - sender:', senderId, 'recipient:', recipientId);
@@ -140,14 +150,14 @@ export const messagingService = {
             
             try {
                 normalizedSenderType = normalizeSenderType(messageData.senderType, senderId);
-                normalizedRecipientType = normalizeRecipientType(messageData.recipientType);
+                normalizedRecipientType = normalizeRecipientType(messageData.recipientType === 'admin' ? 'user' : messageData.recipientType);
             } catch (enumError) {
                 throw new Error(`❌ MESSAGING SERVICE: Invalid enum value - ${enumError.message}`);
             }
             
             // Additional enum validation - reject anything not in allowed lists
-            const allowedRecipientTypes: RecipientTypeValue[] = ['admin', 'therapist', 'place', 'hotel', 'villa', 'user', 'agent'];
-            const allowedSenderTypes: SenderTypeValue[] = ['customer', 'therapist', 'place', 'system'];
+            const allowedRecipientTypes: RecipientTypeValue[] = ['user', 'therapist', 'place', 'hotel', 'villa', 'agent', 'admin'];
+            const allowedSenderTypes: SenderTypeValue[] = ['customer', 'therapist', 'place', 'admin'];
             
             if (!allowedRecipientTypes.includes(normalizedRecipientType)) {
                 throw new Error(`❌ MESSAGING SERVICE: Invalid recipientType "${normalizedRecipientType}". Allowed: ${allowedRecipientTypes.join(', ')}`);
@@ -163,6 +173,7 @@ export const messagingService = {
             
             // ========================================================================
             // Build payload with ALL required attributes + validated enums
+            // FIXED: Added receiverId and receivername (required by schema)
             // ========================================================================
             
             const untrustedPayload = {
@@ -174,8 +185,8 @@ export const messagingService = {
                 [ATTR.RECIPIENT_ID]: recipientId,
                 [ATTR.RECIPIENT_NAME]: messageData.recipientName || 'Unknown',
                 [ATTR.RECIPIENT_TYPE]: normalizedRecipientType,
-                [ATTR.RECEIVER_ID]: messageData.receiverId || recipientId,
-                [ATTR.RECEIVER_NAME]: messageData.receivername || messageData.recipientName || 'Unknown',
+                [ATTR.RECEIVER_ID]: recipientId, // Required field that was missing
+                [ATTR.RECEIVER_NAME]: messageData.recipientName || 'Unknown', // Required field that was missing
                 [ATTR.CONTENT]: messageData.content,
                 [ATTR.MESSAGE]: messageData.message || messageData.content,
                 [ATTR.MESSAGE_TYPE]: (messageData.messageType || messageData.type || MessageType.TEXT) as MessageTypeValue,
@@ -207,7 +218,9 @@ export const messagingService = {
             
             const criticalFields = [
                 ATTR.CONVERSATION_ID, ATTR.SENDER_ID, ATTR.SENDER_NAME, ATTR.SENDER_TYPE,
-                ATTR.RECIPIENT_ID, ATTR.RECIPIENT_NAME, ATTR.RECIPIENT_TYPE, ATTR.CONTENT, ATTR.CREATED_AT
+                ATTR.RECIPIENT_ID, ATTR.RECIPIENT_NAME, ATTR.RECIPIENT_TYPE, 
+                ATTR.RECEIVER_ID, ATTR.RECEIVER_NAME, // Added missing required fields
+                ATTR.CONTENT, ATTR.CREATED_AT
             ];
             
             for (const field of criticalFields) {
