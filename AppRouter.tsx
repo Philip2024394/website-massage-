@@ -289,6 +289,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'home':
             return renderRoute(publicRoutes.home.component, {
+                page: page, // Pass the current page prop to HomePage
                 onNavigate: props.onNavigate,
                 therapists: props.therapists,
                 places: props.places,
@@ -818,6 +819,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'notifications':
             return renderRoute(NotificationsPage);
         
+        case 'chat-room':
+            // Chat room is handled by App.tsx activeChat state
+            // Redirect to home - chat will open via openChat event
+            console.log('[ROUTE] chat-room accessed - redirecting to home');
+            props.setPage('home');
+            return renderRoute(publicRoutes.home.component);
+        
         case 'booking':
             return renderRoute(BookingPage);
         
@@ -942,6 +950,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             }
             // No user logged in - show home page
             return renderRoute(publicRoutes.home.component, {
+                page: page, // Pass the current page prop to HomePage
                 onNavigate: props.onNavigate,
                 therapists: props.therapists,
                 places: props.places,

@@ -32,11 +32,3 @@ export const LEGAL_TERMS = {
     id: "Pemesanan ini tunduk pada komisi"
   }
 } as const;
-
-// Temporary exports for compatibility
-export const FULL_TERMS_DOCUMENT = {
-  title: "Terms and Conditions",
-  content: "Terms content placeholder..."
-};
-
-export const validateTermsAcceptance = (accepted: boolean) => accepted;

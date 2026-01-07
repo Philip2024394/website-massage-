@@ -348,7 +348,7 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       // 🔥 CHAT FLOW RESTORATION: Create chat room and open chat window
       try {
         // Create chat room for the booking
-        console.log('� STEP 3: Creating chat room for immediate booking...');
+        console.log('🔥 STEP 3: Creating chat room for immediate booking...');
         
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + 5); // 5 minutes for response
@@ -368,6 +368,11 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
         });
         
         console.log('✅ STEP 3 COMPLETE: Chat room created:', chatRoom.$id);
+        
+        // ✅ FIX: Validate chat room creation before proceeding
+        if (!chatRoom || !chatRoom.$id) {
+          throw new Error('Chat room creation failed - no room ID returned');
+        }
         
         // 🔒 STEP 3.5: Update booking and chat room for location verification
         console.log('🔒 STEP 3.5: Setting up location verification requirement...');
@@ -435,8 +440,15 @@ ${
         
         // 🔥 STEP 6: Dispatch openChat event with standardized payload
         setTimeout(() => {
+          // ✅ FIX: Validate required fields before dispatching
+          if (!chatRoom.$id) {
+            console.error('❌ STEP 6 FAILED: Cannot dispatch openChat - missing chatRoom.$id');
+            return;
+          }
+          
           const openChatPayload = {
-            chatSessionId: chatRoom.$id,
+            roomId: chatRoom.$id, // ✅ FIX: App.tsx expects 'roomId', not 'chatSessionId'
+            chatSessionId: chatRoom.$id, // Keep for backward compatibility
             therapistName: therapistName,
             therapistPhoto: profilePicture || '',
             therapistId: therapistId.toString(), // ✅ Always string

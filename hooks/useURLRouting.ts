@@ -63,7 +63,13 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'onboarding-package': '/onboarding/package',
         'simpleSignup': '/signup',
         'booking': '/booking',
+        'booking-flow': '/booking',
+        'booking-therapist': '/booking/therapist',
+        'booking-place': '/booking/place',
         'accept-booking': '/accept-booking',
+        'chat': '/chat',
+        'chat-room': '/chat/room',
+        'chatList': '/chat/inbox',
         'notifications': '/notifications',
         'agentPortal': '/agent-portal',
         'agentDashboard': '/agent-dashboard',
@@ -249,6 +255,40 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                     return;
                 }
                 
+                // Handle chat routes with dynamic IDs
+                if (path.startsWith('/chat/')) {
+                    const chatSegments = path.split('/').filter(Boolean);
+                    if (chatSegments[1] === 'room' || chatSegments[1]) {
+                        // /chat/room/:id or /chat/:id
+                        setPage('chat-room');
+                        return;
+                    } else if (path === '/chat/inbox') {
+                        setPage('chatList');
+                        return;
+                    } else if (path === '/chat') {
+                        setPage('chat');
+                        return;
+                    }
+                }
+                
+                // Handle booking routes with dynamic IDs
+                if (path.startsWith('/booking/')) {
+                    const bookingSegments = path.split('/').filter(Boolean);
+                    if (bookingSegments[1] === 'therapist') {
+                        // /booking/therapist/:id
+                        setPage('booking-therapist');
+                        return;
+                    } else if (bookingSegments[1] === 'place') {
+                        // /booking/place/:id
+                        setPage('booking-place');
+                        return;
+                    } else {
+                        // Generic /booking/:id
+                        setPage('booking-flow');
+                        return;
+                    }
+                }
+                
                 const targetPage = pathToPage[path] || 'landing';
                 console.log(`🔗 Direct URL: ${path} → ${targetPage}`);
                 setPage(targetPage);
@@ -302,6 +342,38 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
                 console.log(`🎯 Initial URL: ${initialPath} → onboarding-package`);
                 setPage('onboarding-package');
                 return () => window.removeEventListener('popstate', handlePopState);
+            }
+            
+            // Handle chat routes with dynamic IDs
+            if (initialPath.startsWith('/chat/')) {
+                const chatSegments = initialPath.split('/').filter(Boolean);
+                if (chatSegments[1] === 'room' || chatSegments[1]) {
+                    console.log(`🎯 Initial URL: ${initialPath} → chat-room`);
+                    setPage('chat-room');
+                    return () => window.removeEventListener('popstate', handlePopState);
+                } else if (initialPath === '/chat/inbox') {
+                    console.log(`🎯 Initial URL: ${initialPath} → chatList`);
+                    setPage('chatList');
+                    return () => window.removeEventListener('popstate', handlePopState);
+                }
+            }
+            
+            // Handle booking routes with dynamic IDs
+            if (initialPath.startsWith('/booking/')) {
+                const bookingSegments = initialPath.split('/').filter(Boolean);
+                if (bookingSegments[1] === 'therapist') {
+                    console.log(`🎯 Initial URL: ${initialPath} → booking-therapist`);
+                    setPage('booking-therapist');
+                    return () => window.removeEventListener('popstate', handlePopState);
+                } else if (bookingSegments[1] === 'place') {
+                    console.log(`🎯 Initial URL: ${initialPath} → booking-place`);
+                    setPage('booking-place');
+                    return () => window.removeEventListener('popstate', handlePopState);
+                } else {
+                    console.log(`🎯 Initial URL: ${initialPath} → booking-flow`);
+                    setPage('booking-flow');
+                    return () => window.removeEventListener('popstate', handlePopState);
+                }
             }
             
             const targetPage = pathToPage[initialPath];

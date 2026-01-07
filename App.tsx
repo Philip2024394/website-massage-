@@ -1,3 +1,8 @@
+/**
+ * ⚠️ WARNING
+ * openChat event is handled ONLY by useOpenChatListener.
+ * Do NOT add additional event listeners for chat.
+ */
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import GlobalHeader from './components/GlobalHeader';
@@ -7,7 +12,7 @@ import { useAutoReviews } from './hooks/useAutoReviews';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import ChatWindow from './components/ChatWindow';
+import ChatWindow from './components/ChatWindow.safe';
 import FloatingChat from './apps/therapist-dashboard/src/components/FloatingChat';
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
@@ -26,69 +31,17 @@ import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwr
 import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
+import { useServiceWorkerListener } from './app/useServiceWorkerListener';
+import { useUrlBookingHandler } from './app/useUrlBookingHandler';
+import { useOpenChatListener } from './app/useOpenChatListener';
+import { useAnalyticsHandler } from './app/useAnalyticsHandler';
+import ActiveChatDebugger from './components/ActiveChatDebugger';
 
 const App = () => {
-    console.log('🏗️ App.tsx: App component rendering...');
+    console.log('🏗️ App.tsx: App component rendering');
     
     // Forced booking modal state
     const [forcedBookingData, setForcedBookingData] = useState<any>(null);
-    
-    // Service Worker message listener - PLATFORM ONLY
-    useEffect(() => {
-        console.log('🔊 Setting up service worker message listeners');
-        
-        const handleServiceWorkerMessage = (event: MessageEvent) => {
-            // Sound playback
-            if (event.data?.type === 'play-notification-sound') {
-                console.log('🔊 Playing notification sound:', event.data.soundUrl);
-                const audio = new Audio(event.data.soundUrl);
-                audio.volume = 1.0; // Max volume
-                audio.play().catch(err => console.error('Sound play failed:', err));
-            }
-            
-            // Force booking view (when notification clicked)
-            if (event.data?.type === 'force-booking-view') {
-                console.log('🔴 Forcing booking view:', event.data.bookingId);
-                // Fetch booking details and show forced modal
-                fetchAndShowForcedBooking(event.data.bookingId);
-            }
-            
-            // Booking expired (5-minute timeout)
-            if (event.data?.type === 'booking-expired') {
-                console.log('⏰ Booking expired:', event.data.bookingId);
-                handleBookingExpiration(event.data.bookingId, event.data.reason);
-            }
-        };
-        
-        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
-        
-        return () => {
-            navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
-        };
-    }, []);
-    
-    // Check URL for forced booking view on load
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const forceBookingId = urlParams.get('forceBookingView');
-        const autoAcceptBookingId = urlParams.get('autoAcceptBooking');
-        
-        if (forceBookingId) {
-            console.log('🔴 URL contains forceBookingView:', forceBookingId);
-            fetchAndShowForcedBooking(forceBookingId);
-            // Clean URL
-            urlParams.delete('forceBookingView');
-            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-        }
-        
-        if (autoAcceptBookingId) {
-            console.log('✅ URL contains autoAcceptBooking:', autoAcceptBookingId);
-            handleAutoAcceptBooking(autoAcceptBookingId);
-            // Clean URL
-            urlParams.delete('autoAcceptBooking');
-            window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
-        }
-    }, []);
     
     // Fetch booking details and show forced modal
     const fetchAndShowForcedBooking = async (bookingId: string) => {
@@ -134,6 +87,12 @@ const App = () => {
         setForcedBookingData(null); // Close modal if open
     };
     
+    // Service Worker message listener - PLATFORM ONLY
+    useServiceWorkerListener(fetchAndShowForcedBooking, handleBookingExpiration);
+    
+    // Check URL for forced booking view on load
+    useUrlBookingHandler(fetchAndShowForcedBooking, handleAutoAcceptBooking);
+    
     // Booking Status Tracker state
     const [isStatusTrackerOpen, setIsStatusTrackerOpen] = useState(false);
     const [bookingStatusInfo, setBookingStatusInfo] = useState<{
@@ -144,23 +103,21 @@ const App = () => {
         responseDeadline: Date;
     } | null>(null);
 
-    // Chat Window state - ONLY opens on explicit openChat events (no auto-opening)
-    const [isChatOpen, setIsChatOpen] = useState(false);
-    const [chatInfo, setChatInfo] = useState<{
-        chatSessionId: string;
-        therapistId: string;
-        therapistName: string;
-        therapistPhoto: string;
+    // Active chat state for booking chat windows
+    const [activeChat, setActiveChat] = useState<{
+        chatRoomId: string;
+        bookingId: string;
         providerId: string;
         providerName: string;
-        providerPhoto: string;
-        providerStatus: 'available' | 'busy' | 'offline';
-        providerRating: number;
-        pricing: { '60': number; '90': number; '120': number };
-        bookingId: string;
+        providerImage: string | null;
+        userRole: string;
+        pricing: { [key: string]: number };
         customerName: string;
         customerWhatsApp: string;
     } | null>(null);
+
+    // Chat minimization state
+    const [isChatMinimized, setIsChatMinimized] = useState(true);
 
     // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
     // All hooks combined - MUST be called BEFORE any useEffect that depends on state
@@ -177,82 +134,27 @@ const App = () => {
     const { t: _t, dict } = useTranslations(language);
 
     // Analytics handler function
-    const handleIncrementAnalytics = async (
-        id: number | string, 
-        type: 'therapist' | 'place', 
-        metric: keyof Analytics
-    ): Promise<void> => {
-        try {
-            // Map the metric to the appropriate analytics event type
-            switch (metric) {
-                case 'whatsapp_clicks':
-                case 'whatsappClicks':
-                    await analyticsService.trackWhatsAppClick(id, type);
-                    break;
-                case 'views':
-                case 'profileViews':
-                    await analyticsService.trackProfileView(id, type);
-                    break;
-                case 'bookings':
-                    await analyticsService.trackEvent({
-                        eventType: AnalyticsEventType.BOOKING_INITIATED,
-                        ...(type === 'therapist' ? { therapistId: id } : { placeId: id }),
-                        metadata: { providerType: type }
-                    });
-                    break;
-                default:
-                    console.log(`📊 Analytics: No tracking implemented for metric "${metric}"`);
-                    break;
-            }
-            console.log(`📊 Analytics tracked: ${metric} for ${type} ${id}`);
-        } catch (error) {
-            console.error('📊 Analytics error:', error);
-            // Don't throw - analytics should not break functionality
-        }
-    };
+    const handleIncrementAnalytics = useAnalyticsHandler();
 
-    // Listen for openChat events from booking system
+    // openChat event listener
+    useOpenChatListener(setActiveChat, setIsChatMinimized);
+
+    // Track activeChat state changes
     useEffect(() => {
-        const handleOpenChat = (event: CustomEvent) => {
-            console.log('🔥 STEP 7: App.tsx openChat event received');
-            console.log('📦 Event detail payload:', event.detail);
-            
-            const detail = event.detail;
-            const roomId = detail.roomId;
-            const providerId = detail.providerId || detail.therapistId;
-            const providerName = detail.providerName || detail.therapistName;
-            const providerImage = detail.providerImage || detail.therapistPhoto || '';
-            
-            // RESTORED: Build complete chat info with provider context
-            const chatInfo = {
-                chatSessionId: roomId,
-                therapistId: providerId,
-                therapistName: providerName,
-                therapistPhoto: providerImage,
-                providerId: providerId,
-                providerName: providerName,
-                providerPhoto: providerImage,
-                providerStatus: 'available' as const,
-                providerRating: 4.5,
-                pricing: { '60': 150000, '90': 225000, '120': 300000 },
-                bookingId: detail.bookingId || '',
-                customerName: detail.customerName || '',
-                customerWhatsApp: detail.customerWhatsApp || ''
-            };
-            
-            console.log('✅ Setting chatInfo with provider context:', chatInfo);
-            setChatInfo(chatInfo);
-            setIsChatOpen(true);
-            
-            console.log('✅ STEP 7 COMPLETE: Chat window state updated (isChatOpen=true)');
-        };
+        console.log('🔥 REACT STATE UPDATED - activeChat changed');
+        if (activeChat) {
+            console.log('🔥 activeChat IS NOW SET:', {
+                chatRoomId: activeChat.chatRoomId,
+                bookingId: activeChat.bookingId,
+                providerId: activeChat.providerId
+            });
+            console.log('🔥 NEXT: ChatWindow should render in JSX');
+        } else {
+            console.log('❌ activeChat cleared - ChatWindow hidden');
+        }
+    }, [activeChat]);
 
-        window.addEventListener('openChat' as any, handleOpenChat);
-        
-        return () => {
-            window.removeEventListener('openChat' as any, handleOpenChat);
-        };
-    }, []);
+    // Removed old fallback logic - using new activeChat system
 
     // REMOVED: Listen for data refresh events - was for ChatWindow updates
     // useEffect(() => {
@@ -622,6 +524,12 @@ const App = () => {
         console.log('📊 Opening booking status tracker:', statusInfo);
         setBookingStatusInfo(statusInfo);
         setIsStatusTrackerOpen(true);
+        
+        // Update URL for booking tracker
+        const slug = statusInfo.therapistName.toLowerCase().replace(/\s+/g, '-');
+        const bookingUrl = `/booking/status/${statusInfo.bookingId}/${slug}`;
+        window.history.pushState({ bookingId: statusInfo.bookingId }, '', bookingUrl);
+        console.log('🔗 Updated URL to:', bookingUrl);
     };
 
 
@@ -829,6 +737,9 @@ const App = () => {
                     onClose={() => {
                         setIsStatusTrackerOpen(false);
                         setBookingStatusInfo(null);
+                        // Reset URL when booking tracker closes
+                        window.history.pushState({}, '', '/');
+                        console.log('🔗 Reset URL to home');
                     }}
                     bookingId={bookingStatusInfo.bookingId}
                     therapistName={bookingStatusInfo.therapistName}
@@ -839,27 +750,152 @@ const App = () => {
                 />
             )}
 
-            {/* Global Chat Window - ONLY opens on explicit openChat events */}
-            {/* 🔥 STEP 8: Global Chat Window - ONLY opens on explicit openChat events */}
-            {isChatOpen && chatInfo && (
-                <ChatWindow
-                    isOpen={isChatOpen}
-                    onClose={() => {
-                        console.log('🔴 Closing chat window');
-                        setIsChatOpen(false);
-                        setChatInfo(null);
+            {/* Persistent Floating Chat Icon */}
+            <div className="fixed bottom-6 right-6 z-50">
+                {/* Debug indicator */}
+                <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    CHAT DEBUG
+                </div>
+                
+                <button
+                    onClick={() => {
+                        console.log('💬 Chat icon clicked!');
+                        console.log('💬 Current activeChat:', activeChat);
+                        
+                        if (activeChat) {
+                            console.log('💬 Opening existing chat');
+                            setIsChatMinimized(false);
+                        } else {
+                            // Create a test chat when no active chat exists
+                            console.log('🔥 Creating test chat...');
+                            const testChat = {
+                                chatRoomId: 'test_room_123',
+                                providerId: 'test_provider',
+                                providerName: 'Maya (Test Therapist)',
+                                providerImage: '',
+                                customerName: '',
+                                customerWhatsApp: '',
+                                pricing: {"60": 150000, "90": 225000, "120": 300000},
+                                bookingId: 'test_booking_123'
+                            };
+                            console.log('💬 Setting test chat:', testChat);
+                            setActiveChat(testChat);
+                            setIsChatMinimized(false);
+                        }
                     }}
-                    providerId={chatInfo.providerId}
-                    providerName={chatInfo.providerName}
-                    providerPhoto={chatInfo.providerPhoto}
-                    providerStatus={chatInfo.providerStatus}
-                    providerRating={chatInfo.providerRating}
-                    pricing={chatInfo.pricing}
-                    customerName={chatInfo.customerName}
-                    customerWhatsApp={chatInfo.customerWhatsApp}
-                    bookingId={chatInfo.bookingId}
-                />
-            )}
+                    className={`
+                        w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform
+                        ${activeChat 
+                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 hover:scale-110 cursor-pointer' 
+                            : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 hover:scale-110 cursor-pointer'
+                        }
+                        flex items-center justify-center text-white border-4 border-yellow-400
+                    `}
+                    title={activeChat ? 'Open Chat' : 'Start Test Chat'}
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-3.878-.9L3 21l1.9-6.122A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
+                    </svg>
+                    {activeChat && (
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" />
+                    )}
+                </button>
+            </div>
+
+            {/* Booking Chat Window */}
+            {(() => {
+                console.log('💬 JSX RENDER CYCLE - Checking ChatWindow condition');
+                console.log('💬 activeChat value:', activeChat);
+                console.log('💬 activeChat?.chatRoomId:', activeChat?.chatRoomId);
+                console.log('💬 isChatMinimized:', isChatMinimized);
+                console.log('💬 Will render ChatWindow?:', !!activeChat?.chatRoomId && !isChatMinimized);
+                
+                // Show debug info when activeChat exists but not rendering
+                if (activeChat && !activeChat.chatRoomId) {
+                    console.log('⚠️ activeChat exists but no chatRoomId:', activeChat);
+                }
+                
+                if (activeChat && isChatMinimized) {
+                    console.log('ℹ️ ChatWindow minimized, activeChat exists');
+                }
+                
+                if (!activeChat?.chatRoomId || isChatMinimized) {
+                    console.log('❌ ChatWindow NOT rendering - missing chatRoomId or minimized');
+                    
+                    // Show debug overlay when we should render but can't
+                    if (activeChat && !activeChat.chatRoomId && !isChatMinimized) {
+                        return (
+                            <div className="fixed bottom-20 right-6 z-50 bg-red-500 text-white p-3 rounded-lg shadow-lg max-w-sm">
+                                <div className="text-sm">
+                                    <strong>DEBUG:</strong> Chat exists but no chatRoomId
+                                    <br />
+                                    <code className="text-xs">{JSON.stringify(activeChat, null, 2)}</code>
+                                </div>
+                            </div>
+                        );
+                    }
+                    
+                    return null;
+                }
+                
+                console.log('🔥 RENDERING ChatWindow COMPONENT');
+                
+                try {
+                    console.log('✅ ChatWindow RENDERING NOW');
+                    return (
+                    <ChatWindow
+                        providerId={activeChat.providerId}
+                        providerName={activeChat.providerName}
+                        providerPhoto={activeChat.providerImage}
+                        providerStatus="available"
+                        providerRating={4.5}
+                        pricing={activeChat.pricing || {"60": 150000, "90": 225000, "120": 300000}}
+                        customerName={activeChat.customerName}
+                        customerWhatsApp={activeChat.customerWhatsApp}
+                        bookingId={activeChat.bookingId}
+                        chatRoomId={activeChat.chatRoomId}
+                        isOpen={true}
+                        onClose={() => {
+                            console.log('🔴 Minimizing chat window');
+                            setIsChatMinimized(true);
+                            // Keep activeChat for re-opening
+                        }}
+                    />
+                    );
+                } catch (chatError) {
+                    console.error('❌ ChatWindow render error:', chatError);
+                    // Fallback UI for chat errors
+                    return (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 text-center">
+                                <div className="text-red-500 mb-4">
+                                    <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Chat Unavailable</h3>
+                                <p className="text-gray-600 mb-4">There was an issue loading the chat. Please try again.</p>
+                                <div className="text-xs text-red-600 mb-4 bg-red-50 p-2 rounded">
+                                    Error: {chatError.message}
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        setIsChatMinimized(true);
+                                        setActiveChat(null);
+                                    }}
+                                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    );
+                }
+            })()}
+
+            {/* Debug Component - Remove in production */}
+            <ActiveChatDebugger activeChat={activeChat} />
+
         </DeviceStylesProvider>
         </LanguageProvider>
     );

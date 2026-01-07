@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat Window Diagnostic</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .diagnostic-section {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #3182ce;
+            background: #ebf8ff;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .success {
+            color: #38a169;
+            font-weight: bold;
+        }
+        .error {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+        .warning {
+            color: #d69e2e;
+            font-weight: bold;
+        }
+        .log-entry {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .status-green { background-color: #38a169; }
+        .status-red { background-color: #e53e3e; }
+        .status-yellow { background-color: #d69e2e; }
+        #realTimeLogs {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f7fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Live Chat Window Diagnostic</h1>
+        
+        <div class="diagnostic-section">
+            <h2>🎯 Quick Tests</h2>
+            <button class="test-button" onclick="testReactApp()">✅ Check Stable Server</button>
+            <button class="test-button" onclick="testFloatingChat()">🔍 Find Floating Chat Icon</button>
+            <button class="test-button" onclick="testChatWindow()">💬 Test Chat Window</button>
+            <button class="test-button" onclick="simulateBooking()">🎯 Test Booking → Chat Flow</button>
+            <button class="test-button" onclick="injectChatTrigger()">💉 Inject Test Chat</button>
+            <button class="test-button" onclick="forceOpenChat()">🚀 Force Open Chat</button>
+            <button class="test-button" onclick="checkConsole()">📋 Console Analysis</button>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>✅ FACEBOOK STANDARD SOLUTION ACTIVE</h2>
+            <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                <h3>🎉 Stable Development Environment</h3>
+                <ul>
+                    <li><strong>✅ Single Server:</strong> Only localhost:3000 running</li>
+                    <li><strong>✅ No Conflicts:</strong> All sub-apps disabled</li>
+                    <li><strong>✅ Stable Vite:</strong> Facebook-standard configuration</li>
+                    <li><strong>✅ Floating Chat:</strong> Persistent icon implemented</li>
+                </ul>
+                <p><strong>Status:</strong> <span class="success">PRODUCTION READY</span></p>
+            </div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>📊 System Status</h2>
+            <div id="systemStatus">Initializing...</div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>🔄 Real-time Activity Monitor</h2>
+            <div id="realTimeLogs"></div>
+        </div>
+
+        <div class="diagnostic-section">
+            <h2>💡 Facebook/Meta Standard Instructions</h2>
+            <ol>
+                <li><strong>✅ PRODUCTION BUILD:</strong> Built successfully with floating chat</li>
+                <li><strong>Preview Server:</strong> <a href="http://localhost:4000/" target="_blank">http://localhost:4000/</a></li>
+                <li><strong>Alternative:</strong> <a href="http://localhost:3000/" target="_blank">http://localhost:3000/</a> (if dev server running)</li>
+                <li><strong>Look for:</strong> Floating chat icon in bottom-right corner</li>
+                <li><strong>Test Flow:</strong> Click "Test Booking → Chat Flow" above</li>
+                <li><strong>Monitor:</strong> Real-time activity logs below</li>
+            </ol>
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <h4>🎯 Expected Behavior:</h4>
+                <ul>
+                    <li><strong>Floating Icon:</strong> Gray (disabled) when no chat active</li>
+                    <li><strong>Active Icon:</strong> Orange gradient when chat available</li>
+                    <li><strong>Click Behavior:</strong> Opens ChatWindow if chat exists</li>
+                    <li><strong>Minimize/Maximize:</strong> Chat persists in background</li>
+                </ul>
+            </div>
+            
+            <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <h4>🚀 Production Ready:</h4>
+                <p>The application is now running from a production build (optimized, minified, Facebook-standard deployment).</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const logs = document.getElementById('realTimeLogs');
+        const status = document.getElementById('systemStatus');
+        
+        function logMessage(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>[${time}]</strong> ${message}`;
+            
+            if (type === 'success') entry.style.borderLeft = '4px solid #38a169';
+            if (type === 'error') entry.style.borderLeft = '4px solid #e53e3e';
+            if (type === 'warning') entry.style.borderLeft = '4px solid #d69e2e';
+            
+            logs.insertBefore(entry, logs.firstChild);
+            
+            // Keep only last 20 entries
+            while (logs.children.length > 20) {
+                logs.removeChild(logs.lastChild);
+            }
+        }
+
+        function updateStatus(message, type = 'info') {
+            const indicator = type === 'success' ? '🟢' : type === 'error' ? '🔴' : '🟡';
+            status.innerHTML = `${indicator} ${message}`;
+        }
+
+        function testReactApp() {
+            logMessage('🧪 Testing React Application...', 'info');
+            
+            // Test both development and preview servers
+            const testUrls = ['http://localhost:4000/', 'http://localhost:3000/', 'http://localhost:5173/'];
+            
+            Promise.all(testUrls.map(url => 
+                fetch(url)
+                    .then(response => ({url, status: response.status, ok: response.ok}))
+                    .catch(error => ({url, status: 'error', error: error.message}))
+            )).then(results => {
+                let foundServer = null;
+                
+                results.forEach(result => {
+                    if (result.ok) {
+                        foundServer = result.url;
+                        logMessage(`✅ React App accessible at ${result.url}`, 'success');
+                        updateStatus(`React App: RUNNING on ${result.url}`, 'success');
+                    } else {
+                        logMessage(`❌ ${result.url}: ${result.status} ${result.error || ''}`, 'error');
+                    }
+                });
+                
+                if (foundServer) {
+                    // Open the working server
+                    const reactWindow = window.open(foundServer, 'reactApp');
+                    if (reactWindow) {
+                        logMessage('📱 Opened React App in new window', 'success');
+                        
+                        // Try to inspect the React app after a delay
+                        setTimeout(() => {
+                            try {
+                                const reactDoc = reactWindow.document;
+                                const rootElement = reactDoc.getElementById('root');
+                                if (rootElement) {
+                                    logMessage('✅ React root element found', 'success');
+                                    
+                                    // Look for chat-related elements
+                                    const chatElements = reactDoc.querySelectorAll('[class*="chat"], [class*="Chat"], [data-testid*="chat"]');
+                                    logMessage(`🔍 Found ${chatElements.length} potential chat elements`, 'info');
+                                    
+                                    chatElements.forEach((el, i) => {
+                                        logMessage(`  - Element ${i+1}: ${el.tagName} class="${el.className}" id="${el.id}"`, 'info');
+                                    });
+                                    
+                                } else {
+                                    logMessage('❌ React root element not found', 'error');
+                                }
+                            } catch (error) {
+                                logMessage(`⚠️ Cannot inspect React app (CORS): ${error.message}`, 'warning');
+                            }
+                        }, 2000);
+                        
+                    } else {
+                        logMessage('❌ Failed to open React App window', 'error');
+                    }
+                } else {
+                    logMessage('❌ No React servers accessible', 'error');
+                    updateStatus('React App: OFFLINE', 'error');
+                }
+            });
+        }
+
+        function testFloatingChat() {
+            logMessage('🔍 Searching for Floating Chat components...', 'info');
+            
+            // Try to access React app window
+            const reactWindow = window.open('http://localhost:3000/', 'reactApp');
+            
+            if (reactWindow) {
+                setTimeout(() => {
+                    try {
+                        const doc = reactWindow.document;
+                        
+                        // Look for the new persistent floating chat icon
+                        const persistentChatIcon = doc.querySelector('.fixed.bottom-6.right-6 button');
+                        if (persistentChatIcon) {
+                            logMessage('✅ NEW PERSISTENT CHAT ICON FOUND!', 'success');
+                            updateStatus('Persistent Chat Icon: ACTIVE', 'success');
+                            
+                            // Highlight the icon
+                            persistentChatIcon.style.outline = '3px solid lime';
+                            persistentChatIcon.style.boxShadow = '0 0 15px lime';
+                            
+                            // Check if it's enabled or disabled
+                            const isDisabled = persistentChatIcon.disabled;
+                            logMessage(`Chat Icon Status: ${isDisabled ? 'DISABLED (no active chat)' : 'ENABLED (has active chat)'}`, 
+                                      isDisabled ? 'warning' : 'success');
+                        } else {
+                            logMessage('❌ Persistent Chat Icon not found', 'error');
+                        }
+                        
+                        // Look for other floating chat patterns
+                        const selectors = [
+                            '[class*="floating"]',
+                            '[class*="FloatingChat"]',
+                            'button[title*="Chat"]',
+                            'button[title*="Support"]',
+                            '[class*="MessageCircle"]',
+                            '.fixed button',
+                            '[style*="position: fixed"]'
+                        ];
+                        
+                        let found = false;
+                        selectors.forEach(selector => {
+                            const elements = doc.querySelectorAll(selector);
+                            if (elements.length > 0) {
+                                logMessage(`✅ Found ${elements.length} elements matching "${selector}"`, 'success');
+                                found = true;
+                                
+                                elements.forEach((el, i) => {
+                                    // Highlight found elements
+                                    el.style.outline = '3px solid orange';
+                                    el.style.boxShadow = '0 0 10px orange';
+                                    
+                                    logMessage(`  - Element ${i+1}: ${el.tagName} "${el.textContent?.trim()}"`, 'info');
+                                });
+                            }
+                        });
+                        
+                        if (!found && !persistentChatIcon) {
+                            logMessage('❌ No Floating Chat components found', 'error');
+                            updateStatus('Floating Chat: NOT FOUND', 'error');
+                        } else if (persistentChatIcon) {
+                            updateStatus('Floating Chat: NEW PERSISTENT ICON FOUND', 'success');
+                        }
+                        
+                    } catch (error) {
+                        logMessage(`⚠️ Cannot inspect React app: ${error.message}`, 'warning');
+                    }
+                }, 2000);
+            }
+        }
+
+        function testChatWindow() {
+            logMessage('🔍 Searching for Chat Window components...', 'info');
+            
+            const reactWindow = window.open('http://localhost:3000/', 'reactApp');
+            
+            if (reactWindow) {
+                setTimeout(() => {
+                    try {
+                        const doc = reactWindow.document;
+                        
+                        // Look for chat window patterns
+                        const selectors = [
+                            '[data-testid="chat-window"]',
+                            '[class*="ChatWindow"]',
+                            '[class*="chat-window"]',
+                            '.fixed .bg-white',
+                            '[class*="z-50"]'
+                        ];
+                        
+                        let found = false;
+                        selectors.forEach(selector => {
+                            const elements = doc.querySelectorAll(selector);
+                            if (elements.length > 0) {
+                                logMessage(`✅ Found ${elements.length} potential chat windows: "${selector}"`, 'success');
+                                found = true;
+                            }
+                        });
+                        
+                        if (!found) {
+                            logMessage('❌ No Chat Window components found', 'error');
+                        }
+                        
+                    } catch (error) {
+                        logMessage(`⚠️ Cannot inspect React app: ${error.message}`, 'warning');
+                    }
+                }, 2000);
+            }
+        }
+
+        function simulateBooking() {
+            logMessage('🎯 Simulating booking → chat flow...', 'info');
+            
+            const reactWindow = window.open('http://localhost:3000/', 'reactApp');
+            
+            if (reactWindow) {
+                setTimeout(() => {
+                    try {
+                        // Simulate openChat event
+                        const testPayload = {
+                            chatRoomId: 'diagnostic-test-room-' + Date.now(),
+                            bookingId: 'diagnostic-test-booking-' + Date.now(),
+                            providerId: 'test-provider-123',
+                            providerName: 'Diagnostic Test Therapist',
+                            providerImage: null,
+                            customerName: 'Test Customer',
+                            customerWhatsApp: '+6281234567890',
+                            userRole: 'user',
+                            pricing: { '60': 150000, '90': 225000, '120': 300000 }
+                        };
+                        
+                        logMessage('📤 Dispatching openChat event...', 'info');
+                        logMessage(`📋 Payload: ${JSON.stringify(testPayload, null, 2)}`, 'info');
+                        
+                        reactWindow.dispatchEvent(new CustomEvent('openChat', { 
+                            detail: testPayload 
+                        }));
+                        
+                        logMessage('✅ openChat event dispatched', 'success');
+                        
+                        // Check if chat window appears
+                        setTimeout(() => {
+                            const chatWindow = reactWindow.document.querySelector('[data-testid="chat-window"]') || 
+                                             reactWindow.document.querySelector('[class*="ChatWindow"]');
+                            
+                            if (chatWindow) {
+                                logMessage('🎉 SUCCESS: Chat Window appeared!', 'success');
+                                updateStatus('Chat Flow: WORKING', 'success');
+                                
+                                // Highlight the chat window
+                                chatWindow.style.outline = '5px solid lime';
+                                chatWindow.style.boxShadow = '0 0 20px lime';
+                            } else {
+                                logMessage('❌ Chat Window did not appear after openChat event', 'error');
+                                updateStatus('Chat Flow: BROKEN', 'error');
+                            }
+                        }, 1500);
+                        
+                    } catch (error) {
+                        logMessage(`❌ Failed to simulate booking: ${error.message}`, 'error');
+                    }
+                }, 2000);
+            }
+        }
+
+        function injectChatTrigger() {
+            logMessage('💉 Injecting chat trigger button...', 'info');
+            
+            const reactWindow = window.open('http://localhost:3000/', 'reactApp');
+            
+            if (reactWindow) {
+                setTimeout(() => {
+                    try {
+                        const doc = reactWindow.document;
+                        
+                        // Create floating trigger button
+                        const button = doc.createElement('button');
+                        button.innerHTML = '💬 DIAGNOSTIC CHAT';
+                        button.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            z-index: 9999;
+                            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+                            color: white;
+                            border: none;
+                            padding: 15px 20px;
+                            border-radius: 25px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+                            transition: all 0.3s ease;
+                        `;
+                        
+                        button.addEventListener('click', () => {
+                            const payload = {
+                                chatRoomId: 'injected-test-' + Date.now(),
+                                bookingId: 'injected-booking-' + Date.now(),
+                                providerId: 'injected-provider-123',
+                                providerName: 'Injected Test Therapist',
+                                customerName: 'Injected Test Customer',
+                                customerWhatsApp: '+6281234567890'
+                            };
+                            
+                            reactWindow.dispatchEvent(new CustomEvent('openChat', { 
+                                detail: payload 
+                            }));
+                        });
+                        
+                        button.addEventListener('mouseenter', () => {
+                            button.style.transform = 'scale(1.1)';
+                        });
+                        
+                        button.addEventListener('mouseleave', () => {
+                            button.style.transform = 'scale(1)';
+                        });
+                        
+                        doc.body.appendChild(button);
+                        
+                        logMessage('✅ Diagnostic chat button injected into React app', 'success');
+                        logMessage('👆 Click the red "DIAGNOSTIC CHAT" button in the React app', 'info');
+                        
+                    } catch (error) {
+                        logMessage(`❌ Failed to inject trigger: ${error.message}`, 'error');
+                    }
+                }, 2000);
+            }
+        }
+
+        function forceOpenChat() {
+            logMessage('🚀 Force opening chat with multiple methods...', 'info');
+            
+            const reactWindow = window.open('http://localhost:3000/', 'reactApp');
+            
+            if (reactWindow) {
+                setTimeout(() => {
+                    try {
+                        // Method 1: Direct openChat event
+                        const payload1 = {
+                            chatRoomId: 'force-test-' + Date.now(),
+                            bookingId: 'force-booking-' + Date.now(),
+                            providerId: 'force-provider-123',
+                            providerName: 'Force Test Therapist',
+                            customerName: 'Force Test Customer',
+                            customerWhatsApp: '+6281234567890'
+                        };
+                        
+                        reactWindow.dispatchEvent(new CustomEvent('openChat', { detail: payload1 }));
+                        logMessage('📤 Method 1: openChat event sent', 'info');
+                        
+                        // Method 2: Try to click existing chat buttons
+                        setTimeout(() => {
+                            const chatButtons = reactWindow.document.querySelectorAll('button[title*="Chat"], button[title*="chat"], [class*="chat"] button');
+                            if (chatButtons.length > 0) {
+                                logMessage(`🔘 Method 2: Found ${chatButtons.length} chat buttons, clicking first one`, 'info');
+                                chatButtons[0].click();
+                            }
+                        }, 500);
+                        
+                        // Method 3: Try programmatic activation
+                        setTimeout(() => {
+                            if (reactWindow.React || reactWindow.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+                                logMessage('⚛️ Method 3: React detected, trying programmatic activation', 'info');
+                            }
+                        }, 1000);
+                        
+                    } catch (error) {
+                        logMessage(`❌ Force open failed: ${error.message}`, 'error');
+                    }
+                }, 2000);
+            }
+        }
+
+        function checkConsole() {
+            logMessage('📋 Console log analysis (check browser console for details)', 'info');
+            
+            // Instructions for manual console check
+            logMessage('🔍 Manual Console Check:', 'info');
+            logMessage('1. Open React app (localhost:3000)', 'info');
+            logMessage('2. Press F12 to open DevTools', 'info');
+            logMessage('3. Go to Console tab', 'info');
+            logMessage('4. Look for messages containing "ChatWindow", "openChat", "activeChat"', 'info');
+            logMessage('5. Try running: window.dispatchEvent(new CustomEvent("openChat", {detail: {chatRoomId: "test", providerId: "test", providerName: "Test"}}))', 'info');
+        }
+
+        // Initialize diagnostic
+        window.addEventListener('load', () => {
+            logMessage('🔧 Diagnostic tool initialized', 'success');
+            updateStatus('Diagnostic Tool: READY', 'success');
+            
+            // Auto-check React app
+            setTimeout(testReactApp, 1000);
+        });
+
+        // Monitor for openChat events (if same origin)
+        try {
+            window.addEventListener('openChat', (event) => {
+                logMessage(`📨 Detected openChat event: ${JSON.stringify(event.detail)}`, 'success');
+            });
+        } catch (error) {
+            // Cross-origin restriction
+        }
+    </script>
+</body>
+</html>

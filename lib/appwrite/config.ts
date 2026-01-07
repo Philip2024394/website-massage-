@@ -69,7 +69,8 @@ export const APPWRITE_CONFIG = {
     notifications: optionalEnv('VITE_NOTIFICATIONS_COLLECTION_ID'),
     
     // Business - OPTIONAL
-    hotels: optionalEnv('VITE_HOTELS_COLLECTION_ID'),
+    hotels: requireEnv('VITE_HOTELS_COLLECTION_ID', 'hotels_collection_id'),
+    hotelBookings: requireEnv('VITE_HOTEL_BOOKINGS_COLLECTION_ID', 'hotel_bookings'),
     partners: import.meta.env.VITE_PARTNERS_COLLECTION_ID || 'Partners',
     
     // Content - OPTIONAL

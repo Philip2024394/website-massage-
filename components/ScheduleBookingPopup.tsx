@@ -7,25 +7,10 @@ import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
 import { createChatRoom, sendSystemMessage, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
-
-// Avatar options for customer chat profile
-const AVATAR_OPTIONS = [
-    { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%201.png', label: 'Avatar 1' },
-    { id: 2, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%202.png', label: 'Avatar 2' },
-    { id: 3, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%203.png', label: 'Avatar 3' },
-    { id: 4, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%204.png', label: 'Avatar 4' },
-    { id: 5, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%206.png', label: 'Avatar 6' },
-    { id: 6, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%207.png', label: 'Avatar 7' },
-    { id: 7, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%208.png', label: 'Avatar 8' },
-    { id: 8, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%209.png', label: 'Avatar 9' },
-    { id: 9, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2010.png', label: 'Avatar 10' },
-    { id: 10, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2011.png', label: 'Avatar 11' },
-    { id: 11, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2012.png', label: 'Avatar 12' },
-    { id: 12, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2013.png', label: 'Avatar 13' },
-    { id: 13, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2014.png', label: 'Avatar 14' },
-    { id: 14, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2015.png', label: 'Avatar 15' },
-    { id: 15, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2016.png', label: 'Avatar 16' }
-];
+import { useBookingSuccess } from '../hooks/useBookingSuccess';
+import { useBookingForm } from '../booking/useBookingForm';
+import { useTimeSlots } from '../booking/useTimeSlots';
+import { useBookingSubmit } from '../booking/useBookingSubmit';
 
 // Extend window type
 declare global {
@@ -92,20 +77,41 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const lang = language === 'gb' ? 'en' : language;
   const t = translations[lang] || translations['id'];
 
+  // Initialize booking success hook
+  const onBookingSuccess = useBookingSuccess();
+
+  // Initialize form state hook
+  const formState = useBookingForm();
+  const {
+    step, setStep,
+    selectedDuration, setSelectedDuration,
+    selectedTime, setSelectedTime,
+    customerName, setCustomerName,
+    customerWhatsApp, setCustomerWhatsApp,
+    roomNumber, setRoomNumber,
+    selectedAvatar, setSelectedAvatar,
+    isCreating, setIsCreating,
+    error, setError,
+    resetForm,
+    AVATAR_OPTIONS
+  } = formState;
+
+  // Initialize time slots hook
+  const { timeSlots } = useTimeSlots(isOpen, therapistId, therapistType, step, selectedDuration);
+
+  // Initialize booking submit hook
+  const handleCreateBooking = useBookingSubmit(
+    onBookingSuccess,
+    pricing,
+    therapistId,
+    therapistName,
+    therapistType,
+    profilePicture,
+    hotelVillaId,
+    isImmediateBooking
+  );
+
   const ratingValue = typeof providerRating === 'number' && providerRating > 0 ? providerRating.toFixed(1) : null;
-  
-  const [step, setStep] = useState<'duration' | 'time' | 'details'>('duration');
-  const [selectedDuration, setSelectedDuration] = useState<60 | 90 | 120 | null>(null);
-  const [selectedTime, setSelectedTime] = useState<TimeSlot | null>(null);
-  const [customerName, setCustomerName] = useState('');
-  const [customerWhatsApp, setCustomerWhatsApp] = useState('');
-  const [roomNumber, setRoomNumber] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_OPTIONS[0].imageUrl);
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [lastBookingTime, setLastBookingTime] = useState<string>('22:00');
-  const [openingTime, setOpeningTime] = useState<string>('09:00');
-  const [closingTime, setClosingTime] = useState<string>('21:00');
-  const [isCreating, setIsCreating] = useState(false);
 
   // Debug pricing values
   console.log('📊 ScheduleBookingPopup pricing debug:', {
@@ -147,595 +153,6 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       label: '120 min' 
     }
   ];
-
-  // Generate time slots from 8 AM to last booking time
-  const generateTimeSlots = async () => {
-    const slots: TimeSlot[] = [];
-    const today = new Date();
-    const currentHour = today.getHours();
-    const currentMinute = today.getMinutes();
-
-    // Parse last booking time (format: "HH:MM")
-    const [lastHour, lastMinute] = lastBookingTime.split(':').map(Number);
-    const [openH, openM] = openingTime.split(':').map(Number);
-    const [closeH, closeM] = closingTime.split(':').map(Number);
-
-    // Get today's bookings to mark unavailable slots
-    let todayBookings: any[] = [];
-    
-    if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
-      const bookingsResponse = await databases.listDocuments(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
-        []
-      );
-
-      todayBookings = bookingsResponse.documents.filter((booking: any) => {
-        const bookingDate = new Date(booking.scheduledTime || booking.createdAt);
-        return (
-          booking.therapistId === therapistId &&
-          bookingDate.toDateString() === today.toDateString() &&
-          (booking.status === 'confirmed' || booking.status === 'pending')
-        );
-      });
-    } else {
-      console.warn('⚠️ Bookings collection disabled - no schedule conflicts will be checked');
-    }
-
-    // Generate slots: for places, use opening/closing; for therapists, 8AM to last booking time
-    const isPlace = therapistType === 'place';
-    const startHour = isPlace ? openH : 8;
-    const endHour = isPlace ? closeH : lastHour;
-    for (let hour = startHour; hour <= endHour; hour++) {
-      const startMinute = isPlace ? (hour === openH ? openM : 0) : 0;
-      const endMinute = hour === endHour ? (isPlace ? closeM : lastMinute) : 45;
-
-      for (let minute = startMinute; minute <= endMinute; minute += 15) {
-        // Skip past times
-        if (hour < currentHour || (hour === currentHour && minute <= currentMinute)) {
-          continue;
-        }
-
-        const slotTime = new Date(today);
-        slotTime.setHours(hour, minute, 0, 0);
-
-        // Check if this slot conflicts with existing bookings (including 30min buffer)
-        const isBooked = todayBookings.some((booking: any) => {
-          const bookingStart = new Date(booking.scheduledTime || booking.createdAt);
-          const buffer = therapistType === 'place' ? 0 : 30; // no travel buffer for places
-          const bookingEnd = new Date(bookingStart.getTime() + (booking.duration + buffer) * 60000);
-          return slotTime >= bookingStart && slotTime < bookingEnd;
-        });
-
-        slots.push({
-          hour,
-          minute,
-          label: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-          available: !isBooked
-        });
-      }
-    }
-
-    setTimeSlots(slots);
-  };
-
-  // Fetch therapist's last booking time
-  useEffect(() => {
-    if (isOpen && therapistId) {
-      const fetchTherapistSchedule = async () => {
-        try {
-          const collectionId = therapistType === 'therapist' 
-            ? APPWRITE_CONFIG.collections.therapists 
-            : APPWRITE_CONFIG.collections.places;
-            
-          if (!collectionId || collectionId === '') {
-            console.warn('⚠️ Collection disabled for therapist type:', therapistType);
-            setTimeSlots([]);
-            return;
-          }
-          
-          // Try to fetch schedule info, but don't fail if document not found
-          try {
-            const therapist = await databases.getDocument(
-              APPWRITE_CONFIG.databaseId,
-              collectionId,
-              therapistId
-            );
-            if (therapistType === 'place') {
-              if ((therapist as any).openingTime) setOpeningTime((therapist as any).openingTime);
-              if ((therapist as any).closingTime) setClosingTime((therapist as any).closingTime);
-            } else {
-              if (therapist.lastBookingTime) {
-                setLastBookingTime(therapist.lastBookingTime);
-              }
-            }
-          } catch (docError: any) {
-            // Document not found is OK - we can still create bookings without schedule info
-            if (docError?.code === 404) {
-              console.log('ℹ️ Therapist document not found, using default schedule');
-            } else {
-              console.warn('⚠️ Could not fetch therapist schedule:', docError?.message);
-            }
-          }
-        } catch (error) {
-          console.error('Error in schedule fetch:', error);
-        }
-      };
-
-      fetchTherapistSchedule();
-    }
-  }, [isOpen, therapistId, therapistType]);
-
-  // Generate slots when duration is selected
-  useEffect(() => {
-    if (step === 'time' && selectedDuration) {
-      generateTimeSlots();
-    }
-  }, [step, selectedDuration]);
-
-  const handleCreateBooking = async () => {
-    // For immediate bookings, we don't need time selection
-    if (!isImmediateBooking && (!selectedDuration || !selectedTime)) return;
-    if (!customerName || !customerWhatsApp) return;
-
-    // Validate WhatsApp number length (8-15 digits)
-    const cleanedWhatsApp = customerWhatsApp.replace(/\D/g, '');
-    if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
-      setError('Please enter a valid WhatsApp number (8-15 digits)');
-      return;
-    }
-
-    // Format WhatsApp with +62 prefix
-    const formattedWhatsApp = `+62${cleanedWhatsApp}`;
-
-    // Check for existing pending bookings with this WhatsApp number
-    console.log('🔍 Checking for existing pending bookings for WhatsApp:', formattedWhatsApp);
-    
-    try {
-      const existingBookings = await databases.listDocuments(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings || 'bookings',
-        [
-          Query.equal('customerWhatsApp', formattedWhatsApp),
-          Query.equal('status', 'Pending'),
-          Query.orderDesc('$createdAt'),
-          Query.limit(1)
-        ]
-      );
-
-      if (existingBookings.documents.length > 0) {
-        const existingBooking = existingBookings.documents[0];
-        const providerName = existingBooking.providerName || existingBooking.therapistName || 'a therapist';
-        
-        console.log('❌ Found existing pending booking:', existingBooking);
-        showToast(`You have a pending scheduled booking with ${providerName}. Please wait for their response before booking with another therapist.`, 'warning');
-        setIsCreating(false);
-        onClose();
-        return;
-      }
-      
-      console.log('✅ No existing pending bookings found for WhatsApp number. Proceeding with new booking.');
-    } catch (checkError: any) {
-      console.warn('⚠️ Could not check existing bookings (proceeding anyway):', checkError.message);
-      // Continue with booking creation even if check fails
-    }
-
-    // Also check sessionStorage for local pending bookings (backup check)
-    const pendingBooking = sessionStorage.getItem('pending_booking');
-    if (pendingBooking) {
-      const parsed = JSON.parse(pendingBooking);
-      const deadline = new Date(parsed.deadline);
-      if (deadline > new Date()) {
-        showToast(`You have a pending ${parsed.type} booking with ${parsed.therapistName}. Please wait for their response before booking with another therapist.`, 'warning');
-        onClose();
-        return;
-      } else {
-        // Expired, clear it
-        sessionStorage.removeItem('pending_booking');
-      }
-    }
-
-    try {
-      setIsCreating(true);
-
-      // ✅ ENSURE AUTHENTICATION: Scheduled booking requires valid session
-      // This is a protected Appwrite operation (createDocument)
-      const { ensureAuthSession } = await import('../lib/authSessionHelper');
-      const authResult = await ensureAuthSession('scheduled booking creation');
-      
-      if (!authResult.success) {
-        console.error('❌ Cannot create scheduled booking without authentication');
-        showToast('Unable to authenticate. Please try again.', 'error');
-        setIsCreating(false);
-        return;
-      }
-      
-      console.log(`✅ Authentication confirmed for scheduled booking (userId: ${authResult.userId})`);
-
-      // 🔥 FIX 1: Define userId safely with guard
-      const userId = authResult.userId;
-      if (!userId) {
-        console.warn('⚠️ No userId available — skipping notification');
-        showToast('Authentication issue. Please try again.', 'error');
-        setIsCreating(false);
-        return;
-      }
-
-      // For immediate bookings, use current time; for scheduled, use selected time
-      const scheduledTime = new Date();
-      if (!isImmediateBooking && selectedTime) {
-        scheduledTime.setHours(selectedTime.hour, selectedTime.minute, 0, 0);
-      }
-      
-      const responseDeadline = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-      // Generate a client-side bookingId - required attribute
-      let bookingId: string;
-      try {
-        bookingId = (typeof crypto !== 'undefined' && (crypto as any).randomUUID)
-          ? (crypto as any).randomUUID()
-          : `booking_${Date.now()}`;
-      } catch {
-        bookingId = `booking_${Date.now()}`;
-      }
-
-      // For immediate bookings, use default 60-minute duration if none selected
-      const finalDuration = selectedDuration || (isImmediateBooking ? 60 : 0);
-      const finalPrice = durations.find(d => d.minutes === finalDuration)?.price || 0;
-
-      // Prepare booking message for in-app chat
-      console.log('📱 Preparing booking notification for therapist:', therapistId);
-
-      // Format booking date and time for chat message
-      const bookingDate = scheduledTime.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      const bookingTime = selectedTime?.label || scheduledTime.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false
-      });
-
-      // Save scheduled booking to Appwrite database
-      // Match exact Appwrite schema: providerId, providerType, providerName, service, startTime are REQUIRED
-      
-      const bookingData: any = {
-        // ===== REQUIRED FIELDS (Appwrite Schema) =====
-        bookingId: String(bookingId), // Required string(36)
-        bookingDate: new Date().toISOString(), // Required datetime
-        userId: String(authResult.userId), // Required string(100)
-        status: 'Pending', // Required string(64), default: Pending
-        duration: Number(finalDuration), // Required integer(1-365)
-        providerId: String(therapistId), // Required string(255)
-        providerType: String(therapistType), // Required string(16)
-        providerName: String(therapistName), // Required string(255)
-        service: String(finalDuration), // Required string(16) - '60', '90', or '120'
-        startTime: scheduledTime.toISOString(), // Required datetime
-        price: Number(Math.round(finalPrice / 1000)), // Required integer(0-1000)
-        createdAt: new Date().toISOString(), // Required datetime
-        responseDeadline: responseDeadline.toISOString(), // Required datetime
-        
-        // Optional fields with proper defaults
-        totalCost: finalPrice, // Optional double
-        paymentMethod: 'Unpaid', // Optional string (default: 'Unpaid')
-        scheduledTime: scheduledTime.toISOString(), // Optional datetime
-        customerName: customerName, // Optional string
-        customerWhatsApp: formattedWhatsApp, // Optional string - WhatsApp contact with +62 prefix
-        bookingType: isImmediateBooking ? 'immediate' : 'scheduled', // Optional string
-        
-        // Legacy fields (optional, can be null) - for compatibility
-        therapistId: therapistId, // Optional - duplicate of providerId
-        therapistName: therapistName, // Optional - duplicate of providerName
-        therapistType: therapistType // Optional - duplicate of providerType
-      };
-
-      // Add optional fields only if they have values
-      if (hotelVillaId) {
-        bookingData.hotelId = hotelVillaId;
-        bookingData.hotelGuestName = customerName;
-      }
-      if (roomNumber) bookingData.hotelRoomNumber = roomNumber;
-
-      // ===== CRITICAL: SANITIZE PAYLOAD (Remove undefined/null) =====
-      Object.keys(bookingData).forEach(key => {
-        if (bookingData[key] === undefined || bookingData[key] === null) {
-          delete bookingData[key];
-        }
-      });
-
-      try {
-        console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
-        console.log('📤 Attempting to save booking with data:', bookingData);
-        console.log('📤 Database ID:', APPWRITE_CONFIG.databaseId);
-        console.log('📤 Collection ID:', APPWRITE_CONFIG.collections.bookings);
-        
-        // Save to Appwrite bookings collection (fallback to 'bookings' if config is wrong)
-        const bookingResponse = await databases.createDocument(
-          APPWRITE_CONFIG.databaseId,
-          APPWRITE_CONFIG.collections.bookings || 'bookings',
-          'unique()',
-          bookingData
-        );
-        
-        console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
-        
-        // Create commission record for Pro members (30% commission)
-        try {
-          // Fetch therapist data to check membership tier
-          const collectionId = therapistType === 'therapist' 
-            ? APPWRITE_CONFIG.collections.therapists 
-            : APPWRITE_CONFIG.collections.facial_places;
-          
-          console.log('🔍 Fetching therapist data for commission check:', {
-            collectionId,
-            therapistId,
-            therapistType
-          });
-          
-          if (collectionId && therapistId) {
-            const therapist = await databases.getDocument(
-              APPWRITE_CONFIG.databaseId,
-              collectionId,
-              therapistId
-            );
-
-            if (!therapist) {
-              console.warn('⚠️ Therapist document returned null/undefined');
-              throw new Error('Therapist account is null. Please contact support.');
-            }
-
-            console.log('✅ Therapist data fetched:', {
-              id: therapist.$id,
-              name: (therapist as any).name,
-              membershipTier: (therapist as any).membershipTier
-            });
-
-            // Check if therapist is on Pro plan (free tier with 30% commission)
-            // 'free' = Pro plan, 'plus' = Plus plan (no commission)
-            const membershipTier = (therapist as any).membershipTier || 'free';
-            
-            if (membershipTier === 'free') {
-              // Pro member - create commission record with 3-hour deadline
-              const scheduledDateTime = new Date(bookingDate + ' ' + bookingTime).toISOString();
-              
-              console.log('💰 Creating commission record for Pro member:', {
-                therapistId: therapistId,
-                therapistName: therapistName,
-                serviceAmount: finalPrice,
-                commissionRate: 30,
-                scheduledDate: scheduledDateTime
-              });
-
-              await commissionTrackingService.createCommissionRecord(
-                therapistId,
-                therapistName,
-                bookingResponse.$id,
-                new Date().toISOString(), // bookingDate (when booking was created)
-                scheduledDateTime, // scheduledDate (when service is scheduled)
-                finalPrice
-              );
-
-              console.log('✅ Commission record created successfully');
-            } else {
-              console.log('ℹ️ Plus member - no commission tracking needed');
-            }
-          }
-        } catch (commissionErr) {
-          console.error('⚠️ Failed to create commission record:', commissionErr);
-          // Don't block booking if commission creation fails
-        }
-        
-        // Lock booking - store pending booking info (15 min deadline)
-        const deadline = new Date();
-        deadline.setMinutes(deadline.getMinutes() + 15);
-        sessionStorage.setItem('pending_booking', JSON.stringify({
-          bookingId: bookingResponse.$id,
-          therapistId: therapistId,
-          therapistName: therapistName,
-          customerWhatsApp: formattedWhatsApp,
-          deadline: deadline.toISOString(),
-          type: isImmediateBooking ? 'immediate' : 'scheduled'
-        }));
-        
-        console.log('🔒 Booking locked until:', deadline.toISOString());
-        
-        // Create booking message for in-app chat (conditional based on membership)
-        const serviceType = therapistType === 'place' && therapistName.toLowerCase().includes('facial') 
-          ? 'facial treatment' 
-          : 'massage';
-        
-        // Get membership tier to determine WhatsApp access
-        // Default to 'free' since membership tier is not passed as prop
-        const therapistMembershipTier = 'free';
-        
-        // Pro members: NO WhatsApp, strict rules
-        const proMessage = `🚨 NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING REQUEST
-
-⏱️ YOU HAVE 5 MINUTES TO ACCEPT OR REJECT
-
-👤 Customer: ${customerName}
-📅 Date: ${bookingDate}
-⏰ Time: ${bookingTime}
-⏱️ Duration: ${finalDuration} minutes
-💰 Price: IDR ${Math.round(finalPrice / 1000)}K
-${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Location: ${hotelVillaName}\n` : ''}
-📝 Booking ID: ${bookingResponse.$id}
-
-⚠️ PRO MEMBER NOTICE:
-❌ WhatsApp contact NOT provided (Pro plan)
-✅ Communicate through in-app chat only
-
-⚠️ WARNING: Operating outside Indastreet platform = immediate deactivation + WhatsApp blocking
-
-💡 Upgrade to Plus (Rp 250K/month):
-✓ Customer WhatsApp access
-✓ 0% commission
-✓ No payment deadlines`;
-
-        // Plus members: Full WhatsApp access
-        const plusMessage = `⭐ NEW ${isImmediateBooking ? 'IMMEDIATE' : 'SCHEDULED'} BOOKING (Plus Member)
-
-👤 Customer: ${customerName}
-📱 WhatsApp: ${formattedWhatsApp}
-📅 Date: ${bookingDate}
-⏰ Time: ${bookingTime}
-⏱️ Duration: ${finalDuration} minutes
-💰 Price: IDR ${Math.round(finalPrice / 1000)}K
-${roomNumber ? `🚪 Room: ${roomNumber}\n` : ''}${hotelVillaName ? `🏨 Location: ${hotelVillaName}\n` : ''}
-📝 Booking ID: ${bookingResponse.$id}
-
-✅ Plus Member Benefits Active:
-✓ 0% commission
-✓ Direct WhatsApp access
-✓ No payment deadlines
-
-You can contact the customer immediately!`;
-
-        const message = therapistMembershipTier === 'free' ? proMessage : plusMessage;
-
-        // 🔥 FIX 2: Chat creation MUST be isolated with try/catch
-        console.log('💬 Creating chat room for booking...');
-        let chatRoom;
-        
-        try {
-          // Create or get existing chat room
-          const expiresAt = new Date();
-          expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 minutes for response
-          
-          chatRoom = await createChatRoom({
-            bookingId: bookingResponse.$id,
-            customerId: userId, // Use proper userId instead of 'guest'
-            customerName: customerName,
-            customerLanguage: 'en', // Default to English for scheduled bookings
-            customerPhoto: selectedAvatar, // Use selected avatar for chat profile
-            therapistId: therapistId, // ✅ String document $id
-            therapistName: therapistName,
-            therapistLanguage: 'id', // Default to Indonesian for providers
-            therapistType: therapistType,
-            therapistPhoto: profilePicture || '',
-            expiresAt: expiresAt.toISOString()
-          });
-          
-          console.log('✅ Chat room created:', chatRoom.$id);
-          
-          // RESTORED: Send welcome message first
-          try {
-            await sendWelcomeMessage(chatRoom.$id, therapistName, userId);
-            console.log('✅ Welcome message sent');
-          } catch (welcomeErr) {
-            console.warn('⚠️ Welcome message failed:', welcomeErr);
-          }
-
-          // RESTORED: Send booking received message automatically
-          try {
-            await sendBookingReceivedMessage(chatRoom.$id, userId);
-            console.log('✅ Booking received message sent');
-          } catch (bookingErr) {
-            console.warn('⚠️ Booking received message failed:', bookingErr);
-          }
-          
-          // 🔥 FIX 3: Dispatch chat-open event IMMEDIATELY after chat creation
-          window.dispatchEvent(
-            new CustomEvent('openChat', {
-              detail: {
-                roomId: chatRoom.$id,
-                bookingId: booking.$id,
-                providerId: therapistId,
-                providerName: therapistName,
-                providerImage: therapist?.profileImage || therapist?.photo || '',
-                therapistId,
-                therapistName,
-                source: 'booking',
-                autoOpen: true
-              }
-            })
-          );
-          console.log('✅ Chat window opened immediately via event dispatch');
-          
-        } catch (chatErr) {
-          console.error('❌ Chat creation failed', chatErr);
-          // Show toast but don't block the booking process
-          showToast('Booking saved but chat failed to open. Please contact support.', 'warning');
-          setIsCreating(false);
-          return;
-        }
-        
-        // 🔥 FIX 4: Move notifications AFTER chat opens (non-blocking)
-        // Send system message and notifications in background (don't block chat)
-        setTimeout(async () => {
-          try {
-            if (userId && chatRoom?.$id) {
-              // RESTORED: Send booking received message using template
-              const { SYSTEM_MESSAGE_TEMPLATES } = await import('../lib/chatService');
-              await sendSystemMessage(chatRoom.$id, SYSTEM_MESSAGE_TEMPLATES.BOOKING_RECEIVED, therapistId, userId);
-              console.log('✅ Booking received message sent to chat');
-              
-              // Original booking notification to therapist still sent
-              await sendSystemMessage(chatRoom.$id, { en: message, id: message }, therapistId, userId);
-              console.log('✅ Booking notification sent to therapist');
-              
-              // Create chat notification if possible
-              // await createChatNotification(userId, chatRoom.$id);
-            }
-          } catch (notificationErr) {
-            console.warn('⚠️ Notification failed — chat already open', notificationErr);
-          }
-        }, 100); // Small delay to ensure chat is fully open
-          
-          console.log('✅ Booking and chat created successfully');
-          
-          // Success feedback
-          showToast(
-            isImmediateBooking 
-              ? t.bookingPage.bookingSuccessTitle 
-              : t.bookingPage.bookingSuccessTitle, 
-            'success'
-          );
-          
-          // Close popup after showing success message
-          setTimeout(() => {
-            onClose();
-            resetForm();
-          }, 2000);
-          
-      } catch (saveError: any) {
-        console.error('❌ Error saving scheduled booking to Appwrite:', saveError);
-        console.error('❌ Error details:', {
-          message: saveError.message,
-          code: saveError.code,
-          type: saveError.type,
-          response: saveError.response
-        });
-        
-        // Show detailed error message
-        const errorMsg = saveError.message || 'Unknown error occurred';
-        showToast(`⚠️ Failed to save booking: ${errorMsg}`, 'error');
-        
-        setTimeout(() => {
-          onClose();
-          resetForm();
-        }, 2000);
-      }
-
-    } catch (error: any) {
-      console.error('❌ Error creating scheduled booking:', error);
-      alert(`Failed to send booking request: ${error.message || 'Please try again.'}`);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const resetForm = () => {
-    setStep('duration');
-    setSelectedDuration(null);
-    setSelectedTime(null);
-    setCustomerName('');
-    setCustomerWhatsApp('');
-    setRoomNumber('');
-  };
 
   if (!isOpen) return null;
 
@@ -1027,7 +444,10 @@ You can contact the customer immediately!`;
               </div>
 
               <button
-                onClick={handleCreateBooking}
+                onClick={() => handleCreateBooking(
+                  { selectedDuration, selectedTime, customerName, customerWhatsApp, roomNumber, selectedAvatar },
+                  { setError, setIsCreating, onClose, resetForm }
+                )}
                 disabled={!customerName || !customerWhatsApp || isCreating}
                 className={`w-full py-3 rounded-lg font-bold text-white ${
                   customerName && customerWhatsApp && !isCreating

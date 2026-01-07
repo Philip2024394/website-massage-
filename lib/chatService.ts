@@ -281,7 +281,7 @@ export async function sendMessage(data: {
 /**
  * Send a system message to a chat room
  * Uses messagingService for proper field handling
- * CRITICAL: recipientId MUST be a real numeric userId, NEVER "all"
+ * CRITICAL: recipientId MUST be a valid Appwrite userId, NEVER "all"
  */
 export async function sendSystemMessage(
     roomId: string,
@@ -308,7 +308,7 @@ export async function sendSystemMessage(
         
         // MANDATORY: Validate recipientId is not "all"
         if (actualRecipientId === 'all') {
-            throw new Error('Invalid recipientId: "all" is not allowed. Must be a real numeric userId.');
+            throw new Error('Invalid recipientId: "all" is not allowed. Must be a valid userId.');
         }
         
         console.log('[SYSTEM MESSAGE] Using admin sender - recipientId:', actualRecipientId, 'senderId:', actualSenderId);

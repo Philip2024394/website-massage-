@@ -32,11 +32,6 @@ export const SenderType = {
   CUSTOMER: 'customer',
   THERAPIST: 'therapist',
   PLACE: 'place',
-  ADMIN: 'admin', // FIXED: Use admin instead of system
-  TEXT: 'text',
-  IMAGE: 'image',
-  FILE: 'file',
-  BOOKING: 'booking',
   SYSTEM: 'system',
 } as const;
 
@@ -123,7 +118,8 @@ export function isValidRecipientType(value: string): value is RecipientTypeValue
  * Check if a value is a valid SenderType
  */
 export function isValidSenderType(value: string): value is SenderTypeValue {
-  return Object.values(SenderType).includes(value as SenderTypeValue);
+  const validTypes = Object.values(SenderType);  // Only Appwrite-valid types
+  return validTypes.includes(value as SenderTypeValue);
 }
 
 /**
@@ -187,9 +183,11 @@ export function normalizeSenderType(value: string | undefined, senderId?: string
   // Common mistakes mapping
   const mappings: Record<string, SenderTypeValue> = {
     'user': SenderType.CUSTOMER,
+    'member': SenderType.CUSTOMER,  // Connect member to user/customer
     'buyer': SenderType.CUSTOMER,
     'client': SenderType.CUSTOMER,
-    'admin': SenderType.SYSTEM,  // Admin messages should be system type
+    'admin': SenderType.SYSTEM,  // Map admin to system for Appwrite compatibility
+    'system': SenderType.SYSTEM,
     'seller': SenderType.THERAPIST,
     'provider': SenderType.THERAPIST,
     'massage': SenderType.THERAPIST,

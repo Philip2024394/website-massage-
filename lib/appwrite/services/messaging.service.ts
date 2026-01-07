@@ -128,12 +128,12 @@ export const messagingService = {
 
             // CRITICAL FIX: Validate recipientId is never "all" and is properly formatted
             if (recipientId === 'all') {
-                throw new Error('❌ MESSAGING SERVICE: recipientId cannot be "all". Must be a real numeric userId or "system".');
+                throw new Error('❌ MESSAGING SERVICE: recipientId cannot be "all". Must be a real userId or "system".');
             }
             
-            // CRITICAL FIX: Validate recipientId is numeric or system
-            if (recipientId !== 'system' && !Number.isInteger(Number(recipientId))) {
-                throw new Error(`❌ MESSAGING SERVICE: Invalid recipientId "${recipientId}". Must be a numeric userId or "system".`);
+            // CRITICAL FIX: Validate recipientId is valid Appwrite ID or system
+            if (recipientId !== 'system' && (!recipientId || recipientId.trim().length === 0)) {
+                throw new Error(`❌ MESSAGING SERVICE: Invalid recipientId "${recipientId}". Must be a valid userId or "system".`);
             }
 
             const conversationId = messageData.conversationId || this.generateConversationId(senderId, recipientId);
@@ -150,14 +150,22 @@ export const messagingService = {
             
             try {
                 normalizedSenderType = normalizeSenderType(messageData.senderType, senderId);
-                normalizedRecipientType = normalizeRecipientType(messageData.recipientType === 'admin' ? 'user' : messageData.recipientType);
+                // FIXED: Don't convert admin to user - admin is valid in database schema
+                normalizedRecipientType = normalizeRecipientType(messageData.recipientType);
+                
+                console.log('[MESSAGING SERVICE] 🔄 Raw enum values:');
+                console.log(`  senderType: "${messageData.senderType}"`);
+                console.log(`  recipientType: "${messageData.recipientType}"`);
+                console.log('[MESSAGING SERVICE] 🔄 Normalized enum values:');
+                console.log(`  senderType: "${messageData.senderType}" → "${normalizedSenderType}"`);
+                console.log(`  recipientType: "${messageData.recipientType}" → "${normalizedRecipientType}"`);
             } catch (enumError) {
                 throw new Error(`❌ MESSAGING SERVICE: Invalid enum value - ${enumError.message}`);
             }
             
             // Additional enum validation - reject anything not in allowed lists
             const allowedRecipientTypes: RecipientTypeValue[] = ['user', 'therapist', 'place', 'hotel', 'villa', 'agent', 'admin'];
-            const allowedSenderTypes: SenderTypeValue[] = ['customer', 'therapist', 'place', 'admin'];
+            const allowedSenderTypes: SenderTypeValue[] = ['customer', 'therapist', 'place', 'system'];
             
             if (!allowedRecipientTypes.includes(normalizedRecipientType)) {
                 throw new Error(`❌ MESSAGING SERVICE: Invalid recipientType "${normalizedRecipientType}". Allowed: ${allowedRecipientTypes.join(', ')}`);
@@ -166,10 +174,6 @@ export const messagingService = {
             if (!allowedSenderTypes.includes(normalizedSenderType)) {
                 throw new Error(`❌ MESSAGING SERVICE: Invalid senderType "${normalizedSenderType}". Allowed: ${allowedSenderTypes.join(', ')}`);
             }
-            
-            console.log('[MESSAGING SERVICE] 🔄 Enum normalization:');
-            console.log(`  senderType: "${messageData.senderType}" → "${normalizedSenderType}"`);
-            console.log(`  recipientType: "${messageData.recipientType}" → "${normalizedRecipientType}"`);
             
             // ========================================================================
             // Build payload with ALL required attributes + validated enums

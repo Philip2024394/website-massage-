@@ -715,9 +715,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         if (status === 'available') {
             // Set booking source to track price slider bookings
             setPriceSliderBookingSource('price-slider');
-            console.log('✅ Opening BookingPopup with pre-selected duration:', selectedDuration);
-            // Allow booking without login - BookingPopup collects user info
-            setShowBookingPopup(true);
+            console.log('✅ Opening ScheduleBookingPopup with pre-selected duration:', selectedDuration);
+            // Open ScheduleBookingPopup which creates chat room and dispatches openChat event
+            setShowScheduleBookingPopup(true);
         } else if (status === 'busy') {
             setShowBusyModal(true);
         } else {

@@ -81,6 +81,11 @@ export type Page =
     | 'therapistJobRegistration' 
     | 'jobUnlockPayment' 
     | 'chatList' 
+    | 'chat' // Individual chat window
+    | 'chat-room' // Specific chat room
+    | 'booking-flow' // Booking flow page
+    | 'booking-therapist' // Book specific therapist
+    | 'booking-place' // Book specific place
     | 'about' 
     | 'about-us'
     | 'how-it-works' 
