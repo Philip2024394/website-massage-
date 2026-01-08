@@ -84,9 +84,6 @@ importers:
       '@rollup/rollup-linux-x64-gnu':
         specifier: ^4.22.0
         version: 4.53.2
-      '@rollup/rollup-win32-x64-msvc':
-        specifier: ^4.22.0
-        version: 4.53.2
       '@testing-library/jest-dom':
         specifier: ^6.0.0
         version: 6.9.1
@@ -179,6 +176,9 @@ importers:
         specifier: ^4.22.0
         version: 4.53.2
       '@rollup/rollup-linux-x64-musl':
+        specifier: ^4.22.0
+        version: 4.53.2
+      '@rollup/rollup-win32-x64-msvc':
         specifier: ^4.22.0
         version: 4.53.2
 
@@ -3144,7 +3144,8 @@ snapshots:
   '@rollup/rollup-win32-x64-gnu@4.53.2':
     optional: true
 
-  '@rollup/rollup-win32-x64-msvc@4.53.2': {}
+  '@rollup/rollup-win32-x64-msvc@4.53.2':
+    optional: true
 
   '@tanstack/query-core@5.90.8': {}
 
