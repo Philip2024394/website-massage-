@@ -1,691 +1,609 @@
-// 🔒 PERSISTENT CHAT WINDOW - Minimalistic Orange Theme
-// Facebook Messenger-style chat that NEVER disappears once opened
+/**
+ * 🔒 PERSISTENT CHAT WINDOW - Facebook Messenger Style
+ * Orange minimalistic design with REAL Appwrite backend
+ * 
+ * Features:
+ * - Real-time messages synced with Appwrite
+ * - Therapist can respond instantly
+ * - Beautiful orange gradient theme
+ * - Booking flow integration
+ * - Never disappears once opened
+ */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { usePersistentChat, ChatMessage } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, Loader, ChevronRight, ArrowLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { usePersistentChat, ChatMessage, BookingStep } from '../context/PersistentChatProvider';
+import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar } from 'lucide-react';
 
-// Duration Selection Step
-function DurationStep() {
-  const { chatState, setSelectedDuration, setBookingStep } = usePersistentChat();
-  const { therapist } = chatState;
-  
-  if (!therapist) return null;
-  
-  const durations = [
-    { mins: 60, label: '1 Hour' },
-    { mins: 90, label: '1.5 Hours' },
-    { mins: 120, label: '2 Hours' },
-  ];
-  
-  return (
-    <div style={{ padding: '20px' }}>
-      <p style={{ 
-        fontSize: '13px', 
-        color: '#6b7280', 
-        marginBottom: '16px',
-        textAlign: 'center' 
-      }}>
-        Choose your session duration
-      </p>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {durations.map(({ mins, label }) => {
-          const price = therapist.pricing[mins.toString()] || mins * 5000;
-          return (
-            <button
-              key={mins}
-              onClick={() => {
-                setSelectedDuration(mins);
-                setBookingStep('details');
-              }}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '16px 20px',
-                borderRadius: '12px',
-                border: '1px solid #f3f4f6',
-                backgroundColor: '#fff',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#f97316';
-                e.currentTarget.style.backgroundColor = '#fff7ed';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#f3f4f6';
-                e.currentTarget.style.backgroundColor = '#fff';
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: '#fff7ed',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Clock size={18} color="#f97316" />
-                </div>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, fontSize: '15px', color: '#111827' }}>{label}</div>
-                  <div style={{ fontSize: '12px', color: '#9ca3af' }}>{mins} minutes</div>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: 700, fontSize: '16px', color: '#f97316' }}>
-                  {price.toLocaleString('id-ID')}
-                </div>
-                <div style={{ fontSize: '11px', color: '#9ca3af' }}>IDR</div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// Duration options with prices
+const DURATION_OPTIONS = [
+  { minutes: 60, label: '1 Hour' },
+  { minutes: 90, label: '1.5 Hours' },
+  { minutes: 120, label: '2 Hours' },
+];
 
-// Customer Details Step
-function DetailsStep() {
-  const { chatState, setCustomerDetails, setBookingStep } = usePersistentChat();
-  const [name, setName] = useState(chatState.customerName);
-  const [whatsApp, setWhatsApp] = useState(chatState.customerWhatsApp);
-  const [location, setLocation] = useState(chatState.customerLocation);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  
-  const handleGetLocation = () => {
-    if (navigator.geolocation) {
-      setIsLoadingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation(`${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`);
-          setIsLoadingLocation(false);
-        },
-        () => setIsLoadingLocation(false)
-      );
+// Format price to IDR
+const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(price);
+};
+
+// Format time
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: true 
+  });
+};
+
+export function PersistentChatWindow() {
+  const {
+    chatState,
+    isLocked,
+    isConnected,
+    minimizeChat,
+    maximizeChat,
+    closeChat,
+    setBookingStep,
+    setSelectedDuration,
+    setSelectedDateTime,
+    setCustomerDetails,
+    sendMessage,
+    addMessage,
+  } = usePersistentChat();
+
+  const [messageInput, setMessageInput] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [customerForm, setCustomerForm] = useState({
+    name: '',
+    whatsApp: '',
+    location: '',
+  });
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatState.messages]);
+
+  // Don't render if no therapist or not open
+  if (!chatState.isOpen || !chatState.therapist) {
+    return null;
+  }
+
+  const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
+  const isScheduleMode = chatState.bookingMode === 'schedule';
+
+  // Get price for duration
+  const getPrice = (minutes: number) => {
+    const pricing = therapist.pricing || {};
+    return pricing[minutes.toString()] || pricing['60'] || 0;
+  };
+
+  // Handle duration selection
+  const handleDurationSelect = (minutes: number) => {
+    setSelectedDuration(minutes);
+    
+    // If schedule mode, go to datetime picker first
+    if (isScheduleMode) {
+      setBookingStep('datetime');
+    } else {
+      setBookingStep('details');
     }
-  };
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !whatsApp || !location) return;
-    setCustomerDetails({ name, whatsApp, location });
-    setBookingStep('confirmation');
-  };
-  
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '14px 16px',
-    borderRadius: '10px',
-    border: '1px solid #e5e7eb',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-    boxSizing: 'border-box',
-  };
-  
-  return (
-    <form onSubmit={handleSubmit} style={{ padding: '20px' }}>
-      <button
-        type="button"
-        onClick={() => setBookingStep('duration')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          color: '#6b7280',
-          fontSize: '13px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          marginBottom: '16px',
-          padding: 0,
-        }}
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        <div>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: 500,
-            color: '#374151',
-            marginBottom: '6px',
-          }}>
-            Your Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            required
-            style={inputStyle}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#f97316';
-              e.target.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.1)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = '#e5e7eb';
-              e.target.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-        
-        <div>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: 500,
-            color: '#374151',
-            marginBottom: '6px',
-          }}>
-            WhatsApp Number
-          </label>
-          <input
-            type="tel"
-            value={whatsApp}
-            onChange={(e) => setWhatsApp(e.target.value)}
-            placeholder="+62 812 3456 7890"
-            required
-            style={inputStyle}
-            onFocus={(e) => {
-              e.target.style.borderColor = '#f97316';
-              e.target.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.1)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = '#e5e7eb';
-              e.target.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-        
-        <div>
-          <label style={{ 
-            display: 'block', 
-            fontSize: '12px', 
-            fontWeight: 500,
-            color: '#374151',
-            marginBottom: '6px',
-          }}>
-            Your Location
-          </label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Address or coordinates"
-              required
-              style={{ ...inputStyle, flex: 1 }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#f97316';
-                e.target.style.boxShadow = '0 0 0 3px rgba(249,115,22,0.1)';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#e5e7eb';
-                e.target.style.boxShadow = 'none';
-              }}
-            />
-            <button
-              type="button"
-              onClick={handleGetLocation}
-              disabled={isLoadingLocation}
-              style={{
-                padding: '14px',
-                borderRadius: '10px',
-                border: 'none',
-                backgroundColor: '#f97316',
-                color: '#fff',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ea580c'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f97316'}
-            >
-              {isLoadingLocation ? <Loader size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <MapPin size={18} />}
-            </button>
-          </div>
-        </div>
-        
-        <button
-          type="submit"
-          disabled={!name || !whatsApp || !location}
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: '10px',
-            border: 'none',
-            backgroundColor: (!name || !whatsApp || !location) ? '#d1d5db' : '#f97316',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: '14px',
-            cursor: (!name || !whatsApp || !location) ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s',
-            marginTop: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-          }}
-        >
-          Continue <ChevronRight size={16} />
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// Confirmation Step
-function ConfirmationStep() {
-  const { chatState, setBookingStep, addMessage } = usePersistentChat();
-  const { therapist, selectedDuration, customerName, customerWhatsApp, customerLocation } = chatState;
-  
-  if (!therapist) return null;
-  
-  const price = selectedDuration ? (therapist.pricing[selectedDuration.toString()] || selectedDuration * 5000) : 0;
-  
-  const handleConfirm = () => {
+    
+    // Add system message
     addMessage({
       senderId: 'system',
       senderName: 'System',
-      message: `✅ Booking confirmed!\n\nTherapist: ${therapist.name}\nDuration: ${selectedDuration} mins\nPrice: IDR ${price.toLocaleString('id-ID')}\n\nWe'll contact you on WhatsApp shortly.`,
-      type: 'booking',
+      message: `Selected ${minutes} minutes massage - ${formatPrice(getPrice(minutes))}`,
+      type: 'system',
     });
-    setBookingStep('chat');
   };
-  
-  const Row = ({ label, value }: { label: string; value: string }) => (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'space-between',
-      padding: '10px 0',
-      borderBottom: '1px solid #f3f4f6',
-    }}>
-      <span style={{ color: '#6b7280', fontSize: '13px' }}>{label}</span>
-      <span style={{ fontWeight: 500, fontSize: '13px', color: '#111827', textAlign: 'right', maxWidth: '60%' }}>{value}</span>
-    </div>
-  );
-  
-  return (
-    <div style={{ padding: '20px' }}>
-      <button
-        type="button"
-        onClick={() => setBookingStep('details')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          color: '#6b7280',
-          fontSize: '13px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          marginBottom: '16px',
-          padding: 0,
-        }}
-      >
-        <ArrowLeft size={14} /> Back
-      </button>
-      
-      <div style={{
-        backgroundColor: '#fafafa',
-        borderRadius: '12px',
-        padding: '16px',
-        marginBottom: '16px',
-      }}>
-        <Row label="Therapist" value={therapist.name} />
-        <Row label="Duration" value={`${selectedDuration} minutes`} />
-        <Row label="Name" value={customerName} />
-        <Row label="WhatsApp" value={customerWhatsApp} />
-        <Row label="Location" value={customerLocation} />
-        
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          paddingTop: '12px',
-          marginTop: '4px',
-        }}>
-          <span style={{ fontWeight: 600, color: '#111827' }}>Total</span>
-          <span style={{ fontWeight: 700, fontSize: '18px', color: '#f97316' }}>
-            IDR {price.toLocaleString('id-ID')}
-          </span>
-        </div>
-      </div>
-      
-      <button
-        onClick={handleConfirm}
-        style={{
-          width: '100%',
-          padding: '14px',
-          borderRadius: '10px',
-          border: 'none',
-          backgroundColor: '#f97316',
-          color: '#fff',
-          fontWeight: 600,
-          fontSize: '14px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          transition: 'background-color 0.2s',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#ea580c'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f97316'}
-      >
-        <Check size={18} /> Confirm Booking
-      </button>
-    </div>
-  );
-}
 
-// Chat Step
-function ChatStep() {
-  const { chatState, addMessage } = usePersistentChat();
-  const { therapist, messages } = chatState;
-  const [inputValue, setInputValue] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-  
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  // Handle datetime selection
+  const handleDateTimeSubmit = () => {
+    if (!selectedDate || !selectedTime) return;
     
+    setSelectedDateTime(selectedDate, selectedTime);
+    setBookingStep('details');
+    
+    // Add system message
+    const dateObj = new Date(selectedDate);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
     addMessage({
-      senderId: 'customer',
-      senderName: chatState.customerName || 'You',
-      message: inputValue.trim(),
-      type: 'text',
+      senderId: 'system',
+      senderName: 'System',
+      message: `📅 Scheduled for ${formattedDate} at ${selectedTime}`,
+      type: 'system',
     });
-    
-    setInputValue('');
-    
-    setTimeout(() => {
-      addMessage({
-        senderId: therapist?.id || 'therapist',
-        senderName: therapist?.name || 'Therapist',
-        message: 'Thank you! I will respond shortly. You can also reach me on WhatsApp.',
-        type: 'text',
-      });
-    }, 1000);
   };
-  
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: '280px' }}>
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}>
-        {messages.length === 0 && (
-          <div style={{ textAlign: 'center', color: '#9ca3af', padding: '40px 20px' }}>
-            <MessageCircle size={32} style={{ margin: '0 auto 8px', opacity: 0.4 }} />
-            <p style={{ fontSize: '13px' }}>Start chatting with {therapist?.name}</p>
-          </div>
-        )}
-        
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            style={{
-              alignSelf: msg.senderId === 'customer' ? 'flex-end' : 'flex-start',
-              maxWidth: '80%',
-            }}
-          >
-            <div style={{
-              padding: '10px 14px',
-              borderRadius: msg.senderId === 'customer' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-              backgroundColor: msg.senderId === 'customer' ? '#f97316' : msg.type === 'booking' ? '#ecfdf5' : '#f3f4f6',
-              color: msg.senderId === 'customer' ? '#fff' : '#111827',
-              fontSize: '14px',
-              lineHeight: 1.4,
-              whiteSpace: 'pre-wrap',
-            }}>
-              {msg.message}
-            </div>
-            <div style={{
-              fontSize: '10px',
-              color: '#9ca3af',
-              marginTop: '4px',
-              textAlign: msg.senderId === 'customer' ? 'right' : 'left',
-              paddingLeft: msg.senderId === 'customer' ? 0 : '4px',
-              paddingRight: msg.senderId === 'customer' ? '4px' : 0,
-            }}>
-              {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-      
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        padding: '12px 16px',
-        borderTop: '1px solid #f3f4f6',
-        backgroundColor: '#fff',
-      }}>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type a message..."
-          style={{
-            flex: 1,
-            padding: '10px 14px',
-            borderRadius: '20px',
-            border: '1px solid #e5e7eb',
-            outline: 'none',
-            fontSize: '14px',
-          }}
-        />
-        <button
-          onClick={handleSend}
-          disabled={!inputValue.trim()}
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            border: 'none',
-            backgroundColor: inputValue.trim() ? '#f97316' : '#e5e7eb',
-            color: '#fff',
-            cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background-color 0.2s',
-          }}
-        >
-          <Send size={16} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
-// Main Component
-export function PersistentChatWindow() {
-  const { chatState, isLocked, minimizeChat, maximizeChat, closeChat } = usePersistentChat();
-  const { isOpen, isMinimized, therapist, bookingStep } = chatState;
-  
-  if (!isOpen) return null;
-  
+  // Handle customer form submission
+  const handleCustomerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!customerForm.name || !customerForm.whatsApp) {
+      return;
+    }
+
+    setCustomerDetails({
+      name: customerForm.name,
+      whatsApp: customerForm.whatsApp,
+      location: customerForm.location,
+    });
+
+    // Build booking request message
+    let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
+      `👤 Name: ${customerForm.name}\n` +
+      `📱 WhatsApp: ${customerForm.whatsApp}\n` +
+      `📍 Location: ${customerForm.location || 'To be confirmed'}\n` +
+      `⏱️ Duration: ${selectedDuration} minutes\n` +
+      `💰 Price: ${formatPrice(getPrice(selectedDuration || 60))}`;
+    
+    // Add scheduled date/time if in schedule mode
+    if (isScheduleMode && selectedDate && selectedTime) {
+      const dateObj = new Date(selectedDate);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      bookingMessage += `\n📅 Date: ${formattedDate}\n⏰ Time: ${selectedTime}`;
+    }
+    
+    bookingMessage += `\n\nPlease confirm my booking!`;
+
+    try {
+      setIsSending(true);
+      await sendMessage(bookingMessage);
+      setBookingStep('chat');
+    } catch (error) {
+      console.error('Failed to send booking request:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  // Handle send message
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!messageInput.trim() || isSending) return;
+
+    const content = messageInput.trim();
+    setMessageInput('');
+    setIsSending(true);
+
+    try {
+      await sendMessage(content);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   // Minimized bubble
+  // Show profile picture only if booking sent or in active chat, otherwise show chat icon
+  const hasActiveChat = messages.length > 0 && bookingStep === 'chat';
+  
   if (isMinimized) {
     return (
-      <div
+      <button
         onClick={maximizeChat}
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          zIndex: 99999,
-          width: '56px',
-          height: '56px',
-          borderRadius: '50%',
-          backgroundColor: '#f97316',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          boxShadow: '0 4px 20px rgba(249,115,22,0.4)',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'scale(1.08)';
-          e.currentTarget.style.boxShadow = '0 6px 24px rgba(249,115,22,0.5)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 4px 20px rgba(249,115,22,0.4)';
-        }}
+        className="fixed bottom-4 right-4 z-[9999] flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+        style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
       >
-        {therapist?.image ? (
-          <img
-            src={therapist.image}
-            alt={therapist.name}
-            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-          />
-        ) : (
-          <MessageCircle size={24} color="#fff" />
-        )}
-      </div>
+        <div className="relative">
+          {hasActiveChat ? (
+            <>
+              <img 
+                src={therapist.image || '/placeholder-avatar.jpg'} 
+                alt={therapist.name}
+                className="w-10 h-10 rounded-full object-cover border-2 border-white"
+              />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+            </>
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
+          )}
+        </div>
+        <div className="text-left">
+          <div className="font-semibold text-sm">{hasActiveChat ? therapist.name : 'Continue Booking'}</div>
+          <div className="text-xs text-orange-100">{hasActiveChat ? 'Tap to continue chat' : 'Tap to continue'}</div>
+        </div>
+      </button>
     );
   }
-  
-  // Full window
+
+  // Full chat window
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '20px',
-      right: '20px',
-      zIndex: 99999,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    }}>
-      <div style={{
-        width: '360px',
-        maxWidth: 'calc(100vw - 40px)',
-        maxHeight: 'calc(100vh - 100px)',
-        backgroundColor: '#fff',
-        borderRadius: '16px',
-        boxShadow: '0 8px 40px rgba(0,0,0,0.12)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}>
-        {/* Header */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-          color: '#fff',
-          padding: '14px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(255,255,255,0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden',
-            }}>
-              {therapist?.image ? (
-                <img src={therapist.image} alt={therapist.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <User size={20} color="#fff" />
-              )}
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '14px' }}>{therapist?.name || 'Chat'}</div>
-              <div style={{ fontSize: '11px', opacity: 0.85, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#4ade80' }}></span>
-                Online
-              </div>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              onClick={minimizeChat}
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                border: 'none',
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                color: '#fff',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '18px',
-                lineHeight: 1,
-              }}
-              title="Minimize"
-            >
-              −
-            </button>
-            {!isLocked && (
-              <button
-                onClick={closeChat}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  border: 'none',
-                  backgroundColor: 'rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                title="Close"
-              >
-                <X size={14} />
-              </button>
+    <div
+      className="fixed bottom-4 right-4 z-[9999] w-[380px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+      style={{ 
+        height: 'min(600px, calc(100vh - 100px))',
+        fontFamily: 'system-ui, -apple-system, sans-serif'
+      }}
+    >
+      {/* Header */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 flex items-center gap-3">
+        {bookingStep !== 'duration' && (
+          <button
+            onClick={() => setBookingStep('duration')}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
+        
+        <div className="relative flex-shrink-0">
+          <img 
+            src={therapist.image || '/placeholder-avatar.jpg'} 
+            alt={therapist.name}
+            className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
+          />
+          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-orange-500"></span>
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm truncate">{therapist.name}</h3>
+          <div className="flex items-center gap-1 text-xs text-orange-100">
+            {isConnected ? (
+              <>
+                <Wifi className="w-3 h-3" />
+                <span>Connected • Online</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3 h-3" />
+                <span>Connecting...</span>
+              </>
             )}
           </div>
         </div>
         
-        {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#fff' }}>
-          {bookingStep === 'duration' && <DurationStep />}
-          {bookingStep === 'details' && <DetailsStep />}
-          {bookingStep === 'confirmation' && <ConfirmationStep />}
-          {bookingStep === 'chat' && <ChatStep />}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={minimizeChat}
+            className="p-1.5 bg-black rounded-full hover:bg-gray-800 transition-colors"
+            title="Minimize"
+          >
+            <Minus className="w-4 h-4 text-white" />
+          </button>
+          {!isLocked && (
+            <button
+              onClick={closeChat}
+              className="p-1.5 bg-black rounded-full hover:bg-gray-800 transition-colors"
+              title="Close"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          )}
         </div>
       </div>
-      
-      {/* Keyframes for spinner */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto bg-gray-50">
+        
+        {/* Duration Selection Step */}
+        {bookingStep === 'duration' && (
+          <div className="p-4">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+                <Clock className="w-8 h-8 text-orange-500" />
+              </div>
+              <h4 className="font-semibold text-gray-800">Select Duration</h4>
+              <p className="text-sm text-gray-500 mt-1">Choose your preferred massage duration</p>
+            </div>
+            
+            <div className="space-y-3">
+              {DURATION_OPTIONS.map((option) => {
+                const price = getPrice(option.minutes);
+                return (
+                  <button
+                    key={option.minutes}
+                    onClick={() => handleDurationSelect(option.minutes)}
+                    className="w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 text-left group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold text-gray-800 group-hover:text-orange-600">
+                          {option.label}
+                        </div>
+                        <div className="text-sm text-gray-500">{option.minutes} minutes</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-orange-500 text-lg">
+                          {formatPrice(price)}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            <p className="text-xs text-gray-400 text-center mt-4">
+              Prices may vary based on location and time
+            </p>
+          </div>
+        )}
+
+        {/* DateTime Selection Step (for Schedule mode) */}
+        {bookingStep === 'datetime' && (
+          <div className="p-4">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+                <Calendar className="w-8 h-8 text-orange-500" />
+              </div>
+              <h4 className="font-semibold text-gray-800">Schedule Appointment</h4>
+              <p className="text-sm text-gray-500 mt-1">
+                {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              {/* Date Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-1" />
+                  Select Date
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-800"
+                />
+              </div>
+              
+              {/* Time Picker */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  Select Time
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'].map((time) => (
+                    <button
+                      key={time}
+                      type="button"
+                      onClick={() => setSelectedTime(time)}
+                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        selectedTime === time
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Selected Summary */}
+              {selectedDate && selectedTime && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                  <div className="text-sm text-orange-800">
+                    <strong>Selected:</strong> {new Date(selectedDate).toLocaleDateString('en-US', { 
+                      weekday: 'short', 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })} at {selectedTime}
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={handleDateTimeSubmit}
+                disabled={!selectedDate || !selectedTime}
+                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Check className="w-5 h-5" />
+                Continue to Details
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Customer Details Step */}
+        {bookingStep === 'details' && (
+          <div className="p-4">
+            <div className="text-center mb-4">
+              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
+                <User className="w-8 h-8 text-orange-500" />
+              </div>
+              <h4 className="font-semibold text-gray-800">Your Details</h4>
+              <p className="text-sm text-gray-500 mt-1">
+                {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
+              </p>
+              {isScheduleMode && selectedDate && selectedTime && (
+                <p className="text-sm text-orange-600 mt-1">
+                  📅 {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
+                </p>
+              )}
+            </div>
+            
+            <form onSubmit={handleCustomerSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <User className="w-4 h-4 inline mr-1" />
+                  Your Name *
+                </label>
+                <input
+                  type="text"
+                  value={customerForm.name}
+                  onChange={(e) => setCustomerForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Phone className="w-4 h-4 inline mr-1" />
+                  WhatsApp Number *
+                </label>
+                <input
+                  type="tel"
+                  value={customerForm.whatsApp}
+                  onChange={(e) => setCustomerForm(prev => ({ ...prev, whatsApp: e.target.value }))}
+                  placeholder="+62 812 3456 7890"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Location (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={customerForm.location}
+                  onChange={(e) => setCustomerForm(prev => ({ ...prev, location: e.target.value }))}
+                  placeholder="Hotel name or address"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isSending || !customerForm.name || !customerForm.whatsApp}
+                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSending ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5" />
+                    Send Booking Request
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Chat Messages Step */}
+        {bookingStep === 'chat' && (
+          <div className="flex flex-col h-full">
+            {/* Messages */}
+            <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+              {messages.length === 0 ? (
+                <div className="text-center py-8">
+                  <MessageCircle className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+                  <p className="text-gray-400 text-sm">Start a conversation with {therapist.name}</p>
+                </div>
+              ) : (
+                messages.map((msg: ChatMessage) => {
+                  const isOwn = msg.senderType === 'customer' || 
+                               (msg.senderId !== therapist.id && msg.senderType !== 'therapist' && msg.senderType !== 'system');
+                  const isSystem = msg.senderType === 'system' || msg.isSystemMessage;
+
+                  if (isSystem) {
+                    return (
+                      <div key={msg.$id} className="flex justify-center">
+                        <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
+                          {msg.message}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={msg.$id}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[75%] px-4 py-2 rounded-2xl ${
+                          isOwn
+                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-br-md'
+                            : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md shadow-sm'
+                        }`}
+                      >
+                        {!isOwn && (
+                          <div className="text-xs font-medium text-orange-500 mb-1">
+                            {msg.senderName}
+                          </div>
+                        )}
+                        <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
+                        <div className={`text-xs mt-1 flex items-center gap-1 ${isOwn ? 'text-orange-100 justify-end' : 'text-gray-400'}`}>
+                          {formatTime(msg.createdAt)}
+                          {isOwn && msg.read && <Check className="w-3 h-3" />}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Message Input - Only show in chat step */}
+      {bookingStep === 'chat' && (
+        <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              placeholder="Type a message..."
+              className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-orange-200 outline-none text-sm"
+              disabled={isSending}
+            />
+            <button
+              type="submit"
+              disabled={!messageInput.trim() || isSending}
+              className="p-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSending ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </button>
+          </div>
+          
+          {/* Connection status */}
+          <div className={`text-xs text-center mt-2 flex items-center justify-center gap-1 ${isConnected ? 'text-green-500' : 'text-orange-500'}`}>
+            {isConnected ? (
+              <>
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                Messages delivered instantly
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
+                Connecting to server...
+              </>
+            )}
+          </div>
+        </form>
+      )}
     </div>
   );
 }
