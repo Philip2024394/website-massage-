@@ -10,9 +10,9 @@
  * - Never disappears once opened
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar } from 'lucide-react';
+import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles } from 'lucide-react';
 
 // Duration options with prices
 const DURATION_OPTIONS = [
@@ -65,12 +65,30 @@ export function PersistentChatWindow() {
   });
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Arrival countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setArrivalCountdown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Format countdown to MM:SS
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatState.messages]);
+    if (chatState.messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatState.messages.length]); // Only trigger on message count change, not full array
 
   // Don't render if no therapist or not open
   if (!chatState.isOpen || !chatState.therapist) {
@@ -420,6 +438,95 @@ export function PersistentChatWindow() {
           </div>
         )}
 
+        {/* Confirmation Step - Pre-selected service from Menu Harga */}
+        {bookingStep === 'confirmation' && chatState.selectedService && (
+          <div className="p-4">
+            {/* Service Card with Arrival Countdown */}
+            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200 shadow-sm mb-4">
+              {/* Header with therapist */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                  <img 
+                    src={therapist.image || '/placeholder-avatar.jpg'} 
+                    alt={therapist.name}
+                    className="w-14 h-14 rounded-full object-cover border-2 border-orange-400 shadow-md"
+                  />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-gray-900">{therapist.name}</h4>
+                  <div className="flex items-center gap-1 text-sm text-gray-600">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span>4.9</span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-green-600 font-medium">Available</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Selected Service Details */}
+              <div className="bg-white rounded-xl p-3 border border-orange-200 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Selected Service</span>
+                  <Sparkles className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="font-bold text-lg text-gray-900 mb-1">
+                  {chatState.selectedService.serviceName}
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium">{chatState.selectedService.duration} min</span>
+                  </div>
+                  <div className="text-xl font-bold text-orange-600">
+                    {formatPrice(chatState.selectedService.price)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Arrival Time Countdown */}
+              <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-3 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                      <Clock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="text-xs opacity-90">Estimated Arrival</div>
+                      <div className="font-semibold">~1 Hour</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs opacity-90">Countdown</div>
+                    <div className="font-bold text-2xl font-mono tracking-wider">
+                      {formatCountdown(arrivalCountdown)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Confirm & Book Button */}
+            <button
+              onClick={() => setBookingStep('details')}
+              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+            >
+              <Check className="w-5 h-5" />
+              Confirm & Book Now
+            </button>
+
+            {/* Change Selection Link */}
+            <button
+              onClick={() => setBookingStep('duration')}
+              className="w-full mt-3 py-2 text-sm text-orange-600 hover:text-orange-700 font-medium"
+            >
+              ← Change selection
+            </button>
+          </div>
+        )}
+
         {/* Customer Details Step */}
         {bookingStep === 'details' && (
           <div className="p-4">
@@ -608,4 +715,5 @@ export function PersistentChatWindow() {
   );
 }
 
-export default PersistentChatWindow;
+// Memoize to prevent unnecessary re-renders
+export default memo(PersistentChatWindow);

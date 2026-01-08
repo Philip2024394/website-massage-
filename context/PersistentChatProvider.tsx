@@ -59,6 +59,13 @@ export interface LegacyMessage {
 // Booking flow step
 export type BookingStep = 'duration' | 'datetime' | 'details' | 'confirmation' | 'chat';
 
+// Selected service from Menu Harga
+export interface SelectedService {
+  serviceName: string;
+  duration: number; // 60, 90, or 120
+  price: number;
+}
+
 // Chat window state
 export interface ChatWindowState {
   isOpen: boolean;
@@ -74,6 +81,7 @@ export interface ChatWindowState {
   customerWhatsApp: string;
   customerLocation: string;
   coordinates: { lat: number; lng: number } | null;
+  selectedService: SelectedService | null; // Pre-selected from Menu Harga
 }
 
 // Context value
@@ -82,6 +90,7 @@ interface PersistentChatContextValue {
   isLocked: boolean;
   isConnected: boolean;
   openChat: (therapist: ChatTherapist, mode?: 'book' | 'schedule' | 'price') => void;
+  openChatWithService: (therapist: ChatTherapist, service: SelectedService) => void; // From Menu Harga
   minimizeChat: () => void;
   maximizeChat: () => void;
   closeChat: () => void;
@@ -113,6 +122,7 @@ const initialState: ChatWindowState = {
   customerWhatsApp: '',
   customerLocation: '',
   coordinates: null,
+  selectedService: null, // Pre-selected from Menu Harga
 };
 
 export function PersistentChatProvider({ children }: { children: ReactNode }) {
@@ -122,6 +132,12 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [currentUserName, setCurrentUserName] = useState<string>('Guest');
   const subscriptionRef = useRef<(() => void) | null>(null);
+  const therapistIdRef = useRef<string | null>(null);
+
+  // Keep therapist ID ref in sync
+  useEffect(() => {
+    therapistIdRef.current = chatState.therapist?.id || null;
+  }, [chatState.therapist?.id]);
 
   // Get or create user ID on mount
   useEffect(() => {
@@ -163,10 +179,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
           const isOurMessage = payload.senderId === currentUserId || payload.recipientId === currentUserId;
           if (!isOurMessage) return;
 
-          // Check if it's for the current therapist chat
-          if (chatState.therapist) {
+          // Check if it's for the current therapist chat (use ref to avoid stale closure)
+          const currentTherapistId = therapistIdRef.current;
+          if (currentTherapistId) {
             const isForCurrentChat = 
-              (payload.senderId === chatState.therapist.id || payload.recipientId === chatState.therapist.id);
+              (payload.senderId === currentTherapistId || payload.recipientId === currentTherapistId);
             
             if (isForCurrentChat && response.events.some(e => e.includes('create'))) {
               const newMessage: ChatMessage = {
@@ -217,7 +234,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         console.log('🔌 PersistentChat: Unsubscribed');
       }
     };
-  }, [currentUserId, chatState.therapist?.id]);
+  }, [currentUserId]); // Remove therapist dependency - use ref instead
 
   // Load existing messages when chat opens
   const loadMessages = useCallback(async (therapistId: string) => {
@@ -283,6 +300,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       bookingStep: 'duration',
       selectedDate: null,
       selectedTime: null,
+      selectedService: null, // Reset pre-selected service
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
     }));
     
@@ -296,6 +314,41 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
           ...prev,
           messages,
           bookingStep: 'chat', // Go directly to chat if there's history
+        }));
+      }
+    }
+  }, [currentUserId, loadMessages]);
+
+  // Open chat with pre-selected service from Menu Harga
+  // This skips the duration selection and goes directly to confirmation
+  const openChatWithService = useCallback(async (therapist: ChatTherapist, service: { serviceName: string; duration: number; price: number }) => {
+    console.log('💬 Opening chat with pre-selected service:', therapist.name, service);
+    
+    // Set state with pre-selected service - skip duration step
+    setChatState(prev => ({
+      ...prev,
+      isOpen: true,
+      isMinimized: false,
+      therapist,
+      bookingMode: 'price', // Price mode from Menu Harga
+      bookingStep: 'confirmation', // Skip to confirmation since service already selected
+      selectedDuration: service.duration,
+      selectedDate: null,
+      selectedTime: null,
+      selectedService: service, // Store the pre-selected service details
+      messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+    }));
+    
+    setIsLocked(true);
+
+    // Load existing messages
+    if (currentUserId) {
+      const messages = await loadMessages(therapist.id);
+      if (messages.length > 0) {
+        setChatState(prev => ({
+          ...prev,
+          messages,
+          // Keep confirmation step even with history - user chose specific service
         }));
       }
     }
@@ -481,6 +534,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     isLocked,
     isConnected,
     openChat,
+    openChatWithService, // From Menu Harga with pre-selected service
     minimizeChat,
     maximizeChat,
     closeChat,

@@ -144,7 +144,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     } = useTherapistCardCalculations(therapist);
     
     // 🔒 PERSISTENT CHAT - Facebook Messenger style chat window
-    const { openBookingChat, openScheduleChat, openPriceChat } = usePersistentChatIntegration();
+    const { openBookingChat, openScheduleChat, openPriceChat, openBookingWithService } = usePersistentChatIntegration();
     
     // Debug modal state changes
     useEffect(() => {
@@ -786,7 +786,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                     <img 
                                         key={(therapist as any).profilePicture}
                                         className="w-full h-full rounded-full object-cover aspect-square" 
-                                        src={(therapist as any).profilePicture.includes('?') ? `${(therapist as any).profilePicture}&t=${Date.now()}` : `${(therapist as any).profilePicture}?t=${Date.now()}`}
+                                        src={(therapist as any).profilePicture}
                                         alt={`${therapist.name} profile`}
                                         loading="lazy"
                                         decoding="async"
@@ -904,6 +904,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <span className="font-bold">{chatTranslationService.getTranslation('accepts', chatLang)}:</span> {getClientPreferenceDisplay(therapist.clientPreferences, chatLang)}
                 </p>
                 <button
+                    type="button"
                     onClick={(e) => {
                         console.log('🔴 BUTTON CLICKED - Starting...');
                         e.preventDefault();
@@ -919,7 +920,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             console.error('❌ Error setting modal state:', error);
                         }
                     }}
-                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
+                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle cursor-pointer relative z-10"
                 >
                     <style>{`
                         @keyframes flash-subtle {
@@ -1558,8 +1559,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {/* Price List Bottom Sheet Slider */}
             {showPriceListModal && (
                 <div
-                    className="fixed inset-0 z-[9999] bg-black bg-opacity-50 transition-opacity duration-300"
-                    onClick={() => setShowPriceListModal(false)}
+                    className="fixed inset-0 z-[10000] bg-black bg-opacity-50 transition-opacity duration-300"
+                    onClick={() => {
+                        console.log('🔴 Modal backdrop clicked - closing');
+                        setShowPriceListModal(false);
+                    }}
                 >
                     <style>{`
                         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -1574,7 +1578,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             <div className="flex items-center gap-3 flex-1">
                                 <img
                                     key={(therapist as any).profilePicture}
-                                    src={((therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg').includes('?') ? `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}&t=${Date.now()}` : `${(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}?t=${Date.now()}`}
+                                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                     alt={therapist.name}
                                     className="w-11 h-11 rounded-full border-2 border-white object-cover"
                                     loading="lazy"
@@ -1675,20 +1679,24 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                                     {/* Action Buttons */}
                                                     <div className="col-span-2 text-center">
                                                         <button
-                                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer shadow-lg scale-105'
+                                                                    : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 cursor-pointer'
                                                             }`}
                                                             onClick={(e) => {
-                                                                const availableDurations = [];
+                                                                e.stopPropagation();
+                                                                
+                                                                // If no selection yet, auto-select first available duration for this service
+                                                                const availableDurations: string[] = [];
                                                                 if (service.price60) availableDurations.push('60');
                                                                 if (service.price90) availableDurations.push('90');
                                                                 if (service.price120) availableDurations.push('120');
                                                                 
-                                                                console.log('🎯 PRICE SLIDER: User clicked "Book Now"', {
-                                                                    serviceName: service.name,
+                                                                console.log('🎯 PRICE SLIDER: User clicked "Pesan Sekarang"', {
+                                                                    serviceName: service.name || service.serviceName,
                                                                     serviceIndex: index,
+                                                                    isRowSelected,
                                                                     selectedDuration,
                                                                     availableDurations,
                                                                     therapistId: therapist.id,
@@ -1696,28 +1704,40 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                                                 });
                                                                 
                                                                 if (availableDurations.length > 0) {
-                                                                    handleSelectService(index, availableDurations[0] as '60' | '90' | '120');
-                                                                    
-                                                                    // Close the price list modal
-                                                                    setShowPriceListModal(false);
-
-                                                                    // Get pricing info
-                                                                    const pricing = getPricing();
-                                                                    const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-                                                                    
-                                                                    console.log('🚀 PRICE SLIDER → Calling handleBookingClick with:', {
-                                                                        duration: selectedDuration,
-                                                                        status: normalizedStatus,
-                                                                        pricing
-                                                                    });
-                                                                    
-                                                                    // Handle booking based on status
-                                                                    handleBookingClick(e, normalizedStatus, pricing);
+                                                                    // If this row is already selected with a duration, proceed to booking
+                                                                    if (isRowSelected && selectedDuration) {
+                                                                        const serviceName = service.name || service.serviceName || 'Massage Service';
+                                                                        const servicePrice = Number(service[`price${selectedDuration}`]) * 1000;
+                                                                        const serviceDuration = parseInt(selectedDuration);
+                                                                        
+                                                                        console.log('🚀 PRICE SLIDER → Opening booking chat with pre-selected service:', {
+                                                                            serviceName,
+                                                                            duration: serviceDuration,
+                                                                            price: servicePrice
+                                                                        });
+                                                                        
+                                                                        // Close the price list modal
+                                                                        setShowPriceListModal(false);
+                                                                        
+                                                                        // Open chat with pre-selected service details (skips duration selection)
+                                                                        openBookingWithService(therapist, {
+                                                                            serviceName,
+                                                                            duration: serviceDuration,
+                                                                            price: servicePrice
+                                                                        });
+                                                                    } else {
+                                                                        // Auto-select first available duration for this service
+                                                                        const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                        handleSelectService(index, firstDuration);
+                                                                        console.log('🎯 Auto-selected:', { serviceIndex: index, duration: firstDuration });
+                                                                    }
                                                                 }
                                                             }}
-                                                            disabled={!isRowSelected || !selectedDuration}
                                                         >
-                                                            {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}
+                                                            {isRowSelected && selectedDuration 
+                                                                ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
+                                                                : (chatLang === 'id' ? 'Pilih' : 'Select')
+                                                            }
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1776,39 +1796,60 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                             {/* Action Button */}
                                             <div className="col-span-2 text-center">
                                                 <button
-                                                    className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                                                    className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                         selectedServiceIndex === 0 && selectedDuration
-                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer shadow-lg scale-105'
+                                                            : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 cursor-pointer'
                                                     }`}
                                                     onClick={(e) => {
-                                                        if (selectedServiceIndex === 0 && selectedDuration) {
-                                                            console.log('🎯 PRICE SLIDER (Fallback): User clicked "Book Now"', {
-                                                                selectedDuration,
-                                                                therapistId: therapist.id,
-                                                                therapistName: therapist.name
-                                                            });
-                                                            
-                                                            // Close the price list modal
-                                                            setShowPriceListModal(false);
-
-                                                            // Get pricing info
-                                                            const pricing = getPricing();
-                                                            const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-                                                            
-                                                            console.log('🚀 PRICE SLIDER (Fallback) → Calling handleBookingClick with:', {
-                                                                duration: selectedDuration,
-                                                                status: normalizedStatus,
-                                                                pricing
-                                                            });
-                                                            
-                                                            // Handle booking
-                                                            handleBookingClick(e, normalizedStatus, pricing);
+                                                        e.stopPropagation();
+                                                        
+                                                        // Get available durations from therapist pricing
+                                                        const availableDurations: string[] = [];
+                                                        if (therapist.price60) availableDurations.push('60');
+                                                        if (therapist.price90) availableDurations.push('90');
+                                                        if (therapist.price120) availableDurations.push('120');
+                                                        
+                                                        console.log('🎯 PRICE SLIDER (Fallback): User clicked "Pesan Sekarang"', {
+                                                            selectedServiceIndex,
+                                                            selectedDuration,
+                                                            availableDurations,
+                                                            therapistId: therapist.id,
+                                                            therapistName: therapist.name
+                                                        });
+                                                        
+                                                        if (availableDurations.length > 0) {
+                                                            // If already selected, proceed to booking
+                                                            if (selectedServiceIndex === 0 && selectedDuration) {
+                                                                const priceKey = `price${selectedDuration}` as keyof typeof therapist;
+                                                                const servicePrice = Number(therapist[priceKey]) * 1000;
+                                                                const serviceDuration = parseInt(selectedDuration);
+                                                                
+                                                                console.log('🚀 PRICE SLIDER (Fallback) → Opening booking chat with pre-selected service');
+                                                                
+                                                                // Close the price list modal
+                                                                setShowPriceListModal(false);
+                                                                
+                                                                // Open chat with pre-selected service details
+                                                                openBookingWithService(therapist, {
+                                                                    serviceName: 'Traditional Massage',
+                                                                    duration: serviceDuration,
+                                                                    price: servicePrice
+                                                                });
+                                                            } else {
+                                                                // Auto-select first available duration
+                                                                const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                setSelectedServiceIndex(0);
+                                                                setSelectedDuration(firstDuration);
+                                                                console.log('🎯 Auto-selected (Fallback):', { duration: firstDuration });
+                                                            }
                                                         }
                                                     }}
-                                                    disabled={selectedServiceIndex !== 0 || !selectedDuration}
                                                 >
-                                                    {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}
+                                                    {selectedServiceIndex === 0 && selectedDuration 
+                                                        ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
+                                                        : (chatLang === 'id' ? 'Pilih' : 'Select')
+                                                    }
                                                 </button>
                                             </div>
                                         </div>

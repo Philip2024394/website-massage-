@@ -8,16 +8,17 @@
  * import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
  * 
  * // Inside component:
- * const { openBookingChat, openPriceChat, openScheduleChat } = usePersistentChatIntegration();
+ * const { openBookingChat, openPriceChat, openScheduleChat, openBookingWithService } = usePersistentChatIntegration();
  * 
  * // On button click:
  * <button onClick={() => openBookingChat(therapist)}>Book Now</button>
  * <button onClick={() => openScheduleChat(therapist)}>Schedule</button>
+ * <button onClick={() => openBookingWithService(therapist, { serviceName: 'Full Body', duration: 60, price: 350000 })}>Book Selected</button>
  * ```
  */
 
 import { useCallback } from 'react';
-import { usePersistentChat, ChatTherapist } from '../context/PersistentChatProvider';
+import { usePersistentChat, ChatTherapist, SelectedService } from '../context/PersistentChatProvider';
 import type { Therapist } from '../types';
 import { parsePricing } from '../utils/appwriteHelpers';
 
@@ -25,7 +26,7 @@ import { parsePricing } from '../utils/appwriteHelpers';
  * Hook to integrate TherapistCard buttons with PersistentChatWindow
  */
 export function usePersistentChatIntegration() {
-  const { openChat, chatState, minimizeChat, maximizeChat } = usePersistentChat();
+  const { openChat, openChatWithService, chatState, minimizeChat, maximizeChat } = usePersistentChat();
   
   /**
    * Convert Therapist type to ChatTherapist type
@@ -82,6 +83,20 @@ export function usePersistentChatIntegration() {
   }, [openChat, convertToChatTherapist]);
   
   /**
+   * Open chat with pre-selected service from Menu Harga
+   * - Skips duration selection
+   * - Goes directly to confirmation with service details + arrival time
+   */
+  const openBookingWithService = useCallback((
+    therapist: Therapist, 
+    service: { serviceName: string; duration: number; price: number }
+  ) => {
+    console.log('🔒 [PersistentChatIntegration] Opening chat with pre-selected service:', therapist.name, service);
+    const chatTherapist = convertToChatTherapist(therapist);
+    openChatWithService(chatTherapist, service);
+  }, [openChatWithService, convertToChatTherapist]);
+  
+  /**
    * Check if chat is currently open for a specific therapist
    */
   const isChatOpenFor = useCallback((therapistId: string | number) => {
@@ -103,6 +118,7 @@ export function usePersistentChatIntegration() {
     openBookingChat,
     openScheduleChat,
     openPriceChat,
+    openBookingWithService, // From Menu Harga with pre-selected service
     isChatOpenFor,
     toggleMinimize,
     isChatOpen: chatState.isOpen,
