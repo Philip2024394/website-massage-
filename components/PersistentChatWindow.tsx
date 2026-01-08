@@ -62,6 +62,7 @@ export function PersistentChatWindow() {
     name: '',
     whatsApp: '',
     location: '',
+    locationType: '' as 'home' | 'hotel' | 'villa' | '',
   });
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -162,10 +163,14 @@ export function PersistentChatWindow() {
     });
 
     // Build booking request message
+    const locationTypeLabels = { home: '🏠 Home', hotel: '🏨 Hotel', villa: '🏡 Villa' };
+    const locationTypeText = customerForm.locationType ? locationTypeLabels[customerForm.locationType] : 'Not specified';
+    
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
       `📱 WhatsApp: ${customerForm.whatsApp}\n` +
-      `📍 Location: ${customerForm.location || 'To be confirmed'}\n` +
+      `🏢 Massage At: ${locationTypeText}\n` +
+      `📍 Address: ${customerForm.location || 'To be confirmed'}\n` +
       `⏱️ Duration: ${selectedDuration} minutes\n` +
       `💰 Price: ${formatPrice(getPrice(selectedDuration || 60))}`;
     
@@ -581,22 +586,50 @@ export function PersistentChatWindow() {
               </div>
               
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <MapPin className="w-4 h-4 inline mr-1" />
+                  Massage Required In... *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'home', label: 'Home', icon: '🏠' },
+                    { value: 'hotel', label: 'Hotel', icon: '🏨' },
+                    { value: 'villa', label: 'Villa', icon: '🏡' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setCustomerForm(prev => ({ ...prev, locationType: option.value as 'home' | 'hotel' | 'villa' }))}
+                      className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
+                        customerForm.locationType === option.value
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'
+                      }`}
+                    >
+                      <span className="text-xl">{option.icon}</span>
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <MapPin className="w-4 h-4 inline mr-1" />
-                  Location (Optional)
+                  Address / Location Details
                 </label>
                 <input
                   type="text"
                   value={customerForm.location}
                   onChange={(e) => setCustomerForm(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder="Hotel name or address"
+                  placeholder={customerForm.locationType === 'hotel' ? 'Hotel name & room number' : customerForm.locationType === 'villa' ? 'Villa name & address' : 'Your address'}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
                 />
               </div>
               
               <button
                 type="submit"
-                disabled={isSending || !customerForm.name || !customerForm.whatsApp}
+                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.locationType}
                 className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSending ? (
