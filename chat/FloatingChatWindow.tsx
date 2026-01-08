@@ -71,8 +71,10 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
   const [bookingFormData, setBookingFormData] = useState({
     customerName: '',
     customerWhatsApp: '',
-    location: ''
+    location: '',
+    coordinates: null as { lat: number; lng: number } | null
   });
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   // Refs
   const windowRef = useRef<HTMLDivElement>(null);
@@ -192,14 +194,57 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     }
   };
 
+  // NEW: Handle getting GPS location
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      addNotification('error', 'Not Supported', 'Geolocation is not supported by your device');
+      return;
+    }
+
+    setGettingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setBookingFormData(prev => ({ 
+          ...prev, 
+          coordinates: coords,
+          location: `GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+        }));
+        setGettingLocation(false);
+        addNotification('success', 'Location Set', 'Your location has been captured');
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        let errorMsg = 'Could not get your location';
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMsg = 'Location permission denied. Please enable in settings.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMsg = 'Location information unavailable';
+        } else if (error.code === error.TIMEOUT) {
+          errorMsg = 'Location request timed out';
+        }
+        addNotification('error', 'Location Error', errorMsg);
+        setGettingLocation(false);
+      },
+      { 
+        enableHighAccuracy: true, 
+        timeout: 10000, 
+        maximumAge: 0 
+      }
+    );
+  };
+
   // NEW: Handle booking confirmation from form
   const handleConfirmBooking = async (chatRoomId: string) => {
     const chatRoom = activeChatRooms.find(r => r.$id === chatRoomId);
     if (!chatRoom || chatRoom.status !== 'booking-in-progress') return;
 
     // Validate form
-    if (!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.location) {
-      addNotification('error', 'Missing Information', 'Please fill in all required fields');
+    if (!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates) {
+      addNotification('error', 'Missing Information', 'Please fill in all required fields and set your location');
       return;
     }
 
@@ -253,6 +298,8 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         customerName: bookingFormData.customerName,
         customerWhatsApp: formattedWhatsApp,
         customerLocation: bookingFormData.location,
+        customerLatitude: bookingFormData.coordinates.lat,
+        customerLongitude: bookingFormData.coordinates.lng,
         bookingType: 'immediate',
         therapistId: chatRoom.providerId,
         therapistName: chatRoom.providerName,
@@ -482,22 +529,46 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Your Location <span className="text-red-500">*</span>
                         </label>
-                        <textarea
-                          value={bookingFormData.location}
-                          onChange={(e) => setBookingFormData(prev => ({ ...prev, location: e.target.value }))}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          placeholder="Enter your address (Hotel name, Villa, Street address, etc.)"
-                          rows={3}
-                          required
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Therapist will travel to your location</p>
+                        <button
+                          type="button"
+                          onClick={handleGetLocation}
+                          disabled={gettingLocation}
+                          className={`w-full px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
+                            bookingFormData.coordinates
+                              ? 'border-green-500 bg-green-50 text-green-700'
+                              : 'border-orange-500 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                          } ${gettingLocation ? 'opacity-50 cursor-wait' : ''}`}
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>
+                            {gettingLocation
+                              ? 'Getting Location...'
+                              : bookingFormData.coordinates
+                              ? '✓ Location Set'
+                              : 'Set My Location'}
+                          </span>
+                        </button>
+                        {bookingFormData.coordinates && (
+                          <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              <span>Lat: {bookingFormData.coordinates.lat.toFixed(6)}, Lng: {bookingFormData.coordinates.lng.toFixed(6)}</span>
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">📍 Therapist will see your exact location before accepting</p>
                       </div>
                     </div>
 
                     {/* Confirm Button */}
                     <button
                       onClick={() => handleConfirmBooking(chatRoom.$id)}
-                      disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.location}
+                      disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates}
                       className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
                     >
                       Confirm Booking

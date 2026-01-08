@@ -509,7 +509,10 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           bookingDetails={{
             date: selectedBooking.date,
             duration: selectedBooking.duration,
-            price: selectedBooking.price
+            price: selectedBooking.price,
+            location: selectedBooking.customerLocation,
+            latitude: selectedBooking.customerLatitude,
+            longitude: selectedBooking.customerLongitude
           }}
           isOpen={chatOpen}
           onClose={() => {
