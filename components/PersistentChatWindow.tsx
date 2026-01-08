@@ -555,17 +555,26 @@ export function PersistentChatWindow() {
         {bookingStep === 'details' && (
           <div className="p-4">
             <div className="text-center mb-4">
-              <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center">
+              <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                   alt="Indastreet Massage"
-                  className="w-24 h-24 object-contain"
+                  className="w-32 h-32 object-contain"
                 />
               </div>
-              <h4 className="font-semibold text-gray-800">Your Details</h4>
-              <p className="text-sm text-gray-500 mt-1">
-                {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
-              </p>
+              <h4 className="text-lg font-bold text-gray-800">Booking Details</h4>
+              {chatState.selectedService ? (
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm font-medium text-orange-600">{chatState.selectedService.serviceName}</p>
+                  <p className="text-xs text-gray-500">
+                    {chatState.selectedService.duration} min • {formatPrice(chatState.selectedService.price)}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-1">
+                  {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
+                </p>
+              )}
               {isScheduleMode && selectedDate && selectedTime && (
                 <p className="text-sm text-orange-600 mt-1">
                   📅 {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
