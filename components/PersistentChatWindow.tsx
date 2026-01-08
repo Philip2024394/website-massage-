@@ -67,7 +67,9 @@ export function PersistentChatWindow() {
     coordinates: null as { lat: number; lng: number } | null,
     hotelVillaName: '',
     roomNumber: '',
+    massageFor: '' as 'male' | 'female' | 'children' | '',
   });
+  const [clientMismatchError, setClientMismatchError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
@@ -182,9 +184,14 @@ export function PersistentChatWindow() {
         `🛏️ Room Number: ${customerForm.roomNumber}\n`;
     }
     
+    // Massage recipient label
+    const massageForLabels = { male: '👨 Male', female: '👩 Female', children: '👶 Children' };
+    const massageForText = customerForm.massageFor ? massageForLabels[customerForm.massageFor] : 'Not specified';
+    
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
       `📱 WhatsApp: ${customerForm.whatsApp}\n` +
+      `🧍 Massage For: ${massageForText}\n` +
       `🏢 Massage At: ${locationTypeText}\n` +
       locationDetails +
       (mapsLink 
@@ -613,6 +620,74 @@ export function PersistentChatWindow() {
                 />
               </div>
               
+              {/* Massage For Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <User className="w-4 h-4 inline mr-1" />
+                  The Massage Is For... *
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: 'male', label: 'Male', icon: '👨' },
+                    { value: 'female', label: 'Female', icon: '👩' },
+                    { value: 'children', label: 'Children', icon: '👶' },
+                  ].map((option) => {
+                    // Check if therapist accepts this client type
+                    const clientPref = therapist.clientPreferences || 'Males And Females';
+                    let isCompatible = true;
+                    
+                    if (option.value === 'male') {
+                      isCompatible = clientPref === 'Males Only' || clientPref === 'Males And Females' || clientPref === 'All Ages And Genders';
+                    } else if (option.value === 'female') {
+                      isCompatible = clientPref === 'Females Only' || clientPref === 'Males And Females' || clientPref === 'All Ages And Genders';
+                    } else if (option.value === 'children') {
+                      isCompatible = clientPref === 'Babies Only' || clientPref === 'All Ages And Genders';
+                    }
+                    
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => {
+                          setCustomerForm(prev => ({ ...prev, massageFor: option.value as 'male' | 'female' | 'children' }));
+                          // Validate compatibility and set error message
+                          if (!isCompatible) {
+                            const prefLabels: Record<string, string> = {
+                              'Males Only': 'Male clients only',
+                              'Females Only': 'Female clients only',
+                              'Males And Females': 'Male and Female clients',
+                              'Babies Only': 'Babies/Children only',
+                              'All Ages And Genders': 'All ages and genders'
+                            };
+                            setClientMismatchError(`Unfortunately ${therapist.name} only provides massage service for ${prefLabels[clientPref] || clientPref}`);
+                          } else {
+                            setClientMismatchError(null);
+                          }
+                        }}
+                        className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
+                          customerForm.massageFor === option.value
+                            ? isCompatible
+                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                              : 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
+                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'
+                        }`}
+                      >
+                        <span className="text-xl">{option.icon}</span>
+                        <span>{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {/* Client mismatch error message */}
+                {clientMismatchError && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-300 rounded-xl">
+                    <p className="text-sm text-red-700 font-medium">⚠️ {clientMismatchError}</p>
+                    <p className="text-xs text-red-600 mt-1">Please choose a different therapist or select a compatible option.</p>
+                  </div>
+                )}
+              </div>
+              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="w-4 h-4 inline mr-1" />
@@ -774,7 +849,7 @@ export function PersistentChatWindow() {
               
               <button
                 type="submit"
-                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
+                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSending ? (
