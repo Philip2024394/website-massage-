@@ -404,7 +404,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             {/* 60 min pricing */}
                             <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 min-w-0 ${
                                 (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
                                     : ''
                             }`}>
                                 <p className="text-gray-600">60 min</p>
@@ -434,7 +434,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             {/* 90 min pricing */}
                             <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
                                 (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
                                     : ''
                             }`}>
                                 <p className="text-gray-600">90 min</p>
@@ -464,7 +464,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             {/* 120 min pricing */}
                             <div className={`bg-gray-100 p-2 rounded-lg border border-gray-200 shadow-md relative transition-all duration-500 ${
                                 (place.discountPercentage && place.discountPercentage > 0) || (activeDiscount && discountTimeLeft !== 'EXPIRED')
-                                    ? 'shadow-orange-500/60 shadow-xl ring-4 ring-orange-400/40 bg-gradient-to-br from-orange-50 to-orange-100 animate-pulse border-orange-300' 
+                                    ? 'bg-gradient-to-br from-orange-50 to-orange-100' 
                                     : ''
                             }`}>
                                 <p className="text-gray-600">120 min</p>

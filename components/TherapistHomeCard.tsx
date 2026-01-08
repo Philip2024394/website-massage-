@@ -154,6 +154,22 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         }
     }, [userLocation, (therapist as any).geopoint, therapist.coordinates]);
 
+    // Get the location area from GPS-computed _locationArea (consistent with filtering)
+    const therapistLocationArea = (therapist as any)._locationArea;
+    
+    // Get display name for the therapist's actual location area
+    const getLocationAreaDisplayName = () => {
+        if (!therapistLocationArea) {
+            // Fallback to database location field if no GPS-computed area
+            return (therapist.location || 'Bali').split(',')[0].trim();
+        }
+        const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+        const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+        return cityData?.name || therapistLocationArea;
+    };
+    
+    const locationAreaDisplayName = getLocationAreaDisplayName();
+
     // Determine if we should show "Serves [Area] area" instead of distance
     const getLocationDisplay = () => {
         // If no specific city selected (showing "All Indonesia"), show distance if available
@@ -162,13 +178,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         }
 
         // If same city/area is selected, show "Serves [Area] area"
-        const therapistLocationArea = (therapist as any)._locationArea;
         if (therapistLocationArea === selectedCity) {
-            // Find the display name for the selected city
-            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-            const cityData = allCities.find(city => city.locationId === selectedCity);
-            const displayName = cityData?.name || selectedCity;
-            return `Serves ${displayName} area`;
+            return `Serves ${locationAreaDisplayName} area`;
         }
 
         // Different city/area selected, show distance if available
@@ -371,7 +382,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span className="text-xs font-medium text-gray-700">{(therapist.location || 'Bali').split(',')[0].trim()}</span>
+                        <span className="text-xs font-medium text-gray-700">{locationAreaDisplayName}</span>
                     </div>
                     {locationDisplay && (
                         <div className="text-xs text-orange-500 font-medium">

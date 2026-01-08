@@ -395,31 +395,88 @@ export function PersistentChatWindow() {
               <p className="text-sm text-gray-500 mt-1">Choose your preferred massage duration</p>
             </div>
             
-            <div className="space-y-3">
-              {DURATION_OPTIONS.map((option) => {
-                const price = getPrice(option.minutes);
-                return (
-                  <button
-                    key={option.minutes}
-                    onClick={() => handleDurationSelect(option.minutes)}
-                    className="w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-200 text-left group"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-gray-800 group-hover:text-orange-600">
-                          {option.label}
+            {/* CSS for animated hand clicking effect */}
+            {/* Using CSS variables for responsive container positioning */}
+            <style>{`
+              :root {
+                --container-height: 68px;
+                --container-gap: 12px;
+                --hand-size: 40px;
+              }
+              @keyframes handMove {
+                0%, 10% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
+                15% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
+                20%, 30% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
+                33%, 43% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2)); }
+                48% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
+                53%, 63% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2)); }
+                66%, 76% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2)); }
+                81% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
+                86%, 96% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2)); }
+                100% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
+              }
+              @keyframes containerHighlight1 {
+                0%, 10% { border-color: #fb923c; background-color: #fff7ed; box-shadow: 0 10px 15px -3px rgba(251, 146, 60, 0.3); }
+                15% { border-color: #f97316; background-color: #ffedd5; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); transform: scale(1.02); }
+                20%, 100% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
+              }
+              @keyframes containerHighlight2 {
+                0%, 32% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
+                33%, 43% { border-color: #fb923c; background-color: #fff7ed; box-shadow: 0 10px 15px -3px rgba(251, 146, 60, 0.3); }
+                48% { border-color: #f97316; background-color: #ffedd5; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); transform: scale(1.02); }
+                53%, 100% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
+              }
+              @keyframes containerHighlight3 {
+                0%, 65% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
+                66%, 76% { border-color: #fb923c; background-color: #fff7ed; box-shadow: 0 10px 15px -3px rgba(251, 146, 60, 0.3); }
+                81% { border-color: #f97316; background-color: #ffedd5; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); transform: scale(1.02); }
+                86%, 100% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
+              }
+              .hand-animation { animation: handMove 6s ease-in-out infinite; }
+              .container-animate-1 { animation: containerHighlight1 6s ease-in-out infinite; }
+              .container-animate-2 { animation: containerHighlight2 6s ease-in-out infinite; }
+              .container-animate-3 { animation: containerHighlight3 6s ease-in-out infinite; }
+              .duration-container { height: var(--container-height); }
+            `}</style>
+            
+            <div className="relative">
+              {/* Animated clicking hand */}
+              <div className="absolute left-1/2 top-0 z-10 hand-animation pointer-events-none">
+                <img 
+                  src="https://ik.imagekit.io/7grri5v7d/glove-removebg-preview.png" 
+                  alt="Click to select" 
+                  className="w-10 h-10 drop-shadow-lg object-contain"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                {DURATION_OPTIONS.map((option, index) => {
+                  const price = getPrice(option.minutes);
+                  const animationClass = index === 0 ? 'container-animate-1' : index === 1 ? 'container-animate-2' : 'container-animate-3';
+                  return (
+                    <button
+                      key={option.minutes}
+                      onClick={() => handleDurationSelect(option.minutes)}
+                      className={`w-full p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-orange-400 hover:bg-orange-50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 text-left group cursor-pointer duration-container ${animationClass}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-gray-800 group-hover:text-orange-600">
+                            {option.label}
+                          </div>
+                          <div className="text-sm text-gray-500">{option.minutes} minutes</div>
                         </div>
-                        <div className="text-sm text-gray-500">{option.minutes} minutes</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-orange-500 text-lg">
-                          {formatPrice(price)}
+                        <div className="text-right">
+                          <div className="font-bold text-orange-500 text-lg">
+                            {formatPrice(price)}
+                          </div>
+                          <div className="text-xs text-gray-400 group-hover:text-orange-400">Book Now →</div>
                         </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             
             <p className="text-xs text-gray-400 text-center mt-4">
@@ -598,25 +655,25 @@ export function PersistentChatWindow() {
         {/* Customer Details Step */}
         {bookingStep === 'details' && (
           <div className="p-4">
+            <h4 className="text-lg font-bold text-gray-800 text-left mb-4">Booking Details</h4>
             <div className="text-center mb-4">
-              <div className="w-64 h-64 mx-auto mb-3 flex items-center justify-center">
+              <div className="w-64 h-64 mx-auto -mt-[15px] mb-1 flex items-center justify-center">
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                   alt="Indastreet Massage"
                   className="w-64 h-64 object-contain"
                 />
               </div>
-              <h4 className="text-lg font-bold text-gray-800">Booking Details</h4>
               {chatState.selectedService ? (
                 <div className="mt-2 space-y-1">
-                  <p className="text-sm font-medium text-orange-600">{chatState.selectedService.serviceName}</p>
-                  <p className="text-xs text-gray-500">
-                    {chatState.selectedService.duration} min • {formatPrice(chatState.selectedService.price)}
+                  <p className="text-lg font-medium text-orange-600">{chatState.selectedService.serviceName}</p>
+                  <p className="text-base text-gray-700">
+                    <span className="font-bold">{chatState.selectedService.duration} min</span> • <span className="font-bold">IDR {chatState.selectedService.price.toLocaleString('id-ID')}</span>
                   </p>
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 mt-1">
-                  {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
+                <p className="text-base text-gray-700 mt-1">
+                  <span className="font-bold">{selectedDuration} min</span> • <span className="font-bold">IDR {(getPrice(selectedDuration || 60)).toLocaleString('id-ID')}</span>
                 </p>
               )}
               {isScheduleMode && selectedDate && selectedTime && (
@@ -668,9 +725,9 @@ export function PersistentChatWindow() {
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { value: 'male', label: 'Male', icon: '👨' },
-                    { value: 'female', label: 'Female', icon: '👩' },
-                    { value: 'children', label: 'Children', icon: '👶' },
+                    { value: 'male', label: 'Male', icon: 'https://ik.imagekit.io/7grri5v7d/male%20icon.png', isImage: true },
+                    { value: 'female', label: 'Female', icon: '👩', isImage: false },
+                    { value: 'children', label: 'Children', icon: '👶', isImage: false },
                   ].map((option) => {
                     // Check if therapist accepts this client type
                     const clientPref = therapist.clientPreferences || 'Males And Females';
@@ -704,16 +761,31 @@ export function PersistentChatWindow() {
                             setClientMismatchError(null);
                           }
                         }}
-                        className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
-                          customerForm.massageFor === option.value
-                            ? isCompatible
-                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
-                              : 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
-                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'
+                        className={`text-sm font-medium transition-all flex flex-col items-center gap-1 relative ${
+                          option.isImage
+                            ? customerForm.massageFor === option.value
+                              ? 'scale-105'
+                              : ''
+                            : `py-3 px-2 rounded-xl ${customerForm.massageFor === option.value
+                              ? isCompatible
+                                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                                : 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg scale-105'
+                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
                         }`}
                       >
-                        <span className="text-xl">{option.icon}</span>
-                        <span>{option.label}</span>
+                        {option.isImage ? (
+                          <div className="relative -mt-[10px]">
+                            <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
+                            <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
+                              customerForm.massageFor === option.value ? 'text-orange-500' : 'text-white'
+                            }`}>{option.label}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-xl">{option.icon}</span>
+                            <span>{option.label}</span>
+                          </>
+                        )}
                       </button>
                     );
                   })}
@@ -731,26 +803,41 @@ export function PersistentChatWindow() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="w-4 h-4 inline mr-1" />
-                  Massage Required In... *
+                  Massage Required At... *
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { value: 'home', label: 'Home', icon: '🏠' },
-                    { value: 'hotel', label: 'Hotel', icon: '🏨' },
-                    { value: 'villa', label: 'Villa', icon: '🏡' },
+                    { value: 'home', label: 'Home', icon: 'https://ik.imagekit.io/7grri5v7d/home%20icon.png', isImage: true },
+                    { value: 'hotel', label: 'Hotel', icon: 'https://ik.imagekit.io/7grri5v7d/hotel%20icon.png', isImage: true },
+                    { value: 'villa', label: 'Villa', icon: 'https://ik.imagekit.io/7grri5v7d/villa%20icon.png', isImage: true },
                   ].map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => setCustomerForm(prev => ({ ...prev, locationType: option.value as 'home' | 'hotel' | 'villa' }))}
-                      className={`py-3 px-2 rounded-xl text-sm font-medium transition-all flex flex-col items-center gap-1 ${
-                        customerForm.locationType === option.value
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'
+                      className={`text-sm font-medium transition-all flex flex-col items-center gap-1 relative ${
+                        option.isImage
+                          ? customerForm.locationType === option.value
+                            ? 'scale-105'
+                            : ''
+                          : `py-3 px-2 rounded-xl ${customerForm.locationType === option.value
+                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
                       }`}
                     >
-                      <span className="text-xl">{option.icon}</span>
-                      <span>{option.label}</span>
+                      {option.isImage ? (
+                        <div className="relative -mt-[10px]">
+                          <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
+                          <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
+                            customerForm.locationType === option.value ? 'text-orange-500' : 'text-white'
+                          }`}>{option.label}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-xl">{option.icon}</span>
+                          <span>{option.label}</span>
+                        </>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -859,7 +946,10 @@ export function PersistentChatWindow() {
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {customerForm.locationType === 'hotel' ? '🏨' : '🏡'} {customerForm.locationType === 'hotel' ? 'Hotel' : 'Villa'} Name *
+                      <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
+                      </svg>
+                      {customerForm.locationType === 'hotel' ? 'Hotel' : 'Villa'} Name *
                     </label>
                     <input
                       type="text"
@@ -873,7 +963,10 @@ export function PersistentChatWindow() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      🛏️ Room Number *
+                      <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                      </svg>
+                      Room Number *
                     </label>
                     <input
                       type="text"
