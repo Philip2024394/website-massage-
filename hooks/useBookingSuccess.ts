@@ -16,6 +16,10 @@ export interface BookingSuccessPayload {
   userRole: string;
   source: string;
   pricing: { [key: string]: number };
+  bookingDate?: string;
+  bookingTime?: string;
+  serviceDuration?: string;
+  serviceType?: string;
 }
 
 export function useBookingSuccess() {

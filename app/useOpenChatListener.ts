@@ -33,7 +33,11 @@ export function useOpenChatListener(
                 userRole: detail.userRole || "user",
                 pricing: detail.pricing || { '60': 150000, '90': 225000, '120': 300000 },
                 customerName: detail.customerName,
-                customerWhatsApp: detail.customerWhatsApp
+                customerWhatsApp: detail.customerWhatsApp,
+                bookingDate: detail.bookingDate,
+                bookingTime: detail.bookingTime,
+                serviceDuration: detail.serviceDuration,
+                serviceType: detail.serviceType
             };
             
             console.log('🔥 CONSTRUCTED activeChat OBJECT:', newActiveChat);

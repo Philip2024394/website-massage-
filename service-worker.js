@@ -37,17 +37,29 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // In development (localhost), do not intercept requests at all
-  if (self.location && self.location.hostname === 'localhost') {
-    return;
-  }
-  // Skip caching for Vite dev server resources
+  // 🔥 DEV MODE: NEVER intercept localhost requests
   const url = new URL(event.request.url);
+  const isLocalhost = url.hostname === 'localhost' || 
+                      url.hostname === '127.0.0.1' || 
+                      url.hostname.includes('192.168.');
+  
+  if (isLocalhost) {
+    console.log('🔥 DEV: Bypassing cache for localhost:', url.pathname);
+    return; // Let browser handle it normally
+  }
+  
+  // Skip caching for Vite dev server resources
   if (url.pathname.includes('/@') || 
       url.pathname.includes('/node_modules/') ||
       url.pathname.includes('/@vite/') ||
       url.pathname.includes('/@react-refresh') ||
-      url.searchParams.has('import')) {
+      url.pathname.includes('/src/') ||
+      url.pathname.includes('.tsx') ||
+      url.pathname.includes('.ts') ||
+      url.pathname.includes('.jsx') ||
+      url.pathname.includes('.js') ||
+      url.searchParams.has('import') ||
+      url.searchParams.has('t=')) {
     return;
   }
 

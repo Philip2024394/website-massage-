@@ -14,6 +14,7 @@ import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
 import ChatWindow from './components/ChatWindow.safe';
 import FloatingChat from './apps/therapist-dashboard/src/components/FloatingChat';
+import { FloatingChatWindow } from './chat'; // New standalone chat system
 import { useState, useEffect, Suspense } from 'react';
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
@@ -750,57 +751,7 @@ const App = () => {
                 />
             )}
 
-            {/* Persistent Floating Chat Icon */}
-            <div className="fixed bottom-6 right-6 z-50">
-                {/* Debug indicator */}
-                <div className="absolute -top-2 -left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                    CHAT DEBUG
-                </div>
-                
-                <button
-                    onClick={() => {
-                        console.log('💬 Chat icon clicked!');
-                        console.log('💬 Current activeChat:', activeChat);
-                        
-                        if (activeChat) {
-                            console.log('💬 Opening existing chat');
-                            setIsChatMinimized(false);
-                        } else {
-                            // Create a test chat when no active chat exists
-                            console.log('🔥 Creating test chat...');
-                            const testChat = {
-                                chatRoomId: 'test_room_123',
-                                providerId: 'test_provider',
-                                providerName: 'Maya (Test Therapist)',
-                                providerImage: '',
-                                customerName: '',
-                                customerWhatsApp: '',
-                                pricing: {"60": 150000, "90": 225000, "120": 300000},
-                                bookingId: 'test_booking_123'
-                            };
-                            console.log('💬 Setting test chat:', testChat);
-                            setActiveChat(testChat);
-                            setIsChatMinimized(false);
-                        }
-                    }}
-                    className={`
-                        w-14 h-14 rounded-full shadow-lg transition-all duration-300 transform
-                        ${activeChat 
-                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 hover:scale-110 cursor-pointer' 
-                            : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 hover:scale-110 cursor-pointer'
-                        }
-                        flex items-center justify-center text-white border-4 border-yellow-400
-                    `}
-                    title={activeChat ? 'Open Chat' : 'Start Test Chat'}
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-3.878-.9L3 21l1.9-6.122A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
-                    </svg>
-                    {activeChat && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse" />
-                    )}
-                </button>
-            </div>
+
 
             {/* Booking Chat Window */}
             {(() => {
@@ -854,6 +805,10 @@ const App = () => {
                         customerWhatsApp={activeChat.customerWhatsApp}
                         bookingId={activeChat.bookingId}
                         chatRoomId={activeChat.chatRoomId}
+                        bookingDate={activeChat.bookingDate || new Date().toLocaleDateString()}
+                        bookingTime={activeChat.bookingTime || new Date().toLocaleTimeString()}
+                        serviceDuration={activeChat.serviceDuration || '60'}
+                        serviceType={activeChat.serviceType || 'Home Massage'}
                         isOpen={true}
                         onClose={() => {
                             console.log('🔴 Minimizing chat window');
@@ -892,6 +847,8 @@ const App = () => {
                     );
                 }
             })()}
+
+            {/* New Standalone Floating Chat - Only on home page (rendered in HomePage.tsx) */}
 
             {/* Debug Component - Remove in production */}
             <ActiveChatDebugger activeChat={activeChat} />

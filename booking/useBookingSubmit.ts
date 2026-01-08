@@ -280,7 +280,11 @@ export function useBookingSubmit(
                 customerWhatsApp: customerWhatsApp,
                 userRole: "user",
                 source: "booking_flow",
-                pricing: pricing || { '60': 150000, '90': 225000, '120': 300000 }
+                pricing: pricing || { '60': 150000, '90': 225000, '120': 300000 },
+                bookingDate: scheduledTime.toLocaleDateString(),
+                bookingTime: scheduledTime.toLocaleTimeString(),
+                serviceDuration: String(finalDuration),
+                serviceType: 'Home Massage'
             });
             
             console.log("✅ Hook executed - openChat event dispatched");

@@ -27,7 +27,28 @@ if (isAdminMode) {
   // Main customer app
   console.log('🏠 Loading Main App...');
   
-  // Register Service Worker only in production (avoid dev cache issues)
+  // 🔥 DEVELOPMENT MODE: Force unregister ALL service workers and clear caches
+  if ('serviceWorker' in navigator && import.meta.env.DEV) {
+    console.log('🧹 DEV MODE: Unregistering all service workers and clearing caches...');
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((registration) => {
+        registration.unregister().then((success) => {
+          if (success) console.log('✅ Service worker unregistered:', registration.scope);
+        });
+      });
+    });
+    
+    // Clear all caches
+    caches.keys().then((cacheNames) => {
+      cacheNames.forEach((cacheName) => {
+        caches.delete(cacheName).then(() => {
+          console.log('🗑️ Cache deleted:', cacheName);
+        });
+      });
+    });
+  }
+  
+  // 🚀 PRODUCTION MODE: Register Service Worker only in production
   if ('serviceWorker' in navigator && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')

@@ -45,7 +45,7 @@ export default defineConfig({
     },
     // Prevent server crashes from file watcher issues (Enterprise-grade stability)
     watch: {
-      usePolling: false, // Use native file watching for better performance
+      usePolling: true, // ✅ WINDOWS FIX: Use polling for reliable file watching
       interval: 100,
       // Ignore large directories that don't need watching (reduces CPU/memory)
       ignored: [

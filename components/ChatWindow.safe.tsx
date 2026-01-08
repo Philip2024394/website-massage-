@@ -13,6 +13,10 @@ interface ChatWindowProps {
   customerWhatsApp?: string
   bookingId?: string
   chatRoomId?: string
+  bookingDate?: string
+  bookingTime?: string
+  serviceDuration?: string
+  serviceType?: string
   isOpen: boolean
   onClose: () => void
 }
@@ -42,10 +46,15 @@ function SafeChatWindow({
   customerWhatsApp: initialCustomerWhatsApp = '',
   bookingId,
   chatRoomId: existingChatRoomId,
+  bookingDate,
+  bookingTime,
+  serviceDuration: bookingServiceDuration = '60',
+  serviceType = 'Home Massage',
   isOpen,
   onClose
 }: ChatWindowProps) {
   console.log('🛡️ SafeChatWindow LOADED - Error-safe mode active');
+  console.log('📊 ChatWindow Props:', { providerId, providerName, chatRoomId: existingChatRoomId, bookingId });
   
   // Core state
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -53,7 +62,7 @@ function SafeChatWindow({
   const [isMinimized, setIsMinimized] = useState(false)
   const [customerName, setCustomerName] = useState(initialCustomerName)
   const [customerWhatsApp, setCustomerWhatsApp] = useState(initialCustomerWhatsApp)
-  const [serviceDuration, setServiceDuration] = useState<'60' | '90' | '120'>('60')
+  const [serviceDuration, setServiceDuration] = useState<'60' | '90' | '120'>(bookingServiceDuration as '60' | '90' | '120')
   const [isRegistered, setIsRegistered] = useState(!!initialCustomerName && !!initialCustomerWhatsApp)
   
   // UI state
@@ -159,8 +168,8 @@ function SafeChatWindow({
 
   return (
     <div className="fixed bottom-4 right-4 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white">
+      {/* Header - ORANGE COLOR */}
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -199,10 +208,35 @@ function SafeChatWindow({
             </button>
           </div>
         </div>
+        
+        {/* Booking Details Banner */}
+        {bookingId && (
+          <div className="mt-3 bg-white/10 rounded-lg p-3">
+            <div className="text-sm text-white/90">
+              <div className="font-medium mb-1">📅 Booking Details</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>Date: {bookingDate || new Date().toLocaleDateString()}</div>
+                <div>Time: {bookingTime || new Date().toLocaleTimeString()}</div>
+                <div>Service: {serviceType}</div>
+                <div>Duration: {bookingServiceDuration} min</div>
+              </div>
+              <div className="mt-2 text-white font-medium">
+                Total: Rp {(pricing[bookingServiceDuration as '60' | '90' | '120'] || pricing['60']).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {!isMinimized && (
         <>
+          {/* Welcome Banner */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-b p-3">
+            <p className="text-orange-800 text-sm text-center font-medium">
+              🌟 Welcome to your chat with {providerName}! 🌟
+            </p>
+          </div>
+          
           {/* Registration Form (if not registered) */}
           {!isRegistered && (
             <div className="p-4 bg-blue-50 border-b">

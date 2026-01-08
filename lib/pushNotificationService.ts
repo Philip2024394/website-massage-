@@ -110,8 +110,15 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 
 /**
  * Register service worker for push notifications
+ * ONLY IN PRODUCTION - Development mode skips registration to avoid cache issues
  */
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  // 🔥 SKIP in development to prevent stale cache
+  if (import.meta.env.DEV) {
+    console.log('⚠️ DEV MODE: Skipping service worker registration');
+    return null;
+  }
+
   if (!isPushSupported()) {
     console.warn('🚫 Service workers not supported');
     return null;
@@ -125,7 +132,8 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     }
 
     const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/'
+      scope: '/',
+      updateViaCache: 'none' // 🔥 Prevent service worker caching
     });
 
     console.log('✅ Service worker registered successfully:', registration.scope);

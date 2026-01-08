@@ -24,6 +24,7 @@ import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, fin
 import { matchesLocation } from '../utils/locationNormalization';
 import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
 import MusicPlayer from '../components/MusicPlayer';
+import { FloatingChatWindow } from '../chat';
 
 
 interface HomePageProps {
@@ -2410,6 +2411,15 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Floating Chat Window - Bottom Right */}
+            {loggedInCustomer && (
+                <FloatingChatWindow
+                    userId={loggedInCustomer.$id || loggedInCustomer.id || 'guest'}
+                    userName={loggedInCustomer.name || loggedInCustomer.username || 'Guest User'}
+                    userRole="customer"
+                />
             )}
         </div>
     );
