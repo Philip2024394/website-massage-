@@ -88,3 +88,24 @@ bulk-*.html
 eslint-report.json
 file-size-report.json
 file-size-report.txt
+# Utility/maintenance scripts with API keys (secrets)
+check-*.mjs
+check-*.cjs
+fix-*.mjs
+clear-*.mjs
+debug-*.mjs
+migrate-*.mjs
+create-*.mjs
+add-*.mjs
+get-*.mjs
+location-*.mjs
+comprehensive-*.mjs
+industry-*.mjs
+audit-*.mjs
+bulk-update-*.mjs
+add-*-reviews.js
+scripts/*.mjs
+scripts/*.cjs
+APPWRITE_MASTER_CONFIG.ts
+BABY_STEPS_SETUP.md
+QUICK_FUNCTION_SETUP.md
