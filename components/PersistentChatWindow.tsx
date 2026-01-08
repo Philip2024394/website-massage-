@@ -65,6 +65,8 @@ export function PersistentChatWindow() {
     location: '',
     locationType: '' as 'home' | 'hotel' | 'villa' | '',
     coordinates: null as { lat: number; lng: number } | null,
+    hotelVillaName: '',
+    roomNumber: '',
   });
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -173,12 +175,21 @@ export function PersistentChatWindow() {
       ? `https://www.google.com/maps?q=${customerForm.coordinates.lat},${customerForm.coordinates.lng}`
       : null;
     
+    // Build location details based on type
+    let locationDetails = '';
+    if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
+      locationDetails = `🏨 ${customerForm.locationType === 'hotel' ? 'Hotel' : 'Villa'} Name: ${customerForm.hotelVillaName}\n` +
+        `🛏️ Room Number: ${customerForm.roomNumber}\n`;
+    }
+    
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
       `📱 WhatsApp: ${customerForm.whatsApp}\n` +
       `🏢 Massage At: ${locationTypeText}\n` +
-      `📍 Address: ${customerForm.location || 'To be confirmed'}\n` +
-      (mapsLink ? `🗺️ GPS Location: ${mapsLink}\n` : '') +
+      locationDetails +
+      (mapsLink 
+        ? `🔐 GPS Location: ${mapsLink}\n` 
+        : `📍 GPS: Not provided - please ask customer for location\n`) +
       `⏱️ Duration: ${selectedDuration} minutes\n` +
       `💰 Price: ${formatPrice(getPrice(selectedDuration || 60))}`;
     
@@ -624,7 +635,7 @@ export function PersistentChatWindow() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="w-4 h-4 inline mr-1" />
-                  Your Location *
+                  Your Location (Optional)
                 </label>
                 
                 {/* GPS Set Location Button */}
@@ -632,7 +643,7 @@ export function PersistentChatWindow() {
                   type="button"
                   onClick={async () => {
                     if (!navigator.geolocation) {
-                      alert('Geolocation is not supported by your browser');
+                      alert('Geolocation is not supported by your browser. You can share your location in chat.');
                       return;
                     }
                     
@@ -651,15 +662,15 @@ export function PersistentChatWindow() {
                       (error) => {
                         console.error('Location error:', error);
                         setIsGettingLocation(false);
-                        alert('Unable to get your location. Please enable GPS and try again.');
+                        alert('Unable to get your location. Don\'t worry - you can share your location in chat with the therapist.');
                       },
                       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                   }}
-                  disabled={isGettingLocation}
+                  disabled={isGettingLocation || !!customerForm.coordinates}
                   className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
                     customerForm.coordinates
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg cursor-default'
                       : 'bg-white border-2 border-green-500 text-green-600 hover:bg-green-50'
                   }`}
                 >
@@ -670,8 +681,10 @@ export function PersistentChatWindow() {
                     </>
                   ) : customerForm.coordinates ? (
                     <>
-                      <Check className="w-5 h-5" />
-                      ✓ Location Set
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                      </svg>
+                      🔒 Location Secured
                     </>
                   ) : (
                     <>
@@ -681,40 +694,78 @@ export function PersistentChatWindow() {
                   )}
                 </button>
                 
+                {/* Show coordinates with lock when location is set */}
                 {customerForm.coordinates && (
-                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center justify-between text-xs text-green-700">
-                      <span>🗺️ GPS coordinates captured</span>
-                      <a 
-                        href={`https://www.google.com/maps?q=${customerForm.coordinates.lat},${customerForm.coordinates.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 underline hover:text-green-800"
-                      >
-                        View on Map
-                      </a>
+                  <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-xl shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-semibold text-green-700">Location Locked</span>
+                      <Check className="w-4 h-4 text-green-600 ml-auto" />
                     </div>
+                    <div className="bg-white rounded-lg p-2 border border-green-200">
+                      <div className="text-xs text-gray-500 mb-1">GPS Coordinates:</div>
+                      <div className="font-mono text-sm text-green-800">
+                        {customerForm.coordinates.lat.toFixed(6)}, {customerForm.coordinates.lng.toFixed(6)}
+                      </div>
+                    </div>
+                    <a 
+                      href={`https://www.google.com/maps?q=${customerForm.coordinates.lat},${customerForm.coordinates.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 flex items-center justify-center gap-1 text-xs text-green-600 hover:text-green-800 font-medium"
+                    >
+                      <MapPin className="w-3 h-3" />
+                      View on Google Maps
+                    </a>
                   </div>
+                )}
+                
+                {/* Info text when no location */}
+                {!customerForm.coordinates && !isGettingLocation && (
+                  <p className="mt-2 text-xs text-gray-500 text-center">
+                    📍 Location helps therapist find you faster. You can also share in chat.
+                  </p>
                 )}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <MapPin className="w-4 h-4 inline mr-1" />
-                  Address Details (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={customerForm.location}
-                  onChange={(e) => setCustomerForm(prev => ({ ...prev, location: e.target.value }))}
-                  placeholder={customerForm.locationType === 'hotel' ? 'Hotel name & room number' : customerForm.locationType === 'villa' ? 'Villa name & address' : 'Additional address details'}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
-                />
-              </div>
+              {/* Hotel/Villa Name and Room Number - only show for hotel or villa */}
+              {(customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {customerForm.locationType === 'hotel' ? '🏨' : '🏡'} {customerForm.locationType === 'hotel' ? 'Hotel' : 'Villa'} Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerForm.hotelVillaName}
+                      onChange={(e) => setCustomerForm(prev => ({ ...prev, hotelVillaName: e.target.value }))}
+                      placeholder={customerForm.locationType === 'hotel' ? 'e.g. Grand Hyatt Bali' : 'e.g. Villa Seminyak Estate'}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      🛏️ Room Number *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerForm.roomNumber}
+                      onChange={(e) => setCustomerForm(prev => ({ ...prev, roomNumber: e.target.value }))}
+                      placeholder="e.g. Room 1205"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      required
+                    />
+                  </div>
+                </>
+              )}
               
               <button
                 type="submit"
-                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.locationType || !customerForm.coordinates}
+                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSending ? (
