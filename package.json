@@ -5,17 +5,18 @@
   "type": "module",
   "packageManager": "pnpm@10.21.0",
   "scripts": {
+    "cleanup": "pwsh -NoProfile -File cleanup-memory.ps1",
     "dev": "vite",
     "dev:open": "vite --open",
     "dev:main": "vite --open",
     "dev:stable": "vite --port 3000 --host",
-    "dev:clean": "taskkill /F /IM node.exe 2>nul & vite",
-    "stop:all": "taskkill /F /IM node.exe 2>nul & exit 0",
+    "dev:clean": "pwsh -NoProfile -File cleanup-memory.ps1 && vite",
+    "stop:all": "pwsh -NoProfile -File cleanup-memory.ps1",
     "build:production": "cross-env NODE_ENV=production ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "serve:production": "npx serve dist -s -p 3000",
     "dev:therapist": "cd app/apps/therapist-dashboard && pnpm run dev",
     "dev:admin": "cd app/apps/admin-dashboard && pnpm run dev",
-    "dev:place": "cd app/apps/place-dashboard && pnpm run dev",
+    "dev:place": "cd app/apps/place-dashboard && pnpm run dev", 
     "dev:facial": "cd app/apps/facial-dashboard && pnpm run dev",
     "dev:auth": "cd app/apps/auth-app && pnpm run dev",
     "dev:all": "concurrently \"pnpm run dev:main\" \"pnpm run dev:place\" \"pnpm run dev:therapist\" \"pnpm run dev:facial\" \"pnpm run dev:admin\"",
@@ -74,9 +75,11 @@
     "size:check": "npm run monitor:files",
     "size:report": "npm run monitor:files > file-size-report.txt",
     "precheck": "npm run monitor:files",
+    
     "migrate:services": "node scripts/appwrite-migration.cjs report",
     "migrate:extract": "node scripts/appwrite-migration.cjs extract",
     "migrate:all": "node scripts/appwrite-migration.cjs extract-all",
+    
     "refactor:check": "npm run monitor:files && npm run lint",
     "refactor:plan": "echo 'See docs/COMPONENT_REFACTORING_GUIDE.md for guidelines'",
     "refactor:verify": "npm run type-check && npm run test"
@@ -109,7 +112,6 @@
     "@esbuild/linux-x64": "0.25.11",
     "@eslint/js": "^9.39.1",
     "@rollup/rollup-linux-x64-gnu": "^4.22.0",
-    "@rollup/rollup-win32-x64-msvc": "^4.22.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
     "@types/qrcode": "^1.5.6",
@@ -157,7 +159,8 @@
     "@esbuild/win32-x64": "0.25.11",
     "@rollup/rollup-darwin-arm64": "^4.22.0",
     "@rollup/rollup-darwin-x64": "^4.22.0",
-    "@rollup/rollup-linux-x64-musl": "^4.22.0"
+    "@rollup/rollup-linux-x64-musl": "^4.22.0",
+    "@rollup/rollup-win32-x64-msvc": "^4.22.0"
   },
   "keywords": [
     "massage",

@@ -52,14 +52,21 @@
     "**/debug-*.html": true
   },
 
-  "typescript.tsserver.maxTsServerMemory": 8192,
-  "files.maxMemoryForLargeFilesMB": 8192,
+  "typescript.tsserver.maxTsServerMemory": 4096,
+  "files.maxMemoryForLargeFilesMB": 4096,
 
   "editor.codeLens": false,
   "git.autorefresh": false,
   "typescript.surveys.enabled": false,
   "editor.semanticHighlighting.enabled": false,
   "editor.minimap.enabled": false,
-  "breadcrumbs.enabled": false
+  "breadcrumbs.enabled": false,
+
+  "terminal.integrated.persistentSessionReviveProcess": "never",
+  "terminal.integrated.enablePersistentSessions": false,
+  "workbench.editor.limit.enabled": true,
+  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.perEditorGroup": true,
+  "editor.maxTokenizationLineLength": 20000
 }
 
