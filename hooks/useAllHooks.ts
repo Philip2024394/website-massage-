@@ -29,15 +29,17 @@ export const useAllHooks = () => {
     useEffect(() => {
         const initializeData = async () => {
             try {
-                console.log('🚀 [useAllHooks] Starting data fetch...');
+                console.log('� [STAGE 3 - useAllHooks] Starting data fetch...');
                 const { therapists, places, facialPlaces, hotels } = await dataFetching.fetchPublicData();
-                console.log('📊 [useAllHooks] Received data:', {
+                console.log('✅ [STAGE 3 - useAllHooks] Received from fetchPublicData:', {
                     therapists: therapists?.length || 0,
                     places: places?.length || 0,
                     facialPlaces: facialPlaces?.length || 0,
                     hotels: hotels?.length || 0
                 });
+                console.log('🔍 [STAGE 3] Setting therapists in App state...');
                 state.setTherapists(therapists);
+                console.log('✅ [STAGE 3] Therapists set in state:', therapists?.length || 0);
                 state.setPlaces(places);
                 state.setFacialPlaces(facialPlaces);
                 console.log('✅ [useAllHooks] Facial places set in state:', facialPlaces?.length || 0);

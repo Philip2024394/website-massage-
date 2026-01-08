@@ -37,46 +37,46 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000, // Fixed port for main app
-    host: true,
-    open: isAdminMode ? '/admin.html' : true,
+    // 🔒 PRODUCTION-GRADE DEV SERVER LOCK (no fallback, explicit binding)
+    port: 3000,
+    host: '127.0.0.1', // Explicit IPv4 binding (not 'true')
+    open: false,
+    strictPort: true, // FAIL FAST if port unavailable (no silent fallback)
+    cors: true,
     headers: {
-      'Cache-Control': 'no-store',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     },
-    // Prevent server crashes from file watcher issues (Enterprise-grade stability)
+    // 🔧 CORS PROXY: Proxy Appwrite requests to avoid CORS issues
+    proxy: {
+      '/api/appwrite': {
+        target: 'https://syd.cloud.appwrite.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/appwrite/, ''),
+        configure: (proxy, options) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Sending Request to:', proxyReq.path);
+          });
+        }
+      }
+    },
+    // Facebook-standard file watching - WINDOWS OPTIMIZED
     watch: {
-      usePolling: true, // ✅ WINDOWS FIX: Use polling for reliable file watching
+      usePolling: true, // REQUIRED for Windows reliability
       interval: 100,
-      // Ignore large directories that don't need watching (reduces CPU/memory)
-      ignored: [
-        '**/node_modules/**',
-        '**/dist/**',
-        '**/.git/**',
-        '**/coverage/**',
-        '**/*.log',
-        '**/*.md',
-        '**/docs/**',
-        '**/deleted/**',
-        '**/*-backup.*',
-        '**/*-old.*',
-        '**/*.disabled',
-        '**/.vscode/**',
-        '**/.idea/**',
-        '**/esbuild/**',
-        '**/*.esbuild',
-        '**/temp/**',
-      ],
+      ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
     },
-    // Optimized HMR (Hot Module Replacement) - prevents VS Code crashes
+    // Facebook-standard HMR - instant updates
     hmr: {
-      timeout: 10000, // Reduced timeout
-      overlay: false, // Disabled to prevent VS Code interference
+      overlay: true,
+      host: '127.0.0.1',
+      port: 3000,
       clientPort: 3000,
-      protocol: 'ws',
     },
-    // Graceful shutdown handling
-    // Use strict port to prevent conflicts
-    strictPort: true,
   },
   // Ensure preview also uses a low, predictable port
   preview: {
@@ -184,18 +184,19 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Pre-bundle critical dependencies (Amazon/Facebook strategy)
     include: [
-      'react', 
-      'react-dom', 
+      'react',
+      'react-dom',
       'react-router-dom',
       'lucide-react',
       'react-hot-toast',
+      'framer-motion',
     ],
-    // Exclude heavy dependencies that rarely change
     exclude: ['appwrite'],
-    // Don't force re-optimization unless dependencies change
     force: false,
+    esbuildOptions: {
+      target: 'es2020',
+    },
   },
   // Prevent memory issues during development (Enterprise optimization)
   esbuild: {
@@ -203,8 +204,7 @@ export default defineConfig({
     // Drop console/debugger in production
     drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
   },
-  // Clear screen on restart (cleaner developer experience)
   clearScreen: false,
-  // Log level for better debugging
   logLevel: 'info',
+  appType: 'spa',
 })

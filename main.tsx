@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppErrorBoundary from './components/AppErrorBoundary';
+import { ProductionErrorBoundary } from './components/ProductionErrorBoundary';
 import './index.css';
 
 // Initialize DOM error handler to prevent removeChild errors
@@ -14,10 +15,16 @@ import './utils/suppressNonCriticalErrors';
 // Initialize version checking for cache busting
 import { initVersionCheck } from './lib/versionCheck';
 
+// 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
+import { initializeStartupGuard } from './utils/startupGuard';
+
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 
 console.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
+
+// 🔒 Initialize startup guard IMMEDIATELY
+initializeStartupGuard();
 
 // Admin mode: Redirect to separate admin dashboard app
 if (isAdminMode) {
@@ -74,13 +81,20 @@ if (isAdminMode) {
     const reactRoot = ReactDOM.createRoot(root);
     reactRoot.render(
       <React.StrictMode>
-        <ErrorBoundary>
-          <AppErrorBoundary>
-            <App />
-          </AppErrorBoundary>
-        </ErrorBoundary>
+        <ProductionErrorBoundary>
+          <ErrorBoundary>
+            <AppErrorBoundary>
+              <App />
+            </AppErrorBoundary>
+          </ErrorBoundary>
+        </ProductionErrorBoundary>
       </React.StrictMode>
     );
     console.log('✅ React app mounted successfully');
+    
+    // Signal successful mount to startup guard
+    if ((window as any).__APP_MOUNTED__) {
+      (window as any).__APP_MOUNTED__();
+    }
   }
 }

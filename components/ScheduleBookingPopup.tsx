@@ -7,10 +7,10 @@ import { translations } from '../translations';
 import { showToast } from '../utils/showToastPortal';
 import { createChatRoom, sendSystemMessage, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
-import { useBookingSuccess } from '../hooks/useBookingSuccess';
 import { useBookingForm } from '../booking/useBookingForm';
 import { useTimeSlots } from '../booking/useTimeSlots';
 import { useBookingSubmit } from '../booking/useBookingSubmit';
+import { useChatContext } from '../context/ChatProvider';  // NEW: Import ChatProvider hook
 
 // Extend window type
 declare global {
@@ -77,8 +77,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   const lang = language === 'gb' ? 'en' : language;
   const t = translations[lang] || translations['id'];
 
-  // Initialize booking success hook
-  const onBookingSuccess = useBookingSuccess();
+  // NEW: Get ChatProvider functions
+  const { openBookingChat } = useChatContext();
 
   // Initialize form state hook
   const formState = useBookingForm();
@@ -99,9 +99,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   // Initialize time slots hook
   const { timeSlots } = useTimeSlots(isOpen, therapistId, therapistType, step, selectedDuration);
 
-  // Initialize booking submit hook
+  // Initialize booking submit hook (no longer needs onBookingSuccess callback)
   const handleCreateBooking = useBookingSubmit(
-    onBookingSuccess,
     pricing,
     therapistId,
     therapistName,
@@ -210,20 +209,19 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   key={option.minutes}
                   onClick={() => {
                     setSelectedDuration(option.minutes as 60 | 90 | 120);
-                    // For immediate bookings, skip time selection and go to details
-                    if (isImmediateBooking) {
-                      // Set current time as selected time for immediate booking
-                      const now = new Date();
-                      setSelectedTime({
-                        hour: now.getHours(),
-                        minute: now.getMinutes(),
-                        label: 'Now',
-                        available: true
-                      });
-                      setStep('details');
-                    } else {
-                      setStep('time');
-                    }
+                    
+                    // NEW: Open chat window immediately after duration selection
+                    console.log('🚀 Duration selected, opening booking chat...');
+                    openBookingChat({
+                      therapistId,
+                      therapistName,
+                      therapistImage: profilePicture,
+                      duration: option.minutes,
+                      pricing: pricing || { "60": 250000, "90": 350000, "120": 450000 }
+                    });
+                    
+                    // Close this popup - user will complete booking in chat
+                    onClose();
                   }}
                   className={`w-full p-2 sm:p-2.5 rounded-xl border-2 transition-all ${
                     selectedDuration === option.minutes

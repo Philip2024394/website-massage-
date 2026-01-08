@@ -29,6 +29,15 @@ self.addEventListener('install', (event) => {
                 await cache.add('/').catch((err) => {
                     console.log('⚠️ SW: Root cache failed:', err);
                 });
+                // Cache essential assets for offline functionality
+                await cache.addAll([
+                    '/',
+                    '/index.html',
+                    '/manifest.json'
+                ]).catch((err) => {
+                    console.log('⚠️ SW: Asset caching failed:', err);
+                });
+                });
                 console.log(`✅ Service Worker ${SW_VERSION}: Assets cached successfully`);
             } catch (err) {
                 console.log('⚠️ SW: Cache error:', err);
@@ -63,6 +72,79 @@ self.addEventListener('activate', (event) => {
             console.log(`✅ Service Worker ${SW_VERSION}: Activated and controlling all clients`);
         })
     );
+});
+
+/**
+ * FETCH EVENT HANDLER
+ * Ensures preview always displays fresh content and never shows offline messages
+ * Strategy: Network first, then cache, with automatic retry
+ */
+self.addEventListener('fetch', (event) => {
+    // Only handle navigation requests (page loads)
+    if (event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request)
+                .then((response) => {
+                    // If we get a fresh response, return it immediately
+                    if (response.ok) {
+                        console.log('✅ SW: Serving fresh content');
+                        return response;
+                    }
+                    throw new Error('Server not available');
+                })
+                .catch(() => {
+                    // If network fails, try to return cached version
+                    console.log('⚠️ SW: Network unavailable, checking cache...');
+                    return caches.match(event.request).then((cachedResponse) => {
+                        if (cachedResponse) {
+                            console.log('✅ SW: Serving cached content');
+                            return cachedResponse;
+                        }
+                        // If no cache, return a custom "server starting" page instead of offline message
+                        return new Response(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <title>Server Starting...</title>
+                                <meta charset="utf-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1">
+                                <style>
+                                    body { 
+                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                        display: flex; align-items: center; justify-content: center;
+                                        height: 100vh; margin: 0; background: #f5f5f5;
+                                        text-align: center;
+                                    }
+                                    .container { max-width: 400px; padding: 2rem; }
+                                    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
+                                               border-radius: 50%; width: 40px; height: 40px;
+                                               animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+                                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                                    h1 { color: #333; margin-bottom: 1rem; }
+                                    p { color: #666; line-height: 1.5; }
+                                </style>
+                                <script>
+                                    // Auto-retry loading the page every 5 seconds
+                                    setTimeout(() => { window.location.reload(); }, 5000);
+                                </script>
+                            </head>
+                            <body>
+                                <div class="container">
+                                    <div class="spinner"></div>
+                                    <h1>🚀 Server Starting...</h1>
+                                    <p>Your massage booking platform is loading.<br>
+                                       This page will refresh automatically in 5 seconds.</p>
+                                    <p><small>If this continues, the development server may need to be restarted.</small></p>
+                                </div>
+                            </body>
+                            </html>
+                        `, {
+                            headers: { 'Content-Type': 'text/html' }
+                        });
+                    });
+                })
+        );
+    }
 });
 
 /**

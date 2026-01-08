@@ -8,12 +8,27 @@ const client = new Client()
 const databases = new Databases(client);
 
 async function testCollectionIds() {
-    console.log('🔍 Testing collection IDs from config...\n');
+    console.log('🔍 First, let\'s see what collections exist...\n');
+    
+    try {
+        const allCollections = await databases.listCollections('68f76ee1000e64ca8d05');
+        console.log(`Found ${allCollections.total} collections:\n`);
+        
+        allCollections.collections.forEach(collection => {
+            console.log(`📁 ${collection.name.padEnd(30)} ID: ${collection.$id}`);
+        });
+        
+        console.log('\n' + '='.repeat(60));
+        console.log('🔍 Now testing our configured IDs...\n');
+    } catch (error) {
+        console.error('❌ Could not list collections:', error.message);
+        console.log('\n🔍 Testing configured IDs anyway...\n');
+    }
     
     const testIds = [
-        { name: 'therapists', id: 'therapists_collection_id' },
-        { name: 'places', id: 'places_collection_id' },
-        { name: 'bookings', id: 'bookings_collection_id' }
+        { name: 'therapists', id: 'therapists' },
+        { name: 'places', id: 'places' },
+        { name: 'bookings', id: 'bookings' }
     ];
 
     for (const test of testIds) {

@@ -13,14 +13,14 @@ export const APPWRITE_CONFIG = {
     collections: {
         // Disabled collections to prevent 401/404 errors
         admins: null, // ⚠️ DISABLED - Collection doesn't exist
-        therapists: 'therapists_collection_id', // ✅ FIXED - Use actual therapists collection
-        places: 'places_collection_id', // ✅ Text-based collection ID  
+        therapists: '673d17fb0028fddd90e8', // ✅ FIXED - Real production collection ID
+        places: '673d184c000817b936e2', // ✅ Real production collection ID  
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
-        bookings: 'bookings_collection_id', // ✅ FIXED - Use actual bookings collection
-        reviews: 'reviews_collection_id', // ✅ CONNECTED - Review and rating system
-        notifications: 'Notifications', // ✅ Therapist notification system
-        users: null, // ⚠️ DISABLED - Collection doesn't exist
+        bookings: '675e13fc002aaf0777ce', // ✅ FIXED - Real production collection ID
+        reviews: '6752e724002ee159c0f5', // ✅ CONNECTED - Real production collection ID
+        notifications: '675d65c3001b725fa829', // ✅ Real production collection ID
+        users: '674f38dd0039f3de41ac', // ✅ Real production collection ID
         // Production Booking System Collections
         booking_acknowledgments: 'booking_acknowledgments', // ✅ Therapist response tracking
         therapist_matches: 'therapist_matches', // ✅ Therapist search results
@@ -54,8 +54,8 @@ export const APPWRITE_CONFIG = {
         providerLoyaltySettings: 'provider_loyalty_settings',
         coinTransactions: 'coin_transactions',
         userRegistrations: 'user_registrations',
-        chatRooms: 'chat_rooms',
-        chatMessages: 'chat_messages',
+        chatRooms: '6761241900398c596516', // ✅ Real production collection ID
+        chatMessages: '6761241100372a5338d1', // ✅ Real production collection ID
         chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)

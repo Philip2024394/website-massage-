@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
 import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
-import { notificationService, bookingService, reviewService, therapistMenusService } from '../lib/appwriteService';
+import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
@@ -24,6 +24,11 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
+
+// Custom hooks for logic extraction
+import { useTherapistCardModals } from '../hooks/useTherapistCardModals';
+import { useTherapistCardState } from '../hooks/useTherapistCardState';
+import { useTherapistCardCalculations } from '../hooks/useTherapistCardCalculations';
 
 interface TherapistCardProps {
     therapist: Therapist;
@@ -76,38 +81,64 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     const { settings: bookNowConfig } = useUIConfig('book_now_behavior');
     const { settings: scheduleConfig } = useUIConfig('schedule_behavior');
     
-    const [showBusyModal, setShowBusyModal] = useState(false);
-    const [showReferModal, setShowReferModal] = useState(false);
-    const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-    const [showBookingPopup, setShowBookingPopup] = useState(false);
-    const [showScheduleBookingPopup, setShowScheduleBookingPopup] = useState(false);
-    const [showReviewModal, setShowReviewModal] = useState(false);
-    const [showSharePopup, setShowSharePopup] = useState(false);
-    const [showPriceListModal, setShowPriceListModal] = useState(false);
-    const [termsAccepted, setTermsAccepted] = useState(false);
-    const [menuData, setMenuData] = useState<any[]>([]);
-    const [userReferralCode, setUserReferralCode] = useState<string>('');
-    const [selectedServiceIndex, setSelectedServiceIndex] = useState<number | null>(null);
-    const [selectedDuration, setSelectedDuration] = useState<'60' | '90' | '120' | null>(null);
-    const [priceSliderBookingSource, setPriceSliderBookingSource] = useState<string>('quick-book'); // Track if from price slider
-    const [highlightedCell, setHighlightedCell] = useState<{serviceIndex: number, duration: '60' | '90' | '120'} | null>(null);
-    const [arrivalCountdown, setArrivalCountdown] = useState<number>(3600); // 1 hour in seconds
-    const [shortShareUrl, setShortShareUrl] = useState<string>(''); // Short link from share_links collection
-    const [showJoinPopup, setShowJoinPopup] = useState(false);
-    const [animatedPriceIndex, setAnimatedPriceIndex] = useState<number>(0); // 0=60min, 1=90min, 2=120min
+    // Custom hooks for state and calculations - ✅ FIXED: Proper destructuring
+    const {
+        showBusyModal,
+        setShowBusyModal,
+        showReferModal,
+        setShowReferModal,
+        showLoginRequiredModal,
+        setShowLoginRequiredModal,
+        showBookingPopup,
+        setShowBookingPopup,
+        showScheduleBookingPopup,
+        setShowScheduleBookingPopup,
+        showReviewModal,
+        setShowReviewModal,
+        showSharePopup,
+        setShowSharePopup,
+        showPriceListModal,
+        setShowPriceListModal,
+        showJoinPopup,
+        setShowJoinPopup,
+        termsAccepted,
+        setTermsAccepted
+    } = useTherapistCardModals();
     
-    // Animated price frame that moves randomly between containers
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setAnimatedPriceIndex(prev => {
-                // Generate random next index (0-2) different from current
-                const options = [0, 1, 2].filter(i => i !== prev);
-                return options[Math.floor(Math.random() * options.length)];
-            });
-        }, 2000); // Move every 2 seconds
-        
-        return () => clearInterval(interval);
-    }, []);
+    const {
+        menuData,
+        setMenuData,
+        userReferralCode,
+        setUserReferralCode,
+        selectedServiceIndex,
+        setSelectedServiceIndex,
+        selectedDuration,
+        setSelectedDuration,
+        priceSliderBookingSource,
+        setPriceSliderBookingSource,
+        highlightedCell,
+        setHighlightedCell,
+        arrivalCountdown,
+        setArrivalCountdown,
+        shortShareUrl,
+        setShortShareUrl,
+        animatedPriceIndex,
+        countdown,
+        setCountdown,
+        isOvertime,
+        setIsOvertime,
+        handleSelectService
+    } = useTherapistCardState();
+    
+    const {
+        bookingsCount,
+        setBookingsCount,
+        getInitialBookingCount,
+        joinedDisplay,
+        calculateDistance,
+        formatCountdown,
+        getDynamicSpacing
+    } = useTherapistCardCalculations(therapist);
     
     // Debug modal state changes
     useEffect(() => {
@@ -124,11 +155,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         setHighlightedCell(null);
     }, [showPriceListModal]);
 
-    const handleSelectService = (index: number, duration: '60' | '90' | '120') => {
-        setSelectedServiceIndex(index);
-        setSelectedDuration(duration);
-        setHighlightedCell(null);
-    };
+    // Remove duplicate - using hook version
+    // const handleSelectService = (index: number, duration: '60' | '90' | '120') => {
+    //     setSelectedServiceIndex(index);
+    //     setSelectedDuration(duration);
+    //     setHighlightedCell(null);
+    // };
     
     // Countdown timer for booking arrival time (1 hour)
     useEffect(() => {
@@ -160,79 +192,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         return () => window.removeEventListener('openPriceMenu', handleOpenPriceMenu as EventListener);
     }, [therapist]);
     
-    // Format countdown as HH:MM:SS
-    const formatCountdown = (seconds: number): string => {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-    const [countdown, setCountdown] = useState<string>('');
-    const [isOvertime, setIsOvertime] = useState(false);
-    const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
-    // Orders count sourced from persisted analytics JSON or actual bookings
-    const [bookingsCount, setBookingsCount] = useState<number>(() => {
-        try {
-            if (therapist.analytics) {
-                const parsed = JSON.parse(therapist.analytics);
-                if (parsed && typeof parsed.bookings === 'number') return parsed.bookings;
-            }
-        } catch {}
-        return 0;
-    });
-
-    // Fallback: derive bookings count from bookings collection if analytics not populated
-    useEffect(() => {
-        const loadBookingsCount = async () => {
-            try {
-                const providerId = String((therapist as any).id || (therapist as any).$id || '');
-                if (!providerId) return;
-                const bookingDocs = await bookingService.getByProvider(providerId, 'therapist');
-                if (Array.isArray(bookingDocs)) {
-                    setBookingsCount(bookingDocs.length);
-                }
-            } catch (e) {
-                // Silent fallback
-            }
-        };
-        loadBookingsCount();
-    }, [therapist]);
-
-    // Generate consistent fake booking count for new therapists (18-26)
-    const getInitialBookingCount = (therapistId: string): number => {
-        // Create a simple hash from therapist ID for consistent random number
-        let hash = 0;
-        for (let i = 0; i < therapistId.length; i++) {
-            hash = ((hash << 5) - hash) + therapistId.charCodeAt(i);
-            hash = hash & hash; // Convert to 32bit integer
-        }
-        // Generate number between 18-26 based on hash
-        return 18 + (Math.abs(hash) % 9);
-    };
-
-    const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
-    const joinedDisplay = (() => {
-        if (!joinedDateRaw) return '—';
-        try {
-            const d = new Date(joinedDateRaw);
-            if (isNaN(d.getTime())) return '—';
-            return d.toLocaleDateString('en-GB');
-        } catch {
-            return '—';
-        }
-    })();
+    // ✅ REMOVED DUPLICATES - Using hook versions:
+    // - formatCountdown (from useTherapistCardCalculations)
+    // - countdown, setCountdown (from useTherapistCardState)
+    // - isOvertime, setIsOvertime (from useTherapistCardState)
+    // - bookingsCount, setBookingsCount (from useTherapistCardCalculations)
+    // - getInitialBookingCount (from useTherapistCardCalculations)
+    // - joinedDisplay (from useTherapistCardCalculations)
+    // - getDynamicSpacing (from useTherapistCardCalculations)
+    // - calculateDistance (from useTherapistCardCalculations)
     
-    // Helper function to calculate dynamic spacing based on description length
-    const getDynamicSpacing = (longSpacing: string, mediumSpacing: string, shortSpacing: string) => {
-        const descriptionLength = translatedDescription.length;
-        
-        // If description is short (less than 200 chars), use minimum spacing  
-        if (descriptionLength < 200) return shortSpacing;
-        // If description is medium (200-300 chars), use reduced spacing
-        if (descriptionLength < 300) return mediumSpacing;
-        // If description is long (300+ chars), use standard spacing
-        return longSpacing;
-    };
+    const [_discountTimeLeft, _setDiscountTimeLeft] = useState<string>('');
 
     // Get language context for chat translations
     const { language } = useLanguageContext();
@@ -289,21 +259,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Location parsing for display (show city / first segment)
     const locationCity = therapist.location ? String(therapist.location).split(',')[0].trim() : '';
     
-    // 🌍 DISTANCE CALCULATION - Import required utility
-    const calculateDistance = (point1: { lat: number; lng: number }, point2: { lat: number; lng: number }) => {
-        const R = 6371000; // Earth's radius in meters
-        const φ1 = point1.lat * Math.PI/180;
-        const φ2 = point2.lat * Math.PI/180;
-        const Δφ = (point2.lat-point1.lat) * Math.PI/180;
-        const Δλ = (point2.lng-point1.lng) * Math.PI/180;
-
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-        return R * c; // Distance in meters
-    };
+    // ✅ REMOVED DUPLICATE - Using calculateDistance from useTherapistCardCalculations hook
     
     // Extract therapist coordinates and calculate distance
     const therapistDistance = useMemo(() => {
@@ -1023,7 +979,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }
                 
                 return languages && Array.isArray(languages) && languages.length > 0 && (
-                    <div className={`px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2')}`}>
+                    <div className={`px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescription.length)}`}>
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
                             {therapist.yearsOfExperience && (
@@ -1112,7 +1068,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
             {/* Discounted Prices Header */}
             {isDiscountActive(therapist) && (
-                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
+                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1', translatedDescription.length)}`}>
                     <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
                         🔥 Discounted Price's Displayed
                     </p>
@@ -1213,7 +1169,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
 
-            <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3')}`}>
+            <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}`}>
                 <button
                     onClick={(e) => {
                         e.preventDefault();

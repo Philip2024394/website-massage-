@@ -1,5 +1,6 @@
 import type { Therapist } from '../types';
 import { getDisplayRating } from '../utils/ratingUtils';
+import { useChatProvider } from './useChatProvider';
 
 interface ChatEventDetail {
   therapistId: string;
@@ -25,24 +26,20 @@ export const useTherapistChat = (
   displayStatus: string,
   isDiscountActive: boolean
 ) => {
+  // Use ChatProvider instead of event system
+  const { addNotification } = useChatProvider();
+
   const openChat = (mode: 'immediate' | 'scheduled', selectedService?: ChatEventDetail['selectedService']) => {
-    const normalizedStatus = displayStatus.toLowerCase() as 'available' | 'busy' | 'offline';
-
-    const detail: ChatEventDetail = {
-      therapistId: typeof therapist.id === 'string' ? therapist.id : therapist.id?.toString() || '',
-      therapistName: therapist.name,
-      therapistType: 'therapist',
-      therapistStatus: normalizedStatus,
-      pricing: pricing,
-      profilePicture: (therapist as any).profilePicture || (therapist as any).mainImage,
-      providerRating: getDisplayRating(therapist.rating, therapist.reviewCount),
-      discountPercentage: therapist.discountPercentage || 0,
-      discountActive: isDiscountActive,
-      mode: mode,
-      ...(selectedService && { selectedService }),
-    };
-
-    window.dispatchEvent(new CustomEvent('openChat', { detail }));
+    console.log(`🟢 Opening ${mode} chat for ${therapist.name}`);
+    
+    // For now, show a notification that the user should book to access chat
+    // In a complete implementation, this would trigger a booking modal
+    addNotification(
+      'info',
+      `${mode === 'immediate' ? 'Instant' : 'Scheduled'} Booking`,
+      `Please complete booking with ${therapist.name} to start chatting`,
+      { duration: 4000 }
+    );
   };
 
   const openBookNowChat = () => {

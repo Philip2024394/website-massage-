@@ -9,6 +9,32 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
+    <!-- 🖥️ PREVIEW MODE: Auto-refresh if server disconnects -->
+    <script>
+        // Prevent offline messages in preview mode
+        (function() {
+            let lastConnected = true;
+            function checkConnection() {
+                fetch('/')
+                    .then(() => {
+                        if (!lastConnected) {
+                            console.log('✅ Server reconnected - refreshing...');
+                            window.location.reload();
+                        }
+                        lastConnected = true;
+                    })
+                    .catch(() => {
+                        lastConnected = false;
+                        console.log('⚠️ Server disconnected - will auto-refresh when back online');
+                    });
+            }
+            // Check every 10 seconds
+            setInterval(checkConnection, 10000);
+            // Initial check
+            checkConnection();
+        })();
+    </script>
+    
     <!-- 📱 PWA MANIFEST: Critical for background notifications -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#f97316" />

@@ -156,25 +156,15 @@ export const useNavigation = ({
         setPage('therapistJobRegistration');
     }, [setPage]);
 
-    // ❌ REMOVED: Legacy booking navigation - use local modal in components instead
+    // ❌ DEPRECATED: Legacy booking navigation - use local booking modals in components instead
     const handleNavigateToBooking = useCallback((provider: Therapist | Place, type: 'therapist' | 'place') => {
-        console.warn('⚠️ DEPRECATED: handleNavigateToBooking called but window.openBookingPopup removed.');
+        console.warn('⚠️ DEPRECATED: handleNavigateToBooking called - functionality removed.');
         console.log('ℹ️ Use local booking modals in TherapistCard or SharedTherapistProfile instead.');
-        console.log('🔄 Fallback: Opening chat window directly');
+        console.log('❌ openChat events are no longer supported - use ChatProvider directly.');
         
-        // Legacy booking system removed - open chat instead
-        window.dispatchEvent(new CustomEvent('openChat', {
-            detail: {
-                therapistId: provider.id || (provider as any).$id,
-                therapistName: provider.name,
-                therapistType: type,
-                therapistStatus: (provider as any).status || (provider as any).availability || 'available',
-                pricing: (provider as any).pricing ? JSON.parse((provider as any).pricing) : { '60': 200000, '90': 300000, '120': 400000 },
-                profilePicture: (provider as any).profilePicture || (provider as any).mainImage,
-                mode: 'immediate'
-            }
-        }));
-    }, [setProviderForBooking, setPage]);
+        // No-op - legacy function kept for compatibility
+        console.log('🚫 Function disabled - please update calling code to use modern booking flow');
+    }, []);
 
     const handleNavigateToBookingPage = useCallback((therapist: Therapist) => {
         setProviderForBooking({ provider: therapist, type: 'therapist' });

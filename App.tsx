@@ -12,10 +12,11 @@ import { useAutoReviews } from './hooks/useAutoReviews';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import ChatWindow from './components/ChatWindow.safe';
-import FloatingChat from './apps/therapist-dashboard/src/components/FloatingChat';
-import { FloatingChatWindow } from './chat'; // New standalone chat system
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
+
+// Lazy load heavy systems to improve FCP and reduce initial bundle
+const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
+const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
 // import './utils/disableLocalStorage';
@@ -34,9 +35,8 @@ import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapp
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
 import { useServiceWorkerListener } from './app/useServiceWorkerListener';
 import { useUrlBookingHandler } from './app/useUrlBookingHandler';
-import { useOpenChatListener } from './app/useOpenChatListener';
 import { useAnalyticsHandler } from './app/useAnalyticsHandler';
-import ActiveChatDebugger from './components/ActiveChatDebugger';
+import { ChatProvider } from './context/ChatProvider';
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
@@ -137,8 +137,7 @@ const App = () => {
     // Analytics handler function
     const handleIncrementAnalytics = useAnalyticsHandler();
 
-    // openChat event listener
-    useOpenChatListener(setActiveChat, setIsChatMinimized);
+    // Track activeChat state changes
 
     // Track activeChat state changes
     useEffect(() => {
@@ -560,6 +559,7 @@ const App = () => {
 
     return (
         <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: (l: 'en' | 'id' | 'gb') => { void handleLanguageSelect(l); } }}>
+        <ChatProvider>
         <DeviceStylesProvider>
             <AppLayout
                 isFullScreen={state.page === 'landing' || state.isFullScreen}
@@ -701,10 +701,12 @@ const App = () => {
                 state.page === 'schedule' || 
                 state.page === 'bookings'
             ) && (
-                <FloatingChat 
-                    therapist={state.loggedInProvider as any}
-                    isPWA={false}
-                />
+                <Suspense fallback={<div className="fixed bottom-4 right-4 w-80 h-96 bg-gray-100 rounded-lg animate-pulse" />}>
+                    <FloatingChat 
+                        therapist={state.loggedInProvider as any}
+                        isPWA={false}
+                    />
+                </Suspense>
             )}
 
             <AppFooterLayout
@@ -728,6 +730,10 @@ const App = () => {
                 setPage={state.setPage}
                 setLoyaltyEvent={state.setLoyaltyEvent}
             />
+            
+            {/* Global Chat System - Available everywhere */}
+            <FloatingChatWindow />
+            
             </AppLayout>
             
             {/* Global Overlays - Outside AppLayout to prevent clipping */}
@@ -789,33 +795,18 @@ const App = () => {
                     return null;
                 }
                 
-                console.log('🔥 RENDERING ChatWindow COMPONENT');
+                console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
                 
                 try {
-                    console.log('✅ ChatWindow RENDERING NOW');
+                    console.log('✅ FloatingChatWindow RENDERING NOW');
                     return (
-                    <ChatWindow
-                        providerId={activeChat.providerId}
-                        providerName={activeChat.providerName}
-                        providerPhoto={activeChat.providerImage}
-                        providerStatus="available"
-                        providerRating={4.5}
-                        pricing={activeChat.pricing || {"60": 150000, "90": 225000, "120": 300000}}
-                        customerName={activeChat.customerName}
-                        customerWhatsApp={activeChat.customerWhatsApp}
-                        bookingId={activeChat.bookingId}
-                        chatRoomId={activeChat.chatRoomId}
-                        bookingDate={activeChat.bookingDate || new Date().toLocaleDateString()}
-                        bookingTime={activeChat.bookingTime || new Date().toLocaleTimeString()}
-                        serviceDuration={activeChat.serviceDuration || '60'}
-                        serviceType={activeChat.serviceType || 'Home Massage'}
-                        isOpen={true}
-                        onClose={() => {
-                            console.log('🔴 Minimizing chat window');
-                            setIsChatMinimized(true);
-                            // Keep activeChat for re-opening
-                        }}
-                    />
+                        <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
+                            <FloatingChatWindow
+                                userId={activeChat.customerId || 'guest'}
+                                userName={activeChat.customerName || 'Guest'}
+                                userRole="customer"
+                            />
+                        </Suspense>
                     );
                 } catch (chatError) {
                     console.error('❌ ChatWindow render error:', chatError);
@@ -850,10 +841,8 @@ const App = () => {
 
             {/* New Standalone Floating Chat - Only on home page (rendered in HomePage.tsx) */}
 
-            {/* Debug Component - Remove in production */}
-            <ActiveChatDebugger activeChat={activeChat} />
-
         </DeviceStylesProvider>
+        </ChatProvider>
         </LanguageProvider>
     );
 };

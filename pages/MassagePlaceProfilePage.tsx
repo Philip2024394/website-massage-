@@ -9,6 +9,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
+import { useChatProvider } from '../hooks/useChatProvider';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -147,6 +148,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     // Review modal state
     const [showReviewModal, setShowReviewModal] = useState(false);
     
+    // Chat provider for notifications
+    const { addNotification } = useChatProvider();
+    
     // Fetch custom links on mount
     useEffect(() => {
         customLinksService.getAll()
@@ -252,21 +256,13 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             };
         })();
         
-        // Dispatch openChat event just like therapist bookings
-        window.dispatchEvent(new CustomEvent('openChat', {
-            detail: {
-                therapistId: String(place.$id || place.id || ''),
-                therapistName: place.name,
-                therapistType: 'place',
-                therapistStatus: 'available', // Places are considered available during business hours
-                pricing: pricing,
-                profilePicture: place.mainImage || place.profilePicture,
-                providerRating: (place as any).rating || 0,
-                discountPercentage: activeDiscountData?.percentage || 0,
-                discountActive: !!activeDiscountData,
-                mode: 'immediate'
-            }
-        }));
+        // Show notification instead of dispatching event
+        addNotification(
+            'info',
+            'Instant Booking',
+            `Please complete booking with ${place.name} to start chatting`,
+            { duration: 4000 }
+        );
     };
     
     // Handle Schedule booking - open chat window in scheduled mode (same as therapist booking)
@@ -311,21 +307,13 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
             };
         })();
         
-        // Dispatch openChat event in scheduled mode
-        window.dispatchEvent(new CustomEvent('openChat', {
-            detail: {
-                therapistId: String(place.$id || place.id || ''),
-                therapistName: place.name,
-                therapistType: 'place',
-                therapistStatus: 'available', // Places are considered available during business hours
-                pricing: pricing,
-                profilePicture: place.mainImage || place.profilePicture,
-                providerRating: (place as any).rating || 0,
-                discountPercentage: activeDiscountData?.percentage || 0,
-                discountActive: !!activeDiscountData,
-                mode: 'scheduled'
-            }
-        }));
+        // Show notification instead of dispatching event
+        addNotification(
+            'info',
+            'Scheduled Booking',
+            `Please complete booking with ${place.name} to start chatting`,
+            { duration: 4000 }
+        );
     };
 
     // Handle Bike Taxi booking

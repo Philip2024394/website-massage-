@@ -290,6 +290,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'home':
             return renderRoute(publicRoutes.home.component, {
                 page: page, // Pass the current page prop to HomePage
+                user: props.user, // Pass user prop for chat system
                 onNavigate: props.onNavigate,
                 therapists: props.therapists,
                 places: props.places,
@@ -548,13 +549,22 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 );
                 if (foundTherapist) {
                     return renderRoute(profileRoutes.therapistProfile.component, {
-                        therapist: foundTherapist
+                        therapist: foundTherapist,
+                        onBack: () => props.setPage?.('home'), // Navigate back to home
+                        onLanguageChange: props.onLanguageChange,
+                        language: props.language,
+                        selectedCity: props.selectedCity,
+                        onCityChange: props.onCityChange,
+                        therapists: props.therapists,
+                        places: props.places,
+                        onNavigate: props.onNavigate
                     });
                 }
             }
             
             return renderRoute(profileRoutes.therapistProfile.component, {
                 therapist: props.selectedTherapist,
+                onBack: () => props.setPage?.('home'), // Navigate back to home
                 // Header props
                 onLanguageChange: props.onLanguageChange,
                 language: props.language,

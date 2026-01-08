@@ -10,6 +10,7 @@ import SocialSharePopup from './SocialSharePopup';
 import MassagePlaceJoinPopup from './MassagePlaceJoinPopup';
 import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
+import { useChatProvider } from '../hooks/useChatProvider';
 
 interface MassagePlaceCardProps {
     place: Place;
@@ -44,6 +45,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     t: _t,
     userLocation
 }) => {
+    // Chat provider for notifications
+    const { addNotification } = useChatProvider();
+    
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showSharePopup, setShowSharePopup] = useState(false);
@@ -968,26 +972,15 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                             
                             console.log('🟢 Book Now button clicked - opening chat window for massage place');
                             
-                            // Open chat window directly with registration flow
-                            console.log('🔵 MassagePlaceCard dispatching openChat:', { 
-                                placeName: place.name,
-                                status: place.status
-                            });
+                            // Show notification instead of opening chat
+                            console.log('🔵 MassagePlaceCard: Instant booking notification for', place.name);
                             
-                            window.dispatchEvent(new CustomEvent('openChat', {
-                                detail: {
-                                    therapistId: typeof place.id === 'string' ? place.id : place.id?.toString(),
-                                    therapistName: place.name,
-                                    therapistType: 'massage_place',
-                                    therapistStatus: 'available',
-                                    pricing: pricing,
-                                    profilePicture: (place as any).profilePicture || (place as any).logo || mainImage,
-                                    providerRating: getDisplayRating(place.rating, place.reviewCount),
-                                    discountPercentage: (place as any).discountPercentage || 0,
-                                    discountActive: isDiscountActive(place),
-                                    mode: 'immediate'
-                                }
-                            }));
+                            addNotification(
+                                'info',
+                                'Instant Booking',
+                                `Please complete booking with ${place.name} to start chatting`,
+                                { duration: 4000 }
+                            );
                         }}
                         className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
                     >
@@ -1010,22 +1003,14 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                 (e.target as HTMLElement).removeAttribute('data-clicking');
                             });
                             
-                            console.log('📅 Schedule button clicked - opening chat in scheduled mode for massage place');
+                            console.log('📅 Schedule button clicked - showing notification for massage place');
                             
-                            window.dispatchEvent(new CustomEvent('openChat', {
-                                detail: {
-                                    therapistId: typeof place.id === 'string' ? place.id : place.id?.toString(),
-                                    therapistName: place.name,
-                                    therapistType: 'massage_place',
-                                    therapistStatus: 'available',
-                                    pricing: pricing,
-                                    profilePicture: (place as any).profilePicture || (place as any).logo || mainImage,
-                                    providerRating: getDisplayRating(place.rating, place.reviewCount),
-                                    discountPercentage: (place as any).discountPercentage || 0,
-                                    discountActive: isDiscountActive(place),
-                                    mode: 'scheduled'
-                                }
-                            }));
+                            addNotification(
+                                'info',
+                                'Scheduled Booking',
+                                `Please complete booking with ${place.name} to start chatting`,
+                                { duration: 4000 }
+                            );
                             onIncrementAnalytics('bookings');
                         }} 
                         className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"

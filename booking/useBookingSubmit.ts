@@ -3,15 +3,14 @@ import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { showToast } from '../utils/showToastPortal';
 import { createChatRoom, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
-import type { BookingSuccessPayload } from '../hooks/useBookingSuccess';
+import { useChatProvider } from '../hooks/useChatProvider';
 
 /**
  * Booking submission handler - extracted from ScheduleBookingPopup.tsx
- * Contains all booking creation logic (lines 280-800+)
- * RULE: Side-effects live in hooks, not JSX files
+ * Contains all booking creation logic (lines 280-800+) 
+ * UPDATED: Now uses ChatProvider instead of event system
  */
 export function useBookingSubmit(
-    onBookingSuccess: (payload: BookingSuccessPayload) => void,
     pricing: { [key: string]: number } | undefined,
     therapistId: string,
     therapistName: string,
@@ -20,6 +19,9 @@ export function useBookingSubmit(
     hotelVillaId?: string,
     isImmediateBooking?: boolean
 ) {
+    // Get ChatProvider functions
+    const { handleBookingSuccess } = useChatProvider();
+
     return async function handleCreateBooking(formData: {
         selectedDuration: number | null;
         selectedTime: { hour: number; minute: number; label: string } | null;
@@ -265,10 +267,10 @@ export function useBookingSubmit(
             
             console.log("🔥 BOOKING SAVE COMPLETE:", bookingResponse.$id);
             console.log("🔥 CHAT ROOM CREATED:", chatRoom.$id);
-            console.log("🔥 ABOUT TO DISPATCH openChat EVENT");
+            console.log("🔥 ABOUT TO OPEN CHAT VIA CHATPROVIDER");
             
-            // Use the isolated booking success hook
-            onBookingSuccess({
+            // Use ChatProvider instead of event system
+            const chatOpened = handleBookingSuccess({
                 chatRoomId: chatRoom.$id,
                 bookingId: booking.$id,
                 providerId: booking.therapistId,
@@ -287,15 +289,20 @@ export function useBookingSubmit(
                 serviceType: 'Home Massage'
             });
             
-            console.log("✅ Hook executed - openChat event dispatched");
-            console.log("🔥 WAITING FOR EVENT LISTENER TO CATCH IT...");
+            if (chatOpened) {
+                console.log("✅ ChatProvider opened chat successfully");
+                showToast('✅ Booking created! Chat window opened.', 'success');
+            } else {
+                console.warn("⚠️ ChatProvider failed to open chat");
+                showToast('✅ Booking created! Please refresh to access chat.', 'warning');
+            }
             
             // Close popup after chat opens
             setTimeout(() => {
                 console.log('🚪 Closing ScheduleBookingPopup after chat opened');
                 onClose();
                 resetForm();
-            }, 1000);
+            }, 500); // Shorter delay since no events needed
             
         } catch (chatErr: any) {
             console.error('❌ Chat creation failed', chatErr);

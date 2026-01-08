@@ -24,13 +24,14 @@ export const useDataFetching = () => {
             setIsLoading(true);
             
             // Fetch therapists first (this should work)
-            console.log('🔄 Fetching therapists data...');
+            console.log('� [STAGE 2 - HOOK] Fetching therapists data...');
             const therapistsData = await robustCollectionQuery(
                 () => therapistService.getTherapists(),
                 'therapists',
                 [] as Therapist[]
             );
-            console.log('✅ Therapists data received:', therapistsData?.length || 0);
+            console.log('✅ [STAGE 2 - HOOK] Therapists after robustQuery:', therapistsData?.length || 0);
+            console.log('🔍 [STAGE 2] Sample therapist:', therapistsData?.[0]?.name || 'None');
             console.log('🔍 THERAPIST QUERY RESULT DEBUG:');
             console.log('  📊 Total therapists:', therapistsData?.length || 0);
             console.log('  🆔 Document IDs:', therapistsData?.map(t => t.$id) || []);
@@ -73,7 +74,7 @@ export const useDataFetching = () => {
             console.log('✅ Hotels data received:', hotelsData?.length || 0);
             
             // Initialize review data for new accounts
-            console.log('🎯 Initializing reviews for therapists...');
+            console.log('🔍 [STAGE 2] Initializing reviews for therapists...');
             const therapistsWithReviews = (therapistsData || []).map((therapist: Therapist) => {
                 const initialized = reviewService.initializeProvider(therapist) as Therapist;
                 if (initialized.rating !== therapist.rating || initialized.reviewCount !== (therapist as any).reviewcount) {
@@ -81,6 +82,7 @@ export const useDataFetching = () => {
                 }
                 return initialized;
             });
+            console.log('✅ [STAGE 2] Therapists after review init:', therapistsWithReviews.length);
             
             // ✅ CRITICAL FIX: Update therapist list provider state when real data arrives
             if (therapistsWithReviews && therapistsWithReviews.length > 0) {

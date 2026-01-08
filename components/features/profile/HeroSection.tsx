@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, MapPin, Clock, Calendar, ShieldCheck } from 'lucide-react';
 import AnonymousReviewModal from '../../AnonymousReviewModal';
 import SocialSharePopup from '../../SocialSharePopup';
+import { useChatProvider } from '../../../hooks/useChatProvider';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -66,6 +67,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     isCustomerLoggedIn = false,
     activeDiscount
 }) => {
+    // Chat provider for notifications
+    const { addNotification } = useChatProvider();
+    
     const [showReferModal, setShowReferModal] = useState(false);
     const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
@@ -513,21 +517,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             const pricing = parsePricing(place.pricing);
                             console.log('💰 Place pricing:', pricing);
                             
-                            // Dispatch openChat event just like therapist bookings
-                            window.dispatchEvent(new CustomEvent('openChat', {
-                                detail: {
-                                    therapistId: String(place.id || place.$id || ''),
-                                    therapistName: place.name,
-                                    therapistType: 'place',
-                                    therapistStatus: 'available', // Places are considered available during business hours
-                                    pricing: pricing,
-                                    profilePicture: place.mainImage || place.profilePicture,
-                                    providerRating: place.rating || 0,
-                                    discountPercentage: activeDiscount?.percentage || 0,
-                                    discountActive: !!activeDiscount,
-                                    mode: 'immediate'
-                                }
-                            }));
+                            // Show notification instead of dispatching event
+                            addNotification(
+                                'info',
+                                'Instant Booking',
+                                `Please complete booking with ${place.name} to start chatting`,
+                                { duration: 4000 }
+                            );
                         }}
                         className="flex items-center justify-center gap-2 py-2.5 px-4 bg-green-500 text-white font-semibold text-sm rounded-lg hover:bg-green-600 transition-colors shadow-lg"
                     >

@@ -6,6 +6,7 @@ import { useLanguage } from '../hooks/useLanguage';
 import { translations } from '../translations';
 import { createChatRoom, sendSystemMessage } from '../lib/chatService';
 import { showToast } from '../utils/showToastPortal';
+import { useChatProvider } from '../hooks/useChatProvider';
 import { 
   validateBookingPayload, 
   validateUserInput,
@@ -71,6 +72,10 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
   bookingSource = 'quick-book' // Default source
 }) => {
   const { language } = useLanguage();
+  
+  // Get ChatProvider functions for opening chats
+  const { openBookingChat } = useChatProvider();
+  
   const [showWarning, setShowWarning] = useState(true);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(initialDuration || null);
   const [isCreating, setIsCreating] = useState(false);
@@ -438,35 +443,34 @@ ${
         // Show success toast
         showToast('✅ Booking created! Opening chat...', 'success');
         
-        // 🔥 STEP 6: Dispatch openChat event with standardized payload
-        setTimeout(() => {
-          // ✅ FIX: Validate required fields before dispatching
-          if (!chatRoom.$id) {
-            console.error('❌ STEP 6 FAILED: Cannot dispatch openChat - missing chatRoom.$id');
-            return;
-          }
-          
-          const openChatPayload = {
-            roomId: chatRoom.$id, // ✅ FIX: App.tsx expects 'roomId', not 'chatSessionId'
-            chatSessionId: chatRoom.$id, // Keep for backward compatibility
-            therapistName: therapistName,
-            therapistPhoto: profilePicture || '',
-            therapistId: therapistId.toString(), // ✅ Always string
-            providerId: therapistId.toString(),
-            providerName: therapistName,
-            providerPhoto: profilePicture || '',
-            providerStatus: 'available' as const,
-            providerRating: 0,
-            pricing: pricing || { '60': 250000, '90': 350000, '120': 450000 },
-            bookingId: booking.$id,
-            customerName: customerName,
-            customerWhatsApp: `${countryCode}${customerWhatsApp}`.replace(/\s/g, '')
-          };
-          
-          console.log('🔥 STEP 6: Dispatching openChat event with payload:', openChatPayload);
-          window.dispatchEvent(new CustomEvent('openChat', { detail: openChatPayload }));
-          console.log('✅ openChat event dispatched successfully');
-        }, 100);
+        // 🔥 STEP 6: Open chat via ChatProvider instead of events
+        console.log('🔥 STEP 6: Opening chat via ChatProvider...');
+        
+        // ✅ FIX: Validate required fields before opening chat
+        if (!chatRoom.$id) {
+          console.error('❌ STEP 6 FAILED: Cannot open chat - missing chatRoom.$id');
+          return;
+        }
+        
+        const chatOpened = openBookingChat({
+          chatRoomId: chatRoom.$id,
+          bookingId: booking.$id,
+          providerId: therapistId.toString(),
+          providerName: therapistName,
+          providerImage: profilePicture || null,
+          customerName: customerName,
+          customerWhatsApp: `${countryCode}${customerWhatsApp}`.replace(/\s/g, ''),
+          serviceDuration: selectedDuration?.toString(),
+          serviceType: providerType === 'place' && therapistName.toLowerCase().includes('facial') ? 'facial treatment' : 'massage',
+          serviceDate: new Date().toLocaleDateString(),
+          serviceTime: new Date().toLocaleTimeString()
+        });
+        
+        if (chatOpened) {
+          console.log('✅ STEP 6: Chat opened via ChatProvider successfully');
+        } else {
+          console.warn('⚠️ STEP 6: ChatProvider failed to open chat');
+        }
         
       } catch (chatError: any) {
         console.error('❌ Error creating chat room:', chatError);

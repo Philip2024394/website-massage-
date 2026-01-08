@@ -8,8 +8,12 @@ export function useServiceWorkerListener(
     fetchAndShowForcedBooking: (bookingId: string) => void,
     handleBookingExpiration: (bookingId: string, reason: string) => void
 ) {
-    useEffect(() => {
-        console.log('🔊 Setting up service worker message listeners');
+    useEffect(() => {        // 🔒 SKIP SERVICE WORKER IN DEV MODE
+        if (import.meta.env.DEV) {
+            console.log('⚠️ Service worker disabled in dev mode');
+            return;
+        }
+                console.log('🔊 Setting up service worker message listeners');
         
         const handleServiceWorkerMessage = (event: MessageEvent) => {
             // Sound playback

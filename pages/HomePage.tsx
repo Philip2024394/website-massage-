@@ -13,18 +13,22 @@ import { Users, Building, Sparkles } from 'lucide-react';
 import SocialMediaLinks from '../components/SocialMediaLinks';
 import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
-import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } from '../lib/nearbyProvidersService';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import PageNumberBadge from '../components/PageNumberBadge';
-import { THERAPIST_MAIN_IMAGES } from '../lib/services/imageService';
-import { loadGoogleMapsScript } from '../constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
-import { INDONESIAN_CITIES_CATEGORIZED, findCityByName, matchProviderToCity, findCityByCoordinates } from '../constants/indonesianCities';
-import { matchesLocation } from '../utils/locationNormalization';
-import { initializeGoogleMaps, isGoogleMapsLoaded } from '../lib/appwrite.config';
+import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.config';
 import MusicPlayer from '../components/MusicPlayer';
 import { FloatingChatWindow } from '../chat';
+import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
+import { matchProviderToCity } from '../constants/indonesianCities';
+import { matchesLocation } from '../utils/locationNormalization';
+import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
+
+// Custom hooks for logic extraction
+import { useHomePageState } from '../hooks/useHomePageState';
+import { useHomePageLocation } from '../hooks/useHomePageLocation';
+import { useHomePageAdmin } from '../hooks/useHomePageAdmin';
+import { useHomePageTranslations } from '../hooks/useHomePageTranslations';
 
 
 interface HomePageProps {
@@ -75,33 +79,6 @@ interface HomePageProps {
 
 
 
-// Coordinate parsing utility to handle different formats
-const parseCoordinates = (coordinates: any): { lat: number; lng: number } | null => {
-    if (!coordinates) return null;
-    
-    // Handle Point format [lng, lat] - Appwrite GeoJSON standard
-    if (Array.isArray(coordinates) && coordinates.length === 2) {
-        return { lat: coordinates[1], lng: coordinates[0] };
-    }
-    
-    // Handle JSON string format
-    if (typeof coordinates === 'string') {
-        try {
-            const parsed = JSON.parse(coordinates);
-            if (parsed.lat && parsed.lng) {
-                return { lat: parsed.lat, lng: parsed.lng };
-            }
-        } catch {}
-    }
-    
-    // Handle object format
-    if (coordinates.lat && coordinates.lng) {
-        return { lat: coordinates.lat, lng: coordinates.lng };
-    }
-    
-    return null;
-};
-
 // Icon used in massage type filter
 const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -111,6 +88,7 @@ const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
 
 const HomePage: React.FC<HomePageProps> = ({ 
     page, // Current page from routing system
+    user, // Add user for chat system
     loggedInAgent: _loggedInAgent,
     loggedInProvider,
     loggedInCustomer,
@@ -157,211 +135,95 @@ const HomePage: React.FC<HomePageProps> = ({
         return null;
     }
     
-    console.log('🏠 HomePage: Component is being called!');
-    // Enhanced debug logging for translations
-    // Memoize translation conversion to prevent re-renders
-    // SAFE: Always returns valid object structure, never undefined
-    const translationsObject = React.useMemo(() => {
-        console.log('🏠 HomePage received translations:', {
-            tExists: !!t,
-            tType: typeof t,
-            tIsFunction: typeof t === 'function',
-            tKeys: t && typeof t === 'object' ? Object.keys(t) : 'not an object',
-        });
-
-        // SAFE: Provide default fallback translations
-        const defaultTranslations = {
-            home: {
-                homeServiceTab: 'Home Service',
-                massagePlacesTab: 'Massage Places',
-                loading: 'Loading...',
-                loginSignUp: 'Login / Sign Up',
-                noMoreTherapists: 'No more therapists available',
-                setLocation: 'Set Location',
-                updateLocation: 'Update Location',
-                cityLocation: 'City / Location',
-                therapistsOnline: 'Therapists Online',
-                searchPlaceholder: 'Search...',
-                noResults: 'No results found',
-                massageDirectory: 'Massage Directory',
-                massageDirectoryTitle: 'Browse All Massage Types',
-                noTherapistsAvailable: 'No therapists available in your area',
-                therapistsTitle: 'Home Massage Therapists',
-                therapistsSubtitle: 'Find the best massage therapists',
-                massagePlacesTitle: 'Featured Massage Spas',
-                massagePlacesSubtitle: 'Find the best massage places',
-                noPlacesAvailable: 'No massage places available in your area'
-            },
-            detail: {},
-            common: {}
-        };
-
-        // SAFE: Return default if t is missing
-        if (!t) {
-            console.warn('⚠️ HomePage: No translations provided, using defaults');
-            return defaultTranslations;
-        }
-
-        // Adapter: Convert translation function to object structure for HomePage compatibility
-        if (typeof t === 'function') {
-            console.log('🔄 Converting translation function to object structure for HomePage');
-            try {
-                const homeTranslations = {
-                    homeServiceTab: t('home.homeServiceTab') || defaultTranslations.home.homeServiceTab,
-                    massagePlacesTab: t('home.massagePlacesTab') || defaultTranslations.home.massagePlacesTab,
-                    loading: t('home.loading') || defaultTranslations.home.loading,
-                    loginSignUp: t('home.loginSignUp') || defaultTranslations.home.loginSignUp,
-                    noMoreTherapists: t('home.noMoreTherapists') || defaultTranslations.home.noMoreTherapists,
-                    setLocation: t('home.setLocation') || defaultTranslations.home.setLocation,
-                    updateLocation: t('home.updateLocation') || defaultTranslations.home.updateLocation,
-                    cityLocation: t('cityLocation') || defaultTranslations.home.cityLocation,
-                    therapistsOnline: t('home.therapistsOnline') || defaultTranslations.home.therapistsOnline,
-                    searchPlaceholder: t('home.searchPlaceholder') || defaultTranslations.home.searchPlaceholder,
-                    noResults: t('home.noResults') || defaultTranslations.home.noResults,
-                    massageDirectory: t('home.massageDirectory') || defaultTranslations.home.massageDirectory,
-                    massageDirectoryTitle: t('home.massageDirectoryTitle') || defaultTranslations.home.massageDirectoryTitle,
-                    noTherapistsAvailable: t('home.noTherapistsAvailable') || defaultTranslations.home.noTherapistsAvailable,
-                    therapistsTitle: t('home.therapistsTitle') || defaultTranslations.home.therapistsTitle,
-                    therapistsSubtitle: t('home.therapistsSubtitle') || defaultTranslations.home.therapistsSubtitle,
-                    massagePlacesTitle: t('home.massagePlacesTitle') || defaultTranslations.home.massagePlacesTitle,
-                    massagePlacesSubtitle: t('home.massagePlacesSubtitle') || defaultTranslations.home.massagePlacesSubtitle,
-                    noPlacesAvailable: t('home.noPlacesAvailable') || defaultTranslations.home.noPlacesAvailable
-                };
-                
-                console.log('✅ Converted function-based translations to object structure for HomePage');
-                return {
-                    home: homeTranslations,
-                    detail: {},
-                    common: {}
-                };
-            } catch (error) {
-                console.error('❌ Error converting translations:', error);
-                return defaultTranslations;
-            }
-        }
-        
-        // SAFE: If t is object but missing home property, merge with defaults
-        if (typeof t === 'object' && !t.home) {
-            console.warn('⚠️ HomePage: Translations object missing home property, using defaults');
-            return defaultTranslations;
-        }
-        
-        return t;
-    }, [t]);
-
-    // Debug data received
-    console.log('🏠 HomePage Data Debug:', {
-        therapistsCount: therapists?.length || 0,
-        placesCount: places?.length || 0,
-        therapistsLive: therapists?.filter((t: any) => t.isLive)?.length || 0,
-        placesLive: places?.filter((p: any) => p.isLive)?.length || 0,
-        hasTherapists: !!therapists && therapists.length > 0,
-        hasPlaces: !!places && places.length > 0,
-        therapistsSample: therapists?.slice(0, 2),
-        placesSample: places?.slice(0, 2)
-    });
-
-    const [activeTab, setActiveTab] = useState('home');
+    console.log('🔍 [STAGE 4 - HomePage] Component rendering');
+    console.log('🔍 [STAGE 4] Therapists prop received:', therapists?.length || 0);
+    console.log('🔍 [STAGE 4] First 3 therapist names:', therapists?.slice(0, 3).map(t => t.name) || []);
     
-    // Coming soon popup state
-    const [showComingSoonModal, setShowComingSoonModal] = useState(false);
-    const [comingSoonSection, setComingSoonSection] = useState('');
-    
-    // Development mode toggle (press Ctrl+Shift+D to toggle)
-    const [isDevelopmentMode, setIsDevelopmentMode] = useState(() => {
-        return localStorage.getItem('massage_dev_mode') === 'true';
-    });
-    
-    // Add keyboard shortcut to toggle dev mode
-    useEffect(() => {
-        const handleKeydown = (e: KeyboardEvent) => {
-            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                const newDevMode = !isDevelopmentMode;
-                setIsDevelopmentMode(newDevMode);
-                localStorage.setItem('massage_dev_mode', newDevMode.toString());
-                console.log('🛠️ Development mode:', newDevMode ? 'ENABLED' : 'DISABLED');
-            }
-        };
-        
-        window.addEventListener('keydown', handleKeydown);
-        return () => window.removeEventListener('keydown', handleKeydown);
-    }, [isDevelopmentMode]);
-    
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-    const [selectedCity, setSelectedCity] = useState<string>('all');
-    const [, setCustomLinks] = useState<any[]>([]);
-    const [showRatingModal, setShowRatingModal] = useState(false);
-    const [, setSelectedTherapist] = useState<Therapist | null>(null);
-    const [selectedRatingItem, setSelectedRatingItem] = useState<{item: any, type: 'therapist' | 'place'} | null>(null);
-    
-    // Location-based filtering state (automatic, no UI)
-    const [autoDetectedLocation, setAutoDetectedLocation] = useState<{lat: number, lng: number} | null>(null);
-    const [nearbyTherapists, setNearbyTherapists] = useState<Therapist[]>([]);
-    const [nearbyPlaces, setNearbyPlaces] = useState<Place[]>([]);
-    const [nearbyHotels, setNearbyHotels] = useState<any[]>([]);
-    const [cityFilteredTherapists, setCityFilteredTherapists] = useState<Therapist[]>([]);
-    const [isLocationDetecting, setIsLocationDetecting] = useState(false);
-    
-    // 🔧 DEV-ONLY: Location override for testing geo-filtering from remote locations
-    const isDev = import.meta.env.DEV;
-    const [devLocationOverride, setDevLocationOverride] = useState<{lat: number, lng: number, label: string} | null>(null);
-    const [devShowAllTherapists, setDevShowAllTherapists] = useState(false); // Admin toggle to bypass 10km radius
-    const devTestLocations = {
-        'yogyakarta': { lat: -7.797068, lng: 110.370529, label: 'Yogyakarta Center' },
-        'bandung': { lat: -6.917464, lng: 107.619123, label: 'Bandung Center' },
-        'denpasar': { lat: -8.670458, lng: 115.212629, label: 'Denpasar Center' },
-        'jakarta': { lat: -6.2088, lng: 106.8456, label: 'Jakarta Center' },
-        'solo': { lat: -7.5755, lng: 110.8243, label: 'Solo Center' },
-        'surabaya': { lat: -7.2575, lng: 112.7521, label: 'Surabaya Center' },
-        'bekasi': { lat: -6.2349, lng: 106.9896, label: 'Bekasi Center' },
-        'medan': { lat: 3.5952, lng: 98.6722, label: 'Medan Center' },
-        'depok': { lat: -6.4025, lng: 106.7942, label: 'Depok Center' }
-    };
-    
-    // 🔐 ADMIN/PREVIEW MODE: Parse query params for special viewing modes
-    const [previewTherapistId, setPreviewTherapistId] = useState<string | null>(null);
-    const [adminViewArea, setAdminViewArea] = useState<string | null>(null);
-    const [bypassRadiusForAdmin, setBypassRadiusForAdmin] = useState(false);
-    
-    // Check if user has admin/therapist privileges
+    // Custom hooks for logic extraction
+    const translationsObject = useHomePageTranslations(t);
     const hasAdminPrivileges = !!(_loggedInAgent || loggedInProvider);
     
-    useEffect(() => {
-        // Parse URL query params for admin/preview modes
-        const urlParams = new URLSearchParams(window.location.search);
-        const previewId = urlParams.get('previewTherapistId');
-        const adminArea = urlParams.get('adminViewArea');
-        const bypassRadius = urlParams.get('bypassRadius') === 'true';
-        
-        // Only allow preview/admin modes if user has privileges
-        if (hasAdminPrivileges) {
-            if (previewId) {
-                setPreviewTherapistId(previewId);
-                console.log('🔍 Preview mode enabled for therapist:', previewId);
-            }
-            if (adminArea && bypassRadius) {
-                setAdminViewArea(adminArea);
-                setBypassRadiusForAdmin(true);
-                console.log('🔐 Admin area view enabled:', adminArea);
-            }
-        } else {
-            // Clear any preview/admin modes if user doesn't have privileges
-            setPreviewTherapistId(null);
-            setAdminViewArea(null);
-            setBypassRadiusForAdmin(false);
-        }
-    }, [hasAdminPrivileges]);
+    // ✅ CRITICAL FIX: Destructure all hook returns
+    const {
+        activeTab,
+        setActiveTab,
+        showComingSoonModal,
+        setShowComingSoonModal,
+        comingSoonSection,
+        setComingSoonSection,
+        isMenuOpen,
+        setIsMenuOpen,
+        isLocationModalOpen,
+        setIsLocationModalOpen,
+        selectedCity,
+        setSelectedCity,
+        customLinks,
+        setCustomLinks,
+        showRatingModal,
+        setShowRatingModal,
+        selectedTherapist,
+        setSelectedTherapist,
+        selectedRatingItem,
+        setSelectedRatingItem,
+        isDevelopmentMode,
+        setIsDevelopmentMode,
+        shuffledHomeImages,
+        shuffleArray
+    } = useHomePageState();
     
-    // Shuffled unique home page therapist images (no repeats until all 17 used)
-    const [shuffledHomeImages, setShuffledHomeImages] = useState<string[]>([]);
+    const {
+        previewTherapistId,
+        adminViewArea,
+        bypassRadiusForAdmin,
+        devLocationOverride,
+        setDevLocationOverride,
+        devShowAllTherapists,
+        setDevShowAllTherapists,
+        devTestLocations,
+        isDev
+    } = useHomePageAdmin({ hasAdminPrivileges });
     
-    // Google Maps Autocomplete
+    const {
+        autoDetectedLocation,
+        setAutoDetectedLocation,
+        nearbyTherapists,
+        setNearbyTherapists,
+        nearbyPlaces,
+        setNearbyPlaces,
+        nearbyHotels,
+        setNearbyHotels,
+        cityFilteredTherapists,
+        setCityFilteredTherapists,
+        isLocationDetecting,
+        setIsLocationDetecting,
+        parseCoordinates,
+        getCustomerLocation,
+        findAllNearbyTherapists,
+        findAllNearbyPlaces,
+        findCityByCoordinates
+    } = useHomePageLocation({
+        therapists,
+        places,
+        hotels,
+        selectedCity,
+        propSelectedCity,
+        userLocation,
+        previewTherapistId,
+        adminViewArea,
+        bypassRadiusForAdmin,
+        devLocationOverride,
+        devShowAllTherapists,
+        hasAdminPrivileges,
+        onSetUserLocation
+    });
+
+    
+    // Google Maps Autocomplete (minimal UI state)
     const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
     const locationInputRef = useRef<HTMLInputElement>(null);
     const autocompleteRef = useRef<any>(null);
     
-    // Initialize Google Maps for city location functionality
+    // Initialize Google Maps and body classes
     useEffect(() => {
         const initGoogleMaps = async () => {
             try {
@@ -371,32 +233,16 @@ const HomePage: React.FC<HomePageProps> = ({
                 console.log('✅ Google Maps initialized successfully for city filtering');
             } catch (error) {
                 console.warn('⚠️ Google Maps failed to load, using fallback location matching:', error);
-                // City filtering will work with coordinate-based matching without Google Maps
             }
         };
-        
         initGoogleMaps();
+        
+        // Add body classes for proper CSS support
+        document.body.classList.add('has-footer', 'is-home');
+        return () => {
+            document.body.classList.remove('has-footer', 'is-home');
+        };
     }, []);
-
-    // Fisher-Yates shuffle to randomize array order
-    const shuffleArray = (arr: string[]) => {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    };
-
-    // Reshuffle images whenever user views the Home tab (requirement: random change each time)
-    useEffect(() => {
-        if (activeTab === 'home') {
-            // Use all 18 available images then shuffle for unique cycle
-            const baseImages = [...THERAPIST_MAIN_IMAGES]; // Use all images, not just first 17
-            const shuffled = shuffleArray(baseImages);
-            setShuffledHomeImages(shuffled);
-            console.log('🎲 HomePage shuffled therapist images for this view:', shuffled);
-        }
-    }, [activeTab]);
 
     // Ensure activeTab is always 'home' when HomePage loads (shows therapist cards)
     useEffect(() => {
@@ -431,16 +277,10 @@ const HomePage: React.FC<HomePageProps> = ({
             }
 
             console.log('🗺️ Loading Google Maps API for location autocomplete...');
-            loadGoogleMapsScript(
-                apiKey,
-                () => {
-                    console.log('✅ Google Maps API loaded for HomePage');
-                    setMapsApiLoaded(true);
-                },
-                () => {
-                    console.error('❌ Failed to load Google Maps API');
-                }
-            );
+            loadGoogleMapsScript(() => {
+                console.log('✅ Google Maps API loaded for HomePage');
+                setMapsApiLoaded(true);
+            });
         };
 
         if (!checkGoogleMaps()) {
@@ -1059,10 +899,18 @@ const HomePage: React.FC<HomePageProps> = ({
         });
         
         console.log('🏠 [HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius):');
-        console.log('  📊 Total therapists prop:', therapists.length, therapists.map((t: any) => ({ id: t.$id || t.id, name: t.name, isLive: t.isLive })));
+        console.log('🔍 [STAGE 5 - HomePage Filters] Filter analysis:');
+        console.log('  📊 Total therapists prop:', therapists.length);
         console.log('  📍 Nearby therapists (location-filtered):', nearbyTherapists.length);
         console.log('  🔴 Live nearby therapists (isLive=true):', liveTherapists.length);
-        console.log('  🎯 Final filtered therapists (massage type + location + showcase):', finalTherapistList.length);
+        console.log('  🎯 Final filtered therapists:', finalTherapistList.length);
+        console.log('🔍 [STAGE 5] Filter breakdown:', {
+            input: therapists.length,
+            afterLocation: nearbyTherapists.length,
+            afterLiveFilter: liveTherapists.length,
+            final: finalTherapistList.length,
+            reduction: therapists.length - finalTherapistList.length
+        });
         console.log('  🏨 Final filtered hotels (location):', filteredHotels.length);
         console.log('  📍 Auto-detected location:', autoDetectedLocation);
         console.log('  🏙️ Selected city:', selectedCity);
@@ -1885,10 +1733,15 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             // Render grouped therapists with section headers
                             const locationAreas = Object.keys(therapistsByLocation).sort();
                             
+                            console.log('🔍 [STAGE 6 - Render] About to render therapist cards:', preparedTherapists.length);
+                            console.log('🔍 [STAGE 6] Location areas:', locationAreas);
+                            console.log('🔍 [STAGE 6] Therapists by location:', Object.keys(therapistsByLocation).map(k => `${k}: ${therapistsByLocation[k].length}`));
+                            
                             return (
                                 <>
                                 {locationAreas.map((area) => {
                                     const therapistsInArea = therapistsByLocation[area];
+                                    console.log('🔍 [STAGE 6] Rendering area:', area, 'with', therapistsInArea.length, 'therapists');
                                     return (
                                         <div key={`area-${area}`} className="mb-8">
                                             {/* Location Area Header */}
@@ -1900,6 +1753,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                             
                                             {/* Therapist Cards in This Area */}
                                             {therapistsInArea.map((therapist: any, index: number) => {
+                                                console.log('🔍 [STAGE 6] Rendering TherapistHomeCard for:', therapist.name);
                                 // 🌐 Enhanced Debug: Comprehensive therapist data analysis
                                 // Parse languages safely - handle both JSON arrays and comma-separated strings
                                 let languagesParsed: string[] = [];
@@ -2413,14 +2267,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 </div>
             )}
 
-            {/* Floating Chat Window - Bottom Right */}
-            {loggedInCustomer && (
-                <FloatingChatWindow
-                    userId={loggedInCustomer.$id || loggedInCustomer.id || 'guest'}
-                    userName={loggedInCustomer.name || loggedInCustomer.username || 'Guest User'}
-                    userRole="customer"
-                />
-            )}
+            {/* Floating Chat Window - Bottom Right - Always mounted, internally manages visibility */}
+            <FloatingChatWindow
+                userId={loggedInCustomer?.$id || loggedInCustomer?.id || user?.id || 'guest'}
+                userName={loggedInCustomer?.name || loggedInCustomer?.username || user?.name || 'Guest User'}
+                userRole="customer"
+            />
         </div>
     );
 };
