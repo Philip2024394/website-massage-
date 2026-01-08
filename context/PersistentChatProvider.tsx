@@ -354,10 +354,23 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUserId, loadMessages]);
 
-  // Minimize chat
+  // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
-    console.log('➖ Minimizing chat');
-    setChatState(prev => ({ ...prev, isMinimized: true }));
+    console.log('➖ Minimizing chat - resetting to duration selection');
+    setChatState(prev => ({ 
+      ...prev, 
+      isMinimized: true,
+      // Reset booking flow
+      bookingStep: 'duration',
+      selectedDuration: null,
+      selectedDate: null,
+      selectedTime: null,
+      selectedService: null,
+      customerName: '',
+      customerWhatsApp: '',
+      customerLocation: '',
+      coordinates: null,
+    }));
   }, []);
 
   // Maximize chat

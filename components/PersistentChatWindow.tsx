@@ -75,6 +75,43 @@ export function PersistentChatWindow() {
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Reset form when minimized or therapist changes
+  useEffect(() => {
+    if (chatState.isMinimized || chatState.bookingStep === 'duration') {
+      // Reset local form state
+      setCustomerForm({
+        name: '',
+        whatsApp: '',
+        location: '',
+        locationType: '',
+        coordinates: null,
+        hotelVillaName: '',
+        roomNumber: '',
+        massageFor: '',
+      });
+      setClientMismatchError(null);
+      setSelectedDate('');
+      setSelectedTime('');
+    }
+  }, [chatState.isMinimized, chatState.bookingStep]);
+
+  // Reset form when viewing a different therapist
+  useEffect(() => {
+    setCustomerForm({
+      name: '',
+      whatsApp: '',
+      location: '',
+      locationType: '',
+      coordinates: null,
+      hotelVillaName: '',
+      roomNumber: '',
+      massageFor: '',
+    });
+    setClientMismatchError(null);
+    setSelectedDate('');
+    setSelectedTime('');
+  }, [chatState.therapist?.id]);
+
   // Arrival countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
@@ -562,11 +599,11 @@ export function PersistentChatWindow() {
         {bookingStep === 'details' && (
           <div className="p-4">
             <div className="text-center mb-4">
-              <div className="w-32 h-32 mx-auto mb-3 flex items-center justify-center">
+              <div className="w-64 h-64 mx-auto mb-3 flex items-center justify-center">
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                   alt="Indastreet Massage"
-                  className="w-32 h-32 object-contain"
+                  className="w-64 h-64 object-contain"
                 />
               </div>
               <h4 className="text-lg font-bold text-gray-800">Booking Details</h4>
@@ -587,6 +624,9 @@ export function PersistentChatWindow() {
                   📅 {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
                 </p>
               )}
+              <p className="text-sm text-gray-600 mt-2">
+                🕐 Estimated Arrival: 30-60 minutes
+              </p>
             </div>
             
             <form onSubmit={handleCustomerSubmit} className="space-y-4">
