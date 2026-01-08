@@ -1,0 +1,511 @@
+{
+  "generatedAt": "2026-01-08T15:34:46.301Z",
+  "database": {
+    "id": "68f76ee1000e64ca8d05",
+    "project": "68f23b11000d25eb3664",
+    "endpoint": "https://syd.cloud.appwrite.io/v1"
+  },
+  "totalCollections": 100,
+  "collections": [
+    {
+      "id": "users_collection_id",
+      "name": "USERS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "therapists_collection_id",
+      "name": "THERAPISTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "places_collection_id",
+      "name": "PLACES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "hotels_collection_id",
+      "name": "HOTELS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "agents_collection_id",
+      "name": "AGENTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "bookings_collection_id",
+      "name": "BOOKINGS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "notifications_collection_id",
+      "name": "NOTIFICATIONS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "reviews_collection_id",
+      "name": "REVIEWS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "massage_types_collection_id",
+      "name": "MASSAGE_TYPES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "membership_pricing_collection_id",
+      "name": "MEMBERSHIP_PRICING_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "image_assets",
+      "name": "image_assets",
+      "isTextId": true
+    },
+    {
+      "id": "login_backgrounds",
+      "name": "login_backgrounds",
+      "isTextId": true
+    },
+    {
+      "id": "custom_links_collection_id",
+      "name": "CUSTOM_LINKS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "translations_collection_id",
+      "name": "translations_collection_id",
+      "isTextId": true
+    },
+    {
+      "id": "commission_records",
+      "name": "commission_records",
+      "isTextId": true
+    },
+    {
+      "id": "attributes",
+      "name": "ATTRIBUTES",
+      "isTextId": true
+    },
+    {
+      "id": "analytics_events",
+      "name": "Analytics Events",
+      "isTextId": true
+    },
+    {
+      "id": "hotel_bookings",
+      "name": "hotel_bookings",
+      "isTextId": true
+    },
+    {
+      "id": "therapist_job_listings",
+      "name": "therapist_job_listings",
+      "isTextId": true
+    },
+    {
+      "id": "employer_job_postings",
+      "name": "employer_job_postings",
+      "isTextId": true
+    },
+    {
+      "id": "bank_details",
+      "name": "bank_details",
+      "isTextId": true
+    },
+    {
+      "id": "payment_transactions",
+      "name": "payment_transactions",
+      "isTextId": true
+    },
+    {
+      "id": "bankaccounts",
+      "name": "bankAccounts",
+      "isTextId": true
+    },
+    {
+      "id": "push_subscriptions",
+      "name": "push_subscriptions",
+      "isTextId": true
+    },
+    {
+      "id": "admin_messages",
+      "name": "admin_messages",
+      "isTextId": true
+    },
+    {
+      "id": "users_collection_id",
+      "name": "USERS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "therapists_collection_id",
+      "name": "THERAPISTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "places_collection_id",
+      "name": "PLACES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "hotels_collection_id",
+      "name": "HOTELS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "agents_collection_id",
+      "name": "AGENTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "bookings_collection_id",
+      "name": "BOOKINGS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "notifications_collection_id",
+      "name": "NOTIFICATIONS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "reviews_collection_id",
+      "name": "REVIEWS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "massage_types_collection_id",
+      "name": "MASSAGE_TYPES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "membership_pricing_collection_id",
+      "name": "MEMBERSHIP_PRICING_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "image_assets",
+      "name": "image_assets",
+      "isTextId": true
+    },
+    {
+      "id": "login_backgrounds",
+      "name": "login_backgrounds",
+      "isTextId": true
+    },
+    {
+      "id": "custom_links_collection_id",
+      "name": "CUSTOM_LINKS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "translations_collection_id",
+      "name": "translations_collection_id",
+      "isTextId": true
+    },
+    {
+      "id": "commission_records",
+      "name": "commission_records",
+      "isTextId": true
+    },
+    {
+      "id": "attributes",
+      "name": "ATTRIBUTES",
+      "isTextId": true
+    },
+    {
+      "id": "analytics_events",
+      "name": "Analytics Events",
+      "isTextId": true
+    },
+    {
+      "id": "hotel_bookings",
+      "name": "hotel_bookings",
+      "isTextId": true
+    },
+    {
+      "id": "therapist_job_listings",
+      "name": "therapist_job_listings",
+      "isTextId": true
+    },
+    {
+      "id": "employer_job_postings",
+      "name": "employer_job_postings",
+      "isTextId": true
+    },
+    {
+      "id": "bank_details",
+      "name": "bank_details",
+      "isTextId": true
+    },
+    {
+      "id": "payment_transactions",
+      "name": "payment_transactions",
+      "isTextId": true
+    },
+    {
+      "id": "bankaccounts",
+      "name": "bankAccounts",
+      "isTextId": true
+    },
+    {
+      "id": "push_subscriptions",
+      "name": "push_subscriptions",
+      "isTextId": true
+    },
+    {
+      "id": "admin_messages",
+      "name": "admin_messages",
+      "isTextId": true
+    },
+    {
+      "id": "users_collection_id",
+      "name": "USERS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "therapists_collection_id",
+      "name": "THERAPISTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "places_collection_id",
+      "name": "PLACES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "hotels_collection_id",
+      "name": "HOTELS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "agents_collection_id",
+      "name": "AGENTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "bookings_collection_id",
+      "name": "BOOKINGS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "notifications_collection_id",
+      "name": "NOTIFICATIONS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "reviews_collection_id",
+      "name": "REVIEWS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "massage_types_collection_id",
+      "name": "MASSAGE_TYPES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "membership_pricing_collection_id",
+      "name": "MEMBERSHIP_PRICING_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "image_assets",
+      "name": "image_assets",
+      "isTextId": true
+    },
+    {
+      "id": "login_backgrounds",
+      "name": "login_backgrounds",
+      "isTextId": true
+    },
+    {
+      "id": "custom_links_collection_id",
+      "name": "CUSTOM_LINKS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "translations_collection_id",
+      "name": "translations_collection_id",
+      "isTextId": true
+    },
+    {
+      "id": "commission_records",
+      "name": "commission_records",
+      "isTextId": true
+    },
+    {
+      "id": "attributes",
+      "name": "ATTRIBUTES",
+      "isTextId": true
+    },
+    {
+      "id": "analytics_events",
+      "name": "Analytics Events",
+      "isTextId": true
+    },
+    {
+      "id": "hotel_bookings",
+      "name": "hotel_bookings",
+      "isTextId": true
+    },
+    {
+      "id": "therapist_job_listings",
+      "name": "therapist_job_listings",
+      "isTextId": true
+    },
+    {
+      "id": "employer_job_postings",
+      "name": "employer_job_postings",
+      "isTextId": true
+    },
+    {
+      "id": "bank_details",
+      "name": "bank_details",
+      "isTextId": true
+    },
+    {
+      "id": "payment_transactions",
+      "name": "payment_transactions",
+      "isTextId": true
+    },
+    {
+      "id": "bankaccounts",
+      "name": "bankAccounts",
+      "isTextId": true
+    },
+    {
+      "id": "push_subscriptions",
+      "name": "push_subscriptions",
+      "isTextId": true
+    },
+    {
+      "id": "admin_messages",
+      "name": "admin_messages",
+      "isTextId": true
+    },
+    {
+      "id": "users_collection_id",
+      "name": "USERS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "therapists_collection_id",
+      "name": "THERAPISTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "places_collection_id",
+      "name": "PLACES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "hotels_collection_id",
+      "name": "HOTELS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "agents_collection_id",
+      "name": "AGENTS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "bookings_collection_id",
+      "name": "BOOKINGS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "notifications_collection_id",
+      "name": "NOTIFICATIONS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "reviews_collection_id",
+      "name": "REVIEWS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "massage_types_collection_id",
+      "name": "MASSAGE_TYPES_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "membership_pricing_collection_id",
+      "name": "MEMBERSHIP_PRICING_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "image_assets",
+      "name": "image_assets",
+      "isTextId": true
+    },
+    {
+      "id": "login_backgrounds",
+      "name": "login_backgrounds",
+      "isTextId": true
+    },
+    {
+      "id": "custom_links_collection_id",
+      "name": "CUSTOM_LINKS_COLLECTION_ID",
+      "isTextId": true
+    },
+    {
+      "id": "translations_collection_id",
+      "name": "translations_collection_id",
+      "isTextId": true
+    },
+    {
+      "id": "commission_records",
+      "name": "commission_records",
+      "isTextId": true
+    },
+    {
+      "id": "attributes",
+      "name": "ATTRIBUTES",
+      "isTextId": true
+    },
+    {
+      "id": "analytics_events",
+      "name": "Analytics Events",
+      "isTextId": true
+    },
+    {
+      "id": "hotel_bookings",
+      "name": "hotel_bookings",
+      "isTextId": true
+    },
+    {
+      "id": "therapist_job_listings",
+      "name": "therapist_job_listings",
+      "isTextId": true
+    },
+    {
+      "id": "employer_job_postings",
+      "name": "employer_job_postings",
+      "isTextId": true
+    },
+    {
+      "id": "bank_details",
+      "name": "bank_details",
+      "isTextId": true
+    },
+    {
+      "id": "payment_transactions",
+      "name": "payment_transactions",
+      "isTextId": true
+    },
+    {
+      "id": "bankaccounts",
+      "name": "bankAccounts",
+      "isTextId": true
+    },
+    {
+      "id": "push_subscriptions",
+      "name": "push_subscriptions",
+      "isTextId": true
+    },
+    {
+      "id": "admin_messages",
+      "name": "admin_messages",
+      "isTextId": true
+    }
+  ]
+}

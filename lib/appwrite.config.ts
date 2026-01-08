@@ -54,8 +54,8 @@ export const APPWRITE_CONFIG = {
         providerLoyaltySettings: 'provider_loyalty_settings',
         coinTransactions: 'coin_transactions',
         userRegistrations: 'user_registrations',
-        chatRooms: '6761241900398c596516', // ✅ Real production collection ID
-        chatMessages: '6761241100372a5338d1', // ✅ Real production collection ID
+        chatRooms: 'chat_rooms', // ✅ TEXT-BASED ID - verified exists in Appwrite
+        chatMessages: 'chat_messages', // ✅ TEXT-BASED ID - verified exists in Appwrite
         chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)

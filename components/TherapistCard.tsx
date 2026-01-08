@@ -30,6 +30,9 @@ import { useTherapistCardModals } from '../hooks/useTherapistCardModals';
 import { useTherapistCardState } from '../hooks/useTherapistCardState';
 import { useTherapistCardCalculations } from '../hooks/useTherapistCardCalculations';
 
+// 🔒 PERSISTENT CHAT - Facebook Messenger style
+import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
+
 interface TherapistCardProps {
     therapist: Therapist;
     userLocation?: { lat: number; lng: number } | null; // User's current location for distance calculation
@@ -139,6 +142,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         formatCountdown,
         getDynamicSpacing
     } = useTherapistCardCalculations(therapist);
+    
+    // 🔒 PERSISTENT CHAT - Facebook Messenger style chat window
+    const { openBookingChat, openScheduleChat, openPriceChat } = usePersistentChatIntegration();
     
     // Debug modal state changes
     useEffect(() => {
@@ -671,9 +677,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
         if (status === 'available') {
             // Set booking source to track price slider bookings
             setPriceSliderBookingSource('price-slider');
-            console.log('✅ Opening ScheduleBookingPopup with pre-selected duration:', selectedDuration);
-            // Open ScheduleBookingPopup which creates chat room and dispatches openChat event
-            setShowScheduleBookingPopup(true);
+            console.log('✅ Opening PERSISTENT CHAT with pre-selected duration:', selectedDuration);
+            
+            // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
+            // This chat window will NEVER disappear once opened
+            openPriceChat(therapist);
         } else if (status === 'busy') {
             setShowBusyModal(true);
         } else {
@@ -1184,11 +1192,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        devLog('🟢 Book Now button clicked - opening immediate booking with chat');
-                        const pricing = getPricing();
+                        devLog('🟢 Book Now button clicked - opening PERSISTENT CHAT');
                         
-                        // Open ScheduleBookingPopup in immediate mode (creates chat room)
-                        setShowScheduleBookingPopup(true);
+                        // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
+                        // This chat window will NEVER disappear once opened
+                        openBookingChat(therapist);
+                        
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     }}
@@ -1211,8 +1220,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        console.log('📅 Schedule button clicked - opening ScheduleBookingPopup');
-                        setShowScheduleBookingPopup(true);
+                        console.log('📅 Schedule button clicked - opening PERSISTENT CHAT');
+                        
+                        // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
+                        // This chat window will NEVER disappear once opened
+                        openScheduleChat(therapist);
+                        
                         onIncrementAnalytics('bookings');
                         // Increment bookings count for UI display
                         setBookingsCount(prev => prev + 1);

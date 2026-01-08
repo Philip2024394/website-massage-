@@ -28,8 +28,8 @@ export const APPWRITE_CONFIG = {
     users: '674f38dd0039f3de41ac', // Real users collection
     bookings: '675e13fc002aaf0777ce', // Real bookings collection  
     reviews: '6752e724002ee159c0f5', // Real reviews collection
-    chatMessages: '6761241100372a5338d1', // Real chat messages collection
-    chatRooms: '6761241900398c596516', // Real chat rooms collection
+    chatMessages: 'chat_messages', // ✅ TEXT-BASED ID - verified exists in Appwrite
+    chatRooms: 'chat_rooms', // ✅ TEXT-BASED ID - verified exists in Appwrite
     notifications: '675d65c3001b725fa829', // Real notifications collection
     
     // Fallback collections (keep existing text IDs as backup)

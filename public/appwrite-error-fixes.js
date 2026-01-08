@@ -46,7 +46,7 @@ window.addEventListener('load', () => {
                     
                     // Handle 400 errors for chat messages
                     if (!response.ok && response.status === 400) {
-                        if (url.includes('/chat_messages/documents') || url.includes('/6761241100372a5338d1/')) {
+                        if (url.includes('/chat_messages/documents') || url.includes('/chat_messages/')) {
                             console.warn('⚠️ Chat message creation failed (400) - Missing required fields');
                             
                             // Return success response to prevent UI errors

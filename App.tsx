@@ -38,6 +38,10 @@ import { useUrlBookingHandler } from './app/useUrlBookingHandler';
 import { useAnalyticsHandler } from './app/useAnalyticsHandler';
 import { ChatProvider } from './context/ChatProvider';
 
+// 🔒 PERSISTENT CHAT SYSTEM - Facebook Messenger style
+import { PersistentChatProvider } from './context/PersistentChatProvider';
+import { PersistentChatWindow } from './components/PersistentChatWindow';
+
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
     
@@ -560,6 +564,7 @@ const App = () => {
     return (
         <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: (l: 'en' | 'id' | 'gb') => { void handleLanguageSelect(l); } }}>
         <ChatProvider>
+        <PersistentChatProvider>
         <DeviceStylesProvider>
             <AppLayout
                 isFullScreen={state.page === 'landing' || state.isFullScreen}
@@ -841,7 +846,13 @@ const App = () => {
 
             {/* New Standalone Floating Chat - Only on home page (rendered in HomePage.tsx) */}
 
+            {/* 🔒 PERSISTENT CHAT WINDOW - Facebook Messenger style
+                This renders at ROOT level, OUTSIDE all other components.
+                It will NEVER disappear once opened. */}
+            <PersistentChatWindow />
+
         </DeviceStylesProvider>
+        </PersistentChatProvider>
         </ChatProvider>
         </LanguageProvider>
     );
