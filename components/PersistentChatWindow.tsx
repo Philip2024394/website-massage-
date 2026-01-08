@@ -338,7 +338,7 @@ export function PersistentChatWindow() {
       </div>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      <div className="flex-1 overflow-y-auto bg-white">
         
         {/* Duration Selection Step */}
         {bookingStep === 'duration' && (
@@ -555,11 +555,11 @@ export function PersistentChatWindow() {
         {bookingStep === 'details' && (
           <div className="p-4">
             <div className="text-center mb-4">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center overflow-hidden">
+              <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center">
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                   alt="Indastreet Massage"
-                  className="w-12 h-12 object-contain"
+                  className="w-24 h-24 object-contain"
                 />
               </div>
               <h4 className="font-semibold text-gray-800">Your Details</h4>
