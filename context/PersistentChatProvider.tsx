@@ -14,42 +14,82 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { client, databases, ID, account } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
+import { 
+  bookingLifecycleService, 
+  BookingLifecycleStatus, 
+  BookingType,
+  BookingLifecycleRecord 
+} from '../lib/services/bookingLifecycleService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
 
-// Booking status for workflow
-export type BookingStatus = 
-  | 'pending'           // Waiting for therapist response
-  | 'waiting_others'    // Therapist timeout, sent to other therapists
-  | 'therapist_accepted'// Therapist accepted, waiting user confirmation
-  | 'user_confirmed'    // User confirmed, booking active
-  | 'cancelled'         // Booking cancelled
-  | 'on_the_way'        // Therapist en route
-  | 'completed'         // Service completed
-  | 'payment_pending'   // Waiting for payment
-  | 'payment_received'; // Payment confirmed
+// Re-export lifecycle status for UI components
+export { BookingLifecycleStatus, BookingType };
 
-// Booking data structure
+// Booking status for workflow (maps to BookingLifecycleStatus)
+export type BookingStatus = 
+  | 'pending'           // PENDING - Waiting for therapist response
+  | 'waiting_others'    // PENDING - Therapist timeout, sent to other therapists
+  | 'therapist_accepted'// ACCEPTED - Therapist accepted, waiting user confirmation
+  | 'user_confirmed'    // CONFIRMED - User confirmed, booking active
+  | 'cancelled'         // DECLINED - Booking cancelled
+  | 'on_the_way'        // CONFIRMED - Therapist en route
+  | 'completed'         // COMPLETED - Service completed (commission applies)
+  | 'payment_pending'   // COMPLETED - Waiting for payment
+  | 'payment_received'  // COMPLETED - Payment confirmed
+  | 'expired';          // EXPIRED - Timeout, excluded from commission
+
+// Booking data structure aligned with BookingLifecycleRecord
 export interface BookingData {
   id: string;
+  bookingId: string;
+  documentId?: string; // Appwrite document ID
   status: BookingStatus;
+  lifecycleStatus: BookingLifecycleStatus; // Server-authoritative status
+  
+  // Provider info
   therapistId: string;
   therapistName: string;
+  businessId?: string;
+  businessName?: string;
+  providerType: 'therapist' | 'place' | 'facial';
+  
+  // Customer info
   customerId: string;
   customerName: string;
+  customerPhone?: string;
+  
+  // Service details
+  serviceType: string;
   duration: number;
-  price: number;
-  location: string;
+  locationZone: string;
   coordinates?: { lat: number; lng: number };
+  
+  // Booking type and pricing
+  bookingType: BookingType;
+  totalPrice: number;
+  adminCommission: number; // 30%
+  providerPayout: number;  // 70%
+  
+  // Timestamps
+  createdAt: string;
+  pendingAt?: string;
+  acceptedAt?: string;
+  confirmedAt?: string;
+  completedAt?: string;
+  declinedAt?: string;
+  expiredAt?: string;
+  
+  // Schedule (for SCHEDULED bookings)
   scheduledDate?: string;
   scheduledTime?: string;
-  createdAt: string;
+  
+  // Legacy fields for UI compatibility
   therapistAcceptedAt?: string;
   userConfirmedAt?: string;
   therapistOnTheWayAt?: string;
-  completedAt?: string;
   paymentMethod?: 'cash' | 'bank_transfer';
   paymentStatus?: 'pending' | 'transferred' | 'received';
 }
@@ -691,41 +731,94 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     setChatState(prev => ({ ...prev, bookingCountdown: null }));
   }, []);
 
-  // Create a new booking
-  const createBooking = useCallback((bookingData: Partial<BookingData>) => {
-    const booking: BookingData = {
-      id: `booking_${Date.now()}`,
-      status: 'pending',
-      therapistId: chatState.therapist?.id || '',
-      therapistName: chatState.therapist?.name || '',
-      customerId: currentUserId,
-      customerName: currentUserName || chatState.customerName || 'Guest',
-      duration: bookingData.duration || chatState.selectedDuration || 60,
-      price: bookingData.price || 0,
-      location: bookingData.location || chatState.customerLocation || '',
-      coordinates: bookingData.coordinates || chatState.coordinates || undefined,
-      scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
-      scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
-      createdAt: new Date().toISOString(),
-    };
+  // Create a new booking using BookingLifecycleService
+  const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
+    const therapist = chatState.therapist;
+    const duration = bookingData.duration || chatState.selectedDuration || 60;
+    const price = bookingData.totalPrice || bookingData.price || 0;
     
-    setChatState(prev => ({ ...prev, currentBooking: booking }));
+    // Calculate commission (30% admin, 70% provider)
+    const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
     
-    // Add notification for user
-    addSystemNotification('📨 Your booking request has been sent. Waiting for therapist confirmation...');
+    // Determine booking type
+    const isScheduled = !!(bookingData.scheduledDate || chatState.selectedDate);
+    const bookingType = isScheduled ? BookingType.SCHEDULED : BookingType.BOOK_NOW;
     
-    // Start 5 minute countdown for therapist response
-    startCountdown(300, () => {
-      // Therapist didn't respond in time
-      addSystemNotification('⏰ No therapist accepted in 5 minutes. Your request is sent to other available therapists.');
-      setChatState(prev => ({
-        ...prev,
-        currentBooking: prev.currentBooking ? { ...prev.currentBooking, status: 'waiting_others' } : null,
-      }));
-    });
-    
-    console.log('📋 Booking created:', booking);
-  }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, currentUserId, currentUserName, addSystemNotification, startCountdown]);
+    // Create booking via lifecycle service (server-authoritative)
+    try {
+      const lifecycleBooking = await bookingLifecycleService.createBooking({
+        customerId: currentUserId,
+        customerName: currentUserName || chatState.customerName || 'Guest',
+        customerPhone: chatState.customerWhatsApp || '',
+        therapistId: therapist?.id,
+        therapistName: therapist?.name,
+        providerType: 'therapist',
+        serviceType: bookingData.serviceType || 'massage',
+        duration,
+        locationZone: bookingData.locationZone || chatState.customerLocation || '',
+        locationCoordinates: bookingData.coordinates || chatState.coordinates || undefined,
+        bookingType,
+        totalPrice: price,
+        notes: bookingData.scheduledDate ? `Scheduled: ${bookingData.scheduledDate} ${bookingData.scheduledTime || ''}` : undefined,
+      });
+
+      // Create local booking state aligned with lifecycle
+      const booking: BookingData = {
+        id: lifecycleBooking.bookingId,
+        bookingId: lifecycleBooking.bookingId,
+        documentId: lifecycleBooking.$id,
+        status: 'pending',
+        lifecycleStatus: BookingLifecycleStatus.PENDING,
+        therapistId: therapist?.id || '',
+        therapistName: therapist?.name || '',
+        providerType: 'therapist',
+        customerId: currentUserId,
+        customerName: currentUserName || chatState.customerName || 'Guest',
+        customerPhone: chatState.customerWhatsApp,
+        serviceType: bookingData.serviceType || 'massage',
+        duration,
+        locationZone: bookingData.locationZone || chatState.customerLocation || '',
+        coordinates: bookingData.coordinates || chatState.coordinates || undefined,
+        bookingType,
+        totalPrice: price,
+        adminCommission,
+        providerPayout,
+        createdAt: lifecycleBooking.createdAt,
+        pendingAt: lifecycleBooking.pendingAt,
+        scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
+        scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
+      };
+      
+      setChatState(prev => ({ ...prev, currentBooking: booking }));
+      
+      // Add notification for user
+      addSystemNotification('📨 Your booking request has been sent. Waiting for therapist confirmation...');
+      
+      // Start 5 minute countdown for therapist response
+      startCountdown(300, async () => {
+        // Therapist didn't respond in time - expire booking
+        if (lifecycleBooking.$id) {
+          await bookingLifecycleService.expireBooking(lifecycleBooking.$id, 'Therapist response timeout');
+        }
+        addSystemNotification('⏰ No therapist accepted in 5 minutes. Your request is sent to other available therapists.');
+        setChatState(prev => ({
+          ...prev,
+          currentBooking: prev.currentBooking ? { 
+            ...prev.currentBooking, 
+            status: 'waiting_others',
+            lifecycleStatus: BookingLifecycleStatus.EXPIRED 
+          } : null,
+        }));
+      });
+      
+      console.log('📋 [BookingLifecycle] Booking created:', booking);
+      console.log(`💰 Commission: Admin ${adminCommission} IDR (30%) | Provider ${providerPayout} IDR (70%)`);
+      
+    } catch (error) {
+      console.error('❌ [BookingLifecycle] Failed to create booking:', error);
+      addSystemNotification('❌ Failed to create booking. Please try again.');
+    }
+  }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown]);
 
   // Update booking status
   const updateBookingStatus = useCallback((status: BookingStatus) => {
@@ -735,17 +828,29 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  // Therapist accepts booking
-  const acceptBooking = useCallback(() => {
+  // Therapist accepts booking (PENDING → ACCEPTED)
+  const acceptBooking = useCallback(async () => {
     stopCountdown();
     
+    const currentBooking = chatState.currentBooking;
     const therapistName = chatState.therapist?.name || 'Therapist';
+    
+    // Update via lifecycle service (server-authoritative)
+    if (currentBooking?.documentId) {
+      try {
+        await bookingLifecycleService.acceptBooking(currentBooking.documentId);
+      } catch (error) {
+        console.error('❌ [BookingLifecycle] Failed to accept booking:', error);
+      }
+    }
     
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
         status: 'therapist_accepted',
+        lifecycleStatus: BookingLifecycleStatus.ACCEPTED,
+        acceptedAt: new Date().toISOString(),
         therapistAcceptedAt: new Date().toISOString(),
       } : null,
     }));
@@ -754,19 +859,38 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     addSystemNotification(`✅ Therapist ${therapistName} accepted your booking. You have 1 minute to confirm or the booking is canceled.`);
     
     // Start 1 minute countdown for user confirmation
-    startCountdown(60, () => {
-      // User didn't confirm in time
-      addSystemNotification('❌ Booking canceled due to no confirmation. Please select a new therapist from the homepage.');
+    startCountdown(60, async () => {
+      // User didn't confirm in time - expire booking
+      if (currentBooking?.documentId) {
+        await bookingLifecycleService.expireBooking(currentBooking.documentId, 'Customer confirmation timeout');
+      }
+      addSystemNotification('❌ Booking expired due to no confirmation. Please select a new therapist from the homepage.');
       setChatState(prev => ({
         ...prev,
-        currentBooking: prev.currentBooking ? { ...prev.currentBooking, status: 'cancelled' } : null,
+        currentBooking: prev.currentBooking ? { 
+          ...prev.currentBooking, 
+          status: 'expired',
+          lifecycleStatus: BookingLifecycleStatus.EXPIRED 
+        } : null,
       }));
     });
-  }, [chatState.therapist, stopCountdown, addSystemNotification, startCountdown]);
+  }, [chatState.therapist, chatState.currentBooking, stopCountdown, addSystemNotification, startCountdown]);
 
-  // Therapist rejects booking
-  const rejectBooking = useCallback(() => {
+  // Therapist rejects booking (PENDING/ACCEPTED → DECLINED)
+  const rejectBooking = useCallback(async () => {
     stopCountdown();
+    
+    const currentBooking = chatState.currentBooking;
+    
+    // Update via lifecycle service (server-authoritative)
+    if (currentBooking?.documentId) {
+      try {
+        await bookingLifecycleService.declineBooking(currentBooking.documentId, 'Therapist declined');
+      } catch (error) {
+        console.error('❌ [BookingLifecycle] Failed to decline booking:', error);
+      }
+    }
+    
     addSystemNotification('❌ Booking rejected. Your request is being sent to other available therapists.');
     setChatState(prev => ({
       ...prev,
@@ -778,37 +902,70 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       addSystemNotification('⏰ No other therapists available. Please try again later or select a different therapist.');
       setChatState(prev => ({
         ...prev,
-        currentBooking: prev.currentBooking ? { ...prev.currentBooking, status: 'cancelled' } : null,
+        currentBooking: prev.currentBooking ? { 
+          ...prev.currentBooking, 
+          status: 'cancelled',
+          lifecycleStatus: BookingLifecycleStatus.DECLINED 
+        } : null,
       }));
     });
   }, [stopCountdown, addSystemNotification, startCountdown]);
 
-  // User confirms booking after therapist accepted
-  const confirmBooking = useCallback(() => {
+  // User confirms booking after therapist accepted (ACCEPTED → CONFIRMED)
+  const confirmBooking = useCallback(async () => {
     stopCountdown();
+    
+    const currentBooking = chatState.currentBooking;
+    
+    // Update via lifecycle service (server-authoritative)
+    if (currentBooking?.documentId) {
+      try {
+        await bookingLifecycleService.confirmBooking(currentBooking.documentId);
+      } catch (error) {
+        console.error('❌ [BookingLifecycle] Failed to confirm booking:', error);
+      }
+    }
     
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
         status: 'user_confirmed',
+        lifecycleStatus: BookingLifecycleStatus.CONFIRMED,
+        confirmedAt: new Date().toISOString(),
         userConfirmedAt: new Date().toISOString(),
       } : null,
     }));
     
     const therapistName = chatState.therapist?.name || 'Therapist';
     addSystemNotification(`🎉 Booking confirmed! ${therapistName} will notify you when they are on the way.`);
-  }, [chatState.therapist, stopCountdown, addSystemNotification]);
+  }, [chatState.therapist, chatState.currentBooking, stopCountdown, addSystemNotification]);
 
-  // Cancel booking
-  const cancelBooking = useCallback(() => {
+  // Cancel booking (any state → DECLINED)
+  const cancelBooking = useCallback(async () => {
     stopCountdown();
+    
+    const currentBooking = chatState.currentBooking;
+    
+    // Update via lifecycle service (server-authoritative)
+    if (currentBooking?.documentId) {
+      try {
+        await bookingLifecycleService.declineBooking(currentBooking.documentId, 'Cancelled by user');
+      } catch (error) {
+        console.error('❌ [BookingLifecycle] Failed to cancel booking:', error);
+      }
+    }
+    
     addSystemNotification('❌ Booking canceled. Please select a new therapist from the homepage.');
     setChatState(prev => ({
       ...prev,
-      currentBooking: prev.currentBooking ? { ...prev.currentBooking, status: 'cancelled' } : null,
+      currentBooking: prev.currentBooking ? { 
+        ...prev.currentBooking, 
+        status: 'cancelled',
+        lifecycleStatus: BookingLifecycleStatus.DECLINED 
+      } : null,
     }));
-  }, [stopCountdown, addSystemNotification]);
+  }, [chatState.currentBooking, stopCountdown, addSystemNotification]);
 
   // Therapist is on the way
   const setOnTheWay = useCallback(() => {
@@ -826,16 +983,29 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     addSystemNotification(`🚗 ${therapistName} is on the way!`);
   }, [chatState.therapist, addSystemNotification]);
 
-  // Complete booking
-  const completeBooking = useCallback(() => {
-    const duration = chatState.currentBooking?.duration || 60;
+  // Complete booking (CONFIRMED → COMPLETED) - This is the only state that generates commission
+  const completeBooking = useCallback(async () => {
+    const currentBooking = chatState.currentBooking;
+    const duration = currentBooking?.duration || 60;
     const totalTime = `${duration + 30}-${duration + 60}`; // Massage time + 30-60 min travel
+    
+    // Update via lifecycle service (server-authoritative)
+    // Only COMPLETED bookings count for admin commission
+    if (currentBooking?.documentId) {
+      try {
+        await bookingLifecycleService.completeBooking(currentBooking.documentId);
+        console.log(`💰 [BookingLifecycle] Commission recorded - Admin: ${currentBooking.adminCommission} IDR | Provider: ${currentBooking.providerPayout} IDR`);
+      } catch (error) {
+        console.error('❌ [BookingLifecycle] Failed to complete booking:', error);
+      }
+    }
     
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
         ...prev.currentBooking,
         status: 'completed',
+        lifecycleStatus: BookingLifecycleStatus.COMPLETED,
         completedAt: new Date().toISOString(),
       } : null,
     }));
