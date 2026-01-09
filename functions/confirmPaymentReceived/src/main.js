@@ -27,9 +27,9 @@ const { Client, Databases, Query, ID } = require('node-appwrite');
 // ============================================================================
 
 const DATABASE_ID = '68f76ee1000e64ca8d05';
-const BOOKINGS_COLLECTION = '675e13fc002aaf0777ce';
+const BOOKINGS_COLLECTION = 'bookings_collection_id'; // ✅ TEXT-BASED ID
 const CHAT_MESSAGES_COLLECTION = 'chat_messages';
-const NOTIFICATIONS_COLLECTION = '675d65c3001b725fa829';
+const NOTIFICATIONS_COLLECTION = 'notifications_collection_id'; // ✅ TEXT-BASED ID
 
 // Review link expiry (7 days)
 const REVIEW_LINK_EXPIRY_DAYS = 7;

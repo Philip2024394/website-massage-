@@ -7,6 +7,8 @@ import { devLog, devWarn } from "../../../../utils/devMode";
 import TherapistLayout from '../components/TherapistLayout';
 import { EnhancedNotificationService } from "../../../../lib/enhancedNotificationService";
 import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer";
+import { useLanguage } from '../../../../hooks/useLanguage';
+import { useTranslations } from '../../../../lib/useTranslations';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -25,19 +27,38 @@ interface TherapistOnlineStatusProps {
 
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
-const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language = 'id' }) => {
+const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language: propLanguage = 'id' }) => {
+  // Get language from context (takes priority over prop)
+  const { language: contextLanguage } = useLanguage();
+  const language = contextLanguage || propLanguage;
+  
+  // Get translations
+  const { dict, loading } = useTranslations(language);
+  
+  // Safety check for translations loading
+  if (loading || !dict || !dict.therapistDashboard) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+          <p className="text-gray-600">Loading translations...</p>
+        </div>
+      </div>
+    );
+  }
+  
   // Safety check - redirect if no therapist data
   if (!therapist) {
     console.error('❌ No therapist data provided to TherapistOnlineStatus');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Loading therapist data...</p>
+          <p className="text-gray-600 mb-4">{dict?.therapistDashboard?.loading || 'Loading therapist data...'}</p>
           <button
             onClick={onBack}
             className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
           >
-            Go Back
+            {dict?.therapistDashboard?.back || 'Go Back'}
           </button>
         </div>
       </div>
@@ -419,10 +440,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       
       // Show toast notification
       const statusMessages = {
-        available: '✅ You are now AVAILABLE for bookings',
-        active: '✅ You are now ACTIVE and ready for bookings',
-        busy: '🟡 Status set to BUSY - customers can still view your profile',
-        offline: '⚫ You are now OFFLINE - profile hidden from search'
+        available: language === 'id' ? '✅ Anda sekarang TERSEDIA untuk booking' : '✅ You are now AVAILABLE for bookings',
+        active: language === 'id' ? '✅ Anda sekarang AKTIF dan siap untuk booking' : '✅ You are now ACTIVE and ready for bookings',
+        busy: language === 'id' ? '🟡 Status diset ke SIBUK - pelanggan masih bisa melihat profil Anda' : '🟡 Status set to BUSY - customers can still view your profile',
+        offline: language === 'id' ? '⚫ Anda sekarang OFFLINE - profil tersembunyi dari pencarian' : '⚫ You are now OFFLINE - profile hidden from search'
       };
       
       devLog('✅ Status saved:', statusMessages[newStatus]);
@@ -448,7 +469,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                           status === 'busy' ? 'available' : 
                           status === 'offline' ? 'available' : 'offline';
       setStatus(revertStatus);
-      alert('❌ Failed to update status. Please try again.');
+      alert(language === 'id' ? '❌ Gagal memperbarui status. Silakan coba lagi.' : '❌ Failed to update status. Please try again.');
       console.error('❌ Error details:', {
         message: error?.message,
         code: error?.code,
@@ -709,8 +730,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <h1 className="text-xl font-bold text-gray-900">Online Status</h1>
-                <p className="text-sm text-gray-500">Manage your availability</p>
+                <h1 className="text-xl font-bold text-gray-900">{dict.therapistDashboard.onlineStatus}</h1>
+                <p className="text-sm text-gray-500">{dict.therapistDashboard.manageAvailability}</p>
               </div>
               {isPremium && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl">
@@ -752,7 +773,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                     : 'text-red-600'
                 }`}
               >
-                Account Health: {accountHealth.charAt(0).toUpperCase() + accountHealth.slice(1)}
+                {dict.therapistDashboard.accountHealth}: {accountHealth.charAt(0).toUpperCase() + accountHealth.slice(1)}
               </span>
             </div>
           </div>
@@ -763,11 +784,11 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-gray-900">Current Status</h2>
+            <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.currentStatus}</h2>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-semibold text-gray-700">{(onlineHoursThisMonth || 0).toFixed(1)}h</span>
-              <span className="text-xs text-gray-500">this month</span>
+              <span className="text-xs text-gray-500">{dict.therapistDashboard.thisMonth}</span>
             </div>
           </div>
 
@@ -785,7 +806,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <div className="flex flex-col items-center gap-2">
                 <CheckCircle className={`w-8 h-8 ${status === 'available' ? 'text-white' : 'text-green-600'}`} />
                 <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'available' ? 'text-white' : 'text-gray-800'}`}>Available</h3>
+                  <h3 className={`text-sm font-bold ${status === 'available' ? 'text-white' : 'text-gray-800'}`}>{dict.therapistDashboard.available}</h3>
                 </div>
               </div>
             </button>
@@ -809,7 +830,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <Clock className={`w-8 h-8 ${status === 'busy' ? 'text-white' : 'text-yellow-600'}`} />
                 <div className="text-center">
                   <h3 className={`text-sm font-bold ${status === 'busy' ? 'text-white' : 'text-gray-800'}`}>
-                    Busy
+                    {dict.therapistDashboard.busy}
                   </h3>
                 </div>
               </div>
@@ -828,7 +849,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <div className="flex flex-col items-center gap-2">
                 <XCircle className={`w-8 h-8 ${status === 'offline' ? 'text-white' : 'text-red-600'}`} />
                 <div className="text-center">
-                  <h3 className={`text-sm font-bold ${status === 'offline' ? 'text-white' : 'text-gray-800'}`}>Offline</h3>
+                  <h3 className={`text-sm font-bold ${status === 'offline' ? 'text-white' : 'text-gray-800'}`}>{dict.therapistDashboard.offline}</h3>
                 </div>
               </div>
             </button>
@@ -836,7 +857,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
 
           <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
             <div className="mb-3 flex items-center justify-between">
-              <h4 className="font-semibold text-gray-900">Advanced Online Status</h4>
+              <h4 className="font-semibold text-gray-900">{dict.therapistDashboard.advancedOnlineStatus}</h4>
               <Crown className="w-5 h-5 text-yellow-500" />
             </div>
             {!isPremium ? (
@@ -858,7 +879,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                     className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm font-bold rounded-lg hover:from-yellow-500 hover:to-amber-600 transition-all shadow-sm flex items-center gap-2 mx-auto"
                   >
                     <Crown className="w-4 h-4" />
-                    Upgrade to Premium
+                    {dict.therapistDashboard.upgradeToPremium}
                   </button>
                 </div>
               </div>
@@ -883,8 +904,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <Clock className={`w-6 h-6 ${isPremium ? 'text-white' : 'text-white'}`} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Auto-Offline Timer</h2>
-                <p className="text-xs text-gray-500">Schedule automatic offline time daily</p>
+                <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.autoOfflineTimer}</h2>
+                <p className="text-xs text-gray-500">{dict.therapistDashboard.autoOfflineTimerDesc}</p>
               </div>
             </div>
             {!isPremium && (
@@ -905,10 +926,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </div>
           )}
           <p className="text-sm text-gray-600 mb-4">
-            Set the amount of hours each day you would like to be available online. Once the timer reaches zero, your online status will turn to offline until you select your online status buttons or set the timer once more.
+            {dict.therapistDashboard.autoOfflineExplanation}
           </p>
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <label className="text-sm font-semibold text-gray-800">Set Time:</label>
+            <label className="text-sm font-semibold text-gray-800">{dict.therapistDashboard.setTime}:</label>
             <input
               type="time"
               value={autoOfflineTime}
@@ -927,14 +948,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               disabled={!autoOfflineTime || !isPremium}
               className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 font-semibold transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Timer
+              {dict.therapistDashboard.saveTimer}
             </button>
             {autoOfflineTime && isPremium && (
               <button
                 onClick={handleCancelTimer}
                 className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 font-semibold transition-colors shadow-sm hover:shadow-md"
               >
-                Cancel Timer
+                {dict.therapistDashboard.cancelTimer}
               </button>
             )}
           </div>
@@ -966,24 +987,24 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <Crown className={`w-6 h-6 ${isPremium ? 'text-white' : 'text-white'}`} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Discount Badge</h2>
-                <p className="text-xs text-gray-500">Add discount badges to your profile</p>
+                <h2 className="text-lg font-bold text-gray-900">{dict.therapistDashboard.discountBadge}</h2>
+                <p className="text-xs text-gray-500">{dict.therapistDashboard.discountBadgeDesc}</p>
               </div>
             </div>
             {isDiscountActive && (
               <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                ACTIVE
+                {dict.therapistDashboard.active.toUpperCase()}
               </div>
             )}
           </div>
 
           <p className="text-sm text-gray-600 mb-4">
-            Attract more customers with a discount badge on your profile! Set a discount percentage and duration to display on your listing.
+            {dict.therapistDashboard.discountBadgeExplanation}
           </p>
 
           {/* Discount Percentage Selection */}
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">Discount Percentage</label>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">{dict.therapistDashboard.discountPercentage}</label>
             <div className="grid grid-cols-4 gap-3">
               {[5, 10, 15, 20].map((percent) => (
                 <button
@@ -1004,7 +1025,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
 
           {/* Duration Selection */}
           <div className="mb-4">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">Duration (Hours)</label>
+            <label className="block text-sm font-semibold text-gray-800 mb-3">{dict.therapistDashboard.duration} (Hours)</label>
             <div className="grid grid-cols-4 gap-3">
               {[1, 3, 6, 12].map((hours) => (
                 <button
@@ -1034,14 +1055,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                   : 'bg-gradient-to-br from-yellow-400 to-amber-500 text-white hover:from-yellow-500 hover:to-amber-600 cursor-pointer'
               }`}
             >
-              {isPremium ? 'Activate Discount' : '⭐ Upgrade to Premium'}
+              {isPremium ? dict.therapistDashboard.startDiscount : `⭐ ${dict.therapistDashboard.upgradeToPremium}`}
             </button>
             {isDiscountActive && isPremium && (
               <button
                 onClick={handleCancelDiscount}
                 className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 font-semibold transition-colors shadow-sm hover:shadow-md"
               >
-                Remove
+                {dict.therapistDashboard.removeDiscount}
               </button>
             )}
           </div>
@@ -1049,7 +1070,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           {/* Preview Badge */}
           {discountPercentage > 0 && (
             <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-              <p className="text-xs text-gray-600 mb-2 font-semibold">Preview:</p>
+              <p className="text-xs text-gray-600 mb-2 font-semibold">{dict.therapistDashboard.preview}:</p>
               <div className="inline-block px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-lg shadow-md">
                 {discountPercentage}% OFF
               </div>
@@ -1070,10 +1091,10 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             <div className="mb-4 p-3 bg-red-100 border-2 border-red-400 rounded-xl">
               <div className="flex items-center gap-2 text-red-800">
                 <AlertTriangle className="w-5 h-5" />
-                <span className="font-bold text-sm">🚨 APP INSTALLATION REQUIRED</span>
+                <span className="font-bold text-sm">🚨 {dict.therapistDashboard.appInstallRequired}</span>
               </div>
               <p className="text-red-700 text-xs mt-1">
-                You must install the app to receive booking notifications with sound!
+                {dict.therapistDashboard.mustInstallApp}
               </p>
             </div>
           )}
@@ -1088,14 +1109,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               <h3 className={`text-lg font-bold ${
                 isAppInstalled ? 'text-green-900' : pwaEnforcementActive ? 'text-red-900' : 'text-orange-900'
               }`}>
-                {isAppInstalled ? '✅ App Installed with Notifications' : '📱 Install App for Notification Sounds'}
+                {isAppInstalled ? `✅ ${dict.therapistDashboard.appInstalledWithNotif}` : `📱 ${dict.therapistDashboard.installAppForSounds}`}
               </h3>
               <p className={`text-sm ${
                 isAppInstalled ? 'text-green-700' : pwaEnforcementActive ? 'text-red-700' : 'text-orange-700'
               }`}>
                 {isAppInstalled 
-                  ? 'Ready to receive booking alerts with custom sounds'
-                  : 'Required: Custom notification sounds only work in installed app'
+                  ? dict.therapistDashboard.readyToReceiveAlerts
+                  : dict.therapistDashboard.customSoundsRequireInstall
                 }
               </p>
             </div>
@@ -1104,13 +1125,13 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           {/* Critical Notification Features List */}
           {!isAppInstalled && (
             <div className="mb-4 p-3 bg-white border border-gray-200 rounded-xl">
-              <p className="font-semibold text-gray-900 text-sm mb-2">🔊 Why installation is critical:</p>
+              <p className="font-semibold text-gray-900 text-sm mb-2">🔊 {dict.therapistDashboard.whyInstallCritical}</p>
               <ul className="text-xs text-gray-600 space-y-1">
-                <li>• <strong>Custom MP3 notification sounds</strong> (only in installed app)</li>
-                <li>• <strong>Background notifications</strong> when phone is locked</li>
-                <li>• <strong>Stronger vibration patterns</strong> for urgent bookings</li>
-                <li>• <strong>3 escalating alerts</strong> over 2 minutes</li>
-                <li>• <strong>Never miss bookings</strong> even when using other apps</li>
+                <li>• <strong>{dict.therapistDashboard.customMP3Sounds}</strong></li>
+                <li>• <strong>{dict.therapistDashboard.backgroundNotif}</strong></li>
+                <li>• <strong>{dict.therapistDashboard.strongerVibration}</strong></li>
+                <li>• <strong>{dict.therapistDashboard.escalatingAlerts}</strong></li>
+                <li>• <strong>{dict.therapistDashboard.neverMissBookings}</strong></li>
               </ul>
             </div>
           )}
@@ -1132,14 +1153,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             >
               <Download className="w-6 h-6" />
               {isAppInstalled && !forceReinstall
-                ? '🔄 FORCE REINSTALL (Fix Notifications)'
+                ? `🔄 ${dict.therapistDashboard.forceReinstallFix}`
                 : isAppInstalled && forceReinstall
-                  ? '📥 REINSTALL WITH ENHANCED SOUNDS'
+                  ? `📥 ${dict.therapistDashboard.reinstallWithSounds}`
                   : deferredPrompt 
-                    ? '🚨 INSTALL NOW FOR NOTIFICATION SOUNDS'
+                    ? `🚨 ${dict.therapistDashboard.installNowForSounds}`
                     : isIOS
-                      ? '🍎 ADD TO HOME SCREEN (iOS)'
-                      : '📋 GET INSTALL INSTRUCTIONS'
+                      ? `🍎 ${dict.therapistDashboard.addToHomeScreenIOS}`
+                      : `📋 ${dict.therapistDashboard.getInstallInstructions}`
               }
             </button>
 
@@ -1150,7 +1171,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 className="w-full py-3 font-semibold rounded-xl border-2 border-green-500 text-green-700 hover:bg-green-50 transition-all flex items-center justify-center gap-2"
               >
                 <Badge className="w-5 h-5" />
-                🧪 TEST NOTIFICATION SOUNDS
+                🧪 {dict.therapistDashboard.testNotificationSounds}
               </button>
             )}
           </div>
@@ -1159,8 +1180,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           <div className="mt-4 p-3 bg-gray-50 rounded-xl">
             <p className="text-xs text-gray-600 text-center">
               {isAppInstalled 
-                ? '✅ App is properly installed. Test notifications to ensure sounds work.'
-                : '⚠️ Browser notifications have generic sounds only. Install for custom MP3 alerts!'
+                ? `✅ ${dict.therapistDashboard.appProperlyInstalled}`
+                : `⚠️ ${dict.therapistDashboard.browserGenericSounds}`
               }
             </p>
           </div>

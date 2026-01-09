@@ -1,8 +1,12 @@
 /**
  * Shared Appwrite Client Configuration
  * Used by all service modules
+ * 
+ * ⚠️ IMPORTANT: This file now uses TEXT-BASED collection IDs only
+ * ⚠️ Numeric hash IDs are blocked by appwrite-collection-validator.ts
  */
 import { Client, Databases, Account } from 'appwrite';
+import { VALIDATED_COLLECTIONS, DATABASE_ID } from '../appwrite-collection-validator';
 
 // Initialize Appwrite client
 const client = new Client()
@@ -18,26 +22,24 @@ export const appwriteClient = client;
 export const appwriteDatabases = databases;
 export const appwriteAccount = account;
 
-// Database and collection constants - UPDATED TO REAL PRODUCTION IDs
+// ✅ Database and collection constants - TEXT-BASED IDs ONLY
+// ⚠️  NEVER use numeric hash IDs like '675e13fc002aaf0777ce'
 export const APPWRITE_CONFIG = {
-  databaseId: '68f76ee1000e64ca8d05',
+  databaseId: DATABASE_ID,
   collections: {
-    // ✅ FIXED: Use real collection IDs with fallback handling
-    therapists: '673d17fb0028fddd90e8', // Real collection ID instead of placeholder
-    places: '673d184c000817b936e2', // Real collection ID
-    users: '674f38dd0039f3de41ac', // Real users collection
-    bookings: '675e13fc002aaf0777ce', // Real bookings collection  
-    reviews: '6752e724002ee159c0f5', // Real reviews collection
-    chatMessages: 'chat_messages', // ✅ TEXT-BASED ID - verified exists in Appwrite
-    chatRooms: 'chat_rooms', // ✅ TEXT-BASED ID - verified exists in Appwrite
-    notifications: '675d65c3001b725fa829', // Real notifications collection
+    // ✅ Core collections with validated text-based IDs
+    therapists: VALIDATED_COLLECTIONS.therapists,
+    places: VALIDATED_COLLECTIONS.places,
+    users: VALIDATED_COLLECTIONS.users,
+    bookings: VALIDATED_COLLECTIONS.bookings,
+    reviews: VALIDATED_COLLECTIONS.reviews,
+    notifications: VALIDATED_COLLECTIONS.notifications,
     
-    // Fallback collections (keep existing text IDs as backup)
-    therapists_fallback: 'therapists_collection_id', 
-    places_fallback: 'places_collection_id',
-    messages_fallback: 'messages',
+    // ✅ Chat collections
+    chatMessages: VALIDATED_COLLECTIONS.chat_messages,
+    chatRooms: VALIDATED_COLLECTIONS.chat_rooms,
     
-    // Keep disabled collections as empty strings
+    // Keep empty string for disabled collections
     admins: '',
     agents: '', 
   }

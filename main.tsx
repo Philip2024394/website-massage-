@@ -18,6 +18,9 @@ import { initVersionCheck } from './lib/versionCheck';
 // 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
 import { initializeStartupGuard } from './utils/startupGuard';
 
+// 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
+import './lib/appwrite-startup-validator';
+
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 

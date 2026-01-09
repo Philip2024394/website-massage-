@@ -14,7 +14,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Check, CheckCheck, Clock, AlertCircle } from 'lucide-react';
+import { Check, Clock, AlertCircle } from 'lucide-react';
 
 // ============================================================================
 // TYPES
@@ -74,9 +74,9 @@ export function MessageBubble({
       case 'sent':
         return <Check className="w-3 h-3 text-gray-400" />;
       case 'delivered':
-        return <CheckCheck className="w-3 h-3 text-gray-400" />;
+        return <div className="flex"><Check className="w-3 h-3 text-gray-400" /><Check className="w-3 h-3 text-gray-400 -ml-1" /></div>;
       case 'read':
-        return <CheckCheck className="w-3 h-3 text-blue-500" />;
+        return <div className="flex"><Check className="w-3 h-3 text-blue-500" /><Check className="w-3 h-3 text-blue-500 -ml-1" /></div>;
       case 'failed':
         return <AlertCircle className="w-3 h-3 text-red-500" />;
       default:

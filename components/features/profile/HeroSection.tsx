@@ -243,9 +243,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             />
                         </div>
                         {/* Star Rating Badge on bottom edge of profile image */}
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-white rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-10">
-                            <Star className="w-5 h-5 text-yellow-500" fill="#eab308" />
-                            <span className="font-bold text-gray-900 text-base">{place.rating || 5.0}</span>
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-black rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5 z-10">
+                            <Star className="w-5 h-5 text-yellow-400" fill="#facc15" />
+                            <span className="font-bold text-yellow-400 text-base">{place.rating || 5.0}</span>
                         </div>
                     </div>
                 </div>

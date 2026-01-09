@@ -25,13 +25,58 @@ const CustomerServiceChatWindow: React.FC<CustomerServiceChatWindowProps> = ({ i
             const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 15000,
                     maximumAge: 0
                 });
             });
 
             const { latitude, longitude } = position.coords;
-            setLocation(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+            
+            // Try to get Google Geocoding address
+            try {
+                const { GOOGLE_MAPS_API_KEY } = await import('../lib/appwrite.config');
+                
+                if (!GOOGLE_MAPS_API_KEY) {
+                    // Fallback to GPS coordinates
+                    setLocation(`GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+                    setGettingLocation(false);
+                    return;
+                }
+
+                // Call Google Geocoding API
+                const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}&language=en`;
+                const response = await fetch(geocodeUrl);
+                const data = await response.json();
+                
+                if (data.status === 'OK' && data.results && data.results.length > 0) {
+                    const addressComponents = data.results[0].address_components;
+                    let cityName = '';
+                    let areaName = '';
+                    
+                    // Find locality and sublocality
+                    for (const component of addressComponents) {
+                        if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+                            cityName = component.long_name;
+                        }
+                        if (component.types.includes('sublocality') || component.types.includes('sublocality_level_1')) {
+                            areaName = component.long_name;
+                        }
+                    }
+                    
+                    const locationString = areaName && cityName 
+                        ? `${areaName}, ${cityName}` 
+                        : cityName || data.results[0].formatted_address;
+                    
+                    setLocation(locationString);
+                } else {
+                    // Fallback to GPS
+                    setLocation(`GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+                }
+            } catch (geocodeError) {
+                console.error('Geocoding error:', geocodeError);
+                // Fallback to GPS coordinates
+                setLocation(`GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+            }
         } catch (error) {
             console.error('Error getting location:', error);
             alert('Could not get your location. Please enter manually.');

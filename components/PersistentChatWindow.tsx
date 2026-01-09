@@ -12,9 +12,11 @@
 
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
+import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, ChevronDown, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
 import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/services/discountValidationService';
 import { FlagIcon } from './FlagIcon';
+import { BookingNotificationBanner } from './BookingNotificationBanner';
+import { locationService } from '../services/locationService';
 
 // Duration options with prices
 const DURATION_OPTIONS = [
@@ -57,6 +59,8 @@ export function PersistentChatWindow() {
     sendMessage,
     addMessage,
     createBooking,
+    acceptBooking,
+    rejectBooking,
     confirmBooking,
     cancelBooking,
     shareBankCard,
@@ -67,7 +71,6 @@ export function PersistentChatWindow() {
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const [locationAttempts, setLocationAttempts] = useState(0);
   const [messageWarning, setMessageWarning] = useState<string | null>(null);
   const [customerForm, setCustomerForm] = useState({
     name: '',
@@ -426,15 +429,82 @@ export function PersistentChatWindow() {
     );
   }
 
+  // ========================================================================
+  // BOOKING NOTIFICATION HANDLERS
+  // ========================================================================
+
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      await acceptBooking();
+    } catch (error) {
+      console.error('Failed to accept booking:', error);
+      throw error;
+    }
+  };
+
+  const handleDeclineBooking = async (bookingId: string, reason?: string) => {
+    try {
+      await rejectBooking();
+    } catch (error) {
+      console.error('Failed to decline booking:', error);  
+      throw error;
+    }
+  };
+
+  const handleBookingExpire = (bookingId: string) => {
+    console.log('Booking expired:', bookingId);
+    addSystemNotification('⏰ Booking request expired due to timeout.');
+  };
+
+  // Convert current booking to BookingRequest format for the banner
+  const createBookingRequestFromCurrent = () => {
+    if (!chatState.currentBooking) return null;
+    
+    const booking = chatState.currentBooking;
+    const expiryTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const createdTime = new Date(booking.createdAt || Date.now()).getTime();
+    
+    return {
+      id: booking.id,
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      service: booking.serviceType,
+      duration: booking.duration,
+      date: booking.scheduledDate,
+      time: booking.scheduledTime,
+      location: booking.locationZone,
+      coordinates: booking.coordinates,
+      totalPrice: booking.totalPrice,
+      bookingType: booking.bookingType as 'book_now' | 'scheduled',
+      discountCode: booking.discountCode,
+      discountPercentage: booking.discountPercentage,
+      originalPrice: booking.originalPrice,
+      createdAt: createdTime,
+      expiresAt: createdTime + expiryTime,
+    };
+  };
+
   // Full chat window
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100vw-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up"
-      style={{ 
-        height: 'min(600px, calc(100vh - 60px))',
-        fontFamily: 'system-ui, -apple-system, sans-serif'
-      }}
-    >
+    <>
+      {/* Enhanced Booking Notification Banner */}
+      {chatState.currentBooking?.status === 'pending' && chatState.isTherapistView && (
+        <BookingNotificationBanner
+          booking={createBookingRequestFromCurrent()!}
+          onAccept={handleAcceptBooking}
+          onDecline={handleDeclineBooking}
+          onExpire={handleBookingExpire}
+          isVisible={true}
+        />
+      )}
+      
+      <div
+        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100vw-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up"
+        style={{ 
+          height: 'min(600px, calc(100vh - 60px))',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}
+      >
       {/* Slide up animation */}
       <style>{`
         @keyframes slideUp {
@@ -452,18 +522,18 @@ export function PersistentChatWindow() {
         }
       `}</style>
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
         <div className="relative flex-shrink-0">
           <img 
             src={therapist.image || '/placeholder-avatar.jpg'} 
             alt={therapist.name}
-            className="w-10 h-10 rounded-full object-cover border-2 border-white/50"
+            className="w-12 h-12 rounded-full object-cover border-2 border-white/50"
           />
           <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-orange-500"></span>
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm truncate">{therapist.name}</h3>
+          <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
           <div className="flex items-center gap-1 text-xs text-orange-100">
             {/* Booking countdown timer */}
             {chatState.bookingCountdown !== null ? (
@@ -473,8 +543,8 @@ export function PersistentChatWindow() {
               </span>
             ) : isConnected ? (
               <>
-                <Wifi className="w-3 h-3" />
-                <span>Connected • Online</span>
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span>Indastreet Live Monitoring In Process</span>
               </>
             ) : (
               <>
@@ -498,10 +568,10 @@ export function PersistentChatWindow() {
           )}
           <button
             onClick={minimizeChat}
-            className="p-1.5 bg-black rounded-full hover:bg-gray-800 transition-colors"
+            className="p-1.5 hover:bg-white/20 transition-colors rounded"
             title="Minimize"
           >
-            <Minus className="w-4 h-4 text-white" />
+            <ChevronDown className="w-6 h-6 text-white stroke-2" />
           </button>
           {!isLocked && (
             <button
@@ -515,73 +585,111 @@ export function PersistentChatWindow() {
         </div>
       </div>
 
-      {/* Booking Status Banner */}
+      {/* Enhanced Welcome Banner with Booking Details */}
       {chatState.currentBooking && (
-        <div className={`px-4 py-2 text-xs font-medium ${
-          chatState.currentBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-          chatState.currentBooking.status === 'therapist_accepted' ? 'bg-blue-100 text-blue-800' :
-          chatState.currentBooking.status === 'user_confirmed' ? 'bg-green-100 text-green-800' :
-          chatState.currentBooking.status === 'on_the_way' ? 'bg-purple-100 text-purple-800' :
-          chatState.currentBooking.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
-          chatState.currentBooking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {chatState.currentBooking.status === 'pending' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-              Waiting for therapist to accept...
-            </span>
-          )}
-          {chatState.currentBooking.status === 'waiting_others' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-spin"></div>
-              Searching for available therapists...
-            </span>
-          )}
-          {chatState.currentBooking.status === 'therapist_accepted' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              Therapist accepted! Confirm below.
-            </span>
-          )}
-          {chatState.currentBooking.status === 'user_confirmed' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-              Booking confirmed!
-            </span>
-          )}
-          {chatState.currentBooking.status === 'on_the_way' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-              Therapist is on the way!
-            </span>
-          )}
-          {chatState.currentBooking.status === 'completed' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-              Service completed - Payment ready
-            </span>
-          )}
-          {chatState.currentBooking.status === 'cancelled' && (
-            <span className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              Booking cancelled
-            </span>
-          )}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+          {/* Welcome Header with Countdown */}
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <h3 className="font-semibold text-sm">🎉 Welcome! Your booking request has been sent</h3>
+              </div>
+              
+              {/* 5 Minute Countdown Timer */}
+              {chatState.bookingCountdown !== null && chatState.currentBooking.status === 'pending' && (
+                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm font-mono font-bold">
+                    {Math.floor(chatState.bookingCountdown / 60)}:{(chatState.bookingCountdown % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            {/* Status Message */}
+            <p className="text-blue-100 text-xs mt-2">
+              {chatState.currentBooking.status === 'pending' && (
+                '⏰ Please wait while therapist connects (up to 5 minutes)'
+              )}
+              {chatState.currentBooking.status === 'waiting_others' && (
+                '🔍 Searching for available therapists...'
+              )}
+              {chatState.currentBooking.status === 'therapist_accepted' && (
+                '✅ Therapist accepted! Please confirm your booking below.'
+              )}
+              {chatState.currentBooking.status === 'user_confirmed' && (
+                '🎯 Booking confirmed! Therapist will contact you shortly.'
+              )}
+              {chatState.currentBooking.status === 'on_the_way' && (
+                '🚗 Therapist is on the way to your location!'
+              )}
+              {chatState.currentBooking.status === 'completed' && (
+                '✨ Service completed - Payment is ready'
+              )}
+              {chatState.currentBooking.status === 'cancelled' && (
+                '❌ Booking was cancelled'
+              )}
+            </p>
+          </div>
+          
+          {/* Booking Details */}
+          <div className="px-4 py-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              {/* Service Details */}
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">Service:</span>
+                <span className="font-medium text-gray-800">
+                  {chatState.currentBooking.serviceType} ({chatState.currentBooking.duration}min)
+                </span>
+              </div>
+              
+              {/* Customer Name */}
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">Customer:</span>
+                <span className="font-medium text-gray-800">{chatState.currentBooking.customerName}</span>
+              </div>
+              
+              {/* Location */}
+              {chatState.currentBooking.locationZone && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-blue-500" />
+                  <span className="text-gray-600">Location:</span>
+                  <span className="font-medium text-gray-800">{chatState.currentBooking.locationZone}</span>
+                </div>
+              )}
+              
+              {/* Price */}
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">Total:</span>
+                <span className="font-bold text-green-600">{formatPrice(chatState.currentBooking.totalPrice)}</span>
+              </div>
+              
+              {/* Booking Type & Time */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">Type:</span>
+                <span className="font-medium text-gray-800">
+                  {chatState.currentBooking.bookingType === 'book_now' ? '🔥 Book Now' : '📅 Scheduled'}
+                  {chatState.currentBooking.scheduledDate && (
+                    ` - ${chatState.currentBooking.scheduledDate} ${chatState.currentBooking.scheduledTime}`
+                  )}
+                </span>
+              </div>
+              
+              {/* Booking ID */}
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-blue-500" />
+                <span className="text-gray-600">ID:</span>
+                <span className="font-mono text-xs text-gray-800">#{chatState.currentBooking.bookingId || chatState.currentBooking.id}</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Flag Icon positioned below header with space */}
-      <div className="absolute top-24 right-4 z-[1]">
-        <FlagIcon
-          chatRoomId={`user-${chatState.therapist?.id || 'unknown'}`}
-          reporterId="user-current" // This should come from user context
-          reporterRole="user"
-          reportedUserId={chatState.therapist?.id || 'unknown'}
-          reportedUserName={chatState.therapist?.name}
-          onReportFormToggle={setIsReportFormOpen}
-        />
-      </div>
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto bg-white">
@@ -869,15 +977,17 @@ export function PersistentChatWindow() {
         {/* Customer Details Step */}
         {bookingStep === 'details' && (
           <div className="p-4">
-            <h4 className="text-lg font-bold text-gray-800 text-left mb-4">Booking Details</h4>
             <div className="text-center mb-4">
-              <div className="w-64 h-64 mx-auto -mt-[15px] mb-1 flex items-center justify-center">
+              <div className="w-64 h-64 mx-auto -mt-[15px] flex items-center justify-center">
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                   alt="Indastreet Massage"
                   className="w-64 h-64 object-contain"
                 />
               </div>
+              <h4 className="text-lg font-bold text-gray-800 text-center mb-2 -mt-[20px]">Booking Details</h4>
+            </div>
+            <div className="text-center mb-4">
               {chatState.selectedService ? (
                 <div className="mt-2 space-y-1">
                   <p className="text-lg font-medium text-orange-600">{chatState.selectedService.serviceName}</p>
@@ -904,7 +1014,7 @@ export function PersistentChatWindow() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <User className="w-4 h-4 inline mr-1" />
-                  Your Name *
+                  Your Name
                 </label>
                 <input
                   type="text"
@@ -921,7 +1031,7 @@ export function PersistentChatWindow() {
                   <svg className="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
-                  WhatsApp Number *
+                  WhatsApp Number
                 </label>
                 <div className="flex gap-2">
                   <select
@@ -959,9 +1069,8 @@ export function PersistentChatWindow() {
               
               {/* Massage For Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-1" />
-                  The Massage Is For... *
+                <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+                  Massage For
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1041,9 +1150,8 @@ export function PersistentChatWindow() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-1" />
-                  Massage Required At... *
+                <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+                  My Location
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1085,76 +1193,92 @@ export function PersistentChatWindow() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-1" />
                   Your Location
                 </label>
                 
-                {/* GPS Set Location Button */}
+                {/* GPS Set Location Button - Simplified Single Press */}
                 <button
                   type="button"
                   onClick={async () => {
                     if (!navigator.geolocation) {
-                      // After 3 attempts, silently succeed
-                      const newAttempts = locationAttempts + 1;
-                      setLocationAttempts(newAttempts);
-                      if (newAttempts >= 3) {
-                        setCustomerForm(prev => ({
-                          ...prev,
-                          coordinates: { lat: 0, lng: 0 } // Dummy coordinates to proceed
-                        }));
-                      }
+                      alert('Location services are not available on this device. Please enter your address manually.');
                       return;
                     }
                     
                     setIsGettingLocation(true);
                     
-                    // Check permission status first (if available)
                     try {
-                      if (navigator.permissions) {
-                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
-                        console.log('📍 Location permission status:', permissionStatus.state);
+                      console.log('📍 Starting location request...');
+                      
+                      // Request permission first
+                      const permission = await navigator.permissions.query({name: 'geolocation'});
+                      console.log('📍 Permission status:', permission.state);
+                      
+                      if (permission.state === 'denied') {
+                        throw new Error('Location permission denied. Please enable location access in your browser settings.');
                       }
-                    } catch (permErr) {
-                      console.log('Permissions API not available, proceeding with geolocation request');
-                    }
-                    
-                    // Request location - this will trigger the mobile permission dialog
-                    navigator.geolocation.getCurrentPosition(
-                      (position) => {
-                        const { latitude, longitude } = position.coords;
-                        setCustomerForm(prev => ({
-                          ...prev,
-                          coordinates: { lat: latitude, lng: longitude }
-                        }));
-                        setIsGettingLocation(false);
-                        setLocationAttempts(0); // Reset on success
-                        console.log('📍 Location set:', latitude, longitude);
-                      },
-                      (error) => {
-                        console.error('Location error:', error.code, error.message);
-                        setIsGettingLocation(false);
-                        // Track failed attempts and auto-succeed after 3
-                        const newAttempts = locationAttempts + 1;
-                        setLocationAttempts(newAttempts);
-                        if (newAttempts >= 3) {
-                          setCustomerForm(prev => ({
-                            ...prev,
-                            coordinates: { lat: 0, lng: 0 } // Dummy coordinates to proceed
-                          }));
+                      
+                      // Use native geolocation as fallback if locationService fails
+                      const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(
+                          resolve,
+                          reject,
+                          { 
+                            enableHighAccuracy: true, 
+                            timeout: 10000, 
+                            maximumAge: 0 
+                          }
+                        );
+                      });
+                      
+                      const { latitude, longitude } = position.coords;
+                      console.log('📍 GPS coordinates received:', latitude, longitude);
+                      
+                      // Try to get address using Google Maps (optional)
+                      let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                      try {
+                        if (locationService && typeof locationService.getCurrentLocation === 'function') {
+                          const locationResult = await locationService.getCurrentLocation();
+                          address = locationResult.address || address;
+                          console.log('📍 Address resolved via LocationService:', address);
                         }
-                      },
-                      { 
-                        enableHighAccuracy: true, 
-                        timeout: 15000, // Increased timeout for mobile
-                        maximumAge: 0 
+                      } catch (addressError) {
+                        console.warn('📍 Address resolution failed, using coordinates:', addressError);
                       }
-                    );
+                      
+                      // Set both coordinates and readable address
+                      setCustomerForm(prev => ({
+                        ...prev,
+                        coordinates: { lat: latitude, lng: longitude },
+                        location: address
+                      }));
+                      
+                      console.log('📍 Location set successfully:', { latitude, longitude, address });
+                    } catch (error) {
+                      console.error('📍 Location error:', error);
+                      
+                      // More specific error messages
+                      let errorMessage = 'Unable to get your location. ';
+                      if (error.code === 1) {
+                        errorMessage += 'Please enable location permission in your browser and try again.';
+                      } else if (error.code === 2) {
+                        errorMessage += 'Location information is unavailable.';
+                      } else if (error.code === 3) {
+                        errorMessage += 'Location request timed out. Please try again.';
+                      } else {
+                        errorMessage += error.message || 'Please make sure location services are enabled and try again.';
+                      }
+                      
+                      alert(errorMessage);
+                    } finally {
+                      setIsGettingLocation(false);
+                    }
                   }}
                   disabled={isGettingLocation || !!customerForm.coordinates}
                   className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
                     customerForm.coordinates
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg cursor-default'
-                      : 'bg-white border-2 border-green-500 text-green-600 hover:bg-green-50'
+                      ? 'bg-orange-500 text-white shadow-lg cursor-default'
+                      : 'bg-gray-100 border-2 border-gray-300 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {isGettingLocation ? (
@@ -1164,51 +1288,33 @@ export function PersistentChatWindow() {
                     </>
                   ) : customerForm.coordinates ? (
                     <>
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                      </svg>
                       🔒 Location Secured
                     </>
                   ) : (
                     <>
-                      <MapPin className="w-5 h-5" />
                       📍 Set My Location
                     </>
                   )}
                 </button>
                 
-                {/* Show coordinates with lock when location is set */}
-                {customerForm.coordinates && customerForm.coordinates.lat !== undefined && (
-                  <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-xl shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-semibold text-green-700">Location Locked</span>
-                      <Check className="w-4 h-4 text-green-600 ml-auto" />
-                    </div>
-                    <div className="bg-white rounded-lg p-2 border border-green-200">
-                      <div className="text-xs text-gray-500 mb-1">GPS Coordinates:</div>
-                      <div className="font-mono text-sm text-green-800">
-                        {(customerForm.coordinates.lat || 0).toFixed(6)}, {(customerForm.coordinates.lng || 0).toFixed(6)}
-                      </div>
-                    </div>
-                    <a 
-                      href={`https://www.google.com/maps?q=${customerForm.coordinates.lat || 0},${customerForm.coordinates.lng || 0}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-2 flex items-center justify-center gap-1 text-xs text-green-600 hover:text-green-800 font-medium"
-                    >
-                      <MapPin className="w-3 h-3" />
-                      View on Google Maps
-                    </a>
+                {/* Show address when location is captured */}
+                {customerForm.coordinates && customerForm.location && (
+                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-xs text-green-700 font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      Location Captured:
+                    </p>
+                    <p className="text-sm text-green-800 mt-1">{customerForm.location}</p>
+                    <p className="text-xs text-green-600 mt-1">
+                      📍 {customerForm.coordinates.lat.toFixed(6)}, {customerForm.coordinates.lng.toFixed(6)}
+                    </p>
                   </div>
                 )}
                 
                 {/* Info text when no location */}
                 {!customerForm.coordinates && !isGettingLocation && (
                   <p className="mt-2 text-xs text-gray-500 text-center">
-                    📍 Location helps therapist find you faster. You can also share in chat.
+                    📍 Location helps therapist find you faster.
                   </p>
                 )}
               </div>
@@ -1255,7 +1361,6 @@ export function PersistentChatWindow() {
               {/* Discount Code Section */}
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Gift className="w-4 h-4 inline mr-1 text-orange-500" />
                   Have a Discount Code?
                 </label>
                 <div className="flex gap-2">
@@ -1358,7 +1463,11 @@ export function PersistentChatWindow() {
               <button
                 type="submit"
                 disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
+                  (!isSending && customerForm.name && customerForm.whatsApp && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                    : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
+                }`}
               >
                 {isSending ? (
                   <>
@@ -1368,7 +1477,7 @@ export function PersistentChatWindow() {
                 ) : (
                   <>
                     <Send className="w-5 h-5" />
-                    Send Booking Request
+                    Order Now
                   </>
                 )}
               </button>
@@ -1510,6 +1619,14 @@ export function PersistentChatWindow() {
           )}
           
           <div className="flex items-center gap-2">
+            <FlagIcon
+              chatRoomId={`user-${chatState.therapist?.id || 'unknown'}`}
+              reporterId="user-current"
+              reporterRole="user"
+              reportedUserId={chatState.therapist?.id || 'unknown'}
+              reportedUserName={chatState.therapist?.name}
+              onReportFormToggle={setIsReportFormOpen}
+            />
             <input
               type="text"
               value={messageInput}
@@ -1534,24 +1651,10 @@ export function PersistentChatWindow() {
               )}
             </button>
           </div>
-          
-          {/* Connection status */}
-          <div className={`text-xs text-center mt-2 flex items-center justify-center gap-1 ${isConnected ? 'text-green-500' : 'text-orange-500'}`}>
-            {isConnected ? (
-              <>
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                Messages delivered instantly
-              </>
-            ) : (
-              <>
-                <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></span>
-                Connecting to server...
-              </>
-            )}
-          </div>
         </form>
       )}
     </div>
+    </>
   );
 }
 

@@ -22,10 +22,10 @@ const { Client, Databases, Query, ID } = require('node-appwrite');
 // ============================================================================
 
 const DATABASE_ID = '68f76ee1000e64ca8d05';
-const REVIEWS_COLLECTION = 'reviews'; // TEXT-BASED ID
-const BOOKINGS_COLLECTION = '675e13fc002aaf0777ce';
-const NOTIFICATIONS_COLLECTION = '675d65c3001b725fa829';
-const CHAT_MESSAGES_COLLECTION = 'chat_messages'; // TEXT-BASED ID
+const REVIEWS_COLLECTION = 'reviews_collection_id'; // ✅ TEXT-BASED ID
+const BOOKINGS_COLLECTION = 'bookings_collection_id'; // ✅ TEXT-BASED ID
+const NOTIFICATIONS_COLLECTION = 'notifications_collection_id'; // ✅ TEXT-BASED ID
+const CHAT_MESSAGES_COLLECTION = 'chat_messages'; // ✅ TEXT-BASED ID
 
 // Valid booking statuses that allow reviews
 const REVIEWABLE_STATUSES = ['completed', 'payment_received', 'COMPLETED', 'PAYMENT_RECEIVED'];

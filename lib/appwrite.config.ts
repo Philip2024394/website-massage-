@@ -1,26 +1,32 @@
 // Google Maps API Configuration
 export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
+// ⚠️ DEPRECATED: This config file is being phased out
+// ⚠️ USE INSTEAD: lib/appwrite-collection-validator.ts with VALIDATED_COLLECTIONS
+// ⚠️ This provides runtime validation and blocks numeric hash IDs
+
+import { VALIDATED_COLLECTIONS, DATABASE_ID } from './appwrite-collection-validator';
+
 // Appwrite Configuration
 export const APPWRITE_CONFIG = {
     endpoint: 'https://syd.cloud.appwrite.io/v1',
     projectId: '68f23b11000d25eb3664',
     
     // Database ID from your Appwrite project - PRODUCTION DATABASE
-    databaseId: '68f76ee1000e64ca8d05',
+    databaseId: DATABASE_ID,
     
-    // Collection IDs from your Appwrite database  
+    // ✅ Collection IDs - TEXT-BASED ONLY (numeric hashes blocked)
     collections: {
         // Disabled collections to prevent 401/404 errors
         admins: null, // ⚠️ DISABLED - Collection doesn't exist
-        therapists: '673d17fb0028fddd90e8', // ✅ FIXED - Real production collection ID
-        places: '673d184c000817b936e2', // ✅ Real production collection ID  
+        therapists: VALIDATED_COLLECTIONS.therapists,
+        places: VALIDATED_COLLECTIONS.places,
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
-        bookings: '675e13fc002aaf0777ce', // ✅ FIXED - Real production collection ID
-        reviews: 'reviews', // ✅ TEXT-BASED ID - review collection
-        notifications: '675d65c3001b725fa829', // ✅ Real production collection ID
-        users: '674f38dd0039f3de41ac', // ✅ Real production collection ID
+        bookings: VALIDATED_COLLECTIONS.bookings,
+        reviews: VALIDATED_COLLECTIONS.reviews,
+        notifications: VALIDATED_COLLECTIONS.notifications,
+        users: VALIDATED_COLLECTIONS.users,
         // Production Booking System Collections
         booking_acknowledgments: 'booking_acknowledgments', // ✅ Therapist response tracking
         therapist_matches: 'therapist_matches', // ✅ Therapist search results
@@ -54,8 +60,8 @@ export const APPWRITE_CONFIG = {
         providerLoyaltySettings: 'provider_loyalty_settings',
         coinTransactions: 'coin_transactions',
         userRegistrations: 'user_registrations',
-        chatRooms: 'chat_rooms', // ✅ TEXT-BASED ID - verified exists in Appwrite
-        chatMessages: 'chat_messages', // ✅ TEXT-BASED ID - verified exists in Appwrite
+        chatRooms: VALIDATED_COLLECTIONS.chat_rooms,
+        chatMessages: VALIDATED_COLLECTIONS.chat_messages,
         chatAuditLogs: 'chat_audit_logs',
         chatSessions: 'chat_sessions',
         chatTranslations: null, // Disabled - collection doesn't exist (causes 404 errors)

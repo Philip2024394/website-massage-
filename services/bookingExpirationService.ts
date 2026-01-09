@@ -1,7 +1,7 @@
 ﻿import { databases, account } from '../lib/appwrite';
-import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { Query } from 'appwrite';
 import { sessionCache } from '../lib/sessionCache';
+import { VALIDATED_COLLECTIONS, DATABASE_ID } from '../lib/appwrite-collection-validator';
 
 class BookingExpirationService {
   private intervalId: NodeJS.Timeout | null = null;
@@ -30,12 +30,6 @@ class BookingExpirationService {
 
   private async checkExpiredBookings() {
     try {
-      // 🔧 Check if bookings collection is configured
-      if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
-        console.log('⚠️ Bookings collection not configured - skipping expiration check');
-        return;
-      }
-
       // Check cache first to avoid repeated 401 errors
       const cached = sessionCache.get();
       if (cached && !cached.hasSession) {
@@ -59,12 +53,14 @@ class BookingExpirationService {
 
       const now = new Date().toISOString();
       
-      console.log('🔍 Checking expired bookings with collection ID:', APPWRITE_CONFIG.collections.bookings);
+      // ✅ Use validated collection ID (blocks numeric hashes)
+      const bookingsCollectionId = VALIDATED_COLLECTIONS.bookings;
+      console.log('🔍 Checking expired bookings with collection ID:', bookingsCollectionId);
 
       // Query for pending bookings only (responseDeadline field doesn't exist in schema)
       const expiredBookings = await databases.listDocuments(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
+        DATABASE_ID,
+        bookingsCollectionId,
         [
           Query.equal('status', 'pending')
           // Note: responseDeadline query removed - field not in schema
@@ -107,8 +103,8 @@ class BookingExpirationService {
 
       // Update booking status to expired
       await databases.updateDocument(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
+        DATABASE_ID,
+        VALIDATED_COLLECTIONS.bookings,
         booking.$id,
         {
           status: 'expired'
@@ -136,20 +132,20 @@ class BookingExpirationService {
         }
 
         const collectionId = isTherapist ? 
-          APPWRITE_CONFIG.collections.therapists : 
-          APPWRITE_CONFIG.collections.places;
+          VALIDATED_COLLECTIONS.therapists : 
+          VALIDATED_COLLECTIONS.places;
 
         console.log(`🔍 Releasing ${booking.therapistType} ${booking.therapistId} from expired booking`);
 
         const provider = await databases.getDocument(
-          APPWRITE_CONFIG.databaseId,
+          DATABASE_ID,
           collectionId,
           booking.therapistId
         );
 
         if (provider.currentBookingId === booking.$id) {
           await databases.updateDocument(
-            APPWRITE_CONFIG.databaseId,
+            DATABASE_ID,
             collectionId,
             booking.therapistId,
             {
@@ -183,15 +179,15 @@ class BookingExpirationService {
       
       // Get all available therapists
       const availableTherapists = await databases.listDocuments(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.therapists,
+        DATABASE_ID,
+        VALIDATED_COLLECTIONS.therapists,
         [Query.equal('status', 'Available')]
       );
 
       // Also try to get total therapist count for debugging
       const totalTherapists = await databases.listDocuments(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.therapists,
+        DATABASE_ID,
+        VALIDATED_COLLECTIONS.therapists,
         []
       );
 
@@ -214,8 +210,8 @@ class BookingExpirationService {
 
       // Update booking to indicate it was broadcast
       await databases.updateDocument(
-        APPWRITE_CONFIG.databaseId,
-        APPWRITE_CONFIG.collections.bookings,
+        DATABASE_ID,
+        VALIDATED_COLLECTIONS.bookings,
         booking.$id,
         {
           broadcast: true,

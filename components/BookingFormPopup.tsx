@@ -134,19 +134,47 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
 
     const t = translations[language];
 
-    const handleSetLocation = () => {
+    const handleSetLocation = async () => {
         if (!navigator.geolocation) {
             alert(t.locationError);
             return;
         }
 
         setGettingLocation(true);
+        
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                setCoordinates({
+            async (position) => {
+                const coords = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
-                });
+                };
+                
+                setCoordinates(coords);
+                
+                // Try to get human-readable address from Google Geocoding
+                try {
+                    const { GOOGLE_MAPS_API_KEY } = await import('../lib/appwrite.config');
+                    
+                    if (!GOOGLE_MAPS_API_KEY) {
+                        setGettingLocation(false);
+                        return;
+                    }
+
+                    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords.lat},${coords.lng}&key=${GOOGLE_MAPS_API_KEY}&language=${language === 'id' ? 'id' : 'en'}`;
+                    const response = await fetch(geocodeUrl);
+                    const data = await response.json();
+                    
+                    if (data.status === 'OK' && data.results && data.results.length > 0) {
+                        // Auto-fill address field with Google result
+                        const formattedAddress = data.results[0].formatted_address;
+                        setAddress(formattedAddress);
+                        
+                        console.log('📍 Location set from Google:', formattedAddress);
+                    }
+                } catch (geocodeError) {
+                    console.error('Geocoding error:', geocodeError);
+                }
+                
                 setGettingLocation(false);
             },
             (error) => {
@@ -154,7 +182,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                 alert(t.locationError);
                 setGettingLocation(false);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
     };
 

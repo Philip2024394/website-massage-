@@ -13,7 +13,7 @@
  * ✅ Cross-chat security (no data leakage)
  */
 
-import { Client, Databases, ID, Query, RealtimeResponseEvent } from 'appwrite';
+import { Client, Databases, ID, Query } from 'appwrite';
 import { APPWRITE_CONFIG } from '../appwrite.config';
 
 // ============================================================================
@@ -30,7 +30,7 @@ export interface ChatMessage {
   senderId: string;
   timestamp: string;
   read: boolean;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read' | 'failed';
   readAt?: string;
 }
 
@@ -45,7 +45,7 @@ export interface TypingStatus {
 
 export interface MessageStatus {
   messageId: string;
-  status: 'sent' | 'delivered' | 'read';
+  status: 'sent' | 'delivered' | 'read' | 'failed';
   timestamp: string;
 }
 

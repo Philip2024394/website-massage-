@@ -194,27 +194,104 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     }
   };
 
-  // NEW: Handle getting GPS location
-  const handleGetLocation = () => {
+  // NEW: Handle getting GPS location with Google Geocoding
+  const handleGetLocation = async () => {
     if (!navigator.geolocation) {
       addNotification('error', 'Not Supported', 'Geolocation is not supported by your device');
       return;
     }
 
     setGettingLocation(true);
+    
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
-        setBookingFormData(prev => ({ 
-          ...prev, 
-          coordinates: coords,
-          location: `GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
-        }));
-        setGettingLocation(false);
-        addNotification('success', 'Location Set', 'Your location has been captured');
+        
+        try {
+          // Use Google Geocoding API to get readable address
+          const { GOOGLE_MAPS_API_KEY } = await import('../lib/appwrite.config');
+          
+          if (!GOOGLE_MAPS_API_KEY) {
+            console.warn('⚠️ Google Maps API key not configured, using GPS coordinates');
+            setBookingFormData(prev => ({ 
+              ...prev, 
+              coordinates: coords,
+              location: `GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+            }));
+            setGettingLocation(false);
+            addNotification('success', 'Location Set', 'Using GPS coordinates');
+            return;
+          }
+
+          // Call Google Geocoding API
+          const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coords.lat},${coords.lng}&key=${GOOGLE_MAPS_API_KEY}&language=en`;
+          
+          const response = await fetch(geocodeUrl);
+          const data = await response.json();
+          
+          if (data.status === 'OK' && data.results && data.results.length > 0) {
+            // Get the formatted address (most detailed)
+            const formattedAddress = data.results[0].formatted_address;
+            
+            // Try to extract meaningful parts
+            const addressComponents = data.results[0].address_components;
+            let cityName = '';
+            let areaName = '';
+            
+            // Find locality (city) and sublocality (area/district)
+            for (const component of addressComponents) {
+              if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+                cityName = component.long_name;
+              }
+              if (component.types.includes('sublocality') || component.types.includes('sublocality_level_1')) {
+                areaName = component.long_name;
+              }
+            }
+            
+            // Create a clean location string
+            const locationString = areaName && cityName 
+              ? `${areaName}, ${cityName}` 
+              : cityName || formattedAddress;
+            
+            console.log('📍 Google Geocoding Result:', {
+              formattedAddress,
+              cityName,
+              areaName,
+              finalLocation: locationString
+            });
+            
+            setBookingFormData(prev => ({ 
+              ...prev, 
+              coordinates: coords,
+              location: locationString
+            }));
+            setGettingLocation(false);
+            addNotification('success', 'Location Set', `Found: ${locationString}`);
+          } else {
+            // Geocoding failed, fallback to GPS coordinates
+            console.warn('⚠️ Geocoding failed:', data.status);
+            setBookingFormData(prev => ({ 
+              ...prev, 
+              coordinates: coords,
+              location: `GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+            }));
+            setGettingLocation(false);
+            addNotification('success', 'Location Set', 'Using GPS coordinates');
+          }
+        } catch (geocodeError) {
+          console.error('❌ Geocoding error:', geocodeError);
+          // Fallback to GPS coordinates on error
+          setBookingFormData(prev => ({ 
+            ...prev, 
+            coordinates: coords,
+            location: `GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
+          }));
+          setGettingLocation(false);
+          addNotification('success', 'Location Set', 'Using GPS coordinates');
+        }
       },
       (error) => {
         console.error('Geolocation error:', error);
@@ -231,7 +308,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       },
       { 
         enableHighAccuracy: true, 
-        timeout: 10000, 
+        timeout: 15000, // Increased timeout for geocoding
         maximumAge: 0 
       }
     );
@@ -400,12 +477,12 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
             >
               <div className="flex items-center gap-3">
                 {/* Profile Image */}
-                <div className="w-10 h-10 rounded-full bg-orange-400 flex items-center justify-center">
+                <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-orange-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {chatRoom.providerImage ? (
                     <img 
                       src={chatRoom.providerImage} 
                       alt={chatRoom.providerName}
-                      className="w-10 h-10 rounded-full object-cover"
+                      className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
                     <span className="text-lg font-bold">
@@ -418,9 +495,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 <div>
                   <h3 className="font-bold text-lg">{chatRoom.providerName}</h3>
                   <p className="text-orange-100 text-sm">
-                    {chatRoom.status === 'waiting' && '⏳ Waiting for response'}
-                    {chatRoom.status === 'active' && '💬 Active chat'}
-                    {chatRoom.status === 'completed' && '✅ Completed'}
+                    📍 Service Location
                   </p>
                 </div>
               </div>
@@ -493,7 +568,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     <div className="space-y-4 flex-1">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Full Name <span className="text-red-500">*</span>
+                          Full Name
                         </label>
                         <input
                           type="text"
@@ -507,7 +582,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          WhatsApp Number <span className="text-red-500">*</span>
+                          WhatsApp Number
                         </label>
                         <div className="flex items-center gap-2">
                           <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
@@ -527,7 +602,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Your Location <span className="text-red-500">*</span>
+                          Your Location
                         </label>
                         <button
                           type="button"
@@ -535,14 +610,10 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           disabled={gettingLocation}
                           className={`w-full px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
                             bookingFormData.coordinates
-                              ? 'border-green-500 bg-green-50 text-green-700'
-                              : 'border-orange-500 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
                           } ${gettingLocation ? 'opacity-50 cursor-wait' : ''}`}
                         >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
                           <span>
                             {gettingLocation
                               ? 'Getting Location...'
@@ -551,16 +622,6 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                               : 'Set My Location'}
                           </span>
                         </button>
-                        {bookingFormData.coordinates && (
-                          <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                              <span>Lat: {bookingFormData.coordinates.lat.toFixed(6)}, Lng: {bookingFormData.coordinates.lng.toFixed(6)}</span>
-                            </div>
-                          </div>
-                        )}
                         <p className="text-xs text-gray-500 mt-1">📍 Therapist will see your exact location before accepting</p>
                       </div>
                     </div>

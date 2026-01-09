@@ -281,8 +281,8 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                                                             disabled={!isRowSelected || !selectedDuration}
                                                             className={`px-3 py-1 text-xs rounded transition-colors ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'
+                                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-not-allowed opacity-60'
                                                             }`}
                                                         >
                                                             {chatLang === 'id' ? 'Pesan Sekarang' : 'Book Now'}

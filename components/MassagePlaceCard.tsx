@@ -764,13 +764,13 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-1 justify-center">
                     {massageTypesDisplay.slice(0, 5).map((mt: string) => (
-                        <span key={mt} className="px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-gray-700/50">{mt}</span>
+                        <span key={mt} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">{mt}</span>
                     ))}
                     {massageTypesDisplay.length === 0 && (
                         <span className="text-xs text-gray-400">No specialties selected</span>
                     )}
                     {massageTypesDisplay.length > 5 && (
-                        <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">+{massageTypesDisplay.length - 5}</span>
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">+{massageTypesDisplay.length - 5}</span>
                     )}
                 </div>
                 </div>

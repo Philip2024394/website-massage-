@@ -451,7 +451,7 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                             
                             <button
                                 onClick={() => setShowScheduleBookingPopup(true)}
-                                className="w-full py-3 px-6 rounded-lg font-medium text-lg flex items-center justify-center gap-3 transition-all duration-200 bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg"
+                                className="w-full py-3 px-6 rounded-lg font-medium text-lg flex items-center justify-center gap-3 transition-all duration-200 bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg"
                             >
                                 <Clock size={20} />
                                 <span>🗓️ Schedule for Later</span>
@@ -462,7 +462,7 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                         <div className="grid grid-cols-2 gap-3 mt-3">
                             <button
                                 onClick={handleQuickChat}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                                className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
                             >
                                 <MessageCircle size={18} />
                                 <span>💬 Chat Now</span>

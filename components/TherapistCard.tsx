@@ -962,13 +962,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-1 justify-center">
                     {massageTypes.slice(0, 5).map(type => (
-                        <span key={type} className="px-2 py-0.5 bg-black/70 backdrop-blur-sm text-white text-xs font-medium rounded-full border border-gray-700/50">{type}</span>
+                        <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">{type}</span>
                     ))}
                     {massageTypes.length === 0 && (
                         <span className="text-xs text-gray-400">No specialties selected</span>
                     )}
                     {massageTypes.length > 5 && (
-                        <span className="px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full">+{massageTypes.length - 5}</span>
+                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">+{massageTypes.length - 5}</span>
                     )}
                 </div>
                 </div>
@@ -1095,7 +1095,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }`}>
                     {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                     {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                             <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
@@ -1129,7 +1129,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }`}>
                     {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                     {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                             <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
@@ -1158,7 +1158,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 }`}>
                     {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
                     {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
+                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
                             <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                             </svg>
@@ -1202,7 +1202,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     }}
-                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
+                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
                 >
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
@@ -1681,8 +1681,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                                         <button
                                                             className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                                 isRowSelected && selectedDuration
-                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer shadow-lg scale-105'
-                                                                    : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 cursor-pointer'
+                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
+                                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
                                                             }`}
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -1798,8 +1798,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                                 <button
                                                     className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                         selectedServiceIndex === 0 && selectedDuration
-                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer shadow-lg scale-105'
-                                                            : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 cursor-pointer'
+                                                            ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
+                                                            : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
                                                     }`}
                                                     onClick={(e) => {
                                                         e.stopPropagation();

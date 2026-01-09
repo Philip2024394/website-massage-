@@ -9,6 +9,9 @@ import { partnersTranslations } from './partners';
 import { companyProfileTranslations } from './companyProfile';
 import { reviewsTranslations } from './reviews';
 import { membershipTranslations } from './membership';
+import { therapistDashboardTranslations } from './therapistDashboard';
+import { placeDashboardTranslations } from './placeDashboard';
+import { uiComponentsTranslations } from './uiComponents';
 
 type LangDict = Record<string, any>;
 type Translations = { en: LangDict; id: LangDict };
@@ -51,7 +54,10 @@ const translations: Translations = mergeTranslations(
   partnersTranslations,
   companyProfileTranslations,
   reviewsTranslations,
-  membershipTranslations
+  membershipTranslations,
+  therapistDashboardTranslations,
+  placeDashboardTranslations,
+  uiComponentsTranslations
 );
 
 // Add remaining translations that weren't split yet

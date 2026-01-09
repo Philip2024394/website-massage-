@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Minimize2, Maximize2, Wifi, WifiOff } from 'lucide-react';
+import { X, Minimize, Maximize, Wifi, WifiOff } from 'lucide-react';
 import { modernChatService, ChatMessage } from '../lib/services/modernChatService';
 import { ChatInput } from './ChatInput';
 import { MessageList, groupMessagesByDate, DateSeparator } from './MessageBubble';
@@ -304,7 +304,7 @@ export function ModernChatWindow({
               onClick={onMinimize}
               className="p-1 rounded hover:bg-orange-600 transition-colors"
             >
-              {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+              {isMinimized ? <Maximize className="w-4 h-4" /> : <Minimize className="w-4 h-4" />}
             </button>
           )}
           
