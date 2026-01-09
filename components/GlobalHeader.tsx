@@ -90,37 +90,44 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
           <div className="text-sm text-gray-500">
             {resolvedTitle}
           </div>
-          {/* Language Switcher */}
-          <div className="flex items-center gap-1">
+          {/* Language Switcher - Facebook Style with Flags */}
+          <div className="flex items-center gap-2 bg-gray-100 rounded-full p-1">
+            {/* Indonesian Flag Button */}
             <button
               onClick={() => {
                 const timestamp = new Date().toISOString();
-                console.log(`🔘 GlobalHeader [${timestamp}]: GB button clicked, current language:`, language);
-                setLanguage('gb');
-                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("gb") called`);
-              }}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                language === 'gb' 
-                  ? 'bg-orange-500 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              GB
-            </button>
-            <button
-              onClick={() => {
-                const timestamp = new Date().toISOString();
-                console.log(`🔘 GlobalHeader [${timestamp}]: ID button clicked, current language:`, language);
+                console.log(`🇮🇩 GlobalHeader [${timestamp}]: ID button clicked, current language:`, language);
                 setLanguage('id');
-                console.log(`🔘 GlobalHeader [${timestamp}]: setLanguage("id") called`);
+                console.log(`🇮🇩 GlobalHeader [${timestamp}]: setLanguage("id") called`);
               }}
-              className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
                 language === 'id' 
-                  ? 'bg-orange-500 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-white shadow-sm text-gray-900 scale-105' 
+                  : 'text-gray-600 hover:bg-white/50'
               }`}
+              title="Bahasa Indonesia"
             >
-              ID
+              <span className="text-base">🇮🇩</span>
+              <span className="hidden sm:inline">ID</span>
+            </button>
+            
+            {/* GB/English Flag Button */}
+            <button
+              onClick={() => {
+                const timestamp = new Date().toISOString();
+                console.log(`🇬🇧 GlobalHeader [${timestamp}]: GB button clicked, current language:`, language);
+                setLanguage('gb');
+                console.log(`🇬🇧 GlobalHeader [${timestamp}]: setLanguage("gb") called`);
+              }}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                language === 'gb' || language === 'en'
+                  ? 'bg-white shadow-sm text-gray-900 scale-105' 
+                  : 'text-gray-600 hover:bg-white/50'
+              }`}
+              title="English"
+            >
+              <span className="text-base">🇬🇧</span>
+              <span className="hidden sm:inline">EN</span>
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Smartphone } from 'lucide-react';
+import { useLanguage } from '../../../hooks/useLanguage';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -110,6 +111,38 @@ const BookingCard: React.FC<{ booking: Booking; onUpdateStatus: (id: number, sta
         </div>
     );
 }
+
+// Language Switcher Component - Facebook Style
+const LanguageSwitcherComponent: React.FC = () => {
+    const { language, setLanguage } = useLanguage();
+    
+    return (
+        <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
+            <button
+                onClick={() => setLanguage('id')}
+                className={`flex items-center px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                    language === 'id' 
+                        ? 'bg-white shadow-sm text-gray-900' 
+                        : 'text-gray-600 hover:bg-white/50'
+                }`}
+                title="Bahasa Indonesia"
+            >
+                <span className="text-sm">🇮🇩</span>
+            </button>
+            <button
+                onClick={() => setLanguage('gb')}
+                className={`flex items-center px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                    language === 'gb' || language === 'en'
+                        ? 'bg-white shadow-sm text-gray-900' 
+                        : 'text-gray-600 hover:bg-white/50'
+                }`}
+                title="English"
+            >
+                <span className="text-sm">🇬🇧</span>
+            </button>
+        </div>
+    );
+};
 
 
 const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogout, onNavigateToNotifications, onNavigate, onUpdateBookingStatus, placeId: _placeId, place: placeProp, bookings, notifications, userLocation, t, onNavigateToChat, onNavigateToPayment }) => {
@@ -1881,7 +1914,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Brand Header with Home Icon - Mobile Optimized */}
+            {/* Brand Header with Home Icon and Language Switcher - Mobile Optimized */}
             <header className="bg-white shadow-md p-3 sm:p-4 sticky top-0 z-40">
                 <div className="flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
@@ -1889,6 +1922,9 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Language Switcher - Facebook Style */}
+                        <LanguageSwitcherComponent />
+                        
                         {/* Chat Button */}
                         {onNavigateToChat && (
                             <button
