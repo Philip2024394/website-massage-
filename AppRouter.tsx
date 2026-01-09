@@ -611,7 +611,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userLocation: props.userLocation ? 'Present' : 'None',
                 currentPath: window.location.pathname
             });
-            return renderRoute(profileRoutes.sharedTherapist.component);
+            // Use TherapistProfilePage in shared view mode
+            return renderRoute(profileRoutes.therapistProfile.component, {
+                therapist: props.selectedTherapist,
+                isSharedView: true, // Show hero logo + SEO footer, hide header
+                onBack: () => props.setPage?.('home'),
+                onLanguageChange: props.onLanguageChange,
+                language: props.language,
+                selectedCity: props.selectedCity,
+                onCityChange: props.onCityChange,
+                therapists: props.therapists,
+                places: props.places,
+                onNavigate: props.onNavigate
+            });
         
         case 'massage-place-profile':
             console.log('🔧 [MassagePlaceProfile] Rendering massage place profile page');
