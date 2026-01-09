@@ -1652,6 +1652,51 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 return score;
                             };
 
+                            // 🎭 VISUAL ENHANCEMENT: Transform 20% of offline therapists to display as "Busy"
+                            // This gives the app a busier appearance while maintaining proper sorting order
+                            const transformOfflineToBusy = (list: any[]) => {
+                                // Separate offline therapists from others
+                                const offlineTherapists = list.filter(t => {
+                                    const status = String(t.status || '').toLowerCase();
+                                    return status === 'offline' || status === '';
+                                });
+                                
+                                // Calculate 20% of offline therapists to transform
+                                const countToTransform = Math.ceil(offlineTherapists.length * 0.2);
+                                
+                                // Use deterministic selection based on therapist ID for consistency
+                                // Sort offline therapists by their ID hash to get consistent "random" selection
+                                const sortedByHash = offlineTherapists.slice().sort((a, b) => {
+                                    const hashA = String(a.$id || a.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                    const hashB = String(b.$id || b.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                    return hashA - hashB;
+                                });
+                                
+                                // Select the first 20% to display as busy
+                                const idsToTransform = new Set(
+                                    sortedByHash.slice(0, countToTransform).map(t => t.$id || t.id)
+                                );
+                                
+                                console.log(`🎭 [VISUAL ENHANCEMENT] Transforming ${countToTransform}/${offlineTherapists.length} offline therapists to display as Busy`);
+                                
+                                // Transform the selected offline therapists to display as busy
+                                return list.map(therapist => {
+                                    const therapistId = therapist.$id || therapist.id;
+                                    if (idsToTransform.has(therapistId)) {
+                                        return {
+                                            ...therapist,
+                                            displayStatus: 'Busy', // Visual status for display
+                                            _originalStatus: therapist.status, // Preserve original for debugging
+                                            status: 'Busy' // Override status for sorting purposes
+                                        };
+                                    }
+                                    return therapist;
+                                });
+                            };
+
+                            // Apply offline-to-busy transformation before sorting
+                            baseList = transformOfflineToBusy(baseList);
+
                             // Apply intelligent sorting: PRIMARY SORT BY DISTANCE, then by priority
                             baseList = baseList
                                 .slice()
