@@ -177,48 +177,84 @@ self.addEventListener('push', (event) => {
             role = 'customer'
         } = data;
 
-        // Vibration patterns based on priority (from systemNotificationMapper)
+        // ULTIMATE VIBRATION PATTERNS - Maximum strength for standby mode
         const vibrationPatterns = {
-            low: [100],
-            normal: [200],
-            high: [200, 100, 200],
-            critical: [300, 100, 300, 100, 300]
+            low: [200, 100, 200],
+            normal: [400, 200, 400, 200, 400],
+            high: [500, 100, 500, 100, 500, 100, 500],
+            critical: [1000, 200, 1000, 200, 1000, 200, 1000] // Maximum 7 second pattern
         };
 
-        // Notification options
+        // ULTIMATE NOTIFICATION OPTIONS - Maximum visibility and persistence
         const options = {
             body,
             icon,
             badge,
-            vibrate: vibrationPatterns[priority] || vibrationPatterns.normal,
-            tag: bookingId ? `booking-${bookingId}` : `notification-${Date.now()}`,
-            requireInteraction: priority === 'critical',
+            // Maximum vibration for all notifications
+            vibrate: vibrationPatterns[priority] || vibrationPatterns.high,
+            
+            // Unique tag to prevent grouping, allows multiple notifications
+            tag: bookingId ? `booking-${bookingId}-${Date.now()}` : `notification-${Date.now()}`,
+            
+            // Require user interaction for ALL notifications (they must tap to dismiss)
+            requireInteraction: true,
+            
+            // Sticky notification - stays until dismissed
+            sticky: true,
+            
+            // Renotify - vibrate again even if notification exists
+            renotify: true,
+            
+            // Silent - we control sound (prevents duplicate system sounds)
+            silent: false, // Let system play default sound in standby
+            
+            // Timestamp for sorting
+            timestamp: Date.now(),
+            
+            // Direction and language
+            dir: 'auto',
+            lang: 'id-ID',
+            
+            // Image for rich notifications
+            image: icon,
+            
             data: {
                 bookingId,
                 status,
                 role,
                 targetUrl: targetUrl || (bookingId ? `/chat?bookingId=${bookingId}` : '/'),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                priority,
+                urgent: true
             },
+            
+            // Prominent action buttons
             actions: bookingId ? [
                 {
                     action: 'open-chat',
-                    title: 'Open Chat',
+                    title: '💬 BUKA CHAT SEKARANG',
                     icon: '/icons/chat.png'
                 },
                 {
-                    action: 'dismiss',
-                    title: 'Dismiss',
-                    icon: '/icons/close.png'
+                    action: 'view-booking',
+                    title: '📋 LIHAT BOOKING',
+                    icon: '/icons/booking.png'
                 }
-            ] : []
+            ] : [
+                {
+                    action: 'open',
+                    title: '🔔 BUKA APLIKASI',
+                    icon: '/icon-192.png'
+                }
+            ]
         };
 
-        // Show notification - works even when app closed
+        // Show notification + update badge counter - works even when app closed
         event.waitUntil(
             Promise.all([
                 self.registration.showNotification(title, options),
-                playNotificationSoundInClients()
+                playNotificationSoundInClients(),
+                updateNotificationBadge()
             ])
         );
 
@@ -239,8 +275,13 @@ self.addEventListener('notificationclick', (event) => {
     const action = event.action;
     const data = notification.data || {};
 
-    // Close notification
+    // Close notification and update badge
     notification.close();
+    
+    // Clear badge if no more notifications
+    event.waitUntil(
+        updateNotificationBadge()
+    );
 
     // Handle action
     if (action === 'dismiss') {
@@ -253,6 +294,15 @@ self.addEventListener('notificationclick', (event) => {
     
     if (action === 'open-chat' && data.bookingId) {
         targetUrl = `/chat?bookingId=${data.bookingId}`;
+    } else if (action === 'view-booking' && data.bookingId) {
+        // Direct to booking management page
+        if (data.role === 'therapist') {
+            targetUrl = `/?page=therapist-bookings&bookingId=${data.bookingId}`;
+        } else if (data.role === 'admin') {
+            targetUrl = `/admin/bookings?bookingId=${data.bookingId}`;
+        } else {
+            targetUrl = `/bookings?id=${data.bookingId}`;
+        }
     } else if (data.bookingId && data.role === 'therapist') {
         targetUrl = `/?page=therapist-dashboard&bookingId=${data.bookingId}`;
     } else if (data.bookingId && data.role === 'admin') {
@@ -314,6 +364,29 @@ self.addEventListener('notificationclose', (event) => {
 });
 
 /**
+ * Update notification badge counter
+ * Shows unread count on app icon
+ */
+async function updateNotificationBadge() {
+    try {
+        // Get all current notifications
+        const notifications = await self.registration.getNotifications();
+        const unreadCount = notifications.length;
+        
+        // Update badge (supported on Android, some iOS versions)
+        if ('setAppBadge' in navigator) {
+            await navigator.setAppBadge(unreadCount);
+        } else if ('setClientBadge' in self) {
+            await self.setClientBadge(unreadCount);
+        }
+        
+        console.log(`📛 Badge updated: ${unreadCount} unread notifications`);
+    } catch (error) {
+        console.log('Badge update not supported:', error.message);
+    }
+}
+
+/**
  * Play notification sound through all open clients (tabs/windows)
  */
 async function playNotificationSoundInClients() {
@@ -347,6 +420,11 @@ self.addEventListener('message', (event) => {
 
     if (event.data && event.data.type === 'skip-waiting') {
         self.skipWaiting();
+    }
+    
+    // Handle badge clear request
+    if (event.data && event.data.type === 'CLEAR_BADGE') {
+        updateNotificationBadge();
     }
 
     if (event.data && event.data.type === 'GET_VERSION') {

@@ -70,33 +70,33 @@ export class EnhancedNotificationService {
 
         const timers: NodeJS.Timeout[] = [];
 
-        // Immediate notification (aggressive)
+        // Immediate notification (MAXIMUM STRENGTH)
         await this.showEnhancedNotification({
             title: `🚨 ${config.title}`,
             body: config.body,
             urgency: 'critical',
-            vibrationPattern: [500, 200, 500, 200, 500], // Strong vibration
+            vibrationPattern: [1000, 200, 1000, 200, 1000], // Maximum 5 second vibration
             requireInteraction: true
         });
 
-        // Second notification after 30 seconds (more aggressive)
+        // Second notification after 30 seconds (MAXIMUM URGENCY)
         const timer1 = setTimeout(async () => {
             await this.showEnhancedNotification({
                 title: `⏰ URGENT: ${config.title}`,
                 body: `${config.body}\n⚠️ RESPOND WITHIN 90 SECONDS!`,
                 urgency: 'critical',
-                vibrationPattern: [300, 100, 300, 100, 300, 100, 300], // Longer vibration
+                vibrationPattern: [800, 150, 800, 150, 800, 150, 800], // 6.2 second vibration
                 requireInteraction: true
             });
         }, 30000); // 30 seconds
 
-        // Final notification after 90 seconds (most aggressive)
+        // Final notification after 90 seconds (ABSOLUTE MAXIMUM URGENCY)
         const timer2 = setTimeout(async () => {
             await this.showEnhancedNotification({
                 title: `🔥 FINAL NOTICE: ${config.title}`,
                 body: `${config.body}\n🚨 BOOKING EXPIRES IN 30 SECONDS!`,
                 urgency: 'critical',
-                vibrationPattern: [200, 100, 200, 100, 200, 100, 200, 100, 200], // Very long vibration
+                vibrationPattern: [1000, 200, 1000, 200, 1000, 200, 1000], // 7 second maximum
                 requireInteraction: true
             });
         }, 90000); // 90 seconds

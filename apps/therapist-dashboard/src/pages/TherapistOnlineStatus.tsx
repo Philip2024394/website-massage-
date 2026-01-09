@@ -557,8 +557,27 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       const hasPermission = await EnhancedNotificationService.requestPermission();
       
       if (hasPermission) {
+        // Import and test ULTIMATE notification system
+        const { UltimateNotificationUtils } = await import('../../../../lib/ultimateNotificationUtils');
+        await UltimateNotificationUtils.testUltimateNotification();
+        
+        // Also test the escalating notifications
         await EnhancedNotificationService.testEnhancedNotifications();
-        alert('🧪 Testing enhanced notification system!\n\n🔊 You should hear sounds and feel vibrations.\n⏰ Watch for 3 escalating notifications over 2 minutes.');
+        
+        alert(
+          '🚀 ULTIMATE NOTIFICATION TEST STARTED!\n\n' +
+          '✅ Testing:\n' +
+          '  • Maximum vibration (7 seconds)\n' +
+          '  • Wake lock (screen stays on)\n' +
+          '  • Badge counter update\n' +
+          '  • 3 escalating notifications over 2 minutes\n\n' +
+          '🔊 You should feel STRONG vibrations NOW!\n' +
+          '👀 Watch for notifications to appear.\n\n' +
+          'If phone is in standby/locked:\n' +
+          '  • Notification WILL show on lock screen\n' +
+          '  • Phone WILL vibrate strongly\n' +
+          '  • System default sound will play'
+        );
       } else {
         alert('⚠️ Notification permission required!\n\nPlease allow notifications in your browser settings and try again.');
       }

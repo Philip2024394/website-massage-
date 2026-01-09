@@ -49,10 +49,15 @@ function App() {
   });
   const { t } = useTranslations(language);
 
-  // Initialize enhanced notification system
+  // Initialize ULTIMATE enhanced notification system
   useEffect(() => {
     const initEnhancedNotifications = async () => {
       try {
+        // Initialize ultimate notification utilities
+        const { UltimateNotificationUtils } = await import('../../../lib/ultimateNotificationUtils');
+        await UltimateNotificationUtils.initialize();
+        console.log('🚀 Ultimate notification utilities initialized');
+        
         // Initialize enhanced notification service
         await EnhancedNotificationService.initialize();
         console.log('✅ Enhanced notification system initialized');
@@ -60,6 +65,10 @@ function App() {
         // Start PWA installation monitoring (non-blocking)
         PWAInstallationEnforcer.startMonitoring();
         console.log('👁️ PWA installation monitoring started');
+        
+        // Register background sync for missed notifications
+        await UltimateNotificationUtils.registerBackgroundSync();
+        console.log('🔄 Background sync registered');
         
       } catch (error) {
         console.error('❌ Failed to initialize enhanced notifications:', error);
