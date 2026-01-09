@@ -1557,14 +1557,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             const getPriorityScore = (therapist: any) => {
                                 let score = 0;
 
-                                // 1. Status Priority (0-1000 points)
+                                // 1. Status Priority (0-10000 points) - HIGHEST WEIGHT
                                 const status = String(therapist.status || '').toLowerCase();
                                 if (status === 'available' || status === 'online') {
-                                    score += 1000; // Highest priority
+                                    score += 10000; // Available first - HIGHEST priority
                                 } else if (status === 'busy') {
-                                    score += 500;  // Medium priority
+                                    score += 5000;  // Busy second - Medium priority
                                 } else {
-                                    score += 0;    // Offline gets lowest
+                                    score += 0;     // Offline last - Lowest priority
                                 }
 
                                 // 2. Premium Account Boost (0-500 points)
@@ -1915,27 +1915,38 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 return false;
                             }) || []).slice();
 
-                            // Determine open/closed now and sort open first
-                            const isOpenNow = (p: any) => {
+                            // Sort places by status: Available/Open → Busy → Offline/Closed
+                            const getPlaceStatusScore = (p: any) => {
+                                const status = String(p.status || '').toLowerCase();
+                                
+                                // Check if place is open now
+                                let isOpen = false;
                                 try {
-                                    if (!p.openingTime || !p.closingTime) return false;
-                                    const now = new Date();
-                                    const [oh, om] = String(p.openingTime).split(':').map(Number);
-                                    const [ch, cm] = String(p.closingTime).split(':').map(Number);
-                                    const current = now.getHours() * 60 + now.getMinutes();
-                                    const openM = (oh || 0) * 60 + (om || 0);
-                                    const closeM = (ch || 0) * 60 + (cm || 0);
-                                    if (closeM >= openM) {
-                                        return current >= openM && current <= closeM;
-                                    } else {
-                                        // Handles overnight hours (e.g., 20:00 - 02:00)
-                                        return current >= openM || current <= closeM;
+                                    if (p.openingTime && p.closingTime) {
+                                        const now = new Date();
+                                        const [oh, om] = String(p.openingTime).split(':').map(Number);
+                                        const [ch, cm] = String(p.closingTime).split(':').map(Number);
+                                        const current = now.getHours() * 60 + now.getMinutes();
+                                        const openM = (oh || 0) * 60 + (om || 0);
+                                        const closeM = (ch || 0) * 60 + (cm || 0);
+                                        if (closeM >= openM) {
+                                            isOpen = current >= openM && current <= closeM;
+                                        } else {
+                                            isOpen = current >= openM || current <= closeM;
+                                        }
                                     }
-                                } catch {
-                                    return false;
+                                } catch {}
+                                
+                                // Priority scoring: Available/Open first, Busy second, Offline/Closed last
+                                if (status === 'available' || status === 'online' || isOpen) {
+                                    return 10000; // Available/Open first
+                                } else if (status === 'busy') {
+                                    return 5000;  // Busy second
+                                } else {
+                                    return 0;     // Offline/Closed last
                                 }
                             };
-                            livePlaces.sort((a, b) => Number(isOpenNow(b)) - Number(isOpenNow(a)));
+                            livePlaces.sort((a, b) => getPlaceStatusScore(b) - getPlaceStatusScore(a));
                             
                             if (livePlaces.length === 0) {
                                 return (
@@ -2049,6 +2060,39 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 
                                 return false;
                             }) || []).slice();
+
+                            // Sort facial places by status: Available/Open → Busy → Offline/Closed
+                            const getFacialPlaceStatusScore = (p: any) => {
+                                const status = String(p.status || '').toLowerCase();
+                                
+                                // Check if place is open now
+                                let isOpen = false;
+                                try {
+                                    if (p.openingTime && p.closingTime) {
+                                        const now = new Date();
+                                        const [oh, om] = String(p.openingTime).split(':').map(Number);
+                                        const [ch, cm] = String(p.closingTime).split(':').map(Number);
+                                        const current = now.getHours() * 60 + now.getMinutes();
+                                        const openM = (oh || 0) * 60 + (om || 0);
+                                        const closeM = (ch || 0) * 60 + (cm || 0);
+                                        if (closeM >= openM) {
+                                            isOpen = current >= openM && current <= closeM;
+                                        } else {
+                                            isOpen = current >= openM || current <= closeM;
+                                        }
+                                    }
+                                } catch {}
+                                
+                                // Priority scoring: Available/Open first, Busy second, Offline/Closed last
+                                if (status === 'available' || status === 'online' || isOpen) {
+                                    return 10000; // Available/Open first
+                                } else if (status === 'busy') {
+                                    return 5000;  // Busy second
+                                } else {
+                                    return 0;     // Offline/Closed last
+                                }
+                            };
+                            liveFacialPlaces.sort((a, b) => getFacialPlaceStatusScore(b) - getFacialPlaceStatusScore(a));
 
                             console.log('🔍 Facial Places on HomePage:', {
                                 total: facialPlaces?.length || 0,
