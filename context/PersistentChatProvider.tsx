@@ -91,6 +91,12 @@ export interface BookingData {
   adminCommission: number; // 30%
   providerPayout: number;  // 70%
   
+  // Discount code applied
+  discountCode?: string;
+  discountPercentage?: number;
+  originalPrice?: number;
+  discountedPrice?: number;
+  
   // Timestamps
   createdAt: string;
   pendingAt?: string;
@@ -790,7 +796,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return; // EXIT - Do not proceed with booking
     }
     
-    // Calculate commission (30% admin, 70% provider)
+    // Calculate commission (30% admin, 70% provider) - uses price which is already discounted if applicable
     const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
     
     // Create booking via lifecycle service (server-authoritative)
@@ -810,6 +816,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         totalPrice: price,
         notes: bookingData.scheduledDate ? `Scheduled: ${bookingData.scheduledDate} ${bookingData.scheduledTime || ''}` : undefined,
         therapistStatus, // Pass status for API-level enforcement
+        // Include discount info if present
+        discountCode: bookingData.discountCode,
+        discountPercentage: bookingData.discountPercentage,
+        originalPrice: bookingData.originalPrice,
       });
       // Create local booking state aligned with lifecycle
       const booking: BookingData = {
@@ -832,6 +842,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         totalPrice: price,
         adminCommission,
         providerPayout,
+        // Discount fields
+        discountCode: bookingData.discountCode,
+        discountPercentage: bookingData.discountPercentage,
+        originalPrice: bookingData.originalPrice,
+        discountedPrice: bookingData.discountCode ? price : undefined,
         createdAt: lifecycleBooking.createdAt,
         pendingAt: lifecycleBooking.pendingAt,
         scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
@@ -841,7 +856,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       setChatState(prev => ({ ...prev, currentBooking: booking }));
       
       // Add notification for user
-      addSystemNotification('📨 Your booking request has been sent. Waiting for therapist confirmation...');
+      if (bookingData.discountCode) {
+        addSystemNotification(`📨 Your booking request has been sent with ${bookingData.discountPercentage}% discount applied! Waiting for therapist confirmation...`);
+      } else {
+        addSystemNotification('📨 Your booking request has been sent. Waiting for therapist confirmation...');
+      }
       
       // Start 5 minute countdown for therapist response
       startCountdown(300, async () => {
@@ -862,6 +881,9 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
       console.log('📋 [BookingLifecycle] Booking created:', booking);
       console.log(`💰 Commission: Admin ${adminCommission} IDR (30%) | Provider ${providerPayout} IDR (70%)`);
+      if (bookingData.discountCode) {
+        console.log(`🎁 Discount Applied: ${bookingData.discountCode} (${bookingData.discountPercentage}%) - Original: ${bookingData.originalPrice} → Final: ${price}`);
+      }
       
     } catch (error) {
       console.error('❌ [BookingLifecycle] Failed to create booking:', error);

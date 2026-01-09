@@ -1,0 +1,126 @@
+{
+  "collectionId": "chat_flags",
+  "name": "Chat Flags",
+  "documentSecurity": true,
+  "permissions": [
+    "read(\"role:admin\")",
+    "create(\"users\")",
+    "update(\"role:admin\")"
+  ],
+  "attributes": [
+    {
+      "key": "chatRoomId",
+      "type": "string",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "size": 255,
+      "default": null
+    },
+    {
+      "key": "reporterId",
+      "type": "string",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "size": 255,
+      "default": null
+    },
+    {
+      "key": "reporterRole",
+      "type": "enum",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "elements": ["user", "therapist"],
+      "format": "enum",
+      "default": null
+    },
+    {
+      "key": "reportedUserId",
+      "type": "string",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "size": 255,
+      "default": null
+    },
+    {
+      "key": "reason",
+      "type": "enum",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "elements": [
+        "inappropriate_behavior",
+        "harassment_abuse",
+        "payment_issue",
+        "scam_fraud",
+        "therapist_no_show",
+        "other"
+      ],
+      "format": "enum",
+      "default": null
+    },
+    {
+      "key": "message",
+      "type": "string",
+      "status": "available",
+      "required": false,
+      "array": false,
+      "size": 500,
+      "default": null
+    },
+    {
+      "key": "status",
+      "type": "enum",
+      "status": "available",
+      "required": true,
+      "array": false,
+      "elements": ["open", "reviewed", "resolved"],
+      "format": "enum",
+      "default": "open"
+    },
+    {
+      "key": "ipHash",
+      "type": "string",
+      "status": "available",
+      "required": false,
+      "array": false,
+      "size": 64,
+      "default": null
+    },
+    {
+      "key": "adminNotes",
+      "type": "string",
+      "status": "available",
+      "required": false,
+      "array": false,
+      "size": 1000,
+      "default": null
+    }
+  ],
+  "indexes": [
+    {
+      "key": "chatRoomId_reporterId",
+      "type": "unique",
+      "status": "available",
+      "attributes": ["chatRoomId", "reporterId"],
+      "orders": ["ASC", "ASC"]
+    },
+    {
+      "key": "status_createdAt",
+      "type": "key",
+      "status": "available",
+      "attributes": ["status", "$createdAt"],
+      "orders": ["ASC", "DESC"]
+    },
+    {
+      "key": "reporterId_createdAt",
+      "type": "key",
+      "status": "available",
+      "attributes": ["reporterId", "$createdAt"],
+      "orders": ["ASC", "DESC"]
+    }
+  ]
+}

@@ -2,6 +2,30 @@
   "projectId": "YOUR_PROJECT_ID",
   "functions": [
     {
+      "functionId": "sendReviewDiscount",
+      "name": "Send Review Discount (Reward System)",
+      "runtime": "node-18.0",
+      "path": "functions/sendReviewDiscount",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["users"]
+    },
+    {
+      "functionId": "validateDiscount",
+      "name": "Validate Discount Code",
+      "runtime": "node-18.0",
+      "path": "functions/validateDiscount",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["guests"]
+    },
+    {
       "functionId": "submitReview",
       "name": "Submit Review (Server-Enforced)",
       "runtime": "node-18.0",

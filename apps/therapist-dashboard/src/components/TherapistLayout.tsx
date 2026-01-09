@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, MessageCircle, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
 
@@ -25,7 +25,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Translations for menu items
   const menuLabels = {
     en: {
       status: 'Online Status',
@@ -42,6 +41,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       legal: 'Legal',
       'custom-menu': 'Menu Prices',
       'commission-payment': 'Payments 30%',
+      'send-discount': 'Send Discount',
       menu: 'Menu',
       logout: 'Logout',
     },
@@ -60,6 +60,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       legal: 'Hukum',
       'custom-menu': 'Harga Menu',
       'commission-payment': 'Pembayaran 30%',
+      'send-discount': 'Kirim Diskon',
       menu: 'Menu',
       logout: 'Keluar',
     },
@@ -72,6 +73,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'schedule', label: labels.schedule, icon: Calendar, color: 'text-orange-500' },
     { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-600' },
     { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-blue-600' },
+    { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-pink-500' },
     { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-purple-600' },
     { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },

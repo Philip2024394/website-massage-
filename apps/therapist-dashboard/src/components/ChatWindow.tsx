@@ -4,6 +4,8 @@ import { commissionTrackingService } from '../../../../lib/services/commissionTr
 import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../../../utils/piiDetector';
 import { auditLoggingService, AuditContext } from '../../../../lib/appwrite/services/auditLogging.service';
 import PaymentCard from '../../../../components/PaymentCard';
+import SendDiscountModal from '../../../../components/SendDiscountModal';
+import { FlagIcon } from '../../../../components/FlagIcon';
 
 interface Message {
     $id: string;
@@ -126,6 +128,7 @@ export default function ChatWindow({
     const [processingAction, setProcessingAction] = useState(false);
     const [showPaymentCard, setShowPaymentCard] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [showDiscountModal, setShowDiscountModal] = useState(false);
     const alertAudioRef = useRef<HTMLAudioElement | null>(null);
     // Language is now managed globally - therapist dashboard uses Indonesian by default
     
@@ -863,6 +866,17 @@ export default function ChatWindow({
                 </div>
                 
                 <div className="flex items-center space-x-2">
+                    {/* Send Discount Button */}
+                    <button
+                        onClick={() => setShowDiscountModal(true)}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors group"
+                        title="Send Discount Code"
+                    >
+                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                        </svg>
+                    </button>
+                    
                     {/* Payment Card Share Button */}
                     {bankDetails?.bankName && (
                         <button
@@ -934,6 +948,18 @@ export default function ChatWindow({
                     )}
                 </>
             )}
+
+            {/* Flag Icon positioned below header with space */}
+            <div className="absolute top-24 right-4 z-[1]">
+                <FlagIcon
+                    chatRoomId={`therapist-${providerId}-${customerId}`}
+                    reporterId={providerId}
+                    reporterRole="therapist"
+                    reportedUserId={customerId}
+                    reportedUserName={customerName}
+                    onReportFormToggle={() => {}} // No special handling needed for therapist chat
+                />
+            </div>
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
@@ -1307,6 +1333,31 @@ export default function ChatWindow({
                     </div>
                 </div>
             )}
+            
+            {/* Send Discount Modal */}
+            <SendDiscountModal
+                isOpen={showDiscountModal}
+                onClose={() => setShowDiscountModal(false)}
+                providerId={providerId}
+                providerType={providerRole}
+                providerName={providerName}
+                customerId={customerId}
+                customerName={customerName}
+                onSuccess={(code, percentage) => {
+                    console.log(`✅ Discount ${percentage}% sent: ${code}`);
+                    // Add a message to chat showing discount was sent
+                    const discountMessage: Message = {
+                        $id: `discount_${Date.now()}`,
+                        $createdAt: new Date().toISOString(),
+                        senderId: 'system',
+                        senderName: 'System',
+                        message: `🎁 You sent a ${percentage}% discount code to ${customerName}!`,
+                        messageType: 'system',
+                        isRead: true
+                    };
+                    setMessages(prev => [...prev, discountMessage]);
+                }}
+            />
         </div>
     );
 }

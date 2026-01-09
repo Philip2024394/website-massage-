@@ -18,6 +18,7 @@ import TherapistMenu from './pages/TherapistMenu';
 import PremiumUpgrade from './pages/PremiumUpgrade';
 import CommissionPayment from './pages/CommissionPayment';
 import TherapistSchedule from './pages/TherapistSchedule';
+import SendDiscountPage from './pages/SendDiscountPage';
 import TherapistLayout from './components/TherapistLayout';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
@@ -28,7 +29,7 @@ import { LanguageProvider } from '../../../context/LanguageContext';
 import { useTranslations } from '../../../lib/useTranslations';
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -557,6 +558,8 @@ function App() {
         return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'schedule':
         return <TherapistSchedule therapist={user} />;
+      case 'send-discount':
+        return <SendDiscountPage therapist={user} language={language} />;
       case 'dashboard':
       default:
         return (

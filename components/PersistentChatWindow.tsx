@@ -12,7 +12,9 @@
 
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle } from 'lucide-react';
+import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
+import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/services/discountValidationService';
+import { FlagIcon } from './FlagIcon';
 
 // Duration options with prices
 const DURATION_OPTIONS = [
@@ -82,6 +84,18 @@ export function PersistentChatWindow() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
+  
+  // Discount code state
+  const [discountCode, setDiscountCode] = useState('');
+  const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
+  const [discountValidation, setDiscountValidation] = useState<{
+    valid: boolean;
+    percentage?: number;
+    message?: string;
+    codeData?: any;
+  } | null>(null);
+  const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Reset form when minimized or therapist changes
@@ -121,7 +135,48 @@ export function PersistentChatWindow() {
     setClientMismatchError(null);
     setSelectedDate('');
     setSelectedTime('');
+    // Reset discount state too
+    setDiscountCode('');
+    setDiscountValidation(null);
   }, [chatState.therapist?.id]);
+
+  // Validate discount code handler
+  const handleValidateDiscount = async () => {
+    if (!discountCode.trim() || !chatState.therapist) return;
+    
+    setIsValidatingDiscount(true);
+    setDiscountValidation(null);
+    
+    try {
+      // Validate discount code
+      const result = await validateDiscountCode(
+        discountCode.trim().toUpperCase(),
+        { providerId: chatState.therapist.id }
+      );
+      
+      if (result.valid) {
+        setDiscountValidation({
+          valid: true,
+          percentage: result.discountPercentage,
+          message: `🎉 ${result.discountPercentage}% discount will be applied!`,
+          codeData: result
+        });
+      } else {
+        setDiscountValidation({
+          valid: false,
+          message: result.message || 'Invalid discount code'
+        });
+      }
+    } catch (error) {
+      console.error('Discount validation error:', error);
+      setDiscountValidation({
+        valid: false,
+        message: 'Failed to validate discount code'
+      });
+    } finally {
+      setIsValidatingDiscount(false);
+    }
+  };
 
   // Arrival countdown timer
   useEffect(() => {
@@ -236,6 +291,13 @@ export function PersistentChatWindow() {
     const massageForLabels = { male: '👨 Male', female: '👩 Female', children: '👶 Children' };
     const massageForText = customerForm.massageFor ? massageForLabels[customerForm.massageFor] : 'Not specified';
     
+    // Calculate price with discount if applied
+    const originalPrice = getPrice(selectedDuration || 60);
+    const hasDiscount = discountValidation?.valid && discountValidation.percentage;
+    const discountedPrice = hasDiscount 
+      ? originalPrice * (1 - (discountValidation.percentage || 0) / 100)
+      : originalPrice;
+    
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
       `📱 WhatsApp: ${customerForm.countryCode}${customerForm.whatsApp}\n` +
@@ -245,8 +307,16 @@ export function PersistentChatWindow() {
       (mapsLink 
         ? `🔐 GPS Location: ${mapsLink}\n` 
         : `📍 GPS: Not provided - please ask customer for location\n`) +
-      `⏱️ Duration: ${selectedDuration} minutes\n` +
-      `💰 Price: ${formatPrice(getPrice(selectedDuration || 60))}`;
+      `⏱️ Duration: ${selectedDuration} minutes\n`;
+    
+    // Add price info with discount if applicable
+    if (hasDiscount) {
+      bookingMessage += `💰 Original Price: ${formatPrice(originalPrice)}\n` +
+        `🎁 Discount Code: ${discountCode} (${discountValidation.percentage}% off)\n` +
+        `✨ Final Price: ${formatPrice(discountedPrice)}`;
+    } else {
+      bookingMessage += `💰 Price: ${formatPrice(originalPrice)}`;
+    }
     
     // Add scheduled date/time if in schedule mode
     if (isScheduleMode && selectedDate && selectedTime) {
@@ -266,10 +336,14 @@ export function PersistentChatWindow() {
       setIsSending(true);
       const result = await sendMessage(bookingMessage);
       if (result.sent) {
-        // Create booking with countdown timer
+        // Create booking with countdown timer and discount info
         createBooking({
           duration: selectedDuration || 60,
-          price: getPrice(selectedDuration || 60),
+          price: discountedPrice, // Use discounted price
+          totalPrice: discountedPrice,
+          originalPrice: hasDiscount ? originalPrice : undefined,
+          discountCode: hasDiscount ? discountCode : undefined,
+          discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
           location: customerForm.location,
           coordinates: customerForm.coordinates || undefined,
           scheduledDate: selectedDate || undefined,
@@ -462,6 +536,18 @@ export function PersistentChatWindow() {
         </div>
       )}
 
+      {/* Flag Icon positioned below header with space */}
+      <div className="absolute top-24 right-4 z-[1]">
+        <FlagIcon
+          chatRoomId={`user-${chatState.therapist?.id || 'unknown'}`}
+          reporterId="user-current" // This should come from user context
+          reporterRole="user"
+          reportedUserId={chatState.therapist?.id || 'unknown'}
+          reportedUserName={chatState.therapist?.name}
+          onReportFormToggle={setIsReportFormOpen}
+        />
+      </div>
+
       {/* Content area */}
       <div className="flex-1 overflow-y-auto bg-white">
         
@@ -526,14 +612,16 @@ export function PersistentChatWindow() {
             `}</style>
             
             <div className="relative">
-              {/* Animated clicking hand */}
-              <div className="absolute left-1/2 top-0 z-10 hand-animation pointer-events-none">
-                <img 
-                  src="https://ik.imagekit.io/7grri5v7d/glove-removebg-preview.png" 
-                  alt="Click to select" 
-                  className="w-[120px] h-[120px] drop-shadow-lg object-contain"
-                />
-              </div>
+              {/* Animated clicking hand - hide when report form is open */}
+              {!isReportFormOpen && (
+                <div className="absolute left-1/2 top-0 z-10 hand-animation pointer-events-none">
+                  <img 
+                    src="https://ik.imagekit.io/7grri5v7d/glove-removebg-preview.png" 
+                    alt="Click to select" 
+                    className="w-[120px] h-[120px] drop-shadow-lg object-contain"
+                  />
+                </div>
+              )}
               
               <div className="space-y-3">
                 {DURATION_OPTIONS.map((option, index) => {
@@ -1122,6 +1210,109 @@ export function PersistentChatWindow() {
                     />
                   </div>
                 </>
+              )}
+              
+              {/* Discount Code Section */}
+              <div className="border-t border-gray-200 pt-4 mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Gift className="w-4 h-4 inline mr-1 text-orange-500" />
+                  Have a Discount Code?
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => {
+                      setDiscountCode(e.target.value.toUpperCase());
+                      setDiscountValidation(null); // Reset validation when typing
+                    }}
+                    placeholder="Enter code"
+                    disabled={discountValidation?.valid}
+                    className={`flex-1 px-4 py-3 border-2 rounded-xl outline-none transition-all ${
+                      discountValidation?.valid
+                        ? 'border-green-400 bg-green-50 text-green-700'
+                        : discountValidation === null
+                        ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100'
+                        : 'border-red-300 bg-red-50'
+                    }`}
+                  />
+                  {!discountValidation?.valid && (
+                    <button
+                      type="button"
+                      onClick={handleValidateDiscount}
+                      disabled={isValidatingDiscount || !discountCode.trim()}
+                      className="px-4 py-3 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isValidatingDiscount ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Tag className="w-4 h-4" />
+                          Apply
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+                
+                {/* Discount validation result */}
+                {discountValidation && (
+                  <div className={`mt-2 p-3 rounded-xl text-sm ${
+                    discountValidation.valid
+                      ? 'bg-green-100 border border-green-300'
+                      : 'bg-red-50 border border-red-200'
+                  }`}>
+                    {discountValidation.valid ? (
+                      <div className="flex items-center gap-2">
+                        <Check className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="font-medium text-green-700">{discountValidation.message}</p>
+                          <p className="text-xs text-green-600 mt-1">
+                            Original: {formatPrice(getPrice(selectedDuration || 60))} → 
+                            <span className="font-bold ml-1">
+                              {formatPrice(getPrice(selectedDuration || 60) * (1 - (discountValidation.percentage || 0) / 100))}
+                            </span>
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDiscountCode('');
+                            setDiscountValidation(null);
+                          }}
+                          className="ml-auto text-green-600 hover:text-green-800"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-red-600">
+                        <AlertTriangle className="w-5 h-5" />
+                        <p>{discountValidation.message}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {/* Price Summary with Discount */}
+              {discountValidation?.valid && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-600">Original Price:</span>
+                    <span className="text-gray-400 line-through">{formatPrice(getPrice(selectedDuration || 60))}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-green-600 font-medium">Discount ({discountValidation.percentage}%):</span>
+                    <span className="text-green-600">-{formatPrice(getPrice(selectedDuration || 60) * (discountValidation.percentage || 0) / 100)}</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-green-200">
+                    <span className="text-gray-800 font-bold">You Pay:</span>
+                    <span className="text-2xl font-bold text-green-600">
+                      {formatPrice(getPrice(selectedDuration || 60) * (1 - (discountValidation.percentage || 0) / 100))}
+                    </span>
+                  </div>
+                </div>
               )}
               
               <button
