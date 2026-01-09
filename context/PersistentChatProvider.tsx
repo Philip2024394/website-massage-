@@ -9,6 +9,7 @@
  * - Chat persists across page navigation
  * - Orange minimalistic design UI
  * - STRICT AVAILABILITY ENFORCEMENT (BUSY/CLOSED cannot Book Now)
+ * - SECURE BANK CARD SHARING (no manual bank numbers allowed)
  */
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
@@ -25,6 +26,11 @@ import {
   availabilityEnforcementService, 
   TherapistAvailabilityStatus 
 } from '../lib/services/availabilityEnforcementService';
+import { 
+  secureBankCardService, 
+  SecureBankCard,
+  MaskedBankCard 
+} from '../lib/services/secureBankCardService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -32,7 +38,8 @@ const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
 
 // Re-export lifecycle status for UI components
 export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
-
+// Re-export bank card types
+export type { SecureBankCard, MaskedBankCard };
 // Booking status for workflow (maps to BookingLifecycleStatus)
 export type BookingStatus = 
   | 'pending'           // PENDING - Waiting for therapist response
@@ -175,8 +182,17 @@ export interface ChatWindowState {
 const PHONE_REGEX = /(\+?\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s-]?)?\d{3,4}[\s-]?\d{3,4}/g;
 const CONTACT_PHRASES = /\b(call me|my number|contact me|whatsapp me|wa me|text me|phone|nomor|hubungi|telp|telepon|hp|handphone)\b/gi;
 
-// Validate message for phone numbers and contact info
+// Validate message for phone numbers, contact info, AND bank numbers
 export const validateMessage = (message: string): { isValid: boolean; warning: string | null } => {
+  // 🔒 CHECK FOR BANK ACCOUNT NUMBERS FIRST (highest priority block)
+  const bankCheck = secureBankCardService.containsBankNumber(message);
+  if (!bankCheck.isValid) {
+    return {
+      isValid: false,
+      warning: bankCheck.warning || '🚫 Sharing bank account numbers is not allowed. Use the secure payment system.',
+    };
+  }
+
   // Check for phone number patterns
   const phoneMatches = message.match(PHONE_REGEX);
   if (phoneMatches) {
@@ -850,11 +866,14 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Therapist accepts booking (PENDING → ACCEPTED)
+  // 🔒 AUTO-INJECTS BANK CARD DETAILS FOR SCHEDULED BOOKINGS
   const acceptBooking = useCallback(async () => {
     stopCountdown();
     
     const currentBooking = chatState.currentBooking;
-    const therapistName = chatState.therapist?.name || 'Therapist';
+    const therapist = chatState.therapist;
+    const therapistName = therapist?.name || 'Therapist';
+    const isScheduledBooking = currentBooking?.bookingType === BookingType.SCHEDULED;
     
     // Update via lifecycle service (server-authoritative)
     if (currentBooking?.documentId) {
@@ -878,6 +897,19 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     
     // Notify user
     addSystemNotification(`✅ Therapist ${therapistName} accepted your booking. You have 1 minute to confirm or the booking is canceled.`);
+    
+    // 🔒 AUTO-INJECT BANK CARD FOR SCHEDULED BOOKINGS
+    if (isScheduledBooking && therapist?.bankCardDetails) {
+      const bankCard = secureBankCardService.parseBankCardString(therapist.bankCardDetails);
+      const bookingAmount = currentBooking?.totalPrice;
+      const bankCardMessage = secureBankCardService.formatSystemMessage(bankCard, bookingAmount);
+      
+      // Inject bank card details as system message
+      setTimeout(() => {
+        addSystemNotification(bankCardMessage);
+        console.log('💳 [SecureBankCard] Auto-injected bank details for scheduled booking');
+      }, 500); // Small delay for better UX
+    }
     
     // Start 1 minute countdown for user confirmation
     startCountdown(60, async () => {
@@ -1034,15 +1066,26 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 Payment can be made now. You can pay via cash or bank transfer.`);
   }, [chatState.currentBooking, addSystemNotification]);
 
-  // Share bank card details
+  // 🔒 Share bank card details SECURELY (masked display)
   const shareBankCard = useCallback(() => {
-    const bankCard = chatState.therapist?.bankCardDetails;
-    if (bankCard) {
-      addSystemNotification(`💳 Bank Card Details for Payment:\n${bankCard}`);
+    const bankCardString = chatState.therapist?.bankCardDetails;
+    const bookingAmount = chatState.currentBooking?.totalPrice;
+    
+    if (bankCardString) {
+      // Parse and format securely with masked account number
+      const bankCard = secureBankCardService.parseBankCardString(bankCardString);
+      
+      if (bankCard && secureBankCardService.isValidBankCard(bankCard)) {
+        const secureMessage = secureBankCardService.formatSystemMessage(bankCard, bookingAmount);
+        addSystemNotification(secureMessage);
+        console.log('💳 [SecureBankCard] Displayed masked bank card details');
+      } else {
+        addSystemNotification('💳 Bank card details are not properly configured. Please contact the therapist.');
+      }
     } else {
       addSystemNotification('💳 Bank card details not available. Please contact the therapist for payment information.');
     }
-  }, [chatState.therapist, addSystemNotification]);
+  }, [chatState.therapist, chatState.currentBooking, addSystemNotification]);
 
   // Confirm payment
   const confirmPayment = useCallback((method: 'cash' | 'bank_transfer') => {
