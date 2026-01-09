@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import TherapistCard from '../components/TherapistCard';
 import RotatingReviews from '../components/RotatingReviews';
 import SocialMediaLinks from '../components/SocialMediaLinks';
@@ -6,6 +6,9 @@ import type { Therapist, UserLocation } from '../types';
 import { useTranslations } from '../lib/useTranslations';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
 import { analyticsService } from '../services/analyticsService';
+import UniversalHeader from '../components/shared/UniversalHeader';
+import { AppDrawer } from '../components/AppDrawerClean';
+import { Building, Sparkles } from 'lucide-react';
 
 interface SharedTherapistProfilePageProps {
     therapists: Therapist[];
@@ -15,6 +18,22 @@ interface SharedTherapistProfilePageProps {
     handleQuickBookWithChat?: (provider: Therapist, type: 'therapist' | 'place') => Promise<void> | void;
     onNavigate?: (page: any) => void;
     language?: 'en' | 'id' | 'gb';
+    loggedInProvider?: { id: number | string; type: 'therapist' | 'place' } | null;
+    onLanguageChange?: (lang: string) => void;
+    selectedCity?: string;
+    onCityChange?: (city: string) => void;
+    places?: any[];
+    onMassageJobsClick?: () => void;
+    onHotelPortalClick?: () => void;
+    onVillaPortalClick?: () => void;
+    onTherapistPortalClick?: () => void;
+    onMassagePlacePortalClick?: () => void;
+    onFacialPortalClick?: () => void;
+    onAgentPortalClick?: () => void;
+    onCustomerPortalClick?: () => void;
+    onAdminPortalClick?: () => void;
+    onTermsClick?: () => void;
+    onPrivacyClick?: () => void;
 }
 
 const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
@@ -25,9 +44,26 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     handleQuickBookWithChat,
     onNavigate,
     language,
+    loggedInProvider,
+    onLanguageChange,
+    selectedCity = 'all',
+    onCityChange,
+    places,
+    onMassageJobsClick,
+    onHotelPortalClick,
+    onVillaPortalClick,
+    onTherapistPortalClick,
+    onMassagePlacePortalClick,
+    onFacialPortalClick,
+    onAgentPortalClick,
+    onCustomerPortalClick,
+    onAdminPortalClick,
+    onTermsClick,
+    onPrivacyClick
 }) => {
     const normalizedLanguage = language === 'gb' ? 'en' : language;
     const { t } = useTranslations(normalizedLanguage);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     // Extract therapist id from /therapist-profile/:id-slug path
     const therapistId = useMemo(() => {
         const segments = window.location.pathname.split('/').filter(Boolean);
@@ -394,17 +430,91 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-xl mx-auto px-4 pt-4 pb-6 space-y-4">
-                {/* Hero Logo - Same as /share/ implementation */}
-                <div className="flex justify-center mb-4">
-                    <img 
-                        src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
-                        alt="Logo" 
-                        className="h-48 w-auto object-contain"
-                    />
-                </div>
+        <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+            {/* Universal Header with Menu and Language Switcher */}
+            <UniversalHeader 
+                language={language || 'id'}
+                onLanguageChange={onLanguageChange}
+                onMenuClick={() => setIsMenuOpen(true)}
+            />
 
+            {/* App Drawer */}
+            {isMenuOpen && (
+                <AppDrawer
+                    isHome={false}
+                    isOpen={isMenuOpen}
+                    onClose={() => setIsMenuOpen(false)}
+                    t={t || {}}
+                    language={(language || 'id') as 'en' | 'id' | 'gb'}
+                    onMassageJobsClick={onMassageJobsClick}
+                    onHotelPortalClick={onHotelPortalClick}
+                    onVillaPortalClick={onVillaPortalClick}
+                    onTherapistPortalClick={onTherapistPortalClick}
+                    onMassagePlacePortalClick={onMassagePlacePortalClick}
+                    onFacialPortalClick={onFacialPortalClick}
+                    onAgentPortalClick={onAgentPortalClick}
+                    onCustomerPortalClick={onCustomerPortalClick}
+                    onAdminPortalClick={onAdminPortalClick}
+                    onNavigate={onNavigate}
+                    onTermsClick={onTermsClick}
+                    onPrivacyClick={onPrivacyClick}
+                    onQRCodeClick={() => onNavigate?.('qr-code')}
+                    therapists={therapists || []}
+                    places={places || []}
+                />
+            )}
+
+            {/* Hero Section with Logo and Orange Navigation Buttons */}
+            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
+                <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
+                    {/* Logo */}
+                    <div className="flex justify-center mb-3">
+                        <img 
+                            src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
+                            alt="IndaStreet Massage Logo" 
+                            className="h-32 w-auto object-contain"
+                        />
+                    </div>
+
+                    {/* Navigation Buttons Row - Same as TherapistProfilePage */}
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        <div className="flex-shrink-0">
+                            <button
+                                onClick={() => onNavigate?.('home')}
+                                className="px-4 py-2.5 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm min-h-[44px] shadow-sm"
+                                title={language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
+                            >
+                                {language === 'id' ? 'Beranda' : 'Home'}
+                            </button>
+                        </div>
+                        
+                        <div className="flex justify-end flex-shrink-0">
+                            <button
+                                onClick={() => onNavigate?.('massagePlaces')}
+                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
+                                title={language === 'id' ? 'Tempat Pijat Indonesia' : 'Massage Spas Indonesia'}
+                            >
+                                <Building className="w-5 h-5" />
+                                <span>{language === 'id' ? 'Tempat Pijat' : 'Massage Places'}</span>
+                            </button>
+                        </div>
+                        
+                        <div className="flex justify-end flex-shrink-0">
+                            <button
+                                onClick={() => onNavigate?.('facialProviders')}
+                                className="px-4 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm"
+                                title={language === 'id' ? 'Facial Indonesia' : 'Facials Indonesia'}
+                            >
+                                <Sparkles className="w-5 h-5" />
+                                <span>Facial</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div className="max-w-4xl mx-auto px-4 py-6">
                 <TherapistCard
                     therapist={therapist}
                     userLocation={userLocation ?? undefined}
@@ -413,25 +523,17 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     onQuickBookWithChat={handleQuickBook}
                     onIncrementAnalytics={noop as any}
                     onShowRegisterPrompt={noop}
-                    onNavigate={handleViewAllTherapists}
+                    onNavigate={onNavigate}
                     onViewPriceList={noop}
                     isCustomerLoggedIn={Boolean(loggedInCustomer)}
+                    loggedInProviderId={loggedInProvider?.id}
                     t={t}
-                    hideJoinButton={true}
+                    hideJoinButton={false}
                     customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/verfied_badge-removebg-preview.png"
                 />
 
-                {/* Rotating Reviews Section - Same as /share/ implementation */}
+                {/* Rotating Reviews Section */}
                 <div className="mt-8">
-                    {/* Debug logging moved outside JSX */}
-                    {(() => {
-                        console.log('🔧 About to render RotatingReviews with:', {
-                            location: therapist.location || 'Yogyakarta',
-                            providerId: (therapist as any).$id || (therapist as any).id,
-                            providerName: therapist.name
-                        });
-                        return null;
-                    })()}
                     <RotatingReviews 
                         location={therapist.location || 'Yogyakarta'} 
                         limit={5}
@@ -448,8 +550,65 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     <SocialMediaLinks />
                 </div>
 
+                {/* SEO-Optimized Footer with Quick Links */}
+                <div className="mt-12 mb-6 flex flex-col items-center gap-2">
+                    <div className="font-bold text-lg">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </div>
+
+                    {/* Quick Links Section */}
+                    <div className="mt-8 pt-6 border-t border-gray-200 w-full">
+                        <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
+                        <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
+                            <button
+                                onClick={() => onNavigate?.('home')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Home
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('massage-types')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Massage Types
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('facial-types')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Facial Types
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('therapist-signup')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Join as a Therapist Today
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('place-signup')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Join Massage Place
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('about-us')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                About Us
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('contact-us')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Contact Us
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* SEO-Optimized Footer with Indonesian Keywords */}
-                <div className="mt-12 pt-8 border-t border-gray-200">
+                <div className="mt-6 pt-8 border-t border-gray-200">
                     {/* Main Brand Section */}
                     <div className="text-center mb-6">
                         <a 
