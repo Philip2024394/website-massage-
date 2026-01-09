@@ -263,6 +263,7 @@ export const bookingLifecycleService = {
 
   /**
    * Transition booking to CONFIRMED state (Customer confirms)
+   * Auto-adds to therapist calendar and schedules reminders
    */
   async confirmBooking(bookingId: string): Promise<BookingLifecycleRecord> {
     const booking = await this.getBookingById(bookingId);
@@ -290,7 +291,31 @@ export const bookingLifecycleService = {
 
     console.log(`✅ [BookingLifecycle] Booking ${bookingId} CONFIRMED - service active`);
 
+    // 📅 Auto-add to therapist calendar and schedule reminders
+    await this.addToCalendarAndScheduleReminders({ ...booking, ...updates, $id: result.$id });
+
     return { ...booking, ...updates, $id: result.$id };
+  },
+
+  /**
+   * Add confirmed booking to therapist calendar
+   * Schedules reminder notifications:
+   * - 6 hours before booking
+   * - Every hour thereafter until booking time
+   */
+  async addToCalendarAndScheduleReminders(booking: BookingLifecycleRecord): Promise<void> {
+    try {
+      const { bookingCalendarService } = await import('./bookingCalendarService');
+      
+      await bookingCalendarService.addToCalendar(booking);
+      
+      console.log(`📅 [BookingLifecycle] Added to calendar with reminders`);
+      console.log(`   📆 Reminders: 6h, 5h, 4h, 3h, 2h, 1h before booking`);
+      console.log(`   💬 Notifications via: Chat window + Dashboard`);
+    } catch (error) {
+      console.error(`❌ [BookingLifecycle] Failed to add to calendar:`, error);
+      // Don't throw - calendar integration should not block booking confirmation
+    }
   },
 
   /**

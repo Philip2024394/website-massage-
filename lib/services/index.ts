@@ -56,3 +56,10 @@ export {
   // Utilities
   customLinksService,
 } from '../appwriteService.LEGACY';
+// Booking System Services
+export { bookingLifecycleService, BookingLifecycleStatus, BookingType } from './bookingLifecycleService';
+export { bookingCalendarService, ReminderType } from './bookingCalendarService';
+export { adminCommissionService, CommissionStatus, ADMIN_REACTIVATION_FEE } from './adminCommissionService';
+export { adminRevenueTrackerService } from './adminRevenueTrackerService';
+export { availabilityEnforcementService, TherapistAvailabilityStatus } from './availabilityEnforcementService';
+export { secureBankCardService } from './secureBankCardService';
