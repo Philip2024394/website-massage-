@@ -1653,7 +1653,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             // Apply offline-to-busy transformation before sorting
                             baseList = transformOfflineToBusy(baseList);
 
-                            // Apply intelligent sorting: PRIMARY SORT BY DISTANCE, then by priority
+                            // Apply intelligent sorting: PRIMARY SORT BY STATUS, then distance
                             baseList = baseList
                                 .slice()
                                 .map(therapist => ({ 
@@ -1662,16 +1662,16 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     randomSeed: Math.random() // For randomization within groups
                                 }))
                                 .sort((a: any, b: any) => {
-                                    // 🌍 PRIMARY SORT: Distance (nearest first) - ONLY if user location exists
+                                    // 🎯 PRIMARY SORT: Status Priority (Available → Busy → Offline)
+                                    if (b.priorityScore !== a.priorityScore) {
+                                        return b.priorityScore - a.priorityScore;
+                                    }
+                                    
+                                    // 🌍 SECONDARY SORT: Distance (nearest first) - ONLY if user location exists
                                     if (currentUserLocation && a._distance !== null && b._distance !== null) {
                                         if (a._distance !== b._distance) {
                                             return a._distance - b._distance; // Ascending (nearest first)
                                         }
-                                    }
-                                    
-                                    // Secondary sort by priority score (descending)
-                                    if (b.priorityScore !== a.priorityScore) {
-                                        return b.priorityScore - a.priorityScore;
                                     }
                                     
                                     // Tertiary sort by random seed for same-priority items
