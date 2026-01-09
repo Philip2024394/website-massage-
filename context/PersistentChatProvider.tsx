@@ -828,6 +828,9 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
 
   // Complete booking
   const completeBooking = useCallback(() => {
+    const duration = chatState.currentBooking?.duration || 60;
+    const totalTime = `${duration + 30}-${duration + 60}`; // Massage time + 30-60 min travel
+    
     setChatState(prev => ({
       ...prev,
       currentBooking: prev.currentBooking ? {
@@ -837,8 +840,8 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       } : null,
     }));
     
-    addSystemNotification('✨ Service completed! Payment can be made after your massage service. You can pay via cash or bank transfer.');
-  }, [addSystemNotification]);
+    addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 Payment can be made now. You can pay via cash or bank transfer.`);
+  }, [chatState.currentBooking, addSystemNotification]);
 
   // Share bank card details
   const shareBankCard = useCallback(() => {
