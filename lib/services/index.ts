@@ -63,3 +63,4 @@ export { adminCommissionService, CommissionStatus, ADMIN_REACTIVATION_FEE } from
 export { adminRevenueTrackerService } from './adminRevenueTrackerService';
 export { availabilityEnforcementService, TherapistAvailabilityStatus } from './availabilityEnforcementService';
 export { secureBankCardService } from './secureBankCardService';
+export { antiContactEnforcementService, ViolationType, UserRole } from './antiContactEnforcementService';

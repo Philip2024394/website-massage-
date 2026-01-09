@@ -10,6 +10,7 @@
  * - Orange minimalistic design UI
  * - STRICT AVAILABILITY ENFORCEMENT (BUSY/CLOSED cannot Book Now)
  * - SECURE BANK CARD SHARING (no manual bank numbers allowed)
+ * - STRICT ANTI-CONTACT ENFORCEMENT (phone, WhatsApp, etc.)
  */
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
@@ -31,6 +32,11 @@ import {
   SecureBankCard,
   MaskedBankCard 
 } from '../lib/services/secureBankCardService';
+import {
+  antiContactEnforcementService,
+  ViolationType,
+  UserRole
+} from '../lib/services/antiContactEnforcementService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -178,43 +184,33 @@ export interface ChatWindowState {
   isTherapistView: boolean; // True if viewing as therapist
 }
 
-// Phone number detection regex - catches various formats
-const PHONE_REGEX = /(\+?\d{1,4}[\s-]?)?(\(?\d{2,4}\)?[\s-]?)?\d{3,4}[\s-]?\d{3,4}/g;
-const CONTACT_PHRASES = /\b(call me|my number|contact me|whatsapp me|wa me|text me|phone|nomor|hubungi|telp|telepon|hp|handphone)\b/gi;
+// ============================================================================
+// 🔒 STRICT ANTI-CONTACT ENFORCEMENT
+// Uses antiContactEnforcementService for comprehensive blocking
+// ============================================================================
 
-// Validate message for phone numbers, contact info, AND bank numbers
+// Validate message for ALL prohibited content
+// - Phone numbers (digits or words)
+// - WhatsApp references
+// - Contact phrases ("call me", "my number", "WA", etc.)
+// - Bank account numbers
 export const validateMessage = (message: string): { isValid: boolean; warning: string | null } => {
-  // 🔒 CHECK FOR BANK ACCOUNT NUMBERS FIRST (highest priority block)
+  // 🔒 CHECK FOR CONTACT INFORMATION (phone, WhatsApp, etc.)
+  const contactCheck = antiContactEnforcementService.checkMessage(message);
+  if (contactCheck.isViolation) {
+    return {
+      isValid: false,
+      warning: contactCheck.warningMessage || `🚫 Sharing contact information is prohibited.
+Violations may deactivate your account.`,
+    };
+  }
+
+  // 🔒 CHECK FOR BANK ACCOUNT NUMBERS
   const bankCheck = secureBankCardService.containsBankNumber(message);
   if (!bankCheck.isValid) {
     return {
       isValid: false,
       warning: bankCheck.warning || '🚫 Sharing bank account numbers is not allowed. Use the secure payment system.',
-    };
-  }
-
-  // Check for phone number patterns
-  const phoneMatches = message.match(PHONE_REGEX);
-  if (phoneMatches) {
-    // Filter out short numbers that might be prices or other numbers
-    const suspiciousNumbers = phoneMatches.filter(match => {
-      const digits = match.replace(/\D/g, '');
-      return digits.length >= 8; // Phone numbers typically have 8+ digits
-    });
-    
-    if (suspiciousNumbers.length > 0) {
-      return {
-        isValid: false,
-        warning: '⚠️ Sharing personal contact information is strictly prohibited. Account will be deactivated on violation.'
-      };
-    }
-  }
-  
-  // Check for contact-related phrases
-  if (CONTACT_PHRASES.test(message)) {
-    return {
-      isValid: false,
-      warning: '⚠️ Sharing personal contact information is strictly prohibited. Account will be deactivated on violation.'
     };
   }
   
@@ -624,11 +620,33 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return { sent: false };
     }
 
-    // Validate message for phone numbers and contact info
-    const validation = validateMessage(messageContent);
-    if (!validation.isValid) {
-      console.warn('⚠️ Message blocked - contact info detected');
-      return { sent: false, warning: validation.warning || undefined };
+    // ============================================================================
+    // 🔒 STRICT ANTI-CONTACT ENFORCEMENT
+    // Full validation with violation logging and account restriction
+    // ============================================================================
+    const enforcement = await antiContactEnforcementService.validateAndEnforce({
+      message: messageContent,
+      userId: currentUserId,
+      userRole: UserRole.USER, // Default to user, therapist view handled separately
+      userName: currentUserName || chatState.customerName || 'Guest',
+      targetId: chatState.therapist.id,
+      targetName: chatState.therapist.name,
+      roomId: `${currentUserId}_${chatState.therapist.id}`,
+    });
+
+    // Check if account is restricted
+    if (enforcement.isRestricted) {
+      console.warn('🚫 Account restricted - cannot send messages');
+      return { 
+        sent: false, 
+        warning: enforcement.warningMessage || '🚫 Your account has been restricted due to repeated policy violations. Contact support for assistance.'
+      };
+    }
+
+    // Check for violation
+    if (enforcement.isViolation) {
+      console.warn('⚠️ Message blocked - contact info detected. Violation logged.');
+      return { sent: false, warning: enforcement.warningMessage || undefined };
     }
 
     const therapist = chatState.therapist;
