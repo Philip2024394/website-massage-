@@ -546,9 +546,29 @@ export const bookingLifecycleService = {
 
   /**
    * Record commission for completed booking
+   * Uses adminCommissionService for automatic notification timeline
    */
   async recordCompletedCommission(booking: BookingLifecycleRecord): Promise<void> {
     try {
+      // Use the new adminCommissionService for full notification timeline
+      const { adminCommissionService } = await import('./adminCommissionService');
+      
+      await adminCommissionService.createCommissionOnCompletion({
+        bookingId: booking.bookingId,
+        therapistId: booking.therapistId || booking.businessId || '',
+        therapistName: booking.therapistName || booking.businessName || '',
+        bookingAmount: booking.totalPrice,
+        completedAt: booking.completedAt,
+      });
+      
+      console.log(`💰 [BookingLifecycle] Commission created with notification timeline`);
+      console.log(`   Amount: Rp ${booking.adminCommission.toLocaleString('id-ID')} (30%)`);
+      console.log(`   Timeline: +2h reminder → +2h30m urgent → +3h final → +3h30m restriction`);
+      
+    } catch (error) {
+      console.error(`❌ [BookingLifecycle] Failed to record commission:`, error);
+      
+      // Fallback to basic commission record if new service fails
       if (APPWRITE_CONFIG.collections.commissionRecords) {
         await databases.createDocument(
           APPWRITE_CONFIG.databaseId,
@@ -569,10 +589,8 @@ export const bookingLifecycleService = {
             completedAt: booking.completedAt,
           }
         );
-        console.log(`💰 [BookingLifecycle] Commission recorded: ${booking.adminCommission} IDR`);
+        console.log(`💰 [BookingLifecycle] Fallback commission recorded: ${booking.adminCommission} IDR`);
       }
-    } catch (error) {
-      console.error(`❌ [BookingLifecycle] Failed to record commission:`, error);
     }
   },
 
