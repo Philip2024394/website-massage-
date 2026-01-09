@@ -322,12 +322,28 @@ export function PersistentChatWindow() {
   // Full chat window
   return (
     <div
-      className="fixed bottom-4 right-4 z-[9999] w-[380px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+      className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100vw-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up"
       style={{ 
-        height: 'min(600px, calc(100vh - 100px))',
+        height: 'min(600px, calc(100vh - 60px))',
         fontFamily: 'system-ui, -apple-system, sans-serif'
       }}
     >
+      {/* Slide up animation */}
+      <style>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-up {
+          animation: slideUp 0.3s ease-out forwards;
+        }
+      `}</style>
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 flex items-center gap-3">
         <div className="relative flex-shrink-0">
@@ -894,6 +910,17 @@ export function PersistentChatWindow() {
                     
                     setIsGettingLocation(true);
                     
+                    // Check permission status first (if available)
+                    try {
+                      if (navigator.permissions) {
+                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                        console.log('📍 Location permission status:', permissionStatus.state);
+                      }
+                    } catch (permErr) {
+                      console.log('Permissions API not available, proceeding with geolocation request');
+                    }
+                    
+                    // Request location - this will trigger the mobile permission dialog
                     navigator.geolocation.getCurrentPosition(
                       (position) => {
                         const { latitude, longitude } = position.coords;
@@ -906,7 +933,7 @@ export function PersistentChatWindow() {
                         console.log('📍 Location set:', latitude, longitude);
                       },
                       (error) => {
-                        console.error('Location error:', error);
+                        console.error('Location error:', error.code, error.message);
                         setIsGettingLocation(false);
                         // Track failed attempts and auto-succeed after 3
                         const newAttempts = locationAttempts + 1;
@@ -918,7 +945,11 @@ export function PersistentChatWindow() {
                           }));
                         }
                       },
-                      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                      { 
+                        enableHighAccuracy: true, 
+                        timeout: 15000, // Increased timeout for mobile
+                        maximumAge: 0 
+                      }
                     );
                   }}
                   disabled={isGettingLocation || !!customerForm.coordinates}
@@ -949,7 +980,7 @@ export function PersistentChatWindow() {
                 </button>
                 
                 {/* Show coordinates with lock when location is set */}
-                {customerForm.coordinates && (
+                {customerForm.coordinates && customerForm.coordinates.lat !== undefined && (
                   <div className="mt-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-300 rounded-xl shadow-sm">
                     <div className="flex items-center gap-2 mb-2">
                       <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -961,11 +992,11 @@ export function PersistentChatWindow() {
                     <div className="bg-white rounded-lg p-2 border border-green-200">
                       <div className="text-xs text-gray-500 mb-1">GPS Coordinates:</div>
                       <div className="font-mono text-sm text-green-800">
-                        {customerForm.coordinates.lat.toFixed(6)}, {customerForm.coordinates.lng.toFixed(6)}
+                        {(customerForm.coordinates.lat || 0).toFixed(6)}, {(customerForm.coordinates.lng || 0).toFixed(6)}
                       </div>
                     </div>
                     <a 
-                      href={`https://www.google.com/maps?q=${customerForm.coordinates.lat},${customerForm.coordinates.lng}`}
+                      href={`https://www.google.com/maps?q=${customerForm.coordinates.lat || 0},${customerForm.coordinates.lng || 0}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="mt-2 flex items-center justify-center gap-1 text-xs text-green-600 hover:text-green-800 font-medium"
