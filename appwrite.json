@@ -2,6 +2,18 @@
   "projectId": "YOUR_PROJECT_ID",
   "functions": [
     {
+      "functionId": "sendChatMessage",
+      "name": "Send Chat Message (Server-Enforced)",
+      "runtime": "node-18.0",
+      "path": "functions/sendChatMessage",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["users"]
+    },
+    {
       "functionId": "booking_confirm",
       "name": "booking-confirm",
       "runtime": "node-20.0",

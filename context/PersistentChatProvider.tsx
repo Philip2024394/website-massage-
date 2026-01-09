@@ -10,7 +10,7 @@
  * - Orange minimalistic design UI
  * - STRICT AVAILABILITY ENFORCEMENT (BUSY/CLOSED cannot Book Now)
  * - SECURE BANK CARD SHARING (no manual bank numbers allowed)
- * - STRICT ANTI-CONTACT ENFORCEMENT (phone, WhatsApp, etc.)
+ * - 🔒 SERVER-ENFORCED ANTI-CONTACT VALIDATION (TAMPER RESISTANT)
  */
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
@@ -33,10 +33,10 @@ import {
   MaskedBankCard 
 } from '../lib/services/secureBankCardService';
 import {
-  antiContactEnforcementService,
-  ViolationType,
-  UserRole
-} from '../lib/services/antiContactEnforcementService';
+  serverEnforcedChatService,
+  SendMessageRequest,
+  SendMessageResponse,
+} from '../lib/services/serverEnforcedChatService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -185,27 +185,24 @@ export interface ChatWindowState {
 }
 
 // ============================================================================
-// 🔒 STRICT ANTI-CONTACT ENFORCEMENT
-// Uses antiContactEnforcementService for comprehensive blocking
+// 🔒 SERVER-ENFORCED ANTI-CONTACT VALIDATION
+// Quick client-side check for UI feedback only
+// REAL validation happens on the server (tamper-resistant)
 // ============================================================================
 
-// Validate message for ALL prohibited content
-// - Phone numbers (digits or words)
-// - WhatsApp references
-// - Contact phrases ("call me", "my number", "WA", etc.)
-// - Bank account numbers
+// Quick UI validation (for immediate feedback - NOT SECURITY)
+// Server does the real validation through serverEnforcedChatService
 export const validateMessage = (message: string): { isValid: boolean; warning: string | null } => {
-  // 🔒 CHECK FOR CONTACT INFORMATION (phone, WhatsApp, etc.)
-  const contactCheck = antiContactEnforcementService.checkMessage(message);
-  if (contactCheck.isViolation) {
+  // Quick check for UI feedback (server validates for real)
+  const quickCheck = serverEnforcedChatService.quickValidate(message);
+  if (quickCheck.mayBeBlocked) {
     return {
       isValid: false,
-      warning: contactCheck.warningMessage || `🚫 Sharing contact information is prohibited.
-Violations may deactivate your account.`,
+      warning: `⚠️ ${quickCheck.reason || 'Contact information detected'}.\n\n🚫 Sharing contact information is strictly prohibited.\nViolations may result in account restriction.`,
     };
   }
 
-  // 🔒 CHECK FOR BANK ACCOUNT NUMBERS
+  // 🔒 CHECK FOR BANK ACCOUNT NUMBERS (also validated server-side)
   const bankCheck = secureBankCardService.containsBankNumber(message);
   if (!bankCheck.isValid) {
     return {
@@ -620,40 +617,27 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return { sent: false };
     }
 
-    // ============================================================================
-    // 🔒 STRICT ANTI-CONTACT ENFORCEMENT
-    // Full validation with violation logging and account restriction
-    // ============================================================================
-    const enforcement = await antiContactEnforcementService.validateAndEnforce({
-      message: messageContent,
-      userId: currentUserId,
-      userRole: UserRole.USER, // Default to user, therapist view handled separately
-      userName: currentUserName || chatState.customerName || 'Guest',
-      targetId: chatState.therapist.id,
-      targetName: chatState.therapist.name,
-      roomId: `${currentUserId}_${chatState.therapist.id}`,
-    });
-
-    // Check if account is restricted
-    if (enforcement.isRestricted) {
-      console.warn('🚫 Account restricted - cannot send messages');
-      return { 
-        sent: false, 
-        warning: enforcement.warningMessage || '🚫 Your account has been restricted due to repeated policy violations. Contact support for assistance.'
-      };
-    }
-
-    // Check for violation
-    if (enforcement.isViolation) {
-      console.warn('⚠️ Message blocked - contact info detected. Violation logged.');
-      return { sent: false, warning: enforcement.warningMessage || undefined };
-    }
-
     const therapist = chatState.therapist;
-    console.log('📤 Sending message to:', therapist.name);
+    const roomId = `${currentUserId}_${therapist.id}`;
+    
+    // ============================================================================
+    // 🔒 SERVER-ENFORCED MESSAGE VALIDATION (TAMPER RESISTANT)
+    // ============================================================================
+    // ALL messages go through the backend Appwrite Function.
+    // No direct database writes - server validates and saves.
+    // Client-side bypass is IMPOSSIBLE.
+    // ============================================================================
+    
+    console.log('📤 [SERVER-ENFORCED] Sending message to:', therapist.name);
 
-    // Prepare message data
-    const messageData = {
+    // Quick UI feedback (not security - server does real validation)
+    const quickCheck = serverEnforcedChatService.quickValidate(messageContent);
+    if (quickCheck.mayBeBlocked) {
+      console.log('⚠️ Quick check flagged message - server will validate');
+    }
+
+    // Prepare server request
+    const serverRequest: SendMessageRequest = {
       senderId: currentUserId,
       senderName: currentUserName || chatState.customerName || 'Guest',
       senderType: 'customer',
@@ -661,30 +645,53 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       recipientName: therapist.name,
       recipientType: 'therapist',
       message: messageContent.trim(),
-      content: messageContent.trim(),
-      createdAt: new Date().toISOString(),
-      read: false,
-      messageType: 'text',
-      roomId: `${currentUserId}_${therapist.id}`,
-      isSystemMessage: false,
+      roomId,
     };
 
     try {
-      // Save to Appwrite
-      const response = await databases.createDocument(
-        DATABASE_ID,
-        CHAT_MESSAGES_COLLECTION,
-        ID.unique(),
-        messageData
-      );
+      // 🔒 Send through SERVER-ENFORCED endpoint
+      const response: SendMessageResponse = await serverEnforcedChatService.sendMessage(serverRequest);
 
-      console.log('✅ Message saved to Appwrite:', response.$id);
+      // Handle server response
+      if (response.isRestricted) {
+        console.warn('🚫 [SERVER] Account restricted');
+        return { 
+          sent: false, 
+          warning: response.message || '🚫 Your account has been restricted due to policy violations.'
+        };
+      }
 
-      // Add to local state immediately
+      if (response.isViolation) {
+        console.warn('⚠️ [SERVER] Violation detected:', response.violationType);
+        return { 
+          sent: false, 
+          warning: response.message || '🚫 Message blocked: Contact information sharing is prohibited.'
+        };
+      }
+
+      if (!response.success) {
+        console.error('❌ [SERVER] Send failed:', response.error);
+        return { sent: false, warning: response.message };
+      }
+
+      // ✅ Message validated and saved by server
+      console.log('✅ [SERVER] Message sent:', response.messageId);
+
+      // Add to local state for immediate UI update
+      // (Real-time subscription will confirm)
       const newMessage: ChatMessage = {
-        ...messageData,
-        $id: response.$id,
+        $id: response.messageId || `local_${Date.now()}`,
+        senderId: currentUserId,
+        senderName: currentUserName || chatState.customerName || 'Guest',
         senderType: 'customer',
+        recipientId: therapist.id,
+        recipientName: therapist.name,
+        message: messageContent.trim(),
+        createdAt: new Date().toISOString(),
+        read: false,
+        messageType: 'text',
+        roomId,
+        isSystemMessage: false,
       };
 
       setChatState(prev => {
@@ -701,21 +708,8 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return { sent: true };
 
     } catch (error) {
-      console.error('❌ Failed to send message:', error);
-      
-      // Still add locally so user sees their message
-      const localMessage: ChatMessage = {
-        ...messageData,
-        $id: `failed_${Date.now()}`,
-        senderType: 'customer',
-      };
-      
-      setChatState(prev => ({
-        ...prev,
-        messages: [...prev.messages, localMessage],
-      }));
-      
-      return { sent: false };
+      console.error('❌ [SERVER] Failed to send message:', error);
+      return { sent: false, warning: 'Failed to send message. Please try again.' };
     }
   }, [currentUserId, currentUserName, chatState.therapist, chatState.customerName]);
 

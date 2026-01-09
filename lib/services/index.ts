@@ -63,4 +63,10 @@ export { adminCommissionService, CommissionStatus, ADMIN_REACTIVATION_FEE } from
 export { adminRevenueTrackerService } from './adminRevenueTrackerService';
 export { availabilityEnforcementService, TherapistAvailabilityStatus } from './availabilityEnforcementService';
 export { secureBankCardService } from './secureBankCardService';
-export { antiContactEnforcementService, ViolationType, UserRole } from './antiContactEnforcementService';
+
+// 🔒 Server-Enforced Contact Validation (Tamper Resistant)
+export { serverEnforcedChatService } from './serverEnforcedChatService';
+export type { SendMessageRequest, SendMessageResponse, ViolationType } from './serverEnforcedChatService';
+
+// Legacy client-side enforcement (kept for reference, server is primary)
+export { antiContactEnforcementService, UserRole } from './antiContactEnforcementService';
