@@ -11,7 +11,7 @@
  * This prevents 404 errors from non-existent collections
  */
 
-import { COLLECTIONS, APPWRITE_DATABASE_ID } from '../APPWRITE_MASTER_CONFIG';
+import { COLLECTIONS, APPWRITE_DATABASE_ID } from './appwrite';
 
 // ============================================
 // TYPE DEFINITIONS

@@ -21,6 +21,7 @@ export { functions as appwriteFunctions };
 
 // Database and Collection IDs - UPDATED TO REAL PRODUCTION IDs
 export const DATABASE_ID = '68f76ee1000e64ca8d05';
+export const APPWRITE_DATABASE_ID = '68f76ee1000e64ca8d05'; // Alias for validators
 export const COLLECTIONS = {
     THERAPISTS: 'therapists_collection_id', // ✅ Text-based collection ID
     PLACES: 'places_collection_id', // ✅ Text-based collection ID
