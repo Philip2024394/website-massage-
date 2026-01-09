@@ -8,6 +8,7 @@
  * - Therapist can see and respond to messages instantly
  * - Chat persists across page navigation
  * - Orange minimalistic design UI
+ * - STRICT AVAILABILITY ENFORCEMENT (BUSY/CLOSED cannot Book Now)
  */
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
@@ -20,13 +21,17 @@ import {
   BookingType,
   BookingLifecycleRecord 
 } from '../lib/services/bookingLifecycleService';
+import { 
+  availabilityEnforcementService, 
+  TherapistAvailabilityStatus 
+} from '../lib/services/availabilityEnforcementService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const CHAT_MESSAGES_COLLECTION = APPWRITE_CONFIG.collections.chatMessages;
 
 // Re-export lifecycle status for UI components
-export { BookingLifecycleStatus, BookingType };
+export { BookingLifecycleStatus, BookingType, TherapistAvailabilityStatus };
 
 // Booking status for workflow (maps to BookingLifecycleStatus)
 export type BookingStatus = 
@@ -102,6 +107,7 @@ export interface ChatTherapist {
   pricing?: Record<string, number>;
   whatsapp?: string;
   status?: string;
+  availabilityStatus?: TherapistAvailabilityStatus | string; // AVAILABLE, BUSY, CLOSED, RESTRICTED
   duration?: number;
   bankCardDetails?: string; // Bank card info for payment
   clientPreferences?: string;
@@ -218,6 +224,10 @@ interface PersistentChatContextValue {
   addMessage: (message: Omit<LegacyMessage, 'id' | 'timestamp'>) => void;
   sendMessage: (messageContent: string) => Promise<{ sent: boolean; warning?: string }>;
   updateTherapist: (updates: Partial<ChatTherapist>) => void;
+  // 🔒 Availability enforcement utilities
+  canBookNow: (therapistStatus?: string) => boolean;
+  canSchedule: (therapistStatus?: string) => boolean;
+  getAvailabilityMessage: (therapistStatus?: string, bookingType?: BookingType) => string | null;
   // Booking workflow functions
   createBooking: (bookingData: Partial<BookingData>) => void;
   updateBookingStatus: (status: BookingStatus) => void;
@@ -732,17 +742,28 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Create a new booking using BookingLifecycleService
+  // 🔒 STRICT AVAILABILITY ENFORCEMENT - UI LEVEL
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const price = bookingData.totalPrice || bookingData.price || 0;
     
-    // Calculate commission (30% admin, 70% provider)
-    const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
-    
     // Determine booking type
     const isScheduled = !!(bookingData.scheduledDate || chatState.selectedDate);
     const bookingType = isScheduled ? BookingType.SCHEDULED : BookingType.BOOK_NOW;
+    
+    // 🔒 STRICT AVAILABILITY CHECK - NO OVERRIDE ALLOWED
+    const therapistStatus = therapist?.availabilityStatus || therapist?.status;
+    const availabilityCheck = availabilityEnforcementService.canBook(therapistStatus, bookingType);
+    
+    if (!availabilityCheck.allowed) {
+      console.log(`🚫 [AvailabilityEnforcement] Booking blocked: ${availabilityCheck.reason}`);
+      addSystemNotification(availabilityCheck.userMessage || 'Booking not available');
+      return; // EXIT - Do not proceed with booking
+    }
+    
+    // Calculate commission (30% admin, 70% provider)
+    const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
     
     // Create booking via lifecycle service (server-authoritative)
     try {
@@ -760,8 +781,8 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         bookingType,
         totalPrice: price,
         notes: bookingData.scheduledDate ? `Scheduled: ${bookingData.scheduledDate} ${bookingData.scheduledTime || ''}` : undefined,
+        therapistStatus, // Pass status for API-level enforcement
       });
-
       // Create local booking state aligned with lifecycle
       const booking: BookingData = {
         id: lifecycleBooking.bookingId,
@@ -1056,6 +1077,25 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // 🔒 AVAILABILITY ENFORCEMENT UTILITIES
+  // These allow UI components to check availability before showing Book Now button
+  const canBookNow = useCallback((therapistStatus?: string): boolean => {
+    const status = therapistStatus || chatState.therapist?.availabilityStatus || chatState.therapist?.status;
+    return availabilityEnforcementService.canBookNow(status);
+  }, [chatState.therapist]);
+
+  const canSchedule = useCallback((therapistStatus?: string): boolean => {
+    const status = therapistStatus || chatState.therapist?.availabilityStatus || chatState.therapist?.status;
+    return availabilityEnforcementService.canSchedule(status);
+  }, [chatState.therapist]);
+
+  const getAvailabilityMessage = useCallback((therapistStatus?: string, bookingType?: BookingType): string | null => {
+    const status = therapistStatus || chatState.therapist?.availabilityStatus || chatState.therapist?.status;
+    const type = bookingType || BookingType.BOOK_NOW;
+    const result = availabilityEnforcementService.canBook(status, type);
+    return result.allowed ? null : (result.userMessage || null);
+  }, [chatState.therapist]);
+
   const contextValue: PersistentChatContextValue = {
     chatState,
     isLocked,
@@ -1074,6 +1114,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     addMessage,
     sendMessage,
     updateTherapist,
+    // 🔒 Availability enforcement utilities
+    canBookNow,
+    canSchedule,
+    getAvailabilityMessage,
     // Booking workflow functions
     createBooking,
     updateBookingStatus,

@@ -146,6 +146,7 @@ export const bookingLifecycleService = {
 
   /**
    * Create a new booking (PENDING state)
+   * Enforces availability rules at API level - NO OVERRIDE ALLOWED
    */
   async createBooking(data: {
     customerId: string;
@@ -163,7 +164,13 @@ export const bookingLifecycleService = {
     bookingType: BookingType;
     totalPrice: number;
     notes?: string;
+    therapistStatus?: string; // Availability status for enforcement
   }): Promise<BookingLifecycleRecord> {
+    // 🔒 STRICT AVAILABILITY ENFORCEMENT - API LEVEL
+    // Import dynamically to avoid circular dependencies
+    const { availabilityEnforcementService } = await import('./availabilityEnforcementService');
+    availabilityEnforcementService.validateBookingRequest(data.therapistStatus, data.bookingType);
+    
     const now = new Date();
     const bookingId = `BK${now.getTime()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
     
