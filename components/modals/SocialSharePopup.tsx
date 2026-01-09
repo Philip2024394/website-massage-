@@ -38,11 +38,14 @@ export default function SocialSharePopup({
 
     const handleCopyLink = async () => {
         try {
+            console.log('📋 Attempting to copy URL:', url);
             await navigator.clipboard.writeText(url);
+            console.log('✅ URL copied successfully:', url);
             setShowCopySuccess(true);
             setTimeout(() => setShowCopySuccess(false), 2000);
         } catch (err) {
-            console.error('Failed to copy:', err);
+            console.error('❌ Failed to copy URL:', err);
+            alert('Failed to copy link. Please try again.');
         }
     };
 
@@ -165,7 +168,7 @@ export default function SocialSharePopup({
                             className="w-16 h-16 object-contain"
                         />
                         <div className="flex-1 pr-2">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight break-words">Share {title}</h3>
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight break-words">Share My Profile</h3>
                             <p className="text-sm text-gray-500 break-words">Choose your platform</p>
                         </div>
                     </div>

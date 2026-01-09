@@ -7,6 +7,7 @@ import {
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import HomeIcon from '../components/icons/HomeIcon';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface Place {
     id?: string | number;
@@ -104,6 +105,13 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Universal Header */}
+            <UniversalHeader 
+                language={(place as any).language || 'id'}
+                onLanguageChange={(lang) => console.log('Language changed:', lang)}
+                onMenuClick={() => setIsMenuOpen(true)}
+            />
+
             {/* App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
@@ -120,37 +128,6 @@ const FacialPlaceProfilePageNew: React.FC<FacialPlaceProfilePageNewProps> = ({
                 therapists={therapists}
                 places={places}
             />
-
-            {/* Fixed Header */}
-            <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
-                <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <button
-                        onClick={onBack}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-gray-700" />
-                    </button>
-                    
-                    <h1 className="text-sm font-semibold text-gray-900 truncate max-w-[200px]">
-                        {place.name}
-                    </h1>
-
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={() => onNavigate?.('home')}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <HomeIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => setIsMenuOpen(true)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <BurgerMenuIcon className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            </header>
 
             {/* Compact Hero Image */}
             <div className="relative h-48 overflow-hidden bg-gray-200">

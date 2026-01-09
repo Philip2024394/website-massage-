@@ -115,14 +115,6 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 language={language}
                 onLanguageChange={onLanguageChange}
                 onMenuClick={() => setIsMenuOpen(true)}
-                onHomeClick={() => {
-                    if (onNavigate) {
-                        onNavigate('home');
-                    } else if (typeof window !== 'undefined') {
-                        window.location.href = '/';
-                    }
-                }}
-                showHomeButton={true}
             />
 
             {/* App Drawer */}
@@ -256,6 +248,62 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 {/* Social Media Icons */}
                 <div className="mt-8">
                     <SocialMediaLinks />
+                </div>
+
+                {/* Quick Links Footer */}
+                <div className="mt-12 mb-6 flex flex-col items-center gap-2">
+                    <div className="font-bold text-lg">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-gray-200 w-full">
+                        <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
+                        <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
+                            <button
+                                onClick={() => onNavigate?.('home')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Home
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('massage-types')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Massage Types
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('facial-types')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Facial Types
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('therapist-signup')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Join as a Therapist Today
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('place-signup')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Join Massage Place
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('about-us')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                About Us
+                            </button>
+                            <button
+                                onClick={() => onNavigate?.('contact-us')}
+                                className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
+                            >
+                                Contact Us
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

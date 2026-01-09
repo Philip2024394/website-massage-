@@ -24,6 +24,7 @@ import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
 import { matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
+import PWAInstallBanner from '../components/PWAInstallBanner';
 
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
@@ -2273,6 +2274,9 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 userName={loggedInCustomer?.name || loggedInCustomer?.username || user?.name || 'Guest User'}
                 userRole="customer"
             />
+
+            {/* PWA Install Banner */}
+            <PWAInstallBanner />
         </div>
     );
 };

@@ -7,6 +7,7 @@ import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
+import { getOrCreateShareLink } from '../utils/shareLinkGenerator';
 import { getAuthAppUrl, getDisplayStatus, isDiscountActive } from '../utils/therapistCardHelpers';
 import { shareLinkService } from '../lib/services/shareLinkService';
 import { WhatsAppIcon, CalendarIcon, StarIcon } from './therapist/TherapistIcons';
@@ -221,30 +222,31 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Use language from context instead of detecting from translations
     const currentLanguage: 'en' | 'id' = language as 'en' | 'id';
 
-    // Fetch short share link from Appwrite (if exists)
+    // Fetch or create short share link from Appwrite
     useEffect(() => {
-        const fetchShortLink = async () => {
+        const fetchOrCreateShortLink = async () => {
             try {
                 const therapistId = String(therapist.$id || therapist.id);
-                console.log('🔍 Fetching short link for therapist:', therapistId, therapist.name);
-                const shareLink = await shareLinkService.getByEntity('therapist', therapistId);
-                console.log('📦 Share link result:', shareLink);
-                if (shareLink) {
-                    const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
-                    console.log('✅ Setting short URL:', shortUrl);
-                    setShortShareUrl(shortUrl);
-                } else {
-                    console.log('⚠️ No share link found, using fallback');
-                    setShortShareUrl(generateShareableURL(therapist));
-                }
+                console.log('🔍 Fetching/creating share link for therapist:', therapistId, therapist.name);
+                
+                // Try to get existing share link or create new one
+                const result = await getOrCreateShareLink(
+                    'therapist',
+                    therapistId,
+                    therapist.name,
+                    therapist.location
+                );
+                
+                console.log('✅ Share link obtained:', result.url);
+                setShortShareUrl(result.url);
             } catch (error) {
-                console.error('❌ Failed to fetch short link:', error);
-                devWarn('Failed to fetch short link:', error);
-                // Fall back to old URL if short link not found
+                console.error('❌ Failed to fetch/create share link:', error);
+                devWarn('Failed to fetch/create share link:', error);
+                // Fall back to old URL if share link creation fails
                 setShortShareUrl(generateShareableURL(therapist));
             }
         };
-        fetchShortLink();
+        fetchOrCreateShortLink();
     }, [therapist]);
 
     // Get translated description based on current language
@@ -1519,13 +1521,19 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             {showSharePopup && (
                 <SocialSharePopup
                     isOpen={showSharePopup}
-                    onClose={() => setShowSharePopup(false)}
-                    title={`Book ${therapist.name} - IndaStreet Massage`}
+                    onClose={() => {
+                        console.log('🚪 Closing share popup');
+                        setShowSharePopup(false);
+                    }}
+                    title={`Share My Profile`}
                     description={`${therapist.name} - Professional massage therapist in ${therapist.location}. Book now on IndaStreet!`}
-                    url={userReferralCode && shortShareUrl ? 
-                        `${shortShareUrl}?ref=${userReferralCode}` : 
-                        (shortShareUrl || generateShareableURL(therapist))
-                    }
+                    url={(() => {
+                        const finalUrl = userReferralCode && shortShareUrl ? 
+                            `${shortShareUrl}?ref=${userReferralCode}` : 
+                            (shortShareUrl || generateShareableURL(therapist));
+                        console.log('🔗 Share popup URL:', finalUrl);
+                        return finalUrl;
+                    })()}
                     type="therapist"
                 />
             )}

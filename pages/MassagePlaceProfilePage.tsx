@@ -444,47 +444,24 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 onMenuClick={() => setIsMenuOpen(true)}
             />
 
-            {/* Hero Section with Location & Controls */}
-            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
-                <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
-                    {/* Location Display */}
-                    <div className="text-center mb-3">
-                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-1">
+            {/* Main Content Container */}
+            <div className="max-w-6xl mx-auto px-3 sm:px-4 pt-4">
+                <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">{place.name}</h1>
+                        <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                             </svg>
-                            <span className="font-medium">
-                                {cityState === 'all' ? 'All Indonesia' : cityState}
-                            </span>
+                            <span className="font-medium">{place.location}</span>
                         </div>
-                        <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
                     </div>
+                </div>
+            </div>
 
-                    {/* Toggle Buttons */}
-                    <div className="flex bg-gray-200 rounded-full p-1 max-w-md mx-auto mb-3">
-                        <button 
-                            onClick={() => {
-                                setActiveTab('home');
-                                onNavigate?.('home');
-                            }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'home' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                        >
-                            <HomeIcon className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Home Service</span>
-                        </button>
-                        <button 
-                            onClick={() => {
-                                setActiveTab('places');
-                                onNavigate?.('home');
-                            }}
-                            className={`w-1/2 py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-colors duration-300 min-h-[44px] ${activeTab === 'places' ? 'bg-orange-500 text-white shadow' : 'text-gray-600'}`}
-                        >
-                            <Building className="w-4 h-4 flex-shrink-0" />
-                            <span className="whitespace-nowrap">Massage Places</span>
-                        </button>
-                    </div>
-
-                    {/* City Dropdown + Facial Button */}
+            {/* Hidden Controls - Keeping for functionality but visually removing */}
+            <div className="hidden">
+                <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
                     <div className="flex flex-row gap-2 items-center max-w-2xl mx-auto">
                         <div className="relative flex-1 min-w-0 max-w-[200px] sm:max-w-none z-20">
                             <CityLocationDropdown

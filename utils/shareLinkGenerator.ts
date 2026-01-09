@@ -106,6 +106,7 @@ export async function generateFacialShareLink(
 
 /**
  * Get share link for existing member (or create if doesn't exist)
+ * Returns Indonesian keyword-rich URL for better SEO
  */
 export async function getOrCreateShareLink(
     entityType: 'therapist' | 'place' | 'facial',
@@ -121,10 +122,12 @@ export async function getOrCreateShareLink(
             city
         );
         
+        // Return slug-based URL for better SEO with Indonesian keywords
+        // Example: https://www.indastreetmassage.com/share/pijat-bali-surtiningsih
         return {
             shortId: shareLink.shortId,
             slug: shareLink.slug,
-            url: `https://www.indastreetmassage.com/share/${shareLink.shortId}`
+            url: `https://www.indastreetmassage.com/share/${shareLink.slug}`
         };
     } catch (error) {
         console.error('❌ Failed to get/create share link:', error);

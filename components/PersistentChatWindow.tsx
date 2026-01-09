@@ -13,6 +13,7 @@
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
 import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, ChevronDown, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
+import CustomDatePicker from './CustomDatePicker';
 import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/services/discountValidationService';
 import { FlagIcon } from './FlagIcon';
 import { BookingNotificationBanner } from './BookingNotificationBanner';
@@ -568,7 +569,7 @@ export function PersistentChatWindow() {
           )}
           <button
             onClick={minimizeChat}
-            className="p-1.5 hover:bg-white/20 transition-colors rounded"
+            className="p-1.5 hover:bg-white/20 transition-colors rounded relative z-[10001]"
             title="Minimize"
           >
             <ChevronDown className="w-6 h-6 text-white stroke-2" />
@@ -817,24 +818,12 @@ export function PersistentChatWindow() {
             
             <div className="space-y-4">
               {/* Date Picker */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
-                  Select Date
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all text-gray-800 text-lg font-medium shadow-sm"
-                  style={{
-                    fontSize: '18px',
-                    minHeight: '56px',
-                    touchAction: 'manipulation'
-                  } as React.CSSProperties}
-                />
-              </div>
+              <CustomDatePicker
+                value={selectedDate}
+                onChange={setSelectedDate}
+                minDate={new Date().toISOString().split('T')[0]}
+                label="Select Date"
+              />
               
               {/* Time Picker */}
               <div>
@@ -1210,16 +1199,20 @@ export function PersistentChatWindow() {
                     try {
                       console.log('📍 Starting location request...');
                       
-                      // Request permission first
-                      const permission = await navigator.permissions.query({name: 'geolocation'});
-                      console.log('📍 Permission status:', permission.state);
-                      
-                      if (permission.state === 'denied') {
-                        throw new Error('Location permission denied. Please enable location access in your browser settings.');
+                      // Request permission first (optional check, skip if not supported)
+                      try {
+                        const permission = await navigator.permissions.query({name: 'geolocation'});
+                        console.log('📍 Permission status:', permission.state);
+                        
+                        if (permission.state === 'denied') {
+                          throw new Error('Location permission denied. Please enable location access in your browser settings.');
+                        }
+                      } catch (permError) {
+                        console.warn('📍 Permissions API not supported or failed, continuing anyway:', permError);
                       }
                       
                       // Use native geolocation as fallback if locationService fails
-                      const position = await new Promise((resolve, reject) => {
+                      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(
                           resolve,
                           reject,
@@ -1247,11 +1240,15 @@ export function PersistentChatWindow() {
                       }
                       
                       // Set both coordinates and readable address
-                      setCustomerForm(prev => ({
-                        ...prev,
-                        coordinates: { lat: latitude, lng: longitude },
-                        location: address
-                      }));
+                      setCustomerForm(prev => {
+                        const updated = {
+                          ...prev,
+                          coordinates: { lat: latitude, lng: longitude },
+                          location: address
+                        };
+                        console.log('📍 CustomerForm updated:', updated);
+                        return updated;
+                      });
                       
                       console.log('📍 Location set successfully:', { latitude, longitude, address });
                     } catch (error) {
@@ -1281,6 +1278,10 @@ export function PersistentChatWindow() {
                       : 'bg-gray-100 border-2 border-gray-300 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
+                  {(() => {
+                    console.log('🔘 Button render - coordinates:', customerForm.coordinates);
+                    return null;
+                  })()}
                   {isGettingLocation ? (
                     <>
                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>

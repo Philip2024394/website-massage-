@@ -74,9 +74,46 @@ class ShareLinkService {
     }
     
     /**
-     * Generate slug from name
+     * Generate slug from name with Indonesian SEO keywords
      */
     private generateSlug(name: string, type: string, city?: string): string {
+        // Indonesian keyword mapping for cities
+        const cityKeywords: Record<string, string> = {
+            'Bali': 'pijat-bali',
+            'Ubud': 'pijat-ubud',
+            'Seminyak': 'pijat-seminyak',
+            'Canggu': 'pijat-canggu',
+            'Sanur': 'pijat-sanur',
+            'Nusa Dua': 'pijat-nusa-dua',
+            'Kuta': 'pijat-kuta',
+            'Denpasar': 'pijat-denpasar',
+            'Jakarta': 'pijat-jakarta',
+            'Jakarta Selatan': 'pijat-jakarta-selatan',
+            'Jakarta Pusat': 'pijat-jakarta-pusat',
+            'Jakarta Barat': 'pijat-jakarta-barat',
+            'Jakarta Timur': 'pijat-jakarta-timur',
+            'Jakarta Utara': 'pijat-jakarta-utara',
+            'Bandung': 'pijat-bandung',
+            'Surabaya': 'pijat-surabaya',
+            'Yogyakarta': 'pijat-jogja',
+            'Semarang': 'pijat-semarang',
+            'Medan': 'pijat-medan',
+            'Makassar': 'pijat-makassar',
+            'Bogor': 'pijat-bogor',
+            'Depok': 'pijat-depok',
+            'Tangerang': 'pijat-tangerang',
+            'Bekasi': 'pijat-bekasi',
+            'Malang': 'pijat-malang',
+            'Palembang': 'pijat-palembang',
+            'Pekanbaru': 'pijat-pekanbaru',
+            'Balikpapan': 'pijat-balikpapan',
+            'Lombok': 'pijat-lombok',
+            'Batam': 'pijat-batam',
+            'Manado': 'pijat-manado',
+            'Jimbaran': 'pijat-jimbaran',
+            'Legian': 'pijat-legian'
+        };
+        
         const baseName = name
             .toLowerCase()
             .replace(/[^a-z0-9\s-]/g, '')
@@ -84,11 +121,35 @@ class ShareLinkService {
             .replace(/-+/g, '-')
             .trim();
         
-        const cityPart = city 
-            ? '-' + city.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
-            : '';
+        // Get Indonesian keyword for city if available
+        let cityKeyword = '';
+        if (city) {
+            // Check exact match first
+            cityKeyword = cityKeywords[city] || '';
+            
+            // If no exact match, check if city contains any of the keywords
+            if (!cityKeyword) {
+                for (const [key, keyword] of Object.entries(cityKeywords)) {
+                    if (city.toLowerCase().includes(key.toLowerCase())) {
+                        cityKeyword = keyword;
+                        break;
+                    }
+                }
+            }
+            
+            // If still no match, create from city name
+            if (!cityKeyword) {
+                cityKeyword = 'pijat-' + city.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            }
+        }
         
-        return `${baseName}${cityPart}`.substring(0, 100);
+        // Format: pijat-{city}-{name} for SEO
+        // Example: pijat-bali-surtiningsih, pijat-jakarta-budi
+        const slug = cityKeyword 
+            ? `${cityKeyword}-${baseName}`
+            : `pijat-${baseName}`;
+        
+        return slug.substring(0, 100);
     }
     
     /**
