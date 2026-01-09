@@ -337,6 +337,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'providers':
             return renderRoute(publicRoutes.providers.component);
         
+        case 'facialProviders':
         case 'facial-providers':
             return renderRoute(publicRoutes.facialProviders.component);
         
