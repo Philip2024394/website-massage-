@@ -25,6 +25,7 @@ const DATABASE_ID = '68f76ee1000e64ca8d05';
 const REVIEWS_COLLECTION = 'reviews'; // TEXT-BASED ID
 const BOOKINGS_COLLECTION = '675e13fc002aaf0777ce';
 const NOTIFICATIONS_COLLECTION = '675d65c3001b725fa829';
+const CHAT_MESSAGES_COLLECTION = 'chat_messages'; // TEXT-BASED ID
 
 // Valid booking statuses that allow reviews
 const REVIEWABLE_STATUSES = ['completed', 'payment_received', 'COMPLETED', 'PAYMENT_RECEIVED'];
@@ -415,15 +416,94 @@ module.exports = async ({ req, res, log, error }) => {
             bookingId,
             starRating: rating,
             hasText: filteredText.length > 0,
+            reviewText: filteredText || null,
+            reviewerName: reviewerName || 'Anonymous',
           }),
           read: false,
           createdAt: new Date().toISOString(),
           active: true,
         }
       );
-      log('✅ Provider notified');
+      log('✅ Provider notified via dashboard');
     } catch (notifErr) {
       log('⚠️ Could not notify provider:', notifErr.message);
+    }
+    
+    // ========================================================================
+    // SEND READ-ONLY CHAT NOTIFICATION (Non-editable system message)
+    // ========================================================================
+    log('💬 Sending read-only review notification to chat...');
+    
+    try {
+      // Format star display
+      const starDisplay = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+      
+      // Build review message
+      let reviewMessage = `📝 NEW REVIEW RECEIVED
+
+${starDisplay} (${rating}/5 stars)
+
+From: ${reviewerName || 'Anonymous Customer'}
+Booking: #${bookingId.substring(0, 8)}...`;
+
+      if (filteredText && filteredText.length > 0) {
+        reviewMessage += `
+
+"${filteredText}"`;
+      }
+
+      reviewMessage += `
+
+━━━━━━━━━━━━━━━━━━━━━━
+🔒 This is a read-only notification.
+Reviews cannot be replied to directly.
+━━━━━━━━━━━━━━━━━━━━━━`;
+
+      // Create room ID (reviewer to provider)
+      const roomId = `${reviewerId}_${targetId}`;
+      
+      // Send as system message (read-only, non-editable)
+      const chatMessage = {
+        senderId: 'system',
+        senderName: 'Review System',
+        senderType: 'system',
+        recipientId: targetId,
+        recipientName: targetName || '',
+        recipientType: targetType,
+        message: reviewMessage,
+        content: reviewMessage,
+        roomId: roomId,
+        createdAt: new Date().toISOString(),
+        read: false,
+        messageType: 'review_notification',
+        isSystemMessage: true,
+        // Immutability flags
+        canEdit: false,
+        canDelete: false,
+        canReply: false,
+        // Review reference data
+        metadata: JSON.stringify({
+          type: 'review_notification',
+          reviewId: result.$id,
+          bookingId,
+          starRating: rating,
+          reviewerName: reviewerName || 'Anonymous',
+          isReadOnly: true,
+          noReplyAllowed: true,
+        }),
+      };
+      
+      await databases.createDocument(
+        DATABASE_ID,
+        CHAT_MESSAGES_COLLECTION,
+        ID.unique(),
+        chatMessage
+      );
+      
+      log('✅ Chat notification sent (read-only)');
+    } catch (chatErr) {
+      log('⚠️ Could not send chat notification:', chatErr.message);
+      // Continue - dashboard notification is primary
     }
     
     // ========================================================================
