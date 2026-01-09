@@ -108,9 +108,17 @@ scripts/*.mjs
 scripts/*.cjs
 APPWRITE_MASTER_CONFIG.ts
 BABY_STEPS_SETUP.md
-QUICK_FUNCTION_SETUP.mdscripts/maintenance/
-gitfiles.txt
-gps-*.mjs
+QUICK_FUNCTION_SETUP.md
+
+# Additional utility scripts with secrets
+test-*.mjs
+test-*.cjs
+find-*.mjs
+discover-*.mjs
+diagnose-*.mjs
+delete-*.mjs
+fetch-*.cjs
+fetch-*.mjs
 
 scripts/maintenance/
 gitfiles.txt

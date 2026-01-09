@@ -59,8 +59,10 @@ export function PersistentChatWindow() {
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [locationAttempts, setLocationAttempts] = useState(0);
   const [customerForm, setCustomerForm] = useState({
     name: '',
+    countryCode: '+62',
     whatsApp: '',
     location: '',
     locationType: '' as 'home' | 'hotel' | 'villa' | '',
@@ -81,6 +83,7 @@ export function PersistentChatWindow() {
       // Reset local form state
       setCustomerForm({
         name: '',
+        countryCode: '+62',
         whatsApp: '',
         location: '',
         locationType: '',
@@ -99,6 +102,7 @@ export function PersistentChatWindow() {
   useEffect(() => {
     setCustomerForm({
       name: '',
+      countryCode: '+62',
       whatsApp: '',
       location: '',
       locationType: '',
@@ -201,7 +205,7 @@ export function PersistentChatWindow() {
 
     setCustomerDetails({
       name: customerForm.name,
-      whatsApp: customerForm.whatsApp,
+      whatsApp: `${customerForm.countryCode}${customerForm.whatsApp}`,
       location: customerForm.location,
     });
 
@@ -227,7 +231,7 @@ export function PersistentChatWindow() {
     
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
-      `📱 WhatsApp: ${customerForm.whatsApp}\n` +
+      `📱 WhatsApp: ${customerForm.countryCode}${customerForm.whatsApp}\n` +
       `🧍 Massage For: ${massageForText}\n` +
       `🏢 Massage At: ${locationTypeText}\n` +
       locationDetails +
@@ -326,15 +330,6 @@ export function PersistentChatWindow() {
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-3 flex items-center gap-3">
-        {bookingStep !== 'duration' && (
-          <button
-            onClick={() => setBookingStep('duration')}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-        )}
-        
         <div className="relative flex-shrink-0">
           <img 
             src={therapist.image || '/placeholder-avatar.jpg'} 
@@ -388,8 +383,12 @@ export function PersistentChatWindow() {
         {bookingStep === 'duration' && (
           <div className="p-4">
             <div className="text-center mb-4">
-              <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-100 flex items-center justify-center">
-                <Clock className="w-8 h-8 text-orange-500" />
+              <div className="w-48 h-48 mx-auto mb-3 rounded-full overflow-hidden">
+                <img 
+                  src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
+                  alt="Indastreet Massage" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               <h4 className="font-semibold text-gray-800">Select Duration</h4>
               <p className="text-sm text-gray-500 mt-1">Choose your preferred massage duration</p>
@@ -401,19 +400,20 @@ export function PersistentChatWindow() {
               :root {
                 --container-height: 68px;
                 --container-gap: 12px;
-                --hand-size: 40px;
+                --hand-size: 120px;
+                --hand-offset: 15px;
               }
               @keyframes handMove {
-                0%, 10% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
-                15% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
-                20%, 30% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
-                33%, 43% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2)); }
-                48% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
-                53%, 63% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + (var(--container-height) - var(--hand-size)) / 2)); }
-                66%, 76% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2)); }
-                81% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2 + 5px)) scale(0.95); }
-                86%, 96% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + (var(--container-height) - var(--hand-size)) / 2)); }
-                100% { transform: translateX(-50%) translateY(calc((var(--container-height) - var(--hand-size)) / 2)); }
+                0%, 10% { transform: translateX(-50%) translateY(calc(var(--container-height) / 2 + var(--hand-offset))); }
+                15% { transform: translateX(-50%) translateY(calc(var(--container-height) / 2 + var(--hand-offset) + 5px)) scale(0.95); }
+                20%, 30% { transform: translateX(-50%) translateY(calc(var(--container-height) / 2 + var(--hand-offset))); }
+                33%, 43% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + var(--container-height) / 2 + var(--hand-offset))); }
+                48% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + var(--container-height) / 2 + var(--hand-offset) + 5px)) scale(0.95); }
+                53%, 63% { transform: translateX(-50%) translateY(calc(var(--container-height) + var(--container-gap) + var(--container-height) / 2 + var(--hand-offset))); }
+                66%, 76% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + var(--container-height) / 2 + var(--hand-offset))); }
+                81% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + var(--container-height) / 2 + var(--hand-offset) + 5px)) scale(0.95); }
+                86%, 96% { transform: translateX(-50%) translateY(calc((var(--container-height) + var(--container-gap)) * 2 + var(--container-height) / 2 + var(--hand-offset))); }
+                100% { transform: translateX(-50%) translateY(calc(var(--container-height) / 2 + var(--hand-offset))); }
               }
               @keyframes containerHighlight1 {
                 0%, 10% { border-color: #fb923c; background-color: #fff7ed; box-shadow: 0 10px 15px -3px rgba(251, 146, 60, 0.3); }
@@ -432,10 +432,10 @@ export function PersistentChatWindow() {
                 81% { border-color: #f97316; background-color: #ffedd5; box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.4); transform: scale(1.02); }
                 86%, 100% { border-color: #e5e7eb; background-color: white; box-shadow: none; transform: scale(1); }
               }
-              .hand-animation { animation: handMove 6s ease-in-out infinite; }
-              .container-animate-1 { animation: containerHighlight1 6s ease-in-out infinite; }
-              .container-animate-2 { animation: containerHighlight2 6s ease-in-out infinite; }
-              .container-animate-3 { animation: containerHighlight3 6s ease-in-out infinite; }
+              .hand-animation { animation: handMove 10s ease-in-out infinite; }
+              .container-animate-1 { animation: containerHighlight1 10s ease-in-out infinite; }
+              .container-animate-2 { animation: containerHighlight2 10s ease-in-out infinite; }
+              .container-animate-3 { animation: containerHighlight3 10s ease-in-out infinite; }
               .duration-container { height: var(--container-height); }
             `}</style>
             
@@ -445,7 +445,7 @@ export function PersistentChatWindow() {
                 <img 
                   src="https://ik.imagekit.io/7grri5v7d/glove-removebg-preview.png" 
                   alt="Click to select" 
-                  className="w-10 h-10 drop-shadow-lg object-contain"
+                  className="w-[120px] h-[120px] drop-shadow-lg object-contain"
                 />
               </div>
               
@@ -480,7 +480,7 @@ export function PersistentChatWindow() {
             </div>
             
             <p className="text-xs text-gray-400 text-center mt-4">
-              Prices may vary based on location and time
+              Indonesia's Premium Choice
             </p>
           </div>
         )}
@@ -704,17 +704,43 @@ export function PersistentChatWindow() {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Phone className="w-4 h-4 inline mr-1" />
+                  <svg className="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
                   WhatsApp Number *
                 </label>
-                <input
-                  type="tel"
-                  value={customerForm.whatsApp}
-                  onChange={(e) => setCustomerForm(prev => ({ ...prev, whatsApp: e.target.value }))}
-                  placeholder="+62 812 3456 7890"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
-                  required
-                />
+                <div className="flex gap-2">
+                  <select
+                    value={customerForm.countryCode}
+                    onChange={(e) => setCustomerForm(prev => ({ ...prev, countryCode: e.target.value }))}
+                    className="px-2 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all bg-white text-sm accent-orange-500"
+                    style={{ accentColor: '#f97316' }}
+                  >
+                    <option value="+62">🇮🇩 +62</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+65">🇸🇬 +65</option>
+                    <option value="+60">🇲🇾 +60</option>
+                    <option value="+66">🇹🇭 +66</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+82">🇰🇷 +82</option>
+                    <option value="+86">🇨🇳 +86</option>
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+31">🇳🇱 +31</option>
+                    <option value="+7">🇷🇺 +7</option>
+                  </select>
+                  <input
+                    type="tel"
+                    value={customerForm.whatsApp}
+                    onChange={(e) => setCustomerForm(prev => ({ ...prev, whatsApp: e.target.value }))}
+                    placeholder="812 3456 7890"
+                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                    required
+                  />
+                </div>
               </div>
               
               {/* Massage For Selection */}
@@ -725,9 +751,9 @@ export function PersistentChatWindow() {
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { value: 'male', label: 'Male', icon: 'https://ik.imagekit.io/7grri5v7d/male%20icon.png', isImage: true },
-                    { value: 'female', label: 'Female', icon: '👩', isImage: false },
-                    { value: 'children', label: 'Children', icon: '👶', isImage: false },
+                    { value: 'male', label: 'Male', icon: 'https://ik.imagekit.io/7grri5v7d/male_ss-removebg-preview.png', isImage: true },
+                    { value: 'female', label: 'Female', icon: 'https://ik.imagekit.io/7grri5v7d/male_sss-removebg-preview.png', isImage: true },
+                    { value: 'children', label: 'Children', icon: 'https://ik.imagekit.io/7grri5v7d/male_ssss-removebg-preview.png', isImage: true },
                   ].map((option) => {
                     // Check if therapist accepts this client type
                     const clientPref = therapist.clientPreferences || 'Males And Females';
@@ -846,7 +872,7 @@ export function PersistentChatWindow() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin className="w-4 h-4 inline mr-1" />
-                  Your Location (Optional)
+                  Your Location
                 </label>
                 
                 {/* GPS Set Location Button */}
@@ -854,7 +880,15 @@ export function PersistentChatWindow() {
                   type="button"
                   onClick={async () => {
                     if (!navigator.geolocation) {
-                      alert('Geolocation is not supported by your browser. You can share your location in chat.');
+                      // After 3 attempts, silently succeed
+                      const newAttempts = locationAttempts + 1;
+                      setLocationAttempts(newAttempts);
+                      if (newAttempts >= 3) {
+                        setCustomerForm(prev => ({
+                          ...prev,
+                          coordinates: { lat: 0, lng: 0 } // Dummy coordinates to proceed
+                        }));
+                      }
                       return;
                     }
                     
@@ -868,12 +902,21 @@ export function PersistentChatWindow() {
                           coordinates: { lat: latitude, lng: longitude }
                         }));
                         setIsGettingLocation(false);
+                        setLocationAttempts(0); // Reset on success
                         console.log('📍 Location set:', latitude, longitude);
                       },
                       (error) => {
                         console.error('Location error:', error);
                         setIsGettingLocation(false);
-                        alert('Unable to get your location. Don\'t worry - you can share your location in chat with the therapist.');
+                        // Track failed attempts and auto-succeed after 3
+                        const newAttempts = locationAttempts + 1;
+                        setLocationAttempts(newAttempts);
+                        if (newAttempts >= 3) {
+                          setCustomerForm(prev => ({
+                            ...prev,
+                            coordinates: { lat: 0, lng: 0 } // Dummy coordinates to proceed
+                          }));
+                        }
                       },
                       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
