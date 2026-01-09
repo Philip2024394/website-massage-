@@ -4,6 +4,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface AboutUsPageProps {
     onNavigate: (page: string) => void;
@@ -45,28 +46,13 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
-                    </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        {/* Home Button */}
-                        <button
-                            onClick={() => onNavigate?.('home')}
-                            className="p-2 hover:bg-gray-100 rounded-full"
-                            title="Home"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                        </button>
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                           <BurgerMenuIcon className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+            {/* Universal Header */}
+            <UniversalHeader 
+                onMenuClick={() => setIsMenuOpen(true)}
+                onHomeClick={() => onNavigate?.('home')}
+                showHomeButton={true}
+                showLanguageSelector={false}
+            />
             {/* Global App Drawer - same content as Home */}
             <React19SafeWrapper condition={isMenuOpen}>
                 <AppDrawer

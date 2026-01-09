@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Building2, Globe, Award, Users, TrendingUp, Shield, Target, Heart, CheckCircle, Download, Share2, MapPin, Mail, Phone, Facebook, Instagram, Linkedin, Home, MessageCircle } from 'lucide-react';
 import PageContainer from '../components/layout/PageContainer';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface CompanyProfilePageProps {
   onBack: () => void;

@@ -6,6 +6,7 @@ import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { databases, ID } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface PartnershipApplicationPageProps {
     onBack: () => void;

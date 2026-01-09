@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { setupBlogArticleSEO } from '../../utils/seoSchema';
+import UniversalHeader from '../../components/shared/UniversalHeader';
 
 const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -43,21 +44,11 @@ const MassageCareerIndonesiaPage: React.FC<MassageCareerIndonesiaPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    <button 
-                        onClick={() => setIsMenuOpen(true)} 
-                        title="Menu"
-                        className="text-orange-500 hover:text-orange-600 transition-colors"
-                    >
-                        <BurgerMenuIcon className="w-6 h-6" />
-                    </button>
-                </div>
-            </header>
+            {/* Universal Header */}
+            <UniversalHeader 
+                onMenuClick={() => setIsMenuOpen(true)}
+                showLanguageSelector={false}
+            />
             
             {isMenuOpen && (
                 <div className="fixed inset-0 z-50">

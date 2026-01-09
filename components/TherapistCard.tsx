@@ -1256,7 +1256,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     }}
                     className="text-xs text-gray-500 hover:text-gray-700 underline font-medium cursor-pointer bg-transparent border-none p-0"
                 >
-                    Please Read Terms and Conditions
+                    Terms And Conditions
                 </button>
             </div>
 

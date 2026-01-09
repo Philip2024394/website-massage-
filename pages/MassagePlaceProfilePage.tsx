@@ -10,6 +10,7 @@ import HomeIcon from '../components/icons/HomeIcon';
 import CityLocationDropdown from '../components/CityLocationDropdown';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
 import { useChatProvider } from '../hooks/useChatProvider';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -436,45 +437,12 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
-            {/* Header with Brand, Language, and Menu */}
-            <header className="bg-white shadow-md sticky top-0 z-[9997] w-full max-w-full">
-                <PageContainer className="py-2 sm:py-3 max-w-full">
-                <div className="flex justify-between items-center max-w-full">
-                    {/* Brand Name with Menu Button */}
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setIsMenuOpen(true)}
-                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                            title="Menu"
-                        >
-                            <BurgerMenuIcon className="w-5 h-5 text-gray-700" />
-                        </button>
-                        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex-shrink-0">
-                            <span className="text-black">Inda</span>
-                            <span className="text-orange-500">Street</span>
-                        </h1>
-                    </div>
-                    
-                    {/* Language & Menu */}
-                    <div className="flex items-center gap-2 sm:gap-3 text-gray-600 flex-shrink-0">
-                        {/* Language Selector */}
-                        <button 
-                            onClick={() => {
-                                const currentLang = language || 'id';
-                                const newLanguage = currentLang === 'id' ? 'en' : 'id';
-                                onLanguageChange?.(newLanguage);
-                            }} 
-                            className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0" 
-                            title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-                        >
-                            <span className="text-xl sm:text-2xl">
-                                {language === 'id' ? '🇮🇩' : '🇬🇧'}
-                            </span>
-                        </button>
-                    </div>
-                </div>
-                </PageContainer>
-            </header>
+            {/* Universal Header */}
+            <UniversalHeader 
+                language={language}
+                onLanguageChange={onLanguageChange}
+                onMenuClick={() => setIsMenuOpen(true)}
+            />
 
             {/* Hero Section with Location & Controls */}
             <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">

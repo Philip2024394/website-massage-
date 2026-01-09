@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface GuestProfilePageProps {
     onBack: () => void;
@@ -33,11 +34,7 @@ const ArrowIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-const BurgerMenuIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
+// BurgerMenuIcon is now provided by UniversalHeader component
 
 const GuestProfilePage: React.FC<GuestProfilePageProps> = ({ 
     onBack, 
@@ -60,25 +57,11 @@ const GuestProfilePage: React.FC<GuestProfilePageProps> = ({
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header with Brand and Burger Menu */}
-            <header className="bg-white shadow-sm px-4 py-4 sticky top-0 z-20">
-                <div className="flex justify-between items-center">
-                    {/* Brand Name */}
-                    <h1 className="text-xl sm:text-2xl font-bold">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
-                    
-                    {/* Burger Menu */}
-                    <button 
-                        onClick={() => setIsMenuOpen(true)} 
-                        title="Menu"
-                        className="text-orange-500 hover:text-orange-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
-                    >
-                        <BurgerMenuIcon className="w-6 h-6" />
-                    </button>
-                </div>
-            </header>
+            {/* Universal Header */}
+            <UniversalHeader 
+                onMenuClick={() => setIsMenuOpen(true)}
+                showLanguageSelector={false}
+            />
             
             {/* AppDrawer */}
             <AppDrawer
