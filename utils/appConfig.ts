@@ -37,11 +37,7 @@ export const saveGoogleMapsApiKey = (apiKey: string) => {
 
 export const getStoredGoogleMapsApiKey = (): string | null => {
   try {
-    // Try the configured API key first
-    const configuredKey = 'AIzaSyCQkZqabycPDi9F01BAmDYFL6toOGEStgI';
-    if (configuredKey) return configuredKey;
-    
-    // Try environment variable
+    // Try environment variable first
     const envKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (envKey) return envKey;
     

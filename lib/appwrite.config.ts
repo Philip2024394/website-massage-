@@ -1,5 +1,5 @@
 // Google Maps API Configuration
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyCQkZqabycPDi9F01BAmDYFL6toOGEStgI';
+export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 // Appwrite Configuration
 export const APPWRITE_CONFIG = {
