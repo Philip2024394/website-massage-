@@ -73,5 +73,9 @@ export { paymentConfirmationService } from './paymentConfirmationService';
 export type { ConfirmPaymentRequest, ConfirmPaymentResponse, ProviderType } from './paymentConfirmationService';
 export { secureReviewLinkService } from './secureReviewLinkService';
 
+// 🔒 Review Submission (Server-Enforced)
+export { reviewSubmissionService } from './reviewSubmissionService';
+export type { SubmitReviewRequest, SubmitReviewResponse, TargetType } from './reviewSubmissionService';
+
 // Legacy client-side enforcement (kept for reference, server is primary)
 export { antiContactEnforcementService, UserRole } from './antiContactEnforcementService';

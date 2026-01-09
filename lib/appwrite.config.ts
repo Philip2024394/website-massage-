@@ -18,7 +18,7 @@ export const APPWRITE_CONFIG = {
         facial_places: 'facial_places_collection', // ✅ Text-based collection ID
         agents: null, // ⚠️ DISABLED - Collection doesn't exist
         bookings: '675e13fc002aaf0777ce', // ✅ FIXED - Real production collection ID
-        reviews: '6752e724002ee159c0f5', // ✅ CONNECTED - Real production collection ID
+        reviews: 'reviews', // ✅ TEXT-BASED ID - review collection
         notifications: '675d65c3001b725fa829', // ✅ Real production collection ID
         users: '674f38dd0039f3de41ac', // ✅ Real production collection ID
         // Production Booking System Collections

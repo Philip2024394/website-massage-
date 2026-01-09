@@ -26,7 +26,7 @@ import { Query } from 'appwrite';
 // ============================================================================
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
-const REVIEWS_COLLECTION = APPWRITE_CONFIG.collections.reviews || '675d662d0023e98b8f5c';
+const REVIEWS_COLLECTION = APPWRITE_CONFIG.collections.reviews || 'reviews'; // TEXT-BASED ID
 const REVIEW_TOKENS_COLLECTION = 'review_tokens'; // For tracking used tokens
 
 // Review link expiry (7 days in milliseconds)
