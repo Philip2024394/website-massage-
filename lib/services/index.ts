@@ -68,5 +68,10 @@ export { secureBankCardService } from './secureBankCardService';
 export { serverEnforcedChatService } from './serverEnforcedChatService';
 export type { SendMessageRequest, SendMessageResponse, ViolationType } from './serverEnforcedChatService';
 
+// 🔒 Payment Confirmation + Auto Review Request
+export { paymentConfirmationService } from './paymentConfirmationService';
+export type { ConfirmPaymentRequest, ConfirmPaymentResponse, ProviderType } from './paymentConfirmationService';
+export { secureReviewLinkService } from './secureReviewLinkService';
+
 // Legacy client-side enforcement (kept for reference, server is primary)
 export { antiContactEnforcementService, UserRole } from './antiContactEnforcementService';

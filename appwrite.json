@@ -2,6 +2,18 @@
   "projectId": "YOUR_PROJECT_ID",
   "functions": [
     {
+      "functionId": "confirmPaymentReceived",
+      "name": "Confirm Payment Received (Auto Review Request)",
+      "runtime": "node-18.0",
+      "path": "functions/confirmPaymentReceived",
+      "entrypoint": "src/main.js",
+      "enabled": true,
+      "events": [],
+      "schedule": "",
+      "timeout": 15,
+      "execute": ["users"]
+    },
+    {
       "functionId": "sendChatMessage",
       "name": "Send Chat Message (Server-Enforced)",
       "runtime": "node-18.0",
