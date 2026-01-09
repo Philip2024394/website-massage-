@@ -180,13 +180,20 @@ const PlaceCalendar: React.FC<PlaceCalendarProps> = ({ placeId, onBack }) => {
                     {day && (
                       <div
                         onClick={() => setSelectedDate(day)}
-                        className={`h-full p-2 rounded-lg cursor-pointer transition-colors ${
+                        className={`h-full p-3 rounded-xl cursor-pointer transition-all duration-200 min-h-16 flex flex-col justify-center items-center touch-manipulation ${
                           selectedDate?.toDateString() === day.toDateString()
-                            ? 'bg-orange-500 text-white'
-                            : 'hover:bg-gray-100'
+                            ? 'bg-green-500 text-white shadow-lg transform scale-105 font-bold'
+                            : getBookingsForDate(day).length > 0
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                            : 'bg-white hover:bg-gray-100 border border-gray-200'
                         }`}
+                        style={{
+                          fontSize: '18px',
+                          minHeight: '64px',
+                          touchAction: 'manipulation'
+                        } as React.CSSProperties}
                       >
-                        <div className="text-sm font-medium">{day.getDate()}</div>
+                        <div className="text-lg font-bold text-center">{day.getDate()}</div>
                         {getBookingsForDate(day).length > 0 && (
                           <div className="mt-1 space-y-1">
                             {getBookingsForDate(day).slice(0, 2).map((booking, idx) => (

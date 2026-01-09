@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { authService, therapistService } from '../../../lib/appwriteService';
 import { systemHealthService } from "../../../lib/systemHealthService";
+import { EnhancedNotificationService } from "../../../lib/enhancedNotificationService";
+import { PWAInstallationEnforcer } from "../../../lib/pwaInstallationEnforcer";
+import { CardSkeleton } from '../../../components/LoadingSkeletons';
 // import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
@@ -46,7 +49,31 @@ function App() {
   });
   const { t } = useTranslations(language);
 
-  // Function to refresh user data from Appwrite
+  // Initialize enhanced notification system
+  useEffect(() => {
+    const initEnhancedNotifications = async () => {
+      try {
+        // Initialize enhanced notification service
+        await EnhancedNotificationService.initialize();
+        console.log('✅ Enhanced notification system initialized');
+        
+        // Start PWA installation monitoring (non-blocking)
+        PWAInstallationEnforcer.startMonitoring();
+        console.log('👁️ PWA installation monitoring started');
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize enhanced notifications:', error);
+      }
+    };
+    
+    initEnhancedNotifications();
+    
+    // Cleanup on unmount
+    return () => {
+      EnhancedNotificationService.cleanup();
+      console.log('🧹 Enhanced notification system cleaned up');
+    };
+  }, []);
   const refreshUser = async () => {
     if (!user?.$id) {
       console.log('⚠️ Cannot refresh - no user ID');
@@ -447,10 +474,10 @@ function App() {
   // Show loading screen UNTIL auth check completes
   if (!isAuthReady) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Checking authentication...</p>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-md">
+          <CardSkeleton />
+          <p className="mt-4 text-center text-gray-600">Checking authentication...</p>
         </div>
       </div>
     );

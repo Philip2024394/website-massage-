@@ -526,13 +526,48 @@ export function PersistentChatWindow() {
           chatState.currentBooking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
           'bg-gray-100 text-gray-800'
         }`}>
-          {chatState.currentBooking.status === 'pending' && '⏳ Waiting for therapist to accept...'}
-          {chatState.currentBooking.status === 'waiting_others' && '🔄 Searching for available therapists...'}
-          {chatState.currentBooking.status === 'therapist_accepted' && '✅ Therapist accepted! Confirm below.'}
-          {chatState.currentBooking.status === 'user_confirmed' && '🎉 Booking confirmed!'}
-          {chatState.currentBooking.status === 'on_the_way' && '🚗 Therapist is on the way!'}
-          {chatState.currentBooking.status === 'completed' && '✨ Service completed - Payment ready'}
-          {chatState.currentBooking.status === 'cancelled' && '❌ Booking cancelled'}
+          {chatState.currentBooking.status === 'pending' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+              Waiting for therapist to accept...
+            </span>
+          )}
+          {chatState.currentBooking.status === 'waiting_others' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-spin"></div>
+              Searching for available therapists...
+            </span>
+          )}
+          {chatState.currentBooking.status === 'therapist_accepted' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              Therapist accepted! Confirm below.
+            </span>
+          )}
+          {chatState.currentBooking.status === 'user_confirmed' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+              Booking confirmed!
+            </span>
+          )}
+          {chatState.currentBooking.status === 'on_the_way' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+              Therapist is on the way!
+            </span>
+          )}
+          {chatState.currentBooking.status === 'completed' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+              Service completed - Payment ready
+            </span>
+          )}
+          {chatState.currentBooking.status === 'cancelled' && (
+            <span className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              Booking cancelled
+            </span>
+          )}
         </div>
       )}
 
@@ -684,7 +719,12 @@ export function PersistentChatWindow() {
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-800"
+                  className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all text-gray-800 text-lg font-medium shadow-sm"
+                  style={{
+                    fontSize: '18px',
+                    minHeight: '56px',
+                    touchAction: 'manipulation'
+                  } as React.CSSProperties}
                 />
               </div>
               

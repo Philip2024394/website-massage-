@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import TherapistPageHeader from '../components/TherapistPageHeader';
+import { BookingListSkeleton } from '../../../components/LoadingSkeletons';
 
 interface Booking {
   $id: string;
@@ -202,11 +203,11 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'bg-green-100 text-green-800 border-green-300';
-      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'completed': return 'bg-blue-100 text-blue-800 border-blue-300';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+      case 'confirmed': return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-200 shadow-sm';
+      case 'pending': return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-200 shadow-sm animate-pulse';
+      case 'completed': return 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border-blue-200 shadow-sm';
+      case 'cancelled': return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-200 shadow-sm';
+      default: return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-200 shadow-sm';
     }
   };
 
@@ -246,13 +247,18 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         )}
 
         {/* Date Selector */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-4">
+          <label className="block text-lg font-semibold text-gray-800 mb-3">📅 Select Date</label>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+            className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-200 focus:border-green-500 text-lg font-medium shadow-sm transition-all duration-200"
+            style={{
+              fontSize: '18px',
+              minHeight: '56px',
+              touchAction: 'manipulation'
+            } as React.CSSProperties}
           />
         </div>
 
@@ -261,7 +267,7 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         {/* Add Manual Booking Button */}
         <button
           onClick={() => setShowAddModal(true)}
-          className="w-full mb-4 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+          className="w-full mb-4 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-all duration-200 transform hover:scale-105 active:scale-95 hover:shadow-lg flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Add External Booking

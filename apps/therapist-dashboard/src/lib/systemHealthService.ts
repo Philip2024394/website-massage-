@@ -134,7 +134,7 @@ class SystemHealthService {
       audio.play().catch(error => {
         console.warn('Failed to play notification sound:', error);
         // Fallback: try alternative path for therapist dashboard
-        const altAudio = new Audio(`../../../public/sounds/${soundType}-notification.mp3`);
+        const altAudio = new Audio('../../../public/sounds/booking-notification.mp3');
         altAudio.volume = 0.7;
         altAudio.play().catch(err => console.error('Audio playback failed:', err));
       });

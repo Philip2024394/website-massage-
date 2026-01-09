@@ -348,7 +348,7 @@ export class BulletproofNotificationService {
         });
 
         // Test Audio
-        const audioTest = new Audio('/sounds/booking-alert.mp3');
+        const audioTest = new Audio('/sounds/booking-notification.mp3');
         channels.push({
             name: 'Audio Alerts',
             available: !audioTest.error,

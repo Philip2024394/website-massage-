@@ -17,6 +17,7 @@ import {
   logPayload,
   logAppwriteResponse
 } from '../services/bookingValidationService';
+import { InlineLoadingSkeleton } from './LoadingSkeletons';
 
 // Extend window type for global booking tracker
 declare global {
@@ -522,8 +523,8 @@ ${
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4">
         <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading booking details...</p>
+          <InlineLoadingSkeleton />
+          <p className="text-gray-600 mt-4">Loading booking details...</p>
           </div>
         </div>
       </div>
@@ -589,7 +590,7 @@ ${
 
             <button
               onClick={onClose}
-              className="w-full bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl hover:bg-gray-300 transition-all"
+              className="w-full bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl hover:bg-gray-300 transition-all duration-200 hover:shadow-md"
             >
               Cancel
             </button>

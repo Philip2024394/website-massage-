@@ -41,7 +41,7 @@ export const useBookingAudio = () => {
 
   const playSuccess = useCallback(async () => {
     try {
-      const audio = new Audio('/sounds/booking-success.mp3');
+      const audio = new Audio('/sounds/booking-notification.mp3');
       audio.volume = 0.5;
       await audio.play();
     } catch (error) {
@@ -77,7 +77,7 @@ export const useBookingAudio = () => {
 
   const playError = useCallback(async () => {
     try {
-      const audio = new Audio('/sounds/booking-error.mp3');
+      const audio = new Audio('/sounds/booking-notification.mp3');
       audio.volume = 0.5;
       await audio.play();
     } catch (error) {

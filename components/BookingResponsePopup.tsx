@@ -3,6 +3,7 @@ import { X, Clock, User, MapPin, Phone, CheckCircle, XCircle } from 'lucide-reac
 import { databases } from '../lib/appwrite';
 import { APPWRITE_CONFIG } from '../lib/appwrite.config';
 import { notificationSound } from '../lib/notificationSound';
+import { InlineLoadingSkeleton } from './LoadingSkeletons';
 
 interface BookingResponsePopupProps {
   isOpen: boolean;
@@ -193,8 +194,8 @@ const BookingResponsePopup: React.FC<BookingResponsePopupProps> = ({
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-8">
-              <div className="spinner-mobile mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading booking details...</p>
+              <InlineLoadingSkeleton />
+              <p className="text-gray-600 mt-4">Loading booking details...</p>
             </div>
           ) : hasExpired ? (
             <div className="text-center py-8">

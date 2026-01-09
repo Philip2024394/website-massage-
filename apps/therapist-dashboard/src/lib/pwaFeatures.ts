@@ -418,7 +418,7 @@ export class PWANotificationManager {
         }
         
         try {
-            const audio = new Audio('/sounds/booking-urgent-alert.mp3');
+            const audio = new Audio('/sounds/booking-notification.mp3');
             audio.loop = false; // We'll control the loop manually
             audio.volume = 0.8;
             

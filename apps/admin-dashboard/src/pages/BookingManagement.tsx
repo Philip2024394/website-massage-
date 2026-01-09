@@ -105,14 +105,15 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ onBack }) => {
 
     const getStatusColor = (status: Booking['status']) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'accepted': return 'bg-blue-100 text-blue-800';
-            case 'confirmed': return 'bg-green-100 text-green-800';
-            case 'in-progress': return 'bg-purple-100 text-purple-800';
-            case 'completed': return 'bg-gray-100 text-gray-800';
-            case 'cancelled': return 'bg-red-100 text-red-800';
-            case 'expired': return 'bg-orange-100 text-orange-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'pending': return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm';
+            case 'accepted': return 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border border-blue-200 shadow-sm';
+            case 'confirmed': return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm';
+            case 'in-progress': return 'bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 border border-purple-200 shadow-sm animate-pulse';
+            case 'completed': return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 shadow-sm';
+            case 'cancelled': return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm';
+            case 'expired': return 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-200 shadow-sm';
+            default: return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 shadow-sm';
+        }
         }
     };
 
@@ -425,12 +426,12 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ onBack }) => {
                                         </td>
                                         <td className="px-6 py-4">
                                             {booking.chatWindowOpen ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 rounded-full text-xs font-semibold border border-green-200 shadow-sm">
                                                     <MessageSquare className="w-3 h-3" />
                                                     Open
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                                                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-gray-100 to-slate-100 text-gray-600 rounded-full text-xs border border-gray-200 shadow-sm">
                                                     Closed
                                                 </span>
                                             )}

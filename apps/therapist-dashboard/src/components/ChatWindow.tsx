@@ -303,7 +303,7 @@ export default function ChatWindow({
                         // Play notification sound for new customer messages (not system messages)
                         if (newMsg.senderId !== 'system' && newMsg.senderId !== providerId) {
                             try {
-                                const audio = new Audio('/sounds/message-notification.mp3');
+                                const audio = new Audio('/sounds/booking-notification.mp3');
                                 audio.volume = 0.7;
                                 audio.play().catch(err => console.warn('Failed to play message sound:', err));
                                 console.log('🔊 New message notification played');

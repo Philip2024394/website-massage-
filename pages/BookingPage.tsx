@@ -100,7 +100,12 @@ const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBoo
                         min={today}
                         value={selectedDate.toISOString().split('T')[0]}
                         onChange={handleDateChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 text-lg font-semibold shadow-sm transition-all duration-200"
+                        style={{
+                            fontSize: '18px',
+                            minHeight: '60px',
+                            touchAction: 'manipulation'
+                        } as React.CSSProperties}
                     />
                 </div>
 

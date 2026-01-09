@@ -234,23 +234,19 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                 {/* Form */}
                 <div className="p-6 space-y-4">
                     {/* Customer Name */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            {t.customerName} *
-                        </label>
+                    <EnhancedFormField
+                        label={t.customerName}
+                        required={true}
+                        error={errors.customerName}
+                    >
                         <input
                             type="text"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder={t.customerNamePlaceholder}
-                            className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors ${
-                                errors.customerName ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                            className="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors border-gray-300"
                         />
-                        {errors.customerName && (
-                            <p className="text-red-500 text-sm mt-1">{errors.customerName}</p>
-                        )}
-                    </div>
+                    </EnhancedFormField>
 
                     {/* Location Type */}
                     <div>

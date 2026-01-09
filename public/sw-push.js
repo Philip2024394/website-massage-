@@ -22,19 +22,24 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(self.clients.claim());
 });
 
-// Push event - receives push notifications
+// Push event - receives push notifications with enhanced handling
 self.addEventListener('push', (event) => {
-    console.log('📨 Service Worker: Push notification received');
+    console.log('📨 Service Worker: Enhanced push notification received');
 
     let notificationData = {
         title: '📱 IndaStreet',
         body: 'You have a new notification',
         icon: '/icon-192.png',
         badge: '/icon-192.png',
-        vibrate: [200, 100, 200],
+        vibrate: VIBRATION_PATTERNS.normal,
+        sound: NOTIFICATION_SOUNDS.booking,
+        urgency: 'normal',
+        requireInteraction: false,
         data: {
             url: '/',
-            sound: '/sounds/message-notification.mp3'
+            sound: NOTIFICATION_SOUNDS.booking,
+            urgency: 'normal',
+            timestamp: Date.now()
         }
     };
 
@@ -42,12 +47,41 @@ self.addEventListener('push', (event) => {
     if (event.data) {
         try {
             const data = event.data.json();
+            
+            // Determine urgency and sound based on notification type
+            let urgency = 'normal';
+            let sound = NOTIFICATION_SOUNDS.booking;
+            let vibrate = VIBRATION_PATTERNS.normal;
+            
+            if (data.type === 'booking_request' || data.type === 'urgent_booking') {
+                urgency = 'critical';
+                sound = NOTIFICATION_SOUNDS.critical;
+                vibrate = VIBRATION_PATTERNS.critical;
+                notificationData.requireInteraction = true;
+            } else if (data.type === 'booking_reminder' || data.type === 'payment_due') {
+                urgency = 'urgent';
+                sound = NOTIFICATION_SOUNDS.urgent;
+                vibrate = VIBRATION_PATTERNS.urgent;
+            } else if (data.type === 'chat_message') {
+                sound = NOTIFICATION_SOUNDS.chat;
+                vibrate = VIBRATION_PATTERNS.normal;
+            }
+            
             notificationData = {
                 ...notificationData,
-                ...data
+                ...data,
+                vibrate,
+                sound,
+                urgency,
+                data: {
+                    ...notificationData.data,
+                    ...data,
+                    sound,
+                    urgency
+                }
             };
         } catch (e) {
-            console.error('Error parsing push data:', e);
+            console.error('Error parsing enhanced push data:', e);
         }
     }
 

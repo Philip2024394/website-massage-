@@ -223,10 +223,10 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     // Close this popup - user will complete booking in chat
                     onClose();
                   }}
-                  className={`w-full p-2 sm:p-2.5 rounded-xl border-2 transition-all ${
+                  className={`w-full p-2 sm:p-2.5 rounded-xl border-2 transition-all duration-200 transform hover:scale-105 active:scale-95 ${
                     selectedDuration === option.minutes
                       ? 'border-transparent bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg animate-pulse'
-                      : 'border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 hover:border-orange-500 hover:from-orange-100 hover:to-amber-100'
+                      : 'border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50 hover:border-orange-500 hover:from-orange-100 hover:to-amber-100 hover:shadow-md'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -323,11 +323,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">
-                  <User className="inline w-3 h-3 mr-1" />
-                  Your Name
-                </label>
+              <EnhancedFormField
+                label="Your Name"
+                required={true}
+                error={error && !customerName.trim() ? "Name is required" : null}
+              >
                 <input
                   type="text"
                   value={customerName}
@@ -335,7 +335,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   placeholder="Enter your name"
                   className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
                 />
-              </div>
+              </EnhancedFormField>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">

@@ -228,11 +228,16 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
             setSelectedDate(date);
             setManualBookingForm({ ...manualBookingForm, date: date.toISOString().split('T')[0] });
           }}
-          className={`h-12 border-r border-b border-gray-200 flex flex-col items-center justify-center cursor-pointer transition-all
-            ${isToday ? 'ring-2 ring-orange-500 ring-inset' : ''}
-            ${isBooked ? 'bg-orange-500 text-white font-bold' : 'bg-white hover:bg-orange-50 text-black'}
+          className={`h-16 border-r border-b border-gray-200 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 touch-manipulation text-lg font-medium
+            ${isToday ? 'ring-2 ring-green-500 ring-inset bg-green-100' : ''}
+            ${isBooked ? 'bg-green-500 text-white font-bold shadow-lg' : 'bg-white hover:bg-green-50 text-black'}
             ${!isEnabled ? 'bg-gray-100 text-gray-400' : ''}
           `}
+          style={{
+            minHeight: '64px',
+            fontSize: '16px',
+            touchAction: 'manipulation'
+          } as React.CSSProperties}
         >
           <span className="text-sm">
             {day}

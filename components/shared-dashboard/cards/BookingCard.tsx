@@ -29,10 +29,10 @@ const BookingCard: React.FC<BookingCardProps> = ({
     onViewDetails,
 }) => {
     const statusColors = {
-        pending: 'bg-yellow-100 text-yellow-800',
-        confirmed: 'bg-blue-100 text-blue-800',
-        completed: 'bg-green-100 text-green-800',
-        cancelled: 'bg-red-100 text-red-800',
+        pending: 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm',
+        confirmed: 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border border-blue-200 shadow-sm',
+        completed: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm',
+        cancelled: 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border border-red-200 shadow-sm',
     };
 
     return (

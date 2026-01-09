@@ -1,10 +1,12 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge } from "lucide-react";
+import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle } from "lucide-react";
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
 import TherapistLayout from '../components/TherapistLayout';
+import { EnhancedNotificationService } from "../../../../lib/enhancedNotificationService";
+import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer";
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -71,6 +73,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
+  const [forceReinstall, setForceReinstall] = useState(false);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -86,6 +90,17 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       autoOfflineTime: therapist?.autoOfflineTime,
       fullTherapistObject: therapist
     });
+    
+    // Initialize Enhanced Notification System
+    EnhancedNotificationService.initialize();
+    
+    // Initialize PWA Installation Enforcement
+    const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
+    setPwaEnforcementActive(!pwaStatus.isInstalled && !pwaStatus.canBypass);
+    setIsAppInstalled(pwaStatus.isInstalled);
+    
+    // Start PWA monitoring for critical notifications
+    PWAInstallationEnforcer.startMonitoring();
     
     // Load discount settings
     if (therapist?.discountPercentage) setDiscountPercentage(therapist.discountPercentage);
@@ -177,17 +192,21 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     return () => clearInterval(interval);
   }, [autoOfflineTime, status]);
 
-  // PWA Install functionality
+  // PWA Install functionality with enhanced enforcement
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      (window as any).deferredPrompt = e; // Store for PWAInstallationEnforcer
     };
     
     const handleAppInstalled = () => {
       setIsAppInstalled(true);
+      setPwaEnforcementActive(false);
       localStorage.setItem('pwa-installed', 'true');
+      localStorage.setItem('pwa-install-completed', 'true');
       setDeferredPrompt(null);
+      console.log('✅ PWA installed successfully');
     };
     
     const handleRequestInstall = () => {
@@ -196,9 +215,9 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     
     // Check if app is already installed
     const checkIfInstalled = () => {
-      const isInstalled = localStorage.getItem('pwa-installed') === 'true' || 
-                         window.matchMedia('(display-mode: standalone)').matches;
-      setIsAppInstalled(isInstalled);
+      const pwaStatus = PWAInstallationEnforcer.checkInstallationStatus();
+      setIsAppInstalled(pwaStatus.isInstalled);
+      setPwaEnforcementActive(!pwaStatus.isInstalled && !pwaStatus.canBypass);
       
       // Detect iOS device
       const isiOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -532,7 +551,53 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     }
   };
 
+  const handleTestNotifications = async () => {
+    try {
+      // Request permission first
+      const hasPermission = await EnhancedNotificationService.requestPermission();
+      
+      if (hasPermission) {
+        await EnhancedNotificationService.testEnhancedNotifications();
+        alert('🧪 Testing enhanced notification system!\n\n🔊 You should hear sounds and feel vibrations.\n⏰ Watch for 3 escalating notifications over 2 minutes.');
+      } else {
+        alert('⚠️ Notification permission required!\n\nPlease allow notifications in your browser settings and try again.');
+      }
+    } catch (error) {
+      console.error('Error testing notifications:', error);
+      alert('❌ Failed to test notifications. Please ensure the app is properly installed.');
+    }
+  };
+
   const handleInstallApp = async () => {
+    // If forcing reinstall, clear all installation markers first
+    if (forceReinstall) {
+      localStorage.removeItem('pwa-installed');
+      localStorage.removeItem('pwa-install-completed');
+      localStorage.removeItem('pwa-added-to-homescreen');
+      console.log('🗑️ Cleared all PWA installation markers for forced reinstall');
+    }
+    
+    if (isAppInstalled && !forceReinstall) {
+      // Show force reinstall option
+      const shouldForceReinstall = confirm(
+        '📱 APP ALREADY DETECTED\n\n' +
+        'If you\'re having notification issues:\n' +
+        '• Click OK to FORCE REINSTALL\n' +
+        '• This ensures you have the latest notification sounds\n' +
+        '• Cancel if notifications are working fine'
+      );
+      
+      if (shouldForceReinstall) {
+        setForceReinstall(true);
+        setIsAppInstalled(false);
+        localStorage.removeItem('pwa-installed');
+        localStorage.removeItem('pwa-install-completed');
+        PWAInstallationEnforcer.forceRefreshStatus();
+        alert('⚙️ Now tap the DOWNLOAD button again to reinstall with enhanced notifications!');
+        return;
+      }
+      return;
+    }
     if (isAppInstalled) {
       alert('App is already installed on your device!');
       return;
@@ -973,50 +1038,113 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           )}
         </div>
         
-        {/* Download App Button */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
+        {/* CRITICAL: Download App Button - Enhanced for Notification Sounds */}
+        <div className={`rounded-xl p-6 border-2 ${
+          pwaEnforcementActive 
+            ? 'bg-red-50 border-red-500' 
+            : isAppInstalled 
+              ? 'bg-green-50 border-green-500' 
+              : 'bg-orange-50 border-orange-500'
+        }`}>
+          {/* Warning Banner for PWA Enforcement */}
+          {pwaEnforcementActive && (
+            <div className="mb-4 p-3 bg-red-100 border-2 border-red-400 rounded-xl">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertTriangle className="w-5 h-5" />
+                <span className="font-bold text-sm">🚨 APP INSTALLATION REQUIRED</span>
+              </div>
+              <p className="text-red-700 text-xs mt-1">
+                You must install the app to receive booking notifications with sound!
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center gap-4 mb-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              isAppInstalled ? 'bg-gray-100' : 'bg-orange-500'
+              isAppInstalled ? 'bg-green-500' : pwaEnforcementActive ? 'bg-red-500' : 'bg-orange-500'
             }`}>
-              <Smartphone className={`w-6 h-6 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
+              <Smartphone className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">
-                {isAppInstalled ? 'App Installed' : 'Download Mobile App'}
+            <div className="flex-1">
+              <h3 className={`text-lg font-bold ${
+                isAppInstalled ? 'text-green-900' : pwaEnforcementActive ? 'text-red-900' : 'text-orange-900'
+              }`}>
+                {isAppInstalled ? '✅ App Installed with Notifications' : '📱 Install App for Notification Sounds'}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${
+                isAppInstalled ? 'text-green-700' : pwaEnforcementActive ? 'text-red-700' : 'text-orange-700'
+              }`}>
                 {isAppInstalled 
-                  ? 'IndaStreet app is installed on your device' 
-                  : deferredPrompt
-                    ? 'Install the app for quick access from your home screen'
-                    : isIOS
-                      ? 'Add this app to your home screen for easy access'
-                      : 'Get instructions to install this app on your device'
+                  ? 'Ready to receive booking alerts with custom sounds'
+                  : 'Required: Custom notification sounds only work in installed app'
                 }
               </p>
             </div>
           </div>
+
+          {/* Critical Notification Features List */}
+          {!isAppInstalled && (
+            <div className="mb-4 p-3 bg-white border border-gray-200 rounded-xl">
+              <p className="font-semibold text-gray-900 text-sm mb-2">🔊 Why installation is critical:</p>
+              <ul className="text-xs text-gray-600 space-y-1">
+                <li>• <strong>Custom MP3 notification sounds</strong> (only in installed app)</li>
+                <li>• <strong>Background notifications</strong> when phone is locked</li>
+                <li>• <strong>Stronger vibration patterns</strong> for urgent bookings</li>
+                <li>• <strong>3 escalating alerts</strong> over 2 minutes</li>
+                <li>• <strong>Never miss bookings</strong> even when using other apps</li>
+              </ul>
+            </div>
+          )}
           
-          <button
-            onClick={handleInstallApp}
-            disabled={isAppInstalled}
-            className={`w-full py-3 font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 ${
-              isAppInstalled 
-                ? 'bg-gray-100 text-gray-500 cursor-not-allowed border border-gray-200'
-                : 'bg-orange-500 text-white hover:bg-orange-600 hover:shadow-md'
-            }`}
-          >
-            <Download className="w-5 h-5" />
-            {isAppInstalled 
-              ? 'App Installed ✓' 
-              : deferredPrompt 
-                ? 'Download App'
-                : isIOS
-                  ? 'Add to Home Screen'
-                  : 'Install Instructions'
-            }
-          </button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {/* Main Install/Reinstall Button */}
+            <button
+              onClick={handleInstallApp}
+              className={`w-full py-4 font-bold text-lg rounded-xl shadow-sm transition-all flex items-center justify-center gap-3 ${
+                isAppInstalled
+                  ? forceReinstall
+                    ? 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'bg-green-500 text-white hover:bg-green-600'
+                  : pwaEnforcementActive
+                    ? 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
+                    : 'bg-orange-500 text-white hover:bg-orange-600'
+              }`}
+            >
+              <Download className="w-6 h-6" />
+              {isAppInstalled && !forceReinstall
+                ? '🔄 FORCE REINSTALL (Fix Notifications)'
+                : isAppInstalled && forceReinstall
+                  ? '📥 REINSTALL WITH ENHANCED SOUNDS'
+                  : deferredPrompt 
+                    ? '🚨 INSTALL NOW FOR NOTIFICATION SOUNDS'
+                    : isIOS
+                      ? '🍎 ADD TO HOME SCREEN (iOS)'
+                      : '📋 GET INSTALL INSTRUCTIONS'
+              }
+            </button>
+
+            {/* Test Notifications Button (only if installed) */}
+            {isAppInstalled && (
+              <button
+                onClick={handleTestNotifications}
+                className="w-full py-3 font-semibold rounded-xl border-2 border-green-500 text-green-700 hover:bg-green-50 transition-all flex items-center justify-center gap-2"
+              >
+                <Badge className="w-5 h-5" />
+                🧪 TEST NOTIFICATION SOUNDS
+              </button>
+            )}
+          </div>
+
+          {/* Installation Status & Instructions */}
+          <div className="mt-4 p-3 bg-gray-50 rounded-xl">
+            <p className="text-xs text-gray-600 text-center">
+              {isAppInstalled 
+                ? '✅ App is properly installed. Test notifications to ensure sounds work.'
+                : '⚠️ Browser notifications have generic sounds only. Install for custom MP3 alerts!'
+              }
+            </p>
+          </div>
         </div>
       </div>
     </div>

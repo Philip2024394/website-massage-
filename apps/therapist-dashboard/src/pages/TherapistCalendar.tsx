@@ -366,11 +366,16 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
                     <div
                       key={day}
                       onClick={() => setSelectedDate(dateKey)}
-                      className={`p-2 border-b border-r min-h-20 sm:min-h-24 cursor-pointer transition-all ${
-                        isToday ? 'bg-orange-50 border-orange-200' : ''
+                      className={`p-3 border-b border-r min-h-24 sm:min-h-28 cursor-pointer transition-all touch-manipulation ${
+                        isToday ? 'bg-green-50 border-green-200' : ''
                       } ${
-                        isSelected ? 'bg-orange-100 ring-2 ring-orange-400' : 'hover:bg-gray-50'
+                        isSelected ? 'bg-green-500 text-white ring-2 ring-green-400 shadow-lg transform scale-105 font-bold' : 'hover:bg-gray-50'
                       }`}
+                      style={{
+                        minHeight: '72px',
+                        fontSize: '16px',
+                        touchAction: 'manipulation'
+                      } as React.CSSProperties}
                     >
                       <div className={`text-xs sm:text-sm font-medium mb-1 sm:mb-2 ${
                         isToday ? 'text-orange-600' : 'text-gray-700'

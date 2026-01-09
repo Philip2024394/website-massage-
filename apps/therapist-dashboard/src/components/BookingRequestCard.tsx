@@ -36,7 +36,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
 
     useEffect(() => {
         // Create audio element
-        notificationAudio.current = new Audio('/sounds/booking-alert.mp3');
+        notificationAudio.current = new Audio('/sounds/booking-notification.mp3');
         notificationAudio.current.loop = true;
 
         // Load pending bookings
