@@ -478,11 +478,18 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
               <div className="flex items-center gap-3">
                 {/* Profile Image */}
                 <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-orange-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {chatRoom.providerImage ? (
+                  {chatRoom.providerProfilePicture || chatRoom.profilePicture ? (
                     <img 
-                      src={chatRoom.providerImage} 
+                      src={chatRoom.providerProfilePicture || chatRoom.profilePicture} 
                       alt={chatRoom.providerName}
                       className="w-full h-full rounded-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        if (parent) {
+                          parent.innerHTML = `<span class="text-lg font-bold">${chatRoom.providerName.charAt(0).toUpperCase()}</span>`;
+                        }
+                      }}
                     />
                   ) : (
                     <span className="text-lg font-bold">

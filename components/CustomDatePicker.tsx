@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, ArrowLeft } from 'lucide-react';
 
 interface CustomDatePickerProps {
   value: string;
@@ -181,7 +181,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
               onClick={handlePrevMonth}
               className="p-2 hover:bg-gray-700 rounded-lg transition-all"
             >
-              <ChevronLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-white" />
             </button>
             
             <div className="text-white font-bold text-center">
@@ -193,7 +193,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
               onClick={handleNextMonth}
               className="p-2 hover:bg-gray-700 rounded-lg transition-all"
             >
-              <ChevronRight className="w-5 h-5 text-white" />
+              →
             </button>
           </div>
 

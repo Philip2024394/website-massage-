@@ -55,6 +55,31 @@ class FacialPlaceService {
                     lastUpdate: new Date().toISOString(),
                 }
             );
+            
+            // 🔗 AUTO-GENERATE SHARE LINK for new facial place
+            try {
+                console.log('🔗 [Facial Place] Auto-generating share link...');
+                const { shareLinkService } = await import('./shareLinkService');
+                const facialPlaceName = data.name || 'Facial Place';
+                const facialPlaceCity = data.address?.split(',')[0] || 'Bali'; // Extract city from address
+                
+                const shareLink = await shareLinkService.createShareLink(
+                    'facial',
+                    document.$id,
+                    facialPlaceName,
+                    facialPlaceCity
+                );
+                
+                console.log('✅ [Facial Place] Share link created:', {
+                    slug: shareLink.slug,
+                    shortId: shareLink.shortId,
+                    entityId: shareLink.entityId
+                });
+            } catch (shareLinkError) {
+                console.warn('⚠️ [Facial Place] Share link creation failed (non-critical):', shareLinkError);
+                // Don't fail the creation if share link creation fails
+            }
+            
             return document as unknown as FacialPlace;
         } catch (error) {
             console.error('Error creating facial place:', error);

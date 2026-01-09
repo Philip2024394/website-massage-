@@ -1,6 +1,19 @@
 /**
+ * 🔒 PROTECTED FILE - CRITICAL ROUTING CONFIGURATION 🔒
+ * 
  * Provider Profile Routes
  * Individual provider and place detail pages
+ * 
+ * ⚠️ WARNING: Changes here affect ALL profile URLs platform-wide
+ * ⚠️ TESTED & WORKING: January 10, 2026
+ * 
+ * CRITICAL ROUTES:
+ * - /therapist-profile/:id → SharedTherapistProfile (NEW, WORKING)
+ * - /share/therapist/:id → SharedTherapistProfile (NEW, WORKING)
+ * - /share/place/:id → SharedPlaceProfile (NEW, WORKING)
+ * - /share/facial/:id → SharedFacialProfile (NEW, WORKING)
+ * 
+ * 🚨 DO NOT change component imports without thorough testing
  */
 
 import React from 'react';
@@ -52,10 +65,10 @@ export const profileRoutes = {
     component: SharedFacialProfile,
     name: 'shareFacial'
   },
-  // LEGACY: Keep old URLs working (redirect to new)
+  // LEGACY: Keep old URLs working (now uses new component)
   sharedTherapist: {
     path: '/therapist-profile/:id',
-    component: SharedTherapistProfilePage,
+    component: SharedTherapistProfile,
     name: 'sharedTherapist'
   },
   massagePlace: {

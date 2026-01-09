@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Service Worker Cache</title>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Service Worker Cache Cleaner</h1>
+    <p>This will clear the service worker cache that's causing the "Server Starting..." page to appear.</p>
+    
+    <button class="button" onclick="clearServiceWorker()">Clear Service Worker</button>
+    <button class="button" onclick="clearAllCaches()">Clear All Caches</button>
+    <button class="button" onclick="fullReset()">Full Reset & Reload</button>
+    
+    <div id="status"></div>
+
+    <script>
+        const status = document.getElementById('status');
+
+        async function clearServiceWorker() {
+            try {
+                status.innerHTML = '<p>🔄 Clearing service worker...</p>';
+                
+                // Unregister service worker
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        status.innerHTML += '<p class="success">✅ Service worker unregistered</p>';
+                    }
+                }
+                
+                status.innerHTML += '<p class="success">✅ Service worker cleared! Refresh the page.</p>';
+            } catch (error) {
+                status.innerHTML += '<p class="error">❌ Error: ' + error.message + '</p>';
+            }
+        }
+
+        async function clearAllCaches() {
+            try {
+                status.innerHTML = '<p>🔄 Clearing all caches...</p>';
+                
+                // Clear cache storage
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => caches.delete(cacheName))
+                    );
+                    status.innerHTML += '<p class="success">✅ All caches cleared</p>';
+                }
+                
+                // Clear localStorage
+                localStorage.clear();
+                status.innerHTML += '<p class="success">✅ LocalStorage cleared</p>';
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                status.innerHTML += '<p class="success">✅ SessionStorage cleared</p>';
+                
+                status.innerHTML += '<p class="success">✅ All caches cleared! Refresh the page.</p>';
+            } catch (error) {
+                status.innerHTML += '<p class="error">❌ Error: ' + error.message + '</p>';
+            }
+        }
+
+        async function fullReset() {
+            await clearServiceWorker();
+            await clearAllCaches();
+            
+            status.innerHTML += '<p class="success">🔄 Performing full reset...</p>';
+            
+            // Force reload with cache bypass
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

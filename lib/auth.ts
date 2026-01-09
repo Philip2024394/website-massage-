@@ -209,6 +209,30 @@ export const therapistAuth = {
             logger.debug('✅ [Therapist Sign-Up] Therapist document created:', therapist.$id);
             logger.debug('📧 [Therapist Sign-Up] Email stored in document:', therapist.email);
             
+            // 🔗 AUTO-GENERATE SHARE LINK for new therapist
+            try {
+                console.log('🔗 [Therapist Sign-Up] Auto-generating share link...');
+                const { shareLinkService } = await import('../lib/services/shareLinkService');
+                const therapistName = normalizedEmail.split('@')[0];
+                const defaultCity = 'Bali'; // Default for new accounts
+                
+                const shareLink = await shareLinkService.createShareLink(
+                    'therapist',
+                    therapistId,
+                    therapistName,
+                    defaultCity
+                );
+                
+                console.log('✅ [Therapist Sign-Up] Share link created:', {
+                    slug: shareLink.slug,
+                    shortId: shareLink.shortId,
+                    entityId: shareLink.entityId
+                });
+            } catch (shareLinkError) {
+                console.warn('⚠️ [Therapist Sign-Up] Share link creation failed (non-critical):', shareLinkError);
+                // Don't fail the registration if share link creation fails
+            }
+            
             // Wait a moment to ensure document is fully persisted
             await new Promise(resolve => setTimeout(resolve, 500));
             
@@ -381,6 +405,32 @@ export const placeAuth = {
                 generatedPlaceId,
                 placeData
             );
+            
+            console.log('✅ Place document created:', place.$id);
+            
+            // 🔗 AUTO-GENERATE SHARE LINK for new massage place
+            try {
+                console.log('🔗 [Place Sign-Up] Auto-generating share link...');
+                const { shareLinkService } = await import('../lib/services/shareLinkService');
+                const placeName = email.split('@')[0];
+                const defaultCity = 'Jakarta'; // Default for new massage places
+                
+                const shareLink = await shareLinkService.createShareLink(
+                    'place',
+                    generatedPlaceId,
+                    placeName,
+                    defaultCity
+                );
+                
+                console.log('✅ [Place Sign-Up] Share link created:', {
+                    slug: shareLink.slug,
+                    shortId: shareLink.shortId,
+                    entityId: shareLink.entityId
+                });
+            } catch (shareLinkError) {
+                console.warn('⚠️ [Place Sign-Up] Share link creation failed (non-critical):', shareLinkError);
+                // Don't fail the registration if share link creation fails
+            }
             
             return { success: true, userId: user.$id, documentId: place.$id };
         } catch (error: any) {

@@ -7,15 +7,16 @@
  * Integrates with: systemNotificationMapper.ts, Appwrite booking statuses
  * 
  * CRITICAL: This file runs in service worker context (no DOM access)
- * VERSION: 6.0 - Updated Jan 6, 2026
+ * VERSION: 2.2.0 - Updated Jan 10, 2026
+ * - Synced with main service-worker.js version
  * - Integrated with systemNotificationMapper
  * - Standardized booking status notifications
  * - Added click routing to chat/booking pages
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '6.0.0';
-const CACHE_NAME = `push-notifications-v6`;
+const SW_VERSION = '2.2.0';
+const CACHE_NAME = `push-notifications-v2`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -36,7 +37,6 @@ self.addEventListener('install', (event) => {
                     '/manifest.json'
                 ]).catch((err) => {
                     console.log('⚠️ SW: Asset caching failed:', err);
-                });
                 });
                 console.log(`✅ Service Worker ${SW_VERSION}: Assets cached successfully`);
             } catch (err) {

@@ -16,7 +16,8 @@ const createPlaceholderDataURL = (text: string, bgColor: string = '#f3f4f6', tex
         <rect width="400" height="300" fill="${bgColor}"/>
         <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="18" fill="${textColor}">${text}</text>
     </svg>`;
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
+    // Use encodeURIComponent instead of btoa to avoid ERR_INVALID_URL
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
 try {

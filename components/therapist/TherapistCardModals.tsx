@@ -148,7 +148,7 @@ const TherapistCardModals: React.FC<TherapistCardModalsProps> = ({
                         <div className="px-4 py-2.5 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600">
                             <div className="flex items-center gap-2.5 flex-1">
                                 <img
-                                    src={therapist.profilePicture || therapist.mainImage || '/default-avatar.jpg'}
+                                    src={(therapist as any).profilePicture || therapist.mainImage || '/default-avatar.jpg'}
                                     alt={therapist.name}
                                     className="w-10 h-10 rounded-full border-2 border-white object-cover"
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-avatar.jpg'; }}

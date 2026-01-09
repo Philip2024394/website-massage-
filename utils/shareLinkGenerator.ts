@@ -23,7 +23,7 @@ export async function generateTherapistShareLink(
             city
         );
         
-        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
+        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${therapistId}`;
         
         console.log('✅ Share link created:', {
             displayId: `#${shareLink.shortId}`,
@@ -56,7 +56,7 @@ export async function generatePlaceShareLink(
             city
         );
         
-        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
+        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${placeId}`;
         
         console.log('✅ Share link created:', {
             displayId: `#${shareLink.shortId}`,
@@ -89,7 +89,7 @@ export async function generateFacialShareLink(
             city
         );
         
-        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.shortId}`;
+        const shortUrl = `https://www.indastreetmassage.com/share/${shareLink.slug}/${facialPlaceId}`;
         
         console.log('✅ Share link created:', {
             displayId: `#${shareLink.shortId}`,
@@ -123,11 +123,11 @@ export async function getOrCreateShareLink(
         );
         
         // Return slug-based URL for better SEO with Indonesian keywords
-        // Example: https://www.indastreetmassage.com/share/pijat-bali-surtiningsih
+        // Example: https://www.indastreetmassage.com/share/pijat-bali-surtiningsih/therapist-id
         return {
             shortId: shareLink.shortId,
             slug: shareLink.slug,
-            url: `https://www.indastreetmassage.com/share/${shareLink.slug}`
+            url: `https://www.indastreetmassage.com/share/${shareLink.slug}/${shareLink.entityId}`
         };
     } catch (error) {
         console.error('❌ Failed to get/create share link:', error);

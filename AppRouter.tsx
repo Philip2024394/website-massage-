@@ -105,6 +105,9 @@ const DeepTissueVsSwedishMassagePage = React.lazy(() => import('./pages/blog/Dee
 const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog/OnlinePresenceMassageTherapistPage'));
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 
+// Shared profile components
+const SharedTherapistProfile = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
+
 interface AppRouterProps {
     page: Page;
     isLoading: boolean;
@@ -602,27 +605,19 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             console.log('🔧 [ShareFacial] Rendering share page');
             return renderRoute(profileRoutes.shareFacial.component);
         
-        // LEGACY: Keep old shared-therapist-profile working
+        // 🔒 PROTECTED ROUTE - PRODUCTION CRITICAL 🔒
+        // LEGACY: Keep old shared-therapist-profile working - Use new SharedTherapistProfile
+        // ⚠️ DO NOT MODIFY - This route handles ALL /therapist-profile/:id URLs
+        // ⚠️ Used by thousands of shared links in production
         case 'shared-therapist-profile':
-            // Debug logging for therapist private link issues
-            console.log('🔧 [SharedTherapistProfile] Rendering with props:', {
-                therapistsCount: props.therapists?.length || 0,
-                selectedTherapist: props.selectedTherapist ? 'Present' : 'None',
-                userLocation: props.userLocation ? 'Present' : 'None',
-                currentPath: window.location.pathname
-            });
-            // Use TherapistProfilePage in shared view mode
-            return renderRoute(profileRoutes.therapistProfile.component, {
-                therapist: props.selectedTherapist,
-                isSharedView: true, // Show hero logo + SEO footer, hide header
-                onBack: () => props.setPage?.('home'),
-                onLanguageChange: props.onLanguageChange,
-                language: props.language,
-                selectedCity: props.selectedCity,
-                onCityChange: props.onCityChange,
-                therapists: props.therapists,
-                places: props.places,
-                onNavigate: props.onNavigate
+            console.log('🔧 [SharedTherapistProfile] Using NEW shared profile component');
+            console.log('  - Current path:', window.location.pathname);
+            return renderRoute(SharedTherapistProfile, {
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                handleQuickBookWithChat: props.handleQuickBookWithChat,
+                onNavigate: props.onNavigate,
+                language: props.language
             });
         
         case 'massage-place-profile':

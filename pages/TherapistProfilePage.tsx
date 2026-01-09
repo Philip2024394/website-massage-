@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
-import TherapistCard from '../components/TherapistCard';
-import RotatingReviews from '../components/RotatingReviews';
+import TherapistProfileBase from '../components/TherapistProfileBase';
 import HomeIcon from '../components/icons/HomeIcon';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import CityLocationDropdown from '../components/CityLocationDropdown';
-import SocialMediaLinks from '../components/SocialMediaLinks';
 import { Building, Sparkles } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -89,30 +86,16 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
         currentPath: window.location.pathname
     });
     
+    // ⚠️ FAIL LOUDLY - NO SILENT EARLY RETURNS
     if (!therapist) {
-        console.error('🚨 TherapistProfilePage rendered WITHOUT therapist!');
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Therapist not found</h2>
-                    <button 
-                        onClick={onBack} 
-                        className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-                    >
-                        Go Back
-                    </button>
-                </div>
-            </div>
-        );
+        const errorMsg = 'TherapistProfilePage rendered WITHOUT therapist data';
+        console.error('🚨', errorMsg);
+        throw new Error(errorMsg); // Throw error instead of silent return
     }
 
-    const realDiscount = (therapist.discountPercentage && therapist.discountPercentage > 0 && therapist.discountEndTime) ? {
-        percentage: therapist.discountPercentage,
-        expiresAt: new Date(therapist.discountEndTime)
-    } : null;
-
     return (
-        <div className="min-h-scr- Hidden in shared view */}
+        <div className="bg-gray-50">
+            {/* Header - Hidden in shared view */}
             {!isSharedView && (
                 <UniversalHeader 
                     language={language}
@@ -162,9 +145,8 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
 
             {/* Hero Section with Location & Controls - Hidden in shared view */}
             {!isSharedView && (
-            {/* Hero Section with Location & Controls */}
-            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
-                <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
+                <div className="bg-white border-b border-gray-100">
+                    <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
                     {/* Location Display */}
                     <div className="text-center mb-3">
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-1">
@@ -229,58 +211,42 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             </button>
                         </div>
                     </div>
+                    </div>
                 </div>
-            </div>
             )}
 
-            {/* Therapist Card */}
-            <div className="max-w-4xl mx-auto px-4 py-6">
-                <TherapistCard
-                    therapist={therapist}
-                    userLocation={userLocation}
-                    onRate={() => {
-                        console.log('Rate therapist:', therapist);
-                    }}
-                    onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
-                    onChatWithBusyTherapist={onChatWithBusyTherapist}
-                    onShowRegisterPrompt={onShowRegisterPrompt}
-                    isCustomerLoggedIn={!!loggedInCustomer}
-                    onIncrementAnalytics={(metric) => onIncrementAnalytics?.(therapist.id || therapist.$id, 'therapist', metric)}
-                    loggedInProviderId={loggedInProvider?.id}
-                    onNavigate={onNavigate}
-                    activeDiscount={realDiscount}
-                    t={t || {}}
-                />
+            {/* Therapist Profile Content - Use Base Component */}
+            <TherapistProfileBase
+                therapist={therapist}
+                mode="authenticated"
+                userLocation={userLocation}
+                showHeader={false}
+                showSEOFooter={isSharedView}
+                onRate={() => console.log('Rate therapist:', therapist)}
+                onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
+                onChatWithBusyTherapist={onChatWithBusyTherapist}
+                onShowRegisterPrompt={onShowRegisterPrompt}
+                onIncrementAnalytics={(metric) => onIncrementAnalytics?.(therapist.id || therapist.$id, 'therapist', metric)}
+                isCustomerLoggedIn={!!loggedInCustomer}
+                loggedInProviderId={loggedInProvider?.id}
+                onNavigate={onNavigate}
+                t={t || {}}
+                language={language}
+            />
 
-                {/* Rotating Reviews Section */}
-                <div className="mt-8">
-                    <RotatingReviews 
-                        location={therapist.location || 'Yogyakarta'} 
-                        limit={5}
-                        providerId={(therapist as any).id || (therapist as any).$id}
-                        providerName={(therapist as any).name}
-                        providerType={'therapist'}
-                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
-                        onNavigate={onNavigate}
-                    />
-                </div>
+            {/* Quick Links Footer - Only for authenticated view */}
+            {!isSharedView && (
+                <div className="max-w-4xl mx-auto px-4">
+                    <div className="mt-12 mb-6 flex flex-col items-center gap-2">
+                        <div className="font-bold text-lg">
+                            <span className="text-black">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </div>
 
-                {/* Social Media Icons */}
-                <div className="mt-8">
-                    <SocialMediaLinks />
-                </div>
-
-                {/* Quick Links Footer */}
-                <div className="mt-12 mb-6 flex flex-col items-center gap-2">
-                    <div className="font-bold text-lg">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </div>
-
-                    <div className="mt-8 pt-6 border-t border-gray-200 w-full">
-                        <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
-                        <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
-                            <button
+                        <div className="mt-8 pt-6 border-t border-gray-200 w-full">
+                            <h3 className="text-center text-lg font-bold text-gray-800 mb-4">Quick Links</h3>
+                            <div className="flex flex-wrap justify-center gap-1 max-w-2xl mx-auto">
+                                <button
                                 onClick={() => onNavigate?.('home')}
                                 className="px-4 py-2 text-black hover:text-orange-600 transition-colors text-sm font-medium"
                             >
@@ -322,148 +288,11 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                             >
                                 Contact Us
                             </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                {/* SEO-Optimized Footer - Only shown in shared view */}
-                {isSharedView && (
-                    <div className="mt-6 pt-8 border-t border-gray-200">
-                        {/* Main Brand Section */}
-                        <div className="text-center mb-6">
-                            <a 
-                                href="https://www.indastreetmassage.com" 
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-2xl font-bold text-orange-500 hover:text-orange-600 transition-colors"
-                            >
-                                www.indastreetmassage.com
-                            </a>
-                            <p className="text-gray-600 mt-2">
-                                {language === 'en' 
-                                    ? 'Indonesia\'s Premier Massage Booking Platform'
-                                    : 'Platform Booking Pijat Terbaik di Indonesia'
-                                }
-                            </p>
-                        </div>
-
-                        {/* Location-Specific Keywords */}
-                        <div className="bg-gradient-to-r from-orange-50 to-green-50 rounded-lg p-6 mb-6">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">
-                                {language === 'en' 
-                                    ? `Professional Massage Services in ${therapist.location || 'Indonesia'}`
-                                    : `Jasa Pijat Profesional di ${therapist.location || 'Indonesia'}`
-                                }
-                            </h3>
-                            <div className="flex flex-wrap justify-center gap-2">
-                                {(() => {
-                                    const city = therapist.location || 'Indonesia';
-                                    const keywords = [
-                                        `pijat-${city.toLowerCase().replace(/\s+/g, '-')}`,
-                                        `massage-${city.toLowerCase().replace(/\s+/g, '-')}`,
-                                        language === 'en' ? `${city} massage therapy` : `terapi pijat ${city}`,
-                                        language === 'en' ? `massage near me` : `pijat panggilan`,
-                                        language === 'en' ? `home massage service` : `jasa pijat ke rumah`,
-                                        language === 'en' ? `professional therapist` : `terapis profesional`,
-                                        language === 'en' ? `traditional massage` : `pijat tradisional`,
-                                        language === 'en' ? `reflexology` : `pijat refleksi`
-                                    ];
-                                    
-                                    return keywords.map((keyword, index) => (
-                                        <span 
-                                            key={index}
-                                            className="px-3 py-1 bg-white rounded-full text-sm text-gray-700 shadow-sm"
-                                        >
-                                            {keyword}
-                                        </span>
-                                    ));
-                                })()}
-                            </div>
-                        </div>
-
-                        {/* Service Highlights */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">✅</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Verified Therapists' : 'Terapis Terverifikasi'}
-                                </p>
-                            </div>
-                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">🏠</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Home Service' : 'Layanan ke Rumah'}
-                                </p>
-                            </div>
-                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">💆</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Multiple Techniques' : 'Berbagai Teknik'}
-                                </p>
-                            </div>
-                            <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">⭐</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Top Rated' : 'Rating Terbaik'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Quick Links */}
-                        <div className="flex flex-wrap justify-center gap-4 mb-6 text-sm">
-                            <a 
-                                href="https://www.indastreetmassage.com" 
-                                className="text-orange-500 hover:text-orange-600 font-medium"
-                            >
-                                {language === 'en' ? 'Browse All Therapists' : 'Lihat Semua Terapis'}
-                            </a>
-                            <span className="text-gray-300">|</span>
-                            <a 
-                                href="https://www.indastreetmassage.com/massage-places" 
-                                className="text-orange-500 hover:text-orange-600 font-medium"
-                            >
-                                {language === 'en' ? 'Massage Spas' : 'Tempat Pijat'}
-                            </a>
-                            <span className="text-gray-300">|</span>
-                            <a 
-                                href="https://www.indastreetmassage.com/facial-places" 
-                                className="text-orange-500 hover:text-orange-600 font-medium"
-                            >
-                                {language === 'en' ? 'Facial Clinics' : 'Klinik Facial'}
-                            </a>
-                        </div>
-
-                        {/* Rich Footer Text for SEO */}
-                        <div className="text-center text-sm text-gray-600 mb-6 max-w-2xl mx-auto">
-                            <p className="leading-relaxed">
-                                {language === 'en' 
-                                    ? `Book ${therapist.name} and discover professional massage services in ${therapist.location || 'Indonesia'}. IndaStreet Massage connects you with certified therapists offering traditional Indonesian massage, reflexology, aromatherapy, and more. Experience authentic pijat tradisional from verified professionals. Available for home visits and spa locations across Indonesia.`
-                                    : `Pesan ${therapist.name} dan temukan layanan pijat profesional di ${therapist.location || 'Indonesia'}. IndaStreet Massage menghubungkan Anda dengan terapis bersertifikat yang menawarkan pijat tradisional Indonesia, refleksi, aromaterapi, dan lainnya. Rasakan pijat tradisional autentik dari profesional terverifikasi. Tersedia untuk kunjungan rumah dan lokasi spa di seluruh Indonesia.`
-                                }
-                            </p>
-                        </div>
-
-                        {/* Bottom Brand Line */}
-                        <div className="text-center text-xs text-gray-500 pt-4 border-t border-gray-100">
-                            <p>
-                                © 2026 IndaStreet Massage • 
-                                {language === 'en' 
-                                    ? ' Professional Massage Booking Platform in Indonesia'
-                                    : ' Platform Booking Pijat Profesional di Indonesia'
-                                }
-                            </p>
-                            <p className="mt-1">
-                                <a 
-                                    href="https://www.indastreetmassage.com" 
-                                    className="text-orange-500 hover:underline"
-                                >
-                                    www.indastreetmassage.com
-                                </a>
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
         </div>
     );
 };

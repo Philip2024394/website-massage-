@@ -11,6 +11,11 @@ export { appwriteClient, appwriteDatabases, appwriteAccount, APPWRITE_CONFIG } f
 // Migrated Services (from individual files)
 export { imageUploadService } from './image.service';
 
+// 🔗 Share Links & Social Media Services
+export { shareLinkService } from './shareLinkService';
+export { shareLinksValidationService } from './shareLinksValidationService';
+export { shareLinksAutoInitService, ensureEntityShareLink } from './shareLinksAutoInitService';
+
 // Membership Services (modular structure)
 export * from './membership/plans.config';
 export * from './membership/types';

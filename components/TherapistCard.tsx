@@ -156,6 +156,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             console.log('🔍 Session storage:', sessionStorage.getItem('has_entered_app'));
         }
     }, [showPriceListModal]);
+
+    // Clean up modal state when component unmounts
+    useEffect(() => {
+        return () => {
+            setShowPriceListModal(false);
+        };
+    }, [setShowPriceListModal]);
     
     // Keep price cells stable (no auto-animating highlight)
     useEffect(() => {
@@ -1585,7 +1592,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0">
                             <div className="flex items-center gap-3 flex-1">
                                 <img
-                                    key={(therapist as any).profilePicture}
+                                    key={(therapist as any).profilePicture || (therapist as any).mainImage}
                                     src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                     alt={therapist.name}
                                     className="w-11 h-11 rounded-full border-2 border-white object-cover"
@@ -1632,8 +1639,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             </div>
                         </div>
 
-                        {/* Price List Content - Scrollable */}
-                        <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 180px)' }}>
+                        {/* Price List Content - Natural scrolling */}
+                        <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
                             {menuData.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
                                     {/* Table Header */}
