@@ -61,6 +61,12 @@ export interface AdminCommissionRecord {
   commissionRate: number;     // 0.30 (30%)
   commissionAmount: number;   // 30% of bookingAmount
   
+  // Reactivation fee (applied when OVERDUE)
+  reactivationFeeRequired: boolean;   // True when status becomes OVERDUE
+  reactivationFeeAmount: number;      // 25,000 IDR
+  reactivationFeePaid: boolean;       // True when fee is paid
+  totalAmountDue: number;             // commissionAmount + reactivationFeeAmount (if required)
+  
   // Status tracking
   status: CommissionStatus;
   
@@ -72,11 +78,17 @@ export interface AdminCommissionRecord {
   finalWarningSentAt?: string;  // +3h notification
   restrictedAt?: string;      // +3h30m restriction enforced
   paidAt?: string;            // When payment was verified
+  reactivatedAt?: string;     // When account was reactivated
   
   // Payment proof
   paymentProofUrl?: string;
   paymentProofUploadedAt?: string;
   verifiedBy?: string;
+  
+  // Admin override (if fee/commission waived)
+  adminOverrideReason?: string;
+  adminOverrideBy?: string;
+  adminOverrideAt?: string;
   
   // Metadata
   createdAt: string;
@@ -122,6 +134,12 @@ const FINAL_WARNING_TIME_MS = 3 * 60 * 60 * 1000;    // 3 hours
 const RESTRICTION_TIME_MS = 3.5 * 60 * 60 * 1000;    // 3 hours 30 min
 
 // ============================================================================
+// ADMIN REACTIVATION FEE
+// ============================================================================
+
+export const ADMIN_REACTIVATION_FEE = 25000; // Rp 25,000 IDR
+
+// ============================================================================
 // ADMIN COMMISSION SERVICE
 // ============================================================================
 
@@ -156,6 +174,11 @@ export const adminCommissionService = {
       bookingAmount: data.bookingAmount,
       commissionRate: COMMISSION_RATE,
       commissionAmount,
+      // Reactivation fee - not required until OVERDUE
+      reactivationFeeRequired: false,
+      reactivationFeeAmount: 0,
+      reactivationFeePaid: false,
+      totalAmountDue: commissionAmount, // Just commission for now
       status: CommissionStatus.PENDING,
       completedAt,
       paymentDeadline: paymentDeadline.toISOString(),
@@ -329,6 +352,7 @@ export const adminCommissionService = {
 
   /**
    * Enforce restriction at +3h30m
+   * Applies 25,000 IDR admin reactivation fee
    */
   async enforceRestriction(commission: AdminCommissionRecord): Promise<void> {
     const current = await this.getCommissionById(commission.$id!);
@@ -336,33 +360,269 @@ export const adminCommissionService = {
       return;
     }
 
-    // Update commission status to OVERDUE
+    // Calculate total amount due (commission + reactivation fee)
+    const totalAmountDue = commission.commissionAmount + ADMIN_REACTIVATION_FEE;
+
+    // Update commission status to OVERDUE with reactivation fee
     await this.updateCommission(commission.$id!, {
       status: CommissionStatus.OVERDUE,
       restrictedAt: new Date().toISOString(),
+      // Apply reactivation fee
+      reactivationFeeRequired: true,
+      reactivationFeeAmount: ADMIN_REACTIVATION_FEE,
+      reactivationFeePaid: false,
+      totalAmountDue: totalAmountDue,
     });
 
-    // Restrict therapist account
-    await this.restrictTherapistAccount(commission.therapistId);
+    // Restrict therapist account - blocks ALL bookings
+    await this.restrictTherapistAccount(commission.therapistId, {
+      commissionId: commission.commissionId,
+      commissionAmount: commission.commissionAmount,
+      reactivationFee: ADMIN_REACTIVATION_FEE,
+      totalAmountDue: totalAmountDue,
+    });
 
-    // Send restriction notification
+    // Send restriction notification with total amount due
     const template = NOTIFICATION_TEMPLATES[CommissionNotificationType.RESTRICTION_ENFORCED];
     await this.createNotification({
       therapistId: commission.therapistId,
       type: CommissionNotificationType.RESTRICTION_ENFORCED,
       title: template.title,
-      message: template.message(commission.commissionAmount),
+      message: `Your account has been RESTRICTED due to unpaid commission of Rp ${commission.commissionAmount.toLocaleString('id-ID')}. ` +
+               `A reactivation fee of Rp ${ADMIN_REACTIVATION_FEE.toLocaleString('id-ID')} has been applied. ` +
+               `Total amount due: Rp ${totalAmountDue.toLocaleString('id-ID')}. ` +
+               `Upload payment proof to request reactivation.`,
       commissionId: commission.commissionId,
       urgent: true,
     });
 
     console.log(`🔒 [AdminCommission] RESTRICTION ENFORCED for ${commission.therapistId}`);
     console.log(`   Commission: ${commission.commissionId}`);
-    console.log(`   Amount: Rp ${commission.commissionAmount.toLocaleString('id-ID')}`);
+    console.log(`   Commission Amount: Rp ${commission.commissionAmount.toLocaleString('id-ID')}`);
+    console.log(`   Reactivation Fee: Rp ${ADMIN_REACTIVATION_FEE.toLocaleString('id-ID')}`);
+    console.log(`   TOTAL DUE: Rp ${totalAmountDue.toLocaleString('id-ID')}`);
+  },
+
+  /**
+   * Request reactivation - requires FULL payment (commission + fee)
+   * Therapist initiates this after uploading payment proof
+   */
+  async requestReactivation(
+    commissionId: string,
+    paymentProofUrl: string
+  ): Promise<{ success: boolean; message: string; totalDue?: number }> {
+    try {
+      const commission = await this.getCommissionById(commissionId);
+      if (!commission) {
+        return { success: false, message: 'Commission record not found' };
+      }
+
+      if (commission.status !== CommissionStatus.OVERDUE) {
+        return { success: false, message: 'Account is not restricted' };
+      }
+
+      const totalDue = commission.totalAmountDue || 
+        (commission.commissionAmount + (commission.reactivationFeeRequired ? ADMIN_REACTIVATION_FEE : 0));
+
+      // Update with payment proof - awaiting admin verification
+      await this.updateCommission(commissionId, {
+        paymentProofUrl,
+        paymentProofUploadedAt: new Date().toISOString(),
+      });
+
+      // Notify admin of reactivation request
+      await databases.createDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.notifications || 'notifications',
+        ID.unique(),
+        {
+          recipientId: 'admin',
+          recipientType: 'admin',
+          type: 'REACTIVATION_REQUEST',
+          title: '🔓 Reactivation Request',
+          message: `Therapist ${commission.therapistName} has uploaded payment proof of Rp ${totalDue.toLocaleString('id-ID')} for reactivation.`,
+          commissionId: commission.commissionId,
+          urgent: true,
+          read: false,
+          createdAt: new Date().toISOString(),
+        }
+      );
+
+      console.log(`📤 [AdminCommission] Reactivation requested for ${commission.commissionId}`);
+      console.log(`   Payment proof: ${paymentProofUrl}`);
+      console.log(`   Total amount: Rp ${totalDue.toLocaleString('id-ID')}`);
+
+      return {
+        success: true,
+        message: `Reactivation request submitted. Admin will verify your payment of Rp ${totalDue.toLocaleString('id-ID')}.`,
+        totalDue,
+      };
+    } catch (error) {
+      console.error('Error requesting reactivation:', error);
+      return { success: false, message: 'Failed to submit reactivation request' };
+    }
+  },
+
+  /**
+   * Verify reactivation payment and unrestrict account (ADMIN ONLY)
+   * Must verify both commission AND reactivation fee
+   */
+  async verifyReactivationPayment(
+    commissionId: string,
+    verifiedBy: string
+  ): Promise<AdminCommissionRecord | null> {
+    try {
+      const commission = await this.getCommissionById(commissionId);
+      if (!commission) {
+        throw new Error(`Commission ${commissionId} not found`);
+      }
+
+      if (commission.status !== CommissionStatus.OVERDUE) {
+        throw new Error('Commission is not in OVERDUE status');
+      }
+
+      if (!commission.paymentProofUrl) {
+        throw new Error('No payment proof uploaded');
+      }
+
+      const now = new Date().toISOString();
+
+      // Mark both commission and reactivation fee as paid
+      const result = await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+        commissionId,
+        {
+          status: CommissionStatus.PAID,
+          paidAt: now,
+          verifiedBy,
+          reactivationFeePaid: true,
+          reactivatedAt: now,
+          updatedAt: now,
+        }
+      );
+
+      // Unrestrict the account
+      await this.unrestrictTherapistAccount(commission.therapistId);
+
+      // Notify therapist
+      await this.createNotification({
+        therapistId: commission.therapistId,
+        type: CommissionNotificationType.REMINDER, // Re-using type
+        title: '✅ Account Reactivated',
+        message: `Your payment of Rp ${commission.totalAmountDue.toLocaleString('id-ID')} has been verified. Your account is now active and you can accept bookings again.`,
+        commissionId: commission.commissionId,
+      });
+
+      console.log(`✅ [AdminCommission] Reactivation verified for ${commission.therapistId}`);
+      console.log(`   Commission: Rp ${commission.commissionAmount.toLocaleString('id-ID')} - PAID`);
+      console.log(`   Reactivation Fee: Rp ${ADMIN_REACTIVATION_FEE.toLocaleString('id-ID')} - PAID`);
+      console.log(`   Verified by: ${verifiedBy}`);
+
+      return result as unknown as AdminCommissionRecord;
+    } catch (error) {
+      console.error('❌ [AdminCommission] Failed to verify reactivation:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Admin override - reactivate without payment (ADMIN ONLY)
+   * Only accessible from admin dashboard
+   */
+  async adminOverrideReactivation(
+    commissionId: string,
+    adminId: string,
+    reason: string
+  ): Promise<AdminCommissionRecord | null> {
+    try {
+      const commission = await this.getCommissionById(commissionId);
+      if (!commission) {
+        throw new Error(`Commission ${commissionId} not found`);
+      }
+
+      const now = new Date().toISOString();
+
+      // Mark as paid with admin override note
+      const result = await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+        commissionId,
+        {
+          status: CommissionStatus.PAID,
+          paidAt: now,
+          verifiedBy: `ADMIN_OVERRIDE:${adminId}`,
+          reactivationFeePaid: true,
+          reactivatedAt: now,
+          updatedAt: now,
+          // Store override reason
+          adminOverrideReason: reason,
+          adminOverrideBy: adminId,
+          adminOverrideAt: now,
+        }
+      );
+
+      // Unrestrict the account
+      await this.unrestrictTherapistAccount(commission.therapistId);
+
+      console.log(`⚠️ [AdminCommission] ADMIN OVERRIDE reactivation for ${commission.therapistId}`);
+      console.log(`   Admin: ${adminId}`);
+      console.log(`   Reason: ${reason}`);
+      console.log(`   Commission waived: Rp ${commission.commissionAmount.toLocaleString('id-ID')}`);
+      console.log(`   Fee waived: Rp ${ADMIN_REACTIVATION_FEE.toLocaleString('id-ID')}`);
+
+      return result as unknown as AdminCommissionRecord;
+    } catch (error) {
+      console.error('❌ [AdminCommission] Failed admin override:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Get reactivation summary for a therapist
+   */
+  async getReactivationSummary(therapistId: string): Promise<{
+    isRestricted: boolean;
+    commissionAmount: number;
+    reactivationFee: number;
+    totalDue: number;
+    commissionId?: string;
+    paymentProofUploaded: boolean;
+  } | null> {
+    try {
+      const overdueCommissions = await this.getOverdueCommissions(therapistId);
+      if (overdueCommissions.length === 0) {
+        return {
+          isRestricted: false,
+          commissionAmount: 0,
+          reactivationFee: 0,
+          totalDue: 0,
+          paymentProofUploaded: false,
+        };
+      }
+
+      // Get the most recent overdue commission
+      const commission = overdueCommissions[0];
+      const reactivationFee = commission.reactivationFeeRequired ? ADMIN_REACTIVATION_FEE : 0;
+      const totalDue = commission.commissionAmount + reactivationFee;
+
+      return {
+        isRestricted: true,
+        commissionAmount: commission.commissionAmount,
+        reactivationFee,
+        totalDue,
+        commissionId: commission.$id,
+        paymentProofUploaded: !!commission.paymentProofUrl,
+      };
+    } catch (error) {
+      console.error('Error getting reactivation summary:', error);
+      return null;
+    }
   },
 
   /**
    * Mark commission as PAID (admin verification)
+   * For regular payments (before OVERDUE), just marks commission paid
    */
   async markAsPaid(commissionId: string, verifiedBy: string): Promise<AdminCommissionRecord | null> {
     try {
@@ -525,8 +785,17 @@ export const adminCommissionService = {
 
   /**
    * Restrict therapist account (OVERDUE status)
+   * Blocks ALL bookings (Book Now AND Scheduled)
    */
-  async restrictTherapistAccount(therapistId: string): Promise<void> {
+  async restrictTherapistAccount(
+    therapistId: string,
+    feeInfo?: {
+      commissionId: string;
+      commissionAmount: number;
+      reactivationFee: number;
+      totalAmountDue: number;
+    }
+  ): Promise<void> {
     try {
       await databases.updateDocument(
         APPWRITE_CONFIG.databaseId,
@@ -536,19 +805,30 @@ export const adminCommissionService = {
           status: 'RESTRICTED',
           bookingEnabled: false,
           scheduleEnabled: false,
-          restrictionReason: 'Commission payment overdue',
+          restrictionReason: feeInfo 
+            ? `Commission payment overdue. Total due: Rp ${feeInfo.totalAmountDue.toLocaleString('id-ID')} (Commission: Rp ${feeInfo.commissionAmount.toLocaleString('id-ID')} + Reactivation Fee: Rp ${feeInfo.reactivationFee.toLocaleString('id-ID')})`
+            : 'Commission payment overdue',
           restrictedAt: new Date().toISOString(),
+          // Store fee details for reference
+          pendingCommissionId: feeInfo?.commissionId || null,
+          pendingCommissionAmount: feeInfo?.commissionAmount || 0,
+          pendingReactivationFee: feeInfo?.reactivationFee || 0,
+          totalAmountDue: feeInfo?.totalAmountDue || 0,
           updatedAt: new Date().toISOString(),
         }
       );
       console.log(`🔒 [AdminCommission] Account RESTRICTED: ${therapistId}`);
+      if (feeInfo) {
+        console.log(`   Total Amount Due: Rp ${feeInfo.totalAmountDue.toLocaleString('id-ID')}`);
+      }
     } catch (error) {
       console.error('Error restricting account:', error);
     }
   },
 
   /**
-   * Unrestrict therapist account (after payment verified)
+   * Unrestrict therapist account (after FULL payment verified)
+   * Requires both commission AND reactivation fee to be paid
    */
   async unrestrictTherapistAccount(therapistId: string): Promise<void> {
     try {
@@ -562,6 +842,11 @@ export const adminCommissionService = {
           scheduleEnabled: true,
           restrictionReason: null,
           restrictedAt: null,
+          // Clear fee tracking
+          pendingCommissionId: null,
+          pendingCommissionAmount: 0,
+          pendingReactivationFee: 0,
+          totalAmountDue: 0,
           updatedAt: new Date().toISOString(),
         }
       );
