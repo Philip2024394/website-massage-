@@ -11,8 +11,8 @@
  */
 
 import React, { useState, useRef, useEffect, memo } from 'react';
-import { usePersistentChat, ChatMessage, BookingStep } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles } from 'lucide-react';
+import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
+import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle } from 'lucide-react';
 
 // Duration options with prices
 const DURATION_OPTIONS = [
@@ -54,12 +54,19 @@ export function PersistentChatWindow() {
     setCustomerDetails,
     sendMessage,
     addMessage,
+    createBooking,
+    confirmBooking,
+    cancelBooking,
+    shareBankCard,
+    confirmPayment,
+    addSystemNotification,
   } = usePersistentChat();
 
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [locationAttempts, setLocationAttempts] = useState(0);
+  const [messageWarning, setMessageWarning] = useState<string | null>(null);
   const [customerForm, setCustomerForm] = useState({
     name: '',
     countryCode: '+62',
@@ -257,7 +264,18 @@ export function PersistentChatWindow() {
 
     try {
       setIsSending(true);
-      await sendMessage(bookingMessage);
+      const result = await sendMessage(bookingMessage);
+      if (result.sent) {
+        // Create booking with countdown timer
+        createBooking({
+          duration: selectedDuration || 60,
+          price: getPrice(selectedDuration || 60),
+          location: customerForm.location,
+          coordinates: customerForm.coordinates || undefined,
+          scheduledDate: selectedDate || undefined,
+          scheduledTime: selectedTime || undefined,
+        });
+      }
       setBookingStep('chat');
     } catch (error) {
       console.error('Failed to send booking request:', error);
@@ -266,17 +284,32 @@ export function PersistentChatWindow() {
     }
   };
 
-  // Handle send message
+  // Handle send message (with spam detection)
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || isSending) return;
 
     const content = messageInput.trim();
+    
+    // Validate message for phone numbers/contact info before sending
+    const validation = validateMessage(content);
+    if (!validation.isValid) {
+      setMessageWarning(validation.warning);
+      // Clear warning after 5 seconds
+      setTimeout(() => setMessageWarning(null), 5000);
+      return;
+    }
+    
     setMessageInput('');
+    setMessageWarning(null);
     setIsSending(true);
 
     try {
-      await sendMessage(content);
+      const result = await sendMessage(content);
+      if (!result.sent && result.warning) {
+        setMessageWarning(result.warning);
+        setTimeout(() => setMessageWarning(null), 5000);
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
     } finally {
@@ -358,7 +391,13 @@ export function PersistentChatWindow() {
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-sm truncate">{therapist.name}</h3>
           <div className="flex items-center gap-1 text-xs text-orange-100">
-            {isConnected ? (
+            {/* Booking countdown timer */}
+            {chatState.bookingCountdown !== null ? (
+              <span className="flex items-center gap-1 text-yellow-200 font-medium animate-pulse">
+                <Clock className="w-3 h-3" />
+                {Math.floor(chatState.bookingCountdown / 60)}:{(chatState.bookingCountdown % 60).toString().padStart(2, '0')}
+              </span>
+            ) : isConnected ? (
               <>
                 <Wifi className="w-3 h-3" />
                 <span>Connected • Online</span>
@@ -373,6 +412,16 @@ export function PersistentChatWindow() {
         </div>
         
         <div className="flex items-center gap-1">
+          {/* Bank Card Button - for payment sharing */}
+          {chatState.currentBooking && (chatState.currentBooking.status === 'completed' || chatState.currentBooking.status === 'on_the_way') && (
+            <button
+              onClick={shareBankCard}
+              className="p-1.5 bg-green-500 rounded-full hover:bg-green-600 transition-colors"
+              title="Share Bank Card for Payment"
+            >
+              <CreditCard className="w-4 h-4 text-white" />
+            </button>
+          )}
           <button
             onClick={minimizeChat}
             className="p-1.5 bg-black rounded-full hover:bg-gray-800 transition-colors"
@@ -391,6 +440,27 @@ export function PersistentChatWindow() {
           )}
         </div>
       </div>
+
+      {/* Booking Status Banner */}
+      {chatState.currentBooking && (
+        <div className={`px-4 py-2 text-xs font-medium ${
+          chatState.currentBooking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+          chatState.currentBooking.status === 'therapist_accepted' ? 'bg-blue-100 text-blue-800' :
+          chatState.currentBooking.status === 'user_confirmed' ? 'bg-green-100 text-green-800' :
+          chatState.currentBooking.status === 'on_the_way' ? 'bg-purple-100 text-purple-800' :
+          chatState.currentBooking.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+          chatState.currentBooking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+          'bg-gray-100 text-gray-800'
+        }`}>
+          {chatState.currentBooking.status === 'pending' && '⏳ Waiting for therapist to accept...'}
+          {chatState.currentBooking.status === 'waiting_others' && '🔄 Searching for available therapists...'}
+          {chatState.currentBooking.status === 'therapist_accepted' && '✅ Therapist accepted! Confirm below.'}
+          {chatState.currentBooking.status === 'user_confirmed' && '🎉 Booking confirmed!'}
+          {chatState.currentBooking.status === 'on_the_way' && '🚗 Therapist is on the way!'}
+          {chatState.currentBooking.status === 'completed' && '✨ Service completed - Payment ready'}
+          {chatState.currentBooking.status === 'cancelled' && '❌ Booking cancelled'}
+        </div>
+      )}
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto bg-white">
@@ -1092,10 +1162,22 @@ export function PersistentChatWindow() {
                   const isSystem = msg.senderType === 'system' || msg.isSystemMessage;
 
                   if (isSystem) {
+                    // Enhanced system message styling based on content
+                    const isSuccess = msg.message.includes('✅') || msg.message.includes('🎉') || msg.message.includes('✨');
+                    const isWarning = msg.message.includes('⚠️') || msg.message.includes('⏰');
+                    const isError = msg.message.includes('❌');
+                    const isInfo = msg.message.includes('📨') || msg.message.includes('🔄') || msg.message.includes('🚗') || msg.message.includes('💳');
+                    
                     return (
-                      <div key={msg.$id} className="flex justify-center">
-                        <div className="bg-gray-200 text-gray-600 text-xs px-3 py-1 rounded-full">
-                          {msg.message}
+                      <div key={msg.$id} className="flex justify-center my-2">
+                        <div className={`text-xs px-4 py-2 rounded-xl max-w-[90%] text-center ${
+                          isError ? 'bg-red-100 text-red-700 border border-red-200' :
+                          isWarning ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                          isSuccess ? 'bg-green-100 text-green-700 border border-green-200' :
+                          isInfo ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                          'bg-gray-200 text-gray-600'
+                        }`}>
+                          <p className="whitespace-pre-wrap">{msg.message}</p>
                         </div>
                       </div>
                     );
@@ -1134,14 +1216,77 @@ export function PersistentChatWindow() {
         )}
       </div>
 
+      {/* Booking Action Buttons - Show when therapist accepted */}
+      {bookingStep === 'chat' && chatState.currentBooking?.status === 'therapist_accepted' && (
+        <div className="p-3 bg-blue-50 border-t border-blue-200">
+          <p className="text-xs text-blue-700 mb-2 text-center">
+            ✅ {therapist.name} accepted your booking. Confirm now!
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={confirmBooking}
+              className="flex-1 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-1"
+            >
+              <Check className="w-4 h-4" />
+              Confirm Booking
+            </button>
+            <button
+              onClick={cancelBooking}
+              className="px-4 py-2.5 bg-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-300 transition-all"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Options - Show when service completed */}
+      {bookingStep === 'chat' && chatState.currentBooking?.status === 'completed' && !chatState.currentBooking?.paymentStatus && (
+        <div className="p-3 bg-emerald-50 border-t border-emerald-200">
+          <p className="text-xs text-emerald-700 mb-2 text-center">
+            ✨ Service completed! How would you like to pay?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => confirmPayment('cash')}
+              className="flex-1 py-2.5 bg-white border-2 border-emerald-400 text-emerald-700 text-sm font-semibold rounded-xl hover:bg-emerald-50 transition-all flex items-center justify-center gap-1"
+            >
+              💵 Cash
+            </button>
+            <button
+              onClick={() => {
+                shareBankCard();
+                confirmPayment('bank_transfer');
+              }}
+              className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm font-semibold rounded-xl hover:from-emerald-600 hover:to-green-700 transition-all flex items-center justify-center gap-1"
+            >
+              <CreditCard className="w-4 h-4" />
+              Bank Transfer
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Message Input - Only show in chat step */}
       {bookingStep === 'chat' && (
         <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-100">
+          {/* Spam Warning */}
+          {messageWarning && (
+            <div className="mb-2 p-2 bg-red-50 border border-red-300 rounded-lg flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{messageWarning}</p>
+            </div>
+          )}
+          
           <div className="flex items-center gap-2">
             <input
               type="text"
               value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
+              onChange={(e) => {
+                setMessageInput(e.target.value);
+                // Clear warning when user starts typing again
+                if (messageWarning) setMessageWarning(null);
+              }}
               placeholder="Type a message..."
               className="flex-1 px-4 py-2.5 bg-gray-100 border-0 rounded-full focus:ring-2 focus:ring-orange-200 outline-none text-sm"
               disabled={isSending}
