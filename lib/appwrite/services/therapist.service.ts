@@ -300,14 +300,43 @@ export const therapistService = {
     },
     async getById(id: string): Promise<any> {
         try {
+            console.log('🔍 [SharedProfile] Fetching therapist by ID:', id);
+            console.log('🔍 [SharedProfile] Database:', APPWRITE_CONFIG.databaseId);
+            console.log('🔍 [SharedProfile] Collection:', APPWRITE_CONFIG.collections.therapists);
+            
             const response = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id
             );
+            console.log('✅ [SharedProfile] Therapist found:', response.name || response.therapistName);
             return response;
         } catch (error) {
-            console.error('Error fetching therapist:', error);
+            console.error('❌ [SharedProfile] Direct fetch failed:', error.message);
+            console.error('🔍 [SharedProfile] Error code:', error.code);
+            
+            // Fallback: Try searching in all therapists if direct ID fetch fails
+            try {
+                console.log('🔄 [SharedProfile] Fallback: Searching all therapists...');
+                const allTherapists = await this.getAll();
+                const found = allTherapists.find(t => 
+                    t.$id === id || 
+                    t.id === id ||
+                    t.$id === id.split('-')[0] || 
+                    t.id === id.split('-')[0]
+                );
+                
+                if (found) {
+                    console.log('✅ [SharedProfile] Found therapist via search:', found.name || found.therapistName);
+                    return found;
+                }
+                
+                console.error('❌ [SharedProfile] Therapist not found in collection');
+                console.error('💡 Available IDs:', allTherapists.slice(0, 5).map(t => t.$id || t.id));
+            } catch (searchError) {
+                console.error('❌ [SharedProfile] Search fallback also failed:', searchError.message);
+            }
+            
             return null;
         }
     },
