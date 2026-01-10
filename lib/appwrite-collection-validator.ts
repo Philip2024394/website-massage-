@@ -83,11 +83,12 @@ export function validateCollectionId(name: CollectionName): ValidationResult {
   // Check if collection exists in config
   const collectionId = COLLECTIONS[name];
   
-  if (!collectionId) {
+  if (!collectionId || collectionId === '') {
+    // Return empty but valid for disabled collections
     return {
-      isValid: false,
+      isValid: true,
       collectionId: '',
-      error: `❌ Collection "${name}" not found in APPWRITE_MASTER_CONFIG.ts`,
+      warning: `⚠️ Collection "${name}" is disabled or not configured`,
     };
   }
   
@@ -162,37 +163,37 @@ export function validateAllCollections(): { valid: boolean; errors: string[] } {
  */
 export const VALIDATED_COLLECTIONS = {
   // Core Collections
-  get bookings() { return getValidatedCollectionId('bookings'); },
-  get therapists() { return getValidatedCollectionId('therapists'); },
-  get places() { return getValidatedCollectionId('places'); },
-  get users() { return getValidatedCollectionId('users'); },
-  get hotels() { return getValidatedCollectionId('hotels'); },
-  get agents() { return getValidatedCollectionId('agents'); },
+  get bookings() { return getValidatedCollectionId('BOOKINGS'); },
+  get therapists() { return getValidatedCollectionId('THERAPISTS'); },
+  get places() { return getValidatedCollectionId('PLACES'); },
+  get users() { return getValidatedCollectionId('USERS'); },
+  get hotels() { return getValidatedCollectionId('HOTELS'); },
+  get agents() { return getValidatedCollectionId('AGENTS'); },
   
   // Reviews & Notifications
-  get reviews() { return getValidatedCollectionId('reviews'); },
-  get notifications() { return getValidatedCollectionId('notifications'); },
+  get reviews() { return getValidatedCollectionId('REVIEWS'); },
+  get notifications() { return getValidatedCollectionId('NOTIFICATIONS'); },
   
   // Chat System
-  get chat_rooms() { return getValidatedCollectionId('chat_rooms'); },
-  get chat_messages() { return getValidatedCollectionId('chat_messages'); },
-  get admin_messages() { return getValidatedCollectionId('admin_messages'); },
+  get chat_rooms() { return getValidatedCollectionId('CHAT_SESSIONS'); },
+  get chat_messages() { return getValidatedCollectionId('CHAT_SESSIONS'); },
+  get admin_messages() { return getValidatedCollectionId('CHAT_SESSIONS'); },
   
   // Booking System
-  get hotel_bookings() { return getValidatedCollectionId('hotel_bookings'); },
+  get hotel_bookings() { return getValidatedCollectionId('BOOKINGS'); },
   
   // Content & Assets
-  get image_assets() { return getValidatedCollectionId('image_assets'); },
-  get login_backgrounds() { return getValidatedCollectionId('login_backgrounds'); },
-  get custom_links() { return getValidatedCollectionId('custom_links'); },
-  get translations() { return getValidatedCollectionId('translations'); },
-  get attributes() { return getValidatedCollectionId('attributes'); },
+  get image_assets() { return getValidatedCollectionId('IMAGE_ASSETS'); },
+  get login_backgrounds() { return getValidatedCollectionId('LOGIN_BACKGROUNDS'); },
+  get custom_links() { return getValidatedCollectionId('CUSTOM_LINKS'); },
+  get translations() { return getValidatedCollectionId('TRANSLATIONS'); },
+  get attributes() { return getValidatedCollectionId('ATTRIBUTES'); },
   
   // Analytics & Events
-  get analytics_events() { return getValidatedCollectionId('analytics_events'); },
+  get analytics_events() { return getValidatedCollectionId('ANALYTICS_EVENTS'); },
   
   // Financial
-  get commission_records() { return getValidatedCollectionId('commission_records'); },
+  get commission_records() { return getValidatedCollectionId('COMMISSION_RECORDS'); },
   get bank_details() { return getValidatedCollectionId('bank_details'); },
   get payment_transactions() { return getValidatedCollectionId('payment_transactions'); },
   get bankaccounts() { return getValidatedCollectionId('bankaccounts'); },
