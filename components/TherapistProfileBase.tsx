@@ -14,10 +14,10 @@
  */
 
 import React, { Suspense } from 'react';
-const TherapistCard = React.lazy(() => import('./TherapistCard'));
-const RotatingReviews = React.lazy(() => import('./RotatingReviews'));
-const SocialMediaLinks = React.lazy(() => import('./SocialMediaLinks'));
-const ShareActions = React.lazy(() => import('../features/shared-profiles/ShareActions'));
+import TherapistCard from './TherapistCard';
+import RotatingReviews from './RotatingReviews';
+import SocialMediaLinks from './SocialMediaLinks';
+import ShareActions from '../features/shared-profiles/ShareActions';
 import type { Therapist, UserLocation } from '../types';
 import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
 
@@ -125,7 +125,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
 
             {/* Therapist Card */}
             <div className="max-w-4xl mx-auto px-4 py-6">
-                <Suspense fallback={<div className="py-6 text-center text-gray-600">Loading profile...</div>}>
+                {/* Avoid lazy loading for critical shared route reliability */}
                 <TherapistCard
                     therapist={therapist}
                     userLocation={userLocation}
@@ -143,11 +143,9 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     hideJoinButton={mode === 'shared'}
                     customVerifiedBadge={mode === 'shared' ? "https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png" : undefined}
                 />
-                </Suspense>
 
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
-                    <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading reviews...</div>}>
                     <RotatingReviews 
                         location={therapist.location || 'Yogyakarta'} 
                         limit={5}
@@ -157,22 +155,17 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
-                    </Suspense>
                 </div>
 
                 {/* Social Media Icons */}
                 <div className="mt-8">
-                    <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading social links...</div>}>
                     <SocialMediaLinks />
-                    </Suspense>
                 </div>
 
                 {/* Share Actions: Copy link + share buttons (no UI redesign) */}
                 {mode === 'shared' && (
                     <div className="mt-6">
-                        <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading share actions...</div>}>
-                            <ShareActions therapist={therapist} />
-                        </Suspense>
+                        <ShareActions therapist={therapist} />
                     </div>
                 )}
 
