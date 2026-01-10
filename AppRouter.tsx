@@ -244,7 +244,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * Render route with suspense boundary and proper language props
      * Includes error boundary to catch lazy loading failures
      */
-    const renderRoute = (Component: React.LazyExoticComponent<any>, componentProps: any = {}, routeName?: string) => {
+    const renderRoute = (Component: React.ComponentType<any>, componentProps: any = {}, routeName?: string) => {
         const ErrorFallback = () => (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
