@@ -40,9 +40,14 @@ export const SharedPlaceProfile: React.FC<SharedPlaceProfileProps> = ({
     // Track analytics
     useEffect(() => {
         if (place && providerId) {
-            const sessionId = sessionStorage.getItem('shared_link_session_id') || 
-                              crypto.randomUUID?.() || 
-                              `session_${Date.now()}`;
+            const randomId = (typeof window !== 'undefined'
+                && (window as any).crypto
+                && (window as any).crypto.randomUUID
+                ? (window as any).crypto.randomUUID()
+                : null);
+            const sessionId = sessionStorage.getItem('shared_link_session_id')
+                || randomId
+                || `session_${Date.now()}`;
             sessionStorage.setItem('shared_link_session_id', sessionId);
 
             analyticsService.trackSharedLinkView(

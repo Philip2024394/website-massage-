@@ -300,25 +300,63 @@ export const therapistService = {
     },
     async getById(id: string): Promise<any> {
         try {
-            console.log('🔍 [SharedProfile] Fetching therapist by ID:', id);
-            console.log('🔍 [SharedProfile] Database:', APPWRITE_CONFIG.databaseId);
-            console.log('🔍 [SharedProfile] Collection:', APPWRITE_CONFIG.collections.therapists);
+            console.log('\n' + '📡'.repeat(50));
+            console.log('📡 [APPWRITE CLIENT] therapistService.getById() called');
+            console.log('📡'.repeat(50));
+            console.log('🆔 Input ID:', id);
+            console.log('🗄️  Database ID:', APPWRITE_CONFIG.databaseId);
+            console.log('📦 Collection ID:', APPWRITE_CONFIG.collections.therapists);
+            console.log('🔌 Database client initialized:', !!databases);
+            console.log('📡'.repeat(50) + '\n');
+            
+            console.log('⏳ [APPWRITE] Executing databases.getDocument()...');
+            const startTime = Date.now();
             
             const response = await databases.getDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
                 id
             );
-            console.log('✅ [SharedProfile] Therapist found:', response.name || response.therapistName);
+            
+            const duration = Date.now() - startTime;
+            
+            console.log('\n' + '✅'.repeat(50));
+            console.log('✅ [APPWRITE SUCCESS] Document retrieved');
+            console.log('✅'.repeat(50));
+            console.log('⏱️  Query duration:', duration + 'ms');
+            console.log('📄 Document ID:', response.$id);
+            console.log('👤 Name:', response.name || response.therapistName);
+            console.log('📍 Location:', response.location || response.city);
+            console.log('⭐ Rating:', response.rating);
+            console.log('💰 Pricing:', response.pricing);
+            console.log('📊 Review Count:', response.reviewCount);
+            console.log('🔑 All keys:', Object.keys(response).join(', '));
+            console.log('✅'.repeat(50) + '\n');
+            
             return response;
         } catch (error) {
-            console.error('❌ [SharedProfile] Direct fetch failed:', error.message);
-            console.error('🔍 [SharedProfile] Error code:', error.code);
+            console.error('\n' + '❌'.repeat(50));
+            console.error('❌ [APPWRITE ERROR] Direct fetch failed');
+            console.error('❌'.repeat(50));
+            console.error('🔴 Error type:', error.constructor?.name);
+            console.error('🔴 Error message:', error.message);
+            console.error('🔴 Error code:', error.code);
+            console.error('🔴 Error type (appwrite):', error.type);
+            console.error('🔴 Full error object:', error);
+            console.error('❌'.repeat(50) + '\n');
             
             // Fallback: Try searching in all therapists if direct ID fetch fails
             try {
-                console.log('🔄 [SharedProfile] Fallback: Searching all therapists...');
+                console.log('\n' + '🔄'.repeat(50));
+                console.log('🔄 [FALLBACK] Attempting search through all therapists...');
+                console.log('🔄'.repeat(50) + '\n');
+                
                 const allTherapists = await this.getAll();
+                
+                console.log('📊 [FALLBACK] Total therapists retrieved:', allTherapists.length);
+                console.log('🔍 [FALLBACK] Searching for ID:', id);
+                console.log('🔍 [FALLBACK] Also trying ID prefix:', id.split('-')[0]);
+                
                 const found = allTherapists.find(t => 
                     t.$id === id || 
                     t.id === id ||
@@ -327,14 +365,26 @@ export const therapistService = {
                 );
                 
                 if (found) {
-                    console.log('✅ [SharedProfile] Found therapist via search:', found.name || found.therapistName);
+                    console.log('\n' + '✅'.repeat(50));
+                    console.log('✅ [FALLBACK SUCCESS] Found therapist via search');
+                    console.log('✅'.repeat(50));
+                    console.log('👤 Name:', found.name || found.therapistName);
+                    console.log('🆔 ID:', found.$id || found.id);
+                    console.log('✅'.repeat(50) + '\n');
                     return found;
                 }
                 
-                console.error('❌ [SharedProfile] Therapist not found in collection');
-                console.error('💡 Available IDs:', allTherapists.slice(0, 5).map(t => t.$id || t.id));
+                console.error('\n' + '⚠️'.repeat(50));
+                console.error('⚠️ [FALLBACK FAILED] Therapist not found in collection');
+                console.error('⚠️'.repeat(50));
+                console.error('💡 Sample available IDs:', allTherapists.slice(0, 5).map(t => t.$id || t.id));
+                console.error('⚠️'.repeat(50) + '\n');
             } catch (searchError) {
-                console.error('❌ [SharedProfile] Search fallback also failed:', searchError.message);
+                console.error('\n' + '💥'.repeat(50));
+                console.error('💥 [FALLBACK ERROR] Search fallback also failed');
+                console.error('💥'.repeat(50));
+                console.error('🔴 Search error:', searchError.message);
+                console.error('💥'.repeat(50) + '\n');
             }
             
             return null;

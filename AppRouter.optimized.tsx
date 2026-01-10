@@ -245,6 +245,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(profileRoutes.therapist.component);
         
         case 'shared-therapist-profile':
+            // Use standard lazy route rendering to ensure compatibility
             return renderRoute(profileRoutes.sharedTherapist.component);
         
         case 'massage-place-profile':

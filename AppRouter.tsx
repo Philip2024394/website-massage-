@@ -33,6 +33,10 @@ class LazyLoadErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('[LAZY LOAD ERROR]', error, errorInfo);
+        if (typeof window !== 'undefined') {
+            (window as any).__lazyErrorMessage = error?.message || 'Unknown error';
+            (window as any).__lazyErrorStack = (error as any)?.stack || '';
+        }
   }
 
   render() {
@@ -106,7 +110,11 @@ const OnlinePresenceMassageTherapistPage = React.lazy(() => import('./pages/blog
 const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTourismUbudPage'));
 
 // Shared profile components
-const SharedTherapistProfile = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
+const SharedTherapistProfileLazy = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
+// Import full shared profile directly (non-lazy) to guarantee rendering
+import SharedTherapistProfileDirect from './features/shared-profiles/SharedTherapistProfile';
+// Import lite version directly (non-lazy) to avoid chunk load issues
+import SharedTherapistProfileLiteDirect from './features/shared-profiles/SharedTherapistProfileLite';
 
 interface AppRouterProps {
     page: Page;
@@ -241,11 +249,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">⚠️</div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error</h2>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Component Load Error (patched)</h2>
                     <p className="text-gray-600 mb-4">Failed to load page component</p>
                     <div className="bg-gray-100 rounded p-3 mb-4">
                         <code className="text-sm text-gray-700">Route: {routeName || page}</code>
                     </div>
+                    {(typeof window !== 'undefined' && (window as any).__lazyErrorMessage) && (
+                        <div className="bg-red-50 border border-red-200 text-left rounded p-3 mb-4">
+                            <div className="text-sm font-semibold text-red-700">Error:</div>
+                            <div className="text-xs text-red-600 break-words">{(window as any).__lazyErrorMessage}</div>
+                        </div>
+                    )}
                     <p className="text-sm text-gray-500 mb-4">
                         The component file may be missing or have a syntax error. Check the console for details.
                     </p>
@@ -610,15 +624,30 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         // ⚠️ DO NOT MODIFY - This route handles ALL /therapist-profile/:id URLs
         // ⚠️ Used by thousands of shared links in production
         case 'shared-therapist-profile':
-            console.log('🔧 [SharedTherapistProfile] Using NEW shared profile component');
-            console.log('  - Current path:', window.location.pathname);
-            return renderRoute(SharedTherapistProfile, {
-                userLocation: props.userLocation,
-                loggedInCustomer: props.loggedInCustomer,
-                handleQuickBookWithChat: props.handleQuickBookWithChat,
-                onNavigate: props.onNavigate,
-                language: props.language
-            });
+            console.log('\n' + '🔧'.repeat(50));
+            console.log('🔧 [ROUTER] Route matched: shared-therapist-profile');
+            console.log('🔧'.repeat(50));
+            console.log('📍 Current path:', window.location.pathname);
+            console.log('🔗 Full URL:', window.location.href);
+            console.log('📦 Route name:', page);
+            console.log('👤 Has loggedInCustomer:', !!props.loggedInCustomer);
+            console.log('📍 Has userLocation:', !!props.userLocation);
+            console.log('🌐 Language:', props.language);
+            console.log('🔧'.repeat(50));
+            console.log('🚀 [ROUTER] Rendering SharedTherapistProfile component...');
+            console.log('🔧'.repeat(50) + '\n');
+            
+            // Restore full shared profile UI (direct import, non-lazy)
+            return (
+                <SharedTherapistProfileDirect
+                    {...props}
+                    userLocation={props.userLocation}
+                    loggedInCustomer={props.loggedInCustomer}
+                    handleQuickBookWithChat={props.handleQuickBookWithChat}
+                    onNavigate={props.onNavigate}
+                    language={props.language}
+                />
+            );
         
         case 'massage-place-profile':
             console.log('🔧 [MassagePlaceProfile] Rendering massage place profile page');

@@ -13,10 +13,11 @@
  * - SharedTherapistProfile wraps this with direct fetch + SEO
  */
 
-import React from 'react';
-import TherapistCard from './TherapistCard';
-import RotatingReviews from './RotatingReviews';
-import SocialMediaLinks from './SocialMediaLinks';
+import React, { Suspense } from 'react';
+const TherapistCard = React.lazy(() => import('./TherapistCard'));
+const RotatingReviews = React.lazy(() => import('./RotatingReviews'));
+const SocialMediaLinks = React.lazy(() => import('./SocialMediaLinks'));
+const ShareActions = React.lazy(() => import('../features/shared-profiles/ShareActions'));
 import type { Therapist, UserLocation } from '../types';
 import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
 
@@ -124,6 +125,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
 
             {/* Therapist Card */}
             <div className="max-w-4xl mx-auto px-4 py-6">
+                <Suspense fallback={<div className="py-6 text-center text-gray-600">Loading profile...</div>}>
                 <TherapistCard
                     therapist={therapist}
                     userLocation={userLocation}
@@ -141,9 +143,11 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     hideJoinButton={mode === 'shared'}
                     customVerifiedBadge={mode === 'shared' ? "https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png" : undefined}
                 />
+                </Suspense>
 
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
+                    <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading reviews...</div>}>
                     <RotatingReviews 
                         location={therapist.location || 'Yogyakarta'} 
                         limit={5}
@@ -153,12 +157,24 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
                         onNavigate={onNavigate}
                     />
+                    </Suspense>
                 </div>
 
                 {/* Social Media Icons */}
                 <div className="mt-8">
+                    <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading social links...</div>}>
                     <SocialMediaLinks />
+                    </Suspense>
                 </div>
+
+                {/* Share Actions: Copy link + share buttons (no UI redesign) */}
+                {mode === 'shared' && (
+                    <div className="mt-6">
+                        <Suspense fallback={<div className="text-center text-sm text-gray-600">Loading share actions...</div>}>
+                            <ShareActions therapist={therapist} />
+                        </Suspense>
+                    </div>
+                )}
 
                 {/* SEO-Optimized Footer - Only in shared mode */}
                 {mode === 'shared' && showSEOFooter && (
@@ -185,7 +201,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         <div className="bg-gradient-to-r from-orange-50 to-green-50 rounded-lg p-6 mb-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">
                                 {language === 'en' 
-                                    ? `Professional Massage Services in ${therapist.location || 'Indonesia'}`
+                                    ? `Professional Massage Therapist - Home - Hotel - Villa ${therapist.location || 'Jakarta Location'}`
                                     : `Jasa Pijat Profesional di ${therapist.location || 'Indonesia'}`
                                 }
                             </h3>

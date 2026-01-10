@@ -11,10 +11,12 @@ export interface ShareLink {
     $id?: string;
     linkId: string;                // Full URL
     linkedItemId: string;          // Entity ID (your schema)
-    linkedItemType: 'therapist' | 'place' | 'facial';  // Enum type
+    // Stored type must match Appwrite schema enum values
+    linkedItemType: 'therapist' | 'place';
     shortId: string;               // e.g., "12345"
     slug: string;                  // e.g., "budi-massage-ubud"
-    entityType: 'therapist' | 'place' | 'facial';  // Matches linkedItemType
+    // Mirror of linkedItemType for convenience in queries
+    entityType: 'therapist' | 'place';
     entityId: string;              // Full Appwrite ID (duplicate of linkedItemId)
     entityName?: string;           // Cached name
     isActive: boolean;
@@ -73,6 +75,15 @@ class ShareLinkService {
         }
     }
     
+    /**
+     * Normalize input entity type to a storage-safe value supported by Appwrite schema.
+     * Appwrite collection allows: user, therapist, place, hotel, agent. We map "facial" to "place".
+     */
+    private normalizeTypeForStorage(type: 'therapist' | 'place' | 'facial'): 'therapist' | 'place' {
+        if (type === 'facial') return 'place';
+        return type;
+    }
+
     /**
      * Generate slug from name with Indonesian SEO keywords
      */
@@ -164,6 +175,7 @@ class ShareLinkService {
         try {
             const shortId = await this.generateShortId();
             const slug = this.generateSlug(entityName, entityType, city);
+            const storageType = this.normalizeTypeForStorage(entityType);
             
             // Check if slug exists and make it unique if needed
             let finalSlug = slug;
@@ -176,10 +188,10 @@ class ShareLinkService {
             const shareLink: Omit<ShareLink, '$id' | '$createdAt' | '$updatedAt'> = {
                 linkId: `https://www.indastreetmassage.com/share/${shortId}`,
                 linkedItemId: entityId,
-                linkedItemType: entityType,
+                linkedItemType: storageType,
                 shortId,
                 slug: finalSlug,
-                entityType,
+                entityType: storageType,
                 entityId,
                 entityName,
                 isActive: true,
@@ -276,11 +288,14 @@ class ShareLinkService {
      */
     async getByEntity(entityType: string, entityId: string): Promise<ShareLink | null> {
         try {
+            const storageType = this.normalizeTypeForStorage(
+                (entityType as 'therapist' | 'place' | 'facial')
+            );
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 this.collectionId,
                 [
-                    Query.equal('linkedItemType', entityType),
+                    Query.equal('linkedItemType', storageType),
                     Query.equal('linkedItemId', entityId),
                     Query.equal('isActive', true)
                 ]

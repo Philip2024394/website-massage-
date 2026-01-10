@@ -296,7 +296,18 @@ const App = () => {
         
         // Note: Chat is intentionally NOT closed on route change
         // to allow users to continue conversations while navigating
+    }, [state.page]);
         
+    // ===== GLOBAL PAGE CHANGE MONITOR =====
+    useEffect(() => {
+        console.log('\n' + '📄'.repeat(50));
+        console.log('📄 [PAGE STATE] Page changed');
+        console.log('📄'.repeat(50));
+        console.log('📍 Current page:', state.page);
+        console.log('📍 Previous page:', document.title);
+        console.log('🔗 Current URL:', window.location.href);
+        console.log('🔗 Pathname:', window.location.pathname);
+        console.log('📄'.repeat(50) + '\n');
     }, [state.page]);
 
     // ===== URL SYNCHRONIZATION SYSTEM =====
@@ -313,8 +324,18 @@ const App = () => {
         const currentPath = window.location.pathname;
         const expectedUrl = getUrlForPage(state.page);
         
+        console.log('\n' + '🔄'.repeat(50));
+        console.log('🔄 [URL SYNC] Checking if URL needs update');
+        console.log('🔄'.repeat(50));
+        console.log('📍 Current path:', currentPath);
+        console.log('📍 Expected URL:', expectedUrl);
+        console.log('📍 Match:', currentPath === expectedUrl);
+        console.log('🔄'.repeat(50) + '\n');
+        
         // Only update if URL doesn't match (avoid unnecessary history entries)
         if (currentPath !== expectedUrl && !currentPath.startsWith('/profile/therapist/') && !currentPath.startsWith('/profile/place/') && !currentPath.startsWith('/accept-booking/')) {
+            console.log('🚫 [REDIRECT] URL sync triggering updateBrowserUrl');
+            console.log('   From:', currentPath, '→ To:', expectedUrl);
             updateBrowserUrl(state.page, undefined, false);
         }
     }, [state.page]);
@@ -325,8 +346,17 @@ const App = () => {
             const path = window.location.pathname;
             const page = getPageFromUrl(path);
             
+            console.log('\n' + '🔙'.repeat(50));
+            console.log('🔙 [NAVIGATION] Browser back/forward detected');
+            console.log('🔙'.repeat(50));
+            console.log('📍 Path:', path);
+            console.log('📄 Resolved page:', page);
+            console.log('📄 Current page:', state.page);
+            console.log('🔙'.repeat(50) + '\n');
+            
             if (page && page !== state.page) {
-                console.log('🔙 Browser back/forward navigation to:', page);
+                console.log('🚫 [REDIRECT] Page change triggered by popstate');
+                console.log('   From:', state.page, '→ To:', page);
                 state.setPage(page);
             }
         };
@@ -561,8 +591,59 @@ const App = () => {
         state.setPage('home');
     };
 
+    const renderChatWindow = () => {
+        console.log('💬 JSX RENDER CYCLE - Checking ChatWindow condition');
+        console.log('💬 activeChat value:', activeChat);
+        console.log('💬 activeChat?.chatRoomId:', activeChat?.chatRoomId);
+        console.log('💬 isChatMinimized:', isChatMinimized);
+        console.log('💬 Will render ChatWindow?:', !!activeChat?.chatRoomId && !isChatMinimized);
+        
+        // Show debug info when activeChat exists but not rendering
+        if (activeChat && !activeChat.chatRoomId) {
+            console.log('⚠️ activeChat exists but no chatRoomId:', activeChat);
+        }
+        
+        if (activeChat && isChatMinimized) {
+            console.log('ℹ️ ChatWindow minimized, activeChat exists');
+        }
+        
+        if (!activeChat?.chatRoomId || isChatMinimized) {
+            console.log('❌ ChatWindow NOT rendering - missing chatRoomId or minimized');
+            
+            // Show debug overlay when we should render but can't
+            if (activeChat && !activeChat.chatRoomId && !isChatMinimized) {
+                return (
+                    <div className="fixed bottom-20 right-6 z-50 bg-red-500 text-white p-3 rounded-lg shadow-lg max-w-sm">
+                        <div className="text-sm">
+                            <strong>DEBUG:</strong> Chat exists but no chatRoomId
+                            <br />
+                            <code className="text-xs">{JSON.stringify(activeChat, null, 2)}</code>
+                        </div>
+                    </div>
+                );
+            }
+            
+            return null;
+        }
+        
+        console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
+        console.log('✅ FloatingChatWindow RENDERING NOW');
+        return (
+            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
+                <FloatingChatWindow
+                    userId={activeChat.customerId || 'guest'}
+                    userName={activeChat.customerName || 'Guest'}
+                    userRole="customer"
+                />
+            </Suspense>
+        );
+    };
+
     return (
-        <LanguageProvider value={{ language: language as 'en' | 'id', setLanguage: (l: 'en' | 'id' | 'gb') => { void handleLanguageSelect(l); } }}>
+        <LanguageProvider value={{ 
+            language: language as 'en' | 'id', 
+            setLanguage: handleLanguageSelect
+        }}>
         <ChatProvider>
         <PersistentChatProvider>
         <DeviceStylesProvider>
@@ -736,9 +817,6 @@ const App = () => {
                 setLoyaltyEvent={state.setLoyaltyEvent}
             />
             
-            {/* Global Chat System - Available everywhere */}
-            <FloatingChatWindow />
-            
             </AppLayout>
             
             {/* Global Overlays - Outside AppLayout to prevent clipping */}
@@ -765,84 +843,7 @@ const App = () => {
 
 
             {/* Booking Chat Window */}
-            {(() => {
-                console.log('💬 JSX RENDER CYCLE - Checking ChatWindow condition');
-                console.log('💬 activeChat value:', activeChat);
-                console.log('💬 activeChat?.chatRoomId:', activeChat?.chatRoomId);
-                console.log('💬 isChatMinimized:', isChatMinimized);
-                console.log('💬 Will render ChatWindow?:', !!activeChat?.chatRoomId && !isChatMinimized);
-                
-                // Show debug info when activeChat exists but not rendering
-                if (activeChat && !activeChat.chatRoomId) {
-                    console.log('⚠️ activeChat exists but no chatRoomId:', activeChat);
-                }
-                
-                if (activeChat && isChatMinimized) {
-                    console.log('ℹ️ ChatWindow minimized, activeChat exists');
-                }
-                
-                if (!activeChat?.chatRoomId || isChatMinimized) {
-                    console.log('❌ ChatWindow NOT rendering - missing chatRoomId or minimized');
-                    
-                    // Show debug overlay when we should render but can't
-                    if (activeChat && !activeChat.chatRoomId && !isChatMinimized) {
-                        return (
-                            <div className="fixed bottom-20 right-6 z-50 bg-red-500 text-white p-3 rounded-lg shadow-lg max-w-sm">
-                                <div className="text-sm">
-                                    <strong>DEBUG:</strong> Chat exists but no chatRoomId
-                                    <br />
-                                    <code className="text-xs">{JSON.stringify(activeChat, null, 2)}</code>
-                                </div>
-                            </div>
-                        );
-                    }
-                    
-                    return null;
-                }
-                
-                console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
-                
-                try {
-                    console.log('✅ FloatingChatWindow RENDERING NOW');
-                    return (
-                        <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
-                            <FloatingChatWindow
-                                userId={activeChat.customerId || 'guest'}
-                                userName={activeChat.customerName || 'Guest'}
-                                userRole="customer"
-                            />
-                        </Suspense>
-                    );
-                } catch (chatError) {
-                    console.error('❌ ChatWindow render error:', chatError);
-                    // Fallback UI for chat errors
-                    return (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 text-center">
-                                <div className="text-red-500 mb-4">
-                                    <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-800 mb-2">Chat Unavailable</h3>
-                                <p className="text-gray-600 mb-4">There was an issue loading the chat. Please try again.</p>
-                                <div className="text-xs text-red-600 mb-4 bg-red-50 p-2 rounded">
-                                    Error: {chatError.message}
-                                </div>
-                                <button 
-                                    onClick={() => {
-                                        setIsChatMinimized(true);
-                                        setActiveChat(null);
-                                    }}
-                                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
-                    );
-                }
-            })()}
+            {renderChatWindow()}
 
             {/* New Standalone Floating Chat - Only on home page (rendered in HomePage.tsx) */}
 

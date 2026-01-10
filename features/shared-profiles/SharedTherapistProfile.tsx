@@ -23,13 +23,13 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { therapistService } from '../../lib/appwriteService';
 import TherapistProfileBase from '../../components/TherapistProfileBase';
 import type { Therapist, UserLocation } from '../../types';
 import { generateTherapistShareURL } from './utils/shareUrlBuilder';
-import { analyticsService } from '../../services/analyticsService';
 import { PREVIEW_IMAGES } from '../../config/previewImages';
 import { getHeroImageForTherapist } from '../../config/heroImages';
+import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
+import { shareLinkService } from '../../lib/services/shareLinkService';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -53,18 +53,36 @@ interface SharedTherapistProfileProps {
  */
 const extractTherapistIdFromUrl = (): string | null => {
     const path = window.location.pathname;
+    const fullUrl = window.location.href;
+    
+    console.log('\n' + '='.repeat(80));
+    console.log('🔗 [LINK VALIDATION] Incoming URL Analysis');
+    console.log('='.repeat(80));
+    console.log('📍 Full URL:', fullUrl);
+    console.log('📍 Pathname:', path);
+    console.log('📍 Search:', window.location.search);
+    console.log('📍 Hash:', window.location.hash);
     
     // Match patterns: /share/therapist/:id or /therapist-profile/:id
     const match = path.match(/\/(share\/therapist|therapist-profile)\/([^\/]+)/);
     if (!match) {
-        console.error('❌ Invalid URL pattern:', path);
+        console.error('❌ [LINK VALIDATION] Invalid URL pattern - does not match expected routes');
+        console.error('❌ Expected patterns: /share/therapist/:id OR /therapist-profile/:id');
+        console.error('❌ Received path:', path);
         return null;
     }
     
+    const routeType = match[1]; // "share/therapist" or "therapist-profile"
     const fullSegment = match[2]; // "12345" or "12345-name-slug"
     const id = fullSegment.split('-')[0]; // Extract ID before first dash
     
-    console.log('🔍 Extracted therapist ID:', id, 'from:', fullSegment);
+    console.log('✅ [LINK VALIDATION] URL parsed successfully');
+    console.log('   Route type:', routeType);
+    console.log('   Full segment:', fullSegment);
+    console.log('   Extracted ID:', id);
+    console.log('   Has slug:', fullSegment.includes('-'));
+    console.log('='.repeat(80) + '\n');
+    
     return id;
 };
 
@@ -76,64 +94,191 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     onNavigate,
     language = 'en'
 }) => {
+    console.log('\n' + '🧩'.repeat(40));
+    console.log('🧩 [COMPONENT LIFECYCLE] SharedTherapistProfile MOUNTED');
+    console.log('🧩'.repeat(40));
+    console.log('⏰ Mount timestamp:', new Date().toISOString());
+    console.log('📦 Props received:', {
+        hasSelectedTherapist: !!selectedTherapist,
+        selectedTherapistId: selectedTherapist?.$id,
+        selectedTherapistName: selectedTherapist?.name,
+        hasUserLocation: !!userLocation,
+        hasLoggedInCustomer: !!loggedInCustomer,
+        hasQuickBookHandler: !!handleQuickBookWithChat,
+        language
+    });
+    console.log('🧩'.repeat(40) + '\n');
+    
     const [therapist, setTherapist] = useState<Therapist | null>(selectedTherapist || null);
     const [loading, setLoading] = useState(!selectedTherapist);
     const [error, setError] = useState<string | null>(null);
+    
+    // Monitor unmount
+    React.useEffect(() => {
+        return () => {
+            console.log('\n' + '💥'.repeat(40));
+            console.log('💥 [COMPONENT LIFECYCLE] SharedTherapistProfile UNMOUNTING');
+            console.log('💥'.repeat(40));
+            console.log('⏰ Unmount timestamp:', new Date().toISOString());
+            console.log('📊 Final state:', { hasTherapist: !!therapist, loading, error });
+            console.log('💥'.repeat(40) + '\n');
+        };
+    }, []);
 
     // Direct fetch from Appwrite
     useEffect(() => {
+        console.log('\n' + '🔁'.repeat(40));
+        console.log('🔁 [USEEFFECT] Data fetch effect triggered');
+        console.log('🔁 Dependency: selectedTherapist =', selectedTherapist?.$id || 'null');
+        console.log('🔁'.repeat(40) + '\n');
+        
         const fetchTherapist = async () => {
             // If therapist already provided, skip fetch
             if (selectedTherapist) {
-                console.log('✅ Using pre-selected therapist:', selectedTherapist.name);
+                console.log('\n' + '⚡'.repeat(40));
+                console.log('⚡ [STATE UPDATE] Using pre-selected therapist');
+                console.log('⚡ Therapist:', selectedTherapist.name);
+                console.log('⚡ ID:', selectedTherapist.$id);
+                console.log('⚡ Skipping Appwrite fetch');
+                console.log('⚡'.repeat(40) + '\n');
                 setTherapist(selectedTherapist);
                 setLoading(false);
                 return;
             }
 
             // Extract ID from URL
-            const therapistId = extractTherapistIdFromUrl();
+            let therapistId = extractTherapistIdFromUrl();
+
+            // Fallback: support short URLs (/share/12345) and SEO format (/share/slug/{id})
+            if (!therapistId && window.location.pathname.startsWith('/share/')) {
+                try {
+                    const parts = window.location.pathname.split('/').filter(Boolean);
+                    // If format is /share/{slug}/{id}, take last segment as ID
+                    if (parts.length >= 3) {
+                        const lastSegment = parts[parts.length - 1];
+                        therapistId = lastSegment.split('-')[0];
+                        console.log('🔧 [URL FALLBACK] Extracted ID from SEO format:', therapistId);
+                    } else if (parts.length === 2) {
+                        // Short ID or slug: resolve via share links
+                        const identifier = parts[1].replace('#', '');
+                        console.log('🔧 [URL FALLBACK] Resolving short identifier:', identifier);
+                        const link = await shareLinkService.getByShortIdOrSlug(identifier);
+                        if (link && link.entityType === 'therapist') {
+                            therapistId = link.entityId;
+                            console.log('✅ [URL FALLBACK] Resolved therapist ID via share link:', therapistId);
+                        } else {
+                            console.warn('⚠️ [URL FALLBACK] Share link not found or not a therapist');
+                        }
+                    }
+                } catch (e) {
+                    console.warn('⚠️ [URL FALLBACK] Failed to resolve share identifier:', e);
+                }
+            }
+
             if (!therapistId) {
+                console.error('\n' + '🚫'.repeat(40));
+                console.error('🚫 [ERROR] Invalid profile URL - cannot extract therapist ID');
+                console.error('🚫'.repeat(40) + '\n');
                 setError('Invalid profile URL');
                 setLoading(false);
                 return;
             }
 
-            console.log('📡 Fetching therapist directly from Appwrite, ID:', therapistId);
+            console.log('\n' + '📡'.repeat(40));
+            console.log('📡 [APPWRITE] Initiating direct fetch');
+            console.log('📡'.repeat(40));
+            console.log('🆔 Therapist ID:', therapistId);
+            console.log('🔌 Appwrite client initialized:', !!therapistService);
+            console.log('📡'.repeat(40) + '\n');
             
             try {
+                console.log('⏳ [STATE UPDATE] Setting loading = true');
                 setLoading(true);
                 setError(null);
 
-                // DIRECT FETCH - NO dependency on therapist list state
-                const fetchedTherapist = await therapistService.getById(therapistId);
+                console.log('\n' + '🚀'.repeat(40));
+                console.log('🚀 [APPWRITE QUERY] Executing databases.getDocument()');
+                console.log('🚀 Target ID:', therapistId);
+                console.log('🚀'.repeat(40) + '\n');
+                
+                // DIRECT FETCH via lightweight client (avoids heavy config)
+                const fetchedTherapist = await databases.getDocument(
+                    DATABASE_ID,
+                    COLLECTIONS.THERAPISTS,
+                    therapistId
+                );
+                
+                console.log('\n' + '📥'.repeat(40));
+                console.log('📥 [APPWRITE RESPONSE] Query completed');
+                console.log('📥'.repeat(40));
                 
                 if (!fetchedTherapist) {
+                    console.error('⚠️ [APPWRITE RESPONSE] Returned NULL or undefined');
+                    console.error('⚠️ No document found with ID:', therapistId);
+                    console.log('📥'.repeat(40) + '\n');
                     throw new Error('Therapist not found');
                 }
 
-                console.log('✅ Therapist fetched successfully:', fetchedTherapist.name);
+                console.log('✅ [APPWRITE RESPONSE] Document retrieved successfully');
+                console.log('📄 Document ID:', fetchedTherapist.$id || fetchedTherapist.id);
+                console.log('👤 Name:', fetchedTherapist.name || fetchedTherapist.therapistName);
+                console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
+                console.log('📊 Rating:', fetchedTherapist.rating);
+                console.log('💰 Pricing:', fetchedTherapist.pricing);
+                console.log('📥'.repeat(40) + '\n');
+                
+                console.log('⏳ [STATE UPDATE] Setting therapist state with fetched data');
                 setTherapist(fetchedTherapist);
 
                 // Track analytics
                 try {
-                    const sessionId = sessionStorage.getItem('shared_link_session_id') || 
-                                      crypto.randomUUID?.() || 
-                                      `session_${Date.now()}`;
+                    console.log('\n' + '📊'.repeat(40));
+                    console.log('📊 [ANALYTICS] Tracking shared link view');
+                    const randomId = (typeof window !== 'undefined'
+                        && (window as any).crypto
+                        && (window as any).crypto.randomUUID
+                        ? (window as any).crypto.randomUUID()
+                        : null);
+                    const sessionId = sessionStorage.getItem('shared_link_session_id')
+                        || randomId
+                        || `session_${Date.now()}`;
                     sessionStorage.setItem('shared_link_session_id', sessionId);
+                    console.log('📊 Session ID:', sessionId);
+                    console.log('📊 Therapist ID:', therapistId);
 
-                    await analyticsService.trackSharedLinkView(
-                        Number(therapistId),
-                        sessionId
-                    );
+                    try {
+                        const { analyticsService } = await import('../../services/analyticsService');
+                        await analyticsService.trackSharedLinkView(
+                            Number(therapistId),
+                            sessionId
+                        );
+                    } catch (e) {
+                        console.warn('⚠️ [ANALYTICS] Service unavailable, skipping:', e);
+                    }
+                    console.log('✅ [ANALYTICS] View tracked successfully');
+                    console.log('📊'.repeat(40) + '\n');
                 } catch (analyticsError) {
-                    console.log('Analytics tracking skipped:', analyticsError);
+                    console.warn('⚠️ [ANALYTICS] Tracking failed (non-critical):', analyticsError);
                 }
 
             } catch (err: any) {
-                console.error('❌ Failed to fetch therapist:', err);
+                console.error('\n' + '❌'.repeat(40));
+                console.error('❌ [ERROR] Failed to fetch therapist');
+                console.error('❌'.repeat(40));
+                console.error('🔴 Error type:', err.constructor.name);
+                console.error('🔴 Error message:', err.message);
+                console.error('🔴 Error code:', err.code);
+                console.error('🔴 Full error:', err);
+                console.error('🔴 Stack trace:', err.stack);
+                console.error('❌'.repeat(40) + '\n');
+                
+                console.log('⏳ [STATE UPDATE] Setting error state');
                 setError(err.message || 'Failed to load therapist profile');
             } finally {
+                console.log('\n' + '🏁'.repeat(40));
+                console.log('🏁 [FETCH COMPLETE] Setting loading = false');
+                console.log('🏁 Final state: error =', error, ', hasTherapist =', !!therapist);
+                console.log('🏁'.repeat(40) + '\n');
                 setLoading(false);
             }
         };
@@ -371,8 +516,21 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         }
     };
 
+    // RENDER PHASE MONITORING
+    console.log('\n' + '🎨'.repeat(40));
+    console.log('🎨 [RENDER PHASE] Component render triggered');
+    console.log('🎨'.repeat(40));
+    console.log('📊 Current state:', {
+        loading,
+        hasError: !!error,
+        hasTherapist: !!therapist,
+        therapistName: therapist?.name
+    });
+    console.log('🎨'.repeat(40) + '\n');
+
     // LOADING STATE - DO NOT RENDER CONTENT
     if (loading) {
+        console.log('⏳ [RENDER] Rendering LOADING state');
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center max-w-md">
@@ -392,7 +550,13 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     // ERROR STATE - SHOW FULL ERROR, NO SILENT FAILURE
     if (error || !therapist) {
         const errorMessage = error || 'Therapist profile not found';
-        console.error('🚨 SHARED PROFILE ERROR:', errorMessage);
+        console.error('\n' + '🚨'.repeat(40));
+        console.error('🚨 [RENDER] Rendering ERROR state');
+        console.error('🚨'.repeat(40));
+        console.error('❌ Error message:', errorMessage);
+        console.error('❌ Has therapist:', !!therapist);
+        console.error('❌ Current URL:', window.location.href);
+        console.error('🚨'.repeat(40) + '\n');
         
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -405,6 +569,12 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     <p className="text-sm text-gray-600 mb-4">
                         This therapist profile could not be loaded. The link may be invalid or the therapist is no longer available.
                     </p>
+                    <div className="text-xs text-gray-500 mb-4 p-3 bg-gray-100 rounded">
+                        <div className="font-semibold mb-1">Debug Info:</div>
+                        <div>URL: {window.location.pathname}</div>
+                        <div>Error: {errorMessage}</div>
+                        <div>Check console for detailed logs</div>
+                    </div>
                     <button 
                         onClick={() => window.location.href = '/'}
                         className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold"
@@ -417,7 +587,15 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     }
 
     // SUCCESS STATE - RENDER PROFILE
-    console.log('✅ Rendering TherapistProfileBase with therapist:', therapist.name);
+    console.log('\n' + '✅'.repeat(40));
+    console.log('✅ [RENDER] Rendering SUCCESS state - TherapistProfileBase');
+    console.log('✅'.repeat(40));
+    console.log('👤 Therapist:', therapist.name);
+    console.log('🆔 ID:', therapist.$id);
+    console.log('📍 Location:', therapist.location);
+    console.log('⭐ Rating:', therapist.rating);
+    console.log('🎯 Mode: shared');
+    console.log('✅'.repeat(40) + '\n');
     
     return (
         <TherapistProfileBase

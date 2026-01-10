@@ -21,23 +21,19 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
     bookingsCount = 0,
     displayRating
 }) => {
-    // Add cache-busting parameter to force image refresh
-    const getCacheBustedUrl = (url: string) => {
-        if (!url) return url;
-        const separator = url.includes('?') ? '&' : '?';
-        return `${url}${separator}t=${Date.now()}`;
-    };
-
-    const cacheBustedImage = getCacheBustedUrl(displayImage);
+    // Keep image URL stable to avoid reload/flicker on re-renders
 
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
             <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
                 <img 
                     key={displayImage}
-                    src={cacheBustedImage} 
+                    src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
                     onError={(e) => {
                         console.error('🖼️ Main image failed to load:', displayImage);
                         // Fallback to a working ImageKit URL

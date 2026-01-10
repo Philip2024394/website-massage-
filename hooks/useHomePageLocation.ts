@@ -90,7 +90,7 @@ export function useHomePageLocation({
                     const { lat, lng } = customerLocation;
                     console.log('📍 Auto-detected customer location:', { lat, lng });
                     setAutoDetectedLocation({ lat, lng });
-                    onSetUserLocation({ lat, lng });
+                    onSetUserLocation({ lat, lng, address: 'Detected Location' });
                 }
             } catch (error) {
                 console.error('❌ Failed to detect location:', error);
@@ -113,7 +113,7 @@ export function useHomePageLocation({
         
         // Filter therapists by city
         const filtered = therapists.filter(therapist => {
-            const city = therapist.city || therapist.cityLocation;
+            const city = therapist.city || therapist.location;
             if (!city) return false;
             
             const normalizedCity = city.toLowerCase().trim();
@@ -149,7 +149,7 @@ export function useHomePageLocation({
         
         if (adminViewArea && bypassRadiusForAdmin && hasAdminPrivileges) {
             const adminFiltered = therapists.filter(t => {
-                const city = t.city || t.cityLocation;
+                const city = t.city || t.location;
                 return city && matchesLocation(city.toLowerCase(), adminViewArea.toLowerCase());
             });
             setNearbyTherapists(adminFiltered);
@@ -165,26 +165,33 @@ export function useHomePageLocation({
             return;
         }
         
-        // Normal nearby logic (10km radius)
-        const nearbyTherapistResults = findAllNearbyTherapists(effectiveLocation, therapists, 10);
-        const nearbyPlaceResults = findAllNearbyPlaces(effectiveLocation, places, 10);
+        // Normal nearby logic (10km radius) - Filter locally for speed and consistency
+        const nearbyTherapistResults = therapists.filter(t => {
+            const coords = parseCoordinates(t.coordinates);
+            if (!coords) return false;
+            return calculateDistance(effectiveLocation, coords) <= 10;
+        });
+
+        const nearbyPlaceResults = places.filter(p => {
+            const coords = parseCoordinates(p.coordinates);
+            if (!coords) return false;
+            return calculateDistance(effectiveLocation, coords) <= 10;
+        });
+
         const nearbyHotelResults = hotels.filter(hotel => {
             const coords = parseCoordinates(hotel.coordinates);
             if (!coords) return false;
-            
-            const distance = calculateDistance(effectiveLocation, coords);
-            return distance <= 10;
+            return calculateDistance(effectiveLocation, coords) <= 10;
         });
         
         setNearbyTherapists(nearbyTherapistResults);
         setNearbyPlaces(nearbyPlaceResults);
         setNearbyHotels(nearbyHotelResults);
         
-        console.log('📍 Nearby providers:', {
+        console.log('📍 Nearby providers updated:', {
             therapists: nearbyTherapistResults.length,
             places: nearbyPlaceResults.length,
-            hotels: nearbyHotelResults.length,
-            location: effectiveLocation
+            hotels: nearbyHotelResults.length
         });
     }, [
         autoDetectedLocation,

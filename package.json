@@ -103,6 +103,7 @@
     "react-hook-form": "^7.48.0",
     "react-hot-toast": "^2.4.0",
     "react-icons": "^5.0.0",
+    "react-share": "^5.1.0",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^2.0.0",
     "zustand": "^4.4.0"

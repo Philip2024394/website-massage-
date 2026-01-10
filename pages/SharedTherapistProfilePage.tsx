@@ -5,7 +5,7 @@ import SocialMediaLinks from '../components/SocialMediaLinks';
 import type { Therapist, UserLocation } from '../types';
 import { useTranslations } from '../lib/useTranslations';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
-import { analyticsService } from '../services/analyticsService';
+// Analytics loaded dynamically to avoid hard failures in strict envs
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { Building, Sparkles } from 'lucide-react';
@@ -340,7 +340,12 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
 
             if (!sessionStorage.getItem(viewKey)) {
                 sessionStorage.setItem(viewKey, '1');
-                analyticsService.trackSharedLinkView(therapistId, sessionId).catch(() => null);
+                try {
+                    const { analyticsService } = await import('../services/analyticsService');
+                    await analyticsService.trackSharedLinkView(therapistId, sessionId);
+                } catch {
+                    // No-op if analytics cannot load (dev/SSR/env issues)
+                }
             }
         } catch (err) {
             console.log('[SharedTherapistProfile] Analytics skip:', err);

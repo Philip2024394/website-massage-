@@ -1,4 +1,23 @@
-# Primary Netlify configuration (expanded from minimal)
+[build]
+  command = "pnpm run build"
+  publish = "dist"
+
+# Ensure SPA routing for shared profile links on Netlify
+[[redirects]]
+  from = "/share/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/therapist-profile/*"
+  to = "/index.html"
+  status = 200
+
+# Catch-all SPA fallback (serves files if they exist, otherwise index.html)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200# Primary Netlify configuration (expanded from minimal)
 [build]
   publish = "dist"
   # Skip TypeScript checking for now, build with Vite only
