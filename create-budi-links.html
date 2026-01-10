@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Short Links for Budi & Surtiningsih</title>
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@16.0.2"></script>
+</head>
+<body>
+    <h1>Creating Short Links...</h1>
+    <div id="status"></div>
+    
+    <script>
+        const { Client, Databases } = window.Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://syd.cloud.appwrite.io/v1')
+            .setProject('68f23b11000d25eb3664');
+        
+        const databases = new Databases(client);
+        const DATABASE_ID = '68f76ee1000e64ca8d05';
+        const COLLECTION_ID = 'share_links';
+        
+        async function generateShortId() {
+            return Math.floor(Math.random() * (999999 - 10000 + 1) + 10000).toString();
+        }
+        
+        async function createLinks() {
+            const status = document.getElementById('status');
+            
+            try {
+                // Budi
+                const budiShortId = await generateShortId();
+                const budiLink = {
+                    linkId: `https://www.indastreetmassage.com/share/${budiShortId}`,
+                    linkedItemId: '692467a3001f6f05aaa1',
+                    linkedItemType: 'therapist',
+                    shortId: budiShortId,
+                    slug: 'budi-massage-yogyakarta',
+                    entityType: 'therapist',
+                    entityId: '692467a3001f6f05aaa1',
+                    entityName: 'Budi',
+                    isActive: true,
+                    clickCount: 0,
+                    accessCount: 0,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const budiResult = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTION_ID,
+                    'unique()',
+                    budiLink
+                );
+                
+                status.innerHTML += `<p>✅ Budi: <strong>#${budiShortId}</strong> - <a href="https://www.indastreetmassage.com/share/${budiShortId}" target="_blank">Test Link</a></p>`;
+                
+                // Surtiningsih
+                const surtiShortId = await generateShortId();
+                const surtiLink = {
+                    linkId: `https://www.indastreetmassage.com/share/${surtiShortId}`,
+                    linkedItemId: '693cfadf003d16b9896a',
+                    linkedItemType: 'therapist',
+                    shortId: surtiShortId,
+                    slug: 'surtiningsih-massage-bali',
+                    entityType: 'therapist',
+                    entityId: '693cfadf003d16b9896a',
+                    entityName: 'Surtiningsih',
+                    isActive: true,
+                    clickCount: 0,
+                    accessCount: 0,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const surtiResult = await databases.createDocument(
+                    DATABASE_ID,
+                    COLLECTION_ID,
+                    'unique()',
+                    surtiLink
+                );
+                
+                status.innerHTML += `<p>✅ Surtiningsih: <strong>#${surtiShortId}</strong> - <a href="https://www.indastreetmassage.com/share/${surtiShortId}" target="_blank">Test Link</a></p>`;
+                
+                status.innerHTML += '<h2>✅ All links created!</h2>';
+                status.innerHTML += '<p>Now refresh your main page and click the share button - it should show the short URL!</p>';
+                
+            } catch (error) {
+                status.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+        
+        createLinks();
+    </script>
+</body>
+</html>
