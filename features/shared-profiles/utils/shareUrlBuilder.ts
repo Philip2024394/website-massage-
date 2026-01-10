@@ -7,9 +7,7 @@
 
 import type { Therapist, Place } from '../../../types';
 import { locationKeywords } from '../../../utils/seoSlugGenerator';
-
-// ALWAYS use production URL for sharing (never localhost)
-const LIVE_SITE_URL = 'https://www.indastreetmassage.com';
+import { SHARE_URL_FORMAT, LIVE_SITE_URL } from '../config/shareConfig';
 
 /**
  * Generate SEO-friendly slug from location and name
@@ -40,15 +38,18 @@ export function generateTherapistShareURL(therapist: Therapist): string {
     const id = (therapist as any).id ?? (therapist as any).$id ?? '';
     if (!id) {
         console.error('❌ No ID found for therapist:', therapist);
-        return `${LIVE_SITE_URL}/share/therapist/unknown`;
+        return `${LIVE_SITE_URL}/therapist-profile/unknown`;
     }
     
-    // Generate SEO slug with location keyword + name
+    if (SHARE_URL_FORMAT === 'standard') {
+        // Standard profile route for sharing
+        return `${LIVE_SITE_URL}/therapist-profile/${id}`;
+    }
+
+    // Default to SEO format: keyword-rich slug + ID
     const location = therapist.location || 'Indonesia';
     const name = therapist.name || 'therapist';
     const seoSlug = generateSEOSlug(location, name);
-    
-    // SEO-optimized format: keyword-rich slug + ID
     return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
 }
 
@@ -60,13 +61,16 @@ export function generatePlaceShareURL(place: Place): string {
     const id = (place as any).id ?? (place as any).$id ?? '';
     if (!id) {
         console.error('❌ No ID found for place:', place);
-        return `${LIVE_SITE_URL}/share/place/unknown`;
+        return `${LIVE_SITE_URL}/profile/place/unknown`;
     }
     
+    if (SHARE_URL_FORMAT === 'standard') {
+        return `${LIVE_SITE_URL}/profile/place/${id}`;
+    }
+
     const location = (place as any).city || (place as any).location || 'Indonesia';
     const name = (place as any).name || 'spa';
     const seoSlug = generateSEOSlug(location, name);
-    
     return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
 }
 
@@ -78,13 +82,16 @@ export function generateFacialShareURL(place: Place): string {
     const id = (place as any).id ?? (place as any).$id ?? '';
     if (!id) {
         console.error('❌ No ID found for facial place:', place);
-        return `${LIVE_SITE_URL}/share/facial/unknown`;
+        return `${LIVE_SITE_URL}/profile/facial/unknown`;
     }
     
+    if (SHARE_URL_FORMAT === 'standard') {
+        return `${LIVE_SITE_URL}/profile/facial/${id}`;
+    }
+
     const location = (place as any).city || (place as any).location || 'Indonesia';
     const name = (place as any).name || 'facial';
     const seoSlug = generateSEOSlug(location, name);
-    
     return `${LIVE_SITE_URL}/share/${seoSlug}/${id}`;
 }
 
