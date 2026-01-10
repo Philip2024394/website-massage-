@@ -41,6 +41,14 @@ const ShareActions: React.FC<ShareActionsProps> = ({ therapist }) => {
           <span>Copy Share Link</span>
           {copied && <span className="text-white/90 text-sm">✓ Copied</span>}
         </button>
+        <a
+          href={shareUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 ml-3 bg-white border border-orange-600 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors"
+        >
+          View Shared Page
+        </a>
       </div>
 
       <div className="flex flex-wrap justify-center gap-3">
