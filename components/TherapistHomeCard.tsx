@@ -302,7 +302,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 className={`bg-white rounded-2xl overflow-hidden border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''}`}
             >
             {/* Image Container */}
-            <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
+            <div className="relative h-56 overflow-hidden bg-gray-100">
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
@@ -373,7 +373,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* Profile Section - Match TherapistCard positioning */}
-            <div className="px-4 -mt-20 sm:-mt-16 pb-4 relative z-20 overflow-visible">
+            <div className="px-4 -mt-16 pb-4 relative z-20 overflow-visible">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
                     <div className="flex-shrink-0 relative z-20">
@@ -395,7 +395,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     {/* Name and Status Column - Match TherapistCard padding */}
                     <div className="flex-1 pt-4 pb-3 overflow-visible">
                         {/* Name Only */}
-                        <div className="mb-1" style={{marginTop: '15px'}}>
+                        <div className="mb-1" style={{marginTop: '25px'}}>
                             <div className="flex items-center justify-between gap-2 mb-1">
                                 <div className="flex items-center gap-2">
                                     {/* Verified Badge */}
@@ -407,7 +407,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                             title="Verified Therapist"
                                         />
                                     )}
-                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
+                                    <h3 className="text-xl font-bold text-gray-900 truncate flex-shrink-0">
                                         {therapist.name}
                                     </h3>
                                 </div>
@@ -415,7 +415,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
 
                         {/* Status Badge - Under name like profile card */}
-                        <div className="overflow-visible" style={{marginTop: '15px'}}>
+                        <div className="overflow-visible" style={{marginTop: '8px'}}>
                             <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                                 {/* Pulsing satellite broadcast ring for Available status */}
                                 <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
@@ -574,19 +574,19 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     {pricing["60"] > 0 && (
                         <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">60 min</div>
-                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
+                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
                         </div>
                     )}
                     {pricing["90"] > 0 && (
                         <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">90 min</div>
-                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
+                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
                         </div>
                     )}
                     {pricing["120"] > 0 && (
                         <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">120 min</div>
-                            <div className="text-xs sm:text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
+                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
                         </div>
                     )}
                 </div>
