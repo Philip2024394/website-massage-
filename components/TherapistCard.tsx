@@ -803,17 +803,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             })()}
                         </span>
                     </div>
-                    <div className="text-xs text-orange-500 font-medium">
-                        Serves {(() => {
-                            const therapistLocationArea = (therapist as any)._locationArea;
-                            if (!therapistLocationArea) {
-                                return (therapist.location || 'Bali').split(',')[0].trim();
-                            }
-                            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                            const cityData = allCities.find(city => city.locationId === therapistLocationArea);
-                            return cityData?.name || therapistLocationArea;
-                        })()} area
-                    </div>
                 </div>
             </div>
 
