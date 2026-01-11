@@ -315,11 +315,11 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 className={`bg-white rounded-2xl overflow-visible border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative`}
             >
             {/* Image Container */}
-            <div className="relative h-56 overflow-visible bg-gray-100">
+            <div className="relative h-56 overflow-visible bg-gray-100 rounded-t-2xl">
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
-                    className="w-full h-full object-cover transition-transform duration-500"
+                    className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
                     style={{ aspectRatio: '400/224' }}
                     loading="lazy"
                     width="400"
