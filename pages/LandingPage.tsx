@@ -130,13 +130,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
-                    opacity: imageLoaded ? 1 : 0,
+                    opacity: 1, // Always visible for debugging
                 }}
             />
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             <div 
-                className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen transition-opacity duration-700 ease-in-out"
-                style={{ opacity: imageLoaded ? 1 : 0 }}
+                className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-4 text-center w-full min-h-screen"
+                style={{ opacity: 1 }} // Always visible for debugging
             >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
