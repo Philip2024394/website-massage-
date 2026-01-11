@@ -205,6 +205,7 @@ const AdminChatCenter: React.FC = () => {
                 conversationId,
                 senderId: 'admin',
                 senderName: 'Admin',
+                senderType: 'admin', // Required: specify sender type for admin
                 recipientId: selectedMember.$id,
                 recipientName: selectedMember.name,
                 recipientType: selectedMember.category === 'therapist' ? 'therapist' : 'place',

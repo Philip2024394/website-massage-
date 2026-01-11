@@ -270,9 +270,11 @@ async function handleDefaultNotificationClick(clientList, data) {
   }
 }
 
-// Function to play notification sound
-async function playNotificationSound() {
+// Function to play notification sound - Enhanced with different sound types
+async function playNotificationSound(soundType = 'message') {
   try {
+    console.log(`🔊 Playing ${soundType} notification sound...`);
+    
     // Try to get all clients
     const allClients = await clients.matchAll({ includeUncontrolled: true });
     
@@ -281,9 +283,15 @@ async function playNotificationSound() {
       allClients.forEach(client => {
         client.postMessage({
           type: 'PLAY_NOTIFICATION_SOUND',
-          soundUrl: NOTIFICATION_SOUND_URL
+          soundUrl: NOTIFICATION_SOUND_URL,
+          soundType: soundType, // 'message', 'booking', 'alert'
+          volume: 0.7
         });
       });
+      
+      console.log(`✅ ${soundType} notification sound message sent to ${allClients.length} client(s)`);
+    } else {
+      console.log('⚠️ No active clients found to play sound');
     }
   } catch (error) {
     console.error('❌ Error playing notification sound:', error);

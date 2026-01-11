@@ -321,27 +321,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <span className="text-sm font-bold text-white">{displayRating}</span>
                 </div>
 
-                {/* Premium Verified Badge - Left side, between star rating and profile */}
-                {(() => {
-                    // Check if premium member or verified
-                    const isPremium = therapist.membershipTier === 'premium' || 
-                                    therapist.isVerified || 
-                                    (therapist as any).verified || 
-                                    (therapist as any).verificationBadge === 'verified';
-                    
-                    return isPremium && (
-                        <div className="absolute top-12 left-6 z-20">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                                alt="Verified Badge"
-                                className="w-28 h-28 drop-shadow-lg"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                            />
-                        </div>
-                    );
-                })()}
+
 
                 {/* Orders Badge - Top Right */}
                 {displayBookingsCount > 0 && (
@@ -393,17 +373,19 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* Profile Section - Match TherapistCard positioning */}
-            <div className="px-4 -mt-20 sm:-mt-16 pb-4 relative z-20 overflow-visible">
+            <div className="px-4 -mt-10 sm:-mt-16 pb-4 relative z-20 overflow-visible">
                 <div className="flex items-start gap-3">
-                    {/* Profile Picture - Match TherapistCard styling */}
+                    {/* Profile Picture */}
                     <div className="flex-shrink-0 relative z-20">
-                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square ring-2 ring-orange-100 overflow-visible">
+                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square overflow-visible">
                             <img 
                                 className="w-full h-full rounded-full object-cover aspect-square" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                                alt={therapist.name}                                loading="lazy"
+                                alt={`${therapist.name} profile`}
+                                loading="lazy"
                                 width="96"
-                                height="96"                                onError={(e) => {
+                                height="96"
+                                onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
                             />
@@ -411,26 +393,37 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                     
                     {/* Name and Status Column - Match TherapistCard padding */}
-                    <div className="flex-1 pt-20 sm:pt-14 pb-3 overflow-visible">
+                    <div className="flex-1 pt-4 pb-3 overflow-visible">
                         {/* Name Only */}
-                        <div className="mb-1">
+                        <div className="mb-1" style={{marginTop: '15px'}}>
                             <div className="flex items-center justify-between gap-2 mb-1">
-                                <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
-                                    {therapist.name}
-                                </h3>
+                                <div className="flex items-center gap-2">
+                                    {/* Verified Badge */}
+                                    {((therapist as any).verifiedBadge || therapist.isVerified) && (
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            alt="Verified"
+                                            className="w-6 h-6 flex-shrink-0"
+                                            title="Verified Therapist"
+                                        />
+                                    )}
+                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
+                                        {therapist.name}
+                                    </h3>
+                                </div>
                             </div>
                         </div>
 
                         {/* Status Badge - Under name like profile card */}
-                        <div className="overflow-visible">
-                            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`}>
+                        <div className="overflow-visible" style={{marginTop: '15px'}}>
+                            <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                                 {/* Pulsing satellite broadcast ring for Available status */}
-                                <span className="relative inline-flex mr-1.5">
-                                    <span className={`w-2 h-2 rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'}`}></span>
+                                <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
+                                    <span className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
                                     {statusStyle.isAvailable && (
                                         <>
-                                            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
-                                            <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50 animate-pulse"></span>
+                                            <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
+                                            <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
                                         </>
                                     )}
                                 </span>

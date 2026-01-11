@@ -291,7 +291,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         if (!therapist) return;
 
         const city = (therapist.location || 'Bali').split(' ')[0];
-        const title = `${therapist.name} - Professional Massage in ${city}`;
+        const title = `${therapist.name} - Professional Massage Therapist - House - Hotel - Villa`;
         const description = `✨ Book ${therapist.name} for professional massage therapy in ${city}. ⭐ Verified therapist • 💬 Instant chat • 🔒 Secure booking`;
         const shareUrl = generateTherapistShareURL(therapist);
         
@@ -586,6 +586,23 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         );
     }
 
+    // Track booking analytics for admin commission
+    const handleIncrementAnalytics = async (metric: string) => {
+        try {
+            console.log('📊 [SHARED PROFILE] Tracking analytics:', { metric, therapistId: therapist.$id });
+            const { analyticsService } = await import('../../services/analyticsService');
+            await analyticsService.trackEvent(metric, {
+                therapistId: therapist.$id,
+                therapistName: therapist.name,
+                location: therapist.location,
+                source: 'shared_profile'
+            });
+            console.log('✅ [SHARED PROFILE] Analytics tracked successfully');
+        } catch (error) {
+            console.error('❌ [SHARED PROFILE] Analytics tracking failed:', error);
+        }
+    };
+
     // SUCCESS STATE - RENDER PROFILE
     console.log('\n' + '✅'.repeat(40));
     console.log('✅ [RENDER] Rendering SUCCESS state - TherapistProfileBase');
@@ -605,6 +622,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             showSEOFooter={true}
             isCustomerLoggedIn={Boolean(loggedInCustomer)}
             onQuickBookWithChat={handleQuickBook}
+            onIncrementAnalytics={handleIncrementAnalytics}
             onNavigate={onNavigate}
             language={language}
         />

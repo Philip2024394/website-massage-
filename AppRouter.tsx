@@ -299,6 +299,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * Route matcher - Enterprise pattern for clean routing
      */
     console.log('[ROUTER] Resolving page:', page, '| Type:', typeof page);
+    
     switch (page) {
         // ===== PUBLIC ROUTES =====
         case 'landing':

@@ -114,7 +114,6 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ onBack }) => {
             case 'expired': return 'bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 border border-orange-200 shadow-sm';
             default: return 'bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border border-gray-200 shadow-sm';
         }
-        }
     };
 
     const getStatusIcon = (status: Booking['status']) => {

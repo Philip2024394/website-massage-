@@ -979,16 +979,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </label>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  {/* Verified Badge - Available for all therapists */}
-                  {therapist?.verifiedBadge && (profileImageDataUrl || therapist?.profilePicture) && (
-                    <div className="absolute -top-1 -left-1 z-10 w-8 h-8">
-                      <img 
-                        src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                        alt="Verified"
-                        className="w-full h-full object-contain drop-shadow-lg"
-                      />
-                    </div>
-                  )}
+
                   {(profileImageDataUrl || therapist?.profilePicture) ? (
                     <img
                       src={profileImageDataUrl || therapist?.profilePicture}

@@ -25,6 +25,7 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
+import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
 // Custom hooks for logic extraction
 import { useTherapistCardModals } from '../hooks/useTherapistCardModals';
@@ -783,127 +784,122 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     displayRating={displayRating}
                 />
 
-            {/* Profile Section - Flexbox layout aligned to MassagePlaceCard */}
-            <div className="px-6 -mt-10 sm:-mt-16 pb-6 relative z-10 overflow-visible">
-                <div className="flex items-start justify-between gap-4">
-                    {/* Left side: Profile + Name + Status */}
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                        {/* Profile Image */}
-                        <div className="flex-shrink-0 relative z-20 p-2">
-                            <div className="w-24 h-24 bg-white rounded-full p-1 shadow-sm relative aspect-square overflow-visible ring-2 ring-orange-100">
-                                {(therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? (
-                                    <img 
-                                        key={(therapist as any).profilePicture}
-                                        className="w-full h-full rounded-full object-cover aspect-square" 
-                                        src={(therapist as any).profilePicture}
-                                        alt={`${therapist.name} profile`}
-                                        loading="lazy"
-                                        decoding="async"
-                                        width="96"
-                                        height="96"
-                                        onLoad={(e) => {
-                                            console.log(`🖼️ Loaded profile image: ${therapist.name}`);
-                                        }}
-                                        onError={(e) => {
-                                            console.warn(`⚠️ Failed to load profile image for ${therapist.name}, showing fallback`);
-                                            const imgElement = e.target as HTMLImageElement;
-                                            imgElement.style.display = 'none';
-                                            const placeholder = imgElement.parentElement?.querySelector('.profile-placeholder') as HTMLElement;
-                                            if (placeholder) placeholder.style.display = 'flex';
-                                        }}
-                                    />
-                                ) : null}
-                                
-                                <div 
-                                    className="profile-placeholder w-full h-full rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-orange-600"
-                                    style={{ 
-                                        display: (therapist as any).profilePicture && (therapist as any).profilePicture.includes('appwrite.io') ? 'none' : 'flex',
-                                        fontSize: '1.5rem',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    {therapist.name ? therapist.name.charAt(0).toUpperCase() : '👤'}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Name and Status Column */}
-                        <div className="flex-1 pt-12 sm:pt-14 pb-3 overflow-visible">
-                            {/* Location & Distance Display - Above name on mobile only */}
-                            {(therapist.location || therapistDistance) && (
-                                <div className="block sm:hidden mb-1 mt-2">
-                                    <div className="flex items-center text-xs text-gray-600">
-                                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                        </svg>
-                                        <span>{locationCity || therapist.location}</span>
-                                        {therapistDistance && (
-                                            <span className="ml-2 text-orange-500 font-medium">• {therapistDistance}</span>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate mb-1 mt-4">{therapist.name}</h3>
-                            <div className="overflow-visible">
-                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`}>
-                    <span className="relative inline-flex mr-1.5">
-                        <span className={`w-2 h-2 rounded-full block status-indicator relative ${isOvertime ? 'bg-red-500' : style.dot}`}></span>
-                        {!isOvertime && displayStatus === AvailabilityStatus.Available && (
-                            <>
-                                {/* Pulsing satellite broadcast rings for Available status */}
-                                <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
-                                <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50 animate-pulse"></span>
-                            </>
-                        )}
-                        {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
-                            <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
-                        )}
-                    </span>
-                                        {displayStatus === AvailabilityStatus.Busy ? (
-                                            therapist.busyUntil ? (
-                                                <div className="flex items-center gap-1">
-                                                    <span>Busy</span>
-                                                    <BusyCountdownTimer
-                                                        endTime={therapist.busyUntil}
-                                                        onExpired={() => {
-                                                            devLog('Busy period ended – therapist should be available.');
-                                                        }}
-                                                    />
-                                                </div>
-                                            ) : countdown ? (
-                                                <span>
-                                                    {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
-                                                </span>
-                                            ) : (
-                                                <span>Busy</span>
-                                            )
-                                        ) : (
-                                            displayStatus
-                                        )}
-                                </div>
-                            </div>
+            {/* Location Display - Below header image, above profile */}
+            <div className="px-4 mt-2 mb-1 flex justify-end">
+                <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs font-medium text-gray-700">
+                            {(() => {
+                                const therapistLocationArea = (therapist as any)._locationArea;
+                                if (!therapistLocationArea) {
+                                    return (therapist.location || 'Bali').split(',')[0].trim();
+                                }
+                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                                const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+                                return cityData?.name || therapistLocationArea;
+                            })()}
+                        </span>
+                    </div>
+                    <div className="text-xs text-orange-500 font-medium">
+                        Serves {(() => {
+                            const therapistLocationArea = (therapist as any)._locationArea;
+                            if (!therapistLocationArea) {
+                                return (therapist.location || 'Bali').split(',')[0].trim();
+                            }
+                            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                            const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+                            return cityData?.name || therapistLocationArea;
+                        })()} area
+                    </div>
+                </div>
+            </div>
+
+            {/* Profile Section - Overlapping header image with negative margin */}
+            <div className="px-4 -mt-10 sm:-mt-16 pb-4 relative z-40 overflow-visible">
+                <div className="flex items-start gap-3">
+                    {/* Profile Picture */}
+                    <div className="flex-shrink-0 relative z-40">
+                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square overflow-visible">
+                            <img 
+                                className="w-full h-full rounded-full object-cover aspect-square" 
+                                src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                alt={`${therapist.name} profile`}
+                                loading="lazy"
+                                width="96"
+                                height="96"
+                                onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+                                }}
+                            />
                         </div>
                     </div>
                     
-                    {/* Right side: Location & Distance - Desktop only */}
-                    {(therapist.location || therapistDistance) && (
-                        <div className="hidden sm:flex flex-shrink-0 pb-3 pt-12 sm:pt-14 mt-6">
-                            <div className="flex flex-col items-end text-sm text-gray-600">
-                                <div className="flex items-center">
-                                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span>{locationCity || therapist.location}</span>
+                    {/* Name and Status Column - Match TherapistHomeCard padding */}
+                    <div className="flex-1 pt-4 pb-3 overflow-visible">
+                        {/* Name Only */}
+                        <div className="mb-1" style={{marginTop: '25px'}}>
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                                <div className="flex items-center gap-2">
+                                    {/* Verified Badge */}
+                                    {((therapist as any).verifiedBadge || therapist.isVerified) && (
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                            alt="Verified"
+                                            className="w-6 h-6 flex-shrink-0"
+                                            title="Verified Therapist"
+                                        />
+                                    )}
+                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
+                                        {therapist.name}
+                                    </h3>
                                 </div>
-                                {therapistDistance && (
-                                    <div className="text-xs text-orange-500 font-medium mt-1">
-                                        {therapistDistance}
-                                    </div>
+                            </div>
+                        </div>
+
+                        {/* Status Badge - Under name like profile card */}
+                        <div className="overflow-visible" style={{marginTop: '8px'}}>
+                            <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
+                                {/* Pulsing satellite broadcast ring for Available status */}
+                                <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
+                                    <span className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
+                                    {!isOvertime && displayStatus === AvailabilityStatus.Available && (
+                                        <>
+                                            <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
+                                            <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
+                                        </>
+                                    )}
+                                    {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
+                                        <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
+                                    )}
+                                </span>
+                                {displayStatus === AvailabilityStatus.Busy ? (
+                                    therapist.busyUntil ? (
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-xs">Busy</span>
+                                            <BusyCountdownTimer
+                                                endTime={therapist.busyUntil}
+                                                onExpired={() => {
+                                                    devLog('Busy period ended – therapist should be available.');
+                                                }}
+                                            />
+                                        </div>
+                                    ) : countdown ? (
+                                        <span className="text-xs">
+                                            {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs">Busy</span>
+                                    )
+                                ) : (
+                                    <span className="text-xs">{displayStatus}</span>
                                 )}
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
             

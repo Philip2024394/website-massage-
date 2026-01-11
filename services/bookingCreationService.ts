@@ -1,12 +1,19 @@
 /**
- * UNIFIED BOOKING CREATION SERVICE
+ * UNIFIED BOOKING CREATION SERVICE - FACEBOOK STANDARDS ⚡
  * 
  * Single function used by ALL booking flows:
  * - Book Now (BookingPopup)
  * - Scheduled Booking (ScheduleBookingPopup)
  * - Price Slider (TherapistCard → BookingPopup)
+ * - Chat Window Booking
+ * - Menu Slider Booking
  * 
- * Ensures consistency, validation, and zero Appwrite errors
+ * ✅ Features:
+ * - Exponential backoff retry logic
+ * - Source attribution tracking
+ * - Comprehensive error monitoring
+ * - Circuit breaker pattern
+ * - Zero data loss tolerance
  */
 
 import { databases } from '../lib/appwrite';
@@ -21,6 +28,7 @@ import {
   logPayload,
   logAppwriteResponse
 } from './bookingValidationService';
+import { withAppwriteRetry, appwriteCircuitBreaker } from './appwriteRetryService';
 
 export interface BookingInput {
   // User Info
@@ -46,6 +54,10 @@ export interface BookingInput {
   hotelId?: string;
   hotelGuestName?: string;
   hotelRoomNumber?: string;
+  
+  // ⚡ Facebook Standards - Source Attribution
+  source?: 'bookingButton' | 'chatWindow' | 'menuSlider' | 'scheduled' | 'priceSlider' | 'direct';
+  chatWindowOpen?: boolean; // Whether chat is currently active
 }
 
 export interface BookingResult {
@@ -87,6 +99,9 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
     const normalizedWhatsApp = normalizeWhatsApp(
       `${input.countryCode || '+62'}${input.customerWhatsApp}`
     );
+    
+    // ⚡ Determine booking source for analytics
+    const bookingSource = input.source || determineBookingSource(input);
 
     const rawBookingData: any = {
       // REQUIRED FIELDS
@@ -103,6 +118,11 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       price: Math.round(input.price / 1000), // Convert IDR to thousands
       createdAt: now.toISOString(),
       responseDeadline: responseDeadline.toISOString(),
+      
+      // ⚡ Facebook Standards - Analytics & Monitoring
+      source: bookingSource, // bookingButton/chatWindow/menuSlider/scheduled/priceSlider/direct
+      chatWindowOpen: input.chatWindowOpen ?? false, // Track if chat is active
+      mode: input.bookingType, // immediate or scheduled (matches bookingType for compatibility)
       
       // OPTIONAL FIELDS
       therapistId: input.providerId, // Backward compatibility
@@ -150,17 +170,31 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       };
     }
 
-    // ===== STEP 5: CREATE DOCUMENT IN APPWRITE =====
-    console.log('📤 Creating booking document in Appwrite...');
+    // ===== STEP 5: CREATE DOCUMENT IN APPWRITE WITH RETRY =====
+    console.log('📤 Creating booking document in Appwrite with retry protection...');
     
-    const booking = await databases.createDocument(
-      APPWRITE_CONFIG.databaseId,
-      APPWRITE_CONFIG.collections.bookings,
-      bookingId,
-      bookingData
+    const booking = await withAppwriteRetry(
+      () => appwriteCircuitBreaker.execute(() => 
+        databases.createDocument(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.bookings,
+          bookingId,
+          bookingData
+        )
+      ),
+      'Create Booking Document'
     );
 
     logAppwriteResponse(booking);
+    
+    // ⚡ Log successful creation with source
+    console.log(`✅ Booking created successfully:`, {
+      bookingId: booking.$id,
+      source: bookingSource,
+      chatWindowOpen: bookingData.chatWindowOpen,
+      type: input.bookingType,
+      attempts: 'See retry service logs'
+    });
 
     return {
       success: true,
@@ -170,6 +204,18 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
 
   } catch (error: any) {
     console.error('❌ Booking creation failed:', error);
+    
+    // ⚡ Enhanced error logging for monitoring
+    const errorContext = {
+      error: error.message,
+      code: error.code || error.status,
+      timestamp: new Date().toISOString(),
+      bookingType: input.bookingType,
+      source: input.source,
+      providerId: input.providerId,
+      userId: input.userId
+    };
+    console.error('🚨 Booking Error Context:', errorContext);
     
     // Parse Appwrite error
     const errorMessage = error?.message || error?.toString() || 'Unknown error';
@@ -189,6 +235,25 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       error: errorMessage
     };
   }
+}
+
+/**
+ * ⚡ Determine booking source for analytics
+ * Infers source from booking context if not explicitly provided
+ */
+function determineBookingSource(input: BookingInput): string {
+  // If scheduled, mark as scheduled booking
+  if (input.bookingType === 'scheduled') {
+    return 'scheduled';
+  }
+  
+  // If chat window is open, it's from chat
+  if (input.chatWindowOpen) {
+    return 'chatWindow';
+  }
+  
+  // Default to booking button
+  return 'bookingButton';
 }
 
 /**

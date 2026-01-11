@@ -4,11 +4,18 @@ import { showToast } from '../utils/showToastPortal';
 import { createChatRoom, sendWelcomeMessage, sendBookingReceivedMessage } from '../lib/chatService';
 import { commissionTrackingService } from '../lib/services/commissionTrackingService';
 import { useChatProvider } from '../hooks/useChatProvider';
+import { withAppwriteRetry, appwriteCircuitBreaker } from '../services/appwriteRetryService';
+import { logBookingError } from '../services/errorMonitoringService';
 
 /**
- * Booking submission handler - extracted from ScheduleBookingPopup.tsx
- * Contains all booking creation logic (lines 280-800+) 
- * UPDATED: Now uses ChatProvider instead of event system
+ * ⚡ FACEBOOK STANDARDS - Booking Submission Handler
+ * 
+ * Extracted from ScheduleBookingPopup.tsx - fully integrated with:
+ * - ChatProvider (no event system)
+ * - Exponential backoff retry
+ * - Circuit breaker pattern
+ * - Error monitoring
+ * - Source attribution
  */
 export function useBookingSubmit(
     pricing: { [key: string]: number } | undefined,
@@ -199,12 +206,18 @@ export function useBookingSubmit(
 
             console.log('[FINAL_BOOKING_PAYLOAD]', JSON.stringify(bookingData, null, 2));
             
-            // Save to Appwrite
-            const bookingResponse = await databases.createDocument(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.bookings || 'bookings',
-                'unique()',
-                bookingData
+            // ⚡ Save to Appwrite with retry logic and circuit breaker
+            console.log('📤 Creating booking with retry protection...');
+            const bookingResponse = await withAppwriteRetry(
+                () => appwriteCircuitBreaker.execute(() =>
+                    databases.createDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.bookings || 'bookings',
+                        'unique()',
+                        bookingData
+                    )
+                ),
+                'Create Scheduled Booking'
             );
             
             console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
@@ -214,29 +227,62 @@ export function useBookingSubmit(
             // Commission tracking (continued in full implementation)
             // ... rest of commission logic ...
 
-            // Create chat room
-            const chatRoom = await createChatRoom({
-                bookingId: booking.$id,
-                customerId: userId,
-                customerName: customerName,
-                customerLanguage: 'en', // Default to English for customers
-                customerPhoto: selectedAvatar,
-                therapistId: therapistId,
-                therapistName: therapistName,
-                therapistLanguage: 'id', // Indonesian for therapists
-                therapistType: therapistType, // 'therapist' or 'place'
-                therapistPhoto: profilePicture || '',
-                expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
-            });
+            // ⚡ Create chat room with retry protection
+            console.log('📤 Creating chat room with retry protection...');
+            const chatRoom = await withAppwriteRetry(
+                () => appwriteCircuitBreaker.execute(() =>
+                    createChatRoom({
+                        bookingId: booking.$id,
+                        customerId: userId,
+                        customerName: customerName,
+                        customerLanguage: 'en', // Default to English for customers
+                        customerPhoto: selectedAvatar,
+                        therapistId: therapistId,
+                        therapistName: therapistName,
+                        therapistLanguage: 'id', // Indonesian for therapists
+                        therapistType: therapistType, // 'therapist' or 'place'
+                        therapistPhoto: profilePicture || '',
+                        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
+                    })
+                ),
+                'Create Chat Room'
+            );
 
             console.log('✅ Chat room created:', chatRoom.$id);
 
-            // Send welcome messages
+            // Send welcome messages with retry
             try {
-                await sendWelcomeMessage(chatRoom.$id, therapistName, userId);
+                await withAppwriteRetry(
+                    () => sendWelcomeMessage(chatRoom.$id, therapistName, userId),
+                    'Send Welcome Message'
+                );
                 console.log('✅ Welcome message sent');
             } catch (welcomeErr) {
                 console.warn('⚠️ Welcome message failed:', welcomeErr);
+                // Non-critical, continue
+            }
+
+            try {
+                await withAppwriteRetry(
+                    () => sendBookingReceivedMessage(chatRoom.$id, userId),
+                    'Send Booking Received Message'
+                );
+                console.log('✅ Booking received message sent');
+            } catch (bookingMsgErr) {
+                console.warn('⚠️ Booking received message failed:', bookingMsgErr);
+                // Non-critical, continue
+            }
+
+            // ⚡ Use ChatProvider instead of event system
+            if (handleBookingSuccess) {
+                handleBookingSuccess({
+                    bookingId: booking.$id,
+                    chatRoomId: chatRoom.$id,
+                    therapistName,
+                    duration: finalDuration,
+                    price: finalPrice
+                });
+                console.log('✅ ChatProvider notified of booking success');
             }
 
             try {
@@ -313,11 +359,20 @@ export function useBookingSubmit(
                 stack: chatErr.stack
             });
             
+            // ⚡ Log error to monitoring service
+            logBookingError('createChatRoom', chatErr, {
+                bookingId: bookingResponse?.$id,
+                therapistId,
+                therapistName
+            });
+            
             let errorMessage = 'Booking saved but chat failed to open.';
             if (chatErr.message?.includes('validation failed')) {
                 errorMessage = 'Chat setup error. Booking saved successfully.';
             } else if (chatErr.message?.includes('collection')) {
                 errorMessage = 'Chat service unavailable. Booking saved successfully.';
+            } else if (chatErr.message?.includes('Circuit breaker is OPEN')) {
+                errorMessage = 'Service temporarily unavailable. Booking saved, but chat failed.';
             }
             
             showToast(`${errorMessage} Please contact support.`, 'warning');

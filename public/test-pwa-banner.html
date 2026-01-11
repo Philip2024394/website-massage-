@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Install Banner Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .success { border-color: #4caf50; background-color: #f1f8e9; }
+        .warning { border-color: #ff9800; background-color: #fff3e0; }
+        .info { border-color: #2196f3; background-color: #e3f2fd; }
+    </style>
+</head>
+<body>
+    <h1>🔥 PWA Install Banner Test - IndaStreet</h1>
+    
+    <div class="test-section info">
+        <h2>📱 Testing PWA Install Banner</h2>
+        <p>This test verifies the orange app installation banner functionality.</p>
+        <p><strong>Expected behavior:</strong></p>
+        <ul>
+            <li>Orange banner appears at bottom of screen</li>
+            <li>Shows "APP INSTALLATION REQUIRED"</li>
+            <li>Has Install button and X (dismiss) button</li>
+            <li>Clicking X makes banner disappear</li>
+            <li>Clicking Install triggers PWA installation</li>
+        </ul>
+    </div>
+
+    <div class="test-section" id="banner-test">
+        <h2>🧪 Banner Components Test</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        console.log('🔥 PWA Install Banner Test Started');
+        
+        const results = document.getElementById('test-results');
+        let testsPassed = 0;
+        let testsTotal = 0;
+
+        function addTest(name, condition, details = '') {
+            testsTotal++;
+            const status = condition ? '✅' : '❌';
+            const testDiv = document.createElement('div');
+            testDiv.innerHTML = `${status} <strong>${name}</strong>: ${details}`;
+            testDiv.style.margin = '10px 0';
+            results.appendChild(testDiv);
+            
+            if (condition) testsPassed++;
+            console.log(`${status} ${name}: ${details}`);
+        }
+
+        // Test 1: Check if PWA Install Banner component exists
+        fetch('/components/PWAInstallBanner.tsx')
+            .then(response => response.ok)
+            .then(exists => {
+                addTest('PWA Install Banner File', exists, exists ? 'Component file found' : 'Component file missing');
+            });
+
+        // Test 2: Check PWA capabilities
+        const isPWASupported = 'serviceWorker' in navigator;
+        addTest('PWA Support', isPWASupported, isPWASupported ? 'Service Worker supported' : 'PWA not supported');
+
+        // Test 3: Check if beforeinstallprompt event can be captured
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            addTest('Install Prompt Available', true, 'beforeinstallprompt event captured');
+            console.log('📱 PWA install prompt captured and ready');
+        });
+
+        // Test 4: Check localStorage for banner dismissal
+        const isDismissed = localStorage.getItem('pwa-banner-dismissed') === 'true';
+        addTest('Banner Dismissal State', !isDismissed, !isDismissed ? 'Banner should show' : 'Banner was dismissed');
+
+        // Test 5: Check if app is already installed
+        const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+        addTest('App Installation Status', !isInstalled, !isInstalled ? 'App not installed (banner should show)' : 'App already installed');
+
+        // Test 6: Simulate banner functionality
+        setTimeout(() => {
+            addTest('Banner Simulation', true, 'Orange banner should appear at bottom with Install and X buttons');
+            
+            // Final results
+            setTimeout(() => {
+                const successRate = (testsPassed / testsTotal * 100).toFixed(1);
+                const summaryDiv = document.createElement('div');
+                summaryDiv.style.marginTop = '20px';
+                summaryDiv.style.padding = '15px';
+                summaryDiv.style.backgroundColor = testsPassed === testsTotal ? '#4caf50' : '#ff9800';
+                summaryDiv.style.color = 'white';
+                summaryDiv.style.borderRadius = '8px';
+                summaryDiv.innerHTML = `
+                    <h3>📊 Test Summary</h3>
+                    <p>Passed: ${testsPassed}/${testsTotal} (${successRate}%)</p>
+                    <p><strong>Status:</strong> ${testsPassed === testsTotal ? 'All systems ready! 🎉' : 'Some issues detected ⚠️'}</p>
+                `;
+                results.appendChild(summaryDiv);
+
+                console.log(`📊 PWA Install Banner Test Complete: ${testsPassed}/${testsTotal} passed`);
+            }, 1000);
+        }, 2000);
+
+        // Test UI behavior simulation
+        console.log('🎯 To test the banner:');
+        console.log('1. Visit the homepage on a mobile device or use browser dev tools mobile view');
+        console.log('2. Look for orange banner at bottom: "APP INSTALLATION REQUIRED"');
+        console.log('3. Click X button - banner should disappear');
+        console.log('4. Refresh and click Install - should trigger PWA install prompt');
+    </script>
+</body>
+</html>

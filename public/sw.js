@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.0';
-const CACHE_NAME = `push-notifications-v2`;
+const SW_VERSION = '2.2.1';
+const CACHE_NAME = `push-notifications-v2-1`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker

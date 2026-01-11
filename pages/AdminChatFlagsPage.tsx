@@ -35,10 +35,12 @@ const REASON_LABELS: Record<FlagReason, { label: string; icon: string; color: st
   payment_issue: { label: 'Payment Issue', icon: '💳', color: 'text-blue-600' },
   scam_fraud: { label: 'Scam/Fraud', icon: '🚫', color: 'text-red-700' },
   therapist_no_show: { label: 'Therapist No-Show', icon: '👤', color: 'text-orange-600' },
+  asked_for_contact_number: { label: 'Asked for Contact Number', icon: '📞', color: 'text-purple-600' },
+  shared_contact_number: { label: 'Shared Contact Number', icon: '☎️', color: 'text-indigo-600' },
   other: { label: 'Other', icon: '📝', color: 'text-gray-600' }
 };
 
-const STATUS_LABELS: Record<FlagStatus, { label: string; icon: React.ComponentType; color: string }> = {
+const STATUS_LABELS: Record<FlagStatus, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
   open: { label: 'Open', icon: AlertTriangle, color: 'text-red-600 bg-red-50' },
   reviewed: { label: 'Reviewed', icon: Eye, color: 'text-yellow-600 bg-yellow-50' },
   resolved: { label: 'Resolved', icon: CheckCircle, color: 'text-green-600 bg-green-50' }

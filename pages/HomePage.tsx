@@ -610,22 +610,23 @@ const HomePage: React.FC<HomePageProps> = ({
             .trim()
             .toLowerCase();
         
-        // 🔥 CRITICAL FIX: Treat available, busy, AND offline as live (same as Yogyakarta therapists)
-        // Only hide if isLive explicitly set to false
+        // 🔥 CRITICAL FIX: Much more permissive filtering - show therapists by default
+        // Only hide if explicitly set to false AND offline status
         const statusImpliesLive = normalizedStatus === 'available' || 
                                   normalizedStatus === 'busy' || 
-                                  normalizedStatus === 'offline' ||  // ✅ OFFLINE NOW SHOWS!
+                                  normalizedStatus === 'offline' ||  
                                   normalizedStatus === 'online';
         
-        // Only hide if explicitly disabled
-        if (normalizedLiveFlag === false) return false;
+        // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
+        // If isLive is explicitly false AND status is offline/empty, then hide
+        if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) {
+            console.log(`🚫 Hiding therapist ${therapist.name}: isLive=false AND status=${normalizedStatus}`);
+            return false;
+        }
         
-        // Show if isLive=true OR status implies live
-        if (normalizedLiveFlag === true) return true;
-        if (statusImpliesLive) return true;
-        
-        // Default to visible when legacy records lack status
-        return normalizedStatus.length === 0;
+        // Show in all other cases
+        console.log(`✅ Showing therapist ${therapist.name}: isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
+        return true;
     };
 
     // SHOWCASE PROFILE SYSTEM - Random 5 Yogyakarta profiles appear in each city
@@ -800,6 +801,7 @@ const HomePage: React.FC<HomePageProps> = ({
             );
             const featuredTherapist = isFeaturedSample(t, 'therapist');
             const treatedAsLive = shouldTreatTherapistAsLive(t);
+            
             return treatedAsLive || isOwner || featuredTherapist;
         });
         const filteredTherapists = liveTherapists.filter((t: any) => {

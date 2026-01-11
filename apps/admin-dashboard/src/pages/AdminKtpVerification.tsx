@@ -7,6 +7,7 @@ interface TherapistKtpData {
   $id: string;
   name: string;
   email: string;
+  profilePicture?: string; // Profile photo for comparison
   bankName?: string;
   accountName?: string;
   accountNumber?: string;
@@ -14,6 +15,7 @@ interface TherapistKtpData {
   ktpVerified?: boolean;
   ktpVerifiedAt?: string;
   ktpVerifiedBy?: string;
+  isVerified?: boolean; // Overall verification status (shows badge)
 }
 
 const AdminKtpVerification: React.FC = () => {
@@ -43,14 +45,29 @@ const AdminKtpVerification: React.FC = () => {
   const handleVerify = async (therapistId: string, approved: boolean, reason?: string) => {
     setVerifying(true);
     try {
-      await therapistService.update(therapistId, {
+      const updateData: any = {
         ktpVerified: approved,
         ktpVerifiedAt: new Date().toISOString(),
         ktpVerifiedBy: 'admin', // Replace with actual admin ID
         ...(reason && { ktpVerificationReason: reason })
-      });
+      };
+
+      // ✨ AUTO-ADD VERIFIED BADGE when KTP is approved
+      if (approved) {
+        updateData.isVerified = true;
+        updateData.verifiedBadge = true;
+        updateData.verifiedAt = new Date().toISOString();
+        console.log('✅ Auto-adding verified badge to therapist profile');
+      }
       
-      alert(approved ? '✅ KTP Verified Successfully!' : '❌ KTP Verification Declined');
+      await therapistService.update(therapistId, updateData);
+      
+      if (approved) {
+        alert('✅ KTP Verified Successfully!\n\n🎉 Verified badge has been automatically added to this member\'s profile.');
+      } else {
+        alert('❌ KTP Verification Declined');
+      }
+      
       await loadTherapists();
       setSelectedKtp(null);
     } catch (error) {
@@ -131,15 +148,26 @@ const AdminKtpVerification: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="text-xl font-bold text-gray-900">{therapist.name}</h3>
+                      
+                      {/* Verified Badge Status */}
+                      {therapist.isVerified && (
+                        <img 
+                          src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                          alt="Verified"
+                          className="w-7 h-7"
+                          title="Verified Badge Active"
+                        />
+                      )}
+                      
                       {therapist.ktpVerified ? (
                         <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
                           <CheckCircle className="w-4 h-4" />
-                          Verified
+                          KTP Verified
                         </span>
                       ) : (
                         <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
                           <AlertCircle className="w-4 h-4" />
-                          Pending
+                          Pending Review
                         </span>
                       )}
                     </div>
@@ -193,28 +221,114 @@ const AdminKtpVerification: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedKtp.name}</h2>
-                  <p className="text-gray-600">{selectedKtp.email}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedKtp(null)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6">
-              {/* KTP Image */}
+              <divImage Comparison Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">KTP ID Card Photo:</h3>
-                <img
-                  src={selectedKtp.ktpPhotoUrl}
-                  alt="KTP ID Card"
-                  className="w-full rounded-lg border-2 border-gray-300"
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-blue-600" />
+                  Compare Profile Photo with KTP Photo
+                </h3>
+                
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Profile Picture */}
+                  <div className="space-y-2">
+                    <div className="bg-blue-50 px-3 py-2 rounded-lg">
+                      <h4 className="text-sm font-semibold text-blue-900">Profile Picture</h4>
+                      <p className="text-xs text-blue-700">Member's uploaded profile photo</p>
+                    </div>
+                    <div className="relative">
+                      {selectedKtp.profilePicture ? (
+                        <img
+                          src={selectedKtp.profilePicture}
+                          alt="Profile"
+                          className="w-full h-auto rounded-lg border-4 border-blue-300 shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-full aspect-square bg-gray-100 rounded-lg border-4 border-gray-300 flex items-center justify-center">
+                          <div className="text-center">
+                            <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">No profile picture</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* KTP Photo */}
+                  <div className="space-y-2">
+                    <div className="bg-green-50 px-3 py-2 rounded-lg">
+                      <h4 className="text-sm font-semibold text-green-900">KTP ID Card Photo</h4>
+                      <p className="text-xs text-green-700">Indonesian national identity card</p>
+                    </div>
+                    <img
+                      src={selectedKtp.ktpPhotoUrl}
+                      alt="KTP ID Card"
+                      className="w-full h-auto rounded-lg border-4 border-green-300 shadow-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* Verification Instructions */}
+                <div className="mt-4 p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
+                  <div classNamespace-y-4">
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg">
+                    <div className="flex items-start gap-3 mb-3">
+                      <img 
+                        src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                        alt="Verified Badge"
+                        className="w-8 h-8 flex-shrink-0"
+                      />
+                      <div className="text-sm">
+                        <p className="font-bold text-green-900 mb-1">✨ What happens when you approve:</p>
+                        <ul className="text-green-800 space-y-1">
+                          <li>✓ KTP marked as verified</li>
+                          <li>✓ <strong>Verified badge automatically added</strong> to member's profile</li>
+                          <li>✓ Badge will display before their name on all cards and pages</li>
+                          <li>✓ Increases member credibility and booking trust</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => handleVerify(selectedKtp.$id, true)}
+                      disabled={verifying}
+                      className="flex-1 px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <CheckCircle className="w-6 h-6" />
+                      {verifying ? 'Verifying...' : 'Approve & Add Verified Badge'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const reason = prompt('Enter reason for declining (will be shown to therapist):');
+                        if (reason) handleVerify(selectedKtp.$id, false, reason);
+                      }}
+                      disabled={verifying}
+                      className="flex-1 px-6 py-4 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-semibold flex items-center justify-center gap-2"
+                    >
+                      <XCircle className="w-6 h-6" />
+                      Decline - Does Not Match
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {selectedKtp.ktpVerified && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-3 p-4 bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-300 rounded-lg">
+                    <CheckCircle className="w-6 h-6 text-green-700" />
+                    <span className="font-semibold text-green-900">This KTP has been verified</span>
+                    <img 
+                      src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
+                      alt="Verified"
+                      className="w-6 h-6"
+                    />
+                  </div>
+                  {selectedKtp.isVerified && (
+                    <div className="text-center text-sm text-gray-600 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <span className="font-semibold text-purple-900">✨ Verified badge is active on member's profile</span>
+                    </div>
+                  )}
                 />
               </div>
 

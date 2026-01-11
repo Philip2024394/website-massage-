@@ -87,7 +87,7 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
 
     const headerClasses = `
         bg-white shadow-md w-full max-w-full z-[9997]
-        ${sticky ? 'sticky top-0' : ''}
+        ${sticky ? 'fixed top-0 left-0 right-0' : ''}
         ${className}
     `.trim();
 

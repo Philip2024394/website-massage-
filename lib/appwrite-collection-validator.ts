@@ -69,8 +69,12 @@ export function getValidatedCollectionId(name: CollectionName): string {
     throw new Error(result.error || `Invalid collection ID for "${name}"`);
   }
   
-  if (result.warning) {
-    console.warn(result.warning);
+  // Only show warnings in development mode and for non-intentionally disabled collections
+  if (result.warning && import.meta.env.DEV) {
+    const intentionallyDisabled = ['USERS', 'REVIEWS', 'NOTIFICATIONS', 'ANALYTICS', 'ADMINS', 'HOTELS', 'VILLAS', 'PARTNERS', 'MASSAGE_TYPES', 'MEMBERSHIP_PRICING', 'CUSTOM_LINKS', 'ANALYTICS_EVENTS', 'AGENTS'];
+    if (!intentionallyDisabled.includes(name)) {
+      console.warn(result.warning);
+    }
   }
   
   return result.collectionId;

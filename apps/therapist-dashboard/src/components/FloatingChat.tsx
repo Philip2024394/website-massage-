@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { messagingService } from '../../../../lib/appwriteService';
 import { 
@@ -10,10 +10,73 @@ import {
 import { chatDebouncer, performanceUtils } from '../../../../lib/utils/performance';
 
 /**
- * 💬 Persistent Floating Chat Component for PWA
+ * 💬 Enhanced Floating Chat Component with Sound Notifications
  * Always visible chat icon that minimizes to corner of screen
- * Provides quick access to support chat for therapists
+ * Provides quick access to support chat for therapists with MP3 notifications
  */
+
+// Sound notification manager
+class ChatSoundManager {
+    private messageAudio: HTMLAudioElement | null = null;
+    private enabled: boolean = true;
+    
+    constructor() {
+        // Initialize audio with fallback
+        try {
+            this.messageAudio = new Audio('/sounds/notification.mp3');
+            this.messageAudio.volume = 0.7;
+            this.messageAudio.preload = 'auto';
+        } catch (error) {
+            console.warn('Audio not supported, using fallback notification');
+        }
+    }
+    
+    async playMessageSound(): Promise<void> {
+        if (!this.enabled) return;
+        
+        try {
+            if (this.messageAudio) {
+                this.messageAudio.currentTime = 0;
+                await this.messageAudio.play();
+            } else {
+                // Fallback: Web Audio API beep
+                this.playBeepSound();
+            }
+        } catch (error) {
+            console.log('Sound play failed (user interaction required):', error);
+            // Try fallback beep
+            this.playBeepSound();
+        }
+    }
+    
+    private playBeepSound(): void {
+        try {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        } catch (error) {
+            console.log('Fallback beep also failed:', error);
+        }
+    }
+    
+    setEnabled(enabled: boolean): void {
+        this.enabled = enabled;
+    }
+}
+
+const soundManager = new ChatSoundManager();
 
 interface FloatingChatProps {
     therapist: any;
@@ -227,21 +290,49 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
             
             const newUnreadCount = unreadMessages.length;
             
-            // Show notification for new messages (PWA)
-            if (newUnreadCount > unreadCount && isInPWAMode && !isOpen) {
-                const latestMessage = unreadMessages[0];
-                if (latestMessage) {
-                    PWANotificationManager.showChatNotification({
-                        title: 'New Support Message',
-                        body: latestMessage.content || latestMessage.message || 'You have a new message from support',
-                        tag: 'support-chat',
-                        messageId: latestMessage.$id,
-                        therapistId: therapist.$id
+            // 🔊 SOUND NOTIFICATION: Play MP3 when new message arrives
+            if (newUnreadCount > unreadCount && !isOpen) {
+                console.log('🔔 New message detected! Playing notification sound...');
+                await soundManager.playMessageSound();
+                
+                // Show browser notification if supported
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const latestMessage = unreadMessages[0];
+                    new Notification('💬 New Support Message', {
+                        body: latestMessage?.content || latestMessage?.message || 'You have a new message from admin support',
+                        icon: '/icons/therapist-icon-192.png',
+                        badge: '/icons/therapist-icon-96.png',
+                        tag: 'therapist-chat',
+                        requireInteraction: false,
+                        silent: false // Allow sound from notification
                     });
+                }
+                
+                // PWA notification for mobile
+                if (isInPWAMode) {
+                    const latestMessage = unreadMessages[0];
+                    if (latestMessage) {
+                        PWANotificationManager.showChatNotification({
+                            title: '💬 New Support Message',
+                            body: latestMessage.content || latestMessage.message || 'You have a new message from support',
+                            tag: 'support-chat',
+                            messageId: latestMessage.$id,
+                            therapistId: therapist.$id
+                        });
+                    }
                 }
             }
             
+            // 📛 BADGE UPDATE: Update red circle counter
             setUnreadCount(newUnreadCount);
+            
+            // Update PWA badge on app icon
+            if (isInPWAMode) {
+                PWABadgeManager.updateBadge(newUnreadCount);
+            }
+            
+            console.log(`📨 Unread messages: ${newUnreadCount}`);
+            
         } catch (error) {
             console.warn('Failed to check unread messages:', error);
         }
@@ -268,6 +359,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                     conversationId,
                     senderId: String(therapist.$id),
                     senderName: therapist.name || 'Therapist',
+                    senderType: 'therapist', // Required: specify sender type for therapist
                     recipientId: 'admin',  // Fixed: was 'receiverId', now matches schema
                     recipientName: 'Admin',
                     recipientType: 'admin',
@@ -324,16 +416,24 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                         text-white rounded-full shadow-2xl 
                         transition-all transform hover:scale-110 active:scale-95
                         ${isInPWAMode ? 'w-16 h-16 p-4' : 'w-14 h-14 p-4'}
+                        ${unreadCount > 0 ? 'animate-pulse' : ''}
                     `}
-                    title="Open Support Chat"
+                    title={unreadCount > 0 ? `${unreadCount} new message${unreadCount === 1 ? '' : 's'}` : "Open Support Chat"}
                 >
                     <MessageCircle className={`${isInPWAMode ? 'w-8 h-8' : 'w-6 h-6'}`} />
                     
-                    {/* Unread Badge */}
+                    {/* Enhanced Unread Badge with Animation */}
                     {unreadCount > 0 && (
-                        <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[24px] h-6 flex items-center justify-center px-1 animate-pulse">
-                            {unreadCount > 99 ? '99+' : unreadCount}
+                        <div className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold rounded-full min-w-[28px] h-7 flex items-center justify-center px-2 animate-bounce border-2 border-white shadow-lg">
+                            <span className="drop-shadow-sm">
+                                {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
                         </div>
+                    )}
+                    
+                    {/* Pulse Ring for New Messages */}
+                    {unreadCount > 0 && (
+                        <div className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping opacity-30"></div>
                     )}
                 </button>
             </div>
@@ -344,22 +444,40 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     if (isMinimized) {
         return (
             <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
-                <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 p-2 flex items-center gap-2">
+                <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 p-3 flex items-center gap-3 min-w-[180px]">
                     <button
                         onClick={toggleChat}
-                        className="flex items-center gap-2 px-3 py-2 hover:bg-orange-50 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-orange-50 rounded-lg transition-colors flex-1"
                     >
-                        <MessageCircle className="w-5 h-5 text-orange-600" />
-                        <span className="text-sm font-medium text-gray-700">Support Chat</span>
+                        <div className="relative">
+                            <MessageCircle className="w-5 h-5 text-orange-600" />
+                            {/* Small badge on icon */}
+                            {unreadCount > 0 && (
+                                <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium text-gray-700">Support Chat</span>
+                            {unreadCount > 0 && (
+                                <span className="text-xs text-red-600 font-semibold">
+                                    {unreadCount} new message{unreadCount === 1 ? '' : 's'}
+                                </span>
+                            )}
+                        </div>
+                        
+                        {/* Large badge counter */}
                         {unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-xs rounded-full px-2 py-0.5 min-w-[20px] h-5 flex items-center justify-center">
-                                {unreadCount}
+                            <span className="bg-red-500 text-white text-sm rounded-full px-3 py-1 min-w-[28px] h-7 flex items-center justify-center font-bold animate-pulse ml-auto">
+                                {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                         )}
                     </button>
                     <button
                         onClick={closeChat}
-                        className="p-1 hover:bg-red-50 rounded text-gray-400 hover:text-red-600 transition-colors"
+                        className="p-2 hover:bg-red-50 rounded-full text-gray-400 hover:text-red-600 transition-colors"
+                        title="Close chat"
                     >
                         <X className="w-4 h-4" />
                     </button>

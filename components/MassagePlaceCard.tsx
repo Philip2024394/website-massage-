@@ -449,14 +449,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner */}
-                    <div className="absolute top-2 left-2 z-30">
-                        <img 
-                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png" 
-                            alt="Verified"
-                            className="w-28 h-28 sm:w-32 sm:h-32 object-contain"
-                        />
-                    </div>
+
 
                     {/* Star Rating Badge - Top Left (below verified badge) */}
                     {getDisplayRating(place.rating, place.reviewCount) > 0 && (

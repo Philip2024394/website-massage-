@@ -315,41 +315,45 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
     useEffect(() => {
         if (!therapist) return; // Guard clause
 
-        try {
-            const therapistId = (therapist as any).id || (therapist as any).$id;
-            if (!therapistId) return;
+        const trackView = async () => {
+            try {
+                const therapistId = (therapist as any).id || (therapist as any).$id;
+                if (!therapistId) return;
 
-            const sessionKey = 'shared_link_session_id';
-            const viewKey = `shared_link_viewed_${therapistId}`;
-            const existingSessionId = sessionStorage.getItem(sessionKey);
-            const sessionId = existingSessionId || crypto.randomUUID();
-            if (!existingSessionId) {
-                sessionStorage.setItem(sessionKey, sessionId);
-            }
-
-            const visitData = {
-                therapistId,
-                therapistName: therapist.name,
-                timestamp: new Date().toISOString(),
-                source: 'shared_link',
-                url: window.location.href,
-                sessionId,
-            };
-            sessionStorage.setItem('shared_link_visit', JSON.stringify(visitData));
-            sessionStorage.setItem('visit_source', 'shared_link');
-
-            if (!sessionStorage.getItem(viewKey)) {
-                sessionStorage.setItem(viewKey, '1');
-                try {
-                    const { analyticsService } = await import('../services/analyticsService');
-                    await analyticsService.trackSharedLinkView(therapistId, sessionId);
-                } catch {
-                    // No-op if analytics cannot load (dev/SSR/env issues)
+                const sessionKey = 'shared_link_session_id';
+                const viewKey = `shared_link_viewed_${therapistId}`;
+                const existingSessionId = sessionStorage.getItem(sessionKey);
+                const sessionId = existingSessionId || crypto.randomUUID();
+                if (!existingSessionId) {
+                    sessionStorage.setItem(sessionKey, sessionId);
                 }
+
+                const visitData = {
+                    therapistId,
+                    therapistName: therapist.name,
+                    timestamp: new Date().toISOString(),
+                    source: 'shared_link',
+                    url: window.location.href,
+                    sessionId,
+                };
+                sessionStorage.setItem('shared_link_visit', JSON.stringify(visitData));
+                sessionStorage.setItem('visit_source', 'shared_link');
+
+                if (!sessionStorage.getItem(viewKey)) {
+                    sessionStorage.setItem(viewKey, '1');
+                    try {
+                        const { analyticsService } = await import('../services/analyticsService');
+                        await analyticsService.trackSharedLinkView(therapistId, sessionId);
+                    } catch {
+                        // No-op if analytics cannot load (dev/SSR/env issues)
+                    }
+                }
+            } catch (err) {
+                console.log('[SharedTherapistProfile] Analytics skip:', err);
             }
-        } catch (err) {
-            console.log('[SharedTherapistProfile] Analytics skip:', err);
-        }
+        };
+
+        trackView();
     }, [therapist]);
 
     const handleViewAllTherapists = () => {
@@ -534,7 +538,6 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     loggedInProviderId={loggedInProvider?.id}
                     t={t}
                     hideJoinButton={false}
-                    customVerifiedBadge="https://ik.imagekit.io/7grri5v7d/verfied_badge-removebg-preview.png"
                 />
 
                 {/* Rotating Reviews Section */}

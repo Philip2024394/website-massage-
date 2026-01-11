@@ -286,17 +286,7 @@ const FacialPlaceCard: React.FC<FacialPlaceCardProps> = ({
                         }}
                     />
                     
-                    {/* Verified Badge - Top Left Corner - Premium + KTP Verified */}
-                    {(place as any).membershipTier === 'premium' && (place as any).ktpVerified && (
-                        <div className="absolute top-2 left-2 z-30">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
-                                alt="Verified Place"
-                                className="w-20 h-20 sm:w-24 sm:h-24 object-contain drop-shadow-lg"
-                                style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
-                            />
-                        </div>
-                    )}
+
 
                 {/* Discount Badge - Database driven discount */}
                 {isDiscountActive(place) && (

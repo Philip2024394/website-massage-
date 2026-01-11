@@ -302,18 +302,6 @@ const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                                     (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/hotel%20massage%20indoniseas.png?updatedAt=1761154913720';
                                 }}
                             />
-                            
-                            {/* Verified Badge */}
-                            {membershipTier === 'premium' && (
-                                <div className="absolute top-2 left-2 z-30">
-                                    <img 
-                                        src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
-                                        alt="Verified Member"
-                                        className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-lg"
-                                        style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
-                                    />
-                                </div>
-                            )}
                         </div>
 
                         {/* Discount Badge */}

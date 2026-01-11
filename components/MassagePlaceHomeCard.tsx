@@ -214,26 +214,7 @@ const MassagePlaceHomeCard: React.FC<MassagePlaceHomeCardProps> = ({
                 </div>
 
                 {/* Premium Verified Badge - Left side, between star rating and profile */}
-                {(() => {
-                    // Check if premium member or verified
-                    const isPremium = place.membershipTier === 'premium' || 
-                                    place.isVerified || 
-                                    (place as any).verified || 
-                                    (place as any).verificationBadge === 'verified';
-                    
-                    return isPremium && (
-                        <div className="absolute top-12 left-6 z-20">
-                            <img 
-                                src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473"
-                                alt="Verified Badge"
-                                className="w-28 h-28 drop-shadow-lg"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                            />
-                        </div>
-                    );
-                })()}
+
 
                 {/* Status badge removed from main image */}
 

@@ -915,6 +915,30 @@ const ConfirmTherapistsPage: React.FC = () => {
                           >
                             {updatingId === therapist.$id ? 'Deactivating...' : '⏸️ Deactivate'}
                           </Button>
+                          
+                          {/* Verified Badge Toggle */}
+                          <Button
+                            variant="secondary"
+                            className={`w-full py-2 text-sm ${(therapist as any).verifiedBadge ? 'bg-purple-600 hover:bg-purple-700' : 'bg-gray-600 hover:bg-gray-700'} text-white`}
+                            disabled={updatingId === therapist.$id}
+                            onClick={async () => {
+                              setUpdatingId(therapist.$id);
+                              try {
+                                await therapistService.update(therapist.$id, {
+                                  verifiedBadge: !(therapist as any).verifiedBadge
+                                });
+                                await fetchTherapists();
+                                alert((therapist as any).verifiedBadge ? 'Verified badge removed' : 'Verified badge added');
+                              } catch (error) {
+                                console.error('Failed to toggle verified badge:', error);
+                                alert('Failed to update verified badge');
+                              } finally {
+                                setUpdatingId(null);
+                              }
+                            }}
+                          >
+                            {(therapist as any).verifiedBadge ? '✅ Remove Verified Badge' : '⭐ Add Verified Badge'}
+                          </Button>
                         </div>
                       )}
                     </div>

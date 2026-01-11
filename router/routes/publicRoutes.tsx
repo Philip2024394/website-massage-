@@ -8,6 +8,7 @@ import React from 'react';
 // Lazy-loaded page components
 // Critical entry page: import directly to avoid chunk load errors
 import LandingPage from '../../pages/LandingPage';
+import HomePage from '../../pages/HomePage';
 const AboutUsPage = React.lazy(() => import('../../pages/AboutUsPage'));
 const ContactUsPage = React.lazy(() => import('../../pages/ContactUsPage'));
 const CompanyProfilePage = React.lazy(() => import('../../pages/CompanyProfilePage'));

@@ -141,7 +141,6 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     activeDiscount={realDiscount}
                     t={t}
                     hideJoinButton={mode === 'shared'}
-                    customVerifiedBadge={mode === 'shared' ? "https://ik.imagekit.io/7grri5v7d/therapist_verfied-removebg-preview.png" : undefined}
                 />
 
                 {/* Rotating Reviews Section */}

@@ -104,6 +104,7 @@ const TherapistChat: React.FC<TherapistChatProps> = ({ therapist, onBack }) => {
         conversationId,
         senderId: String(therapist.$id || therapist.id),
         senderName: therapist.name || 'Therapist',
+        senderType: 'therapist', // Required: specify sender type for therapist
         recipientId: 'admin',
         recipientName: 'Admin',
         recipientType: 'admin',

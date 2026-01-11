@@ -697,6 +697,7 @@ export const therapistService = {
             if (data.yearsOfExperience) mappedData.yearsOfExperience = data.yearsOfExperience;
             if (data.isLicensed !== undefined) mappedData.isLicensed = data.isLicensed;
             if (data.bookingsEnabled !== undefined) mappedData.bookingsEnabled = data.bookingsEnabled;
+            if (data.isVerified !== undefined) mappedData.isVerified = data.isVerified;
             
             // Handle premium membership fields (only fields that exist in DB)
             if (data.membershipTier !== undefined) mappedData.membershipTier = data.membershipTier;

@@ -2,9 +2,7 @@ name: Block Legacy Edits
 
 on:
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
 jobs:
   prevent-legacy-changes:
@@ -12,23 +10,24 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Check for legacy file modifications
+        shell: bash
         run: |
           echo "INFO: Checking for legacy file edits..."
 
-          git fetch origin ${{ github.base_ref }}
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          git fetch origin "${{ github.base_ref }}"
+          CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
 
           echo "INFO: Changed files:"
           echo "$CHANGED_FILES"
           echo ""
 
-          LEGACY_CHANGES=$(echo "$CHANGED_FILES" | grep "^legacy/" || true)
-          LOCKED_PAGES=$(echo "$CHANGED_FILES" | grep -E "^pages/HomePage\.tsx$|^components/TherapistHomeCard\.tsx$" || true)
+          LEGACY_CHANGES="$(echo "$CHANGED_FILES" | grep "^legacy/" || true)"
+          LOCKED_PAGES="$(echo "$CHANGED_FILES" | grep -E "^pages/HomePage\\.tsx$|^components/TherapistHomeCard\\.tsx$" || true)"
 
           if [ -n "$LEGACY_CHANGES" ]; then
             echo "ERROR: Legacy files were modified!"
@@ -80,10 +79,11 @@ jobs:
           echo "INFO: No legacy file edits detected. Proceeding..."
 
       - name: Check for hardcoded routes
+        shell: bash
         run: |
           echo "INFO: Checking for hardcoded route strings..."
 
-          CHANGED_TS_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '\.(ts|tsx)$' || true)
+          CHANGED_TS_FILES="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD | grep -E '\\.(ts|tsx)$' || true)"
 
           if [ -z "$CHANGED_TS_FILES" ]; then
             echo "INFO: No TypeScript files changed. Skipping route check."

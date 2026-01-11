@@ -3,6 +3,7 @@ import { authService, therapistService } from '../../../lib/appwriteService';
 import { systemHealthService } from "../../../lib/systemHealthService";
 import { EnhancedNotificationService } from "../../../lib/enhancedNotificationService";
 import { PWAInstallationEnforcer } from "../../../lib/pwaInstallationEnforcer";
+import { therapistNotificationManager } from './lib/therapistNotifications';
 import { CardSkeleton } from '../../../components/LoadingSkeletons';
 // import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
@@ -61,6 +62,11 @@ function App() {
         // Initialize enhanced notification service
         await EnhancedNotificationService.initialize();
         console.log('✅ Enhanced notification system initialized');
+        
+        // 🔊 Initialize therapist chat notification system with MP3 sounds
+        console.log('🔔 Initializing therapist notification manager...');
+        therapistNotificationManager.requestNotificationPermission();
+        console.log('✅ Therapist notification system ready');
         
         // Start PWA installation monitoring (non-blocking)
         PWAInstallationEnforcer.startMonitoring();
@@ -208,43 +214,7 @@ function App() {
     const handleServiceWorkerMessage = (event: MessageEvent) => {
       const { type, payload } = event.data;
       
-      switch (type) {
-        case 'NEW_BOOKING':
-          console.log('📋 New booking received:', payload);
-          handleNewBookingAlert(payload);
-          break;
-          
-        case 'ACCEPT_BOOKING':
-          console.log('✅ Accept booking request:', payload);
-          handleAcceptBooking(payload.bookingId);
-          break;
-          
-        case 'OPEN_BOOKING_DETAILS':
-          console.log('👁️ Open booking details:', payload);
-          handleOpenBookingDetails(payload.bookingId);
-          break;
-          
-        default:
-          console.log('Unknown service worker message:', event.data);
-      }
-    };
-
-    // Listen for service worker messages
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
-      
-      return () => {
-        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
-      };
-    }
-  }, [user?.$id]);
-
-  // Listen for service worker messages (booking notifications, etc.)
-  useEffect(() => {
-    if (!user?.$id) return;
-
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
-      const { type, payload } = event.data;
+      console.log('🔔 Service Worker message received:', type);
       
       switch (type) {
         case 'NEW_BOOKING':
@@ -263,16 +233,18 @@ function App() {
           break;
           
         default:
-          console.log('Unknown service worker message:', event.data);
+          console.log('⚠️ Unknown service worker message type:', type);
       }
     };
 
     // Listen for service worker messages
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      console.log('✅ Service Worker message listener registered');
       
       return () => {
         navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+        console.log('🗑️ Service Worker message listener cleaned up');
       };
     }
   }, [user?.$id]);

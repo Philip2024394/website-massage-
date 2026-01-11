@@ -280,6 +280,7 @@ export interface Therapist {
     verificationBadge?: 'verified' | null;
     verificationRevokedAt?: string;
     verificationRevokedReason?: string;
+    verifiedBadge?: boolean; // Small badge shown before name on profile cards
     
     // Dynamic pricing support
     hasPackages?: boolean;

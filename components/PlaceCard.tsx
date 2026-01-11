@@ -3,10 +3,11 @@ import type { Place } from '../types';
 import SocialSharePopup from './SocialSharePopup';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { useLanguageContext } from '../context/LanguageContext';
+import { usePersistentChatIntegration } from '../hooks/usePersistentChatIntegration';
 
 interface PlaceCardProps {
     place: Place;
-    onClick: () => void;
+    onClick?: () => void; // Made optional since we're handling booking internally
     onRate: (place: Place) => void;
     activeDiscount?: { percentage: number; expiresAt: Date } | null; // Active discount
     _t?: any; // Translation object for detecting language
@@ -30,6 +31,9 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     const [showSharePopup, setShowSharePopup] = useState(false);
     
+    // 🔒 PERSISTENT CHAT - Facebook Messenger style booking integration
+    const { openBookingChat } = usePersistentChatIntegration();
+    
     // Use language from context instead of detecting from translations
     const currentLanguage: 'en' | 'id' = language as 'en' | 'id';
     
@@ -45,6 +49,17 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
     };
     
     const translatedDescription = getTranslatedDescription();
+    
+    // Parse pricing for booking
+    const getParsedPricing = () => {
+        try {
+            return typeof place.pricing === 'string' 
+                ? JSON.parse(place.pricing) 
+                : place.pricing || {"60": 0, "90": 0, "120": 0};
+        } catch {
+            return {"60": 0, "90": 0, "120": 0};
+        }
+    };
     
     // Countdown timer for active discount
     useEffect(() => {
@@ -64,6 +79,11 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             
+            className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer" 
+            onClick={handleBooking}
+            role="button"
+            aria-label={`Book massage at ${place.name}`}
+        
             setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
         }, 1000);
         
@@ -73,6 +93,25 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
     const handleRateClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         onRate(place);
+    };
+    
+    // Handle booking - opens persistent chat with place details
+    const handleBooking = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        
+        console.log('🏢 Opening booking for place:', place.name);
+        
+        openBookingChat({
+            id: place.$id,
+            name: place.name,
+            image: place.profilePicture || place.mainImage,
+            pricing: getParsedPricing(),
+            whatsapp: (place as any).whatsapp || (place as any).phoneNumber,
+            status: 'AVAILABLE', // Places are always available (no BUSY status)
+            availabilityStatus: 'AVAILABLE',
+            duration: 60, // Default duration
+            clientPreferences: undefined, // Places don't have client preferences
+        });
     };
 
     return (
@@ -93,17 +132,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
                     <span className="text-xs text-gray-300">({place.reviewCount})</span>
                 </div>
                 
-                {/* Verified Badge - Top Left Corner - Premium + KTP Verified */}
-                {(place as any).membershipTier === 'premium' && (place as any).ktpVerified && (
-                    <div className="absolute top-2 left-2 z-20">
-                        <img 
-                            src="https://ik.imagekit.io/7grri5v7d/indastreet_verfied-removebg-preview.png?updatedAt=1764750953473" 
-                            alt="Verified Place"
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-lg"
-                            style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }}
-                        />
-                    </div>
-                )}
+
 
                 {/* Active Discount Badge - Top Right Corner */}
                 {activeDiscount && discountTimeLeft !== 'EXPIRED' && (

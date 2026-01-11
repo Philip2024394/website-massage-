@@ -124,6 +124,26 @@ const App = () => {
     // Chat minimization state
     const [isChatMinimized, setIsChatMinimized] = useState(true);
 
+    // ===== CRITICAL UX SAFETY: Clean URL → Hash URL Redirect =====
+    // Redirect clean URLs to hash URLs for HashRouter compatibility
+    // Example: /therapist-profile/abc → /#/therapist-profile/abc
+    useEffect(() => {
+        const path = window.location.pathname;
+        const hash = window.location.hash;
+        
+        // Only redirect if:
+        // 1. Path starts with /therapist-profile/
+        // 2. URL doesn't already have #/
+        // 3. Not on admin dashboard or other routes
+        if (path.startsWith('/therapist-profile/') && !hash.includes('#/')) {
+            console.log('🔄 Clean URL detected, redirecting to hash URL');
+            console.log('   From:', window.location.href);
+            const newUrl = window.location.origin + '/#' + path + window.location.search;
+            console.log('   To:', newUrl);
+            window.location.replace(newUrl); // Silent redirect, no history entry
+        }
+    }, []); // Run once on mount
+    
     // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
     // All hooks combined - MUST be called BEFORE any useEffect that depends on state
     const hooks = useAllHooks();

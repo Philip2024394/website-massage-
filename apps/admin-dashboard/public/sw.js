@@ -38,19 +38,26 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clone the response
-        const responseClone = response.clone();
-        
-        // Cache the fetched response
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
-        });
+        // Only cache GET requests to avoid unsupported method errors
+        if (event.request.method === 'GET') {
+          // Clone the response
+          const responseClone = response.clone();
+          
+          // Cache the fetched response
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
         
         return response;
       })
       .catch(() => {
-        // If fetch fails, try to return from cache
-        return caches.match(event.request);
+        // If fetch fails, try to return from cache (only for GET requests)
+        if (event.request.method === 'GET') {
+          return caches.match(event.request);
+        }
+        // For non-GET requests, return a network error response
+        return new Response('Network error', { status: 500, statusText: 'Network Error' });
       })
   );
 });
