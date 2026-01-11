@@ -844,6 +844,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
+                                style={{ aspectRatio: '1/1' }}
                                 loading="lazy"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';

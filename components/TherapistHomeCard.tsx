@@ -320,6 +320,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500"
+                    style={{ aspectRatio: '400/224' }}
                     loading="lazy"
                     width="400"
                     height="224"
@@ -404,6 +405,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
+                                style={{ aspectRatio: '1/1' }}
                                 loading="lazy"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';

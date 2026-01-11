@@ -31,6 +31,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover"
+                    style={{ aspectRatio: '16/9' }}
                     loading="eager"
                     decoding="async"
                     fetchPriority="high"
