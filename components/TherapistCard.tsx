@@ -17,7 +17,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { AvailabilityStatus } from '../types';
-import { parsePricing, parseMassageTypes, parseCoordinates, parseLanguages } from '../utils/appwriteHelpers';
+import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { devLog, devWarn } from '../utils/devMode';
@@ -43,6 +43,11 @@ import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
 import TherapistPricingGrid from '../modules/therapist/TherapistPricingGrid';
 import TherapistModalsContainer from '../modules/therapist/TherapistModalsContainer';
+import TherapistProfile from '../modules/therapist/TherapistProfile';
+import TherapistSpecialties from '../modules/therapist/TherapistSpecialties';
+import TherapistLanguages from '../modules/therapist/TherapistLanguages';
+import TherapistPriceListModal from '../modules/therapist/TherapistPriceListModal';
+import { getDynamicSpacing, formatPrice, formatCountdownDisplay, getInitialBookingCount } from '../modules/therapist/therapistHelpers';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
 // Custom hooks for logic extraction
@@ -620,21 +625,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             parsedPricing: pricing
         });
     }
-    const massageTypes = parseMassageTypes(therapist.massageTypes) || [];
-    
-    // Debug logging for massage types and languages
-    if (therapist.name === 'phil10' || (therapist as any).$id === '6912d611003551067831') {
-        devLog('🔍 CARD DATA DEBUG:', {
-            therapistId: therapist.$id || therapist.id,
-            therapistName: therapist.name,
-            rawMassageTypes: therapist.massageTypes,
-            parsedMassageTypes: massageTypes,
-            massageTypesCount: massageTypes.length,
-            rawLanguages: therapist.languages,
-            languagesType: typeof therapist.languages
-        });
-    }
-    
     // Helper function to format price in 4-character format: "280k"
     const formatPrice = (price: number | string): string => {
         const numPrice = typeof price === 'string' ? parseFloat(price) : price;
@@ -660,15 +650,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
     const mainImage = (therapist as any).mainImage;
     
-    // Check if therapist offers Mobile Corporate massage
-    const isMobileCorporate = massageTypes.some(type => 
-        type.toLowerCase().includes('mobile') || type.toLowerCase().includes('corporate')
-    );
-    
-    // Use corporate image if mobile/corporate massage type exists, otherwise use therapist's mainImage or random fallback
-    const displayImage = isMobileCorporate 
-        ? 'https://ik.imagekit.io/7grri5v7d/massage%20villa%20service%20indonisea.png?updatedAt=1761583264188'
-        : (mainImage || getRandomTherapistImage(therapist.id.toString()));
+    // Use therapist's mainImage or random fallback
+    const displayImage = mainImage || getRandomTherapistImage(therapist.id.toString());
 
     const openWhatsApp = () => {
         devLog('📱 Book Now clicked - showing booking form');
@@ -846,98 +829,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             </div>
 
-            {/* ========================================
-             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
-             * Profile positioning and layout finalized
-             * ======================================== */}
-            {/* Profile Section - Overlapping main image by 30% */}
-            <div className="px-4 -mt-24 pb-4 relative z-50 overflow-visible pointer-events-none">
-                <div className="flex items-start gap-3">
-                    {/* Profile Picture - 30% of card width */}
-                    <div className="flex-shrink-0 relative z-50">
-                        <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
-                            <img 
-                                className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
-                                src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                                alt={`${therapist.name} profile`}
-                                style={{ aspectRatio: '1/1' }}
-                                loading="lazy"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = '/default-avatar.jpg';
-                                }}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* ========================================
-             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
-             * Name and status positioning finalized
-             * 75px offset from left is intentional
-             * ======================================== */}
-            {/* Name and Status - Below main image, left aligned with 75px offset */}
-            <div className="px-4 mt-[2px] mb-3 relative z-40">
-                <div className="flex-shrink-0">
-                    {/* Name left aligned with offset */}
-                    <div className="mb-2 ml-[75px]">
-                        <div className="flex items-center gap-2">
-                            {/* Verified Badge */}
-                            {((therapist as any).verifiedBadge || therapist.isVerified) && (
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
-                                    alt="Verified"
-                                    className="w-5 h-5 flex-shrink-0"
-                                    title="Verified Therapist"
-                                />
-                            )}
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-                                {therapist.name}
-                            </h3>
-                        </div>
-                    </div>
-
-                    {/* Status Badge - Left aligned with offset */}
-                    <div className="overflow-visible flex justify-start ml-[75px]">
-                        <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
-                            {/* Pulsing satellite broadcast ring for Available status */}
-                            <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
-                                <span key={`${therapist.$id || therapist.id}-dot`} className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
-                                {!isOvertime && displayStatus === AvailabilityStatus.Available && (
-                                    <React.Fragment key={`${therapist.$id || therapist.id}-rings`}>
-                                        <span key={`${therapist.$id || therapist.id}-ring1`} className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
-                                        <span key={`${therapist.$id || therapist.id}-ring2`} className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
-                                    </React.Fragment>
-                                )}
-                                {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
-                                    <span key={`${therapist.$id || therapist.id}-busy`} className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
-                                )}
-                            </span>
-                            {displayStatus === AvailabilityStatus.Busy ? (
-                                therapist.busyUntil ? (
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-xs">Busy</span>
-                                        <BusyCountdownTimer
-                                            endTime={therapist.busyUntil}
-                                            onExpired={() => {
-                                                devLog('Busy period ended – therapist should be available.');
-                                            }}
-                                        />
-                                    </div>
-                                ) : countdown ? (
-                                    <span className="text-xs">
-                                        {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
-                                    </span>
-                                ) : (
-                                    <span className="text-xs">Busy</span>
-                                )
-                            ) : (
-                                <span className="text-xs">{displayStatus}</span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <TherapistProfile
+                therapist={therapist}
+                displayStatus={displayStatus}
+                isOvertime={isOvertime}
+                countdown={countdown}
+                customVerifiedBadge={customVerifiedBadge}
+            />
             
             {/* Client Preference Display - Left aligned */}
             <div className="mx-4 mb-2 flex items-center justify-between">
@@ -992,107 +890,13 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </p>
             </div>
 
-            {/* Content Section - Compact layout */}
-            <div className="px-4">
-            {/* Massage Specializations - Centered */}
-            <div className="border-t border-gray-100 pt-3">
-                <div className="mb-2">
-                    <h4 className="text-sm font-semibold text-gray-700 text-center">
-                        {_t.home?.therapistCard?.experiencedArea || 'Areas of Expertise'}
-                    </h4>
-                </div>
-                <div className="flex flex-wrap gap-1 justify-center">
-                    {massageTypes.slice(0, 5).map(type => (
-                        <span key={type} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">{type}</span>
-                    ))}
-                    {massageTypes.length === 0 && (
-                        <span className="text-xs text-gray-400">No specialties selected</span>
-                    )}
-                    {massageTypes.length > 5 && (
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">+{massageTypes.length - 5}</span>
-                    )}
-                </div>
-                </div>
-            </div>
+            <TherapistSpecialties therapist={therapist} t={t} />
 
-            {/* Languages Spoken - Compact */}
-            {(() => {
-                const languages = therapist.languages 
-                    ? (typeof therapist.languages === 'string' 
-                        ? parseLanguages(therapist.languages) 
-                        : therapist.languages)
-                    : [];
-                
-                // Debug in development mode (reduced verbosity)
-                if (process.env.NODE_ENV === 'development' && therapist.name?.toLowerCase().includes('budi')) {
-                    devLog(`🌐 ${therapist.name} languages:`, languages);
-                }
-                
-                return languages && Array.isArray(languages) && languages.length > 0 && (
-                    <div className={`px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-2', translatedDescription.length)}`}>
-                        <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                            {therapist.yearsOfExperience && (
-                                <span className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                    </svg>
-                                    {therapist.yearsOfExperience} years experience
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                            {languages.slice(0, 3).map(lang => {
-                                // Map full language names to flag and display info
-                                const langMap: Record<string, {flag: string, name: string}> = {
-                                    'english': {flag: '🇬🇧', name: 'EN'},
-                                    'indonesian': {flag: '🇮🇩', name: 'ID'},
-                                    'mandarin': {flag: '🇨🇳', name: 'ZH'},
-                                    'japanese': {flag: '🇯🇵', name: 'JP'},
-                                    'korean': {flag: '🇰🇷', name: 'KR'},
-                                    'thai': {flag: '🇹🇭', name: 'TH'},
-                                    'vietnamese': {flag: '🇻🇳', name: 'VI'},
-                                    'french': {flag: '🇫🇷', name: 'FR'},
-                                    'german': {flag: '🇩🇪', name: 'DE'},
-                                    'spanish': {flag: '🇪🇸', name: 'ES'},
-                                    'portuguese': {flag: '🇵🇹', name: 'PT'},
-                                    'italian': {flag: '🇮🇹', name: 'IT'},
-                                    'russian': {flag: '🇷🇺', name: 'RU'},
-                                    'arabic': {flag: '🇸🇦', name: 'AR'},
-                                    'hindi': {flag: '🇮🇳', name: 'HI'},
-                                    // Also support language codes for backward compatibility
-                                    'en': {flag: '🇬🇧', name: 'EN'},
-                                    'id': {flag: '🇮🇩', name: 'ID'},
-                                    'zh': {flag: '🇨🇳', name: 'ZH'},
-                                    'ja': {flag: '🇯🇵', name: 'JP'},
-                                    'ko': {flag: '🇰🇷', name: 'KR'},
-                                    'th': {flag: '🇹🇭', name: 'TH'},
-                                    'vi': {flag: '🇻🇳', name: 'VI'},
-                                    'fr': {flag: '🇫🇷', name: 'FR'},
-                                    'de': {flag: '🇩🇪', name: 'DE'},
-                                    'es': {flag: '🇪🇸', name: 'ES'},
-                                    'pt': {flag: '🇵🇹', name: 'PT'},
-                                    'it': {flag: '🇮🇹', name: 'IT'},
-                                    'ru': {flag: '🇷🇺', name: 'RU'},
-                                    'ar': {flag: '🇸🇦', name: 'AR'},
-                                    'hi': {flag: '🇮🇳', name: 'HI'}
-                                };
-                                const langKey = lang.toLowerCase();
-                                const langInfo = langMap[langKey] || {flag: '🌐', name: lang.slice(0, 2).toUpperCase()};
-                                return (
-                                    <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                        <span className="text-xs">{langInfo.flag}</span>
-                                        <span className="text-xs font-semibold">{langInfo.name}</span>
-                                    </span>
-                                );
-                            })}
-                            {languages.length > 3 && (
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">+{languages.length - 3}</span>
-                            )}
-                        </div>
-                    </div>
-                );
-            })()}
+            <TherapistLanguages 
+                therapist={therapist}
+                getDynamicSpacing={getDynamicSpacing}
+                translatedDescriptionLength={translatedDescription.length}
+            />
 
             {/* Discount Notice - Shows when discount is active and not expired */}
             {/* Discounted Prices Header */}
@@ -1298,310 +1102,22 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
             </div>
 
-            {/* Price List Bottom Sheet Slider */}
-            {showPriceListModal && (
-                <div
-                    className="fixed inset-0 z-[10000] bg-black bg-opacity-50 transition-opacity duration-300"
-                    onClick={() => {
-                        console.log('🔴 Modal backdrop clicked - closing');
-                        setShowPriceListModal(false);
-                    }}
-                >
-                    <style>{`
-                        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-                    `}</style>
-                    <div
-                        className="absolute bottom-0 left-0 right-0 h-full w-full bg-white transform transition-transform duration-300 ease-out"
-                        style={{ animation: 'slideUp 0.3s ease-out forwards' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Header - Orange gradient with profile & rating */}
-                        <div className="px-4 py-3 flex items-center justify-between bg-gradient-to-r from-orange-500 to-orange-600 sticky top-0">
-                            <div className="flex items-center gap-3 flex-1">
-                                <img
-                                    key={(therapist as any).profilePicture || (therapist as any).mainImage}
-                                    src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
-                                    alt={therapist.name}
-                                    className="w-11 h-11 rounded-full border-2 border-white object-cover"
-                                    loading="lazy"
-                                    decoding="async"
-                                    width="44"
-                                    height="44"
-                                    onError={(e) => {
-                                        const img = e.target as HTMLImageElement;
-                                        if (!img.src.includes('default-avatar.jpg')) {
-                                            console.warn(`⚠️ Failed to load modal profile image for ${therapist.name}, using fallback`);
-                                            img.src = '/default-avatar.jpg';
-                                        }
-                                    }}
-                                />
-                                <div>
-                                    <h2 className="text-lg font-bold text-white leading-tight">{therapist.name}</h2>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <StarIcon className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
-                                        <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{displayRating}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowPriceListModal(false)}
-                                className="flex items-center justify-center w-8 h-8 bg-black/70 hover:bg-black rounded-full transition-colors"
-                                aria-label="Close"
-                            >
-                                <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-
-                        {/* Pricing Header Row */}
-                        <div className="px-4 py-2 flex items-center justify-between">
-                            <div className="text-sm sm:text-base font-bold text-gray-900">Service Prices</div>
-                            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-orange-800 font-semibold">
-                                <span className="hidden sm:inline">Estimated Arrival • ~1 hour</span>
-                                <span className="sm:hidden">Estimated Arrival • ~1h</span>
-                                <span className="px-2 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
-                                    {formatCountdown(arrivalCountdown)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Price List Content - Natural scrolling */}
-                        <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
-                            {menuData.length > 0 ? (
-                                <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                                    {/* Table Header */}
-                                    <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
-                                        <div className="col-span-4">Service</div>
-                                        <div className="col-span-2 text-center">60 Min</div>
-                                        <div className="col-span-2 text-center">90 Min</div>
-                                        <div className="col-span-2 text-center">120 Min</div>
-                                        <div className="col-span-2 text-center">Action</div>
-                                    </div>
-
-                                    {/* Table Rows */}
-                                    <div className="divide-y divide-orange-100">
-                                        {menuData.map((service: any, index: number) => {
-                                            const isRowSelected = selectedServiceIndex === index;
-
-                                            return (
-                                                <div key={index} className={`grid grid-cols-12 gap-2 px-3 py-3 transition-colors items-center ${
-                                                    isRowSelected ? 'bg-orange-50 border-l-4 border-orange-500' : 'hover:bg-orange-50'
-                                                }`}>
-                                                    {/* Service Name */}
-                                                    <div className="col-span-4">
-                                                        <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
-                                                        {service.description && (
-                                                            <div className="text-xs text-gray-500 mt-1 truncate">{service.description}</div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Price buttons - improved mobile width */}
-                                                    {['60', '90', '120'].map((duration) => (
-                                                        <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
-                                                            {service[`price${duration}`] ? (
-                                                                <button
-                                                                    onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
-                                                                    className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 ${
-                                                                        isRowSelected && selectedDuration === duration
-                                                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                            : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                                    }`}
-                                                                >
-                                                                    <span className="block truncate text-xs">
-                                                                        Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
-                                                                    </span>
-                                                                </button>
-                                                            ) : (
-                                                                <span className="text-xs text-gray-400">-</span>
-                                                            )}
-                                                        </div>
-                                                    ))}
-
-                                                    {/* Action Buttons */}
-                                                    <div className="col-span-2 text-center">
-                                                        <button
-                                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                                                                isRowSelected && selectedDuration
-                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
-                                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
-                                                            }`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                
-                                                                // If no selection yet, auto-select first available duration for this service
-                                                                const availableDurations: string[] = [];
-                                                                if (service.price60) availableDurations.push('60');
-                                                                if (service.price90) availableDurations.push('90');
-                                                                if (service.price120) availableDurations.push('120');
-                                                                
-                                                                console.log('🎯 PRICE SLIDER: User clicked "Pesan Sekarang"', {
-                                                                    serviceName: service.name || service.serviceName,
-                                                                    serviceIndex: index,
-                                                                    isRowSelected,
-                                                                    selectedDuration,
-                                                                    availableDurations,
-                                                                    therapistId: therapist.id,
-                                                                    therapistName: therapist.name
-                                                                });
-                                                                
-                                                                if (availableDurations.length > 0) {
-                                                                    // If this row is already selected with a duration, proceed to booking
-                                                                    if (isRowSelected && selectedDuration) {
-                                                                        const serviceName = service.name || service.serviceName || 'Massage Service';
-                                                                        const servicePrice = Number(service[`price${selectedDuration}`]) * 1000;
-                                                                        const serviceDuration = parseInt(selectedDuration);
-                                                                        
-                                                                        console.log('🚀 PRICE SLIDER → Opening booking chat with pre-selected service:', {
-                                                                            serviceName,
-                                                                            duration: serviceDuration,
-                                                                            price: servicePrice
-                                                                        });
-                                                                        
-                                                                        // Close the price list modal
-                                                                        setShowPriceListModal(false);
-                                                                        
-                                                                        // Open chat with pre-selected service details (skips duration selection)
-                                                                        openBookingWithService(therapist, {
-                                                                            serviceName,
-                                                                            duration: serviceDuration,
-                                                                            price: servicePrice
-                                                                        });
-                                                                    } else {
-                                                                        // Auto-select first available duration for this service
-                                                                        const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                                        handleSelectService(index, firstDuration);
-                                                                        console.log('🎯 Auto-selected:', { serviceIndex: index, duration: firstDuration });
-                                                                    }
-                                                                }
-                                                            }}
-                                                        >
-                                                            {isRowSelected && selectedDuration 
-                                                                ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
-                                                                : (chatLang === 'id' ? 'Pilih' : 'Select')
-                                                            }
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ) : (
-                                // Fallback pricing when menu data fails to load - use therapist's built-in pricing
-                                <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                                    {/* Table Header */}
-                                    <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
-                                        <div className="col-span-4">Service</div>
-                                        <div className="col-span-2 text-center">60 Min</div>
-                                        <div className="col-span-2 text-center">90 Min</div>
-                                        <div className="col-span-2 text-center">120 Min</div>
-                                        <div className="col-span-2 text-center">Action</div>
-                                    </div>
-
-                                    {/* Fallback Service Row */}
-                                    <div className="divide-y divide-orange-100">
-                                        <div className="grid grid-cols-12 gap-2 px-3 py-3 hover:bg-orange-50 items-center">
-                                            {/* Service Name */}
-                                            <div className="col-span-4">
-                                                <div className="font-medium text-sm text-gray-900">Traditional Massage</div>
-                                                <div className="text-xs text-gray-500 mt-1">Traditional therapeutic massage</div>
-                                            </div>
-
-                                            {/* Price buttons using therapist's pricing */}
-                                            {['60', '90', '120'].map((duration) => {
-                                                const priceKey = `price${duration}` as keyof typeof therapist;
-                                                const price = therapist[priceKey];
-                                                return (
-                                                    <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
-                                                        {price ? (
-                                                            <button
-                                                                onClick={() => {
-                                                                    setSelectedServiceIndex(0);
-                                                                    setSelectedDuration(duration as '60' | '90' | '120');
-                                                                }}
-                                                                className={`px-2 py-1 rounded text-xs transition-all border-2 ${
-                                                                    selectedServiceIndex === 0 && selectedDuration === duration
-                                                                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                        : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                                }`}
-                                                            >
-                                                                Rp {(Number(price) * 1000).toLocaleString('id-ID')}
-                                                            </button>
-                                                        ) : (
-                                                            <span className="text-xs text-gray-400">-</span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-
-                                            {/* Action Button */}
-                                            <div className="col-span-2 text-center">
-                                                <button
-                                                    className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                                                        selectedServiceIndex === 0 && selectedDuration
-                                                            ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
-                                                            : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
-                                                    }`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        
-                                                        // Get available durations from therapist pricing
-                                                        const availableDurations: string[] = [];
-                                                        if (therapist.price60) availableDurations.push('60');
-                                                        if (therapist.price90) availableDurations.push('90');
-                                                        if (therapist.price120) availableDurations.push('120');
-                                                        
-                                                        console.log('🎯 PRICE SLIDER (Fallback): User clicked "Pesan Sekarang"', {
-                                                            selectedServiceIndex,
-                                                            selectedDuration,
-                                                            availableDurations,
-                                                            therapistId: therapist.id,
-                                                            therapistName: therapist.name
-                                                        });
-                                                        
-                                                        if (availableDurations.length > 0) {
-                                                            // If already selected, proceed to booking
-                                                            if (selectedServiceIndex === 0 && selectedDuration) {
-                                                                const priceKey = `price${selectedDuration}` as keyof typeof therapist;
-                                                                const servicePrice = Number(therapist[priceKey]) * 1000;
-                                                                const serviceDuration = parseInt(selectedDuration);
-                                                                
-                                                                console.log('🚀 PRICE SLIDER (Fallback) → Opening booking chat with pre-selected service');
-                                                                
-                                                                // Close the price list modal
-                                                                setShowPriceListModal(false);
-                                                                
-                                                                // Open chat with pre-selected service details
-                                                                openBookingWithService(therapist, {
-                                                                    serviceName: 'Traditional Massage',
-                                                                    duration: serviceDuration,
-                                                                    price: servicePrice
-                                                                });
-                                                            } else {
-                                                                // Auto-select first available duration
-                                                                const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                                setSelectedServiceIndex(0);
-                                                                setSelectedDuration(firstDuration);
-                                                                console.log('🎯 Auto-selected (Fallback):', { duration: firstDuration });
-                                                            }
-                                                        }
-                                                    }}
-                                                >
-                                                    {selectedServiceIndex === 0 && selectedDuration 
-                                                        ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
-                                                        : (chatLang === 'id' ? 'Pilih' : 'Select')
-                                                    }
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <TherapistPriceListModal
+                showPriceListModal={showPriceListModal}
+                setShowPriceListModal={setShowPriceListModal}
+                therapist={therapist}
+                displayRating={displayRating}
+                arrivalCountdown={arrivalCountdown}
+                formatCountdown={formatCountdownDisplay}
+                menuData={menuData}
+                selectedServiceIndex={selectedServiceIndex}
+                selectedDuration={selectedDuration}
+                handleSelectService={handleSelectService}
+                setSelectedServiceIndex={setSelectedServiceIndex}
+                setSelectedDuration={setSelectedDuration}
+                openBookingWithService={openBookingWithService}
+                chatLang={chatLang}
+            />
         </>
     );
 };
