@@ -885,15 +885,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
                             {/* Pulsing satellite broadcast ring for Available status */}
                             <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
-                                <span className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
+                                <span key={`${therapist.$id || therapist.id}-dot`} className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
                                 {!isOvertime && displayStatus === AvailabilityStatus.Available && (
-                                    <>
-                                        <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
-                                        <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
-                                    </>
+                                    <React.Fragment key={`${therapist.$id || therapist.id}-rings`}>
+                                        <span key={`${therapist.$id || therapist.id}-ring1`} className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
+                                        <span key={`${therapist.$id || therapist.id}-ring2`} className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
+                                    </React.Fragment>
                                 )}
                                 {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
-                                    <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
+                                    <span key={`${therapist.$id || therapist.id}-busy`} className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
                                 )}
                             </span>
                             {displayStatus === AvailabilityStatus.Busy ? (
