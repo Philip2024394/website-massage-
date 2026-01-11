@@ -452,6 +452,28 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     title="Verified Therapist"
                                 />
                             )}
+                            
+                            {/* Preferred by Women Badge - Show if therapist accepts female clients */}
+                            {(() => {
+                                const clientPrefs = String((therapist as any).clientPreferences || (therapist as any).clientPreference || '').toLowerCase();
+                                const therapistGender = String((therapist as any).therapistGender || '').toLowerCase();
+                                const showBadge = clientPrefs.includes('female') || 
+                                                 clientPrefs.includes('woman') || 
+                                                 clientPrefs.includes('wanita') ||
+                                                 therapistGender === 'female' ||
+                                                 therapistGender === 'unisex';
+                                
+                                return showBadge && (
+                                    <span 
+                                        className="px-2 py-0.5 bg-pink-100 text-pink-700 text-[10px] font-semibold rounded-full flex items-center gap-1"
+                                        title="Preferred by Women Clients"
+                                    >
+                                        <span>👩‍⚕️</span>
+                                        <span>Women-Friendly</span>
+                                    </span>
+                                );
+                            })()}
+                            
                             <h3 className="text-lg font-bold text-gray-900">
                                 {therapist.name}
                             </h3>

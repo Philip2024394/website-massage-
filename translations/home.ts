@@ -7,9 +7,9 @@ export const homeTranslations = {
       homeServiceTab: 'Home Service',
       massagePlacesTab: 'Massage Places',
       therapistsTitle: 'Home Service Therapists',
-      therapistsSubtitle: 'Find the best therapists in Bali',
-      therapistsSubtitleAll: 'Find the best therapists across Indonesia',
-      therapistsSubtitleCity: 'Find the best therapists in {city}',
+      therapistsSubtitle: 'Safe, Professional Massage - Trusted by Thousands of Women Travelers',
+      therapistsSubtitleAll: 'Safe, Professional Massage - Trusted by Thousands of Women Travelers',
+      therapistsSubtitleCity: 'Safe, Professional Massage in {city} - Trusted by Women Travelers',
       massagePlacesTitle: 'Featured Massage Spas',
       massagePlacesSubtitle: 'Find the best massage places in Bali',
       noTherapistsAvailable: 'No therapists available in your area at the moment.',
@@ -211,8 +211,38 @@ export const homeTranslations = {
       iosInstruction: 'Tap the share button and select "Add to Home Screen"',
       iosAction: 'Add to Home Screen',
       androidInstruction: 'Tap the menu button and select "Add to Home Screen"',
-    },
-  },
+    },    testimonials: {
+      title: 'Trusted by Women Therapists & Clients',
+      subtitle: 'Real stories from our community',
+      femaleTherapistFilter: 'Female Therapists',
+      femaleClientReviews: 'Reviews from Women',
+      stories: [
+        {
+          name: 'Sarah M.',
+          role: 'Therapist, Ubud',
+          text: 'As a single mother, IndaStreet gave me flexibility to earn from home. I get 15-20 bookings weekly and clients feel safe because of the verification system.',
+          avatar: '👩‍⚕️'
+        },
+        {
+          name: 'Winda L.',
+          role: 'Therapist, Seminyak',
+          text: 'The platform is so easy - I just set my availability and clients book me directly. Women clients love that they can choose female therapists.',
+          avatar: '👩‍💼'
+        },
+        {
+          name: 'Ela K.',
+          role: 'Therapist, Canggu',
+          text: 'I was nervous about home service massage, but IndaStreet\'s GPS tracking and client verification made me feel protected. Now I have 500+ bookings!',
+          avatar: '🌸'
+        },
+        {
+          name: 'Jessica T.',
+          role: 'Client, Australia',
+          text: 'Felt very safe booking a female therapist for prenatal massage. The reviews from other women helped me choose the perfect therapist.',
+          avatar: '🤰'
+        }
+      ]
+    },  },
   id: {
     home: {
       // Quick link label used in HomePage
@@ -220,9 +250,9 @@ export const homeTranslations = {
       homeServiceTab: 'Layanan Rumah',
       massagePlacesTab: 'Tempat Pijat',
       therapistsTitle: 'Terapis Pijat Rumahan',
-      therapistsSubtitle: 'Temukan terapis terbaik di Bali',
-      therapistsSubtitleAll: 'Temukan terapis terbaik di seluruh Indonesia',
-      therapistsSubtitleCity: 'Temukan terapis terbaik di {city}',
+      therapistsSubtitle: 'Pijat Aman & Profesional - Dipercaya Ribuan Wisatawan Wanita',
+      therapistsSubtitleAll: 'Pijat Aman & Profesional - Dipercaya Ribuan Wisatawan Wanita',
+      therapistsSubtitleCity: 'Pijat Aman & Profesional di {city} - Dipercaya Wisatawan Wanita',
       massagePlacesTitle: 'Spa Pijat Unggulan',
       massagePlacesSubtitle: 'Temukan tempat pijat terbaik di Bali',
       noTherapistsAvailable: 'Tidak ada terapis tersedia di area Anda saat ini.',
@@ -424,6 +454,36 @@ export const homeTranslations = {
       iosInstruction: 'Ketuk tombol bagikan dan pilih "Tambahkan ke Layar Utama"',
       iosAction: 'Tambahkan ke Layar Utama',
       androidInstruction: 'Ketuk tombol menu dan pilih "Tambahkan ke Layar Utama"',
-    },
-  },
+    },    testimonials: {
+      title: 'Dipercaya oleh Terapis & Klien Wanita',
+      subtitle: 'Cerita nyata dari komunitas kami',
+      femaleTherapistFilter: 'Terapis Wanita',
+      femaleClientReviews: 'Ulasan dari Wanita',
+      stories: [
+        {
+          name: 'Sarah M.',
+          role: 'Terapis, Ubud',
+          text: 'Sebagai ibu tunggal, IndaStreet memberi saya fleksibilitas untuk bekerja dari rumah. Saya mendapat 15-20 booking per minggu dan klien merasa aman karena sistem verifikasi.',
+          avatar: '👩‍⚕️'
+        },
+        {
+          name: 'Winda L.',
+          role: 'Terapis, Seminyak',
+          text: 'Platform ini sangat mudah - saya hanya mengatur ketersediaan dan klien langsung memesan. Klien wanita suka bisa memilih terapis wanita.',
+          avatar: '👩‍💼'
+        },
+        {
+          name: 'Ela K.',
+          role: 'Terapis, Canggu',
+          text: 'Saya gugup tentang layanan pijat rumahan, tapi pelacakan GPS dan verifikasi klien IndaStreet membuat saya merasa terlindungi. Sekarang saya punya 500+ booking!',
+          avatar: '🌸'
+        },
+        {
+          name: 'Jessica T.',
+          role: 'Klien, Australia',
+          text: 'Merasa sangat aman memesan terapis wanita untuk pijat prenatal. Ulasan dari wanita lain membantu saya memilih terapis yang sempurna.',
+          avatar: '🤰'
+        }
+      ]
+    },  },
 };

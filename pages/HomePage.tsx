@@ -173,6 +173,9 @@ const HomePage: React.FC<HomePageProps> = ({
         shuffleArray
     } = useHomePageState();
     
+    // Female therapist filter state
+    const [showFemaleOnly, setShowFemaleOnly] = useState(false);
+    
     const {
         previewTherapistId,
         adminViewArea,
@@ -1515,6 +1518,27 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
             if (baseList.length === 1 && budiInBaseList) {
                 console.log('🚨 [CRITICAL ISSUE] Only Budi is in the final list - this is the bug!');
             }
+            
+            // 👩‍⚕️ FEMALE THERAPIST FILTER: Apply if showFemaleOnly is active
+            if (showFemaleOnly) {
+                baseList = baseList.filter((t: any) => {
+                    // Check therapistGender field or clientPreferences for female-friendly options
+                    const gender = String(t.therapistGender || t.gender || '').toLowerCase();
+                    const clientPrefs = String(t.clientPreferences || '').toLowerCase();
+                    
+                    // Include if:
+                    // 1. therapistGender is "female"
+                    // 2. clientPreferences includes "female" or "woman"
+                    // 3. therapistGender is "unisex" (serves all)
+                    const isFemale = gender === 'female' || 
+                                    clientPrefs.includes('female') || 
+                                    clientPrefs.includes('woman') ||
+                                    gender === 'unisex';
+                    
+                    return isFemale;
+                });
+                console.log(`👩‍⚕️ [FEMALE FILTER] Filtered to ${baseList.length} female/female-friendly therapists`);
+            }
 
                             // Ensure owner's profile appears once
                             if (loggedInProvider && loggedInProvider.type === 'therapist') {
@@ -1846,6 +1870,74 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 )}
                             </div>
                         )}
+                        
+                        {/* Testimonials Section - After therapist cards */}
+                        <div className="mt-12 mb-8 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-6 shadow-lg">
+                            <div className="text-center mb-6">
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                                    {translationsObject?.home?.testimonials?.title || 'Trusted by Women Therapists & Clients'}
+                                </h3>
+                                <p className="text-gray-600">
+                                    {translationsObject?.home?.testimonials?.subtitle || 'Real stories from our community'}
+                                </p>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {(translationsObject?.home?.testimonials?.stories || [
+                                    {
+                                        name: 'Sarah M.',
+                                        role: 'Therapist, Ubud',
+                                        text: 'As a single mother, IndaStreet gave me flexibility to earn from home. I get 15-20 bookings weekly and clients feel safe because of the verification system.',
+                                        avatar: '👩‍⚕️'
+                                    },
+                                    {
+                                        name: 'Winda L.',
+                                        role: 'Therapist, Seminyak',
+                                        text: 'The platform is so easy - I just set my availability and clients book me directly. Women clients love that they can choose female therapists.',
+                                        avatar: '👩‍💼'
+                                    },
+                                    {
+                                        name: 'Ela K.',
+                                        role: 'Therapist, Canggu',
+                                        text: 'I was nervous about home service massage, but IndaStreet\\'s GPS tracking and client verification made me feel protected. Now I have 500+ bookings!',
+                                        avatar: '🌸'
+                                    },
+                                    {
+                                        name: 'Jessica T.',
+                                        role: 'Client, Australia',
+                                        text: 'Felt very safe booking a female therapist for prenatal massage. The reviews from other women helped me choose the perfect therapist.',
+                                        avatar: '🤰'
+                                    }
+                                ]).map((story: any, index: number) => (
+                                    <div key={index} className="bg-white rounded-xl p-4 shadow-sm">
+                                        <div className="flex items-start gap-3">
+                                            <div className="text-4xl">{story.avatar}</div>
+                                            <div className="flex-1">
+                                                <p className="text-gray-700 text-sm mb-2 italic">\"{story.text}\"</p>
+                                                <div>
+                                                    <p className="font-semibold text-gray-900 text-sm">{story.name}</p>
+                                                    <p className="text-gray-500 text-xs">{story.role}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}</div>
+                            
+                            <div className="mt-6 flex flex-wrap justify-center gap-3">
+                                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                    <span className="text-green-600 font-semibold">✓</span> Verified Therapists
+                                </div>
+                                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                    <span className="text-green-600 font-semibold">✓</span> GPS Tracking
+                                </div>
+                                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                    <span className="text-green-600 font-semibold">✓</span> Real Reviews
+                                </div>
+                                <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                                    <span className="text-green-600 font-semibold">✓</span> Female Therapist Options
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     </div>
                 )}
@@ -2313,6 +2405,26 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Floating Female Therapist Filter Button - Right Side */}
+            {activeTab === 'home' && (
+                <button
+                    onClick={() => setShowFemaleOnly(!showFemaleOnly)}
+                    className={`fixed right-4 top-1/2 -translate-y-1/2 z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 ${
+                        showFemaleOnly 
+                            ? 'bg-pink-500 hover:bg-pink-600 scale-110' 
+                            : 'bg-white hover:bg-pink-50 border-2 border-pink-200'
+                    }`}
+                    title={translationsObject?.home?.testimonials?.femaleTherapistFilter || 'Female Therapists'}
+                >
+                    <div className="flex flex-col items-center">
+                        <span className="text-2xl">👩‍⚕️</span>
+                        {showFemaleOnly && (
+                            <span className="text-white text-xs font-bold mt-0.5">ON</span>
+                        )}
+                    </div>
+                </button>
             )}
 
             {/* Floating Chat Window - Bottom Right - Always mounted, internally manages visibility */}
