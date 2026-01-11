@@ -221,6 +221,6 @@ const PlacePricing: React.FC<PlacePricingProps> = ({
             </div>
         </>
     );
-};
+}
 
 export default PlacePricing;

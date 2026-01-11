@@ -93,6 +93,9 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'es2020',
     chunkSizeWarningLimit: 1000,
+    esbuild: {
+      drop: ['console', 'debugger'], // Remove console and debugger in production
+    },
     rollupOptions: {
       external: [],
       input: {

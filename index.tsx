@@ -14,7 +14,7 @@ if (!rootElement) {
 // Temporarily disable concurrent features to debug removeChild error
 const root = ReactDOM.createRoot(rootElement, {
     onRecoverableError: (error) => {
-        console.error('React Recoverable Error:', error);
+        logger.error('React Recoverable Error:', error);
     },
 });
 

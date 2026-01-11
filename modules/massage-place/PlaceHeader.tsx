@@ -131,6 +131,6 @@ const PlaceHeader: React.FC<PlaceHeaderProps> = ({
             </button>
         </div>
     );
-};
+}
 
-export default PlaceHeader;
+export default React.memo(PlaceHeader);

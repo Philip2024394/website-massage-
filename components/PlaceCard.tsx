@@ -331,4 +331,4 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
     );
 };
 
-export default PlaceCard;
+export default React.memo(PlaceCard);

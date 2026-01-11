@@ -12,6 +12,7 @@
 import React, { Suspense } from 'react';
 import { useTranslations } from './lib/useTranslations';
 import { useLanguage } from './hooks/useLanguage';
+import { logger } from './utils/logger';
 import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './types';
 import { BookingStatus } from './types';
@@ -32,7 +33,7 @@ class LazyLoadErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[LAZY LOAD ERROR]', error, errorInfo);
+    logger.error('[LAZY LOAD ERROR]', error, errorInfo);
         if (typeof window !== 'undefined') {
             (window as any).__lazyErrorMessage = error?.message || 'Unknown error';
             (window as any).__lazyErrorStack = (error as any)?.stack || '';

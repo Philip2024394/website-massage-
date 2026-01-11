@@ -4,6 +4,7 @@ import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import { ProductionErrorBoundary } from './components/ProductionErrorBoundary';
+import { logger } from './utils/logger';
 import './index.css';
 
 // Initialize DOM error handler to prevent removeChild errors
@@ -24,26 +25,26 @@ import './lib/appwrite-startup-validator';
 // Check if running in admin mode
 const isAdminMode = import.meta.env.MODE === 'admin';
 
-console.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
+logger.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
 
 // 🔒 Initialize startup guard IMMEDIATELY
 initializeStartupGuard();
 
 // Admin mode: Redirect to separate admin dashboard app
 if (isAdminMode) {
-  console.log('🔐 Redirecting to Admin Dashboard App...');
+  logger.log('🔐 Redirecting to Admin Dashboard App...');
   window.location.href = 'http://localhost:3004';
 } else {
   // Main customer app
-  console.log('🏠 Loading Main App...');
+  logger.log('🏠 Loading Main App...');
   
   // 🔥 DEVELOPMENT MODE: Force unregister ALL service workers and clear caches
   if ('serviceWorker' in navigator && import.meta.env.DEV) {
-    console.log('🧹 DEV MODE: Unregistering all service workers and clearing caches...');
+    logger.log('🧹 DEV MODE: Unregistering all service workers and clearing caches...');
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       registrations.forEach((registration) => {
         registration.unregister().then((success) => {
-          if (success) console.log('✅ Service worker unregistered:', registration.scope);
+          if (success) logger.log('✅ Service worker unregistered:', registration.scope);
         });
       });
     });
@@ -52,7 +53,7 @@ if (isAdminMode) {
     caches.keys().then((cacheNames) => {
       cacheNames.forEach((cacheName) => {
         caches.delete(cacheName).then(() => {
-          console.log('🗑️ Cache deleted:', cacheName);
+          logger.log('🗑️ Cache deleted:', cacheName);
         });
       });
     });
@@ -63,10 +64,10 @@ if (isAdminMode) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
-          console.log('✅ Service Worker registered:', registration.scope);
+          logger.log('✅ Service Worker registered:', registration.scope);
         })
         .catch((error) => {
-          console.log('Service Worker registration failed:', error);
+          logger.error('Service Worker registration failed:', error);
         });
     });
   }
@@ -79,7 +80,7 @@ if (isAdminMode) {
   // Mount React app
   const root = document.getElementById('root');
   if (!root) {
-    console.error('Root element not found!');
+    logger.error('Root element not found!');
   } else {
     const reactRoot = ReactDOM.createRoot(root);
     reactRoot.render(
@@ -93,7 +94,7 @@ if (isAdminMode) {
         </ProductionErrorBoundary>
       </React.StrictMode>
     );
-    console.log('✅ React app mounted successfully');
+    logger.log('✅ React app mounted successfully');
     
     // Signal successful mount to startup guard
     if ((window as any).__APP_MOUNTED__) {

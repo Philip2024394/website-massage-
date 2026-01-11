@@ -110,6 +110,6 @@ const PlaceProfile: React.FC<PlaceProfileProps> = ({
             </div>
         </>
     );
-};
+}
 
-export default PlaceProfile;
+export default React.memo(PlaceProfile);
