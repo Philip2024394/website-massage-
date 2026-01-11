@@ -19,31 +19,12 @@ import { FlagIcon } from './FlagIcon';
 import { BookingNotificationBanner } from './BookingNotificationBanner';
 import { locationService } from '../services/locationService';
 
-// Duration options with prices
-const DURATION_OPTIONS = [
-  { minutes: 60, label: '1 Hour' },
-  { minutes: 90, label: '1.5 Hours' },
-  { minutes: 120, label: '2 Hours' },
-];
-
-// Format price to IDR
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-  }).format(price);
-};
-
-// Format time
-const formatTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true 
-  });
-};
+// Extracted components
+import { ChatHeader } from '../modules/chat/ChatHeader';
+import { BookingWelcomeBanner } from '../modules/chat/BookingWelcomeBanner';
+import { DiscountValidator } from '../modules/chat/BookingFlow/DiscountValidator';
+import { useBookingForm } from '../modules/chat/hooks/useBookingForm';
+import { DURATION_OPTIONS, formatPrice, formatTime } from '../modules/chat/utils/chatHelpers';
 
 export function PersistentChatWindow() {
   const {
@@ -73,76 +54,29 @@ export function PersistentChatWindow() {
   const [isSending, setIsSending] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [messageWarning, setMessageWarning] = useState<string | null>(null);
-  const [customerForm, setCustomerForm] = useState({
-    name: '',
-    countryCode: '+62',
-    whatsApp: '',
-    location: '',
-    locationType: '' as 'home' | 'hotel' | 'villa' | '',
-    coordinates: null as { lat: number; lng: number } | null,
-    hotelVillaName: '',
-    roomNumber: '',
-    massageFor: '' as 'male' | 'female' | 'children' | '',
-  });
-  const [clientMismatchError, setClientMismatchError] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   
-  // Discount code state
-  const [discountCode, setDiscountCode] = useState('');
-  const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
-  const [discountValidation, setDiscountValidation] = useState<{
-    valid: boolean;
-    percentage?: number;
-    message?: string;
-    codeData?: any;
-  } | null>(null);
+  // Use custom booking form hook
+  const {
+    customerForm,
+    setCustomerForm,
+    selectedDate,
+    setSelectedDate,
+    selectedTime,
+    setSelectedTime,
+    discountCode,
+    setDiscountCode,
+    discountValidation,
+    setDiscountValidation,
+    isValidatingDiscount,
+    setIsValidatingDiscount,
+    clientMismatchError,
+    setClientMismatchError,
+  } = useBookingForm(chatState.isMinimized, chatState.bookingStep, chatState.therapist?.id);
+  
+  const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Reset form when minimized or therapist changes
-  useEffect(() => {
-    if (chatState.isMinimized || chatState.bookingStep === 'duration') {
-      // Reset local form state
-      setCustomerForm({
-        name: '',
-        countryCode: '+62',
-        whatsApp: '',
-        location: '',
-        locationType: '',
-        coordinates: null,
-        hotelVillaName: '',
-        roomNumber: '',
-        massageFor: '',
-      });
-      setClientMismatchError(null);
-      setSelectedDate('');
-      setSelectedTime('');
-    }
-  }, [chatState.isMinimized, chatState.bookingStep]);
-
-  // Reset form when viewing a different therapist
-  useEffect(() => {
-    setCustomerForm({
-      name: '',
-      countryCode: '+62',
-      whatsApp: '',
-      location: '',
-      locationType: '',
-      coordinates: null,
-      hotelVillaName: '',
-      roomNumber: '',
-      massageFor: '',
-    });
-    setClientMismatchError(null);
-    setSelectedDate('');
-    setSelectedTime('');
-    // Reset discount state too
-    setDiscountCode('');
-    setDiscountValidation(null);
-  }, [chatState.therapist?.id]);
 
   // Validate discount code handler
   const handleValidateDiscount = async () => {
