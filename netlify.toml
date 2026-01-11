@@ -1,6 +1,16 @@
+# Primary Netlify configuration
 [build]
-  command = "pnpm run build"
   publish = "dist"
+  command = "corepack enable pnpm && pnpm i && pnpm run build:netlify"
+
+[build.environment]
+  NODE_VERSION = "20"
+  PNPM_VERSION = "10.22.0"
+  ROLLUP_NO_NATIVE = "1"
+  ROLLUP_NO_WASM = "1"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  NETLIFY_BUILD_DEBUG = "true"
+  VITE_APP_NAME = "IndaStreet"
 
 # Ensure SPA routing for shared profile links on Netlify
 [[redirects]]
@@ -13,43 +23,13 @@
   to = "/index.html"
   status = 200
 
-# Catch-all SPA fallback (serves files if they exist, otherwise index.html)
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200# Primary Netlify configuration (expanded from minimal)
-[build]
-  publish = "dist"
-  # Skip TypeScript checking for now, build with Vite only
-  command = "corepack enable pnpm && pnpm i && pnpm run build:netlify"
-
-[build.environment]
-  NODE_VERSION = "20"
-  PNPM_VERSION = "10.22.0"
-  ROLLUP_NO_NATIVE = "1"
-  ROLLUP_NO_WASM = "1"
-  NODE_OPTIONS = "--max-old-space-size=4096"
-  NETLIFY_BUILD_DEBUG = "true"
-  # NOTE: Move secrets to Netlify UI if sensitive
-  VITE_APP_NAME = "IndaStreet"
-  # VITE_APPWRITE_ENDPOINT = "https://syd.cloud.appwrite.io/v1"
-  # VITE_APPWRITE_PROJECT_ID = "68f23b11000d25eb3664"
-  # VITE_APPWRITE_DATABASE_ID = "68f76ee1000e64ca8d05"
-  # VITE_APPWRITE_BUCKET_ID = "68f76bdd002387590584"
-  # VITE_WHATSAPP_SUPPORT = "6281392000050"
-  # VITE_SUPPORT_EMAIL = "indastreet.id@gmail.com"
-  # VITE_PRIVACY_EMAIL = "privacy@indastreet.com"
-  # VITE_BANK_NAME = "BCA (Bank Central Asia)"
-  # VITE_BANK_ACCOUNT_NUMBER = "1234567890"
-  # VITE_BANK_ACCOUNT_NAME = "IndaStreet Platform"
-
 # Therapist dashboard SPA redirect (must come before catch-all)
 [[redirects]]
   from = "/therapist/*"
   to = "/therapist/index.html"
   status = 200
 
-# Main app SPA redirect - must handle all client-side routes
+# Main app SPA redirect - must handle all client-side routes (catch-all)
 [[redirects]]
   from = "/*"
   to = "/index.html"
