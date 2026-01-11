@@ -11,12 +11,11 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
+    // Check if already installed (removed isDismissed check to always show banner)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
-    const isDismissed = localStorage.getItem('pwa-banner-dismissed') === 'true';
 
-    if (isStandalone || isInWebAppiOS || isDismissed) {
+    if (isStandalone || isInWebAppiOS) {
       return;
     }
 

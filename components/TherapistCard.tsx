@@ -819,7 +819,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
 
             {/* Profile Section - Overlapping header image with negative margin */}
-            <div className="px-4 -mt-10 sm:-mt-16 pb-4 relative z-40 overflow-visible">
+            <div className="px-4 -mt-14 sm:-mt-16 pb-4 relative z-40 overflow-visible">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
                     <div className="flex-shrink-0 relative z-40">

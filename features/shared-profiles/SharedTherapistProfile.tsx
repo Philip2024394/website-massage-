@@ -30,6 +30,7 @@ import { PREVIEW_IMAGES } from '../../config/previewImages';
 import { getHeroImageForTherapist } from '../../config/heroImages';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
+import PWAInstallBanner from '../../components/PWAInstallBanner';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -615,17 +616,21 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     console.log('✅'.repeat(40) + '\n');
     
     return (
-        <TherapistProfileBase
-            therapist={therapist}
-            mode="shared"
-            userLocation={userLocation}
-            showSEOFooter={true}
-            isCustomerLoggedIn={Boolean(loggedInCustomer)}
-            onQuickBookWithChat={handleQuickBook}
-            onIncrementAnalytics={handleIncrementAnalytics}
-            onNavigate={onNavigate}
-            language={language}
-        />
+        <>
+            <TherapistProfileBase
+                therapist={therapist}
+                mode="shared"
+                userLocation={userLocation}
+                showSEOFooter={true}
+                isCustomerLoggedIn={Boolean(loggedInCustomer)}
+                onQuickBookWithChat={handleQuickBook}
+                onIncrementAnalytics={handleIncrementAnalytics}
+                onNavigate={onNavigate}
+                language={language}
+            />
+            {/* PWA Install Banner - Critical for mobile app promotion */}
+            <PWAInstallBanner />
+        </>
     );
 };
 

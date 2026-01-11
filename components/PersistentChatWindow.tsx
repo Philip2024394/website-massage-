@@ -528,7 +528,8 @@ export function PersistentChatWindow() {
           <img 
             src={therapist.image || '/placeholder-avatar.jpg'} 
             alt={therapist.name}
-            className="w-12 h-12 rounded-full object-cover border-2 border-white/50"
+            className="w-12 h-12 rounded-full object-cover border-2 border-white/50 flex-shrink-0"
+            style={{minWidth: '48px', minHeight: '48px'}}
           />
           <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-orange-500"></span>
         </div>

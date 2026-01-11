@@ -180,6 +180,10 @@ export function getPageFromUrl(path: string): Page | null {
     }
     
     // Pattern matches for dynamic routes
+    // CRITICAL: Handle both /therapist-profile/:id AND /share/therapist/:id
+    if (cleanPath.startsWith('/therapist-profile/')) {
+        return 'shared-therapist-profile';
+    }
     if (cleanPath.startsWith('/profile/therapist/')) {
         return 'therapist-profile';
     }
@@ -196,7 +200,7 @@ export function getPageFromUrl(path: string): Page | null {
         return 'decline-booking';
     }
     if (cleanPath.startsWith('/share/therapist/')) {
-        return 'share-therapist';
+        return 'shared-therapist-profile';
     }
     if (cleanPath.startsWith('/share/place/')) {
         return 'share-place';
