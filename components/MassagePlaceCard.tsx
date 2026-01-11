@@ -12,6 +12,12 @@ import { getAuthAppUrl } from '../utils/therapistCardHelpers';
 import { StarIcon, discountStyles, isDiscountActive, getDynamicSpacing, generatePlaceShareableURL } from '../constants/cardConstants.tsx';
 import { useChatProvider } from '../hooks/useChatProvider';
 
+// Extracted components
+import PlaceHeader from '../modules/massage-place/PlaceHeader';
+import PlaceProfile from '../modules/massage-place/PlaceProfile';
+import PlaceServices from '../modules/massage-place/PlaceServices';
+import PlacePricing from '../modules/massage-place/PlacePricing';
+
 interface MassagePlaceCardProps {
     place: Place;
     onRate: (place: Place) => void;
@@ -436,140 +442,20 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 onClick={handleViewDetails}
                 className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden relative active:shadow-xl transition-all touch-manipulation pb-8 cursor-pointer hover:shadow-xl"
             >
-                {/* Main Image Banner + Lazy Loading (full-width cover) */}
-                <div className="h-48 w-full overflow-visible relative rounded-t-xl">
-                <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
-                    <img 
-                        src={mainImage} 
-                        alt={`${place.name} cover`} 
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                        }}
-                    />
-                    
+                {/* Header Section - Extracted to PlaceHeader Component */}
+                <PlaceHeader 
+                    place={place}
+                    mainImage={mainImage}
+                    displayRating={displayRating}
+                    onNavigate={onNavigate}
+                    formatRating={formatRating}
+                    getDisplayRating={getDisplayRating}
+                    t={_t}
+                    onShare={() => setShowSharePopup(true)}
+                    activeDiscount={activeDiscount}
+                    discountTimeLeft={discountTimeLeft}
+                />
 
-
-                    {/* Star Rating Badge - Top Left (below verified badge) */}
-                    {getDisplayRating(place.rating, place.reviewCount) > 0 && (
-                        <button
-                            className="absolute top-3 left-3 z-30 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-lg flex items-center gap-1.5"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                // Navigate to reviews page like RotatingReviews does
-                                if (onNavigate) {
-                                    const params: Record<string, string> = {};
-                                    params.providerId = String(place.$id || place.id);
-                                    params.providerName = place.name;
-                                    params.providerType = 'place';
-                                    params.providerImage = (place as any).profilePicture || (place as any).mainImage || mainImage;
-                                    params.returnUrl = window.location.pathname;
-                                    
-                                    // Store params for reviews page
-                                    sessionStorage.setItem('reviewParams', JSON.stringify(params));
-                                    onNavigate('reviews');
-                                } else {
-                                    // Fallback to direct URL navigation
-                                    try {
-                                        const url = new URL(window.location.origin + '/reviews');
-                                        url.searchParams.set('providerId', String(place.$id || place.id));
-                                        url.searchParams.set('providerName', place.name);
-                                        url.searchParams.set('providerType', 'place');
-                                        url.searchParams.set('providerImage', (place as any).profilePicture || (place as any).mainImage || mainImage);
-                                        url.searchParams.set('returnUrl', window.location.href);
-                                        window.location.href = url.toString();
-                                    } catch {
-                                        window.location.href = '/reviews';
-                                    }
-                                }
-                            }}
-                            aria-label={`Rate ${place.name}`}
-                        >
-                            <svg className="w-4 h-4 fill-current text-yellow-400" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            <span className="text-sm font-bold text-white">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>
-                        </button>
-                    )}
-
-                {/* Discount Badge - Database driven discount */}
-                {isDiscountActive(place) && (
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div 
-                            className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-bounce"
-                            style={{
-                                animation: 'discountFade 2s ease-in-out infinite',
-                                filter: 'drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))'
-                            }}
-                        >
-                            <span className="font-bold text-white text-xl">{(place as any).discountPercentage}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs text-white font-semibold">
-                                {(() => {
-                                    const endTime = new Date((place as any).discountEndTime);
-                                    const now = new Date();
-                                    const diff = endTime.getTime() - now.getTime();
-                                    
-                                    if (diff <= 0) return 'EXPIRED';
-                                    
-                                    const hours = Math.floor(diff / (1000 * 60 * 60));
-                                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                                    return `${hours}h ${minutes}m`;
-                                })()}
-                            </span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Opening/Closing Time Badge - Shows when NO discount is active */}
-                {!isDiscountActive(place) && !activeDiscount && place.openingTime && place.closingTime && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/80 backdrop-blur-md rounded-full px-3 py-2 shadow-lg">
-                        <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="text-xs text-white font-semibold">
-                            {place.openingTime} - {place.closingTime}
-                        </span>
-                    </div>
-                )}
-
-                {/* Active Discount Badge - External discount prop (fallback) */}
-                {!isDiscountActive(place) && activeDiscount && discountTimeLeft !== 'EXPIRED' && (
-                    <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-full px-4 py-2 shadow-lg animate-pulse">
-                            <span className="font-bold text-white text-xl">{activeDiscount.percentage}% OFF</span>
-                        </div>
-                        <div className="flex items-center gap-1 bg-black/80 backdrop-blur-md rounded-full px-3 py-1 shadow-lg">
-                            <svg className="w-3 h-3 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="text-xs text-white font-semibold">{discountTimeLeft}</span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Share Button - Bottom Right Corner */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setShowSharePopup(true);
-                    }}
-                    className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
-                    title="Share this place"
-                    aria-label="Share this place"
-                >
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </button>
-            </div>
-            </div>
-            
             {/* Location - Below image on the right side */}
             <div className="px-4 mt-2 mb-1 flex justify-end">
                 <div className="flex items-center gap-1.5">
@@ -581,439 +467,42 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 </div>
             </div>
             
-            {/* Profile Section - Flexbox layout for stable positioning */}
-            <div className="px-4 -mt-8 sm:-mt-12 pb-6 relative z-10 overflow-visible">
-                <div className="flex items-start justify-between gap-4">
-                    {/* Left side: Profile + Name + Status */}
-                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                        {/* Profile Picture */}
-                        <div className="flex-shrink-0">
-                            <div className="relative w-16 sm:w-20 h-16 sm:h-20 aspect-square">
-                                <img 
-                                    className="w-16 sm:w-20 h-16 sm:h-20 aspect-square rounded-full object-cover border-4 border-white shadow-lg bg-gray-100" 
-                                    src={(place as any).profilePicture || (place as any).logo || mainImage}
-                                    alt={place.name}
-                                    onError={(e) => {
-                                        e.currentTarget.src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                                    }}
-                                />
-                                {/* Verified Pro Rosette */}
-                                {(place as any).isVerified && (
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center bg-gradient-to-br from-yellow-400 to-amber-500">
-                                        <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 1.5l2.19 4.44 4.9.71-3.54 3.45.83 4.86L10 12.9l-4.38 2.33.83-4.86L2.91 6.65l4.9-.71L10 1.5zm-1.2 9.09l-1.6-1.6a.75.75 0 10-1.06 1.06l2.13 2.13a.75.75 0 001.06 0l4.13-4.13a.75.75 0 10-1.06-1.06l-3.6 3.6z" clipRule="evenodd"/>
-                                        </svg>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        
-                        {/* Name and Status Column */}
-                        <div className="flex-1 min-w-0 pt-10 sm:pt-14 pb-2">
-                            <h3 className="text-base sm:text-lg font-bold text-gray-900 truncate">{place.name}</h3>
-                            {(() => {
-                                const statusStr = String((place as any).availability || place.status || 'Open');
-                                const isOpen = statusStr === 'Open' || statusStr === 'Available';
-                                const isClosed = statusStr === 'Closed';
-                                const bgColor = isOpen ? 'bg-green-100' : isClosed ? 'bg-red-100' : 'bg-orange-100';
-                                const textColor = isOpen ? 'text-green-700' : isClosed ? 'text-red-700' : 'text-orange-700';
-                                const dotColor = isOpen ? 'bg-green-500' : isClosed ? 'bg-red-500' : 'bg-orange-500';
-                                const ringColor1 = isOpen ? 'bg-green-300' : isClosed ? 'bg-red-300' : 'bg-orange-300';
-                                const ringColor2 = isOpen ? 'bg-green-400' : isClosed ? 'bg-red-400' : 'bg-orange-400';
-                                const label = isOpen ? 'Open Now' : isClosed ? 'Closed' : statusStr;
-                                
-                                return (
-                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bgColor} ${textColor} mt-1`}>
-                                        <span className="relative mr-1.5">
-                                            {/* Static ring glow effect */}
-                                            <span className={`absolute inset-0 w-4 h-4 -left-1 -top-1 rounded-full ${ringColor1} opacity-40`}></span>
-                                            <span className={`absolute inset-0 w-3 h-3 -left-0.5 -top-0.5 rounded-full ${ringColor2} opacity-30`}></span>
-                                            <span className={`w-2 h-2 rounded-full block ${dotColor}`}></span>
-                                        </span>
-                                        {label}
-                                    </div>
-                                );
-                            })()}
-                        </div>
-                    </div>
-                    
-                    {/* Right side: Distance */}
-                    <div className="flex-shrink-0 pb-2 mt-10 sm:mt-14">
-                        <DistanceDisplay
-                            userLocation={userLocation}
-                            providerLocation={parseCoordinates(place.coordinates) || { lat: 0, lng: 0 }}
-                            className="text-sm"
-                            showTravelTime={true}
-                            showIcon={true}
-                            size="sm"
-                        />
-                    </div>
-                </div>
-            </div>
+            {/* Profile Section - Extracted to PlaceProfile Component */}
+            <PlaceProfile 
+                place={place}
+                mainImage={mainImage}
+                userLocation={userLocation}
+                parseCoordinates={parseCoordinates}
+            />
 
-            {/* Client Preference Display - Left aligned, matching therapist card */}
-            <div className="mx-4 mb-2 mt-4 flex items-center justify-between">
-                <p className="text-xs text-gray-600 text-left">
-                    <span className="font-bold">Menerima:</span> {(place as any).therapistGender && (place as any).therapistGender !== 'Unisex' ? `${(place as any).therapistGender} Only` : 'Pria / Wanita'}
-                </p>
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setShowPriceListModal(true);
-                    }}
-                    className="flex items-center gap-1 text-xs font-medium transition-colors animate-flash-subtle"
-                >
-                    <style>{`
-                        @keyframes flash-subtle {
-                            0%, 100% { opacity: 1; }
-                            50% { opacity: 0.6; }
-                        }
-                        .animate-flash-subtle {
-                            animation: flash-subtle 2s ease-in-out infinite;
-                        }
-                    `}</style>
-                    <img 
-                        src="https://ik.imagekit.io/7grri5v7d/massage%20table.png" 
-                        alt="Menu"
-                        className="w-12 h-12 object-contain"
-                    />
-                    <span className="font-bold text-black text-sm">{_t?.home?.priceMenu || 'Menu Harga'}</span>
-                </button>
-            </div>
+            {/* Services Section - Extracted to PlaceServices Component */}
+            <PlaceServices 
+                place={place}
+                description={description}
+                isDiscountActive={isDiscountActive}
+                activeDiscount={activeDiscount}
+                galleryPhotos={galleryPhotos}
+                massageTypesDisplay={massageTypesDisplay}
+                languagesDisplay={languagesDisplay}
+                yearsOfExperience={yearsOfExperience}
+                displayAmenities={displayAmenities}
+                t={_t}
+                onGalleryPhotoClick={(photo) => setSelectedGalleryPhoto(photo)}
+                onNavigate={onNavigate}
+                setShowPriceListModal={setShowPriceListModal}
+                amenities={amenities}
+            />
 
-            {/* Massage Place Bio - Natural flow with proper margin */}
-            <div className="massage-place-bio-section bg-white/90 backdrop-blur-sm rounded-lg py-2 px-3 shadow-sm mx-4 mb-3">
-                <p className="text-sm text-gray-700 leading-5 break-words whitespace-normal line-clamp-6">
-                    {description}
-                </p>
-                {/* Opening/Closing Time Text - Shows when discount IS active */}
-                {(isDiscountActive(place) || activeDiscount) && place.openingTime && place.closingTime && (
-                    <div className="flex items-center gap-1 text-xs text-gray-600 whitespace-nowrap mt-2">
-                        <svg className="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="font-medium">{place.openingTime}-{place.closingTime}</span>
-                    </div>
-                )}
-                {/* Website Link */}
-                {(place as any).websiteUrl && (
-                    <a
-                        href={(place as any).websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 mt-2 text-xs text-orange-600 hover:text-orange-700 font-medium hover:underline transition-colors"
-                    >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                        </svg>
-                        Visit Website
-                    </a>
-                )}
-            </div>
-
-            {/* Photo Gallery - 4 Thumbnails */}
-            {galleryPhotos.length > 0 && (
-                <div className="px-4 mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Gallery</h4>
-                    <div className="grid grid-cols-4 gap-2">
-                        {galleryPhotos.map((photo: any, index: number) => (
-                            <button
-                                key={index}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedGalleryPhoto({
-                                        url: typeof photo === 'string' ? photo : photo.url || photo.imageUrl || '',
-                                        title: typeof photo === 'object' ? (photo.title || photo.name || `Photo ${index + 1}`) : `Photo ${index + 1}`,
-                                        description: typeof photo === 'object' ? (photo.description || '') : ''
-                                    });
-                                }}
-                                className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-orange-500 transition-all hover:scale-105 active:scale-95"
-                            >
-                                <img
-                                    src={typeof photo === 'string' ? photo : photo.url || photo.imageUrl || ''}
-                                    alt={typeof photo === 'object' ? (photo.title || `Gallery photo ${index + 1}`) : `Gallery photo ${index + 1}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
-                                    }}
-                                />
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Content Section - Compact layout */}
-            <div className="px-4">
-            {/* Massage Specializations - Centered */}
-            <div className="border-t border-gray-100 pt-3">
-                <div className="mb-2">
-                    <h4 className="text-sm font-semibold text-gray-700 text-center">
-                        Areas of Expertise
-                    </h4>
-                </div>
-                <div className="flex flex-wrap gap-1 justify-center">
-                    {massageTypesDisplay.slice(0, 5).map((mt: string) => (
-                        <span key={mt} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">{mt}</span>
-                    ))}
-                    {massageTypesDisplay.length === 0 && (
-                        <span className="text-xs text-gray-400">No specialties selected</span>
-                    )}
-                    {massageTypesDisplay.length > 5 && (
-                        <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-full border border-orange-300">+{massageTypesDisplay.length - 5}</span>
-                    )}
-                </div>
-                </div>
-            </div>
-
-            {/* Languages Spoken - Compact */}
-            {(languagesDisplay.length > 0 || yearsOfExperience) && (
-                <div className="px-4 mt-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-xs font-semibold text-gray-700">Languages</h4>
-                        {yearsOfExperience && (
-                            <span className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                                </svg>
-                                {yearsOfExperience} years experience
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                        {languagesDisplay.slice(0, 3).map((lang: string) => (
-                            <span key={lang} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">
-                                <span className="text-xs">🌐</span>
-                                <span className="text-xs font-semibold">{lang}</span>
-                            </span>
-                        ))}
-                        {languagesDisplay.length > 3 && (
-                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">+{languagesDisplay.length - 3}</span>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Amenities */}
-            {displayAmenities.length > 0 && (
-                <div className="px-4 mt-4">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-1">Amenities</h4>
-                    <p className="text-xs text-gray-500 mb-2">Additional services provided during your massage session</p>
-                    <div className="flex flex-wrap gap-2">
-                        {displayAmenities.map((amenity: string) => (
-                            <span key={amenity} className="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
-                                {amenity}
-                            </span>
-                        ))}
-                        {amenities.length > 3 && (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
-                                +{amenities.length - 3} more
-                            </span>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Massage Therapist Standards Link */}
-            <div className="text-center mb-4 mt-2">
-                <button
-                    onClick={() => {
-                        const isSharedProfile = window.location.pathname.includes('/share/');
-                        if (isSharedProfile) {
-                            // On shared profiles: navigate to mobile terms with custom context in same window
-                            const baseUrl = window.location.origin;
-                            const currentUrl = window.location.href;
-                            window.location.href = `${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}&context=sharedProfile`;
-                        } else {
-                            // On home page: go to verification standards page  
-                            onNavigate?.('verifiedProBadge');
-                        }
-                    }}
-                    className="text-sm font-medium hover:underline"
-                >
-                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
-                </button>
-            </div>
-
-            {/* Discounted Prices Header */}
-            {isDiscountActive(place) && (
-                <div className={`text-center mb-1 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1')}`}>
-                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
-                        🔥 Discounted Price's Displayed
-                    </p>
-                </div>
-            )}
-
-            {/* Pricing */}
-            <div className="grid grid-cols-3 gap-2 mb-3 px-1">
-                {pricing["60"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                        isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                    }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                        {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                {displayRating}
-                            </div>
-                        )}
-                        <p className="text-gray-600 text-xs mb-1">60 min</p>
-                        {isDiscountActive(place) ? (
-                            <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
-                                    Rp {formatPrice(Math.round(pricing["60"] * (1 - (place as any).discountPercentage / 100)))}
-                                </p>
-                                <p className="text-[11px] text-gray-500 line-through">
-                                    Rp {formatPrice(pricing["60"])}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(pricing["60"])}
-                            </p>
-                        )}
-                    </div>
-                )}
-                {pricing["90"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                        isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                    }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                        {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                {displayRating}
-                            </div>
-                        )}
-                        <p className="text-gray-600 text-xs mb-1">90 min</p>
-                        {isDiscountActive(place) ? (
-                            <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
-                                    Rp {formatPrice(Math.round(pricing["90"] * (1 - (place as any).discountPercentage / 100)))}
-                                </p>
-                                <p className="text-[11px] text-gray-500 line-through">
-                                    Rp {formatPrice(pricing["90"])}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(pricing["90"])}
-                            </p>
-                        )}
-                    </div>
-                )}
-                {pricing["120"] > 0 && (
-                    <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                        isDiscountActive(place)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                    }`}>
-                        {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                        {displayRating && (
-                            <div className="absolute -top-2.5 left-2 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                                {displayRating}
-                            </div>
-                        )}
-                        <p className="text-gray-600 text-xs mb-1">120 min</p>
-                        {isDiscountActive(place) ? (
-                            <>
-                                <p className="font-bold text-gray-800 text-sm leading-tight">
-                                    Rp {formatPrice(Math.round(pricing["120"] * (1 - (place as any).discountPercentage / 100)))}
-                                </p>
-                                <p className="text-[11px] text-gray-500 line-through">
-                                    Rp {formatPrice(pricing["120"])}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                Rp {formatPrice(pricing["120"])}
-                            </p>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* Action Buttons - Book Now & Schedule Booking (matching therapist card) */}
-            <div className="flex gap-2 px-4 mt-4">
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Prevent multiple rapid clicks
-                            if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                                return;
-                            }
-                            (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                            requestAnimationFrame(() => {
-                                (e.target as HTMLElement).removeAttribute('data-clicking');
-                            });
-                            
-                            console.log('🟢 Book Now button clicked - opening chat window for massage place');
-                            
-                            // Show notification instead of opening chat
-                            console.log('🔵 MassagePlaceCard: Instant booking notification for', place.name);
-                            
-                            addNotification(
-                                'info',
-                                'Instant Booking',
-                                `Please complete booking with ${place.name} to start chatting`,
-                                { duration: 4000 }
-                            );
-                        }}
-                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-green-500 text-white hover:bg-green-600 active:bg-green-700 active:scale-95"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                        <span className="text-sm">{_t?.home?.bookNow || 'Book Now'}</span>
-                    </button>
-                    <button 
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            
-                            // Prevent multiple rapid clicks
-                            if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                                return;
-                            }
-                            (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                            requestAnimationFrame(() => {
-                                (e.target as HTMLElement).removeAttribute('data-clicking');
-                            });
-                            
-                            console.log('📅 Schedule button clicked - showing notification for massage place');
-                            
-                            addNotification(
-                                'info',
-                                'Scheduled Booking',
-                                `Please complete booking with ${place.name} to start chatting`,
-                                { duration: 4000 }
-                            );
-                            onIncrementAnalytics('bookings');
-                        }} 
-                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-sm">{_t?.home?.scheduleBooking || 'Schedule Booking'}</span>
-                    </button>
-                </div>
+            {/* Pricing Section - Extracted to PlacePricing Component */}
+            <PlacePricing
+                place={place}
+                pricing={pricing}
+                displayRating={displayRating}
+                formatPrice={formatPrice}
+                t={_t}
+                addNotification={addNotification}
+                onIncrementAnalytics={onIncrementAnalytics}
+            />
 
             {/* Terms and Conditions Link - Below booking buttons */}
             <div className="text-center mt-3 px-4">

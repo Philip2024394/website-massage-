@@ -13,17 +13,17 @@ const TherapistEarnings = lazy(() => import('../../apps/therapist-dashboard/src/
 const TherapistChat = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistChat'));
 const TherapistNotifications = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistNotifications'));
 const TherapistLegal = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistLegal'));
-const TherapistCalendar = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistCalendar'));
-const TherapistPaymentInfo = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentInfo'));
-const TherapistPaymentStatus = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentStatus'));
-const TherapistMenu = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistMenu'));
-const PremiumUpgrade = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/PremiumUpgrade'));
-const CommissionPayment = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/CommissionPayment'));
-const TherapistSchedule = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistSchedule'));
-const PackageTermsPage = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/PackageTermsPage'));
+const TherapistCalendar = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistCalendar'));
+const TherapistPaymentInfo = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentInfo'));
+const TherapistPaymentStatus = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentStatus'));
+const TherapistMenu = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistMenu'));
+const PremiumUpgrade = lazy(() => import('../../apps/therapist-dashboard/src/pages/PremiumUpgrade'));
+const CommissionPayment = lazy(() => import('../../apps/therapist-dashboard/src/pages/CommissionPayment'));
+const TherapistSchedule = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistSchedule'));
+const PackageTermsPage = lazy(() => import('../../apps/therapist-dashboard/src/pages/PackageTermsPage'));
 
 // Placeholder component for routes under construction
-const TherapistPlaceholderPage = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPlaceholderPage'));
+const TherapistPlaceholderPage = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPlaceholderPage'));
 
 export const therapistRoutes = {
   dashboard: {

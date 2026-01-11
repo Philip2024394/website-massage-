@@ -79,11 +79,6 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
             
-            className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer" 
-            onClick={handleBooking}
-            role="button"
-            aria-label={`Book massage at ${place.name}`}
-        
             setDiscountTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
         }, 1000);
         
@@ -116,7 +111,12 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDis
 
     return (
         <>
-        <div className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300" onClick={onClick}>
+        <div 
+            className="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer" 
+            onClick={handleBooking}
+            role="button"
+            aria-label={`Book massage at ${place.name}`}
+        >
             <div className="h-40 w-full relative">
                 <img className="h-40 w-full object-cover" src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} alt={place.name} />
                 
