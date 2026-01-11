@@ -16,20 +16,20 @@
  * 🚨 DO NOT change component imports without thorough testing
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
-const TherapistProfilePage = React.lazy(() => import('../../pages/TherapistProfilePage'));
-const MassagePlaceProfilePage = React.lazy(() => import('../../pages/MassagePlaceProfilePage'));
-const FacialPlaceProfilePage = React.lazy(() => import('../../pages/FacialPlaceProfilePageNew'));
-const PlaceDetailPage = React.lazy(() => import('../../pages/PlaceDetailPage'));
+const TherapistProfilePage = lazy(() => import('../../pages/TherapistProfilePage'));
+const MassagePlaceProfilePage = lazy(() => import('../../pages/MassagePlaceProfilePage'));
+const FacialPlaceProfilePage = lazy(() => import('../../pages/FacialPlaceProfilePageNew'));
+const PlaceDetailPage = lazy(() => import('../../pages/PlaceDetailPage'));
 
 // New shared profile components (bulletproof, guaranteed to work)
-const SharedTherapistProfile = React.lazy(() => import('../../features/shared-profiles/SharedTherapistProfile'));
-const SharedPlaceProfile = React.lazy(() => import('../../features/shared-profiles/SharedPlaceProfile'));
-const SharedFacialProfile = React.lazy(() => import('../../features/shared-profiles/SharedFacialProfile'));
+const SharedTherapistProfile = lazy(() => import('../../features/shared-profiles/SharedTherapistProfile'));
+const SharedPlaceProfile = lazy(() => import('../../features/shared-profiles/SharedPlaceProfile'));
+const SharedFacialProfile = lazy(() => import('../../features/shared-profiles/SharedFacialProfile'));
 
 // Legacy - for backwards compatibility
-const SharedTherapistProfilePage = React.lazy(() => import('../../pages/SharedTherapistProfilePage'));
+const SharedTherapistProfilePage = lazy(() => import('../../pages/SharedTherapistProfilePage'));
 
 export const profileRoutes = {
   therapist: {

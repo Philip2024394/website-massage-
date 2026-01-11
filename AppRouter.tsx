@@ -50,7 +50,7 @@ class LazyLoadErrorBoundary extends React.Component<
 // Route configurations
 import { publicRoutes } from './router/routes/publicRoutes';
 import { authRoutes } from './router/routes/authRoutes';
-import { profileRoutes } from './router/routes/profileRoutes.tsx';
+import { profileRoutes } from './router/routes/profileRoutes';
 import { legalRoutes } from './router/routes/legalRoutes';
 import { blogRoutes } from './router/routes/blogRoutes';
 import { therapistRoutes } from './router/routes/therapistRoutes';
