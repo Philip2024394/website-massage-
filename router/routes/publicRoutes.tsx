@@ -18,7 +18,7 @@ const MassageTypesPage = lazy(() => import('../../pages/MassageTypesPage'));
 const FacialTypesPage = lazy(() => import('../../pages/FacialTypesPage'));
 const CustomerProvidersPage = lazy(() => import('../../pages/CustomerProvidersPage'));
 const FacialProvidersPage = lazy(() => import('../../pages/FacialProvidersPage'));
-const TodaysDiscountsPage = React.lazy(() => import('../../pages/TodaysDiscountsPage'));
+const TodaysDiscountsPage = lazy(() => import('../../pages/TodaysDiscountsPage'));
 
 export const publicRoutes = {
   landing: {
