@@ -389,7 +389,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
              * ======================================== */}
 
             {/* Location info - Right side, positioned above profile section */}
-            <div className="px-4 mt-2 mb-1 text-right relative z-10">
+            <div className="px-4 mt-2 mb-0 text-right relative z-10">
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
                         <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -412,7 +412,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
              * Profile positioning and layout finalized
              * ======================================== */}
             {/* Profile Section - Overlapping main image by 30% */}
-            <div className="px-4 -mt-[81px] pb-4 relative z-30 overflow-visible pointer-events-none">
+            <div className="px-4 -mt-[95px] pb-4 relative z-30 overflow-visible pointer-events-none">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture - 30% of card width */}
                     <div className="flex-shrink-0 relative z-30">
