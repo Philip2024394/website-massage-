@@ -321,8 +321,6 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     <span className="text-sm font-bold text-white">{displayRating}</span>
                 </div>
 
-
-
                 {/* Orders Badge - Top Right */}
                 {displayBookingsCount > 0 && (
                     <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg">
@@ -354,37 +352,19 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 )}
             </div>
 
-            {/* Location & Distance - Below image on the right side */}
-            <div className="px-4 mt-2 mb-1 flex justify-end">
-                <div className="flex flex-col items-end gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-xs font-medium text-gray-700">{locationAreaDisplayName}</span>
-                    </div>
-                    {locationDisplay && (
-                        <div className="text-xs text-orange-500 font-medium">
-                            {locationDisplay}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Profile Section - Match TherapistCard positioning */}
-            <div className="px-4 -mt-16 pb-4 relative z-20 overflow-visible">
+            {/* Profile Section - Clean positioning without overlaps */}
+            <div className="px-4 pt-4 pb-3 relative">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
-                    <div className="flex-shrink-0 relative z-20">
-                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square overflow-visible">
+                    <div className="flex-shrink-0">
+                        <div className="w-20 h-20 bg-white rounded-full p-0.5 shadow-lg">
                             <img 
-                                className="w-full h-full rounded-full object-cover aspect-square" 
+                                className="w-full h-full rounded-full object-cover" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
                                 loading="lazy"
-                                width="96"
-                                height="96"
+                                width="80"
+                                height="80"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
@@ -392,42 +372,45 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                         </div>
                     </div>
                     
-                    {/* Name and Status Column - Match TherapistCard padding */}
-                    <div className="flex-1 pt-4 pb-3 overflow-visible">
-                        {/* Name Only */}
-                        <div className="mb-1" style={{marginTop: '25px'}}>
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                                <div className="flex items-center gap-2">
-                                    {/* Verified Badge */}
-                                    {((therapist as any).verifiedBadge || therapist.isVerified) && (
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
-                                            alt="Verified"
-                                            className="w-6 h-6 flex-shrink-0"
-                                            title="Verified Therapist"
-                                        />
-                                    )}
-                                    <h3 className="text-xl font-bold text-gray-900 truncate flex-shrink-0">
-                                        {therapist.name}
-                                    </h3>
-                                </div>
+                    {/* Name, Status and Location Column */}
+                    <div className="flex-1 min-w-0">
+                        {/* Therapist Name */}
+                        <div className="flex items-center gap-2 mb-2">
+                            {/* Verified Badge */}
+                            {((therapist as any).verifiedBadge || therapist.isVerified) && (
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                    alt="Verified"
+                                    className="w-5 h-5 flex-shrink-0"
+                                    title="Verified Therapist"
+                                />
+                            )}
+                            <h3 className="text-lg font-bold text-gray-900 truncate">
+                                {therapist.name}
+                            </h3>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="mb-2">
+                            <div className={`inline-flex items-center px-2 py-1 rounded-full font-medium text-xs ${statusStyle.bg} ${statusStyle.text}`}>
+                                <span className={`w-2 h-2 rounded-full mr-2 ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'}`}></span>
+                                <span>{statusStyle.label}</span>
                             </div>
                         </div>
 
-                        {/* Status Badge - Under name like profile card */}
-                        <div className="overflow-visible" style={{marginTop: '8px'}}>
-                            <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${statusStyle.bg} ${statusStyle.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
-                                {/* Pulsing satellite broadcast ring for Available status */}
-                                <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
-                                    <span className={`absolute rounded-full ${statusStyle.dot} ${statusStyle.isAvailable ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
-                                    {statusStyle.isAvailable && (
-                                        <>
-                                            <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
-                                            <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
-                                        </>
-                                    )}
-                                </span>
-                                <span className="text-xs">{statusStyle.label}</span>
+                        {/* Location */}
+                        <div className="flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                                <span className="text-xs font-medium text-gray-700">{locationAreaDisplayName}</span>
+                                {locationDisplay && (
+                                    <div className="text-xs text-orange-500 font-medium">
+                                        {locationDisplay}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
