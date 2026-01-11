@@ -12,7 +12,7 @@
  * - Offline queue support
  */
 
-import { client, APPWRITE_CONFIG } from '../../../../../lib/appwrite/config';
+import { client, APPWRITE_CONFIG } from '../../../../lib/appwrite/config';
 import { ID } from 'appwrite';
 
 interface AnalyticsEvent {
