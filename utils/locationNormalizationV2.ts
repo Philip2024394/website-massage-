@@ -102,7 +102,7 @@ export function convertLocationStringToId(location: string): string {
  * Extract locationId from therapist document (CANONICAL KEY)
  * FAIL-FAST: Logs error if missing for live therapists
  */
-export function extractLocationId(therapist: any): string {
+export function extractLocationId(therapist: import('../types').TherapistData): string {
   if (!therapist) return LOCATION_IDS.ALL;
   
   // PRIMARY: locationId field (canonical)
@@ -134,7 +134,7 @@ export function extractLocationId(therapist: any): string {
 /**
  * Extract location display name from therapist document
  */
-export function extractLocation(therapist: any): string {
+export function extractLocation(therapist: import('../types').TherapistData): string {
   if (!therapist) return 'all';
   
   // Get locationId first
@@ -149,7 +149,7 @@ export function extractLocation(therapist: any): string {
  * Returns: { location, locationId, coordinates }
  * INCLUDES locationId as canonical key
  */
-export function normalizeLocationForSave(location: string, coordinates?: any): {
+export function normalizeLocationForSave(location: string, coordinates?: [number, number] | { lat: number; lng: number }): {
   location: string;
   locationId: string;
   coordinates: string | null;
@@ -188,7 +188,7 @@ export function normalizeLocationForSave(location: string, coordinates?: any): {
  * Check if therapist matches filter location (CANONICAL - uses locationId)
  * BULLETPROOF: Uses locationId comparison only
  */
-export function matchesLocationId(therapist: any, filterLocationId: string): boolean {
+export function matchesLocationId(therapist: import('../types').TherapistData, filterLocationId: string): boolean {
   if (!therapist || !filterLocationId) return false;
   if (filterLocationId === LOCATION_IDS.ALL) return true;
   
@@ -222,7 +222,7 @@ export function matchesLocation(therapistLocation: string | undefined, filterLoc
 /**
  * Extract coordinates from various formats
  */
-export function extractCoordinates(coords: any): { lat: number | null; lng: number | null; location: string | null } {
+export function extractCoordinates(coords: [number, number] | { lat: number; lng: number } | null | undefined): { lat: number | null; lng: number | null; location: string | null } {
   if (!coords) return { lat: null, lng: null, location: null };
   
   // If string, parse JSON
@@ -256,7 +256,7 @@ export function extractCoordinates(coords: any): { lat: number | null; lng: numb
  * Assert therapist has valid locationId (FAIL-FAST)
  * Throws in dev, logs error in production
  */
-export function assertValidLocationId(therapist: any, context: string): void {
+export function assertValidLocationId(therapist: import('../types').TherapistData, context: string): void {
   if (!therapist) {
     const msg = `${context}: Therapist is null/undefined`;
     if (process.env.NODE_ENV === 'development') {

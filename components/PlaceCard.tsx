@@ -26,7 +26,7 @@ const StarIcon: React.FC<{className?: string}> = ({ className }) => (
 );
 
 
-const PlaceCard: React.FC<PlaceCardProps> = ({ place, onClick, onRate, activeDiscount, _t }) => {
+function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProps) {
     const { language } = useLanguageContext();
     const [discountTimeLeft, setDiscountTimeLeft] = useState<string>('');
     const [showSharePopup, setShowSharePopup] = useState(false);

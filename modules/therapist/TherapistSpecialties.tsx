@@ -15,7 +15,7 @@ interface TherapistSpecialtiesProps {
     t: any;
 }
 
-const TherapistSpecialties: React.FC<TherapistSpecialtiesProps> = ({ therapist, t }) => {
+function TherapistSpecialties({ therapist, t }: TherapistSpecialtiesProps) {
     // Parse massage types from therapist data
     const massageTypes = therapist.massageTypes 
         ? (typeof therapist.massageTypes === 'string' 

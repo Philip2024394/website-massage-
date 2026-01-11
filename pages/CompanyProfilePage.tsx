@@ -9,7 +9,7 @@ interface CompanyProfilePageProps {
   language?: 'en' | 'id';
 }
 
-const CompanyProfilePage: React.FC<CompanyProfilePageProps> = ({ onBack, t, language }) => {
+function CompanyProfilePage({ onBack, t, language }: CompanyProfilePageProps) {
   const handleShare = () => {
     // Create proper company profile URL
     const baseUrl = window.location.origin;

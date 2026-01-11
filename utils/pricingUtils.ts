@@ -19,7 +19,7 @@ export const pricingUtils = {
     },
 
     // Get pricing from therapist object (handles both old and new format)
-    getTherapistPricing: (therapist: any) => {
+    getTherapistPricing: (therapist: import('../types').TherapistData) => {
         // Try new separate fields first
         if (therapist.price60 !== undefined || therapist.price90 !== undefined || therapist.price120 !== undefined) {
             return {
@@ -54,13 +54,13 @@ export const pricingUtils = {
     },
 
     // Check if therapist has any valid pricing
-    hasValidPricing: (therapist: any) => {
+    hasValidPricing: (therapist: import('../types').TherapistData) => {
         const pricing = pricingUtils.getTherapistPricing(therapist);
         return pricing["60"] !== '' || pricing["90"] !== '' || pricing["120"] !== '';
     },
 
     // Convert pricing for card display (shows 'Contact' if no pricing)
-    formatPriceForCard: (therapist: any, duration: "60" | "90" | "120") => {
+    formatPriceForCard: (therapist: import('../types').TherapistData, duration: "60" | "90" | "120") => {
         const pricing = pricingUtils.getTherapistPricing(therapist);
         const price = pricing[duration];
         return price ? `${price}k` : 'Contact';

@@ -13,7 +13,7 @@ interface BookingPageProps {
     t: any;
 }
 
-const BookingPage: React.FC<BookingPageProps> = ({ provider, providerType, onBook, onBack, bookings, t }) => {
+function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: BookingPageProps) {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [selectedService, setSelectedService] = useState<'60' | '90' | '120'>('60');

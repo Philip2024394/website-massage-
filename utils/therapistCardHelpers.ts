@@ -34,7 +34,7 @@ export const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     
     // Legacy: If therapist has an explicit bookedUntil timestamp in the future, show Busy
     try {
-        const bookedUntil: any = (therapist as any).bookedUntil;
+        const bookedUntil = therapist.bookedUntil;
         if (bookedUntil) {
             const until = new Date(bookedUntil);
             if (!isNaN(until.getTime()) && until > new Date()) {
