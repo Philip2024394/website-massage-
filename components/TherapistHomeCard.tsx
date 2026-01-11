@@ -388,7 +388,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 <div className="flex items-start gap-3">
                     {/* Profile Picture - 30% of card width */}
                     <div className="flex-shrink-0 relative z-30">
-                        <div className="relative rounded-full overflow-hidden" style={{width: 'min(30vw, 120px)', height: 'min(30vw, 120px)', minWidth: '100px', minHeight: '100px'}}>
+                        <div className="w-[100px] h-[100px] sm:w-[110px] sm:h-[110px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden relative">
                             <img 
                                 className="w-full h-full object-cover pointer-events-auto border-4 border-white rounded-full" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
