@@ -3,16 +3,16 @@
  * All therapist-related pages and features
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
 // Lazy-loaded therapist dashboard components
-const TherapistDashboard = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistDashboard'));
-const TherapistOnlineStatus = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus'));
-const TherapistBookings = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistBookings'));
-const TherapistEarnings = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistEarnings'));
-const TherapistChat = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistChat'));
-const TherapistNotifications = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistNotifications'));
-const TherapistLegal = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistLegal'));
+const TherapistDashboard = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistDashboard'));
+const TherapistOnlineStatus = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus'));
+const TherapistBookings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistBookings'));
+const TherapistEarnings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistEarnings'));
+const TherapistChat = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistChat'));
+const TherapistNotifications = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistNotifications'));
+const TherapistLegal = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistLegal'));
 const TherapistCalendar = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistCalendar'));
 const TherapistPaymentInfo = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentInfo'));
 const TherapistPaymentStatus = React.lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPaymentStatus'));

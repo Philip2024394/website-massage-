@@ -3,21 +3,21 @@
  * Landing, marketing, and informational pages
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
 // Lazy-loaded page components
 // Critical entry page: import directly to avoid chunk load errors
 import LandingPage from '../../pages/LandingPage';
 import HomePage from '../../pages/HomePage';
-const AboutUsPage = React.lazy(() => import('../../pages/AboutUsPage'));
-const ContactUsPage = React.lazy(() => import('../../pages/ContactUsPage'));
-const CompanyProfilePage = React.lazy(() => import('../../pages/CompanyProfilePage'));
-const HowItWorksPage = React.lazy(() => import('../../pages/HowItWorksPage'));
-const FAQPage = React.lazy(() => import('../../pages/FAQPage'));
-const MassageTypesPage = React.lazy(() => import('../../pages/MassageTypesPage'));
-const FacialTypesPage = React.lazy(() => import('../../pages/FacialTypesPage'));
-const CustomerProvidersPage = React.lazy(() => import('../../pages/CustomerProvidersPage'));
-const FacialProvidersPage = React.lazy(() => import('../../pages/FacialProvidersPage'));
+const AboutUsPage = lazy(() => import('../../pages/AboutUsPage'));
+const ContactUsPage = lazy(() => import('../../pages/ContactUsPage'));
+const CompanyProfilePage = lazy(() => import('../../pages/CompanyProfilePage'));
+const HowItWorksPage = lazy(() => import('../../pages/HowItWorksPage'));
+const FAQPage = lazy(() => import('../../pages/FAQPage'));
+const MassageTypesPage = lazy(() => import('../../pages/MassageTypesPage'));
+const FacialTypesPage = lazy(() => import('../../pages/FacialTypesPage'));
+const CustomerProvidersPage = lazy(() => import('../../pages/CustomerProvidersPage'));
+const FacialProvidersPage = lazy(() => import('../../pages/FacialProvidersPage'));
 const TodaysDiscountsPage = React.lazy(() => import('../../pages/TodaysDiscountsPage'));
 
 export const publicRoutes = {

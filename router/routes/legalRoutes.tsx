@@ -3,15 +3,15 @@
  * Terms, policies, and legal documents
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
-const PrivacyPolicyPage = React.lazy(() => import('../../pages/PrivacyPolicyPage'));
-const CookiesPolicyPage = React.lazy(() => import('../../pages/CookiesPolicyPage'));
-const ServiceTermsPage = React.lazy(() => import('../../pages/ServiceTermsPage'));
-const PlaceTermsPage = React.lazy(() => import('../../pages/PlaceTermsPage'));
-const PackageTermsPage = React.lazy(() => import('../../pages/PackageTermsPage'));
-const MembershipTermsPage = React.lazy(() => import('../../pages/MembershipTermsPage'));
-const MobileTermsAndConditionsPage = React.lazy(() => import('../../pages/MobileTermsAndConditionsPage'));
+const PrivacyPolicyPage = lazy(() => import('../../pages/PrivacyPolicyPage'));
+const CookiesPolicyPage = lazy(() => import('../../pages/CookiesPolicyPage'));
+const ServiceTermsPage = lazy(() => import('../../pages/ServiceTermsPage'));
+const PlaceTermsPage = lazy(() => import('../../pages/PlaceTermsPage'));
+const PackageTermsPage = lazy(() => import('../../pages/PackageTermsPage'));
+const MembershipTermsPage = lazy(() => import('../../pages/MembershipTermsPage'));
+const MobileTermsAndConditionsPage = lazy(() => import('../../pages/MobileTermsAndConditionsPage'));
 
 export const legalRoutes = {
   privacy: {

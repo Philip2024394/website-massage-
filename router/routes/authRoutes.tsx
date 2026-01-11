@@ -4,13 +4,13 @@
  * Organized in dedicated pages/auth/ folder for maintainability
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
-const AuthPage = React.lazy(() => import('../../pages/auth/AuthPage'));
-const TherapistLoginPage = React.lazy(() => import('../../pages/auth/TherapistLoginPage'));
-const MassagePlaceLoginPage = React.lazy(() => import('../../pages/auth/MassagePlaceLoginPage'));
-const FacialPortalPage = React.lazy(() => import('../../pages/FacialPortalPage'));
-const PackageOnboarding = React.lazy(() => import('../../pages/PackageOnboarding'));
+const AuthPage = lazy(() => import('../../pages/auth/AuthPage'));
+const TherapistLoginPage = lazy(() => import('../../pages/auth/TherapistLoginPage'));
+const MassagePlaceLoginPage = lazy(() => import('../../pages/auth/MassagePlaceLoginPage'));
+const FacialPortalPage = lazy(() => import('../../pages/FacialPortalPage'));
+const PackageOnboarding = lazy(() => import('../../pages/PackageOnboarding'));
 
 export const authRoutes = {
   auth: {

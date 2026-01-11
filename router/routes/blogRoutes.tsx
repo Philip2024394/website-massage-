@@ -3,13 +3,13 @@
  * Blog posts and content marketing pages
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
-const BlogIndexPage = React.lazy(() => import('../../pages/BlogIndexPage'));
-const MassageBaliPage = React.lazy(() => import('../../pages/MassageBaliPage'));
-const BalineseMassagePage = React.lazy(() => import('../../pages/BalineseMassagePage'));
-const DeepTissueMassagePage = React.lazy(() => import('../../pages/DeepTissueMassagePage'));
-const PressMediaPage = React.lazy(() => import('../../pages/PressMediaPage'));
+const BlogIndexPage = lazy(() => import('../../pages/BlogIndexPage'));
+const MassageBaliPage = lazy(() => import('../../pages/MassageBaliPage'));
+const BalineseMassagePage = lazy(() => import('../../pages/BalineseMassagePage'));
+const DeepTissueMassagePage = lazy(() => import('../../pages/DeepTissueMassagePage'));
+const PressMediaPage = lazy(() => import('../../pages/PressMediaPage'));
 
 export const blogRoutes = {
   index: {

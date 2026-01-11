@@ -3,10 +3,10 @@
  * Routes accessible only to logged-in agents/admins
  */
 
-import React from 'react';
+import { lazy } from 'react';
 
 // Lazy-loaded admin components
-const AdminLiveListings = React.lazy(() => import('../../pages/AdminLiveListings'));
+const AdminLiveListings = lazy(() => import('../../pages/AdminLiveListings'));
 
 export const adminRoutes = {
   liveListings: {
