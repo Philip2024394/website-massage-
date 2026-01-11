@@ -784,7 +784,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     displayRating={displayRating}
                 />
 
-            {/* Location Display - Below header image, above profile */}
             <div className="px-4 mt-2 mb-1 flex justify-end">
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
@@ -819,7 +818,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             </div>
 
             {/* Profile Section - Overlapping header image with negative margin */}
-            <div className="px-4 -mt-19 sm:-mt-16 pb-4 relative z-40 overflow-visible">
+            <div className="px-4 -mt-17 sm:-mt-16 pb-4 relative z-40 overflow-visible">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
                     <div className="flex-shrink-0 relative z-40">
@@ -899,6 +898,40 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 )}
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            {/* Location Display - Below profile section */}
+            <div className="px-4 mb-2 flex justify-end">
+                <div className="flex flex-col items-end gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs font-medium text-gray-700">
+                            {(() => {
+                                const therapistLocationArea = (therapist as any)._locationArea;
+                                if (!therapistLocationArea) {
+                                    return (therapist.location || 'Bali').split(',')[0].trim();
+                                }
+                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                                const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+                                return cityData?.name || therapistLocationArea;
+                            })()}
+                        </span>
+                    </div>
+                    <div className="text-xs text-orange-500 font-medium">
+                        Serves {(() => {
+                            const therapistLocationArea = (therapist as any)._locationArea;
+                            if (!therapistLocationArea) {
+                                return (therapist.location || 'Bali').split(',')[0].trim();
+                            }
+                            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                            const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+                            return cityData?.name || therapistLocationArea;
+                        })()} area
                     </div>
                 </div>
             </div>
