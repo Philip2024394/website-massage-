@@ -17,7 +17,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     const wasDismissed = localStorage.getItem('pwa-banner-dismissed') === 'true';
     console.log('PWA Install Banner: Was dismissed?', wasDismissed);
     
-    // Check if already installed (removed isDismissed check to always show banner)
+    // Check if already installed 
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
     console.log('PWA Install Banner: Already installed?', isStandalone || isInWebAppiOS);
@@ -28,22 +28,22 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
       return;
     }
 
-    // Don't show if user has dismissed it (unless it's been more than 7 days)
-    if (wasDismissed) {
-      const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
-      const now = Date.now();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      
-      if (dismissedTime && (now - parseInt(dismissedTime)) < sevenDays) {
-        console.log('PWA Install Banner: Recently dismissed, not showing');
-        return;
-      } else {
-        // Clear old dismissal after 7 days
-        console.log('PWA Install Banner: Dismissal expired, clearing');
-        localStorage.removeItem('pwa-banner-dismissed');
-        localStorage.removeItem('pwa-banner-dismissed-time');
-      }
-    }
+    // TEMPORARILY IGNORE DISMISSAL FOR DEBUGGING - Show banner even if dismissed
+    // if (wasDismissed) {
+    //   const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
+    //   const now = Date.now();
+    //   const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    //   
+    //   if (dismissedTime && (now - parseInt(dismissedTime)) < sevenDays) {
+    //     console.log('PWA Install Banner: Recently dismissed, not showing');
+    //     return;
+    //   } else {
+    //     // Clear old dismissal after 7 days
+    //     console.log('PWA Install Banner: Dismissal expired, clearing');
+    //     localStorage.removeItem('pwa-banner-dismissed');
+    //     localStorage.removeItem('pwa-banner-dismissed-time');
+    //   }
+    // }
 
     // Detect iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -60,13 +60,17 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+    // FORCE SHOW BANNER FOR DEBUGGING - Show banner immediately
+    console.log('PWA Install Banner: FORCING banner to show for debugging');
+    setShowBanner(true);
+
     // For iOS or if no beforeinstallprompt event, show banner after delay
     const showBannerTimer = setTimeout(() => {
       console.log('PWA Install Banner: Timer expired, showing banner for iOS or fallback');
       if (iOS || !deferredPrompt) {
         setShowBanner(true);
       }
-    }, 3000);
+    }, 1000); // Reduced delay for testing
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -92,9 +96,22 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   const handleDismiss = () => {
     localStorage.setItem('pwa-banner-dismissed', 'true');
     localStorage.setItem('pwa-banner-dismissed-time', Date.now().toString());
+    console.log('PWA Install Banner: Dismissed and stored in localStorage');
     setShowBanner(false);
     onDismiss?.();
   };
+
+  // Add function to clear localStorage for testing
+  const clearDismissal = () => {
+    localStorage.removeItem('pwa-banner-dismissed');
+    localStorage.removeItem('pwa-banner-dismissed-time');
+    console.log('PWA Install Banner: Cleared dismissal from localStorage');
+  };
+
+  // For debugging - call this in console: window.clearPWADismissal()
+  if (typeof window !== 'undefined') {
+    (window as any).clearPWADismissal = clearDismissal;
+  }
 
   if (!showBanner) {
     console.log('PWA Install Banner: Not showing banner, showBanner =', showBanner);
@@ -131,19 +148,22 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
           </div>
           
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            {!isIOS && deferredPrompt && (
-              <button
-                onClick={handleInstall}
-                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
-              >
-                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span className="hidden sm:inline">Install</span>
-                <span className="sm:hidden">Add</span>
-              </button>
-            )}
+            {/* Always show install button for testing, with different behavior for iOS vs Android */}
+            <button
+              onClick={isIOS ? () => {
+                // For iOS, just show alert with instructions
+                alert('To install: Tap Share (⬆️) button → "Add to Home Screen"');
+              } : handleInstall}
+              className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
+            >
+              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{isIOS ? 'Instructions' : 'Install'}</span>
+              <span className="sm:hidden">{isIOS ? 'Help' : 'Add'}</span>
+            </button>
+            {/* Always show close button with bigger touch target */}
             <button
               onClick={handleDismiss}
-              className="p-1.5 sm:p-2 hover:bg-orange-400 rounded-lg transition-all"
+              className="p-2 sm:p-3 hover:bg-orange-400 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Dismiss"
             >
               <X className="w-5 h-5 sm:w-6 sm:h-6" />
