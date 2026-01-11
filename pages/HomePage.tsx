@@ -1785,7 +1785,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 const isPreviewMode = previewTherapistId && (String(therapist.$id) === String(previewTherapistId) || String(therapist.id) === String(previewTherapistId));
                                 
                                 return (
-                                <div key={therapist.$id || `therapist-wrapper-${therapist.id}-${index}`}>
+                                <div key={therapist.$id || therapist.id}>
                                 {/* 🔍 Preview Mode Banner */}
                                 {isPreviewMode && (
                                     <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-2 mb-2 text-center">
