@@ -12,7 +12,7 @@ export function useHomePageState() {
     const [comingSoonSection, setComingSoonSection] = useState('');
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-    const [selectedCity, setSelectedCity] = useState<string>('all');
+    const [selectedCity, setSelectedCity] = useState<string>('all'); // 'all' shows all therapists nationwide
     const [customLinks, setCustomLinks] = useState<any[]>([]);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [selectedTherapist, setSelectedTherapist] = useState<any | null>(null);
