@@ -1899,7 +1899,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     {
                                         name: 'Ela K.',
                                         role: 'Therapist, Canggu',
-                                        text: 'I was nervous about home service massage, but IndaStreet\\'s GPS tracking and client verification made me feel protected. Now I have 500+ bookings!',
+                                        text: 'I was nervous about home service massage, but IndaStreet GPS tracking and client verification made me feel protected. Now I have 500+ bookings!',
                                         avatar: '🌸'
                                     },
                                     {
