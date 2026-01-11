@@ -13,37 +13,38 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   useEffect(() => {
     console.log('PWA Install Banner: Checking conditions...');
     
-    // Check if banner was dismissed
-    const wasDismissed = localStorage.getItem('pwa-banner-dismissed') === 'true';
-    console.log('PWA Install Banner: Was dismissed?', wasDismissed);
-    
-    // Check if already installed 
+    // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
-    console.log('PWA Install Banner: Already installed?', isStandalone || isInWebAppiOS);
+    const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
+    
+    console.log('PWA Install Banner: Standalone mode?', isStandalone);
+    console.log('PWA Install Banner: iOS web app?', isInWebAppiOS);
+    console.log('PWA Install Banner: Install completed?', isInstalled);
 
     // Don't show if already installed
-    if (isStandalone || isInWebAppiOS) {
+    if (isStandalone || isInWebAppiOS || isInstalled) {
       console.log('PWA Install Banner: App already installed, not showing banner');
       return;
     }
 
-    // TEMPORARILY IGNORE DISMISSAL FOR DEBUGGING - Show banner even if dismissed
-    // if (wasDismissed) {
-    //   const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
-    //   const now = Date.now();
-    //   const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    //   
-    //   if (dismissedTime && (now - parseInt(dismissedTime)) < sevenDays) {
-    //     console.log('PWA Install Banner: Recently dismissed, not showing');
-    //     return;
-    //   } else {
-    //     // Clear old dismissal after 7 days
-    //     console.log('PWA Install Banner: Dismissal expired, clearing');
-    //     localStorage.removeItem('pwa-banner-dismissed');
-    //     localStorage.removeItem('pwa-banner-dismissed-time');
-    //   }
-    // }
+    // Check if banner was dismissed recently
+    const wasDismissed = localStorage.getItem('pwa-banner-dismissed') === 'true';
+    if (wasDismissed) {
+      const dismissedTime = localStorage.getItem('pwa-banner-dismissed-time');
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      
+      if (dismissedTime && (now - parseInt(dismissedTime)) < sevenDays) {
+        console.log('PWA Install Banner: Recently dismissed, not showing');
+        return;
+      } else {
+        // Clear old dismissal after 7 days
+        console.log('PWA Install Banner: Dismissal expired, clearing');
+        localStorage.removeItem('pwa-banner-dismissed');
+        localStorage.removeItem('pwa-banner-dismissed-time');
+      }
+    }
 
     // Detect iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -60,17 +61,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // FORCE SHOW BANNER FOR DEBUGGING - Show banner immediately
-    console.log('PWA Install Banner: FORCING banner to show for debugging');
-    setShowBanner(true);
-
-    // For iOS or if no beforeinstallprompt event, show banner after delay
+    // For iOS or fallback, show banner after short delay
     const showBannerTimer = setTimeout(() => {
-      console.log('PWA Install Banner: Timer expired, showing banner for iOS or fallback');
+      console.log('PWA Install Banner: Timer expired, checking if should show');
       if (iOS || !deferredPrompt) {
+        console.log('PWA Install Banner: Showing banner for iOS or as fallback');
         setShowBanner(true);
       }
-    }, 1000); // Reduced delay for testing
+    }, 2000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -79,17 +77,39 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   }, []);
 
   const handleInstall = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
+    console.log('PWA Install: Install button clicked');
+    
+    if (!deferredPrompt) {
+      console.log('PWA Install: No deferred prompt available');
+      // For browsers that don't support beforeinstallprompt
+      alert('To install this app:\n\n1. Open your browser menu\n2. Look for "Add to Home Screen" or "Install App"\n3. Follow the prompts');
+      return;
+    }
+
+    try {
+      console.log('PWA Install: Showing install prompt');
+      await deferredPrompt.prompt();
+      
       const choiceResult = await deferredPrompt.userChoice;
+      console.log('PWA Install: User choice:', choiceResult.outcome);
       
       if (choiceResult.outcome === 'accepted') {
-        console.log('PWA installed');
+        console.log('PWA Install: Installation accepted');
         localStorage.setItem('pwa-install-completed', 'true');
+        setShowBanner(false);
+        
+        // Show success message
+        setTimeout(() => {
+          alert('App installed successfully! 🎉\nYou can now find it on your home screen.');
+        }, 500);
+      } else {
+        console.log('PWA Install: Installation dismissed by user');
       }
       
       setDeferredPrompt(null);
-      setShowBanner(false);
+    } catch (error) {
+      console.error('PWA Install: Error during installation:', error);
+      alert('Installation failed. Please try adding the app manually from your browser menu.');
     }
   };
 
@@ -148,19 +168,30 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
           </div>
           
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            {/* Always show install button for testing, with different behavior for iOS vs Android */}
-            <button
-              onClick={isIOS ? () => {
-                // For iOS, just show alert with instructions
-                alert('To install: Tap Share (⬆️) button → "Add to Home Screen"');
-              } : handleInstall}
-              className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
-            >
-              <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">{isIOS ? 'Instructions' : 'Install'}</span>
-              <span className="sm:hidden">{isIOS ? 'Help' : 'Add'}</span>
-            </button>
-            {/* Always show close button with bigger touch target */}
+            {/* Show install button based on platform and availability */}
+            {isIOS ? (
+              <button
+                onClick={() => {
+                  alert('To install this app:\n\n📱 Tap the Share button (⬆️)\n➕ Select "Add to Home Screen"\n✅ Confirm installation');
+                }}
+                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
+              >
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Instructions</span>
+                <span className="sm:hidden">Help</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleInstall}
+                className="px-3 py-2 sm:px-6 sm:py-3 bg-white text-orange-600 font-bold rounded-lg sm:rounded-xl hover:bg-orange-50 transition-all flex items-center gap-1 sm:gap-2 shadow-lg text-xs sm:text-base"
+              >
+                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">Install</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            )}
+            
+            {/* Close button */}
             <button
               onClick={handleDismiss}
               className="p-2 sm:p-3 hover:bg-orange-400 rounded-lg transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
