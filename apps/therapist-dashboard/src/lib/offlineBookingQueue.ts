@@ -12,7 +12,7 @@
  * - Background sync support
  */
 
-import { bookingService } from './bookingService';
+import { bookingService } from '../../../../../lib/bookingService';
 
 interface QueuedBookingAction {
   id: string;
