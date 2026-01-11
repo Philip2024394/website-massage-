@@ -373,7 +373,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* Profile Section - Match TherapistCard positioning */}
-            <div className="px-4 -mt-17 sm:-mt-16 pb-4 relative z-20 overflow-visible">
+            <div className="px-4 -mt-20 sm:-mt-16 pb-4 relative z-20 overflow-visible">
                 <div className="flex items-start gap-3">
                     {/* Profile Picture */}
                     <div className="flex-shrink-0 relative z-20">
