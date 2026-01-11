@@ -262,6 +262,17 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const displayBookingsCount = bookingsCount === 0 ? getInitialBookingCount(String(therapist.id || therapist.$id || '')) : bookingsCount;
 
+    // 🧱 MOBILE STABILITY CHECK - This should log identical values on every refresh
+    if (process.env.NODE_ENV === 'development') {
+        console.log('📱 TherapistHomeCard render:', {
+            id: therapist.$id || therapist.id,
+            name: therapist.name,
+            status: statusStyle.label,
+            bookings: displayBookingsCount,
+            timestamp: new Date().toISOString()
+        });
+    }
+
     return (
         <div className="relative">
             {/* External meta bar (Joined Date / Free / Orders) */}
