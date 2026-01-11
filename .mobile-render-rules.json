@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "description": "Mobile Render Stability Rules - ENFORCED",
+  "critical": true,
+  "rules": {
+    "keys": {
+      "rule": "ALWAYS use stable database IDs as React keys",
+      "pattern": "key={item.$id || item.id}",
+      "forbidden": [
+        "key={index}",
+        "key={`${id}-${index}`}",
+        "key={Math.random()}",
+        "key={Date.now()}"
+      ],
+      "rationale": "Index-based keys cause React to destroy/recreate DOM nodes on re-render, causing position jumps"
+    },
+    "images": {
+      "rule": "ALL images MUST have explicit aspect-ratio CSS",
+      "pattern": "style={{ aspectRatio: '16/9' }}",
+      "required": [
+        "Main card images",
+        "Profile images",
+        "Header images",
+        "Thumbnails"
+      ],
+      "rationale": "Prevents layout shifts (CLS) during image loading"
+    },
+    "sizing": {
+      "rule": "Use fixed pixel sizes with Tailwind breakpoints, NOT viewport units",
+      "allowed": "w-[100px] sm:w-[110px] md:w-[120px]",
+      "forbidden": [
+        "min(30vw, 120px)",
+        "calc(30vw + 10px)",
+        "100vh",
+        "50vw"
+      ],
+      "rationale": "Viewport-relative units cause non-deterministic rendering on mobile"
+    },
+    "responsive": {
+      "rule": "CSS-only responsive design, NO JavaScript detection",
+      "allowed": [
+        "Tailwind breakpoints (sm:, md:, lg:)",
+        "CSS media queries"
+      ],
+      "forbidden": [
+        "window.innerWidth",
+        "window.outerWidth",
+        "navigator.userAgent",
+        "isMobile checks",
+        "useMediaQuery hooks (in layout components)"
+      ],
+      "rationale": "JavaScript-based detection is non-deterministic and causes hydration mismatches"
+    },
+    "determinism": {
+      "rule": "NO random or time-based values in render logic",
+      "forbidden": [
+        "Math.random() in render",
+        "Date.now() in render",
+        "new Date() in component body"
+      ],
+      "allowed": [
+        "Hash-based deterministic functions",
+        "Stable sort comparators",
+        "Pre-computed random values in data layer"
+      ],
+      "rationale": "Non-deterministic values cause different renders on each refresh"
+    },
+    "conditionalRendering": {
+      "rule": "NO conditional rendering inside .map() loops",
+      "pattern": "Filter BEFORE mapping, not inside map",
+      "correct": "items.filter(x => condition).map(x => <Component key={x.id} />)",
+      "incorrect": "items.map(x => condition ? <Component key={x.id} /> : null)",
+      "rationale": "Conditional rendering inside map breaks React reconciliation"
+    },
+    "zIndex": {
+      "rule": "Use pointer-events strategy to prevent click blocking",
+      "pattern": "Container: pointer-events-none, Interactive children: pointer-events-auto",
+      "rationale": "High z-index containers block clicks without proper pointer-events management"
+    }
+  },
+  "enforcedIn": [
+    "components/TherapistHomeCard.tsx",
+    "components/TherapistCard.tsx",
+    "pages/HomePage.tsx",
+    "modules/therapist/*"
+  ],
+  "violations": {
+    "severity": "CRITICAL",
+    "action": "DO NOT MERGE until fixed",
+    "impact": "Mobile UI instability, position jumps, layout shifts"
+  },
+  "testing": {
+    "required": [
+      "Mobile refresh test (5+ times)",
+      "Layout shift measurement (CLS < 0.1)",
+      "React key warnings in console",
+      "Deterministic render verification"
+    ]
+  }
+}

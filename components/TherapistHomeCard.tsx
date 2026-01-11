@@ -1,3 +1,19 @@
+/**
+ * ⚠️ MOBILE RENDER STABILITY RULES ENFORCED ⚠️
+ * 
+ * CRITICAL: This component follows strict mobile render rules.
+ * See: .mobile-render-rules.json for complete guidelines.
+ * 
+ * LOCKED PATTERNS:
+ * ✅ Keys: ONLY use therapist.$id (NEVER index)
+ * ✅ Images: aspect-ratio CSS required
+ * ✅ Sizing: Fixed px with breakpoints (NO vw/vh)
+ * ✅ Responsive: CSS-only (NO window.innerWidth)
+ * ✅ Determinism: NO Math.random() or Date.now()
+ * 
+ * DO NOT MODIFY unless you understand React reconciliation.
+ */
+
 import React, { useState, useEffect } from 'react';
 import type { Therapist, Analytics } from '../types';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
