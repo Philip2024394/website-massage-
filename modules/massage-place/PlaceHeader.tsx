@@ -36,8 +36,7 @@ const PlaceHeader: React.FC<PlaceHeaderProps> = ({
     t,
     onShare,
     activeDiscount,
-    discountTimeLeft,
-    onShare
+    discountTimeLeft
 }) => {
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
