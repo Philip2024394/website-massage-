@@ -1,10 +1,10 @@
 import React from 'react';
 import type { Therapist } from '../../types';
-import AnonymousReviewModal from '../AnonymousReviewModal';
-import BookingPopup from '../BookingPopup';
-import ScheduleBookingPopup from '../ScheduleBookingPopup';
-import SocialSharePopup from '../SocialSharePopup';
-import TherapistJoinPopup from '../TherapistJoinPopup';
+import AnonymousReviewModal from '../../components/AnonymousReviewModal';
+import BookingPopup from '../../components/BookingPopup';
+import ScheduleBookingPopup from '../../components/ScheduleBookingPopup';
+import SocialSharePopup from '../../components/SocialSharePopup';
+import TherapistJoinPopup from '../../components/TherapistJoinPopup';
 import { AvailabilityStatus } from '../../types';
 import { isDiscountActive } from '../../utils/therapistCardHelpers';
 

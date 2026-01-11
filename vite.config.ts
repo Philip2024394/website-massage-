@@ -96,8 +96,7 @@ export default defineConfig({
     rollupOptions: {
       external: [],
       input: {
-        main: path.resolve(__dirname, 'index.html'),
-        admin: path.resolve(__dirname, 'admin.html')
+        main: path.resolve(__dirname, 'index.html')
       },
       output: {
         // 🔥 CACHE-BUSTING: Add content hash to filenames
