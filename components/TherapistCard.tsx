@@ -25,8 +25,8 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
-import TherapistPricingGrid from './therapist/TherapistPricingGrid';
-import TherapistModalsContainer from './therapist/TherapistModalsContainer';
+import TherapistPricingGrid from '../modules/therapist/TherapistPricingGrid';
+import TherapistModalsContainer from '../modules/therapist/TherapistModalsContainer';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
 // Custom hooks for logic extraction
