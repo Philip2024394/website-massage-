@@ -2,8 +2,9 @@
  * ESLint Plugin for File Size Enforcement
  * Based on Facebook/Amazon standards
  */
+import path from 'node:path';
 
-module.exports = {
+const plugin = {
   rules: {
     'max-file-size': {
       meta: {
@@ -49,7 +50,7 @@ module.exports = {
         };
 
         function getFileCategory(filename) {
-          const basename = require('path').basename(filename);
+          const basename = path.basename(filename);
           
           // Component files
           if (filename.includes('components/') || 
@@ -204,3 +205,5 @@ module.exports = {
     }
   }
 };
+
+export default plugin;

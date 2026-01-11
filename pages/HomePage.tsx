@@ -1801,6 +1801,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     readOnly={readOnly}
                                     selectedCity={selectedCity}
                                     t={t}
+                                    avatarOffsetPx={8}
                                     onClick={(selectedTherapist) => {
                                         // Set selected therapist and navigate to profile page with URL update
                                         onSelectTherapist?.(selectedTherapist);

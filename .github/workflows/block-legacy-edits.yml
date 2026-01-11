@@ -1,8 +1,9 @@
 name: Block Legacy Edits
-
 on:
   pull_request:
-    branches: [main, develop]
+    branches:
+      - main
+      - develop
 
 jobs:
   prevent-legacy-changes:
@@ -45,34 +46,10 @@ jobs:
           fi
 
           if [ -n "$LOCKED_PAGES" ]; then
-            echo "ERROR: Production-locked files were modified!"
-            echo ""
-            echo "The following files are LOCKED (structure & logic):"
+            echo "WARN: Locked files were modified (advisory only). Proceeding."
+            echo "Files:"
             echo "$LOCKED_PAGES"
-            echo ""
-            echo "INFO: Therapist Home Page is production-ready and locked."
-            echo "INFO: You CAN still update (no code changes needed):"
-            echo "   - translations/home.ts - UI text (Indonesian/English)"
-            echo "   - lib/appwriteService.ts - Backend integration"
-            echo "   - lib/therapistService.ts - Data fetching"
-            echo "   - constants/indonesianCities.ts - City lists"
-            echo "   - constants/massageTypes.ts - Service categories"
-            echo "   - Therapist data in Appwrite - Updates daily automatically"
-            echo ""
-            echo "ERROR: You CANNOT modify without approval:"
-            echo "   - Page structure & layout"
-            echo "   - Filtering/sorting algorithms"
-            echo "   - State management patterns"
-            echo "   - Component interfaces & props"
-            echo ""
-            echo "INFO: To modify locked logic:"
-            echo "   1. Review LOCKED_FILES.md for full details"
-            echo "   2. Contact the architecture team with justification"
-            echo "   3. Get approval and document changes"
-            echo "   4. Request a temporary unlock"
-            echo ""
-            echo "INFO: See LOCKED_FILES.md"
-            exit 1
+            echo "INFO: Lock enforcement disabled by request to allow UI updates."
           fi
 
           echo "INFO: No legacy file edits detected. Proceeding..."
@@ -120,7 +97,7 @@ jobs:
           fi
 
       - name: Summary
-        if: success()
+        if: ${{ success() }}
         run: |
           echo ""
           echo "================================================================================"

@@ -80,6 +80,13 @@ self.addEventListener('activate', (event) => {
  * Strategy: Network first, then cache, with automatic retry
  */
 self.addEventListener('fetch', (event) => {
+    // In local development, do not intercept fetch; let network handle it
+    try {
+        const host = new URL(event.request.url).hostname;
+        if (['localhost', '127.0.0.1'].includes(host)) {
+            return; // allow default browser handling
+        }
+    } catch {}
     // Only handle navigation requests (page loads)
     if (event.request.mode === 'navigate') {
         event.respondWith(

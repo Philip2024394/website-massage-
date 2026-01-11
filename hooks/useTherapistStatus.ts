@@ -24,7 +24,8 @@ export const useTherapistStatus = (therapist: Therapist) => {
     }
 
     // Use availability field (has proper default) or status as fallback
-    const currentStatus = (therapist as any).availability || therapist.status || ('Offline' as AvailabilityStatus);
+    // Default to Available instead of Offline to prevent therapists going offline on refresh
+    const currentStatus = (therapist as any).availability || therapist.status || ('Available' as AvailabilityStatus);
 
     return currentStatus;
   };

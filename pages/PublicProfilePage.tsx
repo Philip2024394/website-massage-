@@ -297,14 +297,14 @@ export default function PublicProfilePage({ memberId, onNavigate }: PublicProfil
                   type="text"
                   value={profileUrl}
                   readOnly
-                  className="flex-1 bg-transparent text-sm text-gray-700 outline-none"
+                  className="flex-1 bg-transparent text-sm text-gray-700 outline-none min-w-0"
                 />
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(profileUrl);
                     alert('Profile link copied to clipboard!');
                   }}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm whitespace-nowrap"
+                  className="px-3 sm:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-xs sm:text-sm whitespace-nowrap min-w-[80px] flex-shrink-0"
                 >
                   Copy Link
                 </button>

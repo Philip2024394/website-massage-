@@ -538,6 +538,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     loggedInProviderId={loggedInProvider?.id}
                     t={t}
                     hideJoinButton={false}
+                    avatarOffsetPx={8}
                 />
 
                 {/* Rotating Reviews Section */}

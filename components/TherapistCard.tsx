@@ -25,6 +25,8 @@ import { chatTranslationService } from '../services/chatTranslationService';
 import { useLanguageContext } from '../context/LanguageContext';
 import { getClientPreferenceDisplay } from '../utils/clientPreferencesUtils';
 import TherapistCardHeader from './therapist/TherapistCardHeader';
+import TherapistPricingGrid from './therapist/TherapistPricingGrid';
+import TherapistModalsContainer from './therapist/TherapistModalsContainer';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 
 // Custom hooks for logic extraction
@@ -52,6 +54,7 @@ interface TherapistCardProps {
     loggedInProviderId?: number | string; // To prevent self-notification
     hideJoinButton?: boolean; // Hide "Therapist Join Free" button (for shared profile pages)
     customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
+    avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
 }
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
@@ -69,7 +72,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     t: _t,
     hideJoinButton = false,
     customVerifiedBadge,
-    loggedInProviderId
+    loggedInProviderId,
+    avatarOffsetPx = 0
 }) => {
     // Use the translations prop
     const t = _t;
@@ -784,7 +788,12 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     displayRating={displayRating}
                 />
 
-            <div className="px-4 mt-2 mb-1 flex justify-end">
+            {/* ========================================
+             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
+             * Facebook Lock: This layout is finalized
+             * Contact admin before making any changes
+             * ======================================== */}
+            <div className="px-4 mt-2 mb-1 text-right relative z-10">
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
                         <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -803,89 +812,111 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             })()}
                         </span>
                     </div>
+                    {/* Serves area - second line */}
+                    <div className="text-xs text-orange-500 font-medium">
+                        {(() => {
+                            const therapistLocationArea = (therapist as any)._locationArea;
+                            let name: string;
+                            if (!therapistLocationArea) {
+                                name = (therapist.location || 'Bali').split(',')[0].trim();
+                            } else {
+                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                                const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+                                name = cityData?.name || therapistLocationArea;
+                            }
+                            return `Serves ${name} area`;
+                        })()}
+                    </div>
                 </div>
             </div>
 
-            {/* Profile Section - Overlapping header image with negative margin */}
-            <div className="px-4 -mt-20 sm:-mt-16 pb-4 relative z-40 overflow-visible">
+            {/* ========================================
+             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
+             * Profile positioning and layout finalized
+             * ======================================== */}
+            {/* Profile Section - Overlapping main image by 30% */}
+            <div className="px-4 -mt-24 pb-4 relative z-50 overflow-visible pointer-events-none">
                 <div className="flex items-start gap-3">
-                    {/* Profile Picture */}
-                    <div className="flex-shrink-0 relative z-40">
-                        <div className="w-24 h-24 bg-white rounded-full p-1 relative aspect-square overflow-visible">
+                    {/* Profile Picture - 30% of card width */}
+                    <div className="flex-shrink-0 relative z-50">
+                        <div className="w-[30%] min-w-[100px] max-w-[120px] aspect-square rounded-full relative overflow-visible">
                             <img 
-                                className="w-full h-full rounded-full object-cover aspect-square" 
+                                className="w-full h-full rounded-full object-cover aspect-square pointer-events-auto border-4 border-white" 
                                 src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
                                 alt={`${therapist.name} profile`}
                                 loading="lazy"
-                                width="96"
-                                height="96"
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                                 }}
                             />
                         </div>
                     </div>
-                    
-                    {/* Name and Status Column - Match TherapistHomeCard padding */}
-                    <div className="flex-1 pt-4 pb-3 overflow-visible">
-                        {/* Name Only */}
-                        <div className="mb-1" style={{marginTop: '25px'}}>
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                                <div className="flex items-center gap-2">
-                                    {/* Verified Badge */}
-                                    {((therapist as any).verifiedBadge || therapist.isVerified) && (
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
-                                            alt="Verified"
-                                            className="w-6 h-6 flex-shrink-0"
-                                            title="Verified Therapist"
-                                        />
-                                    )}
-                                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 truncate flex-shrink-0">
-                                        {therapist.name}
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+            </div>
 
-                        {/* Status Badge - Under name like profile card */}
-                        <div className="overflow-visible" style={{marginTop: '8px'}}>
-                            <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
-                                {/* Pulsing satellite broadcast ring for Available status */}
-                                <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
-                                    <span className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
-                                    {!isOvertime && displayStatus === AvailabilityStatus.Available && (
-                                        <>
-                                            <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
-                                            <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
-                                        </>
-                                    )}
-                                    {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
-                                        <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
-                                    )}
-                                </span>
-                                {displayStatus === AvailabilityStatus.Busy ? (
-                                    therapist.busyUntil ? (
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-xs">Busy</span>
-                                            <BusyCountdownTimer
-                                                endTime={therapist.busyUntil}
-                                                onExpired={() => {
-                                                    devLog('Busy period ended – therapist should be available.');
-                                                }}
-                                            />
-                                        </div>
-                                    ) : countdown ? (
-                                        <span className="text-xs">
-                                            {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
-                                        </span>
-                                    ) : (
-                                        <span className="text-xs">Busy</span>
-                                    )
-                                ) : (
-                                    <span className="text-xs">{displayStatus}</span>
+            {/* ========================================
+             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
+             * Name and status positioning finalized
+             * 75px offset from left is intentional
+             * ======================================== */}
+            {/* Name and Status - Below main image, left aligned with 75px offset */}
+            <div className="px-4 mt-[2px] mb-3 relative z-40">
+                <div className="flex-shrink-0">
+                    {/* Name left aligned with offset */}
+                    <div className="mb-2 ml-[75px]">
+                        <div className="flex items-center gap-2">
+                            {/* Verified Badge */}
+                            {((therapist as any).verifiedBadge || therapist.isVerified) && (
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                    alt="Verified"
+                                    className="w-5 h-5 flex-shrink-0"
+                                    title="Verified Therapist"
+                                />
+                            )}
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+                                {therapist.name}
+                            </h3>
+                        </div>
+                    </div>
+
+                    {/* Status Badge - Left aligned with offset */}
+                    <div className="overflow-visible flex justify-start ml-[75px]">
+                        <div className={`inline-flex items-center px-2.5 rounded-full font-medium whitespace-nowrap ${isOvertime ? 'bg-red-100 text-red-800' : style.bg} ${isOvertime ? '' : style.text}`} style={{paddingTop: '0px', paddingBottom: '0px', lineHeight: '1', fontSize: '10px', transform: 'scaleY(0.9)'}}>
+                            {/* Pulsing satellite broadcast ring for Available status */}
+                            <span className="relative inline-flex mr-1.5" style={{width: '32px', height: '32px', minWidth: '32px', minHeight: '32px'}}>
+                                <span className={`absolute rounded-full ${isOvertime ? 'bg-red-500' : style.dot} ${style.isAvailable && !isOvertime ? '' : 'animate-pulse'} z-10`} style={{width: '8px', height: '8px', left: '12px', top: '12px'}}></span>
+                                {!isOvertime && displayStatus === AvailabilityStatus.Available && (
+                                    <>
+                                        <span className="absolute rounded-full bg-green-400 opacity-75 animate-ping" style={{width: '20px', height: '20px', left: '6px', top: '6px'}}></span>
+                                        <span className="absolute rounded-full bg-green-300 opacity-50 animate-ping" style={{width: '28px', height: '28px', left: '2px', top: '2px', animationDuration: '1.5s'}}></span>
+                                    </>
                                 )}
-                            </div>
+                                {!isOvertime && displayStatus === AvailabilityStatus.Busy && (
+                                    <span className="absolute inset-0 rounded-full animate-ping bg-yellow-400"></span>
+                                )}
+                            </span>
+                            {displayStatus === AvailabilityStatus.Busy ? (
+                                therapist.busyUntil ? (
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-xs">Busy</span>
+                                        <BusyCountdownTimer
+                                            endTime={therapist.busyUntil}
+                                            onExpired={() => {
+                                                devLog('Busy period ended – therapist should be available.');
+                                            }}
+                                        />
+                                    </div>
+                                ) : countdown ? (
+                                    <span className="text-xs">
+                                        {isOvertime ? 'Busy - Extra Time ' : 'Busy - Free in '} {countdown}
+                                    </span>
+                                ) : (
+                                    <span className="text-xs">Busy</span>
+                                )
+                            ) : (
+                                <span className="text-xs">{displayStatus}</span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1047,7 +1078,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             })()}
 
             {/* Discount Notice - Shows when discount is active and not expired */}
-            {/* Massage Therapist Standards Link - Different targets for shared profiles vs home page */}
+            {/* Discounted Prices Header */}
+            {isDiscountActive(therapist) && (
+                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1', translatedDescription.length)}`}>
+                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
+                        🔥 Discounted Price's Displayed
+                    </p>
+                </div>
+            )}
+
             <div className="text-center mb-4 mt-2">
                 <button
                     onClick={() => {
@@ -1068,107 +1107,17 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
             </div>
 
-            {/* Discounted Prices Header */}
-            {isDiscountActive(therapist) && (
-                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1', translatedDescription.length)}`}>
-                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
-                        🔥 Discounted Price's Displayed
-                    </p>
-                </div>
-            )}
+            <TherapistPricingGrid
+                pricing={pricing}
+                therapist={therapist}
+                displayRating={displayRating}
+                animatedPriceIndex={animatedPriceIndex}
+                formatPrice={formatPrice}
+                getDynamicSpacing={getDynamicSpacing}
+                translatedDescriptionLength={translatedDescription.length}
+            />
 
-            <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
-                {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                    animatedPriceIndex === 0
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                }`}>
-                    {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                    {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            {displayRating}
-                        </div>
-                    )}
-                    <p className="text-gray-600 text-xs mb-1">60 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <>
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
-                            <p className="text-[11px] text-gray-500 line-through">
-                                IDR {formatPrice(Number(pricing["60"]))}
-                            </p>
-                        </>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Number(pricing["60"]))}
-                        </p>
-                    )}
-                </div>
-
-                {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                    animatedPriceIndex === 1
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                }`}>
-                    {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                    {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            {displayRating}
-                        </div>
-                    )}
-                    <p className="text-gray-600 text-xs mb-1">90 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Number(pricing["90"]))}
-                        </p>
-                    )}
-                </div>
-                
-                {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
-                    animatedPriceIndex === 2
-                        ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
-                        : isDiscountActive(therapist)
-                        ? 'bg-gray-100 border-orange-500 border-2 price-rim-fade' 
-                        : 'bg-gray-100 border-gray-200'
-                }`}>
-                    {/* Star Rating - Top Edge Left (50% inside, 50% outside) */}
-                    {displayRating && (
-                        <div className="absolute -top-2.5 left-2 bg-black text-yellow-400 text-xs font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-md">
-                            <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                            {displayRating}
-                        </div>
-                    )}
-                    <p className="text-gray-600 text-xs mb-1">120 min</p>
-                    {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
-                    ) : (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Number(pricing["120"]))}
-                        </p>
-                    )}
-                </div>
+            {/* End Content Section wrapper */}
             </div>
 
             <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}`}>
@@ -1253,9 +1202,6 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
             </div>
 
-            {/* End Content Section wrapper */}
-            </div>
-
             {/* Hotel/Villa Partner Link - Mobile optimized */}
             {(therapist as any).partneredHotelVilla && (
                 <div className="mt-3 mb-2 px-2">
@@ -1287,252 +1233,32 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </div>
             )}
             
-            {/* Busy Therapist Confirmation Modal */}
-            {showBusyModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 animate-fadeIn">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-3xl">⏳</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Therapist Currently Busy</h3>
-                            <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-                                This therapist is currently booked and unavailable. Please try booking another available therapist or check back later.
-                            </p>
-                            <p className="text-sm font-semibold text-orange-600 mb-6">- <span className="text-black">Inda</span><span className="text-orange-500">street</span> Admin</p>
-                            
-                            <button
-                                onClick={() => setShowBusyModal(false)}
-                                className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Refer Friend Modal */}
-            {showReferModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4" onClick={() => setShowReferModal(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-[88vw] max-h-[80vh] sm:max-w-xs md:max-w-sm p-3 sm:p-4 overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                        <div className="text-center">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-3 sm:mb-4">
-                                <img 
-                                    src="https://ik.imagekit.io/7grri5v7d/refer%20a%20friend.png"
-                                    alt="Refer a Friend"
-                                    className="w-full h-full object-contain"
-                                    loading="lazy"
-                                    decoding="async"
-                                    width="128"
-                                    height="128"
-                                />
-                            </div>
-                            
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Refer a Friend</h3>
-                            <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">Share IndaStreet with friends! 🎁</p>
-                            
-                            <div className="space-y-2 mb-3 sm:mb-4">
-                                <p className="text-xs text-gray-600 text-left">
-                                    📱 Share your referral link:
-                                </p>
-                                <div className="flex gap-1">
-                                    <input 
-                                        type="text" 
-                                        value={userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'Loading...'} 
-                                        readOnly 
-                                        className="flex-1 px-2 py-1.5 sm:py-2 border border-gray-300 rounded-lg bg-gray-50 text-xs"
-                                        placeholder="Your referral link"
-                                        title="Your referral link to share with friends"
-                                        aria-label="Referral link"
-                                    />
-                                    <button
-                                        onClick={() => {
-                                            const link = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
-                                            navigator.clipboard.writeText(link);
-                                            alert('Link copied to clipboard!');
-                                        }}
-                                        className="px-3 py-1.5 sm:py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold text-xs whitespace-nowrap"
-                                    >
-                                        Copy
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-2 mb-3 sm:mb-4">
-                                <p className="text-xs text-gray-600 mb-2">Share via:</p>
-                                <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-                                    <button
-                                        onClick={() => {
-                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
-                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ Use my referral link and we both earn coins! ${referralLink}`;
-                                            window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
-                                        }}
-                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
-                                    >
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/whats%20app%20icon.png?updatedAt=1761844859402" 
-                                            alt="WhatsApp"
-                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                                            loading="lazy"
-                                            decoding="async"
-                                            width="40"
-                                            height="40"
-                                        />
-                                        <span className="text-xs font-medium text-gray-700">WhatsApp</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
-                                            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
-                                        }}
-                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
-                                    >
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/facebook.png?updatedAt=1761844676576" 
-                                            alt="Facebook"
-                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                                            loading="lazy"
-                                            decoding="async"
-                                            width="40"
-                                            height="40"
-                                        />
-                                        <span className="text-xs font-medium text-gray-700">Facebook</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
-                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
-                                            navigator.clipboard.writeText(message);
-                                            alert('Instagram message copied! Open Instagram and paste to share.');
-                                        }}
-                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
-                                    >
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/insta.png?updatedAt=1761845305146" 
-                                            alt="Instagram"
-                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                                            loading="lazy"
-                                            decoding="async"
-                                            width="40"
-                                            height="40"
-                                        />
-                                        <span className="text-xs font-medium text-gray-700">Instagram</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            const referralLink = userReferralCode ? `https://www.indastreetmassage.com/ref/${userReferralCode}` : 'https://www.indastreetmassage.com';
-                                            const message = `Check out IndaStreet - Book amazing massages! 💆‍♀️ ${referralLink}`;
-                                            navigator.clipboard.writeText(message);
-                                            alert('TikTok message copied! Open TikTok and paste to share.');
-                                        }}
-                                        className="flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg transition-all hover:scale-105"
-                                    >
-                                        <img 
-                                            src="https://ik.imagekit.io/7grri5v7d/tiktok.png?updatedAt=1761845101981" 
-                                            alt="TikTok"
-                                            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-                                            loading="lazy"
-                                            decoding="async"
-                                            width="40"
-                                            height="40"
-                                        />
-                                        <span className="text-xs font-medium text-gray-700">TikTok</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <button
-                                onClick={() => setShowReferModal(false)}
-                                className="w-full px-4 py-2 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors text-sm"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modals */}
-            {showReviewModal && (
-                <AnonymousReviewModal
-                    providerName={therapist.name}
-                    providerId={therapist.$id || therapist.id}
-                    providerType="therapist"
-                    providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
-                    onClose={() => setShowReviewModal(false)}
-                    onSubmit={handleAnonymousReviewSubmit}
-                />
-            )}
-
-            {showBookingPopup && (
-                <BookingPopup
-                    isOpen={showBookingPopup}
-                    onClose={() => {
-                        setShowBookingPopup(false);
-                        setPriceSliderBookingSource('quick-book'); // Reset source
-                    }}
-                    therapistId={String(therapist.id)}
-                    therapistName={therapist.name}
-                    profilePicture={therapist.profilePicture || therapist.mainImage}
-                    providerType="therapist"
-                    pricing={{
-                        "60": pricing["60"],
-                        "90": pricing["90"],
-                        "120": pricing["120"]
-                    }}
-                    discountPercentage={therapist.discountPercentage || 0}
-                    discountActive={isDiscountActive(therapist)}
-                    initialDuration={selectedDuration ? parseInt(selectedDuration) : undefined}
-                    bookingSource={priceSliderBookingSource}
-                />
-            )}
-
-            {showScheduleBookingPopup && (
-                <ScheduleBookingPopup
-                    isOpen={showScheduleBookingPopup}
-                    onClose={() => setShowScheduleBookingPopup(false)}
-                    therapistId={String(therapist.id)}
-                    therapistName={therapist.name}
-                    therapistType="therapist"
-                    therapistStatus={displayStatus.toLowerCase() as 'available' | 'busy' | 'offline'}
-                    profilePicture={therapist.profilePicture || therapist.mainImage}
-                    isImmediateBooking={true}
-                    pricing={{
-                        "60": pricing["60"],
-                        "90": pricing["90"],
-                        "120": pricing["120"]
-                    }}
-                    providerRating={effectiveRating}
-                    discountPercentage={therapist.discountPercentage || 0}
-                    discountActive={isDiscountActive(therapist)}
-                />
-            )}
-
-            {showSharePopup && (
-                <SocialSharePopup
-                    isOpen={showSharePopup}
-                    onClose={() => {
-                        console.log('🚪 Closing share popup');
-                        setShowSharePopup(false);
-                    }}
-                    title={`Share My Profile`}
-                    description={`${therapist.name} - Professional massage therapist in ${therapist.location}. Book now on IndaStreet!`}
-                    url={(() => {
-                        const finalUrl = userReferralCode && shortShareUrl ? 
-                            `${shortShareUrl}?ref=${userReferralCode}` : 
-                            (shortShareUrl || generateShareableURL(therapist));
-                        console.log('🔗 Share popup URL:', finalUrl);
-                        return finalUrl;
-                    })()}
-                    type="therapist"
-                />
-            )}
-
-            {/* Therapist Join Popup */}
-            <TherapistJoinPopup
-                isOpen={showJoinPopup}
-                onClose={() => setShowJoinPopup(false)}
+            <TherapistModalsContainer
+                therapist={therapist}
+                showReviewModal={showReviewModal}
+                setShowReviewModal={setShowReviewModal}
+                showBusyModal={showBusyModal}
+                setShowBusyModal={setShowBusyModal}
+                showReferModal={showReferModal}
+                setShowReferModal={setShowReferModal}
+                showBookingPopup={showBookingPopup}
+                setShowBookingPopup={setShowBookingPopup}
+                showScheduleBookingPopup={showScheduleBookingPopup}
+                setShowScheduleBookingPopup={setShowScheduleBookingPopup}
+                showSharePopup={showSharePopup}
+                setShowSharePopup={setShowSharePopup}
+                showJoinPopup={showJoinPopup}
+                setShowJoinPopup={setShowJoinPopup}
+                pricing={pricing}
+                displayRating={displayRating}
+                effectiveRating={effectiveRating}
+                displayStatus={displayStatus}
+                selectedDuration={selectedDuration}
+                priceSliderBookingSource={priceSliderBookingSource}
+                setPriceSliderBookingSource={setPriceSliderBookingSource}
+                userReferralCode={userReferralCode}
+                shortShareUrl={shortShareUrl}
+                handleAnonymousReviewSubmit={handleAnonymousReviewSubmit}
             />
 
             {/* Report Profile Section - Footer Area */}

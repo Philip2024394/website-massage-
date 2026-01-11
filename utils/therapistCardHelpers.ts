@@ -46,7 +46,8 @@ export const getDisplayStatus = (therapist: Therapist): AvailabilityStatus => {
     }
 
     // Use availability field (has proper default) or status as fallback
-    const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Offline;
+    // Default to Available instead of Offline to prevent therapists going offline on refresh
+    const currentStatus = (therapist as any).availability || therapist.status || AvailabilityStatus.Available;
     
     // Debug status in development mode (reduced verbosity)
     if (process.env.NODE_ENV === 'development' && therapist.name && therapist.name.toLowerCase().includes('budi')) {

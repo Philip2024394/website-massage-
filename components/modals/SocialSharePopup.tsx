@@ -200,11 +200,11 @@ export default function SocialSharePopup({
                                 type="text"
                                 value={url}
                                 readOnly
-                                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                className="flex-1 px-3 sm:px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500 min-w-0"
                             />
                             <button
                                 onClick={handleCopyLink}
-                                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl min-w-[80px]"
+                                className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition-all transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl min-w-[70px] sm:min-w-[80px] flex-shrink-0"
                             >
                                 {showCopySuccess ? (
                                     <>
