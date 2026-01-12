@@ -178,13 +178,8 @@ const HomePage: React.FC<HomePageProps> = ({
     
     // FAB menu state
     const [fabMenuOpen, setFabMenuOpen] = useState(false);
-    const [showWomenReviews, setShowWomenReviews] = useState(false);
-    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-    const [showHelpFaq, setShowHelpFaq] = useState(false);
-    const [showTopTherapists, setShowTopTherapists] = useState(false);
-    const [showSpecialOffers, setShowSpecialOffers] = useState(false);
     
-    // Special Offers Modal States
+    // Special Offers State (for click-to-enlarge)
     const [selectedOffer, setSelectedOffer] = useState<any>(null);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
     
@@ -2064,6 +2059,455 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     </div>
                 )}
 
+                {/* ========== INLINE SECTIONS - ALL FAB CONTENT ON PAGE ========== */}
+                
+                {/* Women Reviews Section */}
+                <div id="women-reviews-section" className="mt-12 mb-8 bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-3 mb-6">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
+                            alt="Indastreet Logo" 
+                            className="w-24 h-24 md:w-32 md:h-32 object-contain"
+                        />
+                        <h3 className="text-2xl font-bold text-gray-900">
+                            {translationsObject?.home?.fabMenu?.womenReviews || 'Tops The Reviews'}
+                        </h3>
+                    </div>
+                    <div className="space-y-4">
+                        {/* Review 1 */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/avatar%2016.png?updatedAt=1764959984734" 
+                                    alt="Sarah M." 
+                                    className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900">Sarah M.</h4>
+                                        <span className="text-sm text-gray-500">2 days ago</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                        <span className="text-sm text-gray-600 ml-2">Traditional Balinese</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">
+                                "Amazing experience! As a solo female traveler, I felt completely safe. The therapist was professional, arrived on time, and the massage was exactly what I needed after days of exploring Ubud. Highly recommend for women traveling alone!"
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                                <span className="bg-white px-3 py-1 rounded-full">Ubud</span>
+                                <span className="bg-white px-3 py-1 rounded-full">Female Therapist</span>
+                            </div>
+                        </div>
+
+                        {/* Review 2 */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/avatar%204.png?updatedAt=1764959623724" 
+                                    alt="Jessica L." 
+                                    className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900">Jessica L.</h4>
+                                        <span className="text-sm text-gray-500">5 days ago</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                        <span className="text-sm text-gray-600 ml-2">Prenatal Massage</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">
+                                "I'm 7 months pregnant and was worried about finding a proper prenatal massage. The platform made it so easy to filter for certified prenatal therapists. She was gentle, knowledgeable, and made me feel so comfortable. Perfect!"
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                                <span className="bg-white px-3 py-1 rounded-full">Seminyak</span>
+                                <span className="bg-white px-3 py-1 rounded-full">Verified</span>
+                            </div>
+                        </div>
+
+                        {/* Review 3 */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/avatar%209.png?updatedAt=1764959762087" 
+                                    alt="Emma K." 
+                                    className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900">Emma K.</h4>
+                                        <span className="text-sm text-gray-500">1 week ago</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                        <span className="text-sm text-gray-600 ml-2">Deep Tissue</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">
+                                "I work remotely and have terrible back pain from sitting all day. The therapist knew exactly where the tension was and worked it out perfectly. GPS tracking gave me peace of mind. Will definitely book again!"
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                                <span className="bg-white px-3 py-1 rounded-full">Canggu</span>
+                                <span className="bg-white px-3 py-1 rounded-full">3+ Bookings</span>
+                            </div>
+                        </div>
+
+                        {/* Review 4 */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/avatar%202.png?updatedAt=1764959549336" 
+                                    alt="Priya S." 
+                                    className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900">Priya S.</h4>
+                                        <span className="text-sm text-gray-500">1 week ago</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                        <span className="text-sm text-gray-600 ml-2">Aromatherapy</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">
+                                "Best massage I've had in Bali! The aromatherapy oils were divine and the therapist was so professional. Being able to read reviews from other women made the decision easy. 100% recommend this platform!"
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                                <span className="bg-white px-3 py-1 rounded-full">Sanur</span>
+                                <span className="bg-white px-3 py-1 rounded-full">Female Therapist</span>
+                            </div>
+                        </div>
+
+                        {/* Review 5 */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                            <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/avatar%2014.png?updatedAt=1764959919170" 
+                                    alt="Mia T." 
+                                    className="w-12 h-12 rounded-full object-cover"
+                                />
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-semibold text-gray-900">Mia T.</h4>
+                                        <span className="text-sm text-gray-500">2 weeks ago</span>
+                                    </div>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                        <span className="text-sm text-gray-600 ml-2">Hot Stone Massage</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p className="text-gray-700 leading-relaxed">
+                                "Traveling with my girlfriends and we all booked massages together. The booking system was super easy, and the therapists arrived as a team. Everyone was professional and respectful. Great experience for our girls trip!"
+                            </p>
+                            <div className="flex items-center gap-2 mt-3 text-sm text-gray-600">
+                                <span className="bg-white px-3 py-1 rounded-full">Nusa Dua</span>
+                                <span className="bg-white px-3 py-1 rounded-full">Group Booking</span>
+                            </div>
+                        </div>
+
+                        {/* Trust Badge */}
+                        <div className="bg-gradient-to-r from-pink-100 to-purple-100 rounded-xl p-4 text-center border border-pink-200">
+                            <p className="text-sm font-medium text-gray-700">
+                                ✓ All therapists verified • GPS tracked • Real reviews • Safe for women travelers
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Advanced Search Section */}
+                <div id="advanced-search-section" className="mt-12 mb-8 bg-white rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        🔍 {translationsObject?.home?.fabMenu?.advancedSearch || 'Advanced Filters'}
+                    </h3>
+                    
+                    <div className="space-y-6">
+                        {/* Therapist Gender Section */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <span>👤</span> Therapist Gender
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => {
+                                        setSelectedTherapistGender(selectedTherapistGender === 'female' ? null : 'female');
+                                        setShowFemaleOnly(selectedTherapistGender !== 'female');
+                                    }}
+                                    className={`px-4 py-3 rounded-xl font-medium text-sm transition-all text-white ${
+                                        selectedTherapistGender === 'female'
+                                            ? 'bg-orange-500'
+                                            : 'bg-black'
+                                    }`}
+                                >
+                                    <div className="flex flex-col items-center gap-1">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/male_icon-removebg-preview.png" 
+                                            alt="Female" 
+                                            className="w-10 h-10 object-contain"
+                                        />
+                                        <span>Female</span>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedTherapistGender(selectedTherapistGender === 'male' ? null : 'male')}
+                                    className={`px-4 py-3 rounded-xl font-medium text-sm transition-all text-white ${
+                                        selectedTherapistGender === 'male'
+                                            ? 'bg-orange-500'
+                                            : 'bg-black'
+                                    }`}
+                                >
+                                    <div className="flex flex-col items-center gap-1">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/male_icon-removebg-preview.png" 
+                                            alt="Male" 
+                                            className="w-10 h-10 object-contain"
+                                        />
+                                        <span>Male</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-200"></div>
+
+                        {/* Service For Section */}
+                        <div>
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <span>⬤</span> Service For
+                            </h4>
+                            <div className="grid grid-cols-3 gap-3">
+                                <button
+                                    onClick={() => setSelectedServiceFor(selectedServiceFor === 'women' ? null : 'women')}
+                                    className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white border-2 border-gray-200 hover:border-orange-500"
+                                >
+                                    <div className="relative w-full h-full">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/male_sss-removebg-preview.png?updatedAt=1767917134858" 
+                                            alt="Female" 
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'women' ? 'text-orange-500' : 'text-gray-800'}`}>Female</span>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedServiceFor(selectedServiceFor === 'men' ? null : 'men')}
+                                    className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white border-2 border-gray-200 hover:border-orange-500"
+                                >
+                                    <div className="relative w-full h-full">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/male_ss-removebg-preview.png?updatedAt=1767916905973" 
+                                            alt="Men" 
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'men' ? 'text-orange-500' : 'text-gray-800'}`}>Men</span>
+                                    </div>
+                                </button>
+                                <button
+                                    onClick={() => setSelectedServiceFor(selectedServiceFor === 'children' ? null : 'children')}
+                                    className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white border-2 border-gray-200 hover:border-orange-500"
+                                >
+                                    <div className="relative w-full h-full">
+                                        <img 
+                                            src="https://ik.imagekit.io/7grri5v7d/male_ssss-removebg-preview.png?updatedAt=1767917265176" 
+                                            alt="Children" 
+                                            className="w-full h-full object-contain"
+                                        />
+                                        <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'children' ? 'text-orange-500' : 'text-gray-800'}`}>Children</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-gray-200"></div>
+
+                        {/* Reset Button */}
+                        <button
+                            onClick={() => {
+                                setSelectedTherapistGender(null);
+                                setSelectedServiceFor(null);
+                                setSelectedMassageType('');
+                                setSelectedSpecialFeature('');
+                                setPriceRange([100000, 450000]);
+                                setShowFemaleOnly(false);
+                            }}
+                            className="w-full px-6 py-3 rounded-xl font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-md transition-all"
+                        >
+                            Reset All Filters
+                        </button>
+                    </div>
+                </div>
+
+                {/* Help & FAQ Section */}
+                <div id="help-faq-section" className="mt-12 mb-8 bg-white rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        ❓ {translationsObject?.home?.fabMenu?.helpFaq || 'Help & FAQ'}
+                    </h3>
+                    <div className="space-y-4">
+                        {/* FAQ List */}
+                        <div className="space-y-3">
+                            <details className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <summary className="font-semibold text-gray-900 cursor-pointer">How do I book a therapist?</summary>
+                                <p className="text-gray-600 mt-2 text-sm">Browse therapists, click on their profile, and use the chat feature to discuss services and pricing. Once agreed, the therapist will create a booking for you.</p>
+                            </details>
+                            <details className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <summary className="font-semibold text-gray-900 cursor-pointer">Is it safe for solo travelers?</summary>
+                                <p className="text-gray-600 mt-2 text-sm">Yes! All therapists are verified, GPS tracked, and reviewed by real clients. You can filter for female therapists and read reviews from other women travelers.</p>
+                            </details>
+                            <details className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <summary className="font-semibold text-gray-900 cursor-pointer">What payment methods are accepted?</summary>
+                                <p className="text-gray-600 mt-2 text-sm">Payment is made directly to the therapist. Most accept cash (IDR), and some accept digital payments like GoPay or bank transfer.</p>
+                            </details>
+                            <details className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <summary className="font-semibold text-gray-900 cursor-pointer">Can I cancel a booking?</summary>
+                                <p className="text-gray-600 mt-2 text-sm">Cancellation policies vary by therapist. We recommend discussing this when booking. Generally, 24-hour notice is appreciated.</p>
+                            </details>
+                            <details className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <summary className="font-semibold text-gray-900 cursor-pointer">How do I contact support?</summary>
+                                <p className="text-gray-600 mt-2 text-sm">Email us at support@indastreet.com or use the WhatsApp button. We respond within 24-48 hours.</p>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Top 5 Therapists Section */}
+                <div id="top-therapists-section" className="mt-12 mb-8 bg-white rounded-2xl p-6 shadow-lg">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        🏆 {translationsObject?.home?.fabMenu?.topTherapists || 'Top 5 Therapists'}
+                    </h3>
+                    <div className="space-y-4">
+                        {therapists
+                            .filter((t: any) => t.isLive === true)
+                            .sort((a: any, b: any) => {
+                                const aBookings = bookingService.getBookingsCount(String(a.$id || a.id), 'therapist');
+                                const bBookings = bookingService.getBookingsCount(String(b.$id || b.id), 'therapist');
+                                return (bBookings as any) - (aBookings as any);
+                            })
+                            .slice(0, 5)
+                            .map((therapist: any, index: number) => (
+                                <div key={therapist.$id || therapist.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-orange-300 transition-all">
+                                    <div className="flex-shrink-0 font-bold text-2xl text-orange-500 w-8">
+                                        #{index + 1}
+                                    </div>
+                                    <img 
+                                        src={(therapist as any).profilePicture || (therapist as any).mainImage || '/default-avatar.jpg'}
+                                        alt={therapist.name}
+                                        className="w-16 h-16 rounded-full object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-gray-900">{therapist.name}</h4>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <span className="flex items-center gap-1">
+                                                <span className="text-yellow-500">⭐</span>
+                                                {getDisplayRating(therapist.rating, therapist.reviewCount).toFixed(1)}
+                                            </span>
+                                            <span>•</span>
+                                            <span>{bookingService.getBookingsCount(String(therapist.$id || therapist.id), 'therapist')}+ bookings</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            onSelectTherapist?.(therapist);
+                                            const therapistId = therapist.id || therapist.$id;
+                                            const slug = therapist.name?.toLowerCase().replace(/\s+/g, '-') || 'therapist';
+                                            const profileUrl = `/profile/therapist/${therapistId}-${slug}`;
+                                            window.history.pushState({}, '', profileUrl);
+                                            onNavigate?.('therapist-profile');
+                                        }}
+                                        className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors"
+                                    >
+                                        View Profile
+                                    </button>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+
+                {/* Special Offers Section */}
+                <div id="special-offers-section" className="mt-12 mb-8 bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-3 mb-2">
+                        <img 
+                            src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
+                            alt="Indastreet" 
+                            className="w-[113px] h-[113px] object-contain"
+                        />
+                        <div>
+                            <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                ⭐ Special Offers
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                                Indastreet Welcomes all new customers with special booking discounts
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Info Banner */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 text-sm text-blue-800">
+                        <span className="font-semibold">ℹ️ How to use:</span> Each offer can be used once per WhatsApp number. Click to enlarge and share with friends!
+                    </div>
+                    
+                    {/* Offers Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                            { id: 1, code: 'Ids-120', discount: '7%', title: '120 Minute Booking', description: '7% off any 120-minute massage booking', condition: 'Valid for first-time use of this code', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%206.png' },
+                            { id: 2, code: 'Ids-710', discount: '10%', title: 'Scheduled Booking', description: '10% off bookings made 24 hours in advance', condition: 'Valid for pre-scheduled appointments only', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%203.png' },
+                            { id: 3, code: 'Ids-808', discount: '8%', title: 'Hotel & Villa', description: '8% off massage at your hotel or villa', condition: 'Valid for accommodation bookings', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%2010.png' },
+                            { id: 4, code: 'Ids-505', discount: '5%', title: 'All Services', description: '5% off all massage service prices', condition: 'Valid for any massage service', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%209.png' },
+                            { id: 5, code: 'Ids-305', discount: '5%', title: 'Coin Rub Massage', description: '5% off traditional coin rub therapy', condition: 'Valid for coin rub massage only', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%208.png' },
+                            { id: 6, code: 'Ids-910', discount: '10%', title: 'Traditional Massage', description: '10% off traditional Balinese massage', condition: 'Valid for traditional massage bookings', image: 'https://ik.imagekit.io/7grri5v7d/massage%20type%207.png' }
+                        ].map(offer => (
+                            <div key={offer.id} className="bg-white rounded-xl p-4 border-2 border-orange-200 hover:border-orange-400 transition-all cursor-pointer" onClick={() => setSelectedOffer(offer)}>
+                                <img src={offer.image} alt={offer.title} className="w-full h-40 object-cover rounded-lg mb-3" />
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-2xl font-bold text-orange-600">{offer.discount} OFF</span>
+                                    <span className="px-3 py-1 bg-orange-100 text-orange-700 text-sm font-bold rounded-full">{offer.code}</span>
+                                </div>
+                                <h4 className="font-bold text-gray-900 mb-1">{offer.title}</h4>
+                                <p className="text-sm text-gray-600">{offer.description}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Enlarged Offer Modal */}
+                {selectedOffer && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-[80] flex items-center justify-center p-4" onClick={() => { setSelectedOffer(null); setCopiedCode(null); }}>
+                        <div className="bg-white rounded-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+                            <button onClick={() => { setSelectedOffer(null); setCopiedCode(null); }} className="float-right text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                            <img src={selectedOffer.image} alt={selectedOffer.title} className="w-full h-64 object-cover rounded-lg mb-4" />
+                            <div className="text-center mb-4">
+                                <span className="text-4xl font-bold text-orange-600">{selectedOffer.discount} OFF</span>
+                                <h3 className="text-xl font-bold text-gray-900 mt-2">{selectedOffer.title}</h3>
+                                <p className="text-gray-600 mt-1">{selectedOffer.description}</p>
+                                <p className="text-sm text-gray-500 mt-2">{selectedOffer.condition}</p>
+                            </div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <input type="text" value={selectedOffer.code} readOnly className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg text-center font-bold text-lg" />
+                                <button onClick={() => { navigator.clipboard.writeText(selectedOffer.code); setCopiedCode(selectedOffer.code); }} className={`px-4 py-2 rounded-lg font-medium transition-all ${copiedCode === selectedOffer.code ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}>
+                                    {copiedCode === selectedOffer.code ? '✓' : 'Copy'}
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button onClick={() => window.open(`https://wa.me/?text=Check out this ${selectedOffer.discount} discount on Indastreet! Code: ${selectedOffer.code} - https://indastreet.com`, '_blank')} className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600">
+                                    📱 WhatsApp
+                                </button>
+                                <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=https://indastreet.com`, '_blank')} className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+                                    📘 Facebook
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Rating Modal */}
                 {showRatingModal && selectedRatingItem && (
                     <RatingModal
@@ -2529,8 +2973,15 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 </div>
             )}
 
-            {/* Women Reviews Modal */}
-            {showWomenReviews && (
+            {/* Frosted glass backdrop when menu is open */}
+            {activeTab === 'home' && fabMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[55] transition-all duration-300"
+                    onClick={() => setFabMenuOpen(false)}
+                />
+            )}
+
+            {/* Collapsible FAB Menu - Bottom Right - Homepage Only */}
                 <div 
                     className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
                     onClick={() => setShowWomenReviews(false)}
@@ -2716,7 +3167,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     onClick={() => setShowAdvancedSearch(false)}
                 >
                     <div 
-                        className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        className="bg-white rounded-2xl max-w-lg w-full max-h-[75vh] overflow-y-auto shadow-2xl animate-slideUp"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="p-4 md:p-6">
@@ -2791,7 +3242,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     <div className="grid grid-cols-3 gap-3">
                                         <button
                                             onClick={() => setSelectedServiceFor(selectedServiceFor === 'women' ? null : 'women')}
-                                            className="p-2 rounded-xl font-medium text-sm transition-all h-32 bg-white"
+                                            className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white"
                                         >
                                             <div className="relative w-full h-full">
                                                 <img 
@@ -2799,12 +3250,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                     alt="Female" 
                                                     className="w-full h-full object-contain"
                                                 />
-                                                <span className={`absolute bottom-[20px] left-0 right-0 text-center font-semibold ${selectedServiceFor === 'women' ? 'text-orange-500' : 'text-white'}`}>Female</span>
+                                                <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'women' ? 'text-orange-500' : 'text-gray-800'}`}>Female</span>
                                             </div>
                                         </button>
                                         <button
                                             onClick={() => setSelectedServiceFor(selectedServiceFor === 'men' ? null : 'men')}
-                                            className="p-2 rounded-xl font-medium text-sm transition-all h-32 bg-white"
+                                            className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white"
                                         >
                                             <div className="relative w-full h-full">
                                                 <img 
@@ -2812,12 +3263,12 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                     alt="Men" 
                                                     className="w-full h-full object-contain"
                                                 />
-                                                <span className={`absolute bottom-[20px] left-0 right-0 text-center font-semibold ${selectedServiceFor === 'men' ? 'text-orange-500' : 'text-white'}`}>Men</span>
+                                                <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'men' ? 'text-orange-500' : 'text-gray-800'}`}>Men</span>
                                             </div>
                                         </button>
                                         <button
                                             onClick={() => setSelectedServiceFor(selectedServiceFor === 'children' ? null : 'children')}
-                                            className="p-2 rounded-xl font-medium text-sm transition-all h-32 bg-white"
+                                            className="p-2 rounded-xl font-medium text-sm transition-all h-24 bg-white"
                                         >
                                             <div className="relative w-full h-full">
                                                 <img 
@@ -2825,7 +3276,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                                     alt="Children" 
                                                     className="w-full h-full object-contain"
                                                 />
-                                                <span className={`absolute bottom-[20px] left-0 right-0 text-center font-semibold ${selectedServiceFor === 'children' ? 'text-orange-500' : 'text-white'}`}>Children</span>
+                                                <span className={`absolute bottom-0 left-0 right-0 text-center font-bold text-xs ${selectedServiceFor === 'children' ? 'text-orange-500' : 'text-gray-800'}`}>Children</span>
                                             </div>
                                         </button>
                                     </div>
@@ -3711,7 +4162,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             {/* Advanced Search - Moved to top */}
                             <button
                                 onClick={() => {
-                                    setShowAdvancedSearch(true);
+                                    document.getElementById('advanced-search-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     setFabMenuOpen(false);
                                 }}
                                 className="bg-gray-100 hover:bg-gray-200 shadow-lg rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105"
@@ -3726,7 +4177,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             {/* Women Reviews */}
                             <button
                                 onClick={() => {
-                                    setShowWomenReviews(true);
+                                    document.getElementById('women-reviews-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     setFabMenuOpen(false);
                                 }}
                                 className="bg-gray-100 hover:bg-gray-200 shadow-lg rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105"
@@ -3741,7 +4192,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             {/* Help & FAQ */}
                             <button
                                 onClick={() => {
-                                    setShowHelpFaq(true);
+                                    document.getElementById('help-faq-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     setFabMenuOpen(false);
                                 }}
                                 className="bg-gray-100 hover:bg-gray-200 shadow-lg rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105"
@@ -3756,7 +4207,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             {/* Top 5 Therapists */}
                             <button
                                 onClick={() => {
-                                    setShowTopTherapists(true);
+                                    document.getElementById('top-therapists-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     setFabMenuOpen(false);
                                 }}
                                 className="bg-gray-100 hover:bg-gray-200 shadow-lg rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105"
@@ -3771,7 +4222,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             {/* Special Offers */}
                             <button
                                 onClick={() => {
-                                    setShowSpecialOffers(true);
+                                    document.getElementById('special-offers-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     setFabMenuOpen(false);
                                 }}
                                 className="bg-gray-100 hover:bg-gray-200 shadow-lg rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105"
