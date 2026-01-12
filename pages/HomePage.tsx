@@ -2531,21 +2531,27 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* Women Reviews Modal */}
             {showWomenReviews && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl animate-slideUp">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={() => setShowWomenReviews(false)}
+                >
+                    <div 
+                        className="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 md:p-6">
+                            <div className="flex justify-between items-center mb-4 md:mb-6">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900 flex items-center gap-3">
                                     <img 
                                         src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
                                         alt="Indastreet Logo" 
-                                        className="w-32 h-32 object-contain"
+                                        className="w-24 h-24 md:w-32 md:h-32 object-contain"
                                     />
-                                    {translationsObject?.home?.fabMenu?.womenReviews || 'Tops The Reviews'}
+                                    <span className="text-base md:text-2xl">{translationsObject?.home?.fabMenu?.womenReviews || 'Tops The Reviews'}</span>
                                 </h3>
                                 <button
                                     onClick={() => setShowWomenReviews(false)}
-                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                    className="text-gray-500 hover:text-gray-700 text-2xl flex-shrink-0"
                                 >
                                     ×
                                 </button>
@@ -2705,17 +2711,23 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* Advanced Search Modal */}
             {showAdvancedSearch && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp">
-                        <div className="p-6">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={() => setShowAdvancedSearch(false)}
+                >
+                    <div 
+                        className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 md:p-6">
                             {/* Header */}
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-bold text-gray-900">
+                            <div className="flex justify-between items-center mb-4 md:mb-6">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900">
                                     🔍 {translationsObject?.home?.fabMenu?.advancedSearch || 'Advanced Filters'}
                                 </h3>
                                 <button
                                     onClick={() => setShowAdvancedSearch(false)}
-                                    className="text-gray-400 hover:text-gray-600 text-3xl leading-none"
+                                    className="text-gray-400 hover:text-gray-600 text-3xl leading-none flex-shrink-0"
                                 >
                                     ×
                                 </button>
@@ -2995,16 +3007,22 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* Help & FAQ Modal */}
             {showHelpFaq && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-                                <h3 className="text-2xl font-bold text-gray-900">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={() => setShowHelpFaq(false)}
+                >
+                    <div 
+                        className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 md:p-6">
+                            <div className="flex justify-between items-center mb-4 md:mb-6 border-b border-gray-200 pb-4">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900">
                                     ❓ {translationsObject?.home?.fabMenu?.helpFaq || 'Help & FAQ'}
                                 </h3>
                                 <button
                                     onClick={() => setShowHelpFaq(false)}
-                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                    className="text-gray-500 hover:text-gray-700 text-2xl flex-shrink-0"
                                 >
                                     ×
                                 </button>
@@ -3150,16 +3168,22 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* Top 5 Therapists Modal */}
             {showTopTherapists && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp">
-                        <div className="p-6">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-bold text-gray-900">
-                                    🏆 {translationsObject?.home?.fabMenu?.topTherapists || 'Top 5 Therapists (Last 30 Days)'}
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={() => setShowTopTherapists(false)}
+                >
+                    <div 
+                        className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 md:p-6">
+                            <div className="flex justify-between items-center mb-4 md:mb-6">
+                                <h3 className="text-lg md:text-2xl font-bold text-gray-900">
+                                    🏆 {translationsObject?.home?.fabMenu?.topTherapists || 'Top 5 Therapists'}
                                 </h3>
                                 <button
                                     onClick={() => setShowTopTherapists(false)}
-                                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                                    className="text-gray-500 hover:text-gray-700 text-2xl flex-shrink-0"
                                 >
                                     ×
                                 </button>
@@ -3366,9 +3390,19 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* Special Offers Modal */}
             {showSpecialOffers && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp">
-                        <div className="p-6">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-[70] flex items-center justify-center p-4 animate-fadeIn"
+                    onClick={() => {
+                        setShowSpecialOffers(false);
+                        setSelectedOffer(null);
+                        setCopiedCode(null);
+                    }}
+                >
+                    <div 
+                        className="bg-white rounded-2xl max-w-4xl w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-slideUp"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-4 md:p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
                                     <img 
