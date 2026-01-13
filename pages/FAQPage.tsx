@@ -836,9 +836,10 @@ const FAQPage: React.FC<FAQPageProps> = ({
             {/* Footer */}
             <div className="mt-16">
                 <FloatingPageFooter 
-                currentLanguage={language as 'en' | 'id'}
-                onNavigate={onNavigate}
-            />
+                    currentLanguage={language as 'en' | 'id'}
+                    onNavigate={onNavigate}
+                />
+            </div>
 
             {/* Menu Drawer */}
             <AppDrawer
