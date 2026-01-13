@@ -608,6 +608,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
                             className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-orange-500 focus:outline-none transition-colors bg-white shadow-sm"
                         />
                     </div>
+                    </div>
                 </div>
             </section>
 
