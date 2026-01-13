@@ -134,6 +134,14 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'employer-info': '/employer-info',
     'payment-info': '/payment-info',
     
+    // Floating Pages
+    'women-reviews': '/women-reviews',
+    'advanced-search': '/advanced-search',
+    'help-faq': '/help-faq',
+    'top-therapists': '/top-therapists',
+    'special-offers': '/special-offers',
+    'video-center': '/video-center',
+    
     // Floating Button URLs
     'chat-support': '/chat/support',
     'booking-quick': '/booking/quick', 

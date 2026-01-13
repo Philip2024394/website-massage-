@@ -2618,6 +2618,21 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     {translationsObject?.home?.fabMenu?.specialOffers || 'Special Offers'}
                                 </span>
                             </button>
+                            
+                            {/* Video Center */}
+                            <button
+                                onClick={() => {
+                                    onNavigate?.('video-center');
+                                    setFabMenuOpen(false);
+                                }}
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                title={translationsObject?.home?.fabMenu?.videoCenter || 'Video Center'}
+                            >
+                                <span className="text-xl">🎥</span>
+                                <span className="text-sm font-medium text-white whitespace-nowrap">
+                                    {translationsObject?.home?.fabMenu?.videoCenter || 'Video Center'}
+                                </span>
+                            </button>
                         </div>
                     )}
                     

@@ -221,7 +221,13 @@ export type Page =
     | 'mobile-therapist-standards'
     | 'guest-alerts'
     | 'partner-settings'
-    | 'admin-login';
+    | 'admin-login'
+    | 'women-reviews'
+    | 'advanced-search'
+    | 'help-faq'
+    | 'top-therapists'
+    | 'special-offers'
+    | 'video-center';
 
 export type Language = 'en' | 'id' | 'gb';
 

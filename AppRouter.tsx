@@ -399,6 +399,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 language: props.language,
                 onNavigate: props.onNavigate
             });
+        
+        case 'video-center':
+            return renderRoute(publicRoutes.videoCenter.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
 
         // ===== JOIN ROUTES =====
         case 'joinIndastreet':

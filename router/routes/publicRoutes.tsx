@@ -24,6 +24,7 @@ const AdvancedSearchPage = lazy(() => import('../../pages/AdvancedSearchPage'));
 const HelpFaqPage = lazy(() => import('../../pages/HelpFaqPage'));
 const TopTherapistsPage = lazy(() => import('../../pages/TopTherapistsPage'));
 const SpecialOffersPage = lazy(() => import('../../pages/SpecialOffersPage'));
+const VideoCenterPage = lazy(() => import('../../pages/VideoCenterPage'));
 
 export const publicRoutes = {
   landing: {
@@ -110,6 +111,11 @@ export const publicRoutes = {
     path: '/special-offers',
     component: SpecialOffersPage,
     name: 'specialOffers'
+  },
+  videoCenter: {
+    path: '/video-center',
+    component: VideoCenterPage,
+    name: 'videoCenter'
   }
 };
 
