@@ -2543,14 +2543,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                 <>
                     {/* FAB Action Buttons - Fixed position above main button */}
                     {fabMenuOpen && (
-                        <div className="fixed bottom-[140px] right-6 flex flex-col gap-3 z-[60] animate-slideUp">
+                        <div className="fixed bottom-[140px] right-6 flex flex-col gap-3 z-[60] animate-slideUp pr-2">
                             {/* Advanced Search - Moved to top */}
                             <button
                                 onClick={() => {
                                     onNavigate?.('advanced-search');
                                     setFabMenuOpen(false);
                                 }}
-                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10"
+                                className="backdrop-blur-xl bg-black/70 hover:bg-black/80 shadow-2xl rounded-full px-4 py-3 flex items-center gap-2 transition-all duration-200 hover:scale-105 border border-white/10 will-change-transform"
                                 title={translationsObject?.home?.fabMenu?.advancedSearch || 'Advanced Search'}
                             >
                                 <span className="text-xl">🔍</span>
@@ -2637,14 +2637,14 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     )}
                     
                     {/* Main FAB Button */}
-                    <div className="fixed bottom-20 right-6 z-[60]">
+                    <div className="fixed bottom-20 right-6 z-[60] pr-2 pb-2">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             console.log('FAB Button clicked, current state:', fabMenuOpen);
                             setFabMenuOpen(!fabMenuOpen);
                         }}
-                        className={`w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 ${
+                        className={`w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 will-change-transform ${
                             fabMenuOpen 
                                 ? 'bg-orange-600 hover:bg-orange-700' 
                                 : 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 scale-100 hover:scale-110'

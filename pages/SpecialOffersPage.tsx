@@ -264,7 +264,7 @@ const SpecialOffersPage: React.FC<SpecialOffersPageProps> = ({ t, language = 'en
                     {/* Back Arrow Button */}
                     <button
                         onClick={() => onNavigate?.('home')}
-                        className="mt-5 mb-4 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+                        className="mt-5 mb-4 ml-2 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110 will-change-transform"
                         title="Back to Home"
                     >
                         <ArrowLeft className="w-6 h-6" />
