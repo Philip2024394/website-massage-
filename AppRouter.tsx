@@ -362,6 +362,43 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'discounts':
             return renderRoute(publicRoutes.discounts.component);
+        
+        case 'women-reviews':
+            return renderRoute(publicRoutes.womenReviews.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
+        
+        case 'advanced-search':
+            return renderRoute(publicRoutes.advancedSearch.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
+        
+        case 'help-faq':
+            return renderRoute(publicRoutes.helpFaq.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
+        
+        case 'top-therapists':
+            return renderRoute(publicRoutes.topTherapists.component, {
+                t: t,
+                language: props.language,
+                therapists: props.therapists,
+                onNavigate: props.onNavigate,
+                onSelectTherapist: props.handleSetSelectedTherapist
+            });
+        
+        case 'special-offers':
+            return renderRoute(publicRoutes.specialOffers.component, {
+                t: t,
+                language: props.language,
+                onNavigate: props.onNavigate
+            });
 
         // ===== JOIN ROUTES =====
         case 'joinIndastreet':
@@ -925,6 +962,36 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         
         case 'customer-support':
             return renderRoute(CustomerSupportPage);
+            
+        // ===== FLOATING BUTTON ROUTES =====
+        case 'chat-support':
+            return renderRoute(CustomerSupportPage, {
+                defaultTab: 'chat',
+                source: 'floating-button'
+            });
+            
+        case 'booking-quick':
+            return renderRoute(BookingPage, {
+                quickMode: true,
+                source: 'floating-button'
+            });
+            
+        case 'emergency-contact':
+            return renderRoute(CustomerSupportPage, {
+                emergencyMode: true,
+                source: 'floating-button'
+            });
+            
+        case 'help':
+            return renderRoute(publicRoutes.faq.component, {
+                source: 'floating-button'
+            });
+            
+        case 'feedback':
+            return renderRoute(CustomerSupportPage, {
+                defaultTab: 'feedback',
+                source: 'floating-button'
+            });
         
         case 'place-discount-badge':
             return renderRoute(PlaceDiscountBadgePage);

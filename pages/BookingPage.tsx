@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import type { Therapist, Place, Booking } from '../types';
 import Button from '../components/Button';
 
@@ -83,10 +84,12 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
     return (
         <div className="p-4 bg-gray-50 min-h-screen">
             <header className="flex items-center mb-6">
-                <button onClick={onBack} className="text-gray-600 hover:text-gray-800 mr-4">
-                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
+                <button 
+                    onClick={onBack} 
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group mr-4"
+                >
+                    <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                    <span className="font-medium">Back</span>
                 </button>
                 <h1 className="text-xl font-bold text-gray-800 truncate">{t.title.replace('{name}', provider.name)}</h1>
             </header>

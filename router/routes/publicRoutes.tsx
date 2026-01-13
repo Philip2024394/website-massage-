@@ -19,6 +19,11 @@ const FacialTypesPage = lazy(() => import('../../pages/FacialTypesPage'));
 const CustomerProvidersPage = lazy(() => import('../../pages/CustomerProvidersPage'));
 const FacialProvidersPage = lazy(() => import('../../pages/FacialProvidersPage'));
 const TodaysDiscountsPage = lazy(() => import('../../pages/TodaysDiscountsPage'));
+const WomenReviewsPage = lazy(() => import('../../pages/WomenReviewsPage'));
+const AdvancedSearchPage = lazy(() => import('../../pages/AdvancedSearchPage'));
+const HelpFaqPage = lazy(() => import('../../pages/HelpFaqPage'));
+const TopTherapistsPage = lazy(() => import('../../pages/TopTherapistsPage'));
+const SpecialOffersPage = lazy(() => import('../../pages/SpecialOffersPage'));
 
 export const publicRoutes = {
   landing: {
@@ -80,6 +85,31 @@ export const publicRoutes = {
     path: '/discounts',
     component: TodaysDiscountsPage,
     name: 'discounts'
+  },
+  womenReviews: {
+    path: '/women-reviews',
+    component: WomenReviewsPage,
+    name: 'womenReviews'
+  },
+  advancedSearch: {
+    path: '/advanced-search',
+    component: AdvancedSearchPage,
+    name: 'advancedSearch'
+  },
+  helpFaq: {
+    path: '/help-faq',
+    component: HelpFaqPage,
+    name: 'helpFaq'
+  },
+  topTherapists: {
+    path: '/top-therapists',
+    component: TopTherapistsPage,
+    name: 'topTherapists'
+  },
+  specialOffers: {
+    path: '/special-offers',
+    component: SpecialOffersPage,
+    name: 'specialOffers'
   }
 };
 

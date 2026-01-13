@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
@@ -72,13 +73,26 @@ const AboutUsPage: React.FC<AboutUsPageProps> = ({
                 }}
             >
                 <div className="absolute inset-0 bg-black/20"></div>
-                <div className="max-w-6xl mx-auto px-4 relative z-10 text-center">
-                    <h1 className="text-6xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        <span className="text-white">Inda</span><span className="text-orange-400">street</span>
-                    </h1>
-                    <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                <div className="max-w-6xl mx-auto px-4 relative z-10">
+                    {/* Back Arrow */}
+                    <button
+                        onClick={() => onNavigate?.('home')}
+                        className="flex items-center gap-2 mb-8 text-white/90 hover:text-white transition-colors group"
+                    >
+                        <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                        <span className="font-medium">
+                            {language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
+                        </span>
+                    </button>
+                    
+                    <div className="text-center">
+                        <h1 className="text-6xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                            <span className="text-white">Inda</span><span className="text-orange-400">street</span>
+                        </h1>
+                        <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                         {t('about.subtitle') || "Indonesia's First Comprehensive Wellness Marketplace Connecting Therapists, Hotels, and Employers"}
-                    </p>
+                        </p>
+                    </div>
                 </div>
             </div>
 

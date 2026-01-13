@@ -97,9 +97,12 @@ function CompanyProfilePage({ onBack, t, language }: CompanyProfilePageProps) {
             </h1>
             <button 
               onClick={onBack}
-              className="p-2 rounded-lg transition-colors text-gray-700 hover:text-orange-500 hover:bg-orange-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group p-2 rounded-lg hover:bg-gray-100"
             >
-              <Home className="w-5 h-5 text-orange-600" />
+              <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+              <span className="font-medium hidden sm:inline">
+                {language === 'id' ? 'Kembali' : 'Back'}
+              </span>
             </button>
           </div>
         </PageContainer>

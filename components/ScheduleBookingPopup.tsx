@@ -11,6 +11,9 @@ import { useBookingForm } from '../booking/useBookingForm';
 import { useTimeSlots } from '../booking/useTimeSlots';
 import { useBookingSubmit } from '../booking/useBookingSubmit';
 import { useChatContext } from '../context/ChatProvider';  // NEW: Import ChatProvider hook
+import ScheduledBookingDepositPopup from './ScheduledBookingDepositPopup';
+import DateChangeRequestModal from './DateChangeRequestModal';
+import { scheduledBookingService } from '../lib/services/scheduledBookingService';
 
 // Extend window type
 declare global {
@@ -80,6 +83,11 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   // NEW: Get ChatProvider functions
   const { openBookingChat } = useChatContext();
 
+  // Deposit popup states
+  const [showDepositPopup, setShowDepositPopup] = useState(false);
+  const [showDateChangeModal, setShowDateChangeModal] = useState(false);
+  const [pendingBookingData, setPendingBookingData] = useState<any>(null);
+
   // Initialize form state hook
   const formState = useBookingForm();
   const {
@@ -99,7 +107,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
   // Initialize time slots hook
   const { timeSlots } = useTimeSlots(isOpen, therapistId, therapistType, step, selectedDuration);
 
-  // Initialize booking submit hook (no longer needs onBookingSuccess callback)
+  // Initialize booking submit hook with deposit requirement for scheduled bookings
   const handleCreateBooking = useBookingSubmit(
     pricing,
     therapistId,
@@ -107,7 +115,8 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
     therapistType,
     profilePicture,
     hotelVillaId,
-    isImmediateBooking
+    isImmediateBooking,
+    { requireDeposit: !isImmediateBooking, depositPercentage: 50 }
   );
 
   const ratingValue = typeof providerRating === 'number' && providerRating > 0 ? providerRating.toFixed(1) : null;
@@ -152,6 +161,69 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
       label: '120 min' 
     }
   ];
+
+  // Deposit handling functions
+  const handleDepositConfirmation = async (depositData: any) => {
+    try {
+      if (!pendingBookingData) return;
+
+      // Create the booking first
+      const bookingResult = await handleCreateBooking(
+        pendingBookingData.formData,
+        { setError, setIsCreating, onClose: () => {}, resetForm }
+      );
+
+      if (bookingResult?.success) {
+        // Create deposit requirement
+        await scheduledBookingService.createDepositRequirement(
+          bookingResult.bookingId,
+          pendingBookingData.userId,
+          therapistId,
+          pendingBookingData.totalPrice,
+          50, // 50% deposit
+          {
+            originalBookingDate: pendingBookingData.formData.selectedTime.date,
+            originalBookingTime: pendingBookingData.formData.selectedTime.time,
+            serviceDuration: pendingBookingData.formData.selectedDuration,
+            totalBookingPrice: pendingBookingData.totalPrice,
+            therapistName,
+            location: hotelVillaName || 'Your Location'
+          }
+        );
+
+        // Upload payment proof if provided
+        if (depositData.paymentProof) {
+          await scheduledBookingService.uploadPaymentProof(
+            bookingResult.bookingId,
+            depositData.paymentProof
+          );
+        }
+
+        showToast('✅ Booking created! Deposit verification pending', 'success');
+        setShowDepositPopup(false);
+        setPendingBookingData(null);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error confirming deposit:', error);
+      showToast('❌ Failed to process deposit', 'error');
+    }
+  };
+
+  const handleScheduledBooking = async (formData: any) => {
+    // For scheduled bookings, show deposit popup first
+    const selectedDurationData = durations.find(d => d.minutes === formData.selectedDuration);
+    const totalPrice = selectedDurationData?.price || 0;
+
+    const bookingData = {
+      formData,
+      totalPrice,
+      userId: 'current-user-id' // You'll need to get this from your auth context
+    };
+
+    setPendingBookingData(bookingData);
+    setShowDepositPopup(true);
+  };
 
   if (!isOpen) return null;
 
@@ -442,10 +514,18 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
               </div>
 
               <button
-                onClick={() => handleCreateBooking(
-                  { selectedDuration, selectedTime, customerName, customerWhatsApp, roomNumber, selectedAvatar },
-                  { setError, setIsCreating, onClose, resetForm }
-                )}
+                onClick={() => {
+                  if (isImmediateBooking) {
+                    // Immediate booking - no deposit required
+                    handleCreateBooking(
+                      { selectedDuration, selectedTime, customerName, customerWhatsApp, roomNumber, selectedAvatar },
+                      { setError, setIsCreating, onClose, resetForm }
+                    );
+                  } else {
+                    // Scheduled booking - require deposit
+                    handleScheduledBooking({ selectedDuration, selectedTime, customerName, customerWhatsApp, roomNumber, selectedAvatar });
+                  }
+                }}
                 disabled={!customerName || !customerWhatsApp || isCreating}
                 className={`w-full py-3 rounded-lg font-bold text-white ${
                   customerName && customerWhatsApp && !isCreating
@@ -453,12 +533,62 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                     : 'bg-gray-300 cursor-not-allowed'
                 }`}
               >
-                {isCreating ? 'Sending...' : '✅ Book Now'}
+                {isCreating ? 'Processing...' : (isImmediateBooking ? '✅ Book Now' : '💳 Secure with Deposit')}
               </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Scheduled Booking Deposit Popup */}
+      {showDepositPopup && pendingBookingData && (
+        <ScheduledBookingDepositPopup
+          isOpen={showDepositPopup}
+          onClose={() => {
+            setShowDepositPopup(false);
+            setPendingBookingData(null);
+          }}
+          onConfirmDeposit={handleDepositConfirmation}
+          bookingDetails={{
+            therapistName,
+            serviceDuration: pendingBookingData.formData.selectedDuration,
+            totalPrice: pendingBookingData.totalPrice,
+            scheduledDate: pendingBookingData.formData.selectedTime?.date || '',
+            scheduledTime: pendingBookingData.formData.selectedTime?.time || '',
+            location: hotelVillaName || 'Your Location'
+          }}
+          depositPercentage={50}
+        />
+      )}
+
+      {/* Date Change Request Modal */}
+      {showDateChangeModal && (
+        <DateChangeRequestModal
+          isOpen={showDateChangeModal}
+          onClose={() => setShowDateChangeModal(false)}
+          onSubmitRequest={async (requestData) => {
+            try {
+              // Handle date change request submission
+              console.log('Date change request:', requestData);
+              showToast('✅ Date change request submitted', 'success');
+              setShowDateChangeModal(false);
+            } catch (error) {
+              console.error('Error submitting date change request:', error);
+              showToast('❌ Failed to submit request', 'error');
+            }
+          }}
+          booking={{
+            id: 'current-booking-id',
+            therapistName,
+            therapistId,
+            currentDate: new Date().toISOString().split('T')[0],
+            currentTime: '10:00',
+            serviceDuration: selectedDuration,
+            depositAmount: 125000,
+            location: hotelVillaName || 'Your Location'
+          }}
+        />
+      )}
     </div>
   );
 };

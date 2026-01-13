@@ -476,10 +476,11 @@ const CustomerBookingPage: React.FC<CustomerBookingPageProps> = ({ therapist, on
                 </div>
               </div>
               <ul className="text-xs text-red-800 space-y-2 ml-7">
-                <li>• <strong>Deposits are NON-REFUNDABLE</strong></li>
-                <li>• <strong>NO RESCHEDULING allowed</strong></li>
-                <li>• To change date/time, you must make a NEW booking</li>
-                <li>• Payment is required to confirm appointment</li>
+                <li>• <strong>Deposits are NON-REFUNDABLE</strong> under any circumstances</li>
+                <li>• <strong>Date changes allowed</strong> with advance notice and therapist agreement</li>
+                <li>• Time slots can be booked outside calendar window with approval</li>
+                <li>• Deposit required to confirm scheduled appointment</li>
+                <li>• Remaining amount paid after service completion</li>
               </ul>
             </div>
 

@@ -41,22 +41,42 @@ if (isAdminMode) {
   // 🔥 DEVELOPMENT MODE: Force unregister ALL service workers and clear caches
   if ('serviceWorker' in navigator && import.meta.env.DEV) {
     logger.log('🧹 DEV MODE: Unregistering all service workers and clearing caches...');
+    
+    // Force immediate unregistration
     navigator.serviceWorker.getRegistrations().then((registrations) => {
-      registrations.forEach((registration) => {
-        registration.unregister().then((success) => {
+      const unregisterPromises = registrations.map((registration) => {
+        return registration.unregister().then((success) => {
           if (success) logger.log('✅ Service worker unregistered:', registration.scope);
+          return success;
         });
+      });
+      
+      Promise.all(unregisterPromises).then(() => {
+        logger.log('✅ All service workers unregistered');
       });
     });
     
-    // Clear all caches
+    // Clear all caches immediately
     caches.keys().then((cacheNames) => {
-      cacheNames.forEach((cacheName) => {
-        caches.delete(cacheName).then(() => {
+      const deletePromises = cacheNames.map((cacheName) => {
+        return caches.delete(cacheName).then(() => {
           logger.log('🗑️ Cache deleted:', cacheName);
         });
       });
+      
+      Promise.all(deletePromises).then(() => {
+        logger.log('✅ All caches cleared');
+      });
     });
+    
+    // Clear localStorage dev flags
+    try {
+      localStorage.removeItem('sw-version');
+      localStorage.removeItem('app-version');
+      logger.log('✅ Cleared version flags');
+    } catch (e) {
+      // Ignore localStorage errors
+    }
   }
   
   // 🚀 PRODUCTION MODE: Register Service Worker only in production
@@ -82,6 +102,38 @@ if (isAdminMode) {
   if (!root) {
     logger.error('Root element not found!');
   } else {
+    // Add dev mode indicator
+    if (import.meta.env.DEV) {
+      const devIndicator = document.createElement('div');
+      devIndicator.id = 'dev-mode-indicator';
+      devIndicator.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+          color: white;
+          padding: 8px 16px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 12px;
+          font-weight: 600;
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        ">
+          <span style="font-size: 16px;">🔧</span>
+          <span>DEV MODE - Cache Disabled | HMR Active | Service Worker Disabled</span>
+          <span style="font-size: 16px;">✨</span>
+        </div>
+      `;
+      document.body.insertBefore(devIndicator, document.body.firstChild);
+      logger.log('✅ Dev mode indicator added');
+    }
+    
     const reactRoot = ReactDOM.createRoot(root);
     reactRoot.render(
       <React.StrictMode>

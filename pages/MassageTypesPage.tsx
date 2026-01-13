@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { MASSAGE_TYPES_CATEGORIZED, getMassageTypeImage, getMassageTypeDetails } from '../constants';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
@@ -240,21 +241,23 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
                             <button 
                                 onClick={handleBackClick} 
                                 title="Back to Therapist Profile"
-                                className="hover:text-orange-500 transition-colors"
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
                             >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
+                                <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                                <span className="font-medium hidden sm:inline">
+                                    {language === 'id' ? 'Kembali' : 'Back'}
+                                </span>
                             </button>
                         ) : (
                             <button 
                                 onClick={() => onNavigate?.('home')} 
                                 title="Home"
-                                className="hover:text-orange-500 transition-colors"
+                                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
                             >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                                </svg>
+                                <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                                <span className="font-medium hidden sm:inline">
+                                    {language === 'id' ? 'Beranda' : 'Home'}
+                                </span>
                             </button>
                         )}
                         <button onClick={() => setIsMenuOpen(true)} title="Menu">

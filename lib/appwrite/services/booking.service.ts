@@ -555,5 +555,39 @@ export const bookingService = {
             console.error('Error cancelling booking:', error);
             throw error;
         }
+    },
+
+    /**
+     * Get bookings count for a provider (therapist or place)
+     */
+    async getBookingsCount(providerId: string, providerType: 'therapist' | 'place' = 'therapist'): Promise<number> {
+        try {
+            // Skip if bookings collection is disabled
+            if (!APPWRITE_CONFIG.collections.bookings || APPWRITE_CONFIG.collections.bookings === '') {
+                // Return 0 silently - collection doesn't exist yet
+                return 0;
+            }
+
+            const attribute = providerType === 'therapist' ? 'therapistId' : 'placeId';
+            const response = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings,
+                [
+                    Query.equal(attribute, providerId),
+                    Query.limit(1) // We only need the count, not the documents
+                ]
+            );
+
+            return response.total || 0;
+        } catch (error: any) {
+            // Handle 404 (collection not found) gracefully
+            if (error?.code === 404 || error?.message?.includes('Collection') || error?.message?.includes('could not be found')) {
+                // Collection doesn't exist - return 0 silently
+                return 0;
+            }
+            // Log other errors but still return 0 to prevent UI breaking
+            console.warn(`⚠️ Bookings count unavailable for ${providerType}:`, error?.message || error);
+            return 0;
+        }
     }
 };

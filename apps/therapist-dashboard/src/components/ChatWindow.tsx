@@ -391,7 +391,7 @@ export default function ChatWindow({
                 receiverId: customerId,
                 receiverName: customerName,
                 receiverRole: 'customer',
-                message: `💳 INFORMASI PEMBAYARAN\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Nama: ${bankDetails.accountHolderName}\n💰 Nomor Rekening: ${bankDetails.accountNumber}\n\n✅ Silakan transfer ke rekening di atas setelah layanan selesai.`,
+                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Name: ${bankDetails.accountHolderName}\n💰 Account: ${bankDetails.accountNumber}\n\n✅ Choose your preferred payment method after service completion.\n\n⚠️ For bank transfer: Please transfer exact amount and notify me when complete.`,
                 messageType: 'payment-card',
                 bookingId,
                 metadata: {
@@ -431,7 +431,7 @@ export default function ChatWindow({
                 receiverId: customerId,
                 receiverName: customerName,
                 receiverRole: 'customer',
-                message: `💳 INFORMASI PEMBAYARAN\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Nama: ${bankDetails.accountHolderName}\n💰 Nomor Rekening: ${bankDetails.accountNumber}\n\n✅ Booking dikonfirmasi! Silakan transfer ke rekening di atas setelah layanan selesai.`,
+                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Name: ${bankDetails.accountHolderName}\n💰 Account: ${bankDetails.accountNumber}\n\n✅ Booking confirmed! Choose payment method after service.\n\n⚠️ For transfers: Use exact amount and confirm when sent.`,
                 messageType: 'payment-card',
                 bookingId,
                 metadata: {
@@ -1054,14 +1054,46 @@ export default function ChatWindow({
                                     
                                     {/* Payment card display for payment-card messages */}
                                     {msg.messageType === 'payment-card' && msg.metadata?.paymentCard && (
-                                        <div className="mt-4 p-4 bg-white/50 rounded-xl border border-blue-200">
-                                            <PaymentCard
-                                                bankName={msg.metadata.paymentCard.bankName}
-                                                accountHolderName={msg.metadata.paymentCard.accountHolderName}
-                                                accountNumber={msg.metadata.paymentCard.accountNumber}
-                                                size="small"
-                                            />
+                        <div className="mt-4">
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                    </div>
+                                    <h4 className="font-bold text-green-900">Bank Transfer Details</h4>
+                                </div>
+                                
+                                <div className="bg-white rounded-lg p-4 space-y-3">
+                                    <div>
+                                        <label className="text-xs text-gray-500 font-medium uppercase tracking-wider">Bank</label>
+                                        <p className="font-bold text-gray-900">{msg.metadata.paymentCard.bankName}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 font-medium uppercase tracking-wider">Account Name</label>
+                                        <p className="font-bold text-gray-900">{msg.metadata.paymentCard.accountHolderName}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 font-medium uppercase tracking-wider">Account Number</label>
+                                        <p className="font-mono font-bold text-lg text-gray-900">{msg.metadata.paymentCard.accountNumber}</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                        <svg className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <div className="text-xs text-blue-800">
+                                            <p className="font-medium mb-1">Payment can be made via:</p>
+                                            <p>💵 <strong>Cash</strong> - Pay directly after service</p>
+                                            <p>🏦 <strong>Bank Transfer</strong> - Use details above</p>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                                     )}
                                     
                                     {/* Accept/Reject buttons for booking messages */}

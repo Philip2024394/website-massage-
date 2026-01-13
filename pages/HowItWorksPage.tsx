@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -46,10 +47,22 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span>
-                        <span className="text-orange-500">Street</span>
-                    </h1>
+                    {/* Back Arrow */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => onNavigate?.('home')}
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+                        >
+                            <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                            <span className="font-medium hidden sm:inline">
+                                {language === 'id' ? 'Beranda' : 'Home'}
+                            </span>
+                        </button>
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            <span className="text-black">Inda</span>
+                            <span className="text-orange-500">Street</span>
+                        </h1>
+                    </div>
                     <div className="flex items-center gap-4 text-gray-600">
                         {/* Home Button */}
                         <button
@@ -88,7 +101,6 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                 language={language}
             />
 
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-x-hidden w-full max-w-full">
             {/* Hero Section */}
             <div 
                 className="bg-gradient-to-r from-blue-600 to-blue-500 text-white py-20 relative bg-cover bg-center w-full max-w-full overflow-hidden"
@@ -748,7 +760,6 @@ const HowItWorksPage: React.FC<HowItWorksPageProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 };

@@ -19,7 +19,12 @@
     "**/node_modules/.cache/**": true,
     "**/.turbo/**": true,
     "**/pnpm-lock.yaml": true,
-    "**/*.tsbuildinfo": true
+    "**/*.tsbuildinfo": true,
+    "**/*.mjs": true,
+    "**/bulk-*.mjs": true,
+    "**/check-*.mjs": true,
+    "**/audit-*.mjs": true,
+    "**/analyze-*.mjs": true
   },
 
   "search.exclude": {
@@ -38,7 +43,13 @@
     "**/debug-*.html": true,
     "**/.cache/**": true,
     "**/.vite/**": true,
-    "**/pnpm-lock.yaml": true
+    "**/pnpm-lock.yaml": true,
+    "**/*.mjs": true,
+    "**/bulk-*.mjs": true,
+    "**/check-*.mjs": true,
+    "**/audit-*.mjs": true,
+    "**/analyze-*.mjs": true,
+    "**/*.md": true
   },
 
   "files.exclude": {
@@ -49,11 +60,22 @@
     "**/test-*.html": true,
     "**/diagnose-*.html": true,
     "**/populate-*.html": true,
-    "**/debug-*.html": true
+    "**/debug-*.html": true,
+    "**/*.mjs": true,
+    "**/bulk-*.mjs": true,
+    "**/check-*.mjs": true,
+    "**/audit-*.mjs": true,
+    "**/analyze-*.mjs": true,
+    "**/*.md": true
   },
 
-  "typescript.tsserver.maxTsServerMemory": 4096,
-  "files.maxMemoryForLargeFilesMB": 4096,
+  "typescript.tsserver.maxTsServerMemory": 12288,
+  "files.maxMemoryForLargeFilesMB": 8192,
+  "typescript.tsserver.useSeparateSyntaxServer": true,
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents"
+  },
 
   "editor.codeLens": false,
   "git.autorefresh": false,
@@ -61,12 +83,43 @@
   "editor.semanticHighlighting.enabled": false,
   "editor.minimap.enabled": false,
   "breadcrumbs.enabled": false,
+  "editor.lightbulb.enabled": "off",
+  "editor.hover.enabled": "off",
+  "editor.parameterHints.enabled": false,
+  "editor.quickSuggestions": {
+    "other": false,
+    "comments": false,
+    "strings": false
+  },
+  "editor.suggestOnTriggerCharacters": false,
+  "editor.acceptSuggestionOnEnter": "off",
+  "editor.tabCompletion": "off",
+  "editor.wordBasedSuggestions": "off",
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
 
   "terminal.integrated.persistentSessionReviveProcess": "never",
   "terminal.integrated.enablePersistentSessions": false,
   "workbench.editor.limit.enabled": true,
-  "workbench.editor.limit.value": 10,
+  "workbench.editor.limit.value": 5,
   "workbench.editor.limit.perEditorGroup": true,
-  "editor.maxTokenizationLineLength": 20000
+  "editor.maxTokenizationLineLength": 10000,
+  "workbench.editor.closeOnFileDelete": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "files.autoSave": "off",
+  "files.hotExit": "off",
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.enabled": false,
+  "javascript.suggest.enabled": false,
+  "html.suggest.html5": false,
+  "css.lint.enabled": false,
+  "scss.lint.enabled": false,
+  "less.lint.enabled": false,
+  "json.validate.enable": false,
+  "git.decorations.enabled": false,
+  "scm.diffDecorations": "none"
 }
 

@@ -487,7 +487,10 @@ export const BookingConfirmed: React.FC<{
                 {price && <div className="mb-1">{formatPrice(price)}</div>}
                 <div className="flex items-center gap-2 text-xs">
                   <span className="bg-purple-200 text-purple-800 px-2 py-0.5 rounded">💵 Cash</span>
-                  <span className="bg-purple-200 text-purple-800 px-2 py-0.5 rounded">🏦 Bank Transfer</span>
+                  <span className="bg-purple-200 text-purple-800 px-2 py-0.5 rounded">🏦 Transfer</span>
+                </div>
+                <div className="text-xs text-purple-700 mt-1">
+                  Bank details shared in chat
                 </div>
               </div>
             </div>
@@ -499,7 +502,8 @@ export const BookingConfirmed: React.FC<{
           <div className="flex items-start gap-2 text-xs text-green-700">
             <span>💡</span>
             <p>
-              <strong>Note:</strong> Payment can be made after service completion via cash or bank transfer. 
+              <strong>Note:</strong> Payment options: 💵 Cash (direct) or 🏦 Bank Transfer (use details in chat). 
+              IndaStreet recommends using bank details shared in this chat window to prevent misunderstandings. 
               Your therapist will provide payment details if needed.
             </p>
           </div>

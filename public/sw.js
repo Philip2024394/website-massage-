@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.1';
-const CACHE_NAME = `push-notifications-v2-1`;
+const SW_VERSION = '2.2.3';
+const CACHE_NAME = `push-notifications-v2-3`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -84,9 +84,13 @@ self.addEventListener('fetch', (event) => {
     try {
         const host = new URL(event.request.url).hostname;
         if (['localhost', '127.0.0.1'].includes(host)) {
+            // DEVELOPMENT MODE: Always fetch fresh content, never cache
+            console.log('🔧 DEV MODE: Bypassing cache for', event.request.url);
             return; // allow default browser handling
         }
     } catch {}
+    
+    // PRODUCTION MODE: Network-first strategy with cache fallback
     // Only handle navigation requests (page loads)
     if (event.request.mode === 'navigate') {
         event.respondWith(

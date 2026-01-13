@@ -1520,7 +1520,10 @@ export function PersistentChatWindow() {
       {bookingStep === 'chat' && chatState.currentBooking?.status === 'completed' && !chatState.currentBooking?.paymentStatus && (
         <div className="p-3 bg-emerald-50 border-t border-emerald-200">
           <p className="text-xs text-emerald-700 mb-2 text-center">
-            ✨ Service completed! How would you like to pay?
+            ✨ Service completed! Choose payment method:
+          </p>
+          <p className="text-xs text-emerald-600 mb-3 text-center">
+            💡 For bank transfer, use details shared in chat above
           </p>
           <div className="flex gap-2">
             <button

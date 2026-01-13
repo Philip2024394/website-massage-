@@ -186,6 +186,13 @@ export type Page =
     | 'facial-portal'
     | 'simple-signup'
     | 'shared-therapist-profile'  // Legacy shared profile URL
+    
+    // Floating Button Routes
+    | 'chat-support'
+    | 'booking-quick'
+    | 'emergency-contact'
+    | 'help'
+    | 'feedback'
     | 'share-therapist'            // New simple share URL for therapists
     | 'share-place'                // New simple share URL for places
     | 'share-facial'               // New simple share URL for facial places

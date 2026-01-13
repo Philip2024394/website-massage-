@@ -115,14 +115,20 @@ export const useAppState = () => {
         console.log('🔄 Fresh ROOT page load detected - clearing session to show landing page');
         sessionStorage.removeItem('has_entered_app');
         sessionStorage.removeItem('current_page');
-      } else if (sessionPage && typeof sessionPage === 'string' && isRootPath) {
+        sessionStorage.removeItem('reviewParams'); // Clear any stored review params
+      } else if (sessionPage && typeof sessionPage === 'string' && isRootPath && sessionPage !== 'reviews') {
+        // CRITICAL FIX: Don't restore 'reviews' page on root path - always default to landing/home flow
         console.log('↩️ Restoring session page:', sessionPage);
         return sessionPage as Page;
+      } else if (sessionPage === 'reviews' && isRootPath) {
+        console.log('🚫 Blocking reviews page restoration on root path - using default flow');
+        sessionStorage.removeItem('current_page');
+        sessionStorage.removeItem('reviewParams');
       }
       
       // If user has already entered the app in this session, go to home
       const hasEntered = sessionStorage.getItem('has_entered_app');
-      if (hasEntered === 'true') {
+      if (hasEntered === 'true' && isRootPath) {
         console.log('🚪 Session indicates app already entered → home');
         return 'home';
       }

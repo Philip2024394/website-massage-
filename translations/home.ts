@@ -55,6 +55,15 @@ export const homeTranslations = {
       facialClinicsSubtitleCity: 'Premium facial treatments in {city}',
       noFacialClinicsAvailable: 'No facial clinics available',
       checkBackFacials: 'Check back soon for featured facial spas!',
+      fabMenu: {
+        womenReviews: 'Women Reviews',
+        advancedSearch: 'Advanced Search',
+        helpFaq: 'Help & FAQ',
+        topTherapists: 'Top 5 Therapists',
+        specialOffers: 'Special Offers',
+        close: 'Close',
+        openMenu: 'Quick Actions',
+      },
       menu: {
         title: 'Menu',
         createProfile: 'Create Profile',
@@ -215,7 +224,7 @@ export const homeTranslations = {
       title: 'Trusted by Women Therapists & Clients',
       subtitle: 'Real stories from our community',
       femaleTherapistFilter: 'Female Therapists',
-      femaleClientReviews: 'Reviews from Women',
+      femaleClientReviews: 'Customer Reviews',
       stories: [
         {
           name: 'Sarah M.',
@@ -458,7 +467,7 @@ export const homeTranslations = {
       title: 'Dipercaya oleh Terapis & Klien Wanita',
       subtitle: 'Cerita nyata dari komunitas kami',
       femaleTherapistFilter: 'Terapis Wanita',
-      femaleClientReviews: 'Ulasan dari Wanita',
+      femaleClientReviews: 'Ulasan Pelanggan',
       stories: [
         {
           name: 'Sarah M.',

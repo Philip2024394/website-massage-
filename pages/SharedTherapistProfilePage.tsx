@@ -154,10 +154,10 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         // Check if therapist is from Yogyakarta/Jogja
         const isYogyakarta = city.toLowerCase().includes('yogyakarta') || city.toLowerCase().includes('jogja');
         
-        // Select image: random from pool for Yogyakarta, profile picture for others
+        // Select image: random from pool for Yogyakarta, main image for others (consistent with TherapistHomeCard)
         const image = isYogyakarta 
             ? yogyakartaImages[Math.floor(Math.random() * yogyakartaImages.length)]
-            : ((therapist as any).profilePicture || (therapist as any).mainImage || 'https://www.indastreetmassage.com/og-default.jpg');
+            : ((therapist as any).mainImage || (therapist as any).profilePicture || 'https://www.indastreetmassage.com/og-default.jpg');
 
         const setTag = (name: string, content: string) => {
             if (!content) return;
@@ -476,12 +476,16 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
             {/* Hero Section with Logo and Orange Navigation Buttons */}
             <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
                 <div className="px-3 sm:px-4 pt-3 pb-3 max-w-6xl mx-auto">
-                    {/* Logo */}
+                    {/* Therapist Main Image */}
                     <div className="flex justify-center mb-3">
                         <img 
-                            src={`https://ik.imagekit.io/7grri5v7d/logo%20yoga.png?t=${Date.now()}`}
-                            alt="IndaStreet Massage Logo" 
-                            className="h-32 w-auto object-contain"
+                            src={getCacheBustedUrl(heroImageUrl)}
+                            alt={`${therapist.name} - Professional Therapist`}
+                            className="h-32 w-auto object-contain rounded-lg shadow-md"
+                            onError={(e) => {
+                                // Fallback to default image if main image fails to load
+                                (e.target as HTMLImageElement).src = "https://ik.imagekit.io/7grri5v7d/logo%20yoga.png";
+                            }}
                         />
                     </div>
 
@@ -549,7 +553,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                         providerId={(therapist as any).$id || (therapist as any).id}
                         providerName={therapist.name}
                         providerType={'therapist'}
-                        providerImage={(therapist as any).profilePicture || (therapist as any).mainImage}
+                        providerImage={(therapist as any).mainImage || (therapist as any).profilePicture}
                         onNavigate={onNavigate}
                     />
                 </div>

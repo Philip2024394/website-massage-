@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
@@ -66,6 +67,19 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 showHomeButton={true}
                 showLanguageSelector={false}
             />
+            
+            {/* Back Arrow */}
+            <div className="max-w-4xl mx-auto px-4 pt-6">
+                <button
+                    onClick={() => onNavigate?.('home')}
+                    className="flex items-center gap-2 mb-4 text-gray-600 hover:text-gray-900 transition-colors group"
+                >
+                    <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
+                    <span className="font-medium">
+                        {language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
+                    </span>
+                </button>
+            </div>
             
             {/* Global App Drawer */}
             <AppDrawer

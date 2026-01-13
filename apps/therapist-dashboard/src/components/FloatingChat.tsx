@@ -411,29 +411,49 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                 <button
                     onClick={toggleChat}
                     className={`
-                        relative bg-gradient-to-r from-orange-500 to-amber-500 
-                        hover:from-orange-600 hover:to-amber-600 
-                        text-white rounded-full shadow-2xl 
-                        transition-all transform hover:scale-110 active:scale-95
+                        relative bg-black/20 backdrop-blur-md border border-white/10
+                        text-white rounded-2xl shadow-2xl
+                        transition-all duration-500 transform 
+                        hover:scale-110 hover:bg-black/40 hover:border-white/20
+                        active:scale-95 active:bg-black/60
                         ${isInPWAMode ? 'w-16 h-16 p-4' : 'w-14 h-14 p-4'}
                         ${unreadCount > 0 ? 'animate-pulse' : ''}
+                        flex items-center justify-center
+                        group overflow-hidden
+                        before:absolute before:inset-0 before:bg-gradient-to-br 
+                        before:from-white/5 before:to-transparent before:rounded-2xl
+                        after:absolute after:inset-0 after:bg-gradient-to-t 
+                        after:from-black/20 after:to-transparent after:rounded-2xl
                     `}
+                    style={{
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        boxShadow: `
+                            0 8px 32px rgba(0, 0, 0, 0.3),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.1)
+                        `
+                    }}
                     title={unreadCount > 0 ? `${unreadCount} new message${unreadCount === 1 ? '' : 's'}` : "Open Support Chat"}
                 >
-                    <MessageCircle className={`${isInPWAMode ? 'w-8 h-8' : 'w-6 h-6'}`} />
+                    <MessageCircle className={`${isInPWAMode ? 'w-8 h-8' : 'w-6 h-6'} relative z-10 drop-shadow-lg`} />
                     
-                    {/* Enhanced Unread Badge with Animation */}
+                    {/* Glass shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    {/* Enhanced Unread Badge with glass effect */}
                     {unreadCount > 0 && (
-                        <div className="absolute -top-3 -right-3 bg-red-500 text-white text-xs font-bold rounded-full min-w-[28px] h-7 flex items-center justify-center px-2 animate-bounce border-2 border-white shadow-lg">
-                            <span className="drop-shadow-sm">
+                        <div className="absolute -top-3 -right-3 bg-red-500/90 backdrop-blur-sm border border-red-400/50 text-white text-xs font-bold rounded-full min-w-[28px] h-7 flex items-center justify-center px-2 animate-bounce shadow-lg">
+                            <div className="absolute inset-0 bg-gradient-to-br from-red-300/30 to-transparent rounded-full"></div>
+                            <span className="relative z-10 drop-shadow-sm">
                                 {unreadCount > 99 ? '99+' : unreadCount}
                             </span>
                         </div>
                     )}
-                    
+
                     {/* Pulse Ring for New Messages */}
                     {unreadCount > 0 && (
-                        <div className="absolute inset-0 rounded-full border-4 border-red-400 animate-ping opacity-30"></div>
+                        <div className="absolute inset-0 rounded-2xl border-4 border-red-400/30 animate-ping opacity-30"></div>
                     )}
                 </button>
             </div>
@@ -444,24 +464,32 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     if (isMinimized) {
         return (
             <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
-                <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 p-3 flex items-center gap-3 min-w-[180px]">
+                <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-3 flex items-center gap-3 min-w-[180px]"
+                    style={{
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+                    }}>
                     <button
                         onClick={toggleChat}
-                        className="flex items-center gap-2 px-3 py-2 hover:bg-orange-50 rounded-lg transition-colors flex-1"
+                        className="flex items-center gap-2 px-3 py-2 hover:bg-white/10 rounded-lg transition-colors flex-1 group"
                     >
                         <div className="relative">
-                            <MessageCircle className="w-5 h-5 text-orange-600" />
+                            <MessageCircle className="w-5 h-5 text-white drop-shadow-lg" />
                             {/* Small badge on icon */}
                             {unreadCount > 0 && (
-                                <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500/90 backdrop-blur-sm rounded-full flex items-center justify-center font-bold text-xs border border-red-400/50">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-red-300/30 to-transparent rounded-full"></div>
+                                    <span className="relative z-10 text-white drop-shadow-sm">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
                                 </div>
                             )}
                         </div>
                         <div className="flex flex-col items-start">
-                            <span className="text-sm font-medium text-gray-700">Support Chat</span>
+                            <span className="text-sm font-medium text-white">Support Chat</span>
                             {unreadCount > 0 && (
-                                <span className="text-xs text-red-600 font-semibold">
+                                <span className="text-xs text-red-300 font-semibold">
                                     {unreadCount} new message{unreadCount === 1 ? '' : 's'}
                                 </span>
                             )}
@@ -469,14 +497,17 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                         
                         {/* Large badge counter */}
                         {unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-sm rounded-full px-3 py-1 min-w-[28px] h-7 flex items-center justify-center font-bold animate-pulse ml-auto">
-                                {unreadCount > 99 ? '99+' : unreadCount}
+                            <span className="bg-red-500/90 backdrop-blur-sm border border-red-400/50 text-white text-sm rounded-full px-3 py-1 min-w-[28px] h-7 flex items-center justify-center font-bold animate-pulse ml-auto shadow-lg">
+                                <div className="absolute inset-0 bg-gradient-to-br from-red-300/30 to-transparent rounded-full"></div>
+                                <span className="relative z-10 drop-shadow-sm">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
                             </span>
                         )}
                     </button>
                     <button
                         onClick={closeChat}
-                        className="p-2 hover:bg-red-50 rounded-full text-gray-400 hover:text-red-600 transition-colors"
+                        className="p-2 hover:bg-red-500/20 rounded-full text-white hover:text-red-300 transition-colors"
                         title="Close chat"
                     >
                         <X className="w-4 h-4" />

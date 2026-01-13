@@ -134,6 +134,13 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'employer-info': '/employer-info',
     'payment-info': '/payment-info',
     
+    // Floating Button URLs
+    'chat-support': '/chat/support',
+    'booking-quick': '/booking/quick', 
+    'emergency-contact': '/emergency/contact',
+    'help': '/help',
+    'feedback': '/feedback',
+    
     // Other dashboard routes (non-user dashboards)
     'agentDashboard': '/dashboard/agent',
     'customerDashboard': '/dashboard/customer',

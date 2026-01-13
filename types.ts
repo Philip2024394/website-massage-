@@ -556,7 +556,13 @@ export interface Booking {
     
     // Booking terms
     depositNonRefundable?: boolean; // Always true - deposits cannot be refunded
-    reschedulingAllowed?: boolean; // Always false - must create new booking for changes
+    reschedulingAllowed?: boolean; // True for scheduled bookings with therapist agreement
+    depositRequired?: boolean; // True for scheduled bookings
+    depositAmount?: number; // Amount of deposit paid
+    depositPercentage?: number; // Percentage of total price (default 50%)
+    depositStatus?: 'pending' | 'verified' | 'rejected';
+    dateChangeAllowed?: boolean; // True for scheduled bookings with advance notice
+    flexibleScheduling?: boolean; // True - can book outside calendar window
 }
 
 export interface Notification {

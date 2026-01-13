@@ -92,7 +92,14 @@ export const useURLRouting = (page: Page, setPage: (page: Page) => void) => {
         'verifiedProBadge': '/verified-badge',
         'sharedProfileStandards': '/shared-profile-standards',
         'mobileTherapistStandards': '/mobile-therapist-standards',
-        'qr-code': '/qr'
+        'qr-code': '/qr',
+        
+        // Floating Button URLs
+        'chat-support': '/chat/support',
+        'booking-quick': '/booking/quick',
+        'emergency-contact': '/emergency/contact',
+        'help': '/help',
+        'feedback': '/feedback'
     };
 
     // Map URL paths back to page states

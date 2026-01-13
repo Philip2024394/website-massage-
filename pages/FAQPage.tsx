@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { AppDrawer } from '../components/AppDrawerClean';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import UniversalHeader from '../components/shared/UniversalHeader';
+import { ChevronDown, Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ThumbsDown, ArrowLeft } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
+import FloatingPageFooter from '../components/FloatingPageFooter';
 
 interface FAQ {
     question: string;
     answer: string;
     category: string;
+    tags?: string[];
 }
 
 interface FAQPageProps {
     onNavigate?: (page: string) => void;
-    // Add navigation props for the drawer
     onMassageJobsClick?: () => void;
-
     onVillaPortalClick?: () => void;
     onTherapistPortalClick?: () => void;
     onMassagePlacePortalClick?: () => void;
@@ -33,7 +31,6 @@ interface FAQPageProps {
 const FAQPage: React.FC<FAQPageProps> = ({ 
     onNavigate,
     onMassageJobsClick,
-
     onVillaPortalClick,
     onTherapistPortalClick,
     onMassagePlacePortalClick,
@@ -47,512 +44,821 @@ const FAQPage: React.FC<FAQPageProps> = ({
 }) => {
     const { language } = useLanguage();
     const { t } = useTranslations(language);
-    const [activeCategory, setActiveCategory] = useState<string>('therapist');
+    const [activeCategory, setActiveCategory] = useState<string>('general');
     const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [faqFeedback, setFaqFeedback] = useState<{[key: number]: 'like' | 'dislike' | null}>({});
 
+    // Modern category design with icons
     const categories = [
-        { id: 'booking', name: t('faq.categories.booking') || 'Bookings', icon: '📅' },
-        { id: 'therapist', name: t('faq.categories.therapist') || 'For Therapists', icon: '🧘' },
-        { id: 'hotel', name: t('faq.categories.hotel') || 'For Hotels', icon: '🏨' },
-        { id: 'employer', name: t('faq.categories.employer') || 'For Employers', icon: '👔' },
-        { id: 'agent', name: t('faq.categories.agent') || 'For Agents', icon: '🤝' },
-        { id: 'payment', name: t('faq.categories.payment') || 'Payments', icon: '💳' },
-        { id: 'technical', name: t('faq.categories.technical') || 'Technical', icon: '⚙️' },
+        { 
+            id: 'general', 
+            name: 'General', 
+            icon: HelpCircle, 
+            color: 'from-blue-500 to-blue-600',
+            count: 8
+        },
+        { 
+            id: 'booking', 
+            name: 'Bookings', 
+            icon: Clock, 
+            color: 'from-emerald-500 to-emerald-600',
+            count: 12
+        },
+        { 
+            id: 'therapist', 
+            name: 'For Therapists', 
+            icon: Users, 
+            color: 'from-purple-500 to-purple-600',
+            count: 15
+        },
+        { 
+            id: 'business', 
+            name: 'For Businesses', 
+            icon: MapPin, 
+            color: 'from-orange-500 to-orange-600',
+            count: 10
+        },
+        { 
+            id: 'payment', 
+            name: 'Payments', 
+            icon: CreditCard, 
+            color: 'from-pink-500 to-pink-600',
+            count: 7
+        },
+        { 
+            id: 'safety', 
+            name: 'Safety & Privacy', 
+            icon: Shield, 
+            color: 'from-red-500 to-red-600',
+            count: 6
+        }
     ];
 
+    // Comprehensive FAQ data
     const faqs: FAQ[] = [
-        // Booking FAQs
+        // GENERAL
+        {
+            category: 'general',
+            question: 'What is IndaStreet?',
+            answer: 'IndaStreet is Indonesia\'s premier massage booking platform connecting users with over 2,000+ verified professional massage therapists, luxury spas, and wellness centers across Indonesia. We offer instant booking for home service, hotel, spa, and villa locations with secure payment processing.',
+            tags: ['about', 'platform', 'overview']
+        },
+        {
+            category: 'general',
+            question: 'How does IndaStreet work?',
+            answer: 'Simply browse our verified therapists and spas, select your preferred service type and location, choose your date and time, then book instantly through our secure platform. You can book for your home, hotel, or visit a spa location. Payment is processed securely, and you\'ll receive confirmation via WhatsApp.',
+            tags: ['how-to', 'booking process']
+        },
+        {
+            category: 'general',
+            question: 'Which cities does IndaStreet serve?',
+            answer: 'We currently operate in major Indonesian cities including Jakarta, Bali (Denpasar, Ubud, Sanur), Surabaya, Bandung, Yogyakarta, Semarang, Medan, Makassar, and Palembang. We\'re rapidly expanding to cover more cities across Indonesia.',
+            tags: ['locations', 'coverage', 'cities']
+        },
+        {
+            category: 'general',
+            question: 'Is IndaStreet available as a mobile app?',
+            answer: 'Currently IndaStreet is a mobile-optimized website that works perfectly on smartphones, tablets, and desktops. You can add our website to your home screen for an app-like experience. Native iOS and Android apps are planned for Q2 2025 with offline booking and push notifications.',
+            tags: ['mobile app', 'website', 'technology']
+        },
+        {
+            category: 'general',
+            question: 'What types of massage services are available?',
+            answer: 'We offer traditional Indonesian massage, Balinese massage, deep tissue, Swedish, reflexology, hot stone, aromatherapy, prenatal massage, sports massage, and specialized treatments. Each therapist lists their specialties and certifications on their profile.',
+            tags: ['services', 'massage types', 'treatments']
+        },
+        {
+            category: 'general',
+            question: 'How do I create an account?',
+            answer: 'You can browse services without an account, but creating one allows you to save favorites, track bookings, earn loyalty points, and receive personalized recommendations. Simply click "Sign Up" and register with your phone number or email.',
+            tags: ['account', 'registration', 'sign up']
+        },
+        {
+            category: 'general',
+            question: 'Is there a membership or subscription fee?',
+            answer: 'No, creating an account and browsing services is completely free. You only pay for the massage services you book. Some premium features like priority booking and extended warranties may require membership upgrades.',
+            tags: ['pricing', 'membership', 'fees']
+        },
+        {
+            category: 'general',
+            question: 'How can I contact customer support?',
+            answer: 'Reach us via WhatsApp at +62-XXX-XXXX, email at support@indastreet.id, or through our in-app chat feature. Our support team is available 7 days a week from 8 AM to 10 PM WIB.',
+            tags: ['support', 'contact', 'help']
+        },
+
+        // BOOKING
         {
             category: 'booking',
-            question: 'Can I cancel my booking?',
-            answer: 'Yes, you can cancel your booking by contacting the therapist or massage spa directly in a timely manner. Please note: if a therapist is already on the way, or if a massage place has a placement booking within 3 hours of your arrival time, they may request a cancellation fee to cover travel costs or loss of earnings. This fee may be up to 20% of the session price and is at the provider\'s discretion.'
+            question: 'How do I book a massage session?',
+            answer: 'Select your city and service type, browse available therapists or spas, choose your preferred provider, select date and time, enter your location details, and confirm payment. You\'ll receive instant confirmation via WhatsApp with therapist contact details.',
+            tags: ['booking process', 'how-to', 'steps']
         },
         {
             category: 'booking',
-            question: 'Can I reject a therapist on arrival or at a massage spa?',
-            answer: 'Yes. You may cancel on arrival if the therapist does not correspond with the profile image or details shown on their profile card. For massage spas, advance notice is usually required for cancellations, but you may request a change of therapist. A change may require additional waiting time. We recommend confirming important details in advance (therapist, session type, duration, and price) to ensure a positive experience.'
+            question: 'Can I book for the same day?',
+            answer: 'Yes! Many therapists accept same-day bookings. Use our "Available Now" filter to see providers who can start within 2-4 hours. Popular time slots may fill up quickly, so book early for best availability.',
+            tags: ['same day', 'immediate booking', 'availability']
         },
         {
             category: 'booking',
-            question: 'Is it normal to wait for a therapist or massage place?',
-            answer: 'Most bookings start on time. Occasionally delays happen if the previous client requested extra time, or due to traffic, weather, or other unforeseen reasons. Therapists and massage places will keep you informed and aim to stay as close to your scheduled time as possible. If your timing is critical, mention it when booking so the provider can plan accordingly.'
-        },
-        // Therapist FAQs
-        {
-            category: 'therapist',
-            question: 'How do I create a therapist profile on IndaStreet?',
-            answer: 'Click "Sign Up" and select "Therapist". Fill in your personal details, certifications, specializations, work experience, and languages. Choose the membership package (1 month) and complete payment via bank transfer. After admin approval, your profile goes live and you can start receiving bookings.'
+            question: 'How far in advance can I book?',
+            answer: 'You can book up to 30 days in advance. For special occasions, holidays, or popular therapists, we recommend booking 3-7 days ahead to ensure availability.',
+            tags: ['advance booking', 'planning', 'schedule']
         },
         {
-            category: 'therapist',
-            question: 'What are the membership costs for therapists?',
-            answer: 'We offer a flexible membership plan: 1 Month - IDR 200,000 with a 30-day free trial included. Your membership comes complete with profile verification, a booking management dashboard, WhatsApp integration, and priority placement in search results to maximize your visibility.'
+            category: 'booking',
+            question: 'Can I cancel or reschedule my booking?',
+            answer: 'SCHEDULED BOOKINGS: Require non-refundable deposit. Dates may be changed in advance with therapist agreement. IMMEDIATE BOOKINGS: Free cancellation up to 4 hours before session. All changes subject to therapist availability and require minimum 24 hours notice.',
+            tags: ['cancellation', 'rescheduling', 'changes', 'deposit', 'scheduled']
         },
         {
-            category: 'therapist',
-            question: 'How do I receive bookings from hotels and clients?',
-            answer: 'Once your profile is active with paid membership, hotels and clients can find you through search. They contact you directly via WhatsApp (integrated into platform). You receive instant notifications for new booking requests. You manage your availability and accept/decline bookings through your dashboard.'
+            category: 'booking',
+            question: 'What is the deposit policy for scheduled bookings?',
+            answer: 'Scheduled bookings require a 50% non-refundable deposit to confirm appointment. Deposits cannot be refunded under any circumstances. However, dates may be changed in advance with therapist agreement, and your deposit transfers to the new date if approved.',
+            tags: ['deposit', 'non-refundable', 'scheduled booking', 'payment']
         },
         {
-            category: 'therapist',
-            question: 'What certifications do I need to join IndaStreet?',
-            answer: 'You do not need formal massage therapy certifications to join IndaStreet. Experience is valued, and you can start your career once you have practical skills. Simply upload clear photos during registration and create an honest profile showcasing your experience, specialties, and techniques. Building your reputation through client reviews is what matters most.'
+            category: 'booking',
+            question: 'Can I book time slots outside the displayed calendar?',
+            answer: 'Yes! Time slots can vary and bookings can be made for dates/times outside the member\'s displayed calendar window. Contact the therapist directly through our chat system to request special time arrangements, early morning, or late evening appointments.',
+            tags: ['flexible scheduling', 'calendar', 'time slots', 'special arrangements']
         },
         {
-            category: 'therapist',
-            question: 'How does the "Therapist For Contract" feature work?',
-            answer: 'If you\'re seeking full-time employment, enable "Available for Contract" in your profile settings. Your name will be hidden from employers until they pay IDR 300,000 unlock fee. This protects you from spam while ensuring only serious employers contact you. Employers see your qualifications, experience, and location but must pay to get your contact details.'
+            category: 'booking',
+            question: 'What if the therapist doesn\'t show up?',
+            answer: 'If a therapist is more than 30 minutes late without communication, you\'ll receive a full refund plus a 20% service credit. We also try to arrange an immediate replacement therapist when possible.',
+            tags: ['no-show', 'refund', 'guarantee']
         },
         {
-            category: 'therapist',
-            question: 'Can I work in multiple locations across Indonesia?',
-            answer: 'Yes! You can list multiple service locations each month when moving from city to city (e.g., Seminyak, Ubud, Canggu). Update your availability by area in your dashboard. Many therapists work in 2-3 locations each month and clients can filter by specific neighborhoods or cities when searching.'
+            category: 'booking',
+            question: 'Can I request a specific therapist?',
+            answer: 'Yes! You can book specific therapists based on their profiles, reviews, and specialties. You can also add them to favorites for easy rebooking. Premium members get priority access to popular therapists.',
+            tags: ['specific therapist', 'preferences', 'favorites']
+        },
+        {
+            category: 'booking',
+            question: 'Do you offer couple or group massages?',
+            answer: 'Yes! Select "Couple Massage" or "Group Session" during booking. We can arrange 2-6 simultaneous massages at your location. Group discounts available for 3+ people.',
+            tags: ['couple massage', 'group booking', 'multiple people']
+        },
+        {
+            category: 'booking',
+            question: 'Can I book for hotels and villas?',
+            answer: 'Absolutely! We specialize in hotel and villa services across Bali, Jakarta, and other major cities. Just enter your hotel/villa name and room number during booking. Additional travel fees may apply for remote locations.',
+            tags: ['hotels', 'villas', 'accommodation', 'travel']
+        },
+        {
+            category: 'booking',
+            question: 'What\'s included in the massage session?',
+            answer: 'Sessions include professional massage oils/lotions, clean linens, and all necessary equipment. Therapists bring portable massage tables for in-room services. Tips are appreciated but not required.',
+            tags: ['included services', 'equipment', 'what to expect']
+        },
+        {
+            category: 'booking',
+            question: 'How do I prepare for an in-home massage?',
+            answer: 'Ensure adequate space (2x2 meters), comfortable room temperature, and privacy. Remove valuables from the area. The therapist will handle setup and cleanup. Shower before the session for best experience.',
+            tags: ['preparation', 'home service', 'setup']
+        },
+        {
+            category: 'booking',
+            question: 'Can I add special requests or notes?',
+            answer: 'Yes! Use the "Special Requests" field during booking to specify pressure preferences, focus areas, allergies, injuries, or other needs. Communicate directly with your therapist via WhatsApp after booking.',
+            tags: ['special requests', 'customization', 'preferences']
+        },
+        {
+            category: 'booking',
+            question: 'What are your operating hours?',
+            answer: 'Most therapists are available 9 AM - 10 PM daily. Some offer early morning (7 AM) or late night (11 PM) sessions with premium charges. Availability varies by therapist and location.',
+            tags: ['hours', 'schedule', 'timing', 'availability']
         },
 
-        // Hotel FAQs
+        // THERAPIST
         {
-            category: 'hotel',
-            question: 'How do hotels and villas use IndaStreet?',
-            answer: 'Register your property with hotel details, spa facilities, and service offerings. Browse 500+ verified therapists by specialty, location, and availability. Contact therapists directly via WhatsApp for bookings. No booking fees or commissions - you negotiate rates directly with therapists. Manage your spa team and track bookings through your hotel dashboard.'
+            category: 'therapist',
+            question: 'How do I become a therapist on IndaStreet?',
+            answer: 'Apply through our "Join as Therapist" page. You\'ll need valid certification, government ID, health certificate, and professional photos. We conduct background checks and skill assessments before approval.',
+            tags: ['join platform', 'become therapist', 'requirements']
         },
         {
-            category: 'hotel',
-            question: 'Is there a fee for hotels to use the platform?',
-            answer: 'No! Hotel registration and therapist browsing are completely free. There are no booking fees, commissions, or monthly subscriptions for hotels. You only pay the therapist directly for their services at rates you negotiate together.'
+            category: 'therapist',
+            question: 'What are the requirements to join?',
+            answer: 'Valid massage therapy certification, Indonesian ID/KITAS, health certificate, minimum 6 months experience, professional photos, smartphone with WhatsApp, and ability to travel to client locations.',
+            tags: ['requirements', 'qualifications', 'documents']
         },
         {
-            category: 'hotel',
-            question: 'How do I find therapists for urgent/same-day bookings?',
-            answer: 'Use our "Available Now" filter to see therapists currently available. Set location to your area (e.g., Seminyak) and select immediate availability. Most therapists respond to WhatsApp within 15-30 minutes. Many experienced therapists keep flexible schedules for last-minute resort bookings.'
+            category: 'therapist',
+            question: 'How much can I earn as a therapist?',
+            answer: 'Therapists typically earn 150,000-500,000 IDR per session depending on service type, location, and experience. Top therapists earn 3-8 million IDR monthly. You keep 70-85% of each booking after platform fees.',
+            tags: ['earnings', 'income', 'payment', 'commission']
         },
         {
-            category: 'hotel',
-            question: 'Can I hire therapists as permanent employees through IndaStreet?',
-            answer: 'Yes! Browse our "Therapist For Contract" section to find professionals actively seeking full-time employment. Pay one-time IDR 300,000 fee to unlock contact information. Then conduct interviews, check references, and hire directly. No placement fees or commissions on hiring.'
+            category: 'therapist',
+            question: 'How do I set my availability and rates?',
+            answer: 'Use your therapist dashboard to set daily/weekly availability, service rates, travel areas, and blackout dates. Rates can vary by service type, location distance, and time of day.',
+            tags: ['availability', 'pricing', 'dashboard', 'schedule']
         },
         {
-            category: 'hotel',
-            question: 'How are therapists verified?',
-            answer: 'All therapists must upload certification documents which our admin team verifies. We check: massage therapy certifications, professional training credentials, work experience history, and identity verification. Verified therapists receive a blue checkmark badge on their profiles.'
+            category: 'therapist',
+            question: 'When and how do I get paid?',
+            answer: 'Payments are processed weekly every Monday via bank transfer for the previous week\'s completed sessions. You can track earnings and payment history in your dashboard. Minimum payout is 100,000 IDR.',
+            tags: ['payment schedule', 'bank transfer', 'earnings', 'payout']
+        },
+        {
+            category: 'therapist',
+            question: 'Do I need to provide my own equipment?',
+            answer: 'Yes, bring your portable massage table/mat, oils, lotions, clean linens, and towels. We provide equipment procurement guidelines and preferred supplier recommendations for new therapists.',
+            tags: ['equipment', 'supplies', 'requirements', 'tools']
+        },
+        {
+            category: 'therapist',
+            question: 'How do I handle difficult clients?',
+            answer: 'Contact our 24/7 therapist support immediately for any safety concerns. You can end sessions early for inappropriate behavior. We have zero tolerance for harassment and will ban problematic clients.',
+            tags: ['safety', 'difficult clients', 'support', 'harassment']
+        },
+        {
+            category: 'therapist',
+            question: 'Can I work flexible hours?',
+            answer: 'Absolutely! Set your own schedule through the app. Many therapists work part-time, weekends only, or specific hours. You have full control over your availability and can update it anytime.',
+            tags: ['flexible hours', 'part-time', 'schedule control']
+        },
+        {
+            category: 'therapist',
+            question: 'What areas can I service?',
+            answer: 'Define your service radius from 5-50 km from your base location. Popular areas typically generate more bookings. You can adjust coverage areas and set different rates for distant locations.',
+            tags: ['service area', 'coverage', 'travel distance', 'location']
+        },
+        {
+            category: 'therapist',
+            question: 'How do I improve my booking rate?',
+            answer: 'Maintain high ratings, update availability regularly, respond quickly to booking requests, offer multiple service types, keep competitive pricing, and encourage client reviews. Featured therapists get priority placement.',
+            tags: ['improve bookings', 'optimization', 'ratings', 'tips']
+        },
+        {
+            category: 'therapist',
+            question: 'What training and support do you provide?',
+            answer: 'New therapists receive onboarding training, safety guidelines, customer service best practices, and ongoing skill development workshops. Monthly webinars cover business growth and industry trends.',
+            tags: ['training', 'support', 'onboarding', 'development']
+        },
+        {
+            category: 'therapist',
+            question: 'Can I bring an assistant or work in teams?',
+            answer: 'Licensed therapists can bring assistants for setup/breakdown, but only certified therapists can perform massage services. Team bookings require all team members to be individually verified on our platform.',
+            tags: ['assistants', 'teams', 'collaboration', 'licensing']
+        },
+        {
+            category: 'therapist',
+            question: 'How do I handle insurance and liability?',
+            answer: 'We provide basic liability coverage for platform-booked sessions. We recommend therapists maintain their own professional liability insurance for comprehensive protection. Safety protocols are mandatory.',
+            tags: ['insurance', 'liability', 'coverage', 'protection']
+        },
+        {
+            category: 'therapist',
+            question: 'What if I need to cancel a booking?',
+            answer: 'Cancel through the app ASAP with a valid reason. Cancellations within 2 hours incur warnings; excessive cancellations may result in account suspension. Emergency cancellations are handled case-by-case.',
+            tags: ['therapist cancellation', 'policy', 'warnings', 'emergencies']
+        },
+        {
+            category: 'therapist',
+            question: 'How does the rating system work?',
+            answer: 'Clients rate you 1-5 stars after each session on punctuality, professionalism, technique, and overall experience. Maintain 4.2+ stars for good standing. Low ratings trigger performance reviews and additional training.',
+            tags: ['ratings', 'reviews', 'performance', 'standards']
         },
 
-        // Employer FAQs
+        // BUSINESS
         {
-            category: 'employer',
-            question: 'What is the "Therapist For Contract" marketplace?',
-            answer: 'It\'s our privacy-protected job board where therapists seeking full-time employment list themselves with hidden names. You can browse candidates by qualification, experience, specialty, and location. To protect therapists from spam, you pay IDR 300,000 one-time fee to unlock each therapist\'s full contact information including name and WhatsApp number.'
+            category: 'business',
+            question: 'How can my spa/wellness center join IndaStreet?',
+            answer: 'Apply through our "Business Partnership" program. We partner with established spas, hotels, resorts, and wellness centers to list their services and therapists on our platform with revenue sharing models.',
+            tags: ['business partnership', 'spas', 'wellness centers']
         },
         {
-            category: 'employer',
-            question: 'Why do I have to pay to see therapist names?',
-            answer: 'This privacy model protects therapists from harassment, spam, and unwanted contact. It ensures only serious employers who are genuinely interested in hiring will contact them. The small fee filters out time-wasters and creates a professional hiring environment. Once you pay, you get permanent access to that therapist\'s full contact details.'
+            category: 'business',
+            question: 'What are the benefits for business partners?',
+            answer: 'Increased bookings, expanded customer reach, integrated marketing, professional photography, online reputation management, booking management tools, and detailed analytics. No upfront costs.',
+            tags: ['benefits', 'marketing', 'analytics', 'tools']
         },
         {
-            category: 'employer',
-            question: 'How do I unlock a therapist\'s contact information?',
-            answer: 'Browse the "Therapist For Contract" section and find candidates matching your requirements. Click "Unlock Contact Details" on their profile. Complete bank transfer payment of IDR 300,000. Upload payment proof. Admin verifies within 24 hours. You receive full contact information via email and can message them directly on WhatsApp.'
+            category: 'business',
+            question: 'How does revenue sharing work?',
+            answer: 'Business partners typically receive 60-75% of booking value depending on partnership level and booking volume. Higher volume partners get better rates. Payments are processed weekly via bank transfer.',
+            tags: ['revenue sharing', 'commission', 'payments', 'partnership tiers']
         },
         {
-            category: 'employer',
-            question: 'Are there any fees after I unlock contact information?',
-            answer: 'No! The IDR 300,000 is a one-time payment. No placement fees, no commission on salary, no monthly subscriptions. After unlocking, you negotiate salary, terms, and conditions directly with the therapist. Conduct your own interviews and reference checks.'
+            category: 'business',
+            question: 'Can hotels list their spa services?',
+            answer: 'Yes! We partner with hotels to list both in-house spa services and in-room massage options. Hotel guests can book through our platform with automatic room billing integration where supported.',
+            tags: ['hotels', 'spa services', 'room billing', 'integration']
         },
         {
-            category: 'employer',
-            question: 'Can I unlock multiple therapists at once?',
-            answer: 'Yes, you can unlock as many profiles as you need. Each unlock costs IDR 300,000. Many employers unlock 3-5 candidates to interview multiple people before making a final hiring decision. We recommend reviewing profiles carefully before unlocking to ensure they match your requirements.'
+            category: 'business',
+            question: 'Do you provide marketing support?',
+            answer: 'Partners receive professional photography, optimized listings, social media promotion, Google Ads inclusion, seasonal campaigns, and customer review management. Premium partners get dedicated account management.',
+            tags: ['marketing support', 'photography', 'promotion', 'advertising']
+        },
+        {
+            category: 'business',
+            question: 'What booking management tools do you provide?',
+            answer: 'Business dashboard includes real-time booking calendar, staff schedule management, customer communications, payment tracking, performance analytics, and integration APIs for existing systems.',
+            tags: ['booking management', 'dashboard', 'tools', 'integration']
+        },
+        {
+            category: 'business',
+            question: 'How do I manage my staff therapists on the platform?',
+            answer: 'Add verified therapists to your business profile, set their schedules and rates, manage their availability, and track their individual performance. Staff can also accept independent bookings.',
+            tags: ['staff management', 'therapist management', 'schedules']
+        },
+        {
+            category: 'business',
+            question: 'Can I offer exclusive deals and promotions?',
+            answer: 'Yes! Create limited-time offers, package deals, loyalty programs, and seasonal promotions through your business dashboard. Featured promotions appear prominently on our platform.',
+            tags: ['promotions', 'deals', 'packages', 'loyalty programs']
+        },
+        {
+            category: 'business',
+            question: 'What are the requirements for business partnerships?',
+            answer: 'Valid business license, established location (minimum 1 year), certified therapists, professional facilities, liability insurance, and commitment to IndaStreet quality standards.',
+            tags: ['business requirements', 'licensing', 'standards', 'qualifications']
+        },
+        {
+            category: 'business',
+            question: 'How do you ensure quality control?',
+            answer: 'Regular facility inspections, customer feedback monitoring, mystery shopper programs, therapist certification verification, and ongoing compliance checks. Partners must maintain 4.0+ average ratings.',
+            tags: ['quality control', 'inspections', 'compliance', 'standards']
         },
 
-        // Agent FAQs
-        {
-            category: 'agent',
-            question: 'How does the agent commission system work?',
-            answer: 'Sign up as an agent and receive your unique referral code. Share this code with therapists you recruit. When they sign up using your code and purchase any membership package, you earn 20% commission. Track your recruits and earnings in your agent dashboard. Commission is paid monthly via bank transfer.'
-        },
-        {
-            category: 'agent',
-            question: 'How much can I earn as an agent?',
-            answer: 'You earn 20% of every membership purchase from your referred therapists. Example earnings: 1 Month (IDR 100k) = IDR 20k commission | 3 Months (IDR 250k) = IDR 50k | 6 Months (IDR 450k) = IDR 90k | 1 Year (IDR 800k) = IDR 160k. If you recruit 10 therapists who each buy 6-month packages, you earn IDR 900,000. There\'s no limit to how many therapists you can recruit.'
-        },
-        {
-            category: 'agent',
-            question: 'When do I receive commission payments?',
-            answer: 'Commissions are calculated at the end of each month and paid within the first 5 business days of the following month via bank transfer to your registered account. You can track pending and paid commissions in your agent dashboard in real-time.'
-        },
-        {
-            category: 'agent',
-            question: 'Do I earn recurring commissions if therapists renew?',
-            answer: 'Currently, you earn commission only on the initial membership purchase. If a therapist renews their membership after expiration, you do not earn additional commission. However, we are developing a recurring commission model for 2025 to reward long-term agent partnerships.'
-        },
-        {
-            category: 'agent',
-            question: 'Can I recruit therapists outside of Bali?',
-            answer: 'Absolutely! You can recruit therapists from anywhere in Indonesia - Jakarta, Surabaya, Yogyakarta, Lombok, etc. IndaStreet serves the entire country, so your earning potential is nationwide.'
-        },
-
-        // Payment FAQs
+        // PAYMENT
         {
             category: 'payment',
             question: 'What payment methods do you accept?',
-            answer: 'We currently accept bank transfer (transfer bank) to our verified Indonesian bank accounts. Supported banks include BCA, Mandiri, BNI, BRI, and CIMB Niaga. We chose bank transfer because it\'s the most trusted and widely used payment method in Indonesia. Credit card and e-wallet options coming in 2025.'
+            answer: 'Payment for massage services is either 💵 Cash (paid directly to therapist after service) or 🏦 Bank Transfer (to therapist\'s account). IndaStreet suggests using bank details provided in the chat window or requesting the therapist to post bank details in chat. This ensures clear communication and prevents any misunderstanding of bank account details.',
+            tags: ['payment methods', 'cash', 'bank transfer', 'chat window']
         },
         {
             category: 'payment',
-            question: 'How do I pay for therapist membership?',
-            answer: 'After selecting your membership package: (1) You receive bank account details for payment (2) Transfer exact amount from any Indonesian bank (3) Take screenshot of successful transaction (4) Upload proof in your dashboard (5) Admin verifies within 24 hours (6) Membership activates and profile goes live. You receive email and WhatsApp confirmation at each step.'
+            question: 'Is it safe to pay online?',
+            answer: 'Yes! We use bank-level encryption and are PCI DSS compliant. We never store your full payment details. All transactions are processed through secure payment gateways with fraud protection.',
+            tags: ['security', 'encryption', 'safe payments', 'fraud protection']
         },
         {
             category: 'payment',
-            question: 'How long does payment verification take?',
-            answer: 'Most payments are verified within 24 hours during business days (Monday-Saturday, 9 AM - 6 PM WIB). Payments submitted on weekends are processed on Monday. You\'ll receive email notification when your payment is approved and your membership is activated. Check your dashboard for real-time payment status.'
+            question: 'When do I pay for massage services?',
+            answer: 'Payment for massage services is made AFTER service completion, not during booking. You can pay via 💵 cash directly to the therapist or 🏦 bank transfer using details shared in the chat window. IndaStreet facilitates secure communication of bank details through our monitored chat system.',
+            tags: ['payment timing', 'after service', 'cash', 'bank transfer', 'chat']
         },
         {
             category: 'payment',
-            question: 'What if my payment is rejected?',
-            answer: 'Common rejection reasons include: wrong transfer amount, unclear payment proof screenshot, or transfer to wrong account. If rejected, you\'ll receive email with specific reason and instructions to resubmit. Simply upload a new payment proof with the correct information. Contact indastreet.id@gmail.com if you need assistance.'
+            question: 'Can I get a refund if I\'m not satisfied?',
+            answer: 'Yes! We offer full refunds for legitimate service issues reported within 24 hours. Refunds are processed within 3-7 business days. Our customer service team investigates all refund requests fairly.',
+            tags: ['refunds', 'satisfaction guarantee', 'service issues']
         },
         {
             category: 'payment',
-            question: 'Can I get a refund if I cancel my membership?',
-            answer: 'Memberships are non-refundable once activated. However, if you haven\'t used the platform at all and request cancellation within 7 days of payment, we can issue 50% refund. Refund requests must be submitted via email to indastreet.id@gmail.com with your transaction details and reason.'
+            question: 'Are there any additional fees?',
+            answer: 'Service fees range from 5-15% depending on booking type and payment method. All fees are clearly displayed before payment. No hidden charges. Premium services may have additional costs.',
+            tags: ['fees', 'service charges', 'transparency', 'pricing']
+        },
+        {
+            category: 'payment',
+            question: 'Do you offer corporate billing?',
+            answer: 'Yes! Corporate accounts get monthly invoicing, bulk booking discounts, dedicated account management, and expense reporting tools. Minimum monthly commitment required for corporate rates.',
+            tags: ['corporate billing', 'business accounts', 'invoicing', 'bulk discounts']
+        },
+        {
+            category: 'payment',
+            question: 'How do I get bank details for transfer payment?',
+            answer: 'Bank details are securely shared through our chat system. After booking, the therapist will either automatically share their bank details in the chat window, or you can request them to post the details. Always use bank information shared within the IndaStreet chat to prevent miscommunication and ensure secure transactions.',
+            tags: ['bank details', 'chat window', 'secure sharing', 'transfer payment']
+        },
+        {
+            category: 'payment',
+            question: 'How do tips and gratuities work?',
+            answer: 'Tips are optional and can be paid in cash directly to therapists or added to your bank transfer amount. Always communicate tip amounts clearly in the chat window before transferring to avoid confusion.',
+            tags: ['tips', 'gratuities', 'optional', 'cash', 'bank transfer']
         },
 
-        // Technical FAQs
+        // SAFETY & PRIVACY
         {
-            category: 'technical',
-            question: 'Is IndaStreet available as a mobile app?',
-            answer: 'Currently IndaStreet is a mobile-responsive website that works perfectly on all smartphones, tablets, and desktops. You can add it to your home screen for app-like experience. Native iOS and Android apps are planned for Q2 2025 with offline booking, push notifications, and enhanced features.'
+            category: 'safety',
+            question: 'How do you verify therapists?',
+            answer: 'All therapists undergo background checks, certification verification, health screenings, skill assessments, and ongoing performance monitoring. We maintain a zero-tolerance policy for any misconduct.',
+            tags: ['verification', 'background checks', 'certification', 'safety']
         },
         {
-            category: 'technical',
-            question: 'How does WhatsApp integration work?',
-            answer: 'When hotels or clients want to contact you, they click "Contact via WhatsApp" on your profile. This opens WhatsApp on their phone with a pre-filled message to your registered number. You receive the booking request directly in WhatsApp where you can respond immediately. All communication happens via WhatsApp - no need to check multiple platforms.'
+            category: 'safety',
+            question: 'What safety measures are in place?',
+            answer: 'GPS tracking during sessions, 24/7 emergency support hotline, therapist check-ins, client verification, and immediate incident response protocols. All sessions are logged and monitored.',
+            tags: ['safety measures', 'GPS tracking', 'emergency support', 'monitoring']
         },
         {
-            category: 'technical',
-            question: 'Can I update my profile after registration?',
-            answer: 'Yes! Log into your dashboard and click "Edit Profile". You can update: photos, certifications, specializations, service areas, availability, languages, pricing, and bio at any time. Changes to certifications require admin re-verification. All other changes are instant.'
+            category: 'safety',
+            question: 'How do you protect my personal information?',
+            answer: 'We comply with Indonesian data protection laws and international privacy standards. Your data is encrypted, access is limited to authorized personnel, and we never sell personal information to third parties.',
+            tags: ['privacy', 'data protection', 'encryption', 'confidentiality']
         },
         {
-            category: 'technical',
-            question: 'What happens when my membership expires?',
-            answer: 'Your profile becomes hidden from search results and you stop receiving new booking requests. You receive email reminders 7 days and 1 day before expiration. To reactivate, simply purchase a new membership package. Your profile data is saved, so you don\'t need to re-enter information. Past bookings and reviews remain visible after reactivation.'
+            category: 'safety',
+            question: 'What should I do if I feel unsafe?',
+            answer: 'Contact our emergency support immediately at [emergency number]. We have protocols for immediate assistance, can help remove therapists from your location, and will investigate all safety concerns seriously.',
+            tags: ['emergency', 'unsafe situations', 'immediate help', 'protocols']
         },
         {
-            category: 'technical',
-            question: 'How do I delete my account?',
-            answer: 'Email indastreet.id@gmail.com from your registered email address with subject "Account Deletion Request". Include your full name and phone number. We\'ll process deletion within 7 business days. Note: account deletion is permanent and cannot be reversed. All profile data, reviews, and booking history will be permanently removed.'
-        },
-        // Platform & App Flow FAQs
-        {
-            category: 'technical',
-            question: 'How is distance calculated and how do I know Maps is working?',
-            answer: 'Your device location is used to estimate distance to therapists and places. When Google Maps Distance Matrix is active you\'ll see a green indicator; if it\'s unavailable you\'ll see a red indicator and we fallback to an accurate on-device calculation. Make sure location services are enabled on your phone for best results.'
+            category: 'safety',
+            question: 'Are therapists insured?',
+            answer: 'Yes! All therapists carry liability insurance through our platform partnership. Additional professional liability coverage is recommended and many therapists maintain their own policies.',
+            tags: ['insurance', 'liability coverage', 'professional insurance']
         },
         {
-            category: 'technical',
-            question: 'What\'s the difference between Book Now and Schedule?',
-            answer: 'Book Now requests an immediate booking to the selected provider. Schedule lets you pick a later time. For massage places (venues), Book Now and Schedule respect the venue\'s opening hours. For mobile therapists, Book Now depends on their current status (Online/Busy/Offline), while Schedule lets you choose a future slot.'
-        },
-        {
-            category: 'technical',
-            question: 'How are massage places different from mobile therapists?',
-            answer: 'Massage places are venues with opening/closing hours and do not show live Online/Busy status. We enforce venue hours for both Book Now and Schedule. Mobile therapists are individuals with status (Online/Busy/Offline); immediate bookings can set them Busy until confirmed, while scheduled bookings set Busy close to the appointment time.'
-        },
-        {
-            category: 'technical',
-            question: 'Why do I hear a loud sound during booking?',
-            answer: 'We use a continuous notification sound to make sure you don\'t miss important booking updates. It stops automatically when the booking is accepted, canceled, a therapist is found, or you close the screen. You can control your device volume if needed.'
-        },
-        {
-            category: 'technical',
-            question: 'Do shared links open the exact profile?',
-            answer: 'Yes. When you share a therapist or place profile, the recipient link opens directly to that exact profile (deep link). Agents also get credit for recruits and shares that originate from their links, visible in the dashboard analytics.'
-        },
-        {
-            category: 'technical',
-            question: 'What is the Online Shop and Coin Shop?',
-            answer: 'The Online Shop showcases curated items you can browse from the Home page. The Coin Shop is part of our rewards system for eligible dashboards (e.g., therapists, hotels, villas) where coins can be earned and redeemed for certain items or benefits. Availability may vary by account type.'
-        },
+            category: 'safety',
+            question: 'How do you handle complaints and disputes?',
+            answer: 'Our customer service team investigates all complaints within 24 hours. We mediate disputes fairly, provide appropriate compensation when warranted, and take corrective actions to prevent future issues.',
+            tags: ['complaints', 'disputes', 'investigation', 'resolution']
+        }
     ];
 
-    const filteredFAQs = faqs.filter(faq => faq.category === activeCategory);
+    // Filter FAQs based on search query and category
+    const filteredFAQs = faqs.filter(faq => {
+        const matchesCategory = faq.category === activeCategory;
+        const matchesSearch = searchQuery === '' || 
+            faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            faq.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            faq.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+    });
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+        setExpandedFAQ(null); // Reset expanded FAQ when searching
+    };
+
+    const toggleFAQ = (index: number) => {
+        setExpandedFAQ(expandedFAQ === index ? null : index);
+    };
+
+    // Handle like/dislike feedback
+    const handleFeedback = (index: number, type: 'like' | 'dislike') => {
+        setFaqFeedback(prev => ({
+            ...prev,
+            [index]: prev[index] === type ? null : type
+        }));
+    };
+
+    const getCategoryCount = (categoryId: string) => {
+        return faqs.filter(faq => faq.category === categoryId).length;
+    };
+
+    // Debug logging
+    console.log('FAQ Page Render:', {
+        totalFAQs: faqs.length,
+        filteredFAQs: filteredFAQs.length,
+        activeCategory,
+        expandedFAQ,
+        searchQuery
+    });
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">
-                        <span className="text-black">Inda</span><span className="text-orange-500"><span className="inline-block animate-float">S</span>treet</span>
+        <div className="min-h-screen bg-white">
+            {/* Inline CSS for animations */}
+            <style>{`
+                @keyframes fade-in-down {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fade-in-down {
+                    animation: fade-in-down 0.3s ease-out;
+                }
+            `}</style>
+            
+            {/* Header */}
+            <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        <span className="text-black">Inda</span>
+                        <span className="text-orange-500">Street</span>
+                        <span className="text-gray-400 text-lg ml-2 font-normal">Help Center</span>
                     </h1>
-                    <div className="flex items-center gap-4 text-gray-600">
-                        {/* Home Button */}
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => onNavigate?.('home')}
-                            className="p-2 hover:bg-gray-100 rounded-full"
+                            className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
                             title="Home"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                         </button>
-                        <button onClick={() => setIsMenuOpen(true)} title="Menu">
-                           <BurgerMenuIcon className="w-6 h-6" />
+                        <button 
+                            onClick={() => setIsMenuOpen(true)} 
+                            className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors"
+                            title="Menu"
+                        >
+                            <BurgerMenuIcon className="w-5 h-5 text-gray-600" />
                         </button>
                     </div>
                 </div>
             </header>
-            
-            {/* Global App Drawer */}
+
+            {/* Hero Section - Minimalistic */}
+            <section className="relative py-16 md:py-24 px-4">
+                <div className="max-w-4xl mx-auto">
+                    {/* Back Arrow */}
+                    <button
+                        onClick={() => onNavigate?.('home')}
+                        className="mb-8 w-12 h-12 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110"
+                        title="Back to Home"
+                    >
+                        <ArrowLeft className="w-6 h-6" />
+                    </button>
+                    
+                    <div className="text-center">
+                        {/* Hero Image */}
+                        <div className="mb-6 -mt-10">
+                            <img 
+                                src="https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258" 
+                                alt="IndaStreet Massage Logo" 
+                                className="w-60 h-60 object-contain mx-auto"
+                            />
+                        </div>
+                        
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-6">
+                            <HelpCircle className="w-8 h-8 text-orange-600" />
+                        </div>
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                            How can we help you?
+                        </h1>
+                        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+                        Find answers to common questions about booking massages, becoming a therapist, and using IndaStreet
+                    </p>
+                    
+                    {/* Search Bar */}
+                    <div className="relative max-w-xl mx-auto">
+                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Search for answers..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-orange-500 focus:outline-none transition-colors bg-white shadow-sm"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <div className="max-w-7xl mx-auto px-4 pb-16">
+                {/* Category Navigation */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-12">
+                    {categories.map((category) => {
+                        const IconComponent = category.icon;
+                        const isActive = activeCategory === category.id;
+                        
+                        return (
+                            <button
+                                key={category.id}
+                                onClick={() => {
+                                    setActiveCategory(category.id);
+                                    setExpandedFAQ(null);
+                                    setSearchQuery('');
+                                }}
+                                className={`
+                                    relative p-6 rounded-2xl transition-all duration-300 group
+                                    ${isActive 
+                                        ? `bg-gradient-to-br ${category.color} text-white shadow-lg scale-105` 
+                                        : 'text-gray-700 hover:bg-gray-50/50'
+                                    }
+                                `}
+                            >
+                                <div className="flex flex-col items-center text-center">
+                                    <div className={`
+                                        p-3 rounded-xl mb-3 transition-colors
+                                        ${isActive 
+                                            ? 'bg-white/20' 
+                                            : 'bg-gray-100 group-hover:bg-gray-200'
+                                        }
+                                    `}>
+                                        <IconComponent className={`
+                                            w-6 h-6 
+                                            ${isActive ? 'text-white' : 'text-gray-600'}
+                                        `} />
+                                    </div>
+                                    <h3 className="font-semibold text-sm mb-1">{category.name}</h3>
+                                    <span className={`
+                                        text-xs px-2 py-1 rounded-full
+                                        ${isActive 
+                                            ? 'bg-white/20 text-white' 
+                                            : 'bg-gray-200 text-gray-600'
+                                        }
+                                    `}>
+                                        {getCategoryCount(category.id)} questions
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* FAQ List */}
+                <div className="max-w-4xl mx-auto">
+                    {searchQuery && (
+                        <div className="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <p className="text-blue-800">
+                                <span className="font-medium">{filteredFAQs.length}</span> results found for 
+                                <span className="font-medium"> "{searchQuery}"</span>
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="space-y-5">
+                        {filteredFAQs.map((faq, index) => {
+                            const isExpanded = expandedFAQ === index;
+                            const currentFeedback = faqFeedback[index];
+                            
+                            return (
+                                <div 
+                                    key={index} 
+                                    className="rounded-2xl transition-all duration-300 overflow-hidden"
+                                >
+                                    {/* Question Container */}
+                                    <div 
+                                        onClick={() => toggleFAQ(index)}
+                                        className="cursor-pointer p-6 flex items-start justify-between gap-4 hover:bg-gradient-to-r hover:from-orange-50 hover:to-purple-50 transition-all duration-300 group"
+                                    >
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                                    {index + 1}
+                                                </div>
+                                                <span className="px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs font-semibold rounded-full">
+                                                    {categories.find(cat => cat.id === faq.category)?.name || 'General'}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors leading-tight">
+                                                {faq.question}
+                                            </h3>
+                                        </div>
+                                        <ChevronDown className={`
+                                            w-7 h-7 text-gray-400 flex-shrink-0 transition-all duration-300 mt-1
+                                            ${isExpanded ? 'rotate-180 text-orange-500 scale-110' : 'group-hover:text-orange-500 group-hover:scale-110'}
+                                        `} />
+                                    </div>
+                                    
+                                    {/* Answer Container */}
+                                    {isExpanded && (
+                                        <div className="px-6 pb-6 animate-fade-in-down">
+                                            <div className="rounded-xl p-5">
+                                                <div className="flex items-start gap-3 mb-4">
+                                                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
+                                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className="text-gray-800 leading-relaxed whitespace-pre-line text-base">
+                                                            {faq.answer}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {faq.tags && (
+                                                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+                                                        {faq.tags.map((tag, tagIndex) => (
+                                                            <span 
+                                                                key={tagIndex}
+                                                                className="px-3 py-1.5 bg-white text-gray-600 text-xs font-medium rounded-full border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors"
+                                                            >
+                                                                #{tag}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Like/Dislike Buttons */}
+                                            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                                <span className="text-sm font-medium text-gray-600">Was this helpful?</span>
+                                                <div className="flex items-center gap-3">
+                                                    <button
+                                                        onClick={() => handleFeedback(index, 'like')}
+                                                        className={`
+                                                            flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
+                                                            ${currentFeedback === 'like' 
+                                                                ? 'bg-green-500 text-white border-green-500 shadow-lg scale-105' 
+                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-300'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <ThumbsUp className="w-4 h-4" />
+                                                        <span className="text-sm font-medium">Yes</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleFeedback(index, 'dislike')}
+                                                        className={`
+                                                            flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 border-2
+                                                            ${currentFeedback === 'dislike' 
+                                                                ? 'bg-red-500 text-white border-red-500 shadow-lg scale-105' 
+                                                                : 'bg-white text-gray-600 border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                                                            }
+                                                        `}
+                                                    >
+                                                        <ThumbsDown className="w-4 h-4" />
+                                                        <span className="text-sm font-medium">No</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {filteredFAQs.length === 0 && (
+                        <div className="text-center py-16">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Search className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No results found</h3>
+                            <p className="text-gray-600 mb-4">
+                                Try adjusting your search or browse different categories
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    setActiveCategory('general');
+                                }}
+                                className="px-6 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+                            >
+                                Clear search
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Contact Support Section */}
+                <div className="max-w-4xl mx-auto mt-16">
+                    <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 md:p-12 text-center border border-orange-200">
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-500 rounded-2xl mb-6">
+                            <MessageCircle className="w-8 h-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                            Still need help?
+                        </h2>
+                        <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+                            Our friendly support team is here to help you with any questions or concerns
+                        </p>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button 
+                                onClick={() => window.open('https://wa.me/62XXX', '_blank')}
+                                className="inline-flex items-center gap-3 px-6 py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors shadow-lg"
+                            >
+                                <Phone className="w-5 h-5" />
+                                WhatsApp Support
+                            </button>
+                            <button 
+                                onClick={() => onNavigate?.('contact')}
+                                className="inline-flex items-center gap-3 px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-lg border-2 border-orange-200"
+                            >
+                                <Mail className="w-5 h-5" />
+                                Email Us
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-16">
+                <FloatingPageFooter 
+                currentLanguage={language as 'en' | 'id'}
+                onNavigate={onNavigate}
+            />
+
+            {/* Menu Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
+                onNavigate={onNavigate}
                 onMassageJobsClick={onMassageJobsClick}
-
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}
                 onAgentPortalClick={onAgentPortalClick}
                 onCustomerPortalClick={onCustomerPortalClick}
                 onAdminPortalClick={onAdminPortalClick}
-                onNavigate={onNavigate}
                 onTermsClick={onTermsClick}
                 onPrivacyClick={onPrivacyClick}
                 therapists={therapists}
                 places={places}
-                language={language}
             />
-
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-            {/* Hero Section */}
-            <div 
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20 relative bg-cover bg-center"
-                style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/massage%20app%20indastreets%20agent.png?updatedAt=1762092663015)',
-                }}
-            >
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{t('faq.title') || 'Frequently Asked Questions'}</h1>
-                    <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        {t('faq.subtitle') || 'Everything you need to know about using IndaStreet'}
-                    </p>
-                </div>
-            </div>
-
-            <div className="max-w-6xl mx-auto px-4 py-16">
-                {/* Category Tabs */}
-                <div className="mb-12">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                        {categories.map((cat) => {
-                            const getBackgroundImage = (): string | undefined => {
-                                if (cat.id === 'therapist') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20places%20indonisea.png?updatedAt=1761571657409)';
-                                if (cat.id === 'hotel') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20places%20indonisea%20hotels.png?updatedAt=1761571807411)';
-                                if (cat.id === 'employer') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20jobs.png?updatedAt=1761571942696)';
-                                if (cat.id === 'agent') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20app%20indastreets%20agent.png?updatedAt=1762092663015)';
-                                if (cat.id === 'payment') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20payments.png?updatedAt=1761572192739)';
-                                if (cat.id === 'technical') return 'url(https://ik.imagekit.io/7grri5v7d/massage%20tables.png?updatedAt=1761608423366)';
-                                return undefined;
-                            };
-
-                            const hasBackgroundImage = ['therapist', 'hotel', 'employer', 'agent', 'payment', 'technical'].includes(cat.id);
-                            const bgImage = getBackgroundImage();
-
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => {
-                                        setActiveCategory(cat.id);
-                                        setExpandedFAQ(null);
-                                    }}
-                                    className={`p-4 rounded-xl font-bold transition-all text-center ${
-                                        activeCategory === cat.id
-                                            ? 'bg-blue-600 text-white shadow-lg'
-                                            : 'bg-white text-gray-700 hover:bg-blue-50 shadow'
-                                    }`}
-                                    style={hasBackgroundImage && bgImage ? {
-                                        backgroundImage: bgImage,
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        position: 'relative'
-                                    } : {}}
-                                >
-                                    {hasBackgroundImage ? (
-                                        <>
-                                            <div className="absolute inset-0 bg-blue-600/30 rounded-xl"></div>
-                                            <div className="relative z-10 text-white font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{cat.name}</div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="text-3xl mb-2">{cat.icon}</div>
-                                            <div className="text-sm">{cat.name}</div>
-                                        </>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-                {/* Therapist Learn More Banner */}
-                {activeCategory === 'therapist' && onNavigate && (
-                    <div className="mb-8 bg-gradient-to-r from-teal-600 to-blue-600 rounded-2xl p-8 text-center text-white shadow-lg">
-                        <h3 className="text-2xl font-bold mb-3">Want to Learn More About Joining as a Therapist?</h3>
-                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                            Discover membership packages, income potential, platform features, and success stories from 500+ therapists already on IndaStreet
-                        </p>
-                        <button 
-                            onClick={() => onNavigate('therapist-info')}
-                            className="px-8 py-3 bg-white text-teal-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                        >
-                            View Complete Therapist Guide →
-                        </button>
-                    </div>
-                )}
-
-                {/* Hotel Learn More Banner */}
-                {activeCategory === 'hotel' && onNavigate && (
-                    <div className="mb-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center text-white shadow-lg">
-                        <h3 className="text-2xl font-bold mb-3">Want to Learn More About Hotel & Villa Partnership?</h3>
-                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                            Discover how to find verified therapists, manage bookings, and enhance your spa services with IndaStreet
-                        </p>
-                        <button 
-                            onClick={() => onNavigate('hotel-info')}
-                            className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                        >
-                            View Complete Hotel Guide →
-                        </button>
-                    </div>
-                )}
-
-                {/* Employer Learn More Banner */}
-                {activeCategory === 'employer' && onNavigate && (
-                    <div className="mb-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-center text-white shadow-lg">
-                        <h3 className="text-2xl font-bold mb-3">Looking to Hire Professional Therapists?</h3>
-                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                            Access our "Therapist For Contract" marketplace and find qualified professionals seeking full-time employment
-                        </p>
-                        <button 
-                            onClick={() => onNavigate('employer-info')}
-                            className="px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                        >
-                            View Hiring Guide →
-                        </button>
-                    </div>
-                )}
-
-                {/* Payment Learn More Banner */}
-                {activeCategory === 'payment' && onNavigate && (
-                    <div className="mb-8 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl p-8 text-center text-white shadow-lg">
-                        <h3 className="text-2xl font-bold mb-3">Questions About Payments?</h3>
-                        <p className="text-white/90 mb-6 max-w-2xl mx-auto">
-                            Learn about membership payments, bank transfer process, refunds, and billing information
-                        </p>
-                        <button 
-                            onClick={() => onNavigate('payment-info')}
-                            className="px-8 py-3 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-colors shadow-lg"
-                        >
-                            View Payment Guide →
-                        </button>
-                    </div>
-                )}
-
-                {/* FAQ List */}
-                <div className="space-y-4">
-                    {filteredFAQs.map((faq, index) => (
-                        <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                            <button
-                                onClick={() => setExpandedFAQ(expandedFAQ === index ? null : index)}
-                                className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
-                            >
-                                <h3 className="text-lg font-bold text-gray-900 pr-4">
-                                    {faq.question}
-                                </h3>
-                                <svg
-                                    className={`w-6 h-6 text-blue-600 flex-shrink-0 transition-transform ${
-                                        expandedFAQ === index ? 'transform rotate-180' : ''
-                                    }`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-                            {expandedFAQ === index && (
-                                <div className="px-6 pb-6">
-                                    <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                        {faq.answer}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Still Have Questions */}
-                <div className="mt-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-12 text-white text-center">
-                    <h2 className="text-3xl font-bold mb-4">{t('faq.stillHaveQuestions') || 'Still Have Questions?'}</h2>
-                    <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-                        {t('faq.contactSupport') || 'Our support team is here to help you succeed on IndaStreet'}
-                    </p>
-                    <div className="flex flex-wrap gap-4 pb-20 justify-center">
-                        <button className="px-8 py-4 bg-white text-orange-600 font-bold rounded-lg hover:bg-orange-50 transition-colors shadow-lg">
-                            Contact Support
-                        </button>
-                        <button className="px-8 py-4 border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-orange-600 transition-colors">
-                            WhatsApp Us
-                        </button>
-                    </div>
-                    <p className="mt-6 text-orange-100">
-                        📧 indastreet.id@gmail.com | 📱 WhatsApp: +6281392000050
-                    </p>
-                </div>
-
-                {/* Quick Links */}
-                <div className="mt-16 grid md:grid-cols-3 gap-8">
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-5xl mb-4">📖</div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">User Guides</h3>
-                        <p className="text-gray-600 mb-4">Step-by-step tutorials for all features</p>
-                        <button className="text-blue-600 font-bold hover:text-blue-700">
-                            View Guides →
-                        </button>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-5xl mb-4">💬</div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Community Forum</h3>
-                        <p className="text-gray-600 mb-4">Connect with other users</p>
-                        <button className="text-blue-600 font-bold hover:text-blue-700">
-                            Join Forum →
-                        </button>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-lg text-center">
-                        <div className="text-5xl mb-4">🎥</div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Video Tutorials</h3>
-                        <p className="text-gray-600 mb-4">Watch how to use the platform</p>
-                        <button className="text-blue-600 font-bold hover:text-blue-700">
-                            Watch Videos →
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <style>{`
-            @keyframes float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-            }
-            .animate-float {
-                animation: float 3s ease-in-out infinite;
-            }
-        `}</style>
         </div>
     );
 };
 
 export default FAQPage;
-

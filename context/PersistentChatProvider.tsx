@@ -1097,7 +1097,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       } : null,
     }));
     
-    addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 Payment can be made now. You can pay via cash or bank transfer.`);
+    addSystemNotification(`✨ Service completed!\n\n⏱️ Total session: ${totalTime} minutes\n   • Massage: ${duration} min\n   • Travel time: 30-60 min\n\n💳 PAYMENT OPTIONS:\n💵 Cash - Pay directly to therapist\n🏦 Bank Transfer - Use bank details in chat\n\n⚠️ IndaStreet suggests using bank details shared in this chat window to prevent any misunderstanding. If bank details not shared, please request therapist to post them in chat.`);
   }, [chatState.currentBooking, addSystemNotification]);
 
   // 🔒 Share bank card details SECURELY (masked display)
