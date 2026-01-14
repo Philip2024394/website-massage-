@@ -82,7 +82,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     } : null;
 
     // Get location-specific hero image
-    const heroImage = getHeroImageForTherapist(therapist.$id, therapist.location || 'Yogyakarta');
+    const heroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || 'Yogyakarta'));
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text

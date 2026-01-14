@@ -204,7 +204,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 />
 
                 {/* Discount badge (top left) */}
-                {isDiscountActive(place) && (
+                {isDiscountActive(place as any) && (
                     <div className="absolute top-3 left-3 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
                         {(place as any).discountPercentage}% OFF
                     </div>

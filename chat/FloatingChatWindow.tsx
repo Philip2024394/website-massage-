@@ -424,7 +424,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       addNotification('success', 'Booking Confirmed', 'Chat window will update shortly');
       
       // Reset form
-      setBookingFormData({ customerName: '', customerWhatsApp: '', location: '' });
+      setBookingFormData({ customerName: '', customerWhatsApp: '', location: '', coordinates: null });
 
       // The Appwrite subscription will automatically add the new chat room
 

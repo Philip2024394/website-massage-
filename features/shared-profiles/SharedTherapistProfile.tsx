@@ -297,7 +297,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         const shareUrl = generateTherapistShareURL(therapist);
         
         // Use hero image from pool for social sharing
-        const previewImage = getHeroImageForTherapist(therapist.$id, therapist.location || 'Yogyakarta');
+        const previewImage = getHeroImageForTherapist(therapist.$id, (therapist.location || 'Yogyakarta'));
         
         console.log('📱 Social Media Preview:', { 
             therapist: therapist.name, 
