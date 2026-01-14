@@ -1089,8 +1089,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'bookings':
                 return (
                     <BookingsTab 
-                        upcomingBookings={upcomingBookings}
-                        pastBookings={pastBookings}
+                        upcomingbookings={upcomingBookings as any}
+                        pastbookings={pastBookings as any}
                         onUpdateBookingStatus={onUpdateBookingStatus}
                         t={t}
                         BookingCard={BookingCard}

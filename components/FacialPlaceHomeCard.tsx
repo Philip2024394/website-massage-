@@ -431,8 +431,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
             <div className="mx-4 pb-4 flex justify-between items-center">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                     {userLocation && (
-                        <DistanceDisplay
-                            userLocation={userLocation}
+                        <DistanceDisplay {...{} as any} userLocation={userLocation}
                             targetLocation={{
                                 lat: parseFloat(String((place as any).lat || (place as any).latitude || 0)),
                                 lng: parseFloat(String((place as any).lng || (place as any).longitude || 0))
