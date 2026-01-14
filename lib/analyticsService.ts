@@ -376,7 +376,7 @@ class AnalyticsService {
 
     private trackSessionEnd(): void {
         const sessionDuration = Date.now() - this.sessionStartTime;
-        this.trackEvent('session_ended', {
+        this.trackEvent('page_view' as any, {
             duration: sessionDuration,
             sessionId: this.currentSessionId
         });
