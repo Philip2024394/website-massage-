@@ -639,7 +639,7 @@ export class PWANotificationManager {
                     badge: '/pwa-icon-192.png',
                     tag: message.tag || 'chat-message',
                     requireInteraction: true,
-                    vibrate: [200, 100, 200],
+                    // vibrate: [200, 100, 200] // Not supported in type,
                     data: {
                         type: 'chat-message',
                         messageId: message.messageId,
@@ -773,7 +773,7 @@ export class PWALifecycleManager {
                     // Initialize push notifications if therapist ID available
                     if (therapistId) {
                         PWANotificationManager.registerPushSubscription(therapistId);
-                        PWANotificationManager.scheduleBackgroundMessageCheck(therapistId);
+                        PWANotificationManager.stopBackgroundMessageCheck(therapistId);
                     }
                 })
                 .catch(error => {
@@ -793,7 +793,7 @@ export class PWALifecycleManager {
                 }));
             } else if (document.hidden && therapistId) {
                 // App went to background - ensure background checking is active
-                PWANotificationManager.scheduleBackgroundMessageCheck(therapistId);
+                PWANotificationManager.stopBackgroundMessageCheck(therapistId);
             }
         });
         
