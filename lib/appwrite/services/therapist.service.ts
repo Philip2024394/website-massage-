@@ -383,7 +383,7 @@ export const therapistService = {
                 console.error('\n' + '💥'.repeat(50));
                 console.error('💥 [FALLBACK ERROR] Search fallback also failed');
                 console.error('💥'.repeat(50));
-                console.error('🔴 Search error:', search(error as Error).message);
+                console.error('🔴 Search error:', (error as Error).message);
                 console.error('💥'.repeat(50) + '\n');
             }
             

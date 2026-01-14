@@ -189,7 +189,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             console.log('📡 [APPWRITE] Initiating direct fetch');
             console.log('📡'.repeat(40));
             console.log('🆔 Therapist ID:', therapistId);
-            console.log('🔌 Appwrite client initialized:', !!therapistService);
+            console.log('🔌 Appwrite client initialized:', !!true);
             console.log('📡'.repeat(40) + '\n');
             
             try {

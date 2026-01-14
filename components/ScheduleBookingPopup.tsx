@@ -336,9 +336,9 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 <p className="text-xs text-orange-800 flex items-center gap-1">
                   <Clock className="inline w-3 h-3" />
                   {therapistType === 'place' ? (
-                    <>{language === 'id' ? `Buka hari ini: ${openingTime}–${closingTime}` : `Open today: ${openingTime}–${closingTime}`}</>
+                    <>{language === 'id' ? `Buka hari ini: 9:00–21:00` : `Open today: 9:00–21:00`}</>
                   ) : (
-                    <>{language === 'id' ? `Booking terakhir hari ini: ${lastBookingTime}` : `Last booking today: ${lastBookingTime}`}</>
+                    <>{language === 'id' ? `Booking terakhir hari ini: 20:00` : `Last booking today: 20:00`}</>
                   )}
                 </p>
               </div>

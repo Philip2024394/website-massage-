@@ -27,7 +27,7 @@ interface TherapistCardModalsProps {
     onCloseShare: () => void;
     onSubmitReview: (reviewData: { name: string; whatsappNumber: string; rating: number; providerId: string | number; providerType: 'therapist' | 'place' }) => Promise<void>;
     onConfirmedBooking: () => void;
-    onSubmitBookingForm: (data: BookingData) => Promise<void>;
+    onSubmitBookingForm: (data: any) => Promise<void>;
     onShowRegisterPrompt?: () => void;
     pricing: { '60': number; '90': number; '120': number };
     currentLanguage: 'en' | 'id';
