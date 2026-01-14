@@ -103,6 +103,14 @@ export const simpleBookingService = {
     createBooking: async (bookingData: any) => {
         console.log('Simple booking service placeholder', bookingData);
         return null;
+    },
+    updateStatus: async (bookingId: string | number, status: string) => {
+        console.log('Updating booking status', bookingId, status);
+        return null;
+    },
+    notifyAdmin: async (message: string) => {
+        console.log('Notifying admin:', message);
+        return null;
     }
 };
 
@@ -148,6 +156,7 @@ export const simpleBookingService = {
  * ⏳ premiumPaymentsService
  * ⏳ therapistMenusService
  */
+
 
 
 

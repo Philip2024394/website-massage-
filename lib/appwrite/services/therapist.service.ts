@@ -902,6 +902,22 @@ export const therapistService = {
         } catch (error) {
             console.error('❌ Error uploading KTP ID:', error);
             throw error;
+        
+        }
+    },
+    async updateTherapist(therapistId: string, updates: any): Promise<any> {
+        try {
+            console.log('Updating therapist:', therapistId, updates);
+            const response = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists,
+                therapistId,
+                updates
+            );
+            return response;
+        } catch (error) {
+            console.error('Error updating therapist:', error);
+            throw error;
         }
     }
 };

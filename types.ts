@@ -391,6 +391,11 @@ export interface Place {
     openingTime: string;
     closingTime: string;
     activeMembershipDate: string;
+    price60?: string; // Price for 60 minute service
+    price90?: string; // Price for 90 minute service
+    price120?: string; // Price for 120 minute service
+    status?: string; // Place status
+    membershipStartDate?: string; // Membership start date
     analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
@@ -634,6 +639,12 @@ export interface ChatRoom {
     lastMessageAt?: string;
     lastMessagePreview?: string;
     unreadCount: number;       // For therapist side
+  providerProfilePicture?: string; // Provider profile picture URL
+  profilePicture?: string;   // Generic profile picture URL
+  serviceTime?: string;      // Booking service time
+  serviceDate?: string;      // Booking service date
+  serviceDuration?: number;  // Service duration in minutes
+  serviceType?: string;      // Type of service booked
     
     createdAt?: string;
     updatedAt?: string;
@@ -821,3 +832,4 @@ export interface UserCoins {
     topProvider?: string;
     topProviderCoins?: number;
 }
+
