@@ -780,7 +780,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
-    const price = bookingData.totalPrice || bookingData.price || 0;
+    const price = bookingData.totalPrice || (bookingData as any).price || 0;
     
     // Determine booking type
     const isScheduled = !!(bookingData.scheduledDate || chatState.selectedDate);

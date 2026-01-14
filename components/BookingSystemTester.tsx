@@ -237,7 +237,7 @@ export const BookingSystemTester: React.FC = () => {
       
       const isBookingActive = bookingStatus === 'active'
       const hasConfirmationMessage = messages.some(m => 
-        m.type === 'system' && m.text.includes('booking is confirmed')
+        (m as any).type === 'system' && (m as any).text?.includes('booking is confirmed')
       )
       
       if (isBookingActive && hasConfirmationMessage) {

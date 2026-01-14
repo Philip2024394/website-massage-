@@ -362,8 +362,8 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             // 🌐 Geographic targeting for local SEO
             { name: 'geo.region', content: 'ID' },
             { name: 'geo.placename', content: city },
-            { name: 'geo.position', content: therapist.coordinates ? `${therapist.coordinates.latitude};${therapist.coordinates.longitude}` : '' },
-            { name: 'ICBM', content: therapist.coordinates ? `${therapist.coordinates.latitude}, ${therapist.coordinates.longitude}` : '' },
+            { name: 'geo.position', content: therapist.coordinates ? `${(therapist.coordinates as any)?.latitude};${(therapist.coordinates as any)?.longitude}` : '' },
+            { name: 'ICBM', content: therapist.coordinates ? `${(therapist.coordinates as any)?.latitude}, ${(therapist.coordinates as any)?.longitude}` : '' },
         ];
 
         metaTags.forEach(({ name, property, itemprop, content }) => {
