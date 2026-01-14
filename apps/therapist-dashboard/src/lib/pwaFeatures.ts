@@ -282,23 +282,7 @@ export class PWANotificationManager {
                         therapistId: booking.therapistId,
                         status: booking.status,
                         url: `/?action=open-booking&id=${booking.id}`
-                    },
-                    // actions: [
-                        {
-                            action: 'accept-booking',
-                            title: '✅ Accept',
-                            icon: '/icons/accept.png'
-                        },
-                        {
-                            action: 'view-details',
-                            title: '👁️ View Details',
-                            icon: '/icons/view.png'
-                        },
-                        {
-                            action: 'dismiss',
-                            title: 'Dismiss'
-                        }
-                    ]
+                    }
                 });
             } catch (error) {
                 console.warn('Service worker notification failed, falling back:', error);
@@ -599,8 +583,7 @@ export class PWANotificationManager {
             const response = await fetch('/api/push-subscriptions', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     therapistId,
                     subscription
@@ -647,18 +630,7 @@ export class PWANotificationManager {
                         action: 'open-chat',
                         timestamp: Date.now(),
                         url: '/?action=open-chat'
-                    },
-                    // actions: [
-                        {
-                            action: 'open-chat',
-                            title: 'Open Chat',
-                            icon: '/pwa-icon-96.png'
-                        },
-                        {
-                            action: 'dismiss',
-                            title: 'Dismiss'
-                        }
-                    ]
+                    }
                 });
                 return;
             } catch (error) {
