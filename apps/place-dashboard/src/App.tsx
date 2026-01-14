@@ -11,7 +11,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'chat' | 'payment'>('dashboard');
-  const [language, setLanguage] = useState<'en' | 'id'>(() => {
+  const [language, setLanguage] = useState<'en' | 'id' | 'gb'>(() => {
     const stored = localStorage.getItem('indastreet_language');
     return (stored === 'en' || stored === 'id') ? stored : 'id';
   });

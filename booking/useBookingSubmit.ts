@@ -255,7 +255,7 @@ export function useBookingSubmit(
             // Send welcome messages with retry
             try {
                 await withAppwriteRetry(
-                    () => sendWelcomeMessage(chatRoom.$id, therapistName || 'Therapist', userId),
+                    () => sendWelcomeMessage(chatRoom.$id as string, therapistName || 'Therapist', userId),
                     'Send Welcome Message'
                 );
                 console.log('✅ Welcome message sent');
