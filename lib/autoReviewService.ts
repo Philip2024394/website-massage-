@@ -111,7 +111,7 @@ class AutoReviewService {
             }
             
             return true;
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error checking localStorage capacity:', error);
             return false; // Fail safe
         }
@@ -165,8 +165,8 @@ class AutoReviewService {
                 }
             }));
             
-        } catch (error) {
-            console.error(`❌ Error adding auto-review for ${therapistName}:`, error.message);
+        } catch (error: unknown) {
+            console.error(`❌ Error adding auto-review for ${therapistName}:`, (error as Error).message);
         }
     }
     

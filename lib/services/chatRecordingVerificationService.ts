@@ -1,8 +1,8 @@
 // 🎯 CHAT SYSTEM VERIFICATION & RECORDING STATUS CHECKER
 // Comprehensive verification of chat recording and admin monitoring integration
 
-import { databases, client, Query } from '../appwrite';
-import { APPWRITE_CONFIG } from '../appwrite.config';
+import { databases, client, Query } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config';
 
 export class ChatRecordingVerificationService {
     
@@ -39,7 +39,7 @@ export class ChatRecordingVerificationService {
         };
         summary: string;
     }> {
-        console.log('🚀 [CHAT VERIFICATION] Starting comprehensive chat system verification...');
+        console.log('🚀 [CHAT VERIFICATION] Starting comprehensive chat system verification..');
         console.log('='.repeat(80));
         
         const result = {
@@ -96,9 +96,9 @@ export class ChatRecordingVerificationService {
             
             return result;
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('❌ [CHAT VERIFICATION] Error during verification:', error);
-            result.summary = `❌ Verification failed: ${error.message}`;
+            result.summary = `❌ Verification failed: ${(error as Error).message}`;
             return result;
         }
     }
@@ -107,7 +107,7 @@ export class ChatRecordingVerificationService {
      * 📊 VERIFY CHAT COLLECTIONS
      */
     private async verifyCollections(result: any): Promise<void> {
-        console.log('📊 [CHAT VERIFICATION] Checking chat collections...');
+        console.log('📊 [CHAT VERIFICATION] Checking chat collections..');
         
         // Check Messages Collection
         try {
@@ -125,8 +125,8 @@ export class ChatRecordingVerificationService {
             
             console.log(`✅ Messages Collection: ${messagesResult.total} messages found`);
             
-        } catch (error) {
-            console.log('❌ Messages Collection: Error -', error.message);
+        } catch (error: unknown) {
+            console.log('❌ Messages Collection: Error -', (error as Error).message);
             result.collections.messages.status = 'error';
         }
 
@@ -146,8 +146,8 @@ export class ChatRecordingVerificationService {
             
             console.log(`✅ Chat Rooms Collection: ${chatRoomsResult.total} rooms found`);
             
-        } catch (error) {
-            console.log('⚠️ Chat Rooms Collection: Not found or error -', error.message);
+        } catch (error: unknown) {
+            console.log('⚠️ Chat Rooms Collection: Not found or error -', (error as Error).message);
             result.collections.chatRooms.status = 'not_found';
         }
 
@@ -166,8 +166,8 @@ export class ChatRecordingVerificationService {
             
             console.log(`✅ Notifications Collection: ${notificationsResult.total} notifications found`);
             
-        } catch (error) {
-            console.log('❌ Notifications Collection: Error -', error.message);
+        } catch (error: unknown) {
+            console.log('❌ Notifications Collection: Error -', (error as Error).message);
             result.collections.notifications.status = 'error';
         }
     }
@@ -176,14 +176,14 @@ export class ChatRecordingVerificationService {
      * 🎛️ VERIFY ADMIN MONITORING
      */
     private async verifyAdminMonitoring(result: any): Promise<void> {
-        console.log('🎛️ [CHAT VERIFICATION] Checking admin monitoring capabilities...');
+        console.log('🎛️ [CHAT VERIFICATION] Checking admin monitoring capabilities..');
         
         // Check if AdminChatCenter component exists
         try {
             // This would be checked at runtime in the actual admin dashboard
             result.adminMonitoring.chatCenter = true;
             console.log('✅ Admin Chat Center: Available');
-        } catch (error) {
+        } catch (error: unknown) {
             console.log('❌ Admin Chat Center: Not available');
         }
 
@@ -191,7 +191,7 @@ export class ChatRecordingVerificationService {
         try {
             result.adminMonitoring.chatMonitor = true;
             console.log('✅ Admin Chat Monitor: Available');
-        } catch (error) {
+        } catch (error: unknown) {
             console.log('❌ Admin Chat Monitor: Not available');
         }
 
@@ -199,7 +199,7 @@ export class ChatRecordingVerificationService {
         try {
             result.adminMonitoring.realTimeUpdates = true;
             console.log('✅ Real-time Updates: Supported');
-        } catch (error) {
+        } catch (error: unknown) {
             console.log('❌ Real-time Updates: Not supported');
         }
     }
@@ -208,7 +208,7 @@ export class ChatRecordingVerificationService {
      * 📝 VERIFY RECORDING CAPABILITIES
      */
     private async verifyRecordingCapabilities(result: any): Promise<void> {
-        console.log('📝 [CHAT VERIFICATION] Checking recording capabilities...');
+        console.log('📝 [CHAT VERIFICATION] Checking recording capabilities..');
         
         // Check if messages are being recorded
         if (result.collections.messages.count > 0) {
@@ -248,7 +248,7 @@ export class ChatRecordingVerificationService {
      * 🔗 VERIFY INTEGRATION POINTS
      */
     private async verifyIntegrationPoints(result: any): Promise<void> {
-        console.log('🔗 [CHAT VERIFICATION] Checking integration points...');
+        console.log('🔗 [CHAT VERIFICATION] Checking integration points..');
         
         // Check therapist chat integration
         if (result.collections.messages.recentMessages.length > 0) {
@@ -389,12 +389,12 @@ ${inactiveFeatures.length > 0 ? `❌ INACTIVE FEATURES (${inactiveFeatures.lengt
                 lastMessage,
                 summary: `Chat recording ${status.toUpperCase()}: ${messagesResult.total} messages recorded${lastMessage ? `, last message: ${new Date(lastMessage.$createdAt).toLocaleString()}` : ''}`
             };
-        } catch (error) {
+        } catch (error: unknown) {
             return {
                 status: 'inactive',
                 messageCount: 0,
                 lastMessage: null,
-                summary: `❌ Chat recording verification failed: ${error.message}`
+                summary: `❌ Chat recording verification failed: ${(error as Error).message}`
             };
         }
     }
@@ -406,7 +406,11 @@ export const chatRecordingVerification = new ChatRecordingVerificationService();
 // Auto-verify on import for admin dashboard
 if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
     setTimeout(() => {
-        console.log('🔍 [CHAT VERIFICATION] Auto-verifying chat system...');
+        console.log('🔍 [CHAT VERIFICATION] Auto-verifying chat system..');
         chatRecordingVerification.verifyCompleteChatSystem();
     }, 5000);
 }
+
+
+
+

@@ -63,10 +63,10 @@ export class AppwriteDataFlowScanner {
             
             return results;
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('❌ [APPWRITE SCANNER] Connection failed:', error);
             results.connectionStatus = 'failed';
-            results.errors.push(error.message);
+            results.errors.push((error as Error).message);
             return results;
         }
     }
@@ -99,14 +99,14 @@ export class AppwriteDataFlowScanner {
                 results.totalEntities += documents.total;
                 console.log(`✅ ${collectionName}: ${documents.total} documents found`);
                 
-            } catch (error) {
-                console.error(`❌ ${collectionName} failed:`, error.message);
+            } catch (error: unknown) {
+                console.error(`❌ ${collectionName} failed:`, (error as Error).message);
                 results.collections[collectionName] = {
                     id: collectionId,
                     status: 'error',
-                    error: error.message
+                    error: (error as Error).message
                 };
-                results.errors.push(`${collectionName}: ${error.message}`);
+                results.errors.push(`${collectionName}: ${(error as Error).message}`);
             }
         }
     }
@@ -132,10 +132,10 @@ export class AppwriteDataFlowScanner {
             
             console.log(`✅ Storage: ${files.total} files found in bucket`);
             
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('❌ Storage scan failed:', error);
-            results.storage = { error: error.message };
-            results.errors.push(`Storage: ${error.message}`);
+            results.storage = { error: (error as Error).message };
+            results.errors.push(`Storage: ${(error as Error).message}`);
         }
     }
     
@@ -259,7 +259,7 @@ export class AppwriteDataFlowScanner {
             console.log('  Fallback: Placeholder SVG or colored initial circle');
             
             return true;
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('❌ Profile image mapping failed:', error);
             return false;
         }
@@ -275,3 +275,4 @@ if (typeof window !== 'undefined' && window.location.hostname.includes('localhos
         dataFlowScanner.scanCompleteDataFlow();
     }, 2000);
 }
+

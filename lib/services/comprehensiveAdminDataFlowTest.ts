@@ -1,8 +1,8 @@
 // 🚀 COMPREHENSIVE ADMIN DATA FLOW TEST
 // Tests commission tracking from ALL bookings and scheduled bookings + chat recording verification
 
-import { databases, Query } from '../appwrite';
-import { APPWRITE_CONFIG } from '../appwrite.config';
+import { databases, Query } from './appwrite';
+import { APPWRITE_CONFIG } from './appwrite.config';
 
 export class ComprehensiveAdminDataFlowTest {
     
@@ -22,7 +22,7 @@ export class ComprehensiveAdminDataFlowTest {
         overallStatus: 'excellent' | 'good' | 'partial' | 'needs_attention';
         summary: string;
     }> {
-        console.log('🚀 [ADMIN DATA FLOW TEST] Starting comprehensive test...');
+        console.log('🚀 [ADMIN DATA FLOW TEST] Starting comprehensive test..');
         console.log('='.repeat(80));
         
         const results = {
@@ -37,23 +37,23 @@ export class ComprehensiveAdminDataFlowTest {
 
         try {
             // 💰 TEST COMMISSION TRACKING
-            console.log('💰 Testing commission tracking from all bookings...');
+            console.log('💰 Testing commission tracking from all bookings..');
             results.commissionTracking = await this.testCommissionTracking();
 
             // 💬 TEST CHAT RECORDING  
-            console.log('💬 Testing chat recording system...');
+            console.log('💬 Testing chat recording system..');
             results.chatRecording = await this.testChatRecording();
 
             // 📋 TEST BOOKING PIPELINE
-            console.log('📋 Testing booking-to-commission pipeline...');
+            console.log('📋 Testing booking-to-commission pipeline..');
             results.bookingPipeline = await this.testBookingPipeline();
 
             // 📅 TEST SCHEDULED BOOKINGS
-            console.log('📅 Testing scheduled booking tracking...');
+            console.log('📅 Testing scheduled booking tracking..');
             results.scheduledBookings = await this.testScheduledBookings();
 
             // ⚡ TEST REAL-TIME UPDATES
-            console.log('⚡ Testing real-time update capabilities...');
+            console.log('⚡ Testing real-time update capabilities..');
             results.realTimeUpdates = await this.testRealTimeUpdates();
 
             // 🎯 DETERMINE OVERALL STATUS
@@ -68,9 +68,9 @@ export class ComprehensiveAdminDataFlowTest {
 
             return results;
 
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('❌ [ADMIN DATA FLOW TEST] Test failed:', error);
-            results.summary = `❌ Comprehensive test failed: ${error.message}`;
+            results.summary = `❌ Comprehensive test failed: ${(error as Error).message}`;
             return results;
         }
     }
@@ -79,7 +79,7 @@ export class ComprehensiveAdminDataFlowTest {
      * 💰 TEST COMMISSION TRACKING
      */
     private async testCommissionTracking(): Promise<any> {
-        console.log('💰 [COMMISSION TEST] Checking commission tracking...');
+        console.log('💰 [COMMISSION TEST] Checking commission tracking..');
         
         const result = {
             status: 'unknown',
@@ -130,15 +130,15 @@ export class ComprehensiveAdminDataFlowTest {
                 console.log(`✅ Commission tracking active: ${result.commissionsGenerated} commissions from ${result.completedBookings} completed bookings`);
                 result.status = 'active';
 
-            } catch (commissionError) {
-                console.log('❌ Commission records collection error:', commissionError.message);
-                result.errors.push(`Commission records: ${commissionError.message}`);
+            } catch (commissionError: unknown) {
+                console.log('❌ Commission records collection error:', (commissionError as Error).message);
+                result.errors.push(`Commission records: ${(commissionError as Error).message}`);
                 result.status = 'partial';
             }
 
-        } catch (error) {
-            console.log('❌ Booking collection error:', error.message);
-            result.errors.push(`Bookings: ${error.message}`);
+        } catch (error: unknown) {
+            console.log('❌ Booking collection error:', (error as Error).message);
+            result.errors.push(`Bookings: ${(error as Error).message}`);
             result.status = 'error';
         }
 
@@ -149,7 +149,7 @@ export class ComprehensiveAdminDataFlowTest {
      * 💬 TEST CHAT RECORDING
      */
     private async testChatRecording(): Promise<any> {
-        console.log('💬 [CHAT TEST] Checking chat recording...');
+        console.log('💬 [CHAT TEST] Checking chat recording..');
         
         const result = {
             status: 'unknown',
@@ -206,9 +206,9 @@ export class ComprehensiveAdminDataFlowTest {
                 result.status = 'inactive';
             }
 
-        } catch (error) {
-            console.log('❌ Messages collection error:', error.message);
-            result.errors.push(`Messages: ${error.message}`);
+        } catch (error: unknown) {
+            console.log('❌ Messages collection error:', (error as Error).message);
+            result.errors.push(`Messages: ${(error as Error).message}`);
             result.status = 'error';
         }
 
@@ -219,7 +219,7 @@ export class ComprehensiveAdminDataFlowTest {
      * 📋 TEST BOOKING PIPELINE
      */
     private async testBookingPipeline(): Promise<any> {
-        console.log('📋 [PIPELINE TEST] Checking booking-to-commission pipeline...');
+        console.log('📋 [PIPELINE TEST] Checking booking-to-commission pipeline..');
         
         const result = {
             status: 'unknown',
@@ -275,14 +275,14 @@ export class ComprehensiveAdminDataFlowTest {
                 console.log(`✅ Pipeline tracking: ${result.pipelineEfficiency.toFixed(1)}% efficiency`);
                 result.status = 'active';
 
-            } catch (commissionError) {
-                console.log('⚠️ Commission pipeline incomplete:', commissionError.message);
+            } catch (commissionError: unknown) {
+                console.log('⚠️ Commission pipeline incomplete:', (commissionError as Error).message);
                 result.status = 'partial';
             }
 
-        } catch (error) {
-            console.log('❌ Pipeline test error:', error.message);
-            result.errors.push(`Pipeline: ${error.message}`);
+        } catch (error: unknown) {
+            console.log('❌ Pipeline test error:', (error as Error).message);
+            result.errors.push(`Pipeline: ${(error as Error).message}`);
             result.status = 'error';
         }
 
@@ -293,7 +293,7 @@ export class ComprehensiveAdminDataFlowTest {
      * 📅 TEST SCHEDULED BOOKINGS
      */
     private async testScheduledBookings(): Promise<any> {
-        console.log('📅 [SCHEDULED TEST] Checking scheduled booking tracking...');
+        console.log('📅 [SCHEDULED TEST] Checking scheduled booking tracking..');
         
         const result = {
             status: 'unknown',
@@ -348,9 +348,9 @@ export class ComprehensiveAdminDataFlowTest {
             console.log(`✅ Scheduled booking tracking: ${result.futureBookings} future bookings, Rp ${result.scheduledRevenue.toLocaleString('id-ID')} scheduled revenue`);
             result.status = 'active';
 
-        } catch (error) {
-            console.log('❌ Scheduled booking test error:', error.message);
-            result.errors.push(`Scheduled: ${error.message}`);
+        } catch (error: unknown) {
+            console.log('❌ Scheduled booking test error:', (error as Error).message);
+            result.errors.push(`Scheduled: ${(error as Error).message}`);
             result.status = 'error';
         }
 
@@ -361,7 +361,7 @@ export class ComprehensiveAdminDataFlowTest {
      * ⚡ TEST REAL-TIME UPDATES
      */
     private async testRealTimeUpdates(): Promise<any> {
-        console.log('⚡ [REALTIME TEST] Checking real-time update capabilities...');
+        console.log('⚡ [REALTIME TEST] Checking real-time update capabilities..');
         
         const result = {
             status: 'unknown',
@@ -397,9 +397,9 @@ export class ComprehensiveAdminDataFlowTest {
             console.log(`✅ Real-time updates: ${result.recentActivity} recent updates detected`);
             result.status = 'active';
 
-        } catch (error) {
-            console.log('❌ Real-time test error:', error.message);
-            result.errors.push(`Real-time: ${error.message}`);
+        } catch (error: unknown) {
+            console.log('❌ Real-time test error:', (error as Error).message);
+            result.errors.push(`Real-time: ${(error as Error).message}`);
             result.status = 'error';
         }
 
@@ -486,7 +486,9 @@ export const adminDataFlowTest = new ComprehensiveAdminDataFlowTest();
 // Auto-test on import for development
 if (typeof window !== 'undefined' && window.location.hostname.includes('localhost')) {
     setTimeout(() => {
-        console.log('🧪 [ADMIN DATA FLOW TEST] Auto-running comprehensive test...');
+        console.log('🧪 [ADMIN DATA FLOW TEST] Auto-running comprehensive test..');
         adminDataFlowTest.runCompleteDataFlowTest();
     }, 8000);
 }
+
+

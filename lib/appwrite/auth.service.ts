@@ -54,13 +54,13 @@ export const authService = {
                         timestamp: Date.now()
                     }));
                     console.log('✅ Session backup saved to localStorage');
-                } catch (err) {
+                } catch (err: unknown) {
                     console.warn('⚠️ Failed to save session backup:', err);
                 }
             }
             
             return user;
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error logging in:', error);
             throw error;
         }
@@ -123,7 +123,7 @@ export const authService = {
                         timestamp: Date.now()
                     }));
                     console.log('✅ Session backup saved to localStorage');
-                } catch (err) {
+                } catch (err: unknown) {
                     console.warn('⚠️ Failed to save session backup:', err);
                 }
                 console.log('✅ Auto-login successful');
@@ -132,24 +132,24 @@ export const authService = {
         } catch (error: any) {
             console.error('❌ auth.service: Registration failed:', error);
             console.error('❌ Error details:', {
-                message: error.message,
-                code: error.code,
-                type: error.type,
+                message: (error as Error).message,
+                code: (error as any).code,
+                type: (error as any).type,
                 response: error.response
             });
             
             // Provide specific error messages based on Appwrite error codes
-            if (error.code === 409 || error.message?.includes('already exists')) {
+            if ((error as any).code === 409 || (error as Error).message?.includes('already exists')) {
                 throw new Error('An account with this email already exists');
-            } else if (error.code === 400 || error.message?.toLowerCase().includes('password')) {
+            } else if ((error as any).code === 400 || (error as Error).message?.toLowerCase().includes('password')) {
                 throw new Error('Password must be at least 8 characters long');
-            } else if (error.code === 429 || error.message?.includes('rate limit')) {
+            } else if ((error as any).code === 429 || (error as Error).message?.includes('rate limit')) {
                 throw new Error('Too many registration attempts. Please wait a moment');
-            } else if (error.code === 400) {
+            } else if ((error as any).code === 400) {
                 // Generic 400 error - don't expose technical details about email format
                 throw new Error('Unable to create account. Please try a different email or contact support.');
             } else {
-                throw new Error(error.message || 'Registration failed. Please try again');
+                throw new Error((error as Error).message || 'Registration failed. Please try again');
             }
         }
     },
@@ -164,10 +164,10 @@ export const authService = {
             try {
                 localStorage.removeItem('therapist_session_backup');
                 console.log('🗑️ Session backup cleared from localStorage');
-            } catch (err) {
+            } catch (err: unknown) {
                 console.warn('⚠️ Failed to clear session backup:', err);
             }
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error logging out:', error);
             throw error;
         }
@@ -231,3 +231,4 @@ export const authService = {
         }
     }
 };
+

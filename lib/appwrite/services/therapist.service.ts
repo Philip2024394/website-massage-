@@ -83,9 +83,9 @@ export const therapistService = {
             }
             
             return response;
-        } catch (error) {
-            console.error('Error creating therapist:', error);
-            throw error;
+        } catch (error: unknown) {
+            const err = error as Error; console.error('Error creating therapist:', err);
+            throw error as Error;
         }
     },
     async getTherapists(): Promise<any[]> {
@@ -200,25 +200,25 @@ export const therapistService = {
             });
             
             return therapistsWithImages;
-        } catch (error) {
-            console.error('❌ [CRITICAL] Therapist fetch failed:', error);
-            console.error('🔍 [ERROR DETAILS] Message:', error.message);
-            console.error('🔍 [ERROR DETAILS] Code:', error.code);
-            console.error('🔍 [ERROR DETAILS] Type:', error.type);
+        } catch (error: unknown) {
+            const err = error as Error; console.error('❌ [CRITICAL] Therapist fetch failed:', err);
+            console.error('🔍 [ERROR DETAILS] Message:', (error as Error).message);
+            console.error('🔍 [ERROR DETAILS] Code:', (error as any).code);
+            console.error('🔍 [ERROR DETAILS] Type:', (error as any).type);
             console.error('Database ID:', APPWRITE_CONFIG.databaseId);
             console.error('Collection ID:', APPWRITE_CONFIG.collections.therapists);
             
-            if (error.message?.includes('Collection with the requested ID could not be found')) {
+            if ((error as Error).message?.includes('Collection with the requested ID could not be found')) {
                 console.error('💡 [FIX HINT] The collection ID doesn\'t exist in Appwrite!');
                 console.error('💡 [FIX HINT] Check: https://syd.cloud.appwrite.io/console/project-68f23b11000d25eb3664/databases/database-68f76ee1000e64ca8d05');
             }
             
-            if (error.message?.includes('not authorized')) {
+            if ((error as Error).message?.includes('not authorized')) {
                 console.error('💡 [FIX HINT] Permission issue - collection permissions need to be set for "any" role');
             }
             
             // 🔧 DEVELOPMENT FALLBACK: Provide sample data when Appwrite is not accessible
-            if (error.message?.includes('Failed to fetch') || error.message?.includes('CORS') || error.message?.includes('Network error')) {
+            if ((error as Error).message?.includes('Failed to fetch') || (error as Error).message?.includes('CORS') || (error as Error).message?.includes('Network error')) {
                 console.warn('🔄 CORS/Network error detected - providing development sample data');
                 console.warn('💡 This ensures therapist cards display during development even with CORS issues');
                 
@@ -334,15 +334,15 @@ export const therapistService = {
             console.log('✅'.repeat(50) + '\n');
             
             return response;
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('\n' + '❌'.repeat(50));
             console.error('❌ [APPWRITE ERROR] Direct fetch failed');
             console.error('❌'.repeat(50));
-            console.error('🔴 Error type:', error.constructor?.name);
-            console.error('🔴 Error message:', error.message);
-            console.error('🔴 Error code:', error.code);
-            console.error('🔴 Error type (appwrite):', error.type);
-            console.error('🔴 Full error object:', error);
+            console.error('🔴 Error type:', (error as any).constructor?.name);
+            console.error('🔴 Error message:', (error as Error).message);
+            console.error('🔴 Error code:', (error as any).code);
+            console.error('🔴 Error type (appwrite):', (error as any).type);
+            const err = error as Error; console.error('🔴 Full error object:', err);
             console.error('❌'.repeat(50) + '\n');
             
             // Fallback: Try searching in all therapists if direct ID fetch fails
@@ -383,7 +383,7 @@ export const therapistService = {
                 console.error('\n' + '💥'.repeat(50));
                 console.error('💥 [FALLBACK ERROR] Search fallback also failed');
                 console.error('💥'.repeat(50));
-                console.error('🔴 Search error:', searchError.message);
+                console.error('🔴 Search error:', search(error as Error).message);
                 console.error('💥'.repeat(50) + '\n');
             }
             
@@ -464,8 +464,8 @@ export const therapistService = {
             });
             
             return normalizedTherapists;
-        } catch (error) {
-            console.error('❌ Error finding therapist by email:', error);
+        } catch (error: unknown) {
+            const err = error as Error; console.error('❌ Error finding therapist by email:', err);
             
             // Provide detailed error context
             if (error && typeof error === 'object') {
@@ -530,8 +530,8 @@ export const therapistService = {
             });
             
             return normalizedTherapists;
-        } catch (error) {
-            console.error('❌ Error finding therapist by userId:', error);
+        } catch (error: unknown) {
+            const err = error as Error; console.error('❌ Error finding therapist by userId:', err);
             
             if (error && typeof error === 'object') {
                 const err = error as any;
@@ -546,7 +546,7 @@ export const therapistService = {
     async getCurrentUser(): Promise<any> {
         try {
             return await account.get();
-        } catch (error) {
+        } catch (error: unknown) {
             console.warn('⚠️ User not authenticated or session expired');
             // Don't log full error details for auth - it's expected when not logged in
             return null;
@@ -820,8 +820,8 @@ export const therapistService = {
             
             console.log('✅ Therapist updated successfully:', response.$id);
             return response;
-        } catch (error) {
-            console.error('❌ Error updating therapist:', error);
+        } catch (error: unknown) {
+            const err = error as Error; console.error('❌ Error updating therapist:', err);
             console.error('🔧 Collection ID (confirmed valid):', APPWRITE_CONFIG.collections.therapists);
             console.error('🔧 Database ID:', APPWRITE_CONFIG.databaseId);
             console.error('🔧 Document ID:', id);
@@ -847,7 +847,7 @@ export const therapistService = {
                 $id: id, 
                 $updatedAt: new Date().toISOString(),
                 _fallback: true,
-                _error: (error instanceof Error ? error.message : 'Unknown error')
+                _error: (error instanceof Error ? (error as Error).message : 'Unknown error')
             };
         }
     },
@@ -858,9 +858,9 @@ export const therapistService = {
                 APPWRITE_CONFIG.collections.therapists,
                 id
             );
-        } catch (error) {
-            console.error('Error deleting therapist:', error);
-            throw error;
+        } catch (error: unknown) {
+            const err = error as Error; console.error('Error deleting therapist:', err);
+            throw error as Error;
         }
     },
     async search(query: string): Promise<any[]> {
@@ -871,8 +871,8 @@ export const therapistService = {
                 [Query.search('name', query)]
             );
             return response.documents;
-        } catch (error) {
-            console.error('Error searching therapists:', error);
+        } catch (error: unknown) {
+            const err = error as Error; console.error('Error searching therapists:', err);
             return [];
         }
     },
@@ -899,9 +899,9 @@ export const therapistService = {
                 url: String(fileUrl),
                 fileId: uploadedFile.$id
             };
-        } catch (error) {
-            console.error('❌ Error uploading KTP ID:', error);
-            throw error;
+        } catch (error: unknown) {
+            const err = error as Error; console.error('❌ Error uploading KTP ID:', err);
+            throw error as Error;
         
         }
     },
@@ -915,9 +915,16 @@ export const therapistService = {
                 updates
             );
             return response;
-        } catch (error) {
-            console.error('Error updating therapist:', error);
-            throw error;
+        } catch (error: unknown) {
+            const err = error as Error; console.error('Error updating therapist:', err);
+            throw error as Error;
         }
     }
 };
+
+
+
+
+
+
+

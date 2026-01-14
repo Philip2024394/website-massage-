@@ -105,8 +105,8 @@ export function PersistentChatWindow() {
           message: result.message || 'Invalid discount code'
         });
       }
-    } catch (error) {
-      console.error('Discount validation error:', error);
+    } catch (error: unknown) {
+      const err = error as Error; console.error('Discount validation error:', err);
       setDiscountValidation({
         valid: false,
         message: 'Failed to validate discount code'
@@ -289,8 +289,8 @@ export function PersistentChatWindow() {
         });
       }
       setBookingStep('chat');
-    } catch (error) {
-      console.error('Failed to send booking request:', error);
+    } catch (error: unknown) {
+      const err = error as Error; console.error('Failed to send booking request:', err);
     } finally {
       setIsSending(false);
     }
@@ -322,8 +322,8 @@ export function PersistentChatWindow() {
         setMessageWarning(result.warning);
         setTimeout(() => setMessageWarning(null), 5000);
       }
-    } catch (error) {
-      console.error('Failed to send message:', error);
+    } catch (error: unknown) {
+      const err = error as Error; console.error('Failed to send message:', err);
     } finally {
       setIsSending(false);
     }
@@ -371,18 +371,18 @@ export function PersistentChatWindow() {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       await acceptBooking();
-    } catch (error) {
-      console.error('Failed to accept booking:', error);
-      throw error;
+    } catch (error: unknown) {
+      const err = error as Error; console.error('Failed to accept booking:', err);
+      throw error as Error;
     }
   };
 
   const handleDeclineBooking = async (bookingId: string, reason?: string) => {
     try {
       await rejectBooking();
-    } catch (error) {
-      console.error('Failed to decline booking:', error);  
-      throw error;
+    } catch (error: unknown) {
+      const err = error as Error; console.error('Failed to decline booking:', err);  
+      throw error as Error;
     }
   };
 
@@ -1186,19 +1186,19 @@ export function PersistentChatWindow() {
                       });
                       
                       console.log('📍 Location set successfully:', { latitude, longitude, address });
-                    } catch (error) {
-                      console.error('📍 Location error:', error);
+                    } catch (error: unknown) {
+                      const err = error as Error; console.error('📍 Location error:', err);
                       
                       // More specific error messages
                       let errorMessage = 'Unable to get your location. ';
-                      if (error.code === 1) {
+                      if ((error as any).code === 1) {
                         errorMessage += 'Please enable location permission in your browser and try again.';
-                      } else if (error.code === 2) {
+                      } else if ((error as any).code === 2) {
                         errorMessage += 'Location information is unavailable.';
-                      } else if (error.code === 3) {
+                      } else if ((error as any).code === 3) {
                         errorMessage += 'Location request timed out. Please try again.';
                       } else {
-                        errorMessage += error.message || 'Please make sure location services are enabled and try again.';
+                        errorMessage += (error as Error).message || 'Please make sure location services are enabled and try again.';
                       }
                       
                       alert(errorMessage);
@@ -1599,3 +1599,7 @@ export function PersistentChatWindow() {
 
 // Memoize to prevent unnecessary re-renders
 export default memo(PersistentChatWindow);
+
+
+
+
