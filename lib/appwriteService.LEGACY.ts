@@ -20,7 +20,7 @@ async function sendAdminNotification(data: {
 New ${data.type === 'therapist' ? 'Therapist' : 'Massage Place'} Registration
 
 Name: ${data.name}
-Email: ${data.email}
+Email: ${(data as any).email}
 WhatsApp: ${data.whatsappNumber}
 Location: ${data.location}
 Registration Date: ${new Date(data.registrationDate).toLocaleString()}
@@ -79,10 +79,10 @@ export const imageUploadService = {
                 file
             );
             
-            console.log('✅ File uploaded successfully! File ID:', response.$id);
+            console.log('✅ File uploaded successfully! File ID:', (response as any).$id);
             
             // Return the file view URL
-            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${(response as any).$id}/view?project=${APPWRITE_CONFIG.projectId}`;
             console.log('🔗 Generated URL:', fileUrl);
             
             return fileUrl;
@@ -132,10 +132,10 @@ export const imageUploadService = {
                 file
             );
             
-            console.log('✅ File uploaded successfully! File ID:', response.$id);
+            console.log('✅ File uploaded successfully! File ID:', (response as any).$id);
             
             // Return the file view URL
-            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${(response as any).$id}/view?project=${APPWRITE_CONFIG.projectId}`;
             console.log('🔗 Generated URL:', fileUrl);
             
             return fileUrl;
@@ -176,7 +176,7 @@ export const customLinksService = {
             );
             
             // Return the file view URL
-            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${response.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            const fileUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${(response as any).$id}/view?project=${APPWRITE_CONFIG.projectId}`;
             return fileUrl;
         } catch (error) {
             console.error('Error uploading icon:', error);
@@ -370,7 +370,7 @@ export const therapistService = {
                 await sendAdminNotification({
                     type: 'therapist',
                     name: therapist.name || 'Unknown',
-                    email: therapist.email || 'Not provided',
+                    email: (therapist as any).email || 'Not provided',
                     whatsappNumber: therapist.whatsappNumber || therapist.contactNumber || 'Not provided',
                     location: therapist.location || 'Not provided',
                     registrationDate: new Date().toISOString()
@@ -413,7 +413,7 @@ export const therapistService = {
                     return status; // Return as-is if unknown
                 };
                 
-                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || therapist.$id}):`);
+                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || (therapist as any).$id}):`);
                 console.log(`   - Original mainImage: ${therapist.mainImage || 'None'}`);
                 console.log(`   - Assigned mainImage: ${assignedMainImage}`);
                 console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
@@ -587,7 +587,7 @@ export const therapistService = {
             const mappedData: any = {
                 // Core required fields - preserve from current document
                 name: currentDocument.name,
-                email: currentDocument.email,
+                email: (currentDocument as any).email,
                 profilePicture: currentDocument.profilePicture || '',
                 description: currentDocument.description || '',
                 whatsappNumber: currentDocument.whatsappNumber || '',
@@ -632,7 +632,7 @@ export const therapistService = {
                     mappedData.busy = '';
                 } else if (data.status.toLowerCase() === 'busy') {
                     // Use bookedUntil / busyDuration to form busy value; fallback to timestamp
-                    const bookedUntilTs = data.bookedUntil || data.busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
+                    const bookedUntilTs = data.bookedUntil || (data as any).busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
                     mappedData.busy = bookedUntilTs;
                     mappedData.available = '';
                 } else if (data.status.toLowerCase() === 'offline') {
@@ -661,7 +661,7 @@ export const therapistService = {
             
             // Update other fields only if provided
             if (data.name) mappedData.name = data.name;
-            if (data.email) mappedData.email = data.email;
+            if ((data as any).email) (mappedData as any).email = (data as any).email;
             // Only save profilePicture if it's a URL (not base64 data)
             if (data.profilePicture && !data.profilePicture.startsWith('data:')) {
                 mappedData.profilePicture = data.profilePicture;
@@ -727,7 +727,7 @@ export const therapistService = {
             });
             
             // Handle busy timer fields - store in existing description field as JSON for now
-            if (data.bookedUntil !== undefined || data.busyDuration !== undefined || data.busyUntil !== undefined) {
+            if (data.bookedUntil !== undefined || (data as any).busyDuration !== undefined || (data as any).busyUntil !== undefined) {
                 try {
                     // Get current description to preserve it
                     let currentDesc = currentDocument.description || '';
@@ -746,14 +746,14 @@ export const therapistService = {
                     }
                     
                     // Update timer data
-                    if (data.busyUntil !== undefined || data.busyDuration !== undefined || data.bookedUntil !== undefined) {
+                    if ((data as any).busyUntil !== undefined || (data as any).busyDuration !== undefined || data.bookedUntil !== undefined) {
                         busyTimerData = {
-                            busyUntil: data.busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
-                            busyDuration: data.busyDuration ?? busyTimerData?.busyDuration ?? null
+                            busyUntil: (data as any).busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
+                            busyDuration: (data as any).busyDuration ?? busyTimerData?.busyDuration ?? null
                         };
                         
                         // Only add timer data if busyUntil exists
-                        if (busyTimerData.busyUntil) {
+                        if ((busyTimerData as any).busyUntil) {
                             mappedData.description = currentDesc + (currentDesc ? ' ' : '') + `[TIMER:${JSON.stringify(busyTimerData)}]`;
                         } else {
                             mappedData.description = currentDesc;
@@ -810,7 +810,7 @@ export const therapistService = {
                 cleanMappedData
             );
             
-            console.log('✅ Therapist updated successfully:', response.$id);
+            console.log('✅ Therapist updated successfully:', (response as any).$id);
             return response;
         } catch (error) {
             console.error('❌ Error updating therapist:', error);
@@ -882,14 +882,14 @@ export const therapistService = {
                 file
             );
             
-            console.log('✅ KTP file uploaded:', uploadedFile.$id);
+            console.log('✅ KTP file uploaded:', (uploadedFile as any).$id);
             
             // Get file URL
-            const fileUrl = storage.getFileView(bucketId, uploadedFile.$id);
+            const fileUrl = storage.getFileView(bucketId, (uploadedFile as any).$id);
             
             return {
                 url: String(fileUrl),
-                fileId: uploadedFile.$id
+                fileId: (uploadedFile as any).$id
             };
         } catch (error) {
             console.error('❌ Error uploading KTP ID:', error);
@@ -929,7 +929,7 @@ export const placesService = {
                         const leadsData = await databases.listDocuments(
                             APPWRITE_CONFIG.databaseId,
                             APPWRITE_CONFIG.collections.leads,
-                            [Query.equal('placeId', place.$id)]
+                            [Query.equal('placeId', (place as any).$id)]
                         );
                         place.analytics = JSON.stringify({ bookings: leadsData.total });
                     } else {
@@ -1016,8 +1016,8 @@ export const placesService = {
                     APPWRITE_CONFIG.collections.places,
                     providerId
                 );
-                if (direct && direct.$id) {
-                    console.log('✅ Found place via direct $id lookup:', direct.$id);
+                if (direct && (direct as any).$id) {
+                    console.log('✅ Found place via direct $id lookup:', (direct as any).$id);
                     return mapAttributes(direct);
                 }
             } catch (directErr: any) {
@@ -1100,7 +1100,7 @@ export const placesService = {
             
             // Map Appwrite lowercase attributes to camelCase for frontend compatibility
             const mappedPlaces = response.documents.map((p: any) => {
-                console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${p.$id}`);
+                console.log(`  🏨 ${p.name} - isLive: ${p.isLive}, ID: ${(p as any).$id}`);
                 
                 // Parse galleryImages JSON string if it exists (check both camelCase and lowercase)
                 let parsedGalleryImages = [];
@@ -1420,7 +1420,7 @@ export const facialPlaceService = {
             if (response.documents.length > 0) {
                 const firstDoc = response.documents[0];
                 console.log('🔬 DIAGNOSTIC - First document raw data:');
-                console.log('  Document ID:', firstDoc.$id);
+                console.log('  Document ID:', (firstDoc as any).$id);
                 console.log('  All attributes:', Object.keys(firstDoc));
                 console.log('  Full document:', firstDoc);
                 
@@ -1439,12 +1439,12 @@ export const facialPlaceService = {
             
             // Map Appwrite attributes to camelCase for frontend compatibility
             const mappedFacialPlaces = response.documents.map((fp: any) => {
-                console.log(`  💆 ${fp.name} - category: ${fp.category}, ID: ${fp.$id}`);
+                console.log(`  💆 ${fp.name} - category: ${fp.category}, ID: ${(fp as any).$id}`);
                 
                 return {
                     ...fp,
                     // Map to Place-like structure for compatibility with FacialPlaceCard
-                    id: fp.$id,
+                    id: (fp as any).$id,
                     name: fp.name || 'Unnamed Facial Spa',
                     mainImage: fp.mainImage || fp.mainimage,
                     profilePicture: fp.mainImage || fp.mainimage, // Use mainImage as profile picture
@@ -1743,7 +1743,7 @@ export const userService = {
         try {
             const existing = await userService.getCustomerByEmail(email);
             if (existing) {
-                return await userService.updateCustomerById(existing.$id, data);
+                return await userService.updateCustomerById((existing as any).$id, data);
             }
             // If not exists, create minimal doc
             return await userService.create({ email, ...data });
@@ -1930,7 +1930,7 @@ export const adminAgentOverviewService = {
             const doc = docs.documents[0];
             if (!doc) return null;
             return {
-                $id: doc.$id,
+                $id: (doc as any).$id,
                 agentId: doc.agentId,
                 agentCode: doc.agentCode,
                 month: doc.month,
@@ -1965,7 +1965,7 @@ export const adminAgentOverviewService = {
             const agents = await agentService.getAll();
             const rows: Array<any> = [];
             for (const a of agents) {
-                const agentId = a.$id || a.agentId;
+                const agentId = (a as any).$id || a.agentId;
                 const [therapistCount, placeCount, visitCount, snapshot] = await Promise.all([
                     this.countTherapistsByAgentCode(a.agentCode),
                     this.countPlacesByAgentCode(a.agentCode),
@@ -2248,7 +2248,7 @@ export const reviewService = {
                     createdAt: new Date().toISOString()
                 }
             );
-            console.log('✅ Review created successfully:', response.$id);
+            console.log('✅ Review created successfully:', (response as any).$id);
             return response;
         } catch (error) {
             console.error('❌ Error creating review:', error);
@@ -2285,7 +2285,7 @@ export const reviewService = {
                     createdAt: new Date().toISOString()
                 }
             );
-            console.log('✅ Anonymous review created successfully:', response.$id);
+            console.log('✅ Anonymous review created successfully:', (response as any).$id);
             
             // Update provider's average rating
             await this.updateProviderRating(review.providerId, review.providerType);
@@ -2494,7 +2494,7 @@ export const bookingService = {
                     createdAt: new Date().toISOString(), // Add required createdAt field
                     oneHourNotice: true // Flag indicating 1-hour requirement acknowledged
                 };
-                console.log('✅ Mock booking created:', mockBooking.$id);
+                console.log('✅ Mock booking created:', (mockBooking as any).$id);
                 return mockBooking;
             }
             
@@ -2527,7 +2527,7 @@ export const bookingService = {
                     source: 'platform' // Mark as platform booking
                 }
             );
-            console.log('✅ Booking created successfully:', response.$id);
+            console.log('✅ Booking created successfully:', (response as any).$id);
             console.log('⏰ 1-hour minimum requirement enforced');
             
             // Create notification for provider
@@ -2535,14 +2535,14 @@ export const bookingService = {
                 providerId: parseInt(booking.providerId),
                 message: `New booking request from ${booking.userName || booking.hotelGuestName || 'Guest'} for ${booking.service} minutes. Customer has been notified of 1-hour minimum preparation time.`,
                 type: 'booking_request',
-                bookingId: response.$id
+                bookingId: (response as any).$id
             });
 
             // Create payment record for therapist earnings
             if (booking.providerType === 'therapist' && booking.totalCost) {
                 try {
                     await paymentService.createPayment({
-                        bookingId: response.$id,
+                        bookingId: (response as any).$id,
                         therapistId: booking.providerId,
                         customerName: booking.userName || booking.hotelGuestName || 'Guest',
                         amount: booking.totalCost,
@@ -2898,7 +2898,7 @@ export const notificationService = {
                     isRead: notification.isRead || false,
                     createdAt: new Date().toISOString()
                 };
-                console.log('✅ Mock notification created:', mockNotification.$id);
+                console.log('✅ Mock notification created:', (mockNotification as any).$id);
                 return mockNotification;
             }
             
@@ -2914,7 +2914,7 @@ export const notificationService = {
                     createdAt: new Date().toISOString()
                 }
             );
-            console.log('✅ Notification created:', response.$id);
+            console.log('✅ Notification created:', (response as any).$id);
             
             // TODO: Integrate with push notification service (Firebase/OneSignal)
             // await this.sendPushNotification(notification.providerId, notification.message);
@@ -3040,7 +3040,7 @@ export const notificationService = {
             const unreadNotifications = await this.getUnread(providerId);
             await Promise.all(
                 unreadNotifications.map(notification => 
-                    this.markAsRead(notification.$id)
+                    this.markAsRead((notification as any).$id)
                 )
             );
             console.log('✅ All notifications marked as read');
@@ -3141,7 +3141,7 @@ export const messagingService = {
                     sentAt: new Date().toISOString()
                 }
             );
-            console.log('✅ Message sent:', response.$id);
+            console.log('✅ Message sent:', (response as any).$id);
             
             // Create notification for receiver (only if receiverId is a valid number)
             if (message.receiverType === 'therapist' || message.receiverType === 'place') {
@@ -3355,7 +3355,7 @@ export const pricingService = {
                     createdAt: new Date().toISOString()
                 }
             );
-            console.log('✅ Package created:', response.$id);
+            console.log('✅ Package created:', (response as any).$id);
             return response;
         } catch (error) {
             console.error('❌ Error creating package:', error);
@@ -3577,7 +3577,7 @@ export const adminMessageService = {
                 messageData
             );
 
-            console.log('✅ Message sent:', response.$id);
+            console.log('✅ Message sent:', (response as any).$id);
             return response;
         } catch (error) {
             console.error('Error sending message:', error);
@@ -3605,7 +3605,7 @@ export const adminMessageService = {
                 databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     'admin_messages',
-                    doc.$id,
+                    (doc as any).$id,
                     { isRead: true }
                 )
             );
@@ -3674,7 +3674,7 @@ export const hotelVillaBookingService = {
                 }
             );
             
-            console.log('✅ Hotel/Villa booking created:', booking.$id);
+            console.log('✅ Hotel/Villa booking created:', (booking as any).$id);
             return booking;
         } catch (error) {
             console.error('Error creating hotel/villa booking:', error);
@@ -3884,7 +3884,7 @@ export const hotelVillaBookingService = {
 
             // Filter out excluded IDs (since Query.notIn might not be available)
             const providers = response.documents.filter(
-                (provider: any) => !excludeIds.includes(provider.$id)
+                (provider: any) => !excludeIds.includes((provider as any).$id)
             );
 
             return providers;
@@ -3949,11 +3949,11 @@ export const agentVisitService = {
                 }
             );
 
-            console.log('✅ Agent visit created:', response.$id);
+            console.log('✅ Agent visit created:', (response as any).$id);
             
             return {
                 ...visit,
-                $id: response.$id
+                $id: (response as any).$id
             };
         } catch (error) {
             console.error('Error creating agent visit:', error);
@@ -3977,7 +3977,7 @@ export const agentVisitService = {
             );
 
             return response.documents.map((doc: any) => ({
-                $id: doc.$id,
+                $id: (doc as any).$id,
                 agentId: doc.agentId,
                 agentName: doc.agentName,
                 agentCode: doc.agentCode,
@@ -4042,7 +4042,7 @@ export const agentVisitService = {
             );
 
             let visits = response.documents.map((doc: any) => ({
-                $id: doc.$id,
+                $id: (doc as any).$id,
                 agentId: doc.agentId,
                 agentName: doc.agentName,
                 agentCode: doc.agentCode,
@@ -4110,7 +4110,7 @@ export const agentVisitService = {
             console.log('✅ Agent visit updated:', visitId);
 
             return {
-                $id: response.$id,
+                $id: (response as any).$id,
                 agentId: response.agentId,
                 agentName: response.agentName,
                 agentCode: response.agentCode,
@@ -4224,7 +4224,7 @@ export const monthlyAgentMetricsService = {
                 ]
             );
             return response.documents.map((doc: any) => ({
-                $id: doc.$id,
+                $id: (doc as any).$id,
                 agentId: doc.agentId,
                 agentCode: doc.agentCode,
                 month: doc.month,
@@ -4292,7 +4292,7 @@ export const memberStatsService = {
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     'member_stats',
-                    stats.$id,
+                    (stats as any).$id,
                     {
                         clicksCount: stats.clicksCount + 1,
                         lastUpdated: new Date().toISOString()
@@ -4332,7 +4332,7 @@ export const memberStatsService = {
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     'member_stats',
-                    stats.$id,
+                    (stats as any).$id,
                     {
                         viewsCount: stats.viewsCount + 1,
                         lastUpdated: new Date().toISOString()
@@ -4372,7 +4372,7 @@ export const memberStatsService = {
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     'member_stats',
-                    stats.$id,
+                    (stats as any).$id,
                     {
                         revenue: stats.revenue + amount,
                         bookingsCount: stats.bookingsCount + 1,
@@ -4828,7 +4828,7 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
 +62-XXX-XXXX`;
 
             // Send in-app message/notification to provider
-            const conversationId = `booking_${lead.$id}`;
+            const conversationId = `booking_${(lead as any).$id}`;
             await messagingService.sendMessage({
                 conversationId,
                 senderId: 'system',
@@ -4838,7 +4838,7 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
                 receiverType: 'user',
                 receiverName: lead.memberName || 'Provider',
                 content: `🆕 New booking request! Customer: ${lead.customerName}. Service: ${lead.serviceType}. Price: Rp ${lead.bookingPrice.toLocaleString()}. You have 5 minutes to respond.`,
-                bookingId: lead.$id
+                bookingId: (lead as any).$id
             });
             
             console.log('✅ Lead notification sent to provider:', lead.memberWhatsApp);
@@ -5946,7 +5946,7 @@ export const membershipPackageService = {
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.memberships,
-                    membership.$id,
+                    (membership as any).$id,
                     {
                         status: 'expired'
                     }
@@ -5994,7 +5994,7 @@ export const membershipPackageService = {
                 await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.memberships,
-                    membership.$id,
+                    (membership as any).$id,
                     {
                         status: 'expired'
                     }
@@ -6132,7 +6132,7 @@ export const leadBillingService = {
             );
 
             const leads = result.documents.map(doc => ({
-                $id: doc.$id,
+                $id: (doc as any).$id,
                 customerName: doc.customerName,
                 customerWhatsApp: doc.customerWhatsApp,
                 leadCost: doc.leadCost || 50000,
@@ -6182,7 +6182,7 @@ export const leadBillingService = {
             }
 
             return {
-                $id: summary.$id,
+                $id: (summary as any).$id,
                 month,
                 year,
                 totalLeads: leads.length,
@@ -6329,7 +6329,7 @@ export const paymentConfirmationService = {
                 data.proofOfPaymentFile
             );
 
-            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${fileResponse.$id}/view?project=${APPWRITE_CONFIG.projectId}`;
+            const proofUrl = `${APPWRITE_CONFIG.endpoint}/storage/buckets/${APPWRITE_CONFIG.bucketId}/files/${(fileResponse as any).$id}/view?project=${APPWRITE_CONFIG.projectId}`;
 
             // Calculate expiry date (7 days from now)
             const now = new Date();
@@ -6358,7 +6358,7 @@ export const paymentConfirmationService = {
                     accountNumber: data.accountNumber,
                     accountName: data.accountName,
                     paymentProofUrl: proofUrl, // Match existing field name
-                    proofOfPaymentFileId: fileResponse.$id,
+                    proofOfPaymentFileId: (fileResponse as any).$id,
                     status: 'pending',
                     submittedAt: now.toISOString(),
                     expiresAt: expiresAt.toISOString(),
@@ -6369,7 +6369,7 @@ export const paymentConfirmationService = {
             // Send notification to admin
             await this.notifyAdminNewPayment(confirmation);
 
-            console.log('✅ Payment proof submitted successfully:', confirmation.$id);
+            console.log('✅ Payment proof submitted successfully:', (confirmation as any).$id);
             return confirmation;
         } catch (error) {
             console.error('❌ Failed to submit payment proof:', error);
@@ -6574,7 +6574,7 @@ export const paymentConfirmationService = {
 
             for (const payment of expiredPayments) {
                 await this.declinePayment(
-                    payment.$id,
+                    (payment as any).$id,
                     'system',
                     'No response from admin within 7 days. Please resubmit your payment proof.'
                 );
@@ -6678,7 +6678,7 @@ export const premiumPaymentsService = {
                 }
             );
             
-            console.log('✅ Premium payment record created:', payment.$id);
+            console.log('✅ Premium payment record created:', (payment as any).$id);
             return payment;
         } catch (error) {
             console.error('❌ Failed to create premium payment:', error);
@@ -6805,7 +6805,7 @@ export const therapistMenusService = {
                 const updated = await databases.updateDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.therapistMenus,
-                    existing.$id,
+                    (existing as any).$id,
                     { 
                         menuData,
                         updatedDate: new Date().toISOString()
@@ -6854,7 +6854,7 @@ export const therapistMenusService = {
                 await databases.deleteDocument(
                     APPWRITE_CONFIG.databaseId,
                     APPWRITE_CONFIG.collections.therapistMenus,
-                    existing.$id
+                    (existing as any).$id
                 );
                 console.log('✅ Menu deleted');
             }

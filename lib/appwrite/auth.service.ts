@@ -49,8 +49,8 @@ export const authService = {
             if (user?.$id) {
                 try {
                     localStorage.setItem('therapist_session_backup', JSON.stringify({
-                        userId: user.$id,
-                        email: user.email,
+                        userId: (user as any).$id,
+                        email: (user as any).email,
                         timestamp: Date.now()
                     }));
                     console.log('✅ Session backup saved to localStorage');
@@ -104,7 +104,7 @@ export const authService = {
                 () => appwriteAccount.create('unique()', trimmedEmail, password, name),
                 'account_create'
             );
-            console.log('✅ Appwrite account created:', response.$id);
+            console.log('✅ Appwrite account created:', (response as any).$id);
             
             // Auto-login after registration unless explicitly disabled
             const shouldAutoLogin = options?.autoLogin !== false;
@@ -118,7 +118,7 @@ export const authService = {
                 // Store user info in localStorage as fallback
                 try {
                     localStorage.setItem('therapist_session_backup', JSON.stringify({
-                        userId: response.$id,
+                        userId: (response as any).$id,
                         email: trimmedEmail,
                         timestamp: Date.now()
                     }));

@@ -72,7 +72,7 @@ export const therapistService = {
                 await sendAdminNotification({
                     type: 'therapist',
                     name: therapist.name || 'Unknown',
-                    email: therapist.email || 'Not provided',
+                    email: (therapist as any).email || 'Not provided',
                     whatsappNumber: therapist.whatsappNumber || therapist.contactNumber || 'Not provided',
                     location: therapist.location || 'Not provided',
                     registrationDate: new Date().toISOString()
@@ -111,7 +111,7 @@ export const therapistService = {
             console.log('🔍 [RAW APPWRITE DATA] First 5 therapists raw data:');
             response.documents.slice(0, 5).forEach((therapist: any, index: number) => {
                 console.log(`🔍 Therapist #${index + 1}:`, {
-                    $id: therapist.$id,
+                    $id: (therapist as any).$id,
                     name: therapist.name,
                     isLive: therapist.isLive,
                     status: therapist.status,
@@ -136,7 +136,7 @@ export const therapistService = {
             if (budiTherapist && nonBudiTherapist) {
                 console.log('🎯 [BUDI vs NON-BUDI COMPARISON]');
                 console.log('Budi data:', {
-                    $id: budiTherapist.$id,
+                    $id: (budiTherapist as any).$id,
                     name: budiTherapist.name,
                     isLive: budiTherapist.isLive,
                     status: budiTherapist.status,
@@ -144,7 +144,7 @@ export const therapistService = {
                     location: budiTherapist.location
                 });
                 console.log('Non-Budi data:', {
-                    $id: nonBudiTherapist.$id,
+                    $id: (nonBudiTherapist as any).$id,
                     name: nonBudiTherapist.name,
                     isLive: nonBudiTherapist.isLive,
                     status: nonBudiTherapist.status,
@@ -167,7 +167,7 @@ export const therapistService = {
                     return status; // Return as-is if unknown
                 };
                 
-                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || therapist.$id}):`);
+                console.log(`🎭 [Therapist Images] ${therapist.name || 'Unknown'} (ID: ${therapist.id || (therapist as any).$id}):`);
                 console.log(`   - Original mainImage: ${therapist.mainImage || 'None'}`);
                 console.log(`   - Assigned mainImage: ${assignedMainImage}`);
                 console.log(`   - Profile picture: ${therapist.profilePicture || 'None'}`);
@@ -324,7 +324,7 @@ export const therapistService = {
             console.log('✅ [APPWRITE SUCCESS] Document retrieved');
             console.log('✅'.repeat(50));
             console.log('⏱️  Query duration:', duration + 'ms');
-            console.log('📄 Document ID:', response.$id);
+            console.log('📄 Document ID:', (response as any).$id);
             console.log('👤 Name:', response.name || response.therapistName);
             console.log('📍 Location:', response.location || response.city);
             console.log('⭐ Rating:', response.rating);
@@ -358,9 +358,9 @@ export const therapistService = {
                 console.log('🔍 [FALLBACK] Also trying ID prefix:', id.split('-')[0]);
                 
                 const found = allTherapists.find(t => 
-                    t.$id === id || 
+                    (t as any).$id === id || 
                     t.id === id ||
-                    t.$id === id.split('-')[0] || 
+                    (t as any).$id === id.split('-')[0] || 
                     t.id === id.split('-')[0]
                 );
                 
@@ -369,7 +369,7 @@ export const therapistService = {
                     console.log('✅ [FALLBACK SUCCESS] Found therapist via search');
                     console.log('✅'.repeat(50));
                     console.log('👤 Name:', found.name || found.therapistName);
-                    console.log('🆔 ID:', found.$id || found.id);
+                    console.log('🆔 ID:', (found as any).$id || found.id);
                     console.log('✅'.repeat(50) + '\n');
                     return found;
                 }
@@ -377,7 +377,7 @@ export const therapistService = {
                 console.error('\n' + '⚠️'.repeat(50));
                 console.error('⚠️ [FALLBACK FAILED] Therapist not found in collection');
                 console.error('⚠️'.repeat(50));
-                console.error('💡 Sample available IDs:', allTherapists.slice(0, 5).map(t => t.$id || t.id));
+                console.error('💡 Sample available IDs:', allTherapists.slice(0, 5).map(t => (t as any).$id || t.id));
                 console.error('⚠️'.repeat(50) + '\n');
             } catch (searchError) {
                 console.error('\n' + '💥'.repeat(50));
@@ -420,8 +420,8 @@ export const therapistService = {
                 console.warn('   3. Document exists but email field is different');
             } else {
                 console.log('📋 [DEBUG] Found therapist document(s):', response.documents.map(d => ({
-                    id: d.$id,
-                    email: d.email,
+                    id: (d as any).$id,
+                    email: (d as any).email,
                     name: d.name,
                     status: d.status
                 })));
@@ -595,7 +595,7 @@ export const therapistService = {
             const mappedData: any = {
                 // Core required fields - preserve from current document
                 name: currentDocument.name,
-                email: currentDocument.email,
+                email: (currentDocument as any).email,
                 profilePicture: currentDocument.profilePicture || '',
                 description: currentDocument.description || '',
                 whatsappNumber: currentDocument.whatsappNumber || '',
@@ -640,7 +640,7 @@ export const therapistService = {
                     mappedData.busy = '';
                 } else if (data.status.toLowerCase() === 'busy') {
                     // Use bookedUntil / busyDuration to form busy value; fallback to timestamp
-                    const bookedUntilTs = data.bookedUntil || data.busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
+                    const bookedUntilTs = data.bookedUntil || (data as any).busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
                     mappedData.busy = bookedUntilTs;
                     mappedData.available = '';
                 } else if (data.status.toLowerCase() === 'offline') {
@@ -669,7 +669,7 @@ export const therapistService = {
             
             // Update other fields only if provided
             if (data.name) mappedData.name = data.name;
-            if (data.email) mappedData.email = data.email;
+            if ((data as any).email) (mappedData as any).email = (data as any).email;
             // Only save profilePicture if it's a URL (not base64 data)
             if (data.profilePicture && !data.profilePicture.startsWith('data:')) {
                 mappedData.profilePicture = data.profilePicture;
@@ -736,7 +736,7 @@ export const therapistService = {
             });
             
             // Handle busy timer fields - store in existing description field as JSON for now
-            if (data.bookedUntil !== undefined || data.busyDuration !== undefined || data.busyUntil !== undefined) {
+            if (data.bookedUntil !== undefined || (data as any).busyDuration !== undefined || (data as any).busyUntil !== undefined) {
                 try {
                     // Get current description to preserve it
                     let currentDesc = currentDocument.description || '';
@@ -755,14 +755,14 @@ export const therapistService = {
                     }
                     
                     // Update timer data
-                    if (data.busyUntil !== undefined || data.busyDuration !== undefined || data.bookedUntil !== undefined) {
+                    if ((data as any).busyUntil !== undefined || (data as any).busyDuration !== undefined || data.bookedUntil !== undefined) {
                         busyTimerData = {
-                            busyUntil: data.busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
-                            busyDuration: data.busyDuration ?? busyTimerData?.busyDuration ?? null
+                            busyUntil: (data as any).busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
+                            busyDuration: (data as any).busyDuration ?? busyTimerData?.busyDuration ?? null
                         };
                         
                         // Only add timer data if busyUntil exists
-                        if (busyTimerData.busyUntil) {
+                        if ((busyTimerData as any).busyUntil) {
                             mappedData.description = currentDesc + (currentDesc ? ' ' : '') + `[TIMER:${JSON.stringify(busyTimerData)}]`;
                         } else {
                             mappedData.description = currentDesc;
@@ -818,7 +818,7 @@ export const therapistService = {
                 cleanMappedData
             );
             
-            console.log('✅ Therapist updated successfully:', response.$id);
+            console.log('✅ Therapist updated successfully:', (response as any).$id);
             return response;
         } catch (error: unknown) {
             const err = error as Error; console.error('❌ Error updating therapist:', err);
@@ -890,14 +890,14 @@ export const therapistService = {
                 file
             );
             
-            console.log('✅ KTP file uploaded:', uploadedFile.$id);
+            console.log('✅ KTP file uploaded:', (uploadedFile as any).$id);
             
             // Get file URL
-            const fileUrl = storage.getFileView(bucketId, uploadedFile.$id);
+            const fileUrl = storage.getFileView(bucketId, (uploadedFile as any).$id);
             
             return {
                 url: String(fileUrl),
-                fileId: uploadedFile.$id
+                fileId: (uploadedFile as any).$id
             };
         } catch (error: unknown) {
             const err = error as Error; console.error('❌ Error uploading KTP ID:', err);
