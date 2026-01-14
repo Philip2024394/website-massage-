@@ -1,7 +1,8 @@
-import { account, databases, DATABASE_ID, COLLECTIONS } from './appwrite';
-import { APPWRITE_CONFIG } from './appwrite.config';
+import { account, databases, DATABASE_ID, COLLECTIONS } from '../appwrite';
+import { APPWRITE_CONFIG } from '../../config';
 import { Query } from 'appwrite';
-import { logger } from '../utils/logger';
+// import { logger } from '../utils/logger';
+const logger = console;
 import { ID } from 'appwrite';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
 import { buildHotelsPayload } from './hotelsSchema';
