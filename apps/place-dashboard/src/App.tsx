@@ -16,7 +16,7 @@ function App() {
     return (stored === 'en' || stored === 'id') ? stored : 'id';
   });
 
-  const handleLanguageChange = (lang: 'en' | 'id') => {
+  const handleLanguageChange = (lang: 'en' | 'id' | 'gb') => {
     setLanguage(lang);
     localStorage.setItem('indastreet_language', lang);
   };
