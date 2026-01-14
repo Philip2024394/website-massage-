@@ -1,8 +1,8 @@
 // 🎯 CHAT SYSTEM VERIFICATION & RECORDING STATUS CHECKER
 // Comprehensive verification of chat recording and admin monitoring integration
 
-import { databases, client, Query } from './appwrite';
-import { APPWRITE_CONFIG } from './appwrite.config';
+import { databases, client, Query } from '../appwrite';
+import { APPWRITE_CONFIG } from '../../config';
 
 export class ChatRecordingVerificationService {
     

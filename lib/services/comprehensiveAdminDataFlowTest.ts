@@ -1,8 +1,8 @@
 // 🚀 COMPREHENSIVE ADMIN DATA FLOW TEST
 // Tests commission tracking from ALL bookings and scheduled bookings + chat recording verification
 
-import { databases, Query } from './appwrite';
-import { APPWRITE_CONFIG } from './appwrite.config';
+import { databases, Query } from '../appwrite';
+import { APPWRITE_CONFIG } from '../../config';
 
 export class ComprehensiveAdminDataFlowTest {
     
