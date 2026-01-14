@@ -123,7 +123,7 @@ export class LiveMenuLocationManager {
           providersWithDistance.push({
             ...provider,
             distance: distanceResult.distance as any,
-            distanceText: enhancedDistanceService.formatDistance(distanceResult.distance as any),
+            distanceText: enhancedDistanceService.formatDistance(distanceResult.distance as any as any),
             travelTime: distanceResult.duration,
             travelTimeText: distanceResult.duration ? enhancedDistanceService.formatTravelTime(distanceResult.duration) : undefined
           });

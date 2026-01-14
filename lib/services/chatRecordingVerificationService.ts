@@ -296,24 +296,24 @@ export class ChatRecordingVerificationService {
         
         // Check each category
         if (result.collections.messages.status === 'active') {
-            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages)`);
+            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages as any)`);
         } else {
-            inactiveFeatures.push('Messages Collection');
+            inactiveFeatures.push('Messages Collection' as any);
         }
 
-        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center');
-        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor');
-        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates');
+        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center' as any);
+        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor' as any);
+        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates' as any);
 
-        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording');
-        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking');
-        if (result.recording.adminAccessible) activeFeatures.push('Admin Access');
-        if (result.recording.searchable) activeFeatures.push('Message Search');
+        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording' as any);
+        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking' as any);
+        if (result.recording.adminAccessible) activeFeatures.push('Admin Access' as any);
+        if (result.recording.searchable) activeFeatures.push('Message Search' as any);
 
-        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration');
-        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration');
-        if (result.integration.adminReplies) activeFeatures.push('Admin Replies');
-        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage');
+        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration' as any);
+        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration' as any);
+        if (result.integration.adminReplies) activeFeatures.push('Admin Replies' as any);
+        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage' as any);
 
         return `
 🎯 CHAT RECORDING STATUS: ${result.recordingStatus.toUpperCase()}

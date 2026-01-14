@@ -1302,7 +1302,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                                 <p className="text-xs text-gray-500">Get alerts even when browsing other apps or phone is locked</p>
                             </div>
                         </div>
-                        <PushNotificationSettings 
+                        <(PushNotificationSettings as any) 
                             providerId={typeof placeId === 'string' ? parseInt(placeId) : placeId} 
                             providerType="place" 
                         />
@@ -1606,7 +1606,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                             <label className="block text-sm font-medium text-gray-900">{t?.descriptionLabel || 'Description'}</label>
                             <div className="relative">
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
-                                    <DocumentTextIcon className="h-5 w-5 text-gray-400" />
+                                    <(DocumentTextIcon as any) className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <textarea 
                                     value={description} 
@@ -2167,14 +2167,14 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         <div className="min-h-screen bg-gray-50 pb-20">
             {/* Brand Header with Home Icon - Mobile Optimized */}
             <header className="bg-white shadow-md sticky top-0 z-40">
-                <PageContainer className="py-3 sm:py-4">
+                <(PageContainer as any) className="py-3 sm:py-4">
                 <div className="flex justify-between items-center">
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                         <span className="text-black">Inda</span>
                         <span className="text-orange-500">Street</span>
                     </h1>
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <NotificationBell 
+                        <(NotificationBell as any) 
                             count={unreadNotificationsCount} 
                             onClick={() => setShowNotificationsView(!showNotificationsView)} 
                         />
@@ -2200,7 +2200,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
             {/* Content Area */}
             <main>
-            <PageContainer className="px-2 sm:px-4 py-4 sm:py-6 pb-40">
+            <(PageContainer as any) className="px-2 sm:px-4 py-4 sm:py-6 pb-40">
                 {showNotificationsView ? (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-4">
@@ -2352,7 +2352,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             </div>
             
             {/* Validation Popup */}
-            <ValidationPopup
+            <(ValidationPopup as any)
                 isOpen={showValidationPopup}
                 onClose={() => setShowValidationPopup(false)}
                 title="Complete Your Business Profile"
