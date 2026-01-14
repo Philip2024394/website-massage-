@@ -283,7 +283,7 @@ export class PWANotificationManager {
                         status: booking.status,
                         url: `/?action=open-booking&id=${booking.id}`
                     },
-                    actions: [
+                    // actions: [
                         {
                             action: 'accept-booking',
                             title: '✅ Accept',
@@ -648,7 +648,7 @@ export class PWANotificationManager {
                         timestamp: Date.now(),
                         url: '/?action=open-chat'
                     },
-                    actions: [
+                    // actions: [
                         {
                             action: 'open-chat',
                             title: 'Open Chat',
