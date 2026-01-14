@@ -82,7 +82,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [clientPreferences, setClientPreferences] = useState(therapist?.clientPreferences || 'Males And Females');
   const [selectedGlobe, setSelectedGlobe] = useState<string[]>(() => {
     try {
-      const raw: any = therapist?.Globe;
+      const raw: any = therapist?.languages;
       // Handle both array format (already parsed) and JSON string format
       if (Array.isArray(raw)) return raw.slice(0, 3);
       if (typeof raw === 'string' && raw) {

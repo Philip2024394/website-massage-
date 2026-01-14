@@ -478,9 +478,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
               <div className="flex items-center gap-3">
                 {/* Profile Image */}
                 <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full bg-orange-400 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {chatRoom.providerProfilePicture || chatRoom.profilePicture ? (
+                  {(chatRoom as any).providerProfilePicture || (chatRoom as any).profilePicture ? (
                     <img 
-                      src={chatRoom.providerProfilePicture || chatRoom.profilePicture} 
+                      src={(chatRoom as any).providerProfilePicture || (chatRoom as any).profilePicture} 
                       alt={chatRoom.providerName}
                       className="w-full h-full rounded-full object-cover"
                       onError={(e) => {
@@ -654,7 +654,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-orange-600">🕐</span>
                           <span className="font-medium text-gray-900">Booking Time:</span>
-                          <span className="text-gray-600">{chatRoom.serviceTime} • {chatRoom.serviceDate}</span>
+                          <span className="text-gray-600">{(chatRoom as any).serviceTime} • {(chatRoom as any).serviceDate}</span>
                         </div>
 
                         {/* Provider */}
@@ -668,7 +668,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-orange-600">⏱️</span>
                           <span className="font-medium text-gray-900">Duration:</span>
-                          <span className="text-gray-600">{chatRoom.serviceDuration} min • {chatRoom.serviceType}</span>
+                          <span className="text-gray-600">{(chatRoom as any).serviceDuration} min • {(chatRoom as any).serviceType}</span>
                         </div>
 
                         {/* Travel Time */}
