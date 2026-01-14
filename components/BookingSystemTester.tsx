@@ -41,10 +41,10 @@ export const BookingSystemTester: React.FC = () => {
           id: '1',
           type: 'system',
           text: "We're checking availability for therapists near you…",
-          timestamp: new Date()
+          timestamp: new Date().toISOString()
         })
         showServiceConfirmation = true
-        bookingStatus = 'registering'
+        bookingStatus = 'pending' as any
       }
       
       handleStartBooking()
@@ -182,9 +182,9 @@ export const BookingSystemTester: React.FC = () => {
           id: '2',
           type: 'system',
           text: 'Good news! A therapist is available.',
-          timestamp: new Date()
+          timestamp: new Date().toISOString()
         })
-        currentTherapist = therapist
+        currentTherapist = therapist as any
         showTherapistSelection = true
         bookingStatus = 'pending_accept'
       }
@@ -217,7 +217,7 @@ export const BookingSystemTester: React.FC = () => {
           id: '3',
           type: 'system', 
           text: 'Your booking is confirmed. The therapist will arrive within 1 hour or less.',
-          timestamp: new Date()
+          timestamp: new Date().toISOString()
         })
         
         return true

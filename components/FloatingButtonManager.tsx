@@ -243,7 +243,7 @@ export const FloatingButtonManager: React.FC<FloatingButtonManagerProps> = ({
       )}
 
       {/* Add CSS animations and glass effects */}
-      <style jsx>{`
+      <style {...({} as any)}>{`
         @keyframes fade-in-up {
           from {
             opacity: 0;

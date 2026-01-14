@@ -279,7 +279,7 @@ export function useBookingSubmit(
             if (handleBookingSuccess) {
                 handleBookingSuccess({
                     bookingId: booking.$id,
-                    chatRoomId: chatRoom.$id,
+                    chatRoomId: chatRoom.$id as string,
                     therapistName,
                     duration: finalDuration,
                     price: finalPrice
@@ -319,7 +319,7 @@ export function useBookingSubmit(
             
             // Use ChatProvider instead of event system
             const chatOpened = handleBookingSuccess({
-                chatRoomId: chatRoom.$id,
+                chatRoomId: chatRoom.$id as string,
                 bookingId: booking.$id,
                 providerId: booking.therapistId,
                 providerName: booking.therapistName,

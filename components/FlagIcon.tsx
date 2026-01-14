@@ -400,8 +400,8 @@ export function FlagIcon({
             chatRoomId={chatRoomId}
             reporterId={reporterId}
             reporterRole={reporterRole}
-            reportedUserId={reportedUserId}
-            reportedUserName={reportedUserName}
+            reportedUserId={reportedUserId as string}
+            reportedUserName={reportedUserName as string}
             onSuccess={handleReportSuccess}
             onClose={() => {
               setShowReportForm(false);
