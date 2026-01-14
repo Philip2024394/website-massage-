@@ -100,7 +100,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     console.log('🧩'.repeat(40));
     console.log('⏰ Mount timestamp:', new Date().toISOString());
     console.log('📦 Props received:', {
-        hasSelectedTherapist: !!selectedTherapist,
+        hasselectedTherapist: !!selectedTherapist,
         selectedTherapistId: selectedTherapist?.$id,
         selectedTherapistName: selectedTherapist?.name,
         hasUserLocation: !!userLocation,
@@ -139,7 +139,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('\n' + '⚡'.repeat(40));
                 console.log('⚡ [STATE UPDATE] Using pre-selected therapist');
                 console.log('⚡ Therapist:', selectedTherapist.name);
-                console.log('⚡ ID:', selectedtherapist.$id as string);
+                console.log('⚡ ID:', selectedTherapist.$id as string);
                 console.log('⚡ Skipping Appwrite fetch');
                 console.log('⚡'.repeat(40) + '\n');
                 setTherapist(selectedTherapist);

@@ -209,8 +209,8 @@ export function useBookingSubmit(
             // ⚡ Save to Appwrite with retry logic and circuit breaker
             console.log('📤 Creating booking with retry protection...');
             
-            let bookingResponse: any = null;
-            bookingResponse = await withAppwriteRetry(
+            let response: any = null;
+            response = await withAppwriteRetry(
                 () => appwriteCircuitBreaker.execute(() =>
                     databases.createDocument(
                         APPWRITE_CONFIG.databaseId,
@@ -222,9 +222,9 @@ export function useBookingSubmit(
                 'Create Scheduled Booking'
             );
             
-            console.log('✅ Scheduled booking saved to Appwrite:', bookingResponse);
+            console.log('✅ Scheduled booking saved to Appwrite:', response);
             
-            const booking = bookingResponse;
+            const booking = response;
             
             // Commission tracking (continued in full implementation)
             // ... rest of commission logic ...
@@ -313,7 +313,7 @@ export function useBookingSubmit(
                 console.log('✅ No pending bookings - normal booking flow');
             }
             
-            console.log("🔥 BOOKING SAVE COMPLETE:", bookingResponse.$id);
+            console.log("🔥 BOOKING SAVE COMPLETE:", response.$id);
             console.log("🔥 CHAT ROOM CREATED:", chatRoom.$id);
             console.log("🔥 ABOUT TO OPEN CHAT VIA CHATPROVIDER");
             
@@ -363,7 +363,7 @@ export function useBookingSubmit(
             
             // ⚡ Log error to monitoring service
             logBookingError('createChatRoom', chatErr, {
-                bookingId: bookingResponse?.$id,
+                bookingId: response?.$id,
                 therapistId,
                 therapistName
             });

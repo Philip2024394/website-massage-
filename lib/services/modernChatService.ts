@@ -1,3 +1,4 @@
+import { RealtimeResponseEvent } from 'appwrite';
 /**
  * ============================================================================
  * 🚀 MODERN CHAT SERVICE - WhatsApp/Messenger-style Real-time Chat
@@ -390,7 +391,7 @@ class ModernChatService {
 
     const unsubscribe = this.client.subscribe(
       `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.chatMessages}.documents`,
-      (response: RealtimeResponseEvent<ChatMessage>) => {
+      (response: any<ChatMessage>) => {
         const payload = response.payload;
         
         // Only process messages for current chat room
@@ -429,7 +430,7 @@ class ModernChatService {
 
     const unsubscribe = this.client.subscribe(
       `databases.${APPWRITE_CONFIG.databaseId}.collections.chat_typing.documents`,
-      async (response: RealtimeResponseEvent<TypingStatus>) => {
+      async (response: any<TypingStatus>) => {
         const payload = response.payload;
         
         // Only process typing for current chat room
