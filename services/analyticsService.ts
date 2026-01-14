@@ -14,7 +14,7 @@ const COLLECTIONS = {
     THERAPISTS: APPWRITE_CONFIG.collections.therapists,
     PLACES: APPWRITE_CONFIG.collections.places,
     USERS: APPWRITE_CONFIG.collections.users,
-    (bookings as any): APPWRITE_CONFIG.collections.(bookings as any),
+    bookings: APPWRITE_CONFIG.collections.bookings,
     REVIEWS: APPWRITE_CONFIG.collections.reviews,
     ANALYTICS: APPWRITE_CONFIG.collections.analytics,
     ANALYTICS_EVENTS: APPWRITE_CONFIG.collections.analyticsEvents,
@@ -235,21 +235,21 @@ export interface PlatformAnalytics {
     topTherapists: Array<{
         id: number | string;
         name: string;
-        (bookings as any): number;
+        bookings: number;
         revenue: number;
         rating: number;
     }>;
     topPlaces: Array<{
         id: number | string;
         name: string;
-        (bookings as any): number;
+        bookings: number;
         revenue: number;
         rating: number;
     }>;
     topHotels: Array<{
         id: number | string;
         name: string;
-        (bookings as any): number;
+        bookings: number;
         commissionsEarned: number;
     }>;
     
@@ -651,13 +651,13 @@ class AnalyticsService {
             if (!COLLECTIONS.THERAPISTS) throw new Error('THERAPISTS collection ID is empty');
             if (!COLLECTIONS.PLACES) throw new Error('PLACES collection ID is empty');
             if (!COLLECTIONS.USERS) throw new Error('USERS collection ID is empty');
-            if (!COLLECTIONS.(bookings as any)) throw new Error('(bookings as any) collection ID is empty');
+            if (!COLLECTIONS.bookings) throw new Error('bookings collection ID is empty');
 
             // Get counts from collections
             const therapistsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS);
             const placesData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
             const usersData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS);
-            const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.(bookings as any), [
+            const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.bookings, [
                 Query.greaterThanEqual('createdAt', startDate),
                 Query.lessThanEqual('createdAt', endDate)
             ]);

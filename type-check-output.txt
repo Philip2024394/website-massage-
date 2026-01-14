@@ -308,13 +308,23 @@ pages/HomePage.tsx(1143,17): error TS2322: Type '((lang: "id" | "en") => void) |
     Types of parameters 'lang' and 'lang' are incompatible.
       Type 'string' is not assignable to type '"id" | "en"'.
 pages/HotStoneMassagePage.tsx(3,8): error TS2440: Import declaration conflicts with local declaration of 'BurgerMenuIcon'.
-pages/MassagePlaceProfilePage.tsx(339,35): error TS2304: Cannot find name 'getUserLocation'.
-pages/MassagePlaceProfilePage.tsx(342,34): error TS2304: Cannot find name 'createTaxiBookingLink'.
-pages/MassagePlaceProfilePage.tsx(362,17): error TS2304: Cannot find name 'openTaxiApp'.
-pages/MassagePlaceProfilePage.tsx(391,35): error TS2304: Cannot find name 'getUserLocation'.
-pages/MassagePlaceProfilePage.tsx(394,34): error TS2304: Cannot find name 'createTaxiBookingLink'.
-pages/MassagePlaceProfilePage.tsx(414,17): error TS2304: Cannot find name 'openTaxiApp'.
-pages/MassagePlaceProfilePage.tsx(519,29): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+pages/MassagePlaceProfilePage.tsx(355,24): error TS2339: Property 'success' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(355,42): error TS2339: Property 'deepLink' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(357,28): error TS2339: Property 'estimatedPrice' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(359,55): error TS2339: Property 'estimatedPrice' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(360,51): error TS2339: Property 'estimatedDuration' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(367,36): error TS2339: Property 'deepLink' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(367,46): error TS2554: Expected 1 arguments, but got 2.
+pages/MassagePlaceProfilePage.tsx(369,40): error TS2339: Property 'error' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(407,24): error TS2339: Property 'success' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(407,42): error TS2339: Property 'deepLink' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(409,28): error TS2339: Property 'estimatedPrice' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(411,55): error TS2339: Property 'estimatedPrice' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(412,51): error TS2339: Property 'estimatedDuration' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(419,36): error TS2339: Property 'deepLink' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(419,46): error TS2554: Expected 1 arguments, but got 2.
+pages/MassagePlaceProfilePage.tsx(421,40): error TS2339: Property 'error' does not exist on type 'string'.
+pages/MassagePlaceProfilePage.tsx(524,29): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
   Type 'undefined' is not assignable to type 'number'.
 pages/ReviewsPage.tsx(188,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
   Type 'undefined' is not assignable to type 'string'.
@@ -345,23 +355,23 @@ pages/WomenReviewsPage.tsx(240,17): error TS2322: Type '{ isOpen: boolean; onClo
 router/routes/facialRoutes.tsx(3,36): error TS2322: Type 'Promise<typeof import("C:/Users/Victus/website-massage-/apps/facial-dashboard/src/App")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
   Property 'default' is missing in type 'typeof import("C:/Users/Victus/website-massage-/apps/facial-dashboard/src/App")' but required in type '{ default: ComponentType<any>; }'.
 services/analyticsService.ts(19,44): error TS2339: Property 'analytics' does not exist on type '{ admins: null; therapists: string; places: string; facial_places: string; agents: null; bookings: string; reviews: string; notifications: string; users: string; booking_acknowledgments: string; ... 50 more ...; uiConfig: null; }'.
-services/analyticsService.ts(681,44): error TS2304: Cannot find name 'bookings'.
-services/analyticsService.ts(682,44): error TS2304: Cannot find name 'bookings'.
-services/analyticsService.ts(683,43): error TS2304: Cannot find name 'bookings'.
-services/analyticsService.ts(684,45): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(681,45): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(682,45): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(683,44): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(684,46): error TS2304: Cannot find name 'bookings'.
 services/analyticsService.ts(688,29): error TS2304: Cannot find name 'users'.
 services/analyticsService.ts(689,30): error TS2304: Cannot find name 'users'.
 services/analyticsService.ts(691,34): error TS2304: Cannot find name 'therapists'.
 services/analyticsService.ts(693,30): error TS2304: Cannot find name 'places'.
-services/analyticsService.ts(699,32): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(699,33): error TS2304: Cannot find name 'bookings'.
 services/analyticsService.ts(709,41): error TS2304: Cannot find name 'users'.
-services/analyticsService.ts(709,70): error TS2304: Cannot find name 'bookings'.
-services/analyticsService.ts(709,98): error TS2304: Cannot find name 'users'.
+services/analyticsService.ts(709,71): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(709,107): error TS2304: Cannot find name 'users'.
 services/analyticsService.ts(710,46): error TS2304: Cannot find name 'therapists'.
 services/analyticsService.ts(710,76): error TS2304: Cannot find name 'places'.
-services/analyticsService.ts(711,23): error TS2304: Cannot find name 'bookings'.
-services/analyticsService.ts(711,52): error TS2304: Cannot find name 'therapists'.
-services/analyticsService.ts(711,82): error TS2304: Cannot find name 'places'.
+services/analyticsService.ts(711,24): error TS2304: Cannot find name 'bookings'.
+services/analyticsService.ts(711,61): error TS2304: Cannot find name 'therapists'.
+services/analyticsService.ts(711,91): error TS2304: Cannot find name 'places'.
 services/locationService.ts(235,51): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
 services/locationService.ts(236,63): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
 services/locationService.ts(237,54): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.

@@ -363,7 +363,7 @@ export function useBookingSubmit(
             
             // ⚡ Log error to monitoring service
             logBookingError('createChatRoom', chatErr, {
-                bookingId: response?.$id,
+                bookingId: bookingResponse?.$id,
                 therapistId,
                 therapistName
             });
