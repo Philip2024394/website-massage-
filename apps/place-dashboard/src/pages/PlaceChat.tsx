@@ -1,9 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Send, MessageSquare, AlertCircle } from 'lucide-react';
-import { messagingService } from '@/lib/appwriteService';
-import { showToast } from '@/utils/showToastPortal';
-import type { Place } from '@/types.ts';
+import { messagingService } from '../../../../lib/appwriteService';
+import { showToast } from '../../../../utils/showToastPortal';
+import type { Place } from '../../../../types.ts';
 
 interface PlaceChatProps {
   place: Place | null;

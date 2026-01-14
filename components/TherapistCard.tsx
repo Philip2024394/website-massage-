@@ -648,7 +648,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     };
     
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
-    const mainImage = (therapist as any).mainImage;
+    const mainImage = (therapist as any).mainImage || therapist.profileImage;
     
     // Use therapist's mainImage or random fallback
     const displayImage = mainImage || getRandomTherapistImage(therapist.id.toString());

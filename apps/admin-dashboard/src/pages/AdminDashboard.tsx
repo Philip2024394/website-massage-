@@ -10,12 +10,12 @@ import {
     therapistService, 
     placesService, 
     bookingService
-} from '@/lib/appwriteService';
+} from '../../../../lib/appwriteService';
 import { analyticsService } from '@/services/analyticsService';
-import { dataFlowScanner } from '@/lib/appwrite-data-flow-scanner';
-import { chatRecordingVerification } from '@/lib/services/chatRecordingVerificationService';
-import { adminDataFlowTest } from '@/lib/services/comprehensiveAdminDataFlowTest';
-import PageNumberBadge from '@/components/PageNumberBadge';
+import { dataFlowScanner } from '../../../../lib/appwrite-data-flow-scanner';
+import { chatRecordingVerification } from '../../../../lib/services/chatRecordingVerificationService';
+import { adminDataFlowTest } from '../../../../lib/services/comprehensiveAdminDataFlowTest';
+import PageNumberBadge from '../../../../../../../components/PageNumberBadge';
 import AdminChatCenter from './AdminChatCenter';
 import AdminChatMonitor from './AdminChatMonitor';
 import GlobalAnalytics from './GlobalAnalytics';
@@ -278,8 +278,8 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 const testCommissionTracking = async () => {
                     try {
                         // Test commission service integration
-                        const { adminCommissionService } = await import('@/lib/services/adminCommissionService');
-                        const { adminRevenueTrackerService } = await import('@/lib/services/adminRevenueTrackerService');
+                        const { adminCommissionService } = await import('../../../../lib/services/adminCommissionService');
+                        const { adminRevenueTrackerService } = await import('../../../../lib/services/adminRevenueTrackerService');
                         
                         console.log('✅ [COMMISSION TRACKING] Services loaded successfully');
                         

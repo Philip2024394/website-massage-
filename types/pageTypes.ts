@@ -227,7 +227,29 @@ export type Page =
     | 'help-faq'
     | 'top-therapists'
     | 'special-offers'
-    | 'video-center';
+    | 'video-center'
+    | 'sign-in'
+    | 'therapist-signup'
+    | 'massage-place-signup'
+    | 'place-signup'
+    | 'facial-place-signup'
+    | 'therapist-terms-and-conditions'
+    | 'therapist-terms'
+    | 'dashboard'
+    | 'status'
+    | 'earnings'
+    | 'legal'
+    | 'calendar'
+    | 'payment'
+    | 'payment-status'
+    | 'custom-menu'
+    | 'commission-payment'
+    | 'therapist-commission'
+    | 'schedule'
+    | 'therapist-package-terms'
+    | 'admin-live-listings'
+    | 'massage-place-dashboard'
+    | 'facial-place-dashboard';
 
 export type Language = 'en' | 'id' | 'gb';
 

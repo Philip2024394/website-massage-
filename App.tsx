@@ -119,6 +119,7 @@ const App = () => {
         pricing: { [key: string]: number };
         customerName: string;
         customerWhatsApp: string;
+        customerId: string;
     } | null>(null);
 
     // Chat minimization state

@@ -56,7 +56,7 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ onBack }) => {
         try {
             setLoading(true);
             // ✅ AUDIT FIX: Replaced mock data with real Appwrite queries
-            const { bookingService } = await import('@/lib/appwriteService');
+            const { bookingService } = await import('../../../../lib/appwriteService');
             const bookingsData = await bookingService.getAll();
             
             // Map Appwrite documents to Booking interface

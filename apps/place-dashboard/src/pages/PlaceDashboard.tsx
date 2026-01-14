@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
-import { BookingStatus, HotelVillaServiceStatus } from '../types';
+import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../types';
+import { BookingStatus, HotelVillaServiceStatus } from '../../../../types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Smartphone } from 'lucide-react';
-import { useLanguage } from '../../../hooks/useLanguage';
+import { useLanguage } from '../../../../hooks/useLanguage';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -10,33 +10,33 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
 }
-import { loadGoogleMapsScript } from '../constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
-import Button from '../components/Button';
+import { loadGoogleMapsScript } from '../../../../constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
+import Button from '../../../../components/Button';
 import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
-import ImageUpload from '../components/ImageUpload';
-import MainImageCropper from '../components/MainImageCropper';
-import HotelVillaOptIn from '../components/HotelVillaOptIn';
+import ImageUpload from '../../../../components/ImageUpload';
+import MainImageCropper from '../../../../components/MainImageCropper';
+import HotelVillaOptIn from '../../../../components/HotelVillaOptIn';
 
-import { placeService, imageUploadService } from '../lib/appwriteService';
-import { sanitizePlacePayload } from '../schemas/placeSchema';
+import { placeService, imageUploadService } from '../../../../lib/appwriteService';
+import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
 import { showToast } from '../../../utils/showToastPortal';
 import TherapistTermsPage from './TherapistTermsPage';
-import LoadingSpinner from '../components/LoadingSpinner';
-import UserSolidIcon from '../components/icons/UserSolidIcon';
-import DocumentTextIcon from '../components/icons/DocumentTextIcon';
-import PhoneIcon from '../components/icons/PhoneIcon';
-import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
-import MapPinIcon from '../components/icons/MapPinIcon';
-import CityLocationDropdown from '../components/CityLocationDropdown';
-import ClockIcon from '../components/icons/ClockIcon';
-import NotificationBell from '../components/NotificationBell';
-import CustomCheckbox from '../components/CustomCheckbox';
-import ValidationPopup from '../components/ValidationPopup';
-import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
-import { notificationService } from '../lib/appwriteService';
-import { soundNotificationService } from '../utils/soundNotificationService';
+import LoadingSpinner from '../../../../components/LoadingSpinner';
+import UserSolidIcon from '../../../../components/icons/UserSolidIcon';
+import DocumentTextIcon from '../../../../components/icons/DocumentTextIcon';
+import PhoneIcon from '../../../../components/icons/PhoneIcon';
+import CurrencyRpIcon from '../../../../components/icons/CurrencyRpIcon';
+import MapPinIcon from '../../../../components/icons/MapPinIcon';
+import CityLocationDropdown from '../../../../components/CityLocationDropdown';
+import ClockIcon from '../../../../components/icons/ClockIcon';
+import NotificationBell from '../../../../components/NotificationBell';
+import CustomCheckbox from '../../../../components/CustomCheckbox';
+import ValidationPopup from '../../../../components/ValidationPopup';
+import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../constants/rootConstants';
+import { notificationService } from '../../../../lib/appwriteService';
+import { soundNotificationService } from '../../../../utils/soundNotificationService';
 import { 
     ColoredProfileIcon, 
     ColoredCalendarIcon, 
@@ -48,9 +48,9 @@ import {
     ColoredDocumentIcon, 
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
-} from '../components/ColoredIcons';
+} from '../../../../components/ColoredIcons';
 // Modular tab components
-import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
+import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../../../../components/dashboard-tabs';
 
 
 interface PlaceDashboardPageProps {

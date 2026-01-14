@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { Place, Pricing, Booking, Notification, UserLocation } from '../types';
-import { BookingStatus, HotelVillaServiceStatus } from '../types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Smartphone } from 'lucide-react';
+import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../types';
+import { BookingStatus, HotelVillaServiceStatus } from '../../../../types';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -9,35 +9,32 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
 }
-import PageContainer from '../components/layout/PageContainer';
-import { loadGoogleMapsScript } from '../constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
-import Button from '../components/Button';
-import DiscountSharePage from './DiscountSharePage';
+import PageContainer from '../../../../components/layout/PageContainer';
+import { loadGoogleMapsScript } from '../../../../constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
+import Button from '../../../../components/Button';
 import MembershipPlansPage from './MembershipPlansPage';
-import ImageUpload from '../components/ImageUpload';
-import MainImageCropper from '../components/MainImageCropper';
-import HotelVillaOptIn from '../components/HotelVillaOptIn';
+import ImageUpload from '../../../../components/ImageUpload';
+import MainImageCropper from '../../../../components/MainImageCropper';
+import HotelVillaOptIn from '../../../../components/HotelVillaOptIn';
 
-import { placeService, imageUploadService } from '../lib/appwriteService';
-import { sanitizePlacePayload } from '../schemas/placeSchema';
-import { showToast } from '../../../utils/showToastPortal';
-import TherapistTermsPage from './TherapistTermsPage';
-import UserSolidIcon from '../components/icons/UserSolidIcon';
-import DocumentTextIcon from '../components/icons/DocumentTextIcon';
-import PhoneIcon from '../components/icons/PhoneIcon';
-import CurrencyRpIcon from '../components/icons/CurrencyRpIcon';
-import MapPinIcon from '../components/icons/MapPinIcon';
-import ClockIcon from '../components/icons/ClockIcon';
-import NotificationBell from '../components/NotificationBell';
-import CustomCheckbox from '../components/CustomCheckbox';
-import ValidationPopup from '../components/ValidationPopup';
-import { FACIAL_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../constants/rootConstants';
-import { notificationService } from '../lib/appwriteService';
-import CityLocationDropdown from '../components/CityLocationDropdown';
-import { matchProviderToCity } from '../constants/indonesianCities';
-import { soundNotificationService } from '../utils/soundNotificationService';
-import PushNotificationSettings from '../components/PushNotificationSettings';
+import { placeService, imageUploadService } from '../../../../lib/appwriteService';
+import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
+import UserSolidIcon from '../../../../components/icons/UserSolidIcon';
+import DocumentTextIcon from '../../../../components/icons/DocumentTextIcon';
+import PhoneIcon from '../../../../components/icons/PhoneIcon';
+import CurrencyRpIcon from '../../../../components/icons/CurrencyRpIcon';
+import MapPinIcon from '../../../../components/icons/MapPinIcon';
+import ClockIcon from '../../../../components/icons/ClockIcon';
+import NotificationBell from '../../../../components/NotificationBell';
+import CustomCheckbox from '../../../../components/CustomCheckbox';
+import ValidationPopup from '../../../../components/ValidationPopup';
+import { FACIAL_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../constants/rootConstants';
+import { notificationService } from '../../../../lib/appwriteService';
+import CityLocationDropdown from '../../../../components/CityLocationDropdown';
+import { matchProviderToCity } from '../../../../constants/indonesianCities';
+import { soundNotificationService } from '../../../../utils/soundNotificationService';
+import PushNotificationSettings from '../../../../components/PushNotificationSettings';
 import { 
     ColoredProfileIcon, 
     ColoredCalendarIcon, 
@@ -49,9 +46,9 @@ import {
     ColoredDocumentIcon, 
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
-} from '../components/ColoredIcons';
+} from '../../../../components/ColoredIcons';
 // Removed chat import - chat system removed
-// import MemberChatWindow from '../components/MemberChatWindow';
+// import MemberChatWindow from '../../../../components/MemberChatWindow';
 
 
 interface FacialPlaceDashboardPageProps {
@@ -320,7 +317,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
         // Load gallery images - Appwrite uses 'galleryImages' (camelCase)
         const galleryData = (placeData as any).galleryImages || (placeData as any).galleryimages;
         if (galleryData) {
-            let parsedGallery = [];
+            let parsedGallery: Array<{ imageUrl: string; caption: string; description: string }> = [];
             
             // Parse if it's a JSON string
             if (typeof galleryData === 'string') {
@@ -616,7 +613,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
     const handleSave = () => {
         // Comprehensive validation with detailed error messages
-        const missingFields = [];
+        const missingFields: string[] = [];
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
         if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
@@ -2538,5 +2535,6 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 };
 
 export default FacialPlaceDashboardPage;
+
 
 

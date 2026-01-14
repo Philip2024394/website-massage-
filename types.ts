@@ -448,6 +448,9 @@ export interface User {
     name: string;
     email: string;
     isActivated: boolean;
+    userType?: string;
+    role?: string;
+    therapistId?: string;
 }
 
 export interface Agent {

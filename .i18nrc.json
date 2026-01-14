@@ -1,0 +1,32 @@
+{
+  "localeStructure": "file",
+  "localesFolder": "./translations",
+  "include": [
+    "lib/**/*.{ts,tsx}",
+    "pages/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "context/**/*.{ts,tsx}",
+    "app/**/*.{ts,tsx}",
+    "src/**/*.{ts,tsx}"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".vite",
+    "**/*.test.{ts,tsx}",
+    "**/index.ts"
+  ],
+  "enablePathParsing": true,
+  "pathMatcher": "{locale}",
+  "keyMatcherRegex": "(?:i18n\\.t|useTranslations|t)\\(['\"]([\\w.]+)['\"]",
+  "refactor": true,
+  "fullReload": false,
+  "displayLanguage": "en",
+  "namespace": true,
+  "sourceLanguage": "en",
+  "defaultValue": "[MISSING]",
+  "showPath": true,
+  "pathTemplate": "{locale}",
+  "usageFileName": "__i18n_usage__.json"
+}

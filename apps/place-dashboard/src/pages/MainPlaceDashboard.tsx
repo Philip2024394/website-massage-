@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import PlaceLayout from '../components/PlaceLayout';
+import PlaceLayout from '../../../../components/PlaceLayout';
 import PlaceDashboard from './PlaceDashboard';
 import PlaceEarnings from './PlaceEarnings';
 import PlacePaymentHistory from './PlacePaymentHistory';

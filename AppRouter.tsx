@@ -56,6 +56,8 @@ import { legalRoutes } from './router/routes/legalRoutes';
 import { blogRoutes } from './router/routes/blogRoutes';
 import { therapistRoutes } from './router/routes/therapistRoutes';
 import { adminRoutes } from './router/routes/adminRoutes';
+import { placeRoutes } from './router/routes/placeRoutes';
+import { facialRoutes } from './router/routes/facialRoutes';
 
 // Specialized pages not in route modules
 const CreateAccountPage = React.lazy(() => import('./pages/auth/CreateAccountPage'));
@@ -159,6 +161,7 @@ interface AppRouterProps {
     handleQuickBookWithChat: (provider: Therapist | Place, type: 'therapist' | 'place') => Promise<void>;
     handleChatWithBusyTherapist: (therapist: Therapist) => Promise<void>;
     handleShowRegisterPromptForChat: () => void;
+    handleShowRegisterPrompt: () => void;
     handleIncrementAnalytics: (providerId: string | number, providerType: 'therapist' | 'place', metric: string) => Promise<void>;
     handleNavigateToHotelLogin: () => void;
     handleNavigateToMassagePlaceLogin: () => void;
@@ -208,13 +211,16 @@ interface AppRouterProps {
     setLoggedInProvider: (provider: LoggedInProvider | null) => void;
     setLoggedInCustomer: (customer: any) => void;
     setSelectedJobId: (id: string | null) => void;
-    restoreUserSession?: () => Promise<void>;
+    restoreUserSession: () => Promise<void>;
     
     // Missing properties for header/navigation
     onLanguageChange?: (lang: Language) => void;
     selectedCity?: string;
     onCityChange?: (city: string) => void;
-    onNavigate?: (page: Page) => void;
+    setSelectedCity: (city: string) => void;
+    onNavigate: (page: Page) => void;
+    t: any;
+    currentPage: Page;
 }
 
 /**
@@ -455,7 +461,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     
                     const dashboardPage = dashboardPageMap[userType];
                     if (dashboardPage) {
-                        props.onNavigate(dashboardPage);
+                        props.onNavigate(dashboardPage as Page);
                     } else {
                         console.error('Unknown user type:', userType);
                         props.onNavigate('home');
@@ -478,7 +484,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         'facial-place': 'facial-place-dashboard'
                     };
                     const dashboardPage = dashboardPageMap[userType] || 'home';
-                    props.onNavigate(dashboardPage);
+                    props.onNavigate(dashboardPage as Page);
                 },
                 onBack: () => props.onNavigate('home')
             });
@@ -496,7 +502,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         'facial-place': 'facial-place-dashboard'
                     };
                     const dashboardPage = dashboardPageMap[userType] || 'home';
-                    props.onNavigate(dashboardPage);
+                    props.onNavigate(dashboardPage as Page);
                 },
                 onBack: () => props.onNavigate('home')
             });
@@ -525,7 +531,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     
                     const dashboardPage = dashboardPageMap[userType];
                     if (dashboardPage) {
-                        props.onNavigate(dashboardPage);
+                        props.onNavigate(dashboardPage as Page);
                     } else {
                         console.error('Unknown user type:', userType);
                         props.onNavigate('home');
@@ -572,7 +578,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     if (props.restoreUserSession) {
                         await props.restoreUserSession();
                     }
-                    props.onNavigate('facial-place-dashboard');
+                    props.onNavigate('facial-place-dashboard' as Page);
                 },
                 onBack: () => props.onNavigate('home')
             });
@@ -1307,3 +1313,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 };
 
 export default AppRouter;
+
+
+
+
