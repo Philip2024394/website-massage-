@@ -103,7 +103,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
   };
 
   const renderCalendar = () => {
-    const days = [];
+    const days: JSX.Element[] = [];
     const totalDays = daysInMonth(currentMonth);
     const firstDay = firstDayOfMonth(currentMonth);
 
