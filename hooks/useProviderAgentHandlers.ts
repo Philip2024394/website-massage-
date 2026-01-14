@@ -604,7 +604,7 @@ export const useProviderAgentHandlers = ({
                     console.log('💳 Creating default Silver membership for new massage place...');
                     const { membershipPackageService } = await import('../lib/appwriteService');
                     const userId = loggedInProvider.id as string;
-                    await membershipPackageService.createDefaultMembership(userId, placeDocumentId, 'massage_place');
+                    await membershipPackageService.createDefaultMembership(userId, placeDocumentId || '', 'massage_place');
                     console.log('✅ Default Silver membership created');
                 } catch (membershipError) {
                     console.error('⚠️ Failed to create membership (non-blocking):', membershipError);

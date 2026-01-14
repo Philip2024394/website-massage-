@@ -75,12 +75,12 @@ class AnalyticsService {
             // Track page visibility changes
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
-                    this.trackEvent('session_paused', {
+                    this.trackEvent('page_view' as any, {
                         duration: Date.now() - this.sessionStartTime
                     });
                 } else {
                     this.sessionStartTime = Date.now();
-                    this.trackEvent('session_resumed');
+                    this.trackEvent('page_view' as any);
                 }
             });
 
