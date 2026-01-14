@@ -678,25 +678,25 @@ class AnalyticsService {
             );
 
             const totalRevenue = revenueEvents.documents.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const completedBookingsCount = (bookings as any).documents.filter((b: any) => b.status === 'Completed').length;
-            const cancelledBookingsCount = (bookings as any).documents.filter((b: any) => b.status === 'Cancelled').length;
-            const bookingCompletionRate = (bookings as any).documents.length > 0 
-                ? (completedBookingsCount / (bookings as any).documents.length) * 100 
+            const completedBookingsCount = bookingsData.documents.filter((b: any) => b.status === 'Completed').length;
+            const cancelledBookingsCount = bookingsData.documents.filter((b: any) => b.status === 'Cancelled').length;
+            const bookingCompletionRate = bookingsData.documents.length > 0 
+                ? (completedBookingsCount / bookingsData.documents.length) * 100 
                 : 0;
 
             return {
-                totalUsers: users.documents.length,
-                activeUsers: users.documents.length, // TODO: Calculate active users
+                totalUsers: usersData.documents.length,
+                activeUsers: usersData.documents.length, // TODO: Calculate active users
                 newUsersThisPeriod: 0, // TODO: Calculate from date range
-                totalTherapists: therapists.documents.length,
+                totalTherapists: therapistsData.documents.length,
                 liveTherapists,
-                totalPlaces: places.documents.length,
+                totalPlaces: placesData.documents.length,
                 livePlaces,
                 newProvidersThisPeriod: 0,
                 totalHotels: 0, // TODO: Get from hotels collection
                 totalVillas: 0, // TODO: Get from villas collection
                 activeHotelVillas: 0,
-                totalBookings: (bookings as any).documents.length,
+                totalBookings: bookingsData.documents.length,
                 completedBookings: completedBookingsCount,
                 cancelledBookings: cancelledBookingsCount,
                 bookingCompletionRate,
@@ -706,9 +706,9 @@ class AnalyticsService {
                 userGrowthRate: 0,
                 providerGrowthRate: 0,
                 revenueGrowthRate: 0,
-                averageBookingsPerUser: users.documents.length > 0 ? (bookings as any).documents.length / users.documents.length : 0,
-                averageBookingsPerProvider: (therapists.documents.length + places.documents.length) > 0 
-                    ? (bookings as any).documents.length / (therapists.documents.length + places.documents.length) 
+                averageBookingsPerUser: usersData.documents.length > 0 ? bookingsData.documents.length / usersData.documents.length : 0,
+                averageBookingsPerProvider: (therapistsData.documents.length + placesData.documents.length) > 0 
+                    ? bookingsData.documents.length / (therapistsData.documents.length + placesData.documents.length) 
                     : 0,
                 platformConversionRate: 0,
                 topTherapists: [],
