@@ -90,12 +90,11 @@ function App() {
 
   return (
     <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
-      <PlaceDashboard 
-        onLogout={handleLogout}
+      <PlaceDashboard {...{} as any} onLogout={handleLogout}
         onNavigateToChat={() => setCurrentView('chat')}
         onNavigateToPayment={() => setCurrentView('payment')}
         language={language}
-        onLanguageChange={handleLanguageChange}
+        onLanguageChange={handleLanguageChange as any}
       />
     </LanguageProvider>
   );

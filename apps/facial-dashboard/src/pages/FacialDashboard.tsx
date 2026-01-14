@@ -1199,8 +1199,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                 );
             case 'membership':
                 return (
-                    <MembershipPlansPage 
-                        onBack={() => setActiveTab('profile')}
+                    <MembershipPlansPage {...{} as any} onBack={() => setActiveTab('profile')}
                         userType="place"
                         currentPlan="free"
                     />
