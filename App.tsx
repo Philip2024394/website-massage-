@@ -737,6 +737,10 @@ const App = () => {
                         state.setShowRegisterPrompt(true);
                     }}
                     handleIncrementAnalytics={handleIncrementAnalytics}
+                    handleShowRegisterPrompt={() => { state.setRegisterPromptContext('booking'); state.setShowRegisterPrompt(true); }}
+                    setSelectedCity={(city: string) => state.setSelectedCity?.(city)}
+                    t={(key: string) => key}
+                    currentPage={state.page}
                     handleNavigateToHotelLogin={() => {}}
                     handleNavigateToMassagePlaceLogin={navigation?.handleNavigateToMassagePlaceLogin || (() => {})}
                     handleNavigateToServiceTerms={navigation?.handleNavigateToServiceTerms || (() => {})}

@@ -392,14 +392,14 @@ export default function ChatWindow({
                 receiverId: customerId,
                 receiverName: customerName,
                 receiverRole: 'customer',
-                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Name: ${bankDetails.accountHolderName}\n💰 Account: ${bankDetails.accountNumber}\n\n✅ Choose your preferred payment method after service completion.\n\n⚠️ For bank transfer: Please transfer exact amount and notify me when complete.`,
-                messageType: 'payment-card',
+                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails?.bankName || 'N/A'}\n👤 Name: ${bankDetails?.accountHolderName || 'N/A'}\n💰 Account: ${bankDetails?.accountNumber || 'N/A'}\n\n✅ Choose your preferred payment method after service completion.\n\n⚠️ For bank transfer: Please transfer exact amount and notify me when complete.`,
+                messageType: 'text',
                 bookingId,
                 metadata: {
                     paymentCard: {
-                        bankName: bankDetails.bankName,
-                        accountHolderName: bankDetails.accountHolderName,
-                        accountNumber: bankDetails.accountNumber
+                        bankName: bankDetails?.bankName || 'N/A',
+                        accountHolderName: bankDetails?.accountHolderName || 'N/A',
+                        accountNumber: bankDetails?.accountNumber || 'N/A'
                     }
                 }
             });
@@ -432,14 +432,14 @@ export default function ChatWindow({
                 receiverId: customerId,
                 receiverName: customerName,
                 receiverRole: 'customer',
-                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails.bankName}\n👤 Name: ${bankDetails.accountHolderName}\n💰 Account: ${bankDetails.accountNumber}\n\n✅ Booking confirmed! Choose payment method after service.\n\n⚠️ For transfers: Use exact amount and confirm when sent.`,
-                messageType: 'payment-card',
+                message: `💳 PAYMENT INFORMATION / INFORMASI PEMBAYARAN\n\n💰 Amount: ${bookingDetails?.price ? 'Rp ' + bookingDetails.price.toLocaleString('id-ID') : 'As agreed'}\n\n🔸 PAYMENT OPTIONS:\n💵 Cash - Pay directly after service\n🏦 Bank Transfer - Details below:\n\n🏦 Bank: ${bankDetails?.bankName || 'N/A'}\n👤 Name: ${bankDetails?.accountHolderName || 'N/A'}\n💰 Account: ${bankDetails?.accountNumber || 'N/A'}\n\n✅ Booking confirmed! Choose payment method after service.\n\n⚠️ For transfers: Use exact amount and confirm when sent.`,
+                messageType: 'text',
                 bookingId,
                 metadata: {
                     paymentCard: {
-                        bankName: bankDetails.bankName,
-                        accountHolderName: bankDetails.accountHolderName,
-                        accountNumber: bankDetails.accountNumber
+                        bankName: bankDetails?.bankName || 'N/A',
+                        accountHolderName: bankDetails?.accountHolderName || 'N/A',
+                        accountNumber: bankDetails?.accountNumber || 'N/A'
                     }
                 }
             });
@@ -1274,9 +1274,9 @@ export default function ChatWindow({
                                     <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
                                         <div className="mb-2">
                                             <PaymentCard
-                                                bankName={bankDetails.bankName}
-                                                accountHolderName={bankDetails.accountHolderName}
-                                                accountNumber={bankDetails.accountNumber}
+                                                bankName={bankDetails?.bankName || 'N/A'}
+                                                accountHolderName={bankDetails?.accountHolderName || 'N/A'}
+                                                accountNumber={bankDetails?.accountNumber || 'N/A'}
                                                 size="small"
                                             />
                                         </div>
