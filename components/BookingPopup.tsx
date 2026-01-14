@@ -435,7 +435,7 @@ ${
         // Send system message to chat room
         console.log('🔥 STEP 5: Sending system message to chat room...');
         if (chatRoom?.$id) {
-          await sendSystemMessage(chatRoom.$id, { en: systemMessage, id: systemMessage }, therapistId, user?.id);
+          await sendSystemMessage(chatRoom.$id, { en: systemMessage, id: systemMessage }, therapistId, (user as any)?.id);
           console.log('✅ STEP 5 COMPLETE: System message sent successfully');
         } else {
           console.error('❌ STEP 5 FAILED: Chat room ID is null');

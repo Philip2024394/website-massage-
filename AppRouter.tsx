@@ -217,7 +217,7 @@ interface AppRouterProps {
     onLanguageChange?: (lang: Language) => void;
     selectedCity?: string;
     onCityChange?: (city: string) => void;
-    setSelectedCity: (city: string) => void;
+    setSelectedCity:? (city: string) => void;
     onNavigate: (page: Page) => void;
     t: any;
     currentPage: Page;

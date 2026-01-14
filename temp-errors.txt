@@ -3,6 +3,7 @@
 > tsc --noEmit
 
 App.tsx(678,18): error TS2741: Property 'setSelectedCity' is missing in type '{ page: Page; isLoading: boolean; loggedInProvider: LoggedInProvider | null; loggedInCustomer: any; loggedInAgent: Agent | null; language: Language; ... 86 more ...; setSelectedJobId: () => void; }' but required in type 'AppRouterProps'.
+AppRouter.tsx(220,21): error TS17020: '?' at the start of a type is not valid TypeScript syntax. Did you mean to write '((city: string) => void) | null | undefined'?
 apps/facial-dashboard/src/pages/FacialDashboard.tsx(1305,26): error TS2786: 'PushNotificationSettings' cannot be used as a JSX component.
   Its type 'FC<PushNotificationSettingsProps>' is not a valid JSX element type.
     Type 'FunctionComponent<PushNotificationSettingsProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
@@ -92,7 +93,7 @@ booking/useBookingSubmit.ts(284,21): error TS2353: Object literal may only speci
 booking/useBookingSubmit.ts(366,28): error TS2304: Cannot find name 'response'.
 chat/FloatingChatWindow.tsx(427,26): error TS2345: Argument of type '{ customerName: string; customerWhatsApp: string; location: string; }' is not assignable to parameter of type 'SetStateAction<{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; }>'.
   Property 'coordinates' is missing in type '{ customerName: string; customerWhatsApp: string; location: string; }' but required in type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; }'.
-components/BookingPopup.tsx(438,104): error TS2304: Cannot find name 'user'.
+components/BookingPopup.tsx(438,105): error TS2304: Cannot find name 'user'.
 components/BookingSystemTester.tsx(42,11): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'ChatMessage'.
 components/BookingSystemTester.tsx(52,11): error TS2367: This comparison appears to be unintentional because the types '"idle"' and '"registering"' have no overlap.
 components/BookingSystemTester.tsx(81,31): error TS2367: This comparison appears to be unintentional because the types '"idle"' and '"searching"' have no overlap.
@@ -250,19 +251,16 @@ lib/utils/performance.ts(69,31): error TS2345: Argument of type 'string | undefi
 lib/utils/performance.ts(70,41): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 modules/chat/BookingWelcomeBanner.tsx(8,29): error TS2307: Cannot find module '../utils/chatHelpers' or its corresponding type declarations.
-modules/massage-place/PlaceServices.tsx(62,25): error TS2304: Cannot find name 'setShowPriceListModal'.
-modules/massage-place/PlaceServices.tsx(210,26): error TS2304: Cannot find name 'amenities'.
-modules/massage-place/PlaceServices.tsx(212,35): error TS2304: Cannot find name 'amenities'.
-modules/massage-place/PlaceServices.tsx(241,14): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(245,44): error TS2304: Cannot find name 'setSelectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(253,34): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(254,34): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(257,27): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(257,57): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(259,34): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(260,95): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(262,34): error TS2304: Cannot find name 'selectedGalleryPhoto'.
-modules/massage-place/PlaceServices.tsx(263,67): error TS2304: Cannot find name 'selectedGalleryPhoto'.
+modules/massage-place/PlaceServices.tsx(1,8): error TS2300: Duplicate identifier 'React'.
+modules/massage-place/PlaceServices.tsx(17,8): error TS2300: Duplicate identifier 'React'.
+modules/massage-place/PlaceServices.tsx(257,55): error TS2339: Property 'url' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(258,55): error TS2339: Property 'title' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(261,48): error TS2339: Property 'title' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(261,78): error TS2339: Property 'description' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(263,55): error TS2339: Property 'title' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(264,116): error TS2339: Property 'title' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(266,55): error TS2339: Property 'description' does not exist on type 'string'.
+modules/massage-place/PlaceServices.tsx(267,88): error TS2339: Property 'description' does not exist on type 'string'.
 pages/AdvancedSearchPage.tsx(282,17): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onNavigate: (page: string) => void; currentLanguage: "id" | "en"; onLanguageChange: (newLang: string) => void; }' is not assignable to type 'IntrinsicAttributes & AppDrawerProps'.
   Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & AppDrawerProps'.
 pages/auth/AuthPage.tsx(2,10): error TS2305: Module '"lucide-react"' has no exported member 'ChevronDown'.

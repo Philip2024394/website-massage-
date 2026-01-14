@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 /**
  * PlaceServices Component
  * 
@@ -48,6 +49,9 @@ const PlaceServices: React.FC<PlaceServicesProps> = ({
     onGalleryPhotoClick,
     onNavigate,
 }) => {
+    const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState<string | null>(null);
+    const [amenities, setAmenities] = useState<any[]>([]);
+    const [showPriceListModal, setShowPriceListModal] = useState(false);
     return (
         <>
             {/* Client Preference Display - Left aligned, matching therapist card */}

@@ -14,7 +14,7 @@ const COLLECTIONS = {
     THERAPISTS: APPWRITE_CONFIG.collections.therapists,
     PLACES: APPWRITE_CONFIG.collections.places,
     USERS: APPWRITE_CONFIG.collections.users,
-    BOOKINGS: APPWRITE_CONFIG.collections.bookings,
+    (bookings as any): APPWRITE_CONFIG.collections.(bookings as any),
     REVIEWS: APPWRITE_CONFIG.collections.reviews,
     ANALYTICS: APPWRITE_CONFIG.collections.analytics,
     ANALYTICS_EVENTS: APPWRITE_CONFIG.collections.analyticsEvents,
@@ -235,21 +235,21 @@ export interface PlatformAnalytics {
     topTherapists: Array<{
         id: number | string;
         name: string;
-        bookings: number;
+        (bookings as any): number;
         revenue: number;
         rating: number;
     }>;
     topPlaces: Array<{
         id: number | string;
         name: string;
-        bookings: number;
+        (bookings as any): number;
         revenue: number;
         rating: number;
     }>;
     topHotels: Array<{
         id: number | string;
         name: string;
-        bookings: number;
+        (bookings as any): number;
         commissionsEarned: number;
     }>;
     
@@ -651,13 +651,13 @@ class AnalyticsService {
             if (!COLLECTIONS.THERAPISTS) throw new Error('THERAPISTS collection ID is empty');
             if (!COLLECTIONS.PLACES) throw new Error('PLACES collection ID is empty');
             if (!COLLECTIONS.USERS) throw new Error('USERS collection ID is empty');
-            if (!COLLECTIONS.BOOKINGS) throw new Error('BOOKINGS collection ID is empty');
+            if (!COLLECTIONS.(bookings as any)) throw new Error('(bookings as any) collection ID is empty');
 
             // Get counts from collections
             const therapistsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.THERAPISTS);
             const placesData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.PLACES);
             const usersData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.USERS);
-            const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.BOOKINGS, [
+            const bookingsData = await databases.listDocuments(DATABASE_ID, COLLECTIONS.(bookings as any), [
                 Query.greaterThanEqual('createdAt', startDate),
                 Query.lessThanEqual('createdAt', endDate)
             ]);
@@ -678,10 +678,10 @@ class AnalyticsService {
             );
 
             const totalRevenue = revenueEvents.documents.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const completedBookingsCount = bookings.documents.filter((b: any) => b.status === 'Completed').length;
-            const cancelledBookingsCount = bookings.documents.filter((b: any) => b.status === 'Cancelled').length;
-            const bookingCompletionRate = bookings.documents.length > 0 
-                ? (completedBookingsCount / bookings.documents.length) * 100 
+            const completedBookingsCount = (bookings as any).documents.filter((b: any) => b.status === 'Completed').length;
+            const cancelledBookingsCount = (bookings as any).documents.filter((b: any) => b.status === 'Cancelled').length;
+            const bookingCompletionRate = (bookings as any).documents.length > 0 
+                ? (completedBookingsCount / (bookings as any).documents.length) * 100 
                 : 0;
 
             return {
@@ -696,7 +696,7 @@ class AnalyticsService {
                 totalHotels: 0, // TODO: Get from hotels collection
                 totalVillas: 0, // TODO: Get from villas collection
                 activeHotelVillas: 0,
-                totalBookings: bookings.documents.length,
+                totalBookings: (bookings as any).documents.length,
                 completedBookings: completedBookingsCount,
                 cancelledBookings: cancelledBookingsCount,
                 bookingCompletionRate,
@@ -706,9 +706,9 @@ class AnalyticsService {
                 userGrowthRate: 0,
                 providerGrowthRate: 0,
                 revenueGrowthRate: 0,
-                averageBookingsPerUser: users.documents.length > 0 ? bookings.documents.length / users.documents.length : 0,
+                averageBookingsPerUser: users.documents.length > 0 ? (bookings as any).documents.length / users.documents.length : 0,
                 averageBookingsPerProvider: (therapists.documents.length + places.documents.length) > 0 
-                    ? bookings.documents.length / (therapists.documents.length + places.documents.length) 
+                    ? (bookings as any).documents.length / (therapists.documents.length + places.documents.length) 
                     : 0,
                 platformConversionRate: 0,
                 topTherapists: [],

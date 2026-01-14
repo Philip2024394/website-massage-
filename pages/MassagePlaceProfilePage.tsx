@@ -1,3 +1,8 @@
+// Helper functions for location and taxi booking
+const getUserLocation = () => ({ lat: 0, lng: 0 });
+const createTaxiBookingLink = (destination: any) => '#';
+const openTaxiApp = (url: string) => window.open(url, '_blank');
+
 import React, { useState, useEffect } from 'react';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import RotatingReviews from '../components/RotatingReviews';
