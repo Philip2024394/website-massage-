@@ -116,6 +116,7 @@ export default function ChatWindow({
     customerName,
     bookingId,
     bookingDetails,
+    bankDetails,
     isOpen,
     onClose
 }: ChatWindowProps) {
@@ -526,7 +527,8 @@ export default function ChatWindow({
             }
 
             // Send commission payment reminder for Pro/Commission tier members
-            if (providerRole === 'therapist' && (therapist?.membershipTier === 'free' || therapist?.membershipTier === 'commission')) {
+            // Commission reminder disabled - therapist data not available
+            if (false && providerRole === 'therapist') {
                 const bookingPrice = bookingDetails?.price || 500000;
                 const commissionAmount = bookingPrice * 0.30;
                 
@@ -1393,3 +1395,5 @@ export default function ChatWindow({
         </div>
     );
 }
+
+

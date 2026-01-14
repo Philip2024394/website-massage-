@@ -793,7 +793,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                 status: 'Open',
             });
 
-            alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
+            alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.');
             
             // Mark payment as pending
             setPaymentPending(true);
@@ -804,7 +804,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             }, 1000);
         } catch (error: any) {
             console.error('❌ Failed to activate profile:', error);
-            alert('❌ Failed to activate profile. Please try again.', 'error');
+            alert('❌ Failed to activate profile. Please try again.');
         }
     };
 
@@ -815,13 +815,13 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            alert('❌ Please upload an image file', 'error');
+            alert('❌ Please upload an image file');
             return;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            alert('❌ Image must be less than 5MB', 'error');
+            alert('❌ Image must be less than 5MB');
             return;
         }
 
@@ -838,7 +838,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     // Submit payment and go live
     const handlePaymentSubmit = async () => {
         if (!paymentProof) {
-            alert('❌ Please upload payment proof', 'error');
+            alert('❌ Please upload payment proof');
             return;
         }
 
@@ -853,7 +853,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
             // Profile is already LIVE from handlePlusActivation
             // Confirm payment submission
-            alert('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
+            alert('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.');
             
             // Mark payment as no longer pending
             setPaymentPending(false);
@@ -862,7 +862,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             setShowPaymentModal(false);
         } catch (error: any) {
             console.error('❌ Payment submission failed:', error);
-            alert('❌ Failed to submit payment. Please try again.', 'error');
+            alert('❌ Failed to submit payment. Please try again.');
         } finally {
             setUploadingPayment(false);
         }
@@ -2531,6 +2531,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 };
 
 export default FacialPlaceDashboardPage;
+
 
 
 

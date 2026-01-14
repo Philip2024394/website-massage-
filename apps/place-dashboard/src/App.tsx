@@ -3,6 +3,7 @@ import { authService } from '../../../lib/appwriteService';
 import PlaceDashboard from './pages/PlaceDashboard';
 import PlaceChat from './pages/PlaceChat';
 import PlacePaymentInfo from './pages/PlacePaymentInfo';
+import { LanguageProvider } from '../../../context/LanguageContext';
 
 
 function App() {
@@ -101,4 +102,5 @@ function App() {
 }
 
 export default App;
+
 
