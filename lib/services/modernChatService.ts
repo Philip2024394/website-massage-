@@ -391,7 +391,7 @@ class ModernChatService {
 
     const unsubscribe = this.client.subscribe(
       `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.chatMessages}.documents`,
-      (response: any<ChatMessage>) => {
+      (response: any) => {
         const payload = response.payload;
         
         // Only process messages for current chat room
@@ -430,7 +430,7 @@ class ModernChatService {
 
     const unsubscribe = this.client.subscribe(
       `databases.${APPWRITE_CONFIG.databaseId}.collections.chat_typing.documents`,
-      async (response: any<TypingStatus>) => {
+      async (response: any) => {
         const payload = response.payload;
         
         // Only process typing for current chat room
