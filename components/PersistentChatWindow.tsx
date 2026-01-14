@@ -12,7 +12,7 @@
 
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Minus, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, ChevronDown, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
+import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, ChevronDown, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
 import CustomDatePicker from './CustomDatePicker';
 import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/services/discountValidationService';
 import { FlagIcon } from './FlagIcon';

@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Minimize, Maximize, Wifi, WifiOff } from 'lucide-react';
+import { X, Plus, Wifi, WifiOff } from 'lucide-react';
 import { modernChatService, ChatMessage } from '../lib/services/modernChatService';
 import { ChatInput } from './ChatInput';
 import { MessageList, groupMessagesByDate, DateSeparator } from './MessageBubble';
@@ -36,8 +36,8 @@ interface ModernChatWindowProps {
   recipientRole: 'customer' | 'therapist' | 'admin';
   isOpen: boolean;
   onClose: () => void;
-  onMinimize?: () => void;
-  isMinimized?: boolean;
+  onMinus?: () => void;
+  isMinusd?: boolean;
   className?: string;
 }
 
@@ -55,8 +55,8 @@ export function ModernChatWindow({
   recipientRole,
   isOpen,
   onClose,
-  onMinimize,
-  isMinimized = false,
+  onMinus,
+  isMinusd = false,
   className = ''
 }: ModernChatWindowProps) {
   // ========================================================================
@@ -257,14 +257,14 @@ export function ModernChatWindow({
   // ========================================================================
   
   useEffect(() => {
-    if (isOpen && !isMinimized && messages.length > 0) {
+    if (isOpen && !isMinusd && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage && lastMessage.$id !== lastReadMessageRef.current) {
         modernChatService.markMessagesAsRead(chatRoomId, currentUserId);
         lastReadMessageRef.current = lastMessage.$id;
       }
     }
-  }, [isOpen, isMinimized, messages, chatRoomId, currentUserId]);
+  }, [isOpen, isMinusd, messages, chatRoomId, currentUserId]);
   
   // ========================================================================
   // RENDER
@@ -299,12 +299,12 @@ export function ModernChatWindow({
         
         {/* Header Actions */}
         <div className="flex items-center space-x-2">
-          {onMinimize && (
+          {onMinus && (
             <button
-              onClick={onMinimize}
+              onClick={onMinus}
               className="p-1 rounded hover:bg-orange-600 transition-colors"
             >
-              {isMinimized ? <Maximize className="w-4 h-4" /> : <Minimize className="w-4 h-4" />}
+              {isMinusd ? <Plus className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
             </button>
           )}
           
@@ -318,7 +318,7 @@ export function ModernChatWindow({
       </div>
       
       {/* Chat Body */}
-      {!isMinimized && (
+      {!isMinusd && (
         <>
           {/* Messages Container */}
           <div 

@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Smile } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { EmojiPicker } from './EmojiPicker';
 
 // ============================================================================

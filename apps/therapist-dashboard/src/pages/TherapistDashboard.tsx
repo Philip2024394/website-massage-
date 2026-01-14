@@ -13,7 +13,7 @@ import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoin
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
-import { Star, Upload, X, CheckCircle, Square, Users, Save, Banknote, Languages, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -80,9 +80,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [price120, setPrice120] = useState(String(therapist?.price120 || '200'));
   const [yearsOfExperience, setYearsOfExperience] = useState(String(therapist?.yearsOfExperience || '5'));
   const [clientPreferences, setClientPreferences] = useState(therapist?.clientPreferences || 'Males And Females');
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
+  const [selectedGlobe, setSelectedGlobe] = useState<string[]>(() => {
     try {
-      const raw: any = therapist?.languages;
+      const raw: any = therapist?.Globe;
       // Handle both array format (already parsed) and JSON string format
       if (Array.isArray(raw)) return raw.slice(0, 3);
       if (typeof raw === 'string' && raw) {
@@ -167,15 +167,15 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           console.log('✅ Profile picture loaded:', latestData.profilePicture);
         }
         
-        // Handle languages
-        if (latestData.languages) {
+        // Handle Globe
+        if (latestData.Globe) {
           try {
-            const langs = typeof latestData.languages === 'string' 
-              ? JSON.parse(latestData.languages) 
-              : latestData.languages;
-            if (Array.isArray(langs)) setSelectedLanguages(langs.slice(0, 3));
+            const langs = typeof latestData.Globe === 'string' 
+              ? JSON.parse(latestData.Globe) 
+              : latestData.Globe;
+            if (Array.isArray(langs)) setSelectedGlobe(langs.slice(0, 3));
           } catch (e) {
-            console.warn('Failed to parse languages:', e);
+            console.warn('Failed to parse Globe:', e);
           }
         }
         
@@ -277,7 +277,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Reset profileSaved when any form field changes
   useEffect(() => {
     setProfileSaved(false);
-  }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedLanguages, price60, price90, price120, yearsOfExperience, clientPreferences]);
+  }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
 
   const initializeMap = (coords: {lat: number, lng: number}) => {
     try {
@@ -373,7 +373,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   };
 
   const handleToggleLanguage = (code: string) => {
-    setSelectedLanguages(prev => 
+    setSelectedGlobe(prev => 
       prev.includes(code) 
         ? prev.filter(c => c !== code) 
         : (prev.length < 3 ? [...prev, code] : prev)
@@ -483,7 +483,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const updateData: any = {
         name: name.trim(),
         description: description.trim(),
-        languages: JSON.stringify(selectedLanguages),
+        Globe: JSON.stringify(selectedGlobe),
         price60: price60.trim(),
         price90: price90.trim(),
         price120: price120.trim(),
@@ -542,7 +542,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       console.log('⏳ Waiting for database to commit changes...');
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Auto-translate profile data to both languages
+      // Auto-translate profile data to both Globe
       console.log('🌐 Auto-translating profile data...');
       try {
         const { adminTranslationService } = await import('../../../../lib/translationService');
@@ -1109,10 +1109,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </p>
             </div>
 
-            {/* Languages */}
+            {/* Globe */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Languages (max 3) - {selectedLanguages.length}/3 selected
+                Globe (max 3) - {selectedGlobe.length}/3 selected
               </label>
               <div className="flex flex-wrap gap-2">
                 {languageOptions.map(opt => (
@@ -1120,7 +1120,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     key={opt.code}
                     onClick={() => handleToggleLanguage(opt.code)}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                      selectedLanguages.includes(opt.code)
+                      selectedGlobe.includes(opt.code)
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
