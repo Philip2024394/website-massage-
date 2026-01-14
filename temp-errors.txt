@@ -84,17 +84,11 @@ apps/therapist-dashboard/src/components/ChatWindow.tsx(1372,14): error TS2786: '
 apps/therapist-dashboard/src/lib/pwaFeatures.ts(276,21): error TS2353: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
 apps/therapist-dashboard/src/lib/pwaFeatures.ts(748,75): error TS2554: Expected 0 arguments, but got 1.
 apps/therapist-dashboard/src/lib/pwaFeatures.ts(768,67): error TS2554: Expected 0 arguments, but got 1.
-apps/therapist-dashboard/src/pages/TherapistDashboard.tsx(1098,53): error TS2345: Argument of type 'ClientPreference' is not assignable to parameter of type 'SetStateAction<"Males Only" | "Females Only" | "Males And Females" | "Babies Only" | "All Ages And Genders">'.
-  Type '"Woman And Children"' is not assignable to type 'SetStateAction<"Males Only" | "Females Only" | "Males And Females" | "Babies Only" | "All Ages And Genders">'.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(192,44): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(306,39): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(405,69): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(410,68): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
-booking/useBookingSubmit.ts(269,54): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 booking/useBookingSubmit.ts(284,21): error TS2353: Object literal may only specify known properties, and 'duration' does not exist in type '{ chatRoomId: string; bookingId: string; providerId: string; providerName: string; providerImage?: string | null | undefined; therapistId?: string | undefined; therapistName?: string | undefined; ... 8 more ...; serviceType?: string | undefined; }'.
-booking/useBookingSubmit.ts(291,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 booking/useBookingSubmit.ts(366,28): error TS2304: Cannot find name 'bookingResponse'.
 chat/FloatingChatWindow.tsx(427,26): error TS2345: Argument of type '{ customerName: string; customerWhatsApp: string; location: string; }' is not assignable to parameter of type 'SetStateAction<{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; }>'.
   Property 'coordinates' is missing in type '{ customerName: string; customerWhatsApp: string; location: string; }' but required in type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; }'.
@@ -153,6 +147,7 @@ components/TherapistProfileBase.tsx(85,48): error TS2345: Argument of type 'stri
 context/PersistentChatProvider.tsx(820,9): error TS2353: Object literal may only specify known properties, and 'discountCode' does not exist in type '{ customerId: string; customerName: string; customerPhone: string; therapistId?: string | undefined; therapistName?: string | undefined; businessId?: string | undefined; businessName?: string | undefined; ... 8 more ...; therapistStatus?: string | undefined; }'.
 features/shared-profiles/ShareActions.tsx(55,45): error TS2322: Type '{ children: Element; url: string; quote: string; }' is not assignable to type 'IntrinsicAttributes & Omit<Props<{ hashtag?: string | undefined; }>, "forwardedRef" | "networkLink" | "networkName" | "opts"> & { hashtag?: string | undefined; } & RefAttributes<...>'.
   Property 'quote' does not exist on type 'IntrinsicAttributes & Omit<Props<{ hashtag?: string | undefined; }>, "forwardedRef" | "networkLink" | "networkName" | "opts"> & { hashtag?: string | undefined; } & RefAttributes<...>'.
+features/shared-profiles/SharedTherapistProfile.tsx(142,38): error TS2304: Cannot find name 'selectedtherapist'.
 features/shared-profiles/SharedTherapistProfile.tsx(300,55): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 features/shared-profiles/SharedTherapistProfile.tsx(595,55): error TS2554: Expected 1 arguments, but got 2.

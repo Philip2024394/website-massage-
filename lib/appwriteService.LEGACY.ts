@@ -3273,7 +3273,7 @@ export const pricingService = {
                     type: 'hotel_guest',
                     amount: basePrice * 0.10,
                     reason: 'Hotel Guest Discount'
-                });
+                } as any);
             }
             
             // Apply agent referral discount (5%)
@@ -3282,7 +3282,7 @@ export const pricingService = {
                     type: 'agent_referral',
                     amount: basePrice * 0.05,
                     reason: 'Agent Referral Discount'
-                });
+                } as any);
             }
             
             // Weekend surcharge (Friday-Sunday, +15%)
@@ -3291,7 +3291,7 @@ export const pricingService = {
                     type: 'weekend',
                     amount: basePrice * 0.15,
                     reason: 'Weekend Premium'
-                });
+                } as any);
             }
             
             // Peak hours surcharge (6PM-10PM, +20%)
@@ -3300,7 +3300,7 @@ export const pricingService = {
                     type: 'peak_hours',
                     amount: basePrice * 0.20,
                     reason: 'Peak Hours Premium'
-                });
+                } as any);
             }
             
             // Early bird discount (6AM-9AM, -10%)
@@ -3309,7 +3309,7 @@ export const pricingService = {
                     type: 'early_bird',
                     amount: basePrice * 0.10,
                     reason: 'Early Bird Special'
-                });
+                } as any);
             }
             
             // Calculate final price
@@ -6218,7 +6218,7 @@ export const leadBillingService = {
 
                 const billing = await this.getMonthlyBilling(providerId, providerType, month, year);
                 if (billing.totalLeads > 0) {
-                    history.push(billing);
+                    history.push(billing as any);
                 }
             }
 
