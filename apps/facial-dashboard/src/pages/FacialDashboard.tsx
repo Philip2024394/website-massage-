@@ -476,7 +476,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
         const checkForNotifications = async () => {
             try {
-                const unreadNotifications = await notificationService.getUnread(placeId);
+                const unreadNotifications = await notificationService.getUnread(placeId.toString());
                 
                 // Filter for WhatsApp contact notifications with null safety
                 const whatsappNotifications = (unreadNotifications || []).filter(

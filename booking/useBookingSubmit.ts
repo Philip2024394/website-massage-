@@ -208,7 +208,9 @@ export function useBookingSubmit(
             
             // ⚡ Save to Appwrite with retry logic and circuit breaker
             console.log('📤 Creating booking with retry protection...');
-            const bookingResponse = await withAppwriteRetry(
+            
+            let bookingResponse: any = null;
+            bookingResponse = await withAppwriteRetry(
                 () => appwriteCircuitBreaker.execute(() =>
                     databases.createDocument(
                         APPWRITE_CONFIG.databaseId,
@@ -253,7 +255,7 @@ export function useBookingSubmit(
             // Send welcome messages with retry
             try {
                 await withAppwriteRetry(
-                    () => sendWelcomeMessage(chatRoom.$id, therapistName, userId),
+                    () => sendWelcomeMessage(chatRoom.$id, therapistName || 'Therapist', userId),
                     'Send Welcome Message'
                 );
                 console.log('✅ Welcome message sent');
@@ -264,7 +266,7 @@ export function useBookingSubmit(
 
             try {
                 await withAppwriteRetry(
-                    () => sendBookingReceivedMessage(chatRoom.$id, userId),
+                    () => sendBookingReceivedMessage(chatRoom.$id, userId || 'user'),
                     'Send Booking Received Message'
                 );
                 console.log('✅ Booking received message sent');
@@ -286,7 +288,7 @@ export function useBookingSubmit(
             }
 
             try {
-                await sendBookingReceivedMessage(chatRoom.$id, userId);
+                await sendBookingReceivedMessage(chatRoom.$id, userId || 'user');
                 console.log('✅ Booking received message sent');
             } catch (bookingErr) {
                 console.warn('⚠️ Booking received message failed:', bookingErr);
@@ -302,7 +304,7 @@ export function useBookingSubmit(
                     };
                     
                     const { sendSystemMessage } = await import('../lib/chatService');
-                    await sendSystemMessage(chatRoom.$id, pendingBookingMessage, 'system', 'system');
+                    await sendSystemMessage(chatRoom.$id || '', pendingBookingMessage, 'system', 'system');
                     console.log('⚠️ Pending booking notification sent to chat');
                 } catch (pendingErr) {
                     console.warn('⚠️ Pending booking notification failed:', pendingErr);

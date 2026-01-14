@@ -12,6 +12,7 @@
 // ============================================================================
 
 // Replace existing PersistentChatWindow with ModernChatWindow
+import React, { useState } from 'react';
 import { ModernChatWindow } from '../components/ModernChatWindow';
 
 function ExampleModernIntegration() {

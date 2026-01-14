@@ -1,3 +1,13 @@
+// Type extensions for PWA features
+declare global {
+    interface Navigator {
+        standalone?: boolean;
+    }
+    interface ServiceWorkerRegistration {
+        sync?: any;
+    }
+}
+
 /**
  * 📱 PWA Enhanced Features for Therapist Dashboard
  * Provides persistent chat functionality and app-like experience

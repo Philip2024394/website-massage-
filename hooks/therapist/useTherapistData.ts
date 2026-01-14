@@ -130,9 +130,9 @@ export const useTherapistData = (
         
         try {
             console.log('📖 Fetching therapist data for ID:', therapistId);
-            
-            let existingTherapist = null;
-            
+
+            let existingTherapist: any = null;
+
             // Priority 1: Use existingTherapistData from AppRouter
             if (existingTherapistData) {
                 console.log('✅ Using existingTherapistData from AppRouter');

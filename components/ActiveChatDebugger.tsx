@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
  * Add this to App.tsx temporarily to debug chat window issues
  */
 const ActiveChatDebugger = ({ activeChat }) => {
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState<Array<{ timestamp: string; activeChat: any }>>([]);
   
   useEffect(() => {
     const timestamp = new Date().toLocaleTimeString();

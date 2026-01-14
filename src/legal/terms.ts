@@ -36,7 +36,23 @@ export const LEGAL_TERMS = {
 // Temporary exports for compatibility
 export const FULL_TERMS_DOCUMENT = {
   title: "Terms and Conditions",
-  content: "Terms content placeholder..."
+  content: "Terms content placeholder...",
+  version: "1.0.0", // Terms version
+  lastUpdated: "2026-01-14", // Last update date
+  sections: [
+    {
+      title: "General Terms",
+      content: "General terms content..."
+    },
+    {
+      title: "Privacy Policy", 
+      content: "Privacy policy content..."
+    },
+    {
+      title: "Service Agreement",
+      content: "Service agreement content..."
+    }
+  ] // Structured sections
 };
 
 export const validateTermsAcceptance = (accepted: boolean) => accepted;

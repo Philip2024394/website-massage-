@@ -53,7 +53,7 @@ const FacialPlaceHomeCard: React.FC<FacialPlaceHomeCardProps> = ({
                 const placeId = String((place as any).id || (place as any).$id || '');
                 if (!placeId) return;
                 
-                const count = await bookingService.getBookingsCount(placeId, 'facial');
+                const count = await bookingService.getBookingsCount(placeId, 'place');
                 setBookingsCount(count);
             } catch (error) {
                 // Silently fall back to default count (don't log error)

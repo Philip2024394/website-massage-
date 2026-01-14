@@ -412,8 +412,8 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
       // Send welcome messages
       try {
-        await sendWelcomeMessage(realChatRoom.$id, chatRoom.providerName, userId);
-        await sendBookingReceivedMessage(realChatRoom.$id, userId);
+        await sendWelcomeMessage(realChatRoom.$id || '', chatRoom.providerName || '', userId || '');
+        await sendBookingReceivedMessage(realChatRoom.$id || '', userId || '');
       } catch (err) {
         console.warn('⚠️ Welcome messages failed:', err);
       }

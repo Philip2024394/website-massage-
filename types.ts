@@ -240,6 +240,7 @@ export interface Therapist {
     email: string;
     password?: string;
     profilePicture: string;
+    profileImage?: string; // Profile image (alias for profilePicture)
     mainImage?: string; // Main banner image URL
     description: string;
     status: AvailabilityStatus;
@@ -395,8 +396,8 @@ export interface Place {
     price90?: string; // Price for 90 minute service
     price120?: string; // Price for 120 minute service
     status?: string; // Place status
-    membershipStartDate?: string; // Membership start date
-    analytics: AnalyticsString; // JSON string for Appwrite
+    membershipStartDate?: string; // Membership start date  averageRating?: number; // Calculated average rating
+  staticRating?: number; // Static/default rating    analytics: AnalyticsString; // JSON string for Appwrite
     agentId?: number;
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
@@ -413,14 +414,14 @@ export interface Place {
     
     // Dynamic pricing support
     hasPackages?: boolean;
-    discountPercentage?: number; // Overall discount for promotions
-    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
+    discountPercentage?: number; // Overall discount for promotions  discountEndTime?: string; // Discount end time
+  isDiscountActive?: boolean; // Discount active flag    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
     
     // Gallery images with captions (up to 6 images)
     galleryImages?: Array<{ imageUrl: string; caption: string }>;
     profilePicture?: string; // Logo/profile image
-    additionalServices?: string[]; // Selected additional services/amenities
+  profileImage?: string; // Profile image (alias for profilePicture)
     
     // Contact and business information
     contactNumber?: string; // Contact phone number
@@ -526,7 +527,8 @@ export interface Booking {
     startTime: string; // ISO string
     status: BookingStatus;
     totalPrice?: number; // Total price in Rupiah
-    
+    price?: number; // Price alias for totalPrice
+
     // Hotel/Villa guest booking fields
     guestName?: string;
     roomNumber?: string;
@@ -661,6 +663,8 @@ export interface ChatMessage {
     
     // Message content
     originalText: string;      // Original message in sender's language
+    text?: string;             // Text alias for originalText
+    type?: string;             // Message type (system, user, etc.)
     originalLanguage: 'en' | 'id';
     translatedText?: string;   // Auto-translated to recipient's language
     translatedLanguage?: 'en' | 'id';

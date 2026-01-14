@@ -444,7 +444,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
         const checkForWhatsAppNotifications = async () => {
             try {
-                const unreadNotifications = await notificationService.getUnread(placeId);
+                const unreadNotifications = await notificationService.getUnread(placeId.toString());
                 
                 // Filter for WhatsApp contact notifications with null safety
                 const whatsappNotifications = (unreadNotifications || []).filter(
@@ -1101,7 +1101,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'hotelVilla':
                 return <HotelVillaTab />;
             case 'notifications':
-                return <NotificationsTab placeId={placeId!} PushNotificationSettings={PushNotificationSettings} />;
+                return <NotificationsTab placeId={placeId!} PushNotificationSettings={undefined} />;
             case 'profile':
             default:
                 return (
