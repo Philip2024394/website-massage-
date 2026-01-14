@@ -292,7 +292,7 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             }
             
             // Add mock data if no photos exist (for demonstration)
-            if (parsedPhotos.length === 0) { parsedPhotos = [ as any
+            if (parsedPhotos.length === 0) { parsedPhotos = [
                     {
                         url: 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382',
                         title: 'Relaxing Treatment Room',
