@@ -46,7 +46,7 @@ export const authService = {
             );
             
             // Store user info in localStorage as fallback for when cookies fail
-            if (user?.$id) {
+            if ((user as any)?.$id) {
                 try {
                     localStorage.setItem('therapist_session_backup', JSON.stringify({
                         userId: (user as any).$id,

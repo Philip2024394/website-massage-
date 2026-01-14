@@ -440,8 +440,8 @@ export const therapistService = {
                     status: normalizeStatus(therapist.status),
                     availability: normalizeStatus(therapist.availability || therapist.status),
                     description: cleanDescription,
-                    busyUntil: extractedBusyTimer?.busyUntil || null,
-                    busyDuration: extractedBusyTimer?.busyDuration || null
+                    busyUntil: (extractedBusyTimer as any)?.busyUntil as any || null,
+                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null
                 };
             });
             
@@ -514,8 +514,8 @@ export const therapistService = {
                     status: normalizeStatus(therapist.status),
                     availability: normalizeStatus(therapist.availability || therapist.status),
                     description: cleanDescription,
-                    busyUntil: extractedBusyTimer?.busyUntil || null,
-                    busyDuration: extractedBusyTimer?.busyDuration || null
+                    busyUntil: (extractedBusyTimer as any)?.busyUntil as any || null,
+                    busyDuration: (extractedBusyTimer as any)?.busyDuration as any || null
                 };
             });
             
@@ -632,7 +632,7 @@ export const therapistService = {
                     mappedData.busy = '';
                 } else if (data.status.toLowerCase() === 'busy') {
                     // Use bookedUntil / busyDuration to form busy value; fallback to timestamp
-                    const bookedUntilTs = data.bookedUntil || (data as any).busyUntil || new Date(Date.now() + 60*60*1000).toISOString();
+                    const bookedUntilTs = data.bookedUntil || (data as any).busyUntil as any || new Date(Date.now() + 60*60*1000).toISOString();
                     mappedData.busy = bookedUntilTs;
                     mappedData.available = '';
                 } else if (data.status.toLowerCase() === 'offline') {
@@ -727,7 +727,7 @@ export const therapistService = {
             });
             
             // Handle busy timer fields - store in existing description field as JSON for now
-            if (data.bookedUntil !== undefined || (data as any).busyDuration !== undefined || (data as any).busyUntil !== undefined) {
+            if (data.bookedUntil !== undefined || (data as any).busyDuration as any !== undefined || (data as any).busyUntil as any !== undefined) {
                 try {
                     // Get current description to preserve it
                     let currentDesc = currentDocument.description || '';
@@ -746,14 +746,14 @@ export const therapistService = {
                     }
                     
                     // Update timer data
-                    if ((data as any).busyUntil !== undefined || (data as any).busyDuration !== undefined || data.bookedUntil !== undefined) {
+                    if ((data as any).busyUntil as any !== undefined || (data as any).busyDuration as any !== undefined || data.bookedUntil !== undefined) {
                         busyTimerData = {
-                            busyUntil: (data as any).busyUntil ?? data.bookedUntil ?? busyTimerData?.busyUntil ?? null,
-                            busyDuration: (data as any).busyDuration ?? busyTimerData?.busyDuration ?? null
+                            busyUntil: (data as any).busyUntil as any ?? data.bookedUntil ?? busyTimerData?.busyUntil as any ?? null,
+                            busyDuration: (data as any).busyDuration as any ?? busyTimerData?.busyDuration as any ?? null
                         };
                         
                         // Only add timer data if busyUntil exists
-                        if ((busyTimerData as any).busyUntil) {
+                        if ((busyTimerData as any).busyUntil as any) {
                             mappedData.description = currentDesc + (currentDesc ? ' ' : '') + `[TIMER:${JSON.stringify(busyTimerData)}]`;
                         } else {
                             mappedData.description = currentDesc;
