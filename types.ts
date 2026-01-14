@@ -422,6 +422,7 @@ export interface Place {
     galleryImages?: Array<{ imageUrl: string; caption: string }>;
     profilePicture?: string; // Logo/profile image
   profileImage?: string; // Profile image (alias for profilePicture)
+  additionalServices?: string[]; // Selected additional services/amenities
     
     // Contact and business information
     contactNumber?: string; // Contact phone number
