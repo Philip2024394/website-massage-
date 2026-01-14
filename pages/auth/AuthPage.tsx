@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, User, Lock, Mail, CheckSquare, Square } from 'lucide-react';
+import { ChevronDown, User, Lock, Mail, Square } from 'lucide-react';
 import HomeIcon from '../../components/icons/HomeIcon';
 import { authService, userService, therapistService, placesService } from '../../lib/appwriteService';
 import { ID } from '../../lib/appwrite';
@@ -462,7 +462,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                         <span className={accountType ? 'text-gray-900' : 'text-gray-500'}>
                                             {accountType ? accountTypes.find(t => t.value === accountType)?.label : 'Select account type'}
                                         </span>
-                                        <ChevronDown className={`w-5 h-5 text-gray-400 transform transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                                        <span>▼</span>
                                     </button>
                                     
                                     {showDropdown && (
@@ -512,7 +512,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                     className="flex-shrink-0 mt-0.5"
                                 >
                                     {acceptTerms ? (
-                                        <CheckSquare className="w-5 h-5 text-orange-500" />
+                                        <span>☑</span>
                                     ) : (
                                         <Square className="w-5 h-5 text-gray-400 border border-gray-300 rounded" />
                                     )}

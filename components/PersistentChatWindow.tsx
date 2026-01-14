@@ -12,7 +12,7 @@
 
 import React, { useState, useRef, useEffect, memo } from 'react';
 import { usePersistentChat, ChatMessage, BookingStep, validateMessage } from '../context/PersistentChatProvider';
-import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, ChevronLeft, ChevronDown, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
+import { MessageCircle, X, Send, Clock, MapPin, User, Phone, Check, Wifi, WifiOff, Calendar, Star, Sparkles, CreditCard, AlertTriangle, Gift, Tag } from 'lucide-react';
 import CustomDatePicker from './CustomDatePicker';
 import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/services/discountValidationService';
 import { FlagIcon } from './FlagIcon';
@@ -507,7 +507,7 @@ export function PersistentChatWindow() {
             className="p-1.5 hover:bg-white/20 transition-colors rounded relative z-[10001]"
             title="Minimize"
           >
-            <ChevronDown className="w-6 h-6 text-white stroke-2" />
+            <span>▼</span>
           </button>
           {!isLocked && (
             <button

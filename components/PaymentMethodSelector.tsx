@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Banknote, AlertTriangle, CheckCircle } from 'lucide-react';
+import { CreditCard, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface PaymentMethodSelectorProps {
     selectedMethod: 'cash' | 'bank_transfer' | null;
@@ -58,9 +58,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
                             <div className={`p-3 rounded-full ${
                                 selectedMethod === 'cash' ? 'bg-green-500' : 'bg-gray-200'
                             }`}>
-                                <Banknote className={`w-6 h-6 ${
-                                    selectedMethod === 'cash' ? 'text-white' : 'text-gray-600'
-                                }`} />
+                                <span>💵</span>
                             </div>
                             <div className="text-left">
                                 <h4 className="font-bold text-gray-900">💵 Cash Payment</h4>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Plus, X, CheckCircle, Upload, CreditCard, Building2, AlertCircle } from 'lucide-react';
 import { Therapist, Booking } from '../../../../types';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
@@ -254,14 +254,14 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
             onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
             className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
           >
-            <ChevronLeft className="w-5 h-5 text-black" />
+            <span>◀</span>
           </button>
           <h3 className="text-base font-bold text-black">{monthName}</h3>
           <button
             onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
             className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
           >
-            <ChevronRight className="w-5 h-5 text-black" />
+            <span>▶</span>
           </button>
         </div>
         

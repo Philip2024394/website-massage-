@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Clock, WifiOff, CreditCard, ChevronDown, X } from 'lucide-react';
+import { Clock, WifiOff, CreditCard, X } from 'lucide-react';
 
 interface ChatHeaderProps {
   therapist: {
@@ -83,7 +83,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           className="p-1.5 hover:bg-white/20 transition-colors rounded relative z-[10001]"
           title="Minimize"
         >
-          <ChevronDown className="w-6 h-6 text-white stroke-2" />
+          <span>▼</span>
         </button>
         {!isLocked && (
           <button

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-    Clock, MapPin, Phone, Mail, Star, ChevronLeft, ChevronRight, 
+    Clock, MapPin, Phone, Mail, Star, 
     Award, Users, Sparkles, Calendar, CheckCircle, X, Heart,
     Image as ImageIcon, Play, Shield, TrendingUp
 } from 'lucide-react';
@@ -167,7 +167,7 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                         onClick={onBack}
                         className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <span>◀</span>
                     </button>
                     
                     <div className="flex items-center gap-2">
@@ -281,13 +281,13 @@ const FacialClinicProfilePage: React.FC<FacialClinicProfilePageProps> = ({
                                 onClick={handlePrevTreatment}
                                 className="p-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
                             >
-                                <ChevronLeft className="w-5 h-5" />
+                                <span>◀</span>
                             </button>
                             <button
                                 onClick={handleNextTreatment}
                                 className="p-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
                             >
-                                <ChevronRight className="w-5 h-5" />
+                                <span>▶</span>
                             </button>
                         </div>
                     </div>
