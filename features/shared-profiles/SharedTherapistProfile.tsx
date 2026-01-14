@@ -139,7 +139,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('\n' + '⚡'.repeat(40));
                 console.log('⚡ [STATE UPDATE] Using pre-selected therapist');
                 console.log('⚡ Therapist:', selectedTherapist.name);
-                console.log('⚡ ID:', selectedTherapist.$id);
+                console.log('⚡ ID:', selectedtherapist.$id as string);
                 console.log('⚡ Skipping Appwrite fetch');
                 console.log('⚡'.repeat(40) + '\n');
                 setTherapist(selectedTherapist);
@@ -609,7 +609,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     console.log('✅ [RENDER] Rendering SUCCESS state - TherapistProfileBase');
     console.log('✅'.repeat(40));
     console.log('👤 Therapist:', therapist.name);
-    console.log('🆔 ID:', therapist.$id);
+    console.log('🆔 ID:', therapist.$id as string);
     console.log('📍 Location:', therapist.location);
     console.log('⭐ Rating:', therapist.rating);
     console.log('🎯 Mode: shared');

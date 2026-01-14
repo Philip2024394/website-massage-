@@ -1095,7 +1095,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </label>
               <select
                 value={clientPreferences}
-                onChange={e => setClientPreferences(e.target.value as ClientPreference)}
+                onChange={e => setClientPreferences(e.target.value as ClientPreference as any)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 focus:outline-none transition-all"
               >
                 {CLIENT_PREFERENCE_OPTIONS.map(preference => (

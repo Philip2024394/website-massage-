@@ -33,8 +33,6 @@ apps/facial-dashboard/src/pages/FacialDashboard.tsx(2355,14): error TS2786: 'Val
     Type 'FunctionComponent<ValidationPopupProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
       Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
         Type 'bigint' is not assignable to type 'ReactNode'.
-apps/place-dashboard/src/App.tsx(20,17): error TS2345: Argument of type '"id" | "en" | "gb"' is not assignable to parameter of type 'SetStateAction<"id" | "en">'.
-  Type '"gb"' is not assignable to type 'SetStateAction<"id" | "en">'.
 apps/place-dashboard/src/App.tsx(92,6): error TS2786: 'LanguageProvider' cannot be used as a JSX component.
   Its type 'FC<PropsWithChildren<{ value: LanguageContextValue; }>>' is not a valid JSX element type.
     Type 'FunctionComponent<PropsWithChildren<{ value: LanguageContextValue; }>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
@@ -92,8 +90,6 @@ apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(192,44): error TS2367: 
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(306,39): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(405,69): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
 apps/therapist-dashboard/src/pages/TherapistSchedule.tsx(410,68): error TS2367: This comparison appears to be unintentional because the types 'BookingStatus' and '"cancelled"' have no overlap.
-booking/useBookingSubmit.ts(258,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
 booking/useBookingSubmit.ts(269,54): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
   Type 'undefined' is not assignable to type 'string'.
 booking/useBookingSubmit.ts(284,21): error TS2353: Object literal may only specify known properties, and 'duration' does not exist in type '{ chatRoomId: string; bookingId: string; providerId: string; providerName: string; providerImage?: string | null | undefined; therapistId?: string | undefined; therapistName?: string | undefined; ... 8 more ...; serviceType?: string | undefined; }'.

@@ -266,7 +266,7 @@ export function useBookingSubmit(
 
             try {
                 await withAppwriteRetry(
-                    () => sendBookingReceivedMessage(chatRoom.$id, userId || 'user'),
+                    () => sendBookingReceivedMessage(chatRoom.$id as string, userId || 'user'),
                     'Send Booking Received Message'
                 );
                 console.log('✅ Booking received message sent');
@@ -288,7 +288,7 @@ export function useBookingSubmit(
             }
 
             try {
-                await sendBookingReceivedMessage(chatRoom.$id, userId || 'user');
+                await sendBookingReceivedMessage(chatRoom.$id as string, userId || 'user');
                 console.log('✅ Booking received message sent');
             } catch (bookingErr) {
                 console.warn('⚠️ Booking received message failed:', bookingErr);
