@@ -516,7 +516,7 @@ class AutomatedBackupService {
             [COLLECTIONS.THERAPISTS]: 'Therapists',
             [COLLECTIONS.PLACES]: 'Places',
             [COLLECTIONS.BOOKINGS]: 'Bookings',
-            [COLLECTIONS.MESSAGES]: 'Messages',
+            [(COLLECTIONS as any).MESSAGES]: 'Messages',
             [COLLECTIONS.NOTIFICATIONS]: 'Notifications'
         };
         return mapping[collectionId] || collectionId;

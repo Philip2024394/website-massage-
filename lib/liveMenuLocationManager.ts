@@ -119,11 +119,11 @@ export class LiveMenuLocationManager {
         );
 
         // Include provider if within radius or if configured to include all
-        if (distanceResult.distance <= radiusKm || includeOutsideRadius) {
+        if (distanceResult.distance as any <= radiusKm || includeOutsideRadius) {
           providersWithDistance.push({
             ...provider,
-            distance: distanceResult.distance,
-            distanceText: enhancedDistanceService.formatDistance(distanceResult.distance),
+            distance: distanceResult.distance as any,
+            distanceText: enhancedDistanceService.formatDistance(distanceResult.distance as any),
             travelTime: distanceResult.duration,
             travelTimeText: distanceResult.duration ? enhancedDistanceService.formatTravelTime(distanceResult.duration) : undefined
           });
@@ -135,7 +135,7 @@ export class LiveMenuLocationManager {
     }
 
     // Sort by distance (closest first)
-    providersWithDistance.sort((a, b) => a.distance - b.distance);
+    providersWithDistance.sort((a, b) => a.distance as any - b.distance as any);
 
     console.log(`✅ Distance calculation complete: ${providersWithDistance.length} providers within ${radiusKm}km`);
     return providersWithDistance;

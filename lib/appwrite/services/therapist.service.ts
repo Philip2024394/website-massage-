@@ -757,8 +757,8 @@ export const therapistService = {
                     // Update timer data
                     if ((data as any).busyUntil as any !== undefined || (data as any).busyDuration as any !== undefined || data.bookedUntil !== undefined) {
                         busyTimerData = {
-                            busyUntil: (data as any).busyUntil as any ?? data.bookedUntil ?? busyTimerData?.busyUntil as any ?? null,
-                            busyDuration: (data as any).busyDuration as any ?? busyTimerData?.busyDuration as any ?? null
+                            busyUntil: (data as any).busyUntil as any ?? data.bookedUntil ?? (busyTimerData as any)?.busyUntil as any ?? null,
+                            busyDuration: (data as any).busyDuration as any ?? (busyTimerData as any)?.busyDuration as any ?? null
                         };
                         
                         // Only add timer data if busyUntil exists

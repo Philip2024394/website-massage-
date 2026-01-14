@@ -89,7 +89,7 @@ class HealthMonitoringService {
             },
             {
                 name: 'Chat Messages Collection',
-                check: () => this.checkCollectionHealth('messages', COLLECTIONS.MESSAGES),
+                check: () => this.checkCollectionHealth('messages', (COLLECTIONS as any).MESSAGES),
                 critical: false
             },
             {
