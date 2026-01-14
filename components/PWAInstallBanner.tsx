@@ -144,7 +144,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-2xl transition-transform duration-500 ease-out transform translate-y-0" style={{
       animation: 'slideUp 0.5s ease-out'
     }}>
-      <style jsx>{`
+      <style {...({} as any)}>{`
         @keyframes slideUp {
           from { transform: translateY(100%); }
           to { transform: translateY(0%); }
