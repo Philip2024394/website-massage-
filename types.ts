@@ -396,9 +396,10 @@ export interface Place {
     price90?: string; // Price for 90 minute service
     price120?: string; // Price for 120 minute service
     status?: string; // Place status
-    membershipStartDate?: string; // Membership start date  averageRating?: number; // Calculated average rating
-  staticRating?: number; // Static/default rating    analytics: AnalyticsString; // JSON string for Appwrite
-    agentId?: number;
+    membershipStartDate?: string; // Membership start date
+    averageRating?: number; // Calculated average rating
+    staticRating?: number; // Static/default rating
+    analytics?: AnalyticsString; // JSON string for Appwrite
     hotelVillaServiceStatus?: HotelVillaServiceStatus;
     hotelDiscount?: number; // minimum 20%
     villaDiscount?: number; // minimum 20%
