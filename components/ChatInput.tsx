@@ -273,7 +273,7 @@ export function ChatInput({
           }`}
           title="Add emoji"
         >
-          <Smile className="w-5 h-5" />
+          😊
         </button>
         
         {/* Input Field */}

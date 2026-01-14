@@ -262,7 +262,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                 {/* Form */}
                 <div className="p-6 space-y-4">
                     {/* Customer Name */}
-                    <EnhancedFormField
+                    {/* <EnhancedFormField
                         label={t.customerName}
                         required={true}
                         error={errors.customerName}
@@ -274,7 +274,7 @@ const BookingFormPopup: React.FC<BookingFormPopupProps> = ({
                             placeholder={t.customerNamePlaceholder}
                             className="w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors border-gray-300"
                         />
-                    </EnhancedFormField>
+                    </EnhancedFormField> */}
 
                     {/* Location Type */}
                     <div>

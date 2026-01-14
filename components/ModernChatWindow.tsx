@@ -304,7 +304,7 @@ export function ModernChatWindow({
               onClick={onMinus}
               className="p-1 rounded hover:bg-orange-600 transition-colors"
             >
-              {isMinusd ? <Plus className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+              {isMinusd ? <Plus className="w-4 h-4" /> : <span className="text-lg">−</span>}
             </button>
           )}
           

@@ -395,7 +395,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                 </div>
               </div>
 
-              <EnhancedFormField
+              {/* <EnhancedFormField
                 label="Your Name"
                 required={true}
                 error={error && !customerName.trim() ? "Name is required" : null}
@@ -407,7 +407,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
                   placeholder="Enter your name"
                   className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm text-gray-900"
                 />
-              </EnhancedFormField>
+              </EnhancedFormField> */}
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">
