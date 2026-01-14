@@ -47,7 +47,7 @@ import {
     ColoredCoinsIcon 
 } from '../../../../components/ColoredIcons';
 // Modular tab components
-import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../../../../components/dashboard-tabs';
+import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
 
 
 interface PlaceDashboardPageProps {
