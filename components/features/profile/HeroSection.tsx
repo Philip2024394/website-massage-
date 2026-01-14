@@ -370,7 +370,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                     {languages.map((lang, index) => {
-                                        const langData = LANGUAGE_MAP[lang.toLowerCase()];
+                                        const langData = LANGUAGE_MAP[(lang as string)?.toLowerCase()];
                                         if (!langData) return null;
                                         return (
                                             <span key={index} className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-gray-800 text-xs font-medium rounded-full flex items-center gap-1">

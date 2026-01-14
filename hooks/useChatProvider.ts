@@ -33,7 +33,7 @@ export function useChatProvider() {
     notifications,
     addNotification,
     removeNotification
-  } = context;
+  } = context as any;
 
   /**
    * Open a chat room after successful booking

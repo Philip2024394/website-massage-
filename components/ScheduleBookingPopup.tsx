@@ -173,10 +173,10 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         { setError, setIsCreating, onClose: () => {}, resetForm }
       );
 
-      if (bookingResult?.success) {
+      if ((bookingResult as any)?.success) {
         // Create deposit requirement
         await scheduledBookingService.createDepositRequirement(
-          bookingResult.bookingId,
+          (bookingResult as any).bookingId,
           pendingBookingData.userId,
           therapistId,
           pendingBookingData.totalPrice,
@@ -194,7 +194,7 @@ const ScheduleBookingPopup: React.FC<ScheduleBookingPopupProps> = ({
         // Upload payment proof if provided
         if (depositData.paymentProof) {
           await scheduledBookingService.uploadPaymentProof(
-            bookingResult.bookingId,
+            (bookingResult as any).bookingId,
             depositData.paymentProof
           );
         }
