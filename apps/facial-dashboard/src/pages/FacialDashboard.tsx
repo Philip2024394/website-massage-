@@ -793,7 +793,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                 status: 'Open',
             });
 
-            showToast('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
+            alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
             
             // Mark payment as pending
             setPaymentPending(true);
@@ -804,7 +804,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             }, 1000);
         } catch (error: any) {
             console.error('❌ Failed to activate profile:', error);
-            showToast('❌ Failed to activate profile. Please try again.', 'error');
+            alert('❌ Failed to activate profile. Please try again.', 'error');
         }
     };
 
@@ -815,13 +815,13 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            showToast('❌ Please upload an image file', 'error');
+            alert('❌ Please upload an image file', 'error');
             return;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            showToast('❌ Image must be less than 5MB', 'error');
+            alert('❌ Image must be less than 5MB', 'error');
             return;
         }
 
@@ -838,7 +838,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
     // Submit payment and go live
     const handlePaymentSubmit = async () => {
         if (!paymentProof) {
-            showToast('❌ Please upload payment proof', 'error');
+            alert('❌ Please upload payment proof', 'error');
             return;
         }
 
@@ -853,7 +853,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 
             // Profile is already LIVE from handlePlusActivation
             // Confirm payment submission
-            showToast('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
+            alert('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
             
             // Mark payment as no longer pending
             setPaymentPending(false);
@@ -862,7 +862,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             setShowPaymentModal(false);
         } catch (error: any) {
             console.error('❌ Payment submission failed:', error);
-            showToast('❌ Failed to submit payment. Please try again.', 'error');
+            alert('❌ Failed to submit payment. Please try again.', 'error');
         } finally {
             setUploadingPayment(false);
         }
@@ -1109,7 +1109,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                         <div className="bg-white rounded-xl shadow-sm p-6">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                                    <Megaphone className="w-5 h-5 text-orange-600" />
+                                    <Bell className="w-5 h-5 text-orange-600" />
                                 </div>
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900">Promotional Tools</h2>
@@ -1195,11 +1195,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                 );
             case 'discounts':
                 return (
-                    <DiscountSharePage
-                        providerId={String(placeId)}
-                        providerName={place?.name || 'Place'}
-                        providerType="place"
-                    />
+                    <div>Discount Share feature temporarily disabled</div>
                 );
             case 'membership':
                 return (
@@ -1212,7 +1208,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
             case 'terms':
                 return (
                     <div className="bg-white p-6 rounded-lg shadow">
-                        <TherapistTermsPage />
+                        <div>Terms page temporarily disabled</div>
                     </div>
                 );
             case 'bookings':
@@ -2319,7 +2315,7 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                             isAppInstalled ? 'bg-gray-100' : 'bg-gradient-to-br from-orange-500 to-amber-500'
                         }`}>
-                            <Smartphone className={`w-5 h-5 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
+                            <Bell className={`w-5 h-5 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-gray-800">
@@ -2535,6 +2531,11 @@ const FacialPlaceDashboardPage: React.FC<FacialPlaceDashboardPageProps> = ({ onS
 };
 
 export default FacialPlaceDashboardPage;
+
+
+
+
+
 
 
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../types';
 import { BookingStatus, HotelVillaServiceStatus } from '../../../../types';
-import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Megaphone, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download, Smartphone } from 'lucide-react';
+import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
 import { useLanguage } from '../../../../hooks/useLanguage';
 
 // PWA Install interface
@@ -13,7 +13,6 @@ interface BeforeInstallPromptEvent extends Event {
 import { loadGoogleMapsScript } from '../../../../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
 import Button from '../../../../components/Button';
-import DiscountSharePage from './DiscountSharePage';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../../../../components/ImageUpload';
 import MainImageCropper from '../../../../components/MainImageCropper';
@@ -21,8 +20,6 @@ import HotelVillaOptIn from '../../../../components/HotelVillaOptIn';
 
 import { placeService, imageUploadService } from '../../../../lib/appwriteService';
 import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
-import { showToast } from '../../../utils/showToastPortal';
-import TherapistTermsPage from './TherapistTermsPage';
 import LoadingSpinner from '../../../../components/LoadingSpinner';
 import UserSolidIcon from '../../../../components/icons/UserSolidIcon';
 import DocumentTextIcon from '../../../../components/icons/DocumentTextIcon';
@@ -329,7 +326,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         // Load gallery images - Appwrite uses 'galleryImages' (camelCase)
         const galleryData = (placeData as any).galleryImages || (placeData as any).galleryimages;
         if (galleryData) {
-            let parsedGallery = [];
+            let parsedGallery: Array<{ imageUrl: string; caption: string; description: string }> = [];
             
             // Parse if it's a JSON string
             if (typeof galleryData === 'string') {
@@ -568,7 +565,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
     const handleSave = () => {
         // Comprehensive validation with detailed error messages
-        const missingFields = [];
+        const missingFields: string[] = [];
         
         if (!name || name.trim() === '') missingFields.push('• Business/Place Name');
         if (!contactNumber || contactNumber.trim() === '') missingFields.push('• Contact Number');
@@ -740,7 +737,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 status: 'Open',
             });
 
-            showToast('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
+            alert('🎉 Your profile is now LIVE! Please submit payment to keep it active.', 'success');
             
             // Mark payment as pending
             setPaymentPending(true);
@@ -751,7 +748,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             }, 1000);
         } catch (error: any) {
             console.error('❌ Failed to activate profile:', error);
-            showToast('❌ Failed to activate profile. Please try again.', 'error');
+            alert('❌ Failed to activate profile. Please try again.', 'error');
         }
     };
 
@@ -762,13 +759,13 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
         // Validate file type
         if (!file.type.startsWith('image/')) {
-            showToast('❌ Please upload an image file', 'error');
+            alert('❌ Please upload an image file', 'error');
             return;
         }
 
         // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            showToast('❌ Image must be less than 5MB', 'error');
+            alert('❌ Image must be less than 5MB', 'error');
             return;
         }
 
@@ -785,7 +782,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     // Submit payment and go live
     const handlePaymentSubmit = async () => {
         if (!paymentProof) {
-            showToast('❌ Please upload payment proof', 'error');
+            alert('❌ Please upload payment proof', 'error');
             return;
         }
 
@@ -800,7 +797,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 
             // Profile is already LIVE from handlePlusActivation
             // Confirm payment submission
-            showToast('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
+            alert('✅ Payment proof submitted successfully! Your profile is now LIVE and can be edited for the next 5 hours. Our team will review your payment within 48 hours and activate your verified badge upon approval.', 'success');
             
             // Mark payment as no longer pending
             setPaymentPending(false);
@@ -812,7 +809,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             }
         } catch (error: any) {
             console.error('❌ Payment submission failed:', error);
-            showToast('❌ Failed to submit payment. Please try again.', 'error');
+            alert('❌ Failed to submit payment. Please try again.', 'error');
         } finally {
             setUploadingPayment(false);
         }
@@ -1073,11 +1070,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                 return <PromotionalTab />;
             case 'discounts':
                 return (
-                    <DiscountSharePage
-                        providerId={String(placeId)}
-                        providerName={place?.name || 'Place'}
-                        providerType="place"
-                    />
+                    <div>Discount Share feature temporarily disabled</div>
                 );
             case 'membership':
                 return (
@@ -1090,7 +1083,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'terms':
                 return (
                     <div className="bg-white p-6 rounded-lg shadow">
-                        <TherapistTermsPage />
+                        <div>Terms page temporarily disabled</div>
                     </div>
                 );
             case 'bookings':
@@ -2087,7 +2080,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                             isAppInstalled ? 'bg-gray-100' : 'bg-gradient-to-br from-orange-500 to-amber-500'
                         }`}>
-                            <Smartphone className={`w-5 h-5 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
+                            <Bell className={`w-5 h-5 ${isAppInstalled ? 'text-gray-400' : 'text-white'}`} />
                         </div>
                         <div>
                             <h3 className="text-sm font-bold text-gray-800">
@@ -2303,3 +2296,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
 };
 
 export default PlaceDashboardPage;
+
+
+
+
+
