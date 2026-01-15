@@ -49,7 +49,7 @@ export const BookingSystemTester: React.FC = () => {
       
       handleStartBooking()
       
-      if (bookingStatus === 'registering' && showServiceConfirmation) {
+      if ((bookingStatus as string) === 'registering' && showServiceConfirmation) {
         addResult('Chat Activation', true, undefined, Date.now() - startTime)
       } else {
         addResult('Chat Activation', false, 'State not updated correctly')
@@ -78,7 +78,7 @@ export const BookingSystemTester: React.FC = () => {
       
       const serviceConfirmed = handleConfirmService()
       
-      if (serviceConfirmed && bookingStatus === 'searching') {
+      if (serviceConfirmed && (bookingStatus as string) === 'searching') {
         addResult('Service Confirmation', true, undefined, Date.now() - confirmStart)
       } else {
         addResult('Service Confirmation', false, 'Service confirmation failed')
@@ -152,7 +152,7 @@ export const BookingSystemTester: React.FC = () => {
       
       handleCancelBooking()
       
-      if (cancelWorked && bookingStatus === 'idle' && !timerActive) {
+      if (cancelWorked && (bookingStatus as string) === 'idle' && !timerActive) {
         addResult('Cancel Safety', true, undefined, Date.now() - cancelStart)
       } else {
         addResult('Cancel Safety', false, 'Cancel not working properly')
@@ -191,7 +191,7 @@ export const BookingSystemTester: React.FC = () => {
       
       onTherapistFound(mockTherapist)
       
-      if (currentTherapist && showTherapistSelection && bookingStatus === 'pending_accept') {
+      if (currentTherapist && showTherapistSelection && (bookingStatus as string) === 'pending_accept') {
         addResult('Therapist Found', true, undefined, Date.now() - therapistStart)
       } else {
         addResult('Therapist Found', false, 'Therapist found logic failed')
@@ -225,7 +225,7 @@ export const BookingSystemTester: React.FC = () => {
       
       const accepted = handleAcceptTherapist()
       
-      if (accepted && therapistAccepted && bookingStatus === 'active') {
+      if (accepted && therapistAccepted && (bookingStatus as string) === 'active') {
         addResult('User Confirmation', true, undefined, Date.now() - confirmationStart)
       } else {
         addResult('User Confirmation', false, 'User confirmation failed')
@@ -235,7 +235,7 @@ export const BookingSystemTester: React.FC = () => {
       setCurrentTest('Testing Booking Confirmed...')
       const bookingStart = Date.now()
       
-      const isBookingActive = bookingStatus === 'active'
+      const isBookingActive = (bookingStatus as string) === 'active'
       const hasConfirmationMessage = messages.some(m => 
         (m as any).type === 'system' && (m as any).text?.includes('booking is confirmed')
       )
@@ -254,7 +254,7 @@ export const BookingSystemTester: React.FC = () => {
       let chatInputEnabled = false
       let realtimeEnabled = false
       
-      if (bookingStatus === 'active') {
+      if ((bookingStatus as string) === 'active') {
         chatInputEnabled = true
         realtimeEnabled = true
       }
@@ -422,4 +422,6 @@ export const BookingSystemTester: React.FC = () => {
 }
 
 export default BookingSystemTester
+
+
 

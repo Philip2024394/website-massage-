@@ -75,7 +75,7 @@ export const availabilityEnforcementService = {
     const status = (availabilityStatus || '').toUpperCase() as TherapistAvailabilityStatus;
     
     // Handle RESTRICTED - cannot accept ANY bookings
-    if (status === TherapistAvailabilityStatus.RESTRICTED) {
+    if ((status as any) === TherapistAvailabilityStatus.RESTRICTED) {
       return {
         allowed: false,
         reason: 'RESTRICTED_STATUS',
@@ -130,7 +130,7 @@ export const availabilityEnforcementService = {
     // Handle SCHEDULED requests
     if (bookingType === BookingType.SCHEDULED) {
       // RESTRICTED still blocked for scheduled
-      if (status === TherapistAvailabilityStatus.RESTRICTED) {
+      if ((status as any) === TherapistAvailabilityStatus.RESTRICTED) {
         return {
           allowed: false,
           reason: 'RESTRICTED_SCHEDULED_BLOCKED',
@@ -227,3 +227,4 @@ export const availabilityEnforcementService = {
 // ============================================================================
 
 export default availabilityEnforcementService;
+

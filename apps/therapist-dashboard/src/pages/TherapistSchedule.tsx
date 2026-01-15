@@ -189,7 +189,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
     // Check system bookings
     const hasSystemBooking = bookings.some(booking => {
       const bookingDate = new Date(booking.startTime).toISOString().split('T')[0];
-      return bookingDate === dateString && booking.status !== 'cancelled';
+      return bookingDate === dateString && (booking.status as string) !== 'cancelled';
     });
     
     // Check manual bookings
@@ -303,7 +303,7 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
     
     const systemBookings = bookings.filter(booking => {
       const bookingDate = new Date(booking.startTime).toISOString().split('T')[0];
-      return bookingDate === today && booking.status !== 'cancelled';
+      return bookingDate === today && (booking.status as string) !== 'cancelled';
     });
     
     const manualBookingsToday = manualBookings.filter(booking => booking.date === today);
@@ -402,12 +402,12 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
         </div>
 
         {/* All Upcoming Bookings */}
-        {bookings.filter(b => new Date(b.startTime) > new Date() && b.status !== 'cancelled').length > 0 && (
+        {bookings.filter(b => new Date(b.startTime) > new Date() && (b.status as string) !== 'cancelled').length > 0 && (
           <div className="bg-white rounded-lg border border-black p-4">
             <h3 className="text-base font-bold text-black mb-3">Upcoming</h3>
             <div className="space-y-2">
               {bookings
-                .filter(b => new Date(b.startTime) > new Date() && b.status !== 'cancelled')
+                .filter(b => new Date(b.startTime) > new Date() && (b.status as string) !== 'cancelled')
                 .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
                 .map(booking => (
                   <div key={booking.id} className="p-3 bg-white border border-gray-300 rounded-lg">
@@ -586,4 +586,6 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
 };
 
 export default TherapistSchedule;
+
+
 

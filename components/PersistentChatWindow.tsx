@@ -609,7 +609,7 @@ export function PersistentChatWindow() {
                 <Calendar className="w-4 h-4 text-blue-500" />
                 <span className="text-gray-600">Type:</span>
                 <span className="font-medium text-gray-800">
-                  {chatState.currentBooking.bookingType === 'book_now' ? '🔥 Book Now' : '📅 Scheduled'}
+                  {(chatState.currentBooking.bookingType as string) === 'book_now' ? '🔥 Book Now' : '📅 Scheduled'}
                   {chatState.currentBooking.scheduledDate && (
                     ` - ${chatState.currentBooking.scheduledDate} ${chatState.currentBooking.scheduledTime}`
                   )}
@@ -1599,6 +1599,7 @@ export function PersistentChatWindow() {
 
 // Memoize to prevent unnecessary re-renders
 export default memo(PersistentChatWindow);
+
 
 
 
