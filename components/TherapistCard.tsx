@@ -938,9 +938,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 translatedDescriptionLength={translatedDescription.length}
             />
 
-            {/* End Content Section wrapper */}
-            </div>
-
+            {/* Booking Buttons - Positioned under price containers */}
             <div className={`flex gap-2 px-4 ${getDynamicSpacing('mt-4', 'mt-3', 'mt-3', translatedDescription.length)}`}>
                 <button
                     onClick={(e) => {
@@ -999,6 +997,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <CalendarIcon className="w-4 h-4"/>
                     <span className="text-sm">{scheduleText}</span>
                 </button>
+            </div>
+
+            {/* End Content Section wrapper */}
             </div>
 
             {/* Terms and Conditions Link - Below booking buttons */}
