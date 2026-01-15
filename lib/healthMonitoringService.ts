@@ -1,4 +1,4 @@
-import { databases, account, DATABASE_ID, COLLECTIONS } from './appwrite';
+import { databases, account, DATABASE_ID, COLLECTIONS, ID } from './appwrite';
 import { Query } from 'appwrite';
 
 /**
@@ -494,7 +494,7 @@ class HealthMonitoringService {
             await databases.createDocument(
                 DATABASE_ID,
                 this.HEALTH_COLLECTION,
-                `health_${Date.now()}`,
+                ID.unique(),
                 {
                     ...report,
                     // Store checks as JSON string for Appwrite
