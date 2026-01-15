@@ -264,8 +264,8 @@ class ScheduledBookingService {
     async getDateChangeRequests(therapistId?: string, userId?: string): Promise<DateChangeRequest[]> {
         try {
             const queries = [];
-            if (therapistId) queries.push(Query.equal('therapistId', therapistId));
-            if (userId) queries.push(Query.equal('userId', userId));
+            if (therapistId) queries.push(Query.equal('therapistId', therapistId as any));
+            if (userId) queries.push(Query.equal('userId', userId as any));
             
             const result = await databases.listDocuments(
                 this.DATABASE_ID,
@@ -345,8 +345,8 @@ class ScheduledBookingService {
     ): Promise<FlexibleTimeSlot[]> {
         try {
             const queries = [Query.equal('therapistId', therapistId)];
-            if (date) queries.push(Query.equal('date', date));
-            if (!includeOutsideCalendar) queries.push(Query.equal('isOutsideCalendar', false));
+            if (date) queries.push(Query.equal('date', date as any));
+            if (!includeOutsideCalendar) queries.push(Query.equal('isOutsideCalendar', false as any));
 
             const result = await databases.listDocuments(
                 this.DATABASE_ID,
@@ -394,7 +394,7 @@ class ScheduledBookingService {
     async getPendingDeposits(therapistId?: string): Promise<ScheduledBookingDeposit[]> {
         try {
             const queries = [Query.equal('status', 'paid')];
-            if (therapistId) queries.push(Query.equal('therapistId', therapistId));
+            if (therapistId) queries.push(Query.equal('therapistId', therapistId as any));
 
             const result = await databases.listDocuments(
                 this.DATABASE_ID,

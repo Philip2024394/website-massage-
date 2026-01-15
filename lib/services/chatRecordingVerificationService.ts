@@ -2,7 +2,7 @@
 // Comprehensive verification of chat recording and admin monitoring integration
 
 import { databases, client, Query } from '../appwrite';
-import { APPWRITE_CONFIG } from '../../config';
+import { APP_CONFIG } from '../../config';
 
 export class ChatRecordingVerificationService {
     
@@ -112,8 +112,8 @@ export class ChatRecordingVerificationService {
         // Check Messages Collection
         try {
             const messagesResult = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages',
+                APP_CONFIG.APPWRITE.DATABASE_ID,
+                (APP_CONFIG as any).collections.messages || 'messages',
                 [Query.orderDesc('$createdAt'), Query.limit(10)]
             );
             
@@ -133,8 +133,8 @@ export class ChatRecordingVerificationService {
         // Check Chat Rooms Collection (if exists)
         try {
             const chatRoomsResult = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.chatRooms || 'chat_rooms',
+                APP_CONFIG.APPWRITE.DATABASE_ID,
+                (APP_CONFIG as any).collections.chatRooms || 'chat_rooms',
                 [Query.limit(10)]
             );
             
@@ -154,8 +154,8 @@ export class ChatRecordingVerificationService {
         // Check Notifications Collection
         try {
             const notificationsResult = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.notifications || 'notifications',
+                APP_CONFIG.APPWRITE.DATABASE_ID,
+                (APP_CONFIG as any).collections.notifications || 'notifications',
                 [Query.limit(5)]
             );
             
@@ -296,24 +296,24 @@ export class ChatRecordingVerificationService {
         
         // Check each category
         if (result.collections.messages.status === 'active') {
-            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages as any as any)`);
+            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages as any as any as any)`);
         } else {
-            inactiveFeatures.push('Messages Collection' as any as any);
+            inactiveFeatures.push('Messages Collection' as any as any as any);
         }
 
-        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center' as any as any);
-        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor' as any as any);
-        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates' as any as any);
+        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center' as any as any as any);
+        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor' as any as any as any);
+        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates' as any as any as any);
 
-        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording' as any as any);
-        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking' as any as any);
-        if (result.recording.adminAccessible) activeFeatures.push('Admin Access' as any as any);
-        if (result.recording.searchable) activeFeatures.push('Message Search' as any as any);
+        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording' as any as any as any);
+        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking' as any as any as any);
+        if (result.recording.adminAccessible) activeFeatures.push('Admin Access' as any as any as any);
+        if (result.recording.searchable) activeFeatures.push('Message Search' as any as any as any);
 
-        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration' as any as any);
-        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration' as any as any);
-        if (result.integration.adminReplies) activeFeatures.push('Admin Replies' as any as any);
-        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage' as any as any);
+        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration' as any as any as any);
+        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration' as any as any as any);
+        if (result.integration.adminReplies) activeFeatures.push('Admin Replies' as any as any as any);
+        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage' as any as any as any);
 
         return `
 🎯 CHAT RECORDING STATUS: ${result.recordingStatus.toUpperCase()}
@@ -375,8 +375,8 @@ ${inactiveFeatures.length > 0 ? `❌ INACTIVE FEATURES (${inactiveFeatures.lengt
     }> {
         try {
             const messagesResult = await databases.listDocuments(
-                APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.messages || 'messages',
+                APP_CONFIG.APPWRITE.DATABASE_ID,
+                (APP_CONFIG as any).collections.messages || 'messages',
                 [Query.orderDesc('$createdAt'), Query.limit(1)]
             );
 
@@ -410,6 +410,8 @@ if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')
         chatRecordingVerification.verifyCompleteChatSystem();
     }, 5000);
 }
+
+
 
 
 

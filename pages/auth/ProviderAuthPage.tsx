@@ -35,8 +35,8 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 						const allPlaces = await placeService.getPlaces();
 						profile = allPlaces?.find((p: any) => p.email === email);
 					}
-					if (profile && ( as any).activeMembershipDate) {
-						setMembershipExpiry(new Date(( as any).activeMembershipDate));
+					if (profile && (profile as any).activeMembershipDate) {
+						setMembershipExpiry(new Date((profile as any).activeMembershipDate));
 					} else {
 						setMembershipExpiry(null);
 					}
@@ -247,4 +247,5 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
 };
 
 export default ProviderAuthPage;
+
 

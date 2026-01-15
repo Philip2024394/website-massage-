@@ -758,9 +758,9 @@ const HomePage: React.FC<HomePageProps> = ({
                     // Get location coordinates
                     // 🔧 DEV-ONLY: Use override location if set, otherwise use real location
                     const realCoords = 'lat' in locationToUse 
-                        ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                        ? { lat: (locationToUse || {}).lat, lng: (locationToUse || {}).lng }
                         : autoDetectedLocation;
-                    const coords = (isDev && devLocationOverride) ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng } : realCoords;
+                    const coords = (isDev && devLocationOverride) ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng } : realCoords;
 
                     if (coords) {
                         console.log('📍 Using coordinates:', coords);
@@ -968,7 +968,7 @@ const HomePage: React.FC<HomePageProps> = ({
             );
             
             const currentCoords = (isDev && devLocationOverride) 
-                ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng }
+                ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
                 : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
             
             if (nearbyTherapists.length === 0 && therapists.length > 0 && currentCoords) {
@@ -1341,7 +1341,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
                             // 🌍 GPS-BASED INCLUSION: Get therapists within radius (or all if dev mode bypass enabled)
                             const currentUserLocation = (isDev && devLocationOverride) 
-                                ? { lat: devLocationOverride.lat, lng: devLocationOverride.lng }
+                                ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng }
                                 : (autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null));
 
                             // 🔧 COORDINATE PARSER: Safely parse Appwrite JSON string coordinates
@@ -2681,3 +2681,4 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 };
 
 export default HomePage;
+
