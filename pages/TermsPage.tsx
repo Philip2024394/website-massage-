@@ -78,7 +78,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({
                 {index + 1}. {section.title}
               </h2>
               <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                {language === 'id' ? section.contentId : section.content}
+                {language === 'id' ? section.content : section.content}
               </div>
             </section>
           ))}
@@ -90,7 +90,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({
             {language === 'id' ? '📋 Ringkasan Penting' : '📋 Key Summary'}
           </h3>
           <div className="text-sm text-blue-800 whitespace-pre-line">
-            {language === 'id' ? LEGAL_TERMS.SUMMARY.contentId : LEGAL_TERMS.SUMMARY.content}
+            {language === 'id' ? LEGAL_TERMS.SUMMARY.content : LEGAL_TERMS.SUMMARY.content}
           </div>
         </div>
 
@@ -122,3 +122,4 @@ export const TermsPage: React.FC<TermsPageProps> = ({
 };
 
 export default TermsPage;
+

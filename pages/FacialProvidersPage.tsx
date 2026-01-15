@@ -162,7 +162,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
         if (localSelectedCity !== 'all') {
             const filtered = facialPlaces.filter(place => {
                 // Use locationId matching (import needed at top of file)
-                const placeLocationId = place.locationId || place.location?.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
+                const placeLocationId = place.location || place.location?.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-');
                 console.log(`🎯 FacialPlace filtering: ${place.name} locationId: ${placeLocationId}, filter: ${localSelectedCity}`);
                 return placeLocationId === localSelectedCity;
             });
@@ -625,3 +625,4 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
 };
 
 export default FacialProvidersPage;
+

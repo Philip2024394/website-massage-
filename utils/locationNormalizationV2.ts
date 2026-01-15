@@ -106,8 +106,8 @@ export function extractLocationId(therapist: import('../types').Therapist): stri
   if (!therapist) return LOCATION_IDS.ALL;
   
   // PRIMARY: locationId field (canonical)
-  if (therapist.locationId && typeof therapist.locationId === 'string') {
-    const normalized = therapist.locationId.trim().toLowerCase();
+  if (therapist.location_id && typeof therapist.location_id === 'string') {
+    const normalized = therapist.location_id.trim().toLowerCase();
     if (normalized && normalized !== '' && normalized !== 'null' && normalized !== 'undefined') {
       return normalized;
     }
@@ -280,7 +280,7 @@ export function assertValidLocationId(therapist: import('../types').Therapist, c
   }
   
   // Verify locationId field exists
-  if (!therapist.locationId) {
+  if (!therapist.location_id) {
     console.warn(`⚠️ ${context}: Therapist "${therapist.name}" (${therapist.$id}) missing locationId field (using fallback)`);
   }
 }
@@ -363,7 +363,7 @@ export function smokeTestLocationSystem(): boolean {
   // Test 2: normalizeLocationForSave
   try {
     const normalized = normalizeLocationForSave('Yogyakarta');
-    if (normalized.locationId === 'yogyakarta' && normalized.location === 'Yogyakarta') {
+    if (normalized.location_id === 'yogyakarta' && normalized.location === 'Yogyakarta') {
       passed++;
     } else {
       console.error('❌ normalizeLocationForSave failed');
@@ -388,4 +388,5 @@ export function isValidLocationName(location: string): boolean {
   const trimmed = location.trim();
   return trimmed.length > 0 && trimmed !== 'null' && trimmed !== 'undefined';
 }
+
 

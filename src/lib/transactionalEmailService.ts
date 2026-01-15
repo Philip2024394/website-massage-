@@ -425,7 +425,7 @@ export class TransactionalEmailService {
         A booking request (ID: ${data.bookingId}) expired because there was no response within 5 minutes.
       </p>
       <div class="penalty-box">
-        <strong>Availability Score Impact: ${scoreImpact} points</strong>
+        <strong>Availability Score Impact: ${penalty} points</strong>
         <br>
         Missing bookings reduces your visibility in search results.
       </div>

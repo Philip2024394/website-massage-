@@ -147,7 +147,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({
                 {index + 1}. {section.title}
               </h3>
               <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                {language === 'id' ? section.contentId : section.content}
+                {language === 'id' ? section.content : section.content}
               </div>
             </div>
           ))}
@@ -218,3 +218,4 @@ export const TermsModal: React.FC<TermsModalProps> = ({
 };
 
 export default TermsModal;
+
