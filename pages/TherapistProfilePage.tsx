@@ -2,14 +2,10 @@ import React, { useState } from 'react';
 import TherapistProfileBase from '../components/TherapistProfileBase';
 import { FloatingChatWindow } from '../chat';
 import HomeIcon from '../components/icons/HomeIcon';
-import { FloatingChatWindow } from '../chat';
 import CityLocationDropdown from '../components/CityLocationDropdown';
-import { FloatingChatWindow } from '../chat';
 import { Building, Sparkles } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { FloatingChatWindow } from '../chat';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import { FloatingChatWindow } from '../chat';
 
 interface TherapistProfilePageProps {
     therapist: any;
