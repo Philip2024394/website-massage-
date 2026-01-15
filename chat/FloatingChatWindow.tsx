@@ -814,7 +814,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         placeholder="e.g., Seminyak, Badung 80361"
                       />
                     </div>
-                      <div>
+                      <div className="hidden">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Your Location
                         </label>
