@@ -32,6 +32,8 @@ import { useHomePageLocation } from '../hooks/useHomePageLocation';
 import { useHomePageAdmin } from '../hooks/useHomePageAdmin';
 import { useHomePageTranslations } from '../hooks/useHomePageTranslations';
 
+// Facebook-style silent location capture
+import { getCustomerLocation } from '../lib/nearbyProvidersService';
 
 interface HomePageProps {
     page?: string; // Current page from routing system
@@ -207,7 +209,55 @@ const HomePage: React.FC<HomePageProps> = ({
         devTestLocations,
         isDev
     } = useHomePageAdmin({ hasAdminPrivileges });
+
+    // 🌍 FACEBOOK-STYLE AUTO LOCATION CAPTURE
+    // Silently capture location when entering from landing page
+    const [silentLocationCaptured, setSilentLocationCaptured] = useState(false);
     
+    useEffect(() => {
+        const captureLocationSilently = async () => {
+            // Only capture if not already done
+            if (silentLocationCaptured) return;
+            
+            // Import the Facebook-style location capture utility
+            const { captureSilentLocation, getStoredLocation } = await import('../utils/silentLocationCapture');
+            
+            // Check if we already have stored location
+            const existing = getStoredLocation();
+            if (existing) {
+                console.log('✓ Using existing location capture:', existing);
+                if (!userLocation && onSetUserLocation) {
+                    onSetUserLocation({
+                        lat: existing.lat,
+                        lng: existing.lng,
+                        address: existing.address || 'Auto-detected location'
+                    });
+                }
+                setSilentLocationCaptured(true);
+                return;
+            }
+            
+            // Capture new location silently
+            const captured = await captureSilentLocation();
+            if (captured) {
+                console.log('✓ New location captured:', captured);
+                if (!userLocation && onSetUserLocation) {
+                    onSetUserLocation({
+                        lat: captured.lat,
+                        lng: captured.lng,
+                        address: captured.address || 'Auto-detected location'
+                    });
+                }
+            }
+            
+            setSilentLocationCaptured(true);
+        };
+        
+        // Small delay to avoid blocking initial render
+        const timer = setTimeout(captureLocationSilently, 2000);
+        return () => clearTimeout(timer);
+    }, [silentLocationCaptured, userLocation, onSetUserLocation]);
+
     const {
         autoDetectedLocation,
         setAutoDetectedLocation,

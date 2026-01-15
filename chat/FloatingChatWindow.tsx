@@ -72,9 +72,45 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     customerName: '',
     customerWhatsApp: '',
     location: '',
-    coordinates: null as { lat: number; lng: number } | null
+    coordinates: null as { lat: number; lng: number } | null,
+    serviceVenueType: 'home' as 'home' | 'villa' | 'hotel',
+    manualAddress1: '',
+    manualAddress2: ''
   });
   const [gettingLocation, setGettingLocation] = useState(false);
+
+  // 🌍 FACEBOOK-STYLE: Auto-populate location from silent capture
+  useEffect(() => {
+    const loadSilentLocation = async () => {
+      // Only if we don't have coordinates yet
+      if (bookingFormData.coordinates) return;
+      
+      try {
+        const { getStoredLocation, enhanceLocation } = await import('../utils/silentLocationCapture');
+        const stored = getStoredLocation();
+        
+        if (stored) {
+          console.log('🎯 Auto-populating location from silent capture:', stored);
+          
+          // Enhance location for better address
+          const enhanced = await enhanceLocation(stored);
+          
+          setBookingFormData(prev => ({
+            ...prev,
+            coordinates: { lat: enhanced.lat, lng: enhanced.lng },
+            location: enhanced.address || `${enhanced.lat.toFixed(4)}, ${enhanced.lng.toFixed(4)}`
+          }));
+        }
+      } catch (error) {
+        console.log('ℹ️ No auto-location available:', error);
+      }
+    };
+    
+    // Load when booking form is active
+    if (activeChatRooms.length > 0) {
+      loadSilentLocation();
+    }
+  }, [activeChatRooms.length, bookingFormData.coordinates]);
 
   // Refs
   const windowRef = useRef<HTMLDivElement>(null);
@@ -351,6 +387,12 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       return;
     }
 
+    // Validate manual address (at least one field required)
+    if (!bookingFormData.manualAddress1 && !bookingFormData.manualAddress2) {
+      addNotification('error', 'Address Required', 'Please enter your complete address in the address fields');
+      return;
+    }
+
     // Validate WhatsApp number
     const cleanedWhatsApp = bookingFormData.customerWhatsApp.replace(/\D/g, '');
     if (cleanedWhatsApp.length < 8 || cleanedWhatsApp.length > 15) {
@@ -402,8 +444,10 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         customerWhatsApp: formattedWhatsApp,
         customerLocation: bookingFormData.location,
         customerLatitude: bookingFormData.coordinates.lat,
-        customerLongitude: bookingFormData.coordinates.lng,
-        bookingType: 'immediate',
+        customerLongitude: bookingFormData.coordinates.lng,          serviceVenueType: bookingFormData.serviceVenueType,
+          manualAddress1: bookingFormData.manualAddress1,
+          manualAddress2: bookingFormData.manualAddress2,
+          fullAddress: `${bookingFormData.manualAddress1}${bookingFormData.manualAddress2 ? ', ' + bookingFormData.manualAddress2 : ''}`,        bookingType: 'immediate',
         therapistId: chatRoom.providerId,
         therapistName: chatRoom.providerName,
         therapistType: 'therapist'
@@ -643,7 +687,74 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Enter without +62 prefix</p>
                       </div>
+                    {/* NEW: Venue Type Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Service Venue
+                      </label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'home' }))}
+                          className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                            bookingFormData.serviceVenueType === 'home'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          🏠 Home
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'villa' }))}
+                          className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                            bookingFormData.serviceVenueType === 'villa'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          🏡 Villa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, serviceVenueType: 'hotel' }))}
+                          className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                            bookingFormData.serviceVenueType === 'hotel'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          🏨 Hotel
+                        </button>
+                      </div>
+                    </div>
 
+                    {/* NEW: Manual Address Input Fields */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Street Address / Building Name
+                      </label>
+                      <input
+                        type="text"
+                        value={bookingFormData.manualAddress1 || ''}
+                        onChange={(e) => setBookingFormData(prev => ({ ...prev, manualAddress1: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="e.g., Jl. Sunset Road No. 123 or Villa Seminyak"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Area / District / Postal Code
+                      </label>
+                      <input
+                        type="text"
+                        value={bookingFormData.manualAddress2 || ''}
+                        onChange={(e) => setBookingFormData(prev => ({ ...prev, manualAddress2: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="e.g., Seminyak, Badung 80361"
+                      />
+                    </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Your Location
@@ -666,14 +777,14 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                               : 'Set My Location'}
                           </span>
                         </button>
-                        <p className="text-xs text-gray-500 mt-1">📍 Therapist will see your exact location before accepting</p>
+                          <p className="text-xs text-gray-500 mt-1">🌍 Location automatically detected for spam verification (Facebook-style)</p>
                       </div>
                     </div>
 
                     {/* Confirm Button */}
                     <button
                       onClick={() => handleConfirmBooking(chatRoom.$id)}
-                      disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates}
+                        disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates || (!bookingFormData.manualAddress1 && !bookingFormData.manualAddress2)}
                       className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
                     >
                       Confirm Booking
