@@ -352,19 +352,19 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 userId: loggedInCustomer?.$id || loggedInCustomer?.id
             });
 
-            if (result.success && result.deepLink) {
+            if ((result as any).success && (result as any).deepLink) {
                 // Show estimated price
-                if (result.estimatedPrice) {
+                if ((result as any).estimatedPrice) {
                     const confirmBooking = confirm(
-                        `Estimated fare: IDR ${result.estimatedPrice.toLocaleString()}\n` +
-                        `Estimated time: ${result.estimatedDuration} mins\n\n` +
+                        `Estimated fare: IDR ${(result as any).estimatedPrice.toLocaleString()}\n` +
+                        `Estimated time: ${(result as any).estimatedDuration} mins\n\n` +
                         `Open Gojek app to book bike ride?`
                     );
                     if (!confirmBooking) return;
                 }
                 
                 // Open taxi app
-                openTaxiApp(result.deepLink, 'bike');
+                openTaxiApp((result as any).deepLink, 'bike');
             } else {
                 alert(`Error: ${result.error || 'Unable to create booking link'}`);
             }
@@ -404,19 +404,19 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 userId: loggedInCustomer?.$id || loggedInCustomer?.id
             });
 
-            if (result.success && result.deepLink) {
+            if ((result as any).success && (result as any).deepLink) {
                 // Show estimated price
-                if (result.estimatedPrice) {
+                if ((result as any).estimatedPrice) {
                     const confirmBooking = confirm(
-                        `Estimated fare: IDR ${result.estimatedPrice.toLocaleString()}\n` +
-                        `Estimated time: ${result.estimatedDuration} mins\n\n` +
+                        `Estimated fare: IDR ${(result as any).estimatedPrice.toLocaleString()}\n` +
+                        `Estimated time: ${(result as any).estimatedDuration} mins\n\n` +
                         `Open Grab app to book car ride?`
                     );
                     if (!confirmBooking) return;
                 }
                 
                 // Open taxi app
-                openTaxiApp(result.deepLink, 'car');
+                openTaxiApp((result as any).deepLink, 'car');
             } else {
                 alert(`Error: ${result.error || 'Unable to create booking link'}`);
             }
@@ -582,4 +582,5 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
 };
 
 export default MassagePlaceProfilePage;
+
 

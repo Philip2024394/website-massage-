@@ -128,16 +128,16 @@ const PlaceServices: React.FC<PlaceServicesProps> = ({
                                     e.preventDefault();
                                     e.stopPropagation();
                                     onGalleryPhotoClick({
-                                        url: typeof photo === 'string' ? photo : photo.url || photo.imageUrl || '',
-                                        title: typeof photo === 'object' ? (photo.title || photo.name || `Photo ${index + 1}`) : `Photo ${index + 1}`,
-                                        description: typeof photo === 'object' ? (photo.description || '') : ''
+                                        url: typeof photo === 'string' ? photo : (photo as any).url || photo.imageUrl || '',
+                                        title: typeof photo === 'object' ? ((photo as any).title || photo.name || `Photo ${index + 1}`) : `Photo ${index + 1}`,
+                                        description: typeof photo === 'object' ? ((photo as any).description || '') : ''
                                     });
                                 }}
                                 className="aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-orange-500 transition-all hover:scale-105 active:scale-95"
                             >
                                 <img
-                                    src={typeof photo === 'string' ? photo : photo.url || photo.imageUrl || ''}
-                                    alt={typeof photo === 'object' ? (photo.title || `Gallery photo ${index + 1}`) : `Gallery photo ${index + 1}`}
+                                    src={typeof photo === 'string' ? photo : (photo as any).url || photo.imageUrl || ''}
+                                    alt={typeof photo === 'object' ? ((photo as any).title || `Gallery photo ${index + 1}`) : `Gallery photo ${index + 1}`}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/balineese%20massage%20indonisea.png?updatedAt=1761918521382';
@@ -254,17 +254,17 @@ const PlaceServices: React.FC<PlaceServicesProps> = ({
                             </svg>
                         </button>
                         <img
-                            src={selectedGalleryPhoto.url}
-                            alt={selectedGalleryPhoto.title}
+                            src={(selectedGalleryPhoto as any).url}
+                            alt={(selectedGalleryPhoto as any).title}
                             className="w-full h-auto max-h-[80vh] object-contain"
                         />
-                        {(selectedGalleryPhoto.title || selectedGalleryPhoto.description) && (
+                        {((selectedGalleryPhoto as any).title || (selectedGalleryPhoto as any).description) && (
                             <div className="p-4 border-t">
-                                {selectedGalleryPhoto.title && (
-                                    <h3 className="font-semibold text-lg text-gray-900 mb-2">{selectedGalleryPhoto.title}</h3>
+                                {(selectedGalleryPhoto as any).title && (
+                                    <h3 className="font-semibold text-lg text-gray-900 mb-2">{(selectedGalleryPhoto as any).title}</h3>
                                 )}
-                                {selectedGalleryPhoto.description && (
-                                    <p className="text-gray-600">{selectedGalleryPhoto.description}</p>
+                                {(selectedGalleryPhoto as any).description && (
+                                    <p className="text-gray-600">{(selectedGalleryPhoto as any).description}</p>
                                 )}
                             </div>
                         )}
