@@ -237,7 +237,7 @@ export const bookingService = {
                 booking.therapistName,
                 booking.bookingId,
                 commissionAmount,
-                booking.completedAt as any || new Date().toISOString()
+                (booking as any).completedAt as any || new Date().toISOString()
             );
 
             console.log('✅ Commission record created for booking:', booking.bookingId);
@@ -685,3 +685,5 @@ export const bookingService = {
         }
     }
 };
+
+

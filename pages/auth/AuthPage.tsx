@@ -125,9 +125,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             if (accountType === 'therapist') {
                 const therapistId = ID.unique();
                 console.log('🔵 Creating therapist profile with ID:', therapistId);
-                await therapistService.create({
+                await (therapistService as any).create({
                     email: profileData.email,
-                    name: profileData.name,
+                    name: (profileData as any).name,
                     therapistId: therapistId,
                     id: therapistId,
                     countryCode: '+62',
@@ -155,9 +155,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             } else if (accountType === 'massage-place') {
                 const placeId = ID.unique();
                 console.log('🔵 Creating massage place profile with ID:', placeId);
-                await placesService.create({
+                await (placesService as any).create({
                     email: profileData.email,
-                    name: profileData.name,
+                    name: (profileData as any).name,
                     id: placeId,
                     placeId: placeId,
                     category: 'massage-place',
@@ -182,9 +182,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
             } else if (accountType === 'facial-place') {
                 const facialPlaceId = ID.unique();
                 console.log('🔵 Creating facial place profile with ID:', facialPlaceId);
-                await placesService.create({
+                await (placesService as any).create({
                     email: profileData.email,
-                    name: profileData.name,
+                    name: (profileData as any).name,
                     facialPlaceId: facialPlaceId,
                     collectionName: 'facial_places',
                     category: 'spa',
@@ -256,7 +256,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     try {
                         const therapistData = await therapistService.getByEmail(normalizedEmail);
                         if (therapistData) {
-                            console.log('✅ Found therapist profile:', therapistData.name);
+                            console.log('✅ Found therapist profile:', (therapistData as any).name);
                             userType = 'therapist';
                         } else {
                             console.log('⚠️ No therapist found, checking places...');
@@ -264,7 +264,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                             try {
                                 const placeData = await placesService.getByEmail(normalizedEmail);
                                 if (placeData) {
-                                    console.log('✅ Found place profile:', placeData.name);
+                                    console.log('✅ Found place profile:', (placeData as any).name);
                                     userType = 'massage-place';
                                 }
                             } catch (e) {
@@ -560,3 +560,4 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
 };
 
 export default AuthPage;
+

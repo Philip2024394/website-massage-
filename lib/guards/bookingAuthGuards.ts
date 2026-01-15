@@ -358,7 +358,7 @@ export async function logAuthViolation(
         
         await databases.createDocument(
             APPWRITE_CONFIG.databaseId,
-            APPWRITE_CONFIG.collections.auditLogs as any || 'audit_logs',
+            APPWRITE_CONFIG.auditLogs as any || 'audit_logs',
             ID.unique(),
             {
                 type,
@@ -374,3 +374,5 @@ export async function logAuthViolation(
         console.error('⚠️ Failed to log auth violation (non-blocking):', error);
     }
 }
+
+
