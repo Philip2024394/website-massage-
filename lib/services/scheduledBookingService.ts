@@ -1,5 +1,5 @@
 import { databases, storage, ID, Query } from '../appwrite';
-import { AppwriteException } from 'appwrite';
+
 
 export interface ScheduledBookingDeposit {
     id?: string;
@@ -107,7 +107,7 @@ class ScheduledBookingService {
             };
         } catch (error) {
             console.error('Error creating deposit requirement:', error);
-            throw new Error(`Failed to create deposit requirement: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to create deposit requirement: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -135,7 +135,7 @@ class ScheduledBookingService {
             return uploadResult.$id;
         } catch (error) {
             console.error('Error uploading payment proof:', error);
-            throw new Error(`Failed to upload payment proof: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to upload payment proof: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -153,7 +153,7 @@ class ScheduledBookingService {
             );
         } catch (error) {
             console.error('Error verifying deposit:', error);
-            throw new Error(`Failed to verify deposit: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to verify deposit: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -234,7 +234,7 @@ class ScheduledBookingService {
             };
         } catch (error) {
             console.error('Error submitting date change request:', error);
-            throw new Error(`Failed to submit date change request: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to submit date change request: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -257,7 +257,7 @@ class ScheduledBookingService {
             );
         } catch (error) {
             console.error('Error responding to date change request:', error);
-            throw new Error(`Failed to respond to date change request: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to respond to date change request: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -334,7 +334,7 @@ class ScheduledBookingService {
             };
         } catch (error) {
             console.error('Error creating flexible time slot:', error);
-            throw new Error(`Failed to create flexible time slot: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to create flexible time slot: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -386,7 +386,7 @@ class ScheduledBookingService {
             );
         } catch (error) {
             console.error('Error booking flexible time slot:', error);
-            throw new Error(`Failed to book flexible time slot: ${error instanceof AppwriteException ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to book flexible time slot: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 

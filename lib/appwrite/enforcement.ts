@@ -4,7 +4,9 @@
  * All chat messages MUST go through messaging.service.ts
  */
 
-import { databases as originalDatabases } from '../../config';
+import { APP_CONFIG } from '../../config';
+
+const originalDatabases = (APP_CONFIG as any).databases;
 
 // Create a proxy to intercept createDocument calls
 const databasesProxy = new Proxy(originalDatabases, {

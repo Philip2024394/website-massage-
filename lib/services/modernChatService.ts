@@ -1,4 +1,3 @@
-import { RealtimeResponseEvent } from 'appwrite';
 /**
  * ============================================================================
  * 🚀 MODERN CHAT SERVICE - WhatsApp/Messenger-style Real-time Chat
