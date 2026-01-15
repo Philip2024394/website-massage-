@@ -194,6 +194,32 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     }
   };
 
+  // NEW: Handle sharing bank details
+  const handleShareBankDetails = async (chatRoomId: string) => {
+    try {
+      // Mock bank details - in production, fetch from therapist profile
+      const bankDetails = {
+        bankName: 'Bank Central Asia (BCA)',
+        accountNumber: '1234567890',
+        accountHolder: userName || 'Therapist Name'
+      };
+
+      const bankMessage = `💳 **Bank Details for Payment**
+
+🏦 **Bank:** ${bankDetails.bankName}
+💳 **Account:** ${bankDetails.accountNumber}
+👤 **Name:** ${bankDetails.accountHolder}
+
+*Please transfer after service completion*`;
+
+      await sendMessage(bankMessage);
+      addNotification('success', 'Bank Details Shared', 'Your bank details have been sent to the customer');
+    } catch (err: any) {
+      addNotification('error', 'Share Failed', 'Could not share bank details. Please try again.');
+      console.error('❌ Failed to share bank details:', err);
+    }
+  };
+
   // NEW: Handle getting GPS location with Google Geocoding
   const handleGetLocation = async () => {
     if (!navigator.geolocation) {
@@ -368,7 +394,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         startTime: new Date().toISOString(),
         price: Number(Math.round(price / 1000)),
         createdAt: new Date().toISOString(),
-        responseDeadline: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        responseDeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(),   
         totalCost: price,
         paymentMethod: 'Unpaid',
         scheduledTime: new Date().toISOString(),
@@ -405,7 +431,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         therapistLanguage: 'id',
         therapistType: 'therapist',
         therapistPhoto: chatRoom.providerImage || '',
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString()
       });
 
       console.log('✅ Chat room created:', realChatRoom.$id);
@@ -509,6 +535,17 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
               {/* Controls */}
               <div className="flex items-center gap-2">
+                {/* Bank Details for Therapists */}
+                {userRole === 'therapist' && (
+                  <button
+                    onClick={() => handleShareBankDetails(chatRoom.$id)}
+                    className="p-2 hover:bg-orange-600 rounded-full transition-colors text-white"
+                    title="Share Bank Details"
+                  >
+                    💳
+                  </button>
+                )}
+                
                 {/* Chat Selector (if multiple chats) */}
                 {activeChatRooms.length > 1 && (
                   <button

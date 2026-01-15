@@ -39,17 +39,15 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
   // Determine banner color based on countdown
   const getBannerColor = () => {
     if (countdown.isExpired) return 'bg-gray-100 border-gray-300';
-    if (countdown.isWithin5Minutes) return 'bg-red-50 border-red-300';
-    if (countdown.isWithin15Minutes) return 'bg-yellow-50 border-yellow-300';
+    if (countdown.isWithin2Minutes) return 'bg-red-50 border-red-300';
+    if (countdown.isWithin5Minutes) return 'bg-yellow-50 border-yellow-300';    
     return 'bg-orange-50 border-orange-300';
   };
 
   const getTimerColor = () => {
     if (countdown.isExpired) return 'text-gray-600';
-    if (countdown.isWithin5Minutes) return 'text-red-600';
-    if (countdown.isWithin15Minutes) return 'text-yellow-600';
-    return 'text-orange-600';
-  };
+    if (countdown.isWithin2Minutes) return 'text-red-600';
+    if (countdown.isWithin5Minutes) return 'text-yellow-600';
 
   return (
     <div className={`${getBannerColor()} border-b p-3 transition-colors duration-300`}>
@@ -124,8 +122,8 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
           <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
             <div
               className={`h-full transition-all duration-1000 ${
-                countdown.isWithin5Minutes ? 'bg-red-500' :
-                countdown.isWithin15Minutes ? 'bg-yellow-500' :
+                countdown.isWithin2Minutes ? 'bg-red-500' :
+                countdown.isWithin5Minutes ? 'bg-yellow-500' :
                 'bg-orange-500'
               }`}
               style={{ width: `${countdown.percentComplete}%` }}

@@ -18,8 +18,8 @@ interface CountdownResult {
   timeRemaining: number; // in seconds
   formatted: string; // "2h 30m" or "15m 30s"
   isExpired: boolean;
-  isWithin15Minutes: boolean;
   isWithin5Minutes: boolean;
+  isWithin2Minutes: boolean;
   percentComplete: number; // 0-100
 }
 
@@ -85,8 +85,8 @@ export function useBookingCountdown(
     timeRemaining,
     formatted: formatTimeRemaining(timeRemaining),
     isExpired: timeRemaining <= 0,
-    isWithin15Minutes: timeRemaining > 0 && timeRemaining <= 15 * 60,
     isWithin5Minutes: timeRemaining > 0 && timeRemaining <= 5 * 60,
+    isWithin2Minutes: timeRemaining > 0 && timeRemaining <= 2 * 60,
     percentComplete
   };
 }
