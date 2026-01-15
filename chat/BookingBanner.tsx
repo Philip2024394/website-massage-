@@ -1,9 +1,9 @@
 /**
  * BookingBanner Component
- * 
+ *
  * Purpose: Displays booking details with countdown timer
  * Data Flow: ChatRoom data + countdown hook → UI display
- * 
+ *
  * Features:
  * - Shows therapist profile image
  * - Displays booking time and service details
@@ -48,6 +48,8 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
     if (countdown.isExpired) return 'text-gray-600';
     if (countdown.isWithin2Minutes) return 'text-red-600';
     if (countdown.isWithin5Minutes) return 'text-yellow-600';
+    return 'text-orange-600';
+  };
 
   return (
     <div className={`${getBannerColor()} border-b p-3 transition-colors duration-300`}>
@@ -67,12 +69,12 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
               </span>
             </div>
           )}
-          
+
           {/* Status indicator */}
           <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
             countdown.isExpired ? 'bg-green-500' :
-            countdown.isWithin5Minutes ? 'bg-red-500 animate-pulse' :
-            countdown.isWithin15Minutes ? 'bg-yellow-500' :
+            countdown.isWithin2Minutes ? 'bg-red-500 animate-pulse' :
+            countdown.isWithin5Minutes ? 'bg-yellow-500' :
             'bg-blue-500'
           }`} />
         </div>
@@ -116,7 +118,7 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
         <div className="text-lg font-bold">
           {countdown.isExpired ? 'Now' : countdown.formatted}
         </div>
-        
+
         {/* Progress bar */}
         {!countdown.isExpired && (
           <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
