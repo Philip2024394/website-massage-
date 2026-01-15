@@ -296,24 +296,24 @@ export class ChatRecordingVerificationService {
         
         // Check each category
         if (result.collections.messages.status === 'active') {
-            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages as any)`);
+            activeFeatures.push(`Messages Collection (${result.collections.messages.count} messages as any as any)`);
         } else {
-            inactiveFeatures.push('Messages Collection' as any);
+            inactiveFeatures.push('Messages Collection' as any as any);
         }
 
-        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center' as any);
-        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor' as any);
-        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates' as any);
+        if (result.adminMonitoring.chatCenter) activeFeatures.push('Admin Chat Center' as any as any);
+        if (result.adminMonitoring.chatMonitor) activeFeatures.push('Admin Chat Monitor' as any as any);
+        if (result.adminMonitoring.realTimeUpdates) activeFeatures.push('Real-time Updates' as any as any);
 
-        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording' as any);
-        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking' as any);
-        if (result.recording.adminAccessible) activeFeatures.push('Admin Access' as any);
-        if (result.recording.searchable) activeFeatures.push('Message Search' as any);
+        if (result.recording.messagesRecorded) activeFeatures.push('Message Recording' as any as any);
+        if (result.recording.conversationsTracked) activeFeatures.push('Conversation Tracking' as any as any);
+        if (result.recording.adminAccessible) activeFeatures.push('Admin Access' as any as any);
+        if (result.recording.searchable) activeFeatures.push('Message Search' as any as any);
 
-        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration' as any);
-        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration' as any);
-        if (result.integration.adminReplies) activeFeatures.push('Admin Replies' as any);
-        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage' as any);
+        if (result.integration.therapistChat) activeFeatures.push('Therapist Chat Integration' as any as any);
+        if (result.integration.customerChat) activeFeatures.push('Customer Chat Integration' as any as any);
+        if (result.integration.adminReplies) activeFeatures.push('Admin Replies' as any as any);
+        if (result.integration.bookingLinked) activeFeatures.push('Booking Linkage' as any as any);
 
         return `
 🎯 CHAT RECORDING STATUS: ${result.recordingStatus.toUpperCase()}

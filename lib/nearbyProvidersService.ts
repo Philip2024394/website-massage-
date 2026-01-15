@@ -146,7 +146,7 @@ export const findNearbyTherapists = async (
             }
 
             if (distanceResult.distance <= radiusKm) {
-                nearbyTherapists.push(therapist as any);
+                nearbyTherapists.push(therapist as any as any);
             }
         }
         
@@ -213,7 +213,7 @@ export const findAllNearbyTherapists = async (
             therapist.distance = distance;
             
             if (distance <= radiusKm) {
-                nearbyTherapists.push(therapist as any);
+                nearbyTherapists.push(therapist as any as any);
                 withinRadiusCount++;
                 console.log(`✅ ${therapist.name}: ${distance.toFixed(2)}km (status: ${therapist.status})`);
             } else {
@@ -314,7 +314,7 @@ export const findNearbyPlaces = async (
             }
             
             if (distanceResult.distance <= radiusKm) {
-                nearbyPlaces.push(place as any);
+                nearbyPlaces.push(place as any as any);
             }
         }
         
@@ -381,7 +381,7 @@ export const findAllNearbyPlaces = async (
             place.distance = distance;
             
             if (distance <= radiusKm) {
-                nearbyPlaces.push(place as any);
+                nearbyPlaces.push(place as any as any);
                 withinRadiusCount++;
                 console.log(`✅ ${place.name}: ${distance.toFixed(2)}km (isLive: ${place.isLive})`);
             } else {

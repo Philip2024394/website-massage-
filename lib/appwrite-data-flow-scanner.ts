@@ -66,7 +66,7 @@ export class AppwriteDataFlowScanner {
         } catch (error: unknown) {
             console.error('❌ [APPWRITE SCANNER] Connection failed:', error);
             results.connectionStatus = 'failed';
-            results.errors.push((error as Error as any).message);
+            results.errors.push((error as Error as any as any).message);
             return results;
         }
     }
@@ -106,7 +106,7 @@ export class AppwriteDataFlowScanner {
                     status: 'error',
                     error: (error as Error).message
                 };
-                results.errors.push(`${collectionName}: ${(error as Error as any).message}`);
+                results.errors.push(`${collectionName}: ${(error as Error as any as any).message}`);
             }
         }
     }
@@ -135,7 +135,7 @@ export class AppwriteDataFlowScanner {
         } catch (error: unknown) {
             console.error('❌ Storage scan failed:', error);
             results.storage = { error: (error as Error).message };
-            results.errors.push(`Storage: ${(error as Error as any).message}`);
+            results.errors.push(`Storage: ${(error as Error as any as any).message}`);
         }
     }
     
