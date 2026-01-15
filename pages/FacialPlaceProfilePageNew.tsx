@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-    Clock, MapPin, Phone, Mail, Star, ChevronLeft, ChevronRight, 
+    Clock, MapPin, Phone, Mail, Star,
     Award, Users, Sparkles, CheckCircle, X, Heart, Calendar,
     Image as ImageIcon
 } from 'lucide-react';
