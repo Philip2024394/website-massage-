@@ -1,7 +1,0 @@
-{
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "dist",
-  "installCommand": "corepack enable pnpm && pnpm install",
-  "framework": null,
-  "devCommand": "pnpm run dev"
-}
