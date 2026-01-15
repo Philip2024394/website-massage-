@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { Therapist, Place, Booking } from '../types';
+import { FloatingChatWindow } from '../chat';
 import Button from '../components/Button';
+import { FloatingChatWindow } from '../chat';
 
 interface BookingPageProps {
     provider: Therapist | Place;
@@ -193,8 +195,12 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
                 </div>
             )}
         </div>
+        {/* Floating Chat Window */}
+        <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
+
     );
 };
 
 export default BookingPage;
+
 

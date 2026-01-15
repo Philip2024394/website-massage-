@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FloatingChatWindow } from '../../../../chat';
 import { Therapist } from '../../../../types';
 import { therapistMenusService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2 } from 'lucide-react';
+import { FloatingChatWindow } from '../../../../chat';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface MenuService {

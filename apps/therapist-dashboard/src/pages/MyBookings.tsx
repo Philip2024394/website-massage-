@@ -1,6 +1,8 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
+import { FloatingChatWindow } from '../../../../chat';
 import { Calendar, Plus, X, Clock, MapPin, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { FloatingChatWindow } from '../../../../chat';
 import TherapistPageHeader from '../components/TherapistPageHeader';
 import { BookingListSkeleton } from '../../../components/LoadingSkeletons';
 
@@ -502,7 +504,11 @@ const MyBookings: React.FC<MyBookingsProps> = ({ therapist, onBack }) => {
         )}
       </main>
     </div>
+    {/* Floating Chat Window */}
+    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+
   );
 };
 
 export default MyBookings;
+

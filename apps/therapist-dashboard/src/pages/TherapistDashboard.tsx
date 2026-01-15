@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FloatingChatWindow } from '../../../../chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../../../constants';
 import type { Therapist } from '../../../../types';
 import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
@@ -14,6 +15,7 @@ import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
+import { FloatingChatWindow } from '../../../../chat';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -855,6 +857,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           <p className="text-gray-600">Loading therapist data...</p>
         </div>
       </div>
+    {/* Floating Chat Window */}
+    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+
     );
   }
 
@@ -1468,7 +1473,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       )}
       </div>
     </TherapistLayout>
+    {/* Floating Chat Window */}
+    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+
   );
 };
 
 export default TherapistPortalPage;
+

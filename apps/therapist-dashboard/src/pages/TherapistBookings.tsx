@@ -1,6 +1,8 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
+import { FloatingChatWindow } from '../../../../chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
+import { FloatingChatWindow } from '../../../../chat';
 import ChatWindow from '../components/ChatWindow';
 import { devLog, devWarn } from '../../../../utils/devMode';
 
@@ -523,7 +525,11 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       )}
       </main>
     </div>
+    {/* Floating Chat Window */}
+    <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
+
   );
 };
 
 export default TherapistBookings;
+
