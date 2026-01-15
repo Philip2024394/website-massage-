@@ -39,7 +39,7 @@ export const BookingSystemTester: React.FC = () => {
       const handleStartBooking = () => {
         messages.push({
           id: '1',
-          type: 'system',
+          type: ('system' as any),
           text: "We're checking availability for therapists near you…",
           timestamp: new Date().toISOString()
         })
@@ -180,7 +180,7 @@ export const BookingSystemTester: React.FC = () => {
       const onTherapistFound = (therapist: typeof mockTherapist) => {
         messages.push({
           id: '2',
-          type: 'system',
+          type: ('system' as any),
           text: 'Good news! A therapist is available.',
           timestamp: new Date().toISOString()
         })
@@ -215,7 +215,7 @@ export const BookingSystemTester: React.FC = () => {
         
         messages.push({
           id: '3',
-          type: 'system', 
+          type: ('system' as any), 
           text: 'Your booking is confirmed. The therapist will arrive within 1 hour or less.',
           timestamp: new Date().toISOString()
         })
