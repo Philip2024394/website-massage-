@@ -356,6 +356,16 @@ export const useAppState = () => {
   
   // Data state
   const [therapists, setTherapists] = useState<Therapist[]>([]);
+  
+  // Enhanced setTherapists to cache data for shared profiles
+  const setTherapistsWithCache = (newTherapists: Therapist[]) => {
+    setTherapists(newTherapists);
+    // Cache therapists globally for SharedTherapistProfile to use
+    if (typeof window !== 'undefined') {
+      (window as any).__THERAPISTS_CACHE = newTherapists;
+    }
+  };
+  
   const [places, setPlaces] = useState<Place[]>([]);
   const [facialPlaces, setFacialPlaces] = useState<Place[]>([]);
   const [hotels, setHotels] = useState<any[]>([]);
@@ -472,7 +482,7 @@ export const useAppState = () => {
     isBookingLocked, setIsBookingLocked,
     
     // Data
-    therapists, setTherapists,
+    therapists, setTherapists: setTherapistsWithCache,
     places, setPlaces,
     facialPlaces, setFacialPlaces,
     hotels, setHotels,

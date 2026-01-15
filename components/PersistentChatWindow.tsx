@@ -460,10 +460,13 @@ export function PersistentChatWindow() {
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
         <div className="relative flex-shrink-0">
           <img 
-            src={therapist.image || '/placeholder-avatar.jpg'} 
+            src={(therapist as any).profilePicture || (therapist as any).mainImage || therapist.image || '/placeholder-avatar.jpg'} 
             alt={therapist.name}
             className="w-12 h-12 rounded-full object-cover border-2 border-white/50 flex-shrink-0"
             style={{minWidth: '48px', minHeight: '48px'}}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder-avatar.jpg';
+            }}
           />
           <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-orange-500"></span>
         </div>
@@ -1115,145 +1118,43 @@ export function PersistentChatWindow() {
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Location
-                </label>
-                
-                {/* GPS Set Location Button - Simplified Single Press */}
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!navigator.geolocation) {
-                      alert('Location services are not available on this device. Please enter your address manually.');
-                      return;
-                    }
-                    
-                    setIsGettingLocation(true);
-                    
-                    try {
-                      console.log('📍 Starting location request...');
-                      
-                      // Request permission first (optional check, skip if not supported)
-                      try {
-                        const permission = await navigator.permissions.query({name: 'geolocation'});
-                        console.log('📍 Permission status:', permission.state);
-                        
-                        if (permission.state === 'denied') {
-                          throw new Error('Location permission denied. Please enable location access in your browser settings.');
-                        }
-                      } catch (permError) {
-                        console.warn('📍 Permissions API not supported or failed, continuing anyway:', permError);
-                      }
-                      
-                      // Use native geolocation as fallback if locationService fails
-                      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(
-                          resolve,
-                          reject,
-                          { 
-                            enableHighAccuracy: true, 
-                            timeout: 10000, 
-                            maximumAge: 0 
-                          }
-                        );
-                      });
-                      
-                      const { latitude, longitude } = position.coords;
-                      console.log('📍 GPS coordinates received:', latitude, longitude);
-                      
-                      // Try to get address using Google Maps (optional)
-                      let address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
-                      try {
-                        if (locationService && typeof locationService.getCurrentLocation === 'function') {
-                          const locationResult = await locationService.getCurrentLocation();
-                          address = locationResult.address || address;
-                          console.log('📍 Address resolved via LocationService:', address);
-                        }
-                      } catch (addressError) {
-                        console.warn('📍 Address resolution failed, using coordinates:', addressError);
-                      }
-                      
-                      // Set both coordinates and readable address
-                      setCustomerForm(prev => {
-                        const updated = {
-                          ...prev,
-                          coordinates: { lat: latitude, lng: longitude },
-                          location: address
-                        };
-                        console.log('📍 CustomerForm updated:', updated);
-                        return updated;
-                      });
-                      
-                      console.log('📍 Location set successfully:', { latitude, longitude, address });
-                    } catch (error: unknown) {
-                      const err = error as Error; console.error('📍 Location error:', err);
-                      
-                      // More specific error messages
-                      let errorMessage = 'Unable to get your location. ';
-                      if ((error as any).code === 1) {
-                        errorMessage += 'Please enable location permission in your browser and try again.';
-                      } else if ((error as any).code === 2) {
-                        errorMessage += 'Location information is unavailable.';
-                      } else if ((error as any).code === 3) {
-                        errorMessage += 'Location request timed out. Please try again.';
-                      } else {
-                        errorMessage += (error as Error).message || 'Please make sure location services are enabled and try again.';
-                      }
-                      
-                      alert(errorMessage);
-                    } finally {
-                      setIsGettingLocation(false);
-                    }
-                  }}
-                  disabled={isGettingLocation || !!customerForm.coordinates}
-                  className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                    customerForm.coordinates
-                      ? 'bg-orange-500 text-white shadow-lg cursor-default'
-                      : 'bg-gray-100 border-2 border-gray-300 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {(() => {
-                    console.log('🔘 Button render - coordinates:', customerForm.coordinates);
-                    return null;
-                  })()}
-                  {isGettingLocation ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                      Getting Location...
-                    </>
-                  ) : customerForm.coordinates ? (
-                    <>
-                      🔒 Location Secured
-                    </>
-                  ) : (
-                    <>
-                      📍 Set My Location
-                    </>
-                  )}
-                </button>
-                
-                {/* Show address when location is captured */}
-                {customerForm.coordinates && customerForm.location && (
-                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-xs text-green-700 font-medium flex items-center gap-1">
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                      Location Captured:
-                    </p>
-                    <p className="text-sm text-green-800 mt-1">{customerForm.location}</p>
-                    <p className="text-xs text-green-600 mt-1">
-                      📍 {customerForm.coordinates.lat.toFixed(6)}, {customerForm.coordinates.lng.toFixed(6)}
-                    </p>
-                  </div>
-                )}
-                
-                {/* Info text when no location */}
-                {!customerForm.coordinates && !isGettingLocation && (
-                  <p className="mt-2 text-xs text-gray-500 text-center">
-                    📍 Location helps therapist find you faster.
-                  </p>
-                )}
+              {/* Massage Location Header */}
+              <div className="text-center">
+                <h3 className="text-base font-semibold text-gray-800 mb-4">Massage Location</h3>
               </div>
+              
+              {/* Address Input Fields - Only for HOME */}
+              {customerForm.locationType === 'home' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Address Line 1 *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerForm.address1 || ''}
+                      onChange={(e) => setCustomerForm(prev => ({ ...prev, address1: e.target.value }))}
+                      placeholder="Street address, building name"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Address Line 2 (Area/District) *
+                    </label>
+                    <input
+                      type="text"
+                      value={customerForm.address2 || ''}
+                      onChange={(e) => setCustomerForm(prev => ({ ...prev, address2: e.target.value }))}
+                      placeholder="e.g. Seminyak, Kuta, Ubud"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      required
+                    />
+                  </div>
+                </>
+              )}
               
               {/* Hotel/Villa Name and Room Number - only show for hotel or villa */}
               {(customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (

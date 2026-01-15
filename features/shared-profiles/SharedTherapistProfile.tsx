@@ -31,6 +31,7 @@ import { getHeroImageForTherapist } from '../../config/heroImages';
 import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../../lib/appwrite';
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
+import { getNonRepeatingMainImage } from '../../lib/appwrite/image.service';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -134,6 +135,32 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         console.log('🔁'.repeat(40) + '\n');
         
         const fetchTherapist = async () => {
+            // FIRST: Try to use existing therapist from main array (same as home page)
+            const currentPath = window.location.pathname + window.location.hash;
+            let therapistId = extractTherapistIdFromUrl() || sessionStorage.getItem('direct_therapist_id');
+            
+            if (therapistId) {
+                // Check if we can use existing therapist data (from home page load)
+                const existingTherapist = window.__THERAPISTS_CACHE?.find((t: any) => 
+                    (t.id || t.$id || '').toString() === therapistId
+                );
+                
+                if (existingTherapist) {
+                    console.log('\n' + '🔄'.repeat(40));
+                    console.log('🔄 [UNIFIED FLOW] Found therapist in cached data (same as home page)');
+                    console.log('🔄 Therapist:', existingTherapist.name);
+                    console.log('🔄 Has mainImage:', !!(existingTherapist as any).mainImage);
+                    console.log('🔄 Skipping Appwrite fetch - using unified data');
+                    console.log('🔄'.repeat(40) + '\n');
+                    
+                    setTherapist(existingTherapist);
+                    setLoading(false);
+                    // Clear stored ID
+                    sessionStorage.removeItem('direct_therapist_id');
+                    return;
+                }
+            }
+
             // If therapist already provided, skip fetch
             if (selectedTherapist) {
                 console.log('\n' + '⚡'.repeat(40));
@@ -147,8 +174,16 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 return;
             }
 
-            // Extract ID from URL
-            let therapistId = extractTherapistIdFromUrl();
+            // Check if we have a direct path therapist ID stored
+            if (!therapistId) {
+                const directId = sessionStorage.getItem('direct_therapist_id');
+                if (directId) {
+                    therapistId = directId;
+                    console.log('🔧 [PATH ROUTE] Using stored direct therapist ID:', therapistId);
+                    // Clear it so it doesn't interfere with future navigation
+                    sessionStorage.removeItem('direct_therapist_id');
+                }
+            }
 
             // Fallback: support short URLs (/share/12345) and SEO format (/share/slug/{id})
             if (!therapistId && window.location.pathname.startsWith('/share/')) {
@@ -226,7 +261,21 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
                 console.log('📊 Rating:', fetchedTherapist.rating);
                 console.log('💰 Pricing:', fetchedTherapist.pricing);
-                console.log('📥'.repeat(40) + '\n');
+                console.log('🖼️ Main Image (raw):', (fetchedTherapist as any).mainImage || 'NOT SET');
+                console.log('🖼️ Profile Picture:', (fetchedTherapist as any).profilePicture || 'NOT SET');
+                
+                // ✨ UNIFIED IMAGE LOGIC: Use same logic as home page (therapistService.getAll())
+                if (!(fetchedTherapist as any).mainImage) {
+                    // Use therapist's index or ID to get consistent image (same as home page)
+                    const imageIndex = parseInt(fetchedTherapist.$id || '0', 36) % 100;
+                    const assignedImage = getNonRepeatingMainImage(imageIndex);
+                    (fetchedTherapist as any).mainImage = assignedImage;
+                    console.log('✨ [UNIFIED FLOW] Assigned mainImage from same pool as home page:', assignedImage);
+                } else {
+                    console.log('✅ [UNIFIED FLOW] Using existing mainImage from Appwrite (consistent with home page)');
+                }
+                
+                console.log('�📥'.repeat(40) + '\n');
                 
                 console.log('⏳ [STATE UPDATE] Setting therapist state with fetched data');
                 setTherapist(fetchedTherapist);

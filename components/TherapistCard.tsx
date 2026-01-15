@@ -20,6 +20,7 @@ import { AvailabilityStatus } from '../types';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
+import { getRandomSharedProfileImage } from '../lib/sharedProfileImages';
 import { devLog, devWarn } from '../utils/devMode';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';
 import { generateShareableURL } from '../utils/seoSlugGenerator';
@@ -650,8 +651,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Get main image from therapist data - use mainImage for background, profilePicture for overlay
     const mainImage = (therapist as any).mainImage || therapist.profileImage;
     
-    // Use therapist's mainImage or random fallback
-    const displayImage = mainImage || getRandomTherapistImage(therapist.id.toString());
+    // Use therapist's mainImage or shared profile image pool (better than gray placeholders)
+    const displayImage = mainImage || getRandomSharedProfileImage();
+    
+    console.log('🖼️ [TherapistCard] Image selection for', therapist.name, ':', {
+        mainImage: (therapist as any).mainImage ? 'SET' : 'NOT SET',
+        mainImageValue: (therapist as any).mainImage,
+        profileImage: therapist.profileImage ? 'SET' : 'NOT SET',
+        finalDisplayImage: displayImage,
+        usingFallback: !mainImage ? 'YES (SharedProfile pool)' : 'NO'
+    });
 
     const openWhatsApp = () => {
         devLog('📱 Book Now clicked - showing booking form');

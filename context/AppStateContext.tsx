@@ -98,11 +98,39 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     // Initialize page from URL hash or default to 'landing'
     const getInitialPage = () => {
         const hash = window.location.hash.replace('#', '');
-        if (hash && hash !== 'landing') {
-            console.log('🔗 Initializing page from URL hash:', hash);
-            return hash;
+        if (!hash || hash === 'landing') {
+            return 'landing';
         }
-        return 'landing';
+        
+        // Handle dynamic routes - convert URL patterns to page names
+        if (hash.startsWith('/therapist-profile/')) {
+            console.log('🔗 Initial URL detected: therapist profile ->', hash);
+            return 'shared-therapist-profile';
+        } else if (hash.startsWith('/share/therapist/')) {
+            console.log('🔗 Initial URL detected: share therapist ->', hash);
+            return 'shared-therapist-profile';
+        } else if (hash.startsWith('/profile/therapist/')) {
+            console.log('🔗 Initial URL detected: authenticated therapist profile ->', hash);
+            return 'therapist-profile';
+        } else if (hash.startsWith('/profile/place/')) {
+            console.log('🔗 Initial URL detected: place profile ->', hash);
+            return 'massage-place-profile';
+        } else if (hash.startsWith('/share/place/')) {
+            console.log('🔗 Initial URL detected: share place ->', hash);
+            return 'share-place';
+        } else if (hash.startsWith('/share/facial/')) {
+            console.log('🔗 Initial URL detected: share facial ->', hash);
+            return 'share-facial';
+        } else if (hash.startsWith('/accept-booking/')) {
+            console.log('🔗 Initial URL detected: accept booking ->', hash);
+            return 'accept-booking';
+        } else if (hash.startsWith('/decline-booking/')) {
+            console.log('🔗 Initial URL detected: decline booking ->', hash);
+            return 'decline-booking';
+        }
+        
+        console.log('🔗 Initializing page from URL hash:', hash);
+        return hash;
     };
     
     const [page, _setPage] = useState<string>(getInitialPage());
@@ -194,6 +222,31 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         const handleHashChange = () => {
             const hash = window.location.hash.replace('#', '');
             let newPage = hash || 'landing';
+            
+            // Handle dynamic routes - convert URL patterns to page names
+            if (hash.startsWith('/therapist-profile/')) {
+                newPage = 'shared-therapist-profile';
+            } else if (hash.startsWith('/share/therapist/')) {
+                newPage = 'shared-therapist-profile';
+            } else if (hash.startsWith('/profile/therapist/')) {
+                newPage = 'therapist-profile';
+            } else if (hash.startsWith('/profile/place/')) {
+                newPage = 'massage-place-profile';
+            } else if (hash.startsWith('/share/place/')) {
+                newPage = 'share-place';
+            } else if (hash.startsWith('/share/facial/')) {
+                newPage = 'share-facial';
+            } else if (hash.startsWith('/accept-booking/')) {
+                newPage = 'accept-booking';
+            } else if (hash.startsWith('/decline-booking/')) {
+                newPage = 'decline-booking';
+            }
+            
+            console.log('🔗 Hash processing:', {
+                originalHash: hash,
+                resolvedPage: newPage,
+                currentPage: page
+            });
             
             // Prevent going back to landing if user has already entered app
             const hasEntered = sessionStorage.getItem('has_entered_app');

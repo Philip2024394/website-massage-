@@ -397,6 +397,19 @@ const App = () => {
                 state.setPage('accept-booking');
             } else if (path === '/join' || path.startsWith('/join/')) {
                 state.setPage('membership-select');
+            } else if (path.startsWith('/therapist-profile/')) {
+                // Handle direct shared therapist profile URL (production links)
+                console.log('🔗 Direct therapist profile path detected:', path);
+                const match = path.match(/\/therapist-profile\/(\d+)-/);
+                if (match) {
+                    const therapistId = match[1];
+                    console.log('   Extracted therapist ID:', therapistId);
+                    state.setPage('shared-therapist-profile');
+                    // Store for SharedTherapistProfile component to use
+                    sessionStorage.setItem('direct_therapist_id', therapistId);
+                } else {
+                    console.warn('   Could not extract therapist ID from path:', path);
+                }
             } else if (path.startsWith('/profile/therapist/')) {
                 // Handle direct therapist profile URL with reviews
                 const match = path.match(/\/profile\/therapist\/(\d+)-/);

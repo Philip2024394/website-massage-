@@ -154,10 +154,11 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
         // Check if therapist is from Yogyakarta/Jogja
         const isYogyakarta = city.toLowerCase().includes('yogyakarta') || city.toLowerCase().includes('jogja');
         
-        // Select image: random from pool for Yogyakarta, main image for others (consistent with TherapistHomeCard)
-        const image = isYogyakarta 
-            ? yogyakartaImages[Math.floor(Math.random() * yogyakartaImages.length)]
-            : ((therapist as any).mainImage || (therapist as any).profilePicture || 'https://www.indastreetmassage.com/og-default.jpg');
+        // Select image: use mainImage from Appwrite first (banner image), or random for Yogyakarta
+        const image = (therapist as any).mainImage ||
+            (isYogyakarta 
+                ? yogyakartaImages[Math.floor(Math.random() * yogyakartaImages.length)]
+                : 'https://www.indastreetmassage.com/og-default.jpg');
 
         const setTag = (name: string, content: string) => {
             if (!content) return;
@@ -479,7 +480,7 @@ const SharedTherapistProfilePage: React.FC<SharedTherapistProfilePageProps> = ({
                     {/* Therapist Main Image */}
                     <div className="flex justify-center mb-3">
                         <img 
-                            src={getCacheBustedUrl(heroImageUrl)}
+                            src={getCacheBustedUrl((therapist as any).mainImage || heroImageUrl)}
                             alt={`${therapist.name} - Professional Therapist`}
                             className="h-32 w-auto object-contain rounded-lg shadow-md"
                             onError={(e) => {

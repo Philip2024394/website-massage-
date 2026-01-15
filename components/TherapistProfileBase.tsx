@@ -18,6 +18,7 @@ import TherapistCard from './TherapistCard';
 import RotatingReviews from './RotatingReviews';
 import SocialMediaLinks from './SocialMediaLinks';
 import ShareActions from '../features/shared-profiles/ShareActions';
+import SharedProfileImageGallery from './shared/SharedProfileImageGallery';
 import type { Therapist, UserLocation } from '../types';
 import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
 
@@ -143,6 +144,14 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     hideJoinButton={mode === 'shared'}
                 />
 
+                {/* Random Image Gallery - Only in shared mode */}
+                {mode === 'shared' && (
+                    <SharedProfileImageGallery 
+                        therapistName={therapist.name}
+                        count={4}
+                    />
+                )}
+
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
                     <RotatingReviews 
@@ -226,27 +235,43 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         {/* Service Highlights */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">✅</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Verified Therapists' : 'Terapis Terverifikasi'}
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/terms_complies-removebg-preview.png?updatedAt=1768021642025" 
+                                    alt="Training Complied"
+                                    className="w-16 h-16 mx-auto mb-2 object-contain"
+                                />
+                                <p className="text-xs text-gray-600 font-medium">
+                                    Training Complied
                                 </p>
                             </div>
                             <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">🏠</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Home Service' : 'Layanan ke Rumah'}
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/terms_compliesz-removebg-preview%20(1).png?updatedAt=1768023242647" 
+                                    alt="Hygiene Complied"
+                                    className="w-16 h-16 mx-auto mb-2 object-contain"
+                                />
+                                <p className="text-xs text-gray-600 font-medium">
+                                    Hygiene Complied
                                 </p>
                             </div>
                             <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">💆</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Multiple Techniques' : 'Berbagai Teknik'}
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/terms_ss-removebg-preview.png?updatedAt=1768023875291" 
+                                    alt="Certified Products"
+                                    className="w-16 h-16 mx-auto mb-2 object-contain"
+                                />
+                                <p className="text-xs text-gray-600 font-medium">
+                                    Certified Products
                                 </p>
                             </div>
                             <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                                <div className="text-2xl mb-1">⭐</div>
-                                <p className="text-xs text-gray-600">
-                                    {language === 'en' ? 'Top Rated' : 'Rating Terbaik'}
+                                <img 
+                                    src="https://ik.imagekit.io/7grri5v7d/terms_ssss-removebg-preview.png?updatedAt=1768101075999" 
+                                    alt="Main Career"
+                                    className="w-16 h-16 mx-auto mb-2 object-contain"
+                                />
+                                <p className="text-xs text-gray-600 font-medium">
+                                    Main Career
                                 </p>
                             </div>
                         </div>
