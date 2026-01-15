@@ -102,7 +102,7 @@ export function convertLocationStringToId(location: string): string {
  * Extract locationId from therapist document (CANONICAL KEY)
  * FAIL-FAST: Logs error if missing for live therapists
  */
-export function extractLocationId(therapist: import('../types').TherapistData): string {
+export function extractLocationId(therapist: import('../types').Therapist): string {
   if (!therapist) return LOCATION_IDS.ALL;
   
   // PRIMARY: locationId field (canonical)
@@ -134,7 +134,7 @@ export function extractLocationId(therapist: import('../types').TherapistData): 
 /**
  * Extract location display name from therapist document
  */
-export function extractLocation(therapist: import('../types').TherapistData): string {
+export function extractLocation(therapist: import('../types').Therapist): string {
   if (!therapist) return 'all';
   
   // Get locationId first
@@ -188,7 +188,7 @@ export function normalizeLocationForSave(location: string, coordinates?: [number
  * Check if therapist matches filter location (CANONICAL - uses locationId)
  * BULLETPROOF: Uses locationId comparison only
  */
-export function matchesLocationId(therapist: import('../types').TherapistData, filterLocationId: string): boolean {
+export function matchesLocationId(therapist: import('../types').Therapist, filterLocationId: string): boolean {
   if (!therapist || !filterLocationId) return false;
   if (filterLocationId === LOCATION_IDS.ALL) return true;
   
@@ -256,7 +256,7 @@ export function extractCoordinates(coords: [number, number] | { lat: number; lng
  * Assert therapist has valid locationId (FAIL-FAST)
  * Throws in dev, logs error in production
  */
-export function assertValidLocationId(therapist: import('../types').TherapistData, context: string): void {
+export function assertValidLocationId(therapist: import('../types').Therapist, context: string): void {
   if (!therapist) {
     const msg = `${context}: Therapist is null/undefined`;
     if (process.env.NODE_ENV === 'development') {
@@ -388,3 +388,4 @@ export function isValidLocationName(location: string): boolean {
   const trimmed = location.trim();
   return trimmed.length > 0 && trimmed !== 'null' && trimmed !== 'undefined';
 }
+
