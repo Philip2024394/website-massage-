@@ -852,7 +852,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   // Safety check for null therapist
   if (!therapist) {
     return (
-      <>
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Loading therapist data...</p>
@@ -860,13 +859,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       </div>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
-      </>
 
     );
   }
 
   return (
-    <>
     <TherapistLayout
       therapist={therapist}
       currentPage="dashboard"
@@ -1478,7 +1475,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     </TherapistLayout>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
-      </>
 
   );
 };

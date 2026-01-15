@@ -246,7 +246,6 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const filteredBookings = getFilteredBookings();
 
   return (
-    <>
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -528,7 +527,6 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     </div>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
-    </>
 
   );
 };
