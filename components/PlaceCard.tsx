@@ -332,3 +332,4 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
 };
 
 export default React.memo(PlaceCard);
+
