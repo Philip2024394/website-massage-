@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { FULL_TERMS_DOCUMENT, LEGAL_TERMS, validateTermsAcceptance } from '../../src/legal/terms';
 import { databases } from '../../lib/appwrite';
-import { APPWRITE_CONFIG } from '../../config';
+import { APPWRITE_CONFIG } from '../../app/packages/auth/src/config';
 
 interface TermsModalProps {
   isOpen: boolean;
