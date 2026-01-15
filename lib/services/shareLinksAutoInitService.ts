@@ -121,7 +121,7 @@ class ShareLinksAutoInitService {
             
         } catch (error) {
             console.error(`❌ [Share Links] Failed to ensure ${entityType} link:`, error);
-            return { success: false, error: error.toString() };
+            return { success: false, error: (error as any).toString() };
         }
     }
 

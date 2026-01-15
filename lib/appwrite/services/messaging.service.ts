@@ -160,7 +160,7 @@ export const messagingService = {
                 console.log(`  senderType: "${messageData.senderType}" → "${normalizedSenderType}"`);
                 console.log(`  recipientType: "${messageData.recipientType}" → "${normalizedRecipientType}"`);
             } catch (enumError) {
-                throw new Error(`❌ MESSAGING SERVICE: Invalid enum value - ${enumError.message}`);
+                throw new Error(`❌ MESSAGING SERVICE: Invalid enum value - ${(enumError as Error).message}`);
             }
             
             // Additional enum validation - reject anything not in allowed lists

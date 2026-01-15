@@ -72,7 +72,7 @@ class SystemMessageService {
                 response = JSON.parse(execution.response);
             } catch (parseError) {
                 console.error('❌ [SYSTEM MESSAGE] Failed to parse function response:', execution.response);
-                throw new Error(`Invalid function response: ${parseError.message}`);
+                throw new Error(`Invalid function response: ${(parseError as Error).message}`);
             }
 
             // Check execution status
