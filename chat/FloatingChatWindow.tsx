@@ -688,6 +688,64 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         </div>
                         <p className="text-xs text-gray-500 mt-1">Enter without +62 prefix</p>
                       </div>
+
+                    {/* Gender Preference Section */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Therapist Gender Preference
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'male' }))}
+                          className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
+                            bookingFormData.gender === 'male'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <img 
+                            src="https://ik.imagekit.io/7grri5v7d/male_icon-removebg-preview%20(1).png" 
+                            alt="Male"
+                            className="w-6 h-6 object-contain"
+                          />
+                          Male
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'female' }))}
+                          className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
+                            bookingFormData.gender === 'female'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <img 
+                            src="https://ik.imagekit.io/7grri5v7d/male_icons-removebg-preview.png" 
+                            alt="Female"
+                            className="w-6 h-6 object-contain"
+                          />
+                          Female
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingFormData(prev => ({ ...prev, gender: 'children' }))}
+                          className={`px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
+                            bookingFormData.gender === 'children'
+                              ? 'border-orange-500 bg-orange-500 text-white'
+                              : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <img 
+                            src="https://ik.imagekit.io/7grri5v7d/male_iconss-removebg-preview.png" 
+                            alt="Children"
+                            className="w-6 h-6 object-contain"
+                          />
+                          Children
+                        </button>
+                      </div>
+                    </div>
+
                     {/* NEW: Venue Type Selection */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
