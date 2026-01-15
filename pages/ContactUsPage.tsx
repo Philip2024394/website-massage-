@@ -3,7 +3,6 @@ import { ArrowLeft } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 

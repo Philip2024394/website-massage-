@@ -415,8 +415,7 @@ export interface Place {
     
     // Dynamic pricing support
     hasPackages?: boolean;
-    discountPercentage?: number; // Overall discount for promotions  discountEndTime?: string; // Discount end time
-  isDiscountActive?: boolean; // Discount active flag    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
+    discountPercentage?: number; // Overall discount for promotions`n    discountEndTime?: string; // Discount end time    serviceRadius?: number; // minimum 7km - how far they will travel for hotel/villa services
     languages?: string[]; // Languages spoken: ['en', 'id', 'zh', 'ja', 'ko', 'ru', 'fr', 'de', 'es']
     
     // Gallery images with captions (up to 6 images)
@@ -838,4 +837,5 @@ export interface UserCoins {
     topProvider?: string;
     topProviderCoins?: number;
 }
+
 

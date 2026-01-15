@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 /**
  * PlaceServices Component
- * 
+ *
  * Extracted from MassagePlaceCard.tsx as part of Phase 3 modularization.
- * Handles the services and details section including bio, gallery, specializations, 
+ * Handles the services and details section including bio, gallery, specializations,
  * languages, and amenities.
- * 
+ *
  * Features:
  * - Bio text with website link
  * - Photo gallery with modal viewing
  * - Massage specializations display
- * - Languages and experience display  
+ * - Languages and experience display
  * - Amenities listing
  */
 
-import React from 'react';
 import { parseMassageTypes, parseLanguages } from '../../utils/appwriteHelpers';
 import { isDiscountActive } from '../../constants/cardConstants';
 
