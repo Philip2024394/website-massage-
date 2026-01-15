@@ -82,7 +82,8 @@
     "migrate:all": "node scripts/appwrite-migration.cjs extract-all",
     "refactor:check": "npm run monitor:files && npm run lint",
     "refactor:plan": "echo 'See docs/COMPONENT_REFACTORING_GUIDE.md for guidelines'",
-    "refactor:verify": "npm run type-check && npm run test"
+    "refactor:verify": "npm run type-check && npm run test",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.0.0",
@@ -133,6 +134,7 @@
     "eslint-plugin-react-refresh": "^0.4.12",
     "glob": "^13.0.0",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^25.0.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
