@@ -16,8 +16,8 @@ const COLLECTIONS = {
     USERS: APPWRITE_CONFIG.collections.users,
     bookings: APPWRITE_CONFIG.collections.bookings,
     REVIEWS: APPWRITE_CONFIG.collections.reviews,
-    ANALYTICS: APPWRITE_CONFIG.collections.analytics,
-    ANALYTICS_EVENTS: APPWRITE_CONFIG.collections.analyticsEvents,
+    ANALYTICS: (APPWRITE_CONFIG.collections as any).analytics,
+    ANALYTICS_EVENTS: (APPWRITE_CONFIG.collections as any).analyticsEvents,
     EVENTS_COLLECTION: APPWRITE_CONFIG.collections.analyticsEvents
 };
 

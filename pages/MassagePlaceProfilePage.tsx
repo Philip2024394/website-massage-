@@ -366,7 +366,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 // Open taxi app
                 openTaxiApp((result as any).deepLink, 'bike');
             } else {
-                alert(`Error: ${result.error || 'Unable to create booking link'}`);
+                alert(`Error: ${(result as any).error || 'Unable to create booking link'}`);
             }
         } catch (error) {
             console.error('Bike taxi booking error:', error);
@@ -418,7 +418,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 // Open taxi app
                 openTaxiApp((result as any).deepLink, 'car');
             } else {
-                alert(`Error: ${result.error || 'Unable to create booking link'}`);
+                alert(`Error: ${(result as any).error || 'Unable to create booking link'}`);
             }
         } catch (error) {
             console.error('Car taxi booking error:', error);

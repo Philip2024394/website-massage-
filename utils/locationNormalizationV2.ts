@@ -243,12 +243,12 @@ export function extractCoordinates(coords: [number, number] | { lat: number; lng
   // If object, extract directly
   if (typeof coords === 'object') {
     return {
-      lat: coords.lat ?? null,
-      lng: coords.lng ?? null,
-      location: coords.location ?? null
+      lat: (coords as any).lat ?? null,
+      lng: (coords as any).lng ?? null,
+      location: (coords as any).location ?? null
     };
   }
-  
+
   return { lat: null, lng: null, location: null };
 }
 

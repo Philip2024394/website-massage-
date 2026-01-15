@@ -358,7 +358,7 @@ export async function logAuthViolation(
         
         await databases.createDocument(
             APPWRITE_CONFIG.databaseId,
-            APPWRITE_CONFIG.auditLogs as any || 'audit_logs',
+            (APPWRITE_CONFIG as any).auditLogs || 'audit_logs',
             ID.unique(),
             {
                 type,
