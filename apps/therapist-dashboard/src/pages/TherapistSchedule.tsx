@@ -586,3 +586,4 @@ const TherapistSchedule: React.FC<TherapistScheduleProps> = ({ therapist, onBack
 };
 
 export default TherapistSchedule;
+

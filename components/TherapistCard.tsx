@@ -312,11 +312,11 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 therapistCoords = (therapist as any).geopoint;
             } else if (therapist.coordinates) {
                 if (Array.isArray(therapist.coordinates)) {
-                    therapistCoords = { lat: therapist.coordinates[1], lng: therapist.coordinates[0] };
+                    therapistCoords = ({ lat: therapist.coordinates[1], lng: therapist.coordinates[0] } as any);
                 } else if (typeof therapist.coordinates === 'string') {
                     const parsed = JSON.parse(therapist.coordinates);
                     if (Array.isArray(parsed)) {
-                        therapistCoords = { lat: parsed[1], lng: parsed[0] };
+                        therapistCoords = ({ lat: parsed[1], lng: parsed[0] } as any);
                     } else if (parsed.lat && parsed.lng) {
                         therapistCoords = parsed;
                     }
@@ -1123,3 +1123,4 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 };
 
 export default TherapistCard;
+
