@@ -1188,8 +1188,16 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         </div>
       </div>
     </div>
+    
+    {/* Floating Chat Window - Always mounted, internally manages visibility */}
+    <FloatingChatWindow
+      userId={therapist?.id || therapist?.id || 'therapist'}
+      userName={therapist?.name || 'Therapist'}
+      userRole="therapist"
+    />
     </TherapistLayout>
   );
 };
 
 export default TherapistOnlineStatus;
+
