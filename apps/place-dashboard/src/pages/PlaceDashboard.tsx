@@ -1057,7 +1057,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
     const pastBookings = (bookings || []).filter(b => new Date(b.startTime) < now).sort((a,b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
     if (isLoading) {
-        return <(LoadingSpinner as any) message="Loading dashboard..." />;
+        return <LoadingSpinner message="Loading dashboard..." />;
     }
 
     if (!place && !_placeId) {
@@ -1400,7 +1400,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                             <label className="block text-sm font-medium text-gray-900">{t?.descriptionLabel || 'Description'}</label>
                             <div className="relative">
                                 <div className="absolute top-3.5 left-0 pl-3 flex items-center pointer-events-none">
-                                    <(DocumentTextIcon as any) className="h-5 w-5 text-gray-400" />
+                                    <DocumentTextIcon className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <textarea 
                                     value={description} 
@@ -1943,7 +1943,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
                                 <DollarSign className="w-5 h-5 sm:w-6 sm:h-6" />
                             </button>
                         )}
-                        <(NotificationBell as any) 
+                        <NotificationBell 
                             count={unreadNotificationsCount} 
                             onClick={() => setShowNotificationsView(!showNotificationsView)} 
                         />
@@ -2118,7 +2118,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             </div>
             
             {/* Validation Popup */}
-            <(ValidationPopup as any)
+            <ValidationPopup
                 isOpen={showValidationPopup}
                 onClose={() => setShowValidationPopup(false)}
                 title="Complete Your Business Profile"
