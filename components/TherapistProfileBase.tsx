@@ -82,11 +82,11 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     } : null;
 
     // Get location-specific hero image
-    const heroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || 'Yogyakarta'));
+    const heroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
-    const city = (therapist.location || 'Yogyakarta').split(' ')[0];
+    const city = (therapist.location || ("a" as string)).split(' ')[0];
     const heroImageAlt = `Professional massage therapy in ${city} - ${therapist.name} - Terapis pijat panggilan ${city}`;
     
     // Replace {city} placeholder with actual location
@@ -146,7 +146,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
                     <RotatingReviews 
-                        location={therapist.location || 'Yogyakarta'} 
+                        location={therapist.location || ("a" as string)} 
                         limit={5}
                         providerId={(therapist as any).id || (therapist as any).$id}
                         providerName={(therapist as any).name}
@@ -193,13 +193,13 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         <div className="bg-gradient-to-r from-orange-50 to-green-50 rounded-lg p-6 mb-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-3 text-center">
                                 {language === 'en' 
-                                    ? `Professional Massage Therapist - Home - Hotel - Villa ${therapist.location || 'Jakarta Location'}`
-                                    : `Jasa Pijat Profesional di ${therapist.location || 'Indonesia'}`
+                                    ? `Professional Massage Therapist - Home - Hotel - Villa ${therapist.location || ("n" as string)}`
+                                    : `Jasa Pijat Profesional di ${therapist.location || ("a" as string)}`
                                 }
                             </h3>
                             <div className="flex flex-wrap justify-center gap-2">
                                 {(() => {
-                                    const city = therapist.location || 'Indonesia';
+                                    const city = therapist.location || ("a" as string);
                                     const keywords = [
                                         `pijat-${city.toLowerCase().replace(/\s+/g, '-')}`,
                                         `massage-${city.toLowerCase().replace(/\s+/g, '-')}`,
@@ -255,8 +255,8 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                         <div className="text-center text-sm text-gray-600 mb-6 max-w-2xl mx-auto">
                             <p className="leading-relaxed">
                                 {language === 'en' 
-                                    ? `Book ${therapist.name} and discover professional massage services in ${therapist.location || 'Indonesia'}. IndaStreet Massage connects you with certified therapists offering traditional Indonesian massage, reflexology, aromatherapy, and more. Experience authentic pijat tradisional from verified professionals. Available for home visits and spa locations across Indonesia.`
-                                    : `Pesan ${therapist.name} dan temukan layanan pijat profesional di ${therapist.location || 'Indonesia'}. IndaStreet Massage menghubungkan Anda dengan terapis bersertifikat yang menawarkan pijat tradisional Indonesia, refleksi, aromaterapi, dan lainnya. Rasakan pijat tradisional autentik dari profesional terverifikasi. Tersedia untuk kunjungan rumah dan lokasi spa di seluruh Indonesia.`
+                                    ? `Book ${therapist.name} and discover professional massage services in ${therapist.location || ("a" as string)}. IndaStreet Massage connects you with certified therapists offering traditional Indonesian massage, reflexology, aromatherapy, and more. Experience authentic pijat tradisional from verified professionals. Available for home visits and spa locations across Indonesia.`
+                                    : `Pesan ${therapist.name} dan temukan layanan pijat profesional di ${therapist.location || ("a" as string)}. IndaStreet Massage menghubungkan Anda dengan terapis bersertifikat yang menawarkan pijat tradisional Indonesia, refleksi, aromaterapi, dan lainnya. Rasakan pijat tradisional autentik dari profesional terverifikasi. Tersedia untuk kunjungan rumah dan lokasi spa di seluruh Indonesia.`
                                 }
                             </p>
                         </div>
@@ -279,5 +279,6 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
 };
 
 export default TherapistProfileBase;
+
 
 

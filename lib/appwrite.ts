@@ -54,3 +54,4 @@ export const COLLECTIONS = {
 export const STORAGE_BUCKETS = {
     PARTNER_IMAGES: 'partner_images_bucket'
 };
+

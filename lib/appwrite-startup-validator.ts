@@ -72,3 +72,4 @@ if (!validation.valid) {
 
 // Export validation result for use in other files
 export const collectionValidation = validation;
+

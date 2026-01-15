@@ -184,3 +184,4 @@ export const initializeGoogleMaps = () => {
 };
 
 export default APPWRITE_CONFIG;
+

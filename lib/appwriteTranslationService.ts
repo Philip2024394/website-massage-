@@ -291,3 +291,4 @@ class AppwriteTranslationService {
 
 export const appwriteTranslationService = new AppwriteTranslationService();
 export default appwriteTranslationService;
+

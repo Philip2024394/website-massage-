@@ -141,7 +141,7 @@ export function validateAllCollections(): { valid: boolean; errors: string[] } {
     const result = validateCollectionId(name as CollectionName);
     
     if (!result.isValid) {
-      errors.push(result.error || `Invalid: ${name}`);
+      errors.push(result.error || `Invalid: ${name}` as any);
     } else {
       console.log(`  ✅ ${name}: ${id}`);
     }
@@ -232,9 +232,10 @@ export function detectHardcodedIds(codeString: string): string[] {
   
   while ((match = numericIdPattern.exec(codeString)) !== null) {
     if (!matches.includes(match[1])) {
-      matches.push(match[1]);
+      matches.push(match[1] as any);
     }
   }
   
   return matches;
 }
+

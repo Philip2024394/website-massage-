@@ -1986,7 +1986,7 @@ export const adminAgentOverviewService = {
                     targetMet: !!snapshot?.targetMet,
                     streakCount: snapshot?.streakCount || 0,
                     commissionDue,
-                    payoutReady: !!(a.bankAccountNumber && a.bankName && a.bankAccountName as any as any)
+                    payoutReady: !!(a.bankAccountNumber && a.bankName && a.bankAccountName as any as any as any as any)
                 });
             }
             return rows;
@@ -3273,7 +3273,7 @@ export const pricingService = {
                     type: 'hotel_guest',
                     amount: basePrice * 0.10,
                     reason: 'Hotel Guest Discount'
-                } as any as any as any);
+                } as any as any as any as any as any);
             }
             
             // Apply agent referral discount (5%)
@@ -3282,7 +3282,7 @@ export const pricingService = {
                     type: 'agent_referral',
                     amount: basePrice * 0.05,
                     reason: 'Agent Referral Discount'
-                } as any as any as any);
+                } as any as any as any as any as any);
             }
             
             // Weekend surcharge (Friday-Sunday, +15%)
@@ -3291,7 +3291,7 @@ export const pricingService = {
                     type: 'weekend',
                     amount: basePrice * 0.15,
                     reason: 'Weekend Premium'
-                } as any as any as any);
+                } as any as any as any as any as any);
             }
             
             // Peak hours surcharge (6PM-10PM, +20%)
@@ -3300,7 +3300,7 @@ export const pricingService = {
                     type: 'peak_hours',
                     amount: basePrice * 0.20,
                     reason: 'Peak Hours Premium'
-                } as any as any as any);
+                } as any as any as any as any as any);
             }
             
             // Early bird discount (6AM-9AM, -10%)
@@ -3309,7 +3309,7 @@ export const pricingService = {
                     type: 'early_bird',
                     amount: basePrice * 0.10,
                     reason: 'Early Bird Special'
-                } as any as any as any);
+                } as any as any as any as any as any);
             }
             
             // Calculate final price
@@ -4023,16 +4023,16 @@ export const agentVisitService = {
 
             // Add filters if provided
             if (filters?.agentId) {
-                queries.push(Query.equal('agentId', filters.agentId as any as any));
+                queries.push(Query.equal('agentId', filters.agentId as any as any as any as any));
             }
             if (filters?.providerType) {
-                queries.push(Query.equal('providerType', filters.providerType as any as any));
+                queries.push(Query.equal('providerType', filters.providerType as any as any as any as any));
             }
             if (filters?.membershipAgreed && filters.membershipAgreed !== 'all') {
-                queries.push(Query.equal('membershipAgreed', filters.membershipAgreed as any as any));
+                queries.push(Query.equal('membershipAgreed', filters.membershipAgreed as any as any as any as any));
             }
             if (filters?.status && filters.status !== 'all') {
-                queries.push(Query.equal('status', filters.status as any as any));
+                queries.push(Query.equal('status', filters.status as any as any as any as any));
             }
 
             const response = await databases.listDocuments(
@@ -5047,7 +5047,7 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
             ];
             
             if (status) {
-                queries.push(Query.equal('status', status as any as any));
+                queries.push(Query.equal('status', status as any as any as any as any));
             }
             
             const response = await databases.listDocuments(
@@ -5079,16 +5079,16 @@ ${lead.notes ? `📝 Notes: ${lead.notes}\n\n` : ''}📞 Questions? Contact Inda
             ];
             
             if (filters?.status) {
-                queries.push(Query.equal('status', filters.status as any as any));
+                queries.push(Query.equal('status', filters.status as any as any as any as any));
             }
             if (filters?.memberType) {
-                queries.push(Query.equal('memberType', filters.memberType as any as any));
+                queries.push(Query.equal('memberType', filters.memberType as any as any as any as any));
             }
             if (filters?.dateFrom) {
-                queries.push(Query.greaterThanEqual('sentAt', filters.dateFrom as any as any));
+                queries.push(Query.greaterThanEqual('sentAt', filters.dateFrom as any as any as any as any));
             }
             if (filters?.dateTo) {
-                queries.push(Query.lessThanEqual('sentAt', filters.dateTo as any as any));
+                queries.push(Query.lessThanEqual('sentAt', filters.dateTo as any as any as any as any));
             }
             
             const response = await databases.listDocuments(
@@ -6218,7 +6218,7 @@ export const leadBillingService = {
 
                 const billing = await this.getMonthlyBilling(providerId, providerType, month, year);
                 if (billing.totalLeads > 0) {
-                    history.push(billing as any as any as any);
+                    history.push(billing as any as any as any as any as any);
                 }
             }
 
@@ -6435,13 +6435,13 @@ export const paymentConfirmationService = {
             ];
 
             if (filter?.status) {
-                queries.push(Query.equal('status', filter.status as any as any));
+                queries.push(Query.equal('status', filter.status as any as any as any as any));
             }
             if (filter?.memberType) {
-                queries.push(Query.equal('memberType', filter.memberType as any as any));
+                queries.push(Query.equal('memberType', filter.memberType as any as any as any as any));
             }
             if (filter?.paymentType) {
-                queries.push(Query.equal('paymentType', filter.paymentType as any as any));
+                queries.push(Query.equal('paymentType', filter.paymentType as any as any as any as any));
             }
 
             const response = await databases.listDocuments(
@@ -6864,6 +6864,8 @@ export const therapistMenusService = {
         }
     },
 };
+
+
 
 
 

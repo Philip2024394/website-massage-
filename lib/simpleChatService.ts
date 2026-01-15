@@ -220,3 +220,4 @@ export const simpleBookingService = {
 };
 
 export default simpleChatService;
+

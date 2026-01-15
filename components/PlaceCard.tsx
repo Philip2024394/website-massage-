@@ -41,10 +41,10 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
     const getTranslatedDescription = () => {
         if (currentLanguage === 'id') {
             // Try Indonesian translation first, fallback to base description
-            return (place as any).description_id || place.description || '';
+            return (place as any).description_id || place.description || ("" as string);
         } else {
             // Try English translation first, fallback to base description
-            return (place as any).description_en || place.description || '';
+            return (place as any).description_en || place.description || ("" as string);
         }
     };
     
@@ -118,7 +118,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
             aria-label={`Book massage at ${place.name}`}
         >
             <div className="h-40 w-full relative">
-                <img className="h-40 w-full object-cover" src={place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} alt={place.name} />
+                <img className="h-40 w-full object-cover" src={place.mainImage || ("1" as string)} alt={place.name} />
                 
                 {/* Star Rating - Top Right Corner with higher z-index */}
                 <div 
@@ -187,7 +187,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     <div className="flex-shrink-0">
                         <div className="w-16 h-16 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white aspect-square">
                             <img 
-                                src={place.profilePicture || place.mainImage || 'https://ik.imagekit.io/7grri5v7d/massage%20indonsea.png?updatedAt=1761973275491'} 
+                                src={place.profilePicture || place.mainImage || ("1" as string)} 
                                 alt={`${place.name} logo`}
                                 className="w-full h-full rounded-full object-cover aspect-square"
                             />
@@ -323,7 +323,7 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
             isOpen={showSharePopup}
             onClose={() => setShowSharePopup(false)}
             title={place.name}
-            description={`Discover ${place.name} on IndaStreet! ${place.description || 'Professional massage services at your location.'}`}
+            description={`Discover ${place.name} on IndaStreet! ${place.description || ("." as string)}`}
             url={window.location.href}
             type="place"
         />
@@ -332,4 +332,5 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
 };
 
 export default React.memo(PlaceCard);
+
 
