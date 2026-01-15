@@ -122,7 +122,7 @@ export class LiveMenuLocationManager {
         if ((distanceResult as any).distance as any <= radiusKm || includeOutsideRadius) {
           providersWithDistance.push({
             ...provider,
-            distance: (distanceResult as any).distance as any,
+            distance: (distanceResult as any as any).distance as any,
             distanceText: enhancedDistanceService.formatDistance((distanceResult as any).distance as any as any as any as any),
             travelTime: distanceResult.duration,
             travelTimeText: distanceResult.duration ? enhancedDistanceService.formatTravelTime(distanceResult.duration) : undefined
@@ -172,4 +172,5 @@ export class LiveMenuLocationManager {
 
 // Export singleton instance
 export const liveMenuLocationManager = LiveMenuLocationManager.getInstance();
+
 
