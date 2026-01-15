@@ -1,16 +1,17 @@
 {
-  "name": "Inda Street Massage Platform",
-  "short_name": "Inda Street",
+  "name": "IndaStreet Massage - Therapist & Place",
+  "short_name": "IndaStreet",
   "description": "Professional massage booking platform with instant notifications",
-  "start_url": "/",
-  "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#ffffff",
   "theme_color": "#f97316",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
   "categories": ["business", "health", "lifestyle"],
+  "id": "/?source=pwa",
   "icons": [
     {
       "src": "/icon-72.png",
@@ -19,14 +20,14 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-96.png", 
+      "src": "/icon-96.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
       "src": "/icon-128.png",
-      "sizes": "128x128", 
+      "sizes": "128x128",
       "type": "image/png",
       "purpose": "any maskable"
     },
@@ -54,14 +55,14 @@
       "name": "Therapist Dashboard",
       "short_name": "Dashboard",
       "description": "Quick access to therapist dashboard",
-      "url": "/?page=therapist-dashboard",
+      "url": "/therapist?source=shortcut",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Place Dashboard", 
+      "name": "Place Dashboard",
       "short_name": "Place",
       "description": "Quick access to massage place dashboard",
-      "url": "/?page=place-dashboard",
+      "url": "/place?source=shortcut",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
