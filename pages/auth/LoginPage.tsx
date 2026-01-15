@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { membershipSignupService } from '../../lib/services/membershipSignup.service';
-import { useLanguage } from '../hooks/useLanguage';
-import { translations } from '../translations';
+import { useLanguage } from '../../hooks/useLanguage';
+import { useTranslations } from '../../lib/useTranslations';
 
 interface LoginPageProps {
   onNavigate?: (page: string) => void;

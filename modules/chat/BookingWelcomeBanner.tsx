@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Clock, Sparkles, User, MapPin, CreditCard, Calendar, Tag } from 'lucide-react';
-import { formatPrice } from '../utils/chatHelpers';
+import { formatPrice } from './utils/chatHelpers';
 
 interface BookingBannerProps {
   currentBooking: {
