@@ -75,7 +75,8 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     coordinates: null as { lat: number; lng: number } | null,
     serviceVenueType: 'home' as 'home' | 'villa' | 'hotel',
     manualAddress1: '',
-    manualAddress2: ''
+    manualAddress2: '',
+    roomNumber: ''
   });
   const [gettingLocation, setGettingLocation] = useState(false);
 
