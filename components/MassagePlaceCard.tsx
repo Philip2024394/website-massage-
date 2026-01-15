@@ -392,8 +392,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
     };
 
     // Calculate display rating (same as therapist card)
-    const displayRating = place.averageRating > 0 
-        ? Number(place.averageRating.toFixed(1)) 
+    const displayRating = (place.averageRating ?? 0) > 0
+        ? Number((place.averageRating ?? 0).toFixed(1))
         : (place.staticRating || 4.8);
 
     return (
