@@ -99,6 +99,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
     }
 
     return (
+        <>
         <div className="bg-gray-50">
             {/* Header - Hidden in shared view */}
             {!isSharedView && (
@@ -302,7 +303,9 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
         {/* Floating Chat Window */}
         <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
 
+    </>
     );
 };
 
 export default TherapistProfilePage;
+

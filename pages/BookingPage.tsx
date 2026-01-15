@@ -84,6 +84,7 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
     const today = new Date().toISOString().split('T')[0];
 
     return (
+        <>
         <div className="p-4 bg-gray-50 min-h-screen">
             <header className="flex items-center mb-6">
                 <button 
@@ -195,12 +196,17 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
                 </div>
             )}
         </div>
+
         {/* Floating Chat Window */}
-        <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
+        <FloatingChatWindow userId="guest" userName="Guest User" userRole="customer" />
+        </>
 
     );
 };
 
 export default BookingPage;
+
+
+
 
 

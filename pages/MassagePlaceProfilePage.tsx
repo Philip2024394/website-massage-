@@ -140,6 +140,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     if (!place) {
         console.log('❌ MASSAGE PLACE PROFILE: No place provided!');
         return (
+            <>
             <div className="min-h-screen bg-gray-100 flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-gray-600 mb-4">Place not found</p>
@@ -151,8 +152,9 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </button>
                 </div>
             </div>
-        {/* Floating Chat Window */}
-        <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
+            {/* Floating Chat Window */}
+            <FloatingChatWindow userId={"guest"} userName={"Guest User"} userRole="customer" />
+            </>
 
         );
     }
@@ -443,6 +445,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
     // Handle missing place
     if (!place) {
         return (
+            <>
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4">Place not found</h2>
@@ -451,13 +454,15 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     </button>
                 </div>
             </div>
-        {/* Floating Chat Window */}
-        <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
+            {/* Floating Chat Window */}
+            <FloatingChatWindow userId={"guest"} userName={"Guest User"} userRole="customer" />
+            </>
 
         );
     }
 
     return (
+        <>
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
             {/* Universal Header */}
             <UniversalHeader 
@@ -595,13 +600,18 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 </div>
             </main>
         </div>
-        {/* Floating Chat Window */}
-        <FloatingChatWindow userId={'guest'} userName={'Guest User'} userRole="customer" />
-
+            {/* Floating Chat Window */}
+            <FloatingChatWindow userId={"guest"} userName={"Guest User"} userRole="customer" />
+        </>
     );
 };
 
 export default MassagePlaceProfilePage;
+
+
+
+
+
 
 
 
