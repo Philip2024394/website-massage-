@@ -382,9 +382,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     const chatRoom = activeChatRooms.find(r => r.$id === chatRoomId);
     if (!chatRoom || chatRoom.status !== 'booking-in-progress') return;
 
-    // Validate form
-    if (!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates) {
-      addNotification('error', 'Missing Information', 'Please fill in all required fields and set your location');
+    // Validate form - coordinates captured silently
+    if (!bookingFormData.customerName || !bookingFormData.customerWhatsApp) {
+      addNotification(''error'', ''Missing Information'', ''Please fill in all required fields'');
       return;
     }
 
@@ -443,9 +443,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
         scheduledTime: new Date().toISOString(),
         customerName: bookingFormData.customerName,
         customerWhatsApp: formattedWhatsApp,
-        customerLocation: bookingFormData.location,
-        customerLatitude: bookingFormData.coordinates.lat,
-        customerLongitude: bookingFormData.coordinates.lng,          serviceVenueType: bookingFormData.serviceVenueType,
+        customerLocation: bookingFormData.location || 'Location not provided',
+        customerLatitude: bookingFormData.coordinates?.lat || 0,
+        customerLongitude: bookingFormData.coordinates?.lng || 0,          serviceVenueType: bookingFormData.serviceVenueType,
           manualAddress1: bookingFormData.manualAddress1,
           manualAddress2: bookingFormData.manualAddress2,
           fullAddress: `${bookingFormData.manualAddress1}${bookingFormData.manualAddress2 ? ', ' + bookingFormData.manualAddress2 : ''}`,        bookingType: 'immediate',
@@ -814,40 +814,33 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                         placeholder="e.g., Seminyak, Badung 80361"
                       />
                     </div>
-                      <div className="hidden">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Your Location
-                        </label>
-                        <button
-                          type="button"
-                          onClick={handleGetLocation}
-                          disabled={gettingLocation}
-                          className={`w-full px-4 py-3 rounded-lg border-2 font-medium transition-all flex items-center justify-center gap-2 ${
-                            bookingFormData.coordinates
-                              ? 'border-orange-500 bg-orange-500 text-white'
-                              : 'border-gray-300 bg-gray-50 text-gray-600 hover:bg-gray-100'
-                          } ${gettingLocation ? 'opacity-50 cursor-wait' : ''}`}
-                        >
-                          <span>
-                            {gettingLocation
-                              ? 'Getting Location...'
-                              : bookingFormData.coordinates
-                              ? '✓ Location Set'
-                              : 'Set My Location'}
-                          </span>
-                        </button>
-                          <p className="text-xs text-gray-500 mt-1">🌍 Location automatically detected for spam verification (Facebook-style)</p>
-                      </div>
-                    </div>
+                      
 
                     {/* Confirm Button */}
                     <button
-                      onClick={() => handleConfirmBooking(chatRoom.$id)}
-                        disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || !bookingFormData.coordinates || (!bookingFormData.manualAddress1 && !bookingFormData.manualAddress2)}
+                      onClick={async () => {
+                        // Silently capture GPS before booking
+                        if (!bookingFormData.coordinates && navigator.geolocation) {
+                          setGettingLocation(true);
+                          await new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+                                setBookingFormData(prev => ({ ...prev, coordinates: coords, location: GPS: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)} }));
+                                setGettingLocation(false);
+                                resolve();
+                              },
+                              () => { setGettingLocation(false); resolve(); },
+                              { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+                            );
+                          });
+                        }
+                        handleConfirmBooking(chatRoom.$id);
+                      }}
+                        disabled={!bookingFormData.customerName || !bookingFormData.customerWhatsApp || (!bookingFormData.manualAddress1 && !bookingFormData.manualAddress2)}
                       className="w-full mt-4 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors"
                     >
-                      Confirm Booking
-                    </button>
+                      {gettingLocation ? 'Getting Location...' : 'Confirm Booking'}</button>
                   </div>
                 )}
 
