@@ -262,33 +262,26 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
                 console.log('📊 Rating:', fetchedTherapist.rating);
                 console.log('💰 Pricing:', fetchedTherapist.pricing);
+                // 🔷 OFFICIAL INDASTREET MASSAGE IMAGES - Use these for all shared profiles
+                const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
+                const OFFICIAL_MAIN_IMAGE = 'https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082';
+                
                 console.log('🔍 RAW mainImage from DB:', (fetchedTherapist as any).mainImage);
                 console.log('🔍 Is SVG placeholder?:', String((fetchedTherapist as any).mainImage || '').startsWith('data:image/svg+xml'));
                 
-                // ⚠️ FIX: Check if mainImage is SVG placeholder and replace it
-                if ((fetchedTherapist as any).mainImage && String((fetchedTherapist as any).mainImage).startsWith('data:image/svg+xml')) {
-                    console.error('❌ [SVG PLACEHOLDER IN DATABASE] Replacing with ImageKit image');
-                    (fetchedTherapist as any).mainImage = null; // Clear the SVG placeholder
-                }
+                // ⚠️ FIX: Always use official main image for all shared profiles
+                console.log('🔷 [OFFICIAL MAIN IMAGE] Using garden forest image for all shared profiles');
+                (fetchedTherapist as any).mainImage = OFFICIAL_MAIN_IMAGE;
                 
-                // ✅ READ ONLY heroImageUrl from database (no derivation, no fallbacks)
-                const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
+                // ✅ Use official InDaStreet Massage logo for all shared profiles
                 const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
                 
-                if (!heroImageUrl || heroImageUrl === '') {
-                    console.error('❌ [MISSING HERO IMAGE] heroImageUrl is null or empty in database');
-                    console.error('   Home page must load first to persist heroImageUrl');
-                    console.error('   Using ImageKit fallback temporarily');
-                    // Use ImageKit fallback instead of placeholder
-                    const fallbackImage = getHeroImageForTherapist(fetchedTherapist.$id, fetchedTherapist.location || 'Yogyakarta');
-                    (fetchedTherapist as any).heroImageUrl = fallbackImage;
-                    (fetchedTherapist as any).mainImage = fallbackImage;
-                    console.log('🔄 [FALLBACK] Using ImageKit hero image:', fallbackImage);
+                if (!heroImageUrl || heroImageUrl === '' || String(heroImageUrl).startsWith('data:image/svg+xml')) {
+                    console.log('🔷 [OFFICIAL LOGO] Using InDaStreet Massage branded hero image');
+                    (fetchedTherapist as any).heroImageUrl = OFFICIAL_HERO_IMAGE;
                 } else {
                     console.log('✅ [HERO IMAGE EXISTS] Using heroImageUrl from database:', heroImageUrl);
-                    // Set both heroImageUrl and mainImage to the same value for consistency
                     (fetchedTherapist as any).heroImageUrl = heroImageUrl;
-                    (fetchedTherapist as any).mainImage = heroImageUrl;
                 }
                 
                 console.log('�📥'.repeat(40) + '\n');

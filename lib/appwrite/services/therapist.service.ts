@@ -155,28 +155,13 @@ export const therapistService = {
             
             // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
-                // ✅ ONE-TIME PERSISTENCE: Save heroImageUrl to database if missing
+                // ⚠️ DISABLED: Persistence logic causes mass 400 errors and rate limiting
+                // Images are now set directly in SharedTherapistProfile.tsx with official URLs
                 let assignedHeroImageUrl = therapist.heroImageUrl;
                 
                 if (!assignedHeroImageUrl || assignedHeroImageUrl === '') {
-                    // Compute image URL using array index (consistent assignment)
+                    // Compute for display only (not persisted)
                     assignedHeroImageUrl = getNonRepeatingMainImage(index);
-                    
-                    // Save to database (runs ONCE per therapist)
-                    console.log(`💾 [HERO IMAGE PERSISTED] ${therapist.$id} → ${assignedHeroImageUrl}`);
-                    databases.updateDocument(
-                        APPWRITE_CONFIG.databaseId,
-                        APPWRITE_CONFIG.collections.therapists,
-                        therapist.$id,
-                        { 
-                            heroImageUrl: assignedHeroImageUrl,
-                            mainImage: assignedHeroImageUrl // Mirror for backward compatibility
-                        }
-                    ).then(() => {
-                        console.log(`✅ [PERSISTED] heroImageUrl saved for ${therapist.name}`);
-                    }).catch((err) => {
-                        console.error(`❌ [PERSIST FAILED] Could not save heroImageUrl for ${therapist.name}:`, err);
-                    });
                 } else {
                     console.log(`✅ [HERO IMAGE EXISTS] ${therapist.name} → ${assignedHeroImageUrl}`);
                 }
