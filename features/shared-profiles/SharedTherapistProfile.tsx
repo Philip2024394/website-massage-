@@ -278,9 +278,16 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     const imageIndex = Math.abs(hash) % 18; // 18 images in pool
                     const assignedImage = getNonRepeatingMainImage(imageIndex);
                     (fetchedTherapist as any).mainImage = assignedImage;
-                    console.log('✅ [IMAGE ASSIGNED] Using ID hash for consistent image:', { id: idStr, index: imageIndex, image: assignedImage });
+                    console.log('%c🖼️ [IMAGE ASSIGNED] ID-based hash', 'background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+                    console.log('ID:', idStr);
+                    console.log('Hash:', hash);
+                    console.log('Index:', imageIndex);
+                    console.log('Image URL:', assignedImage);
+                    console.log('URL Length:', assignedImage?.length || 0);
+                    console.log('URL Valid:', /^https?:\/\/.+/.test(assignedImage || ''));
                 } else {
-                    console.log('✅ [IMAGE EXISTS] Using existing mainImage from Appwrite:', (fetchedTherapist as any).mainImage);
+                    console.log('%c🖼️ [IMAGE EXISTS] From Appwrite', 'background: #2196F3; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+                    console.log('Image URL:', (fetchedTherapist as any).mainImage);
                 }
                 
                 console.log('�📥'.repeat(40) + '\n');

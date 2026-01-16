@@ -96,15 +96,16 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     const heroTitle = welcomeText.title.replace('{city}', city);
     const heroSubtitle = welcomeText.subtitle.replace(/{city}/g, city);
     
-    console.log('🖼️ [TherapistProfileBase] Hero image selection:', {
-        therapistName: therapist.name,
-        mainImage: (therapist as any).mainImage || 'NOT SET',
-        profileImage: therapist.profileImage || 'NOT SET', 
-        profilePicture: (therapist as any).profilePicture || 'NOT SET',
-        selectedHeroImage: heroImage,
-        isUsingMainImage: !!therapistMainImage,
-        fallbackUsed: !therapistMainImage
-    });
+    console.log('%c🖼️ [TherapistProfileBase] Hero Image Debug', 'background: #FF9800; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
+    console.log('Therapist:', therapist.name);
+    console.log('mainImage:', (therapist as any).mainImage || 'NOT SET');
+    console.log('profileImage:', therapist.profileImage || 'NOT SET');
+    console.log('profilePicture:', (therapist as any).profilePicture || 'NOT SET');
+    console.log('Selected heroImage:', heroImage);
+    console.log('Is using mainImage?', !!therapistMainImage);
+    console.log('Fallback used?', !therapistMainImage);
+    console.log('Hero Image URL Test:', /^https?:\/\/.+/.test(heroImage || '') ? '✅ Valid URL' : '❌ Invalid URL');
+    console.log('Hero Image Length:', heroImage?.length || 0);
 
     return (
         <div className="bg-white">

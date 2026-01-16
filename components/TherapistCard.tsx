@@ -654,13 +654,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Use therapist's mainImage or shared profile image pool (better than gray placeholders)
     const displayImage = mainImage || getRandomSharedProfileImage();
     
-    console.log('🖼️ [TherapistCard] Image selection for', therapist.name, ':', {
-        mainImage: (therapist as any).mainImage ? 'SET' : 'NOT SET',
-        mainImageValue: (therapist as any).mainImage,
-        profileImage: therapist.profileImage ? 'SET' : 'NOT SET',
-        finalDisplayImage: displayImage,
-        usingFallback: !mainImage ? 'YES (SharedProfile pool)' : 'NO'
-    });
+    console.log('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
+    console.log('Therapist:', therapist.name);
+    console.log('mainImage:', (therapist as any).mainImage || 'NOT SET');
+    console.log('mainImage Value:', (therapist as any).mainImage);
+    console.log('profileImage:', therapist.profileImage || 'NOT SET');
+    console.log('Final displayImage:', displayImage);
+    console.log('Using fallback?', !mainImage ? 'YES (SharedProfile pool)' : 'NO');
+    console.log('Display Image URL Test:', /^https?:\/\/.+/.test(displayImage || '') ? '✅ Valid URL' : '❌ Invalid URL');
+    console.log('Display Image Length:', displayImage?.length || 0);
 
     const openWhatsApp = () => {
         devLog('📱 Book Now clicked - showing booking form');
