@@ -82,9 +82,10 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
-    // 🔥 FIX: Use therapist's actual mainImage (same as TherapistCard), not generic hero image
+    // 🔥 FIX: Use therapist's actual mainImage (same as card), fallback to hero only if needed
     const therapistMainImage = (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture;
-    const heroImage = therapistMainImage || getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
+    const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
+    const heroImage = therapistMainImage || fallbackHeroImage;
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
@@ -97,11 +98,12 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     
     console.log('🖼️ [TherapistProfileBase] Hero image selection:', {
         therapistName: therapist.name,
-        mainImage: (therapist as any).mainImage ? 'SET' : 'NOT SET',
-        profileImage: therapist.profileImage ? 'SET' : 'NOT SET',
-        profilePicture: (therapist as any).profilePicture ? 'SET' : 'NOT SET',
-        finalHeroImage: heroImage,
-        usingFallback: !therapistMainImage
+        mainImage: (therapist as any).mainImage || 'NOT SET',
+        profileImage: therapist.profileImage || 'NOT SET', 
+        profilePicture: (therapist as any).profilePicture || 'NOT SET',
+        selectedHeroImage: heroImage,
+        isUsingMainImage: !!therapistMainImage,
+        fallbackUsed: !therapistMainImage
     });
 
     return (
