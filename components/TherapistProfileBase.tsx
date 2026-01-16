@@ -82,8 +82,9 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
-    // Get location-specific hero image
-    const heroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
+    // 🔥 FIX: Use therapist's actual mainImage (same as TherapistCard), not generic hero image
+    const therapistMainImage = (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture;
+    const heroImage = therapistMainImage || getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
@@ -93,6 +94,15 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     // Replace {city} placeholder with actual location
     const heroTitle = welcomeText.title.replace('{city}', city);
     const heroSubtitle = welcomeText.subtitle.replace(/{city}/g, city);
+    
+    console.log('🖼️ [TherapistProfileBase] Hero image selection:', {
+        therapistName: therapist.name,
+        mainImage: (therapist as any).mainImage ? 'SET' : 'NOT SET',
+        profileImage: therapist.profileImage ? 'SET' : 'NOT SET',
+        profilePicture: (therapist as any).profilePicture ? 'SET' : 'NOT SET',
+        finalHeroImage: heroImage,
+        usingFallback: !therapistMainImage
+    });
 
     return (
         <div className="bg-white">
