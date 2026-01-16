@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.3';
-const CACHE_NAME = `push-notifications-v2-3`;
+const SW_VERSION = '2.2.4';
+const CACHE_NAME = `push-notifications-v2-4`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -78,8 +78,21 @@ self.addEventListener('activate', (event) => {
  * FETCH EVENT HANDLER
  * Ensures preview always displays fresh content and never shows offline messages
  * Strategy: Network first, then cache, with automatic retry
+ * CRITICAL: Appwrite storage images are NEVER cached or intercepted
  */
 self.addEventListener('fetch', (event) => {
+    const url = event.request.url;
+    
+    // ✅ BYPASS: Appwrite storage images (NEVER cache or intercept)
+    if (
+        url.includes('/v1/storage/') ||
+        url.includes('syd.cloud.appwrite.io/v1/storage/') ||
+        event.request.destination === 'image'
+    ) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+    
     // In local development, do not intercept fetch; let network handle it
     try {
         const host = new URL(event.request.url).hostname;
