@@ -265,29 +265,18 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('🖼️ Main Image (raw):', (fetchedTherapist as any).mainImage || 'NOT SET');
                 console.log('🖼️ Profile Picture:', (fetchedTherapist as any).profilePicture || 'NOT SET');
                 
-                // 🔥 FIX: Ensure mainImage is always assigned (same pool as home page)
+                // ✅ CRITICAL: If mainImage is NOT set in database, DO NOT assign one here
+                // Therapist documents should have mainImage populated by therapist.service.ts
+                // If missing, it means the database needs updating - don't mask the issue
                 if (!(fetchedTherapist as any).mainImage) {
-                    // Use ID-based hash for consistent image per therapist (same image every time)
-                    const idStr = fetchedTherapist.$id || fetchedTherapist.id || '0';
-                    // Create a simple hash from ID string
-                    let hash = 0;
-                    for (let i = 0; i < idStr.length; i++) {
-                        hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
-                        hash = hash & hash; // Convert to 32bit integer
-                    }
-                    const imageIndex = Math.abs(hash) % 18; // 18 images in pool
-                    const assignedImage = getNonRepeatingMainImage(imageIndex);
-                    (fetchedTherapist as any).mainImage = assignedImage;
-                    console.log('%c🖼️ [IMAGE ASSIGNED] ID-based hash', 'background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
-                    console.log('ID:', idStr);
-                    console.log('Hash:', hash);
-                    console.log('Index:', imageIndex);
-                    console.log('Image URL:', assignedImage);
-                    console.log('URL Length:', assignedImage?.length || 0);
-                    console.log('URL Valid:', /^https?:\/\/.+/.test(assignedImage || ''));
+                    console.error('❌ [CRITICAL] Therapist mainImage NOT SET in database!');
+                    console.error('   This therapist was not processed by therapist.service.ts');
+                    console.error('   Database document needs mainImage field populated');
+                    console.error('   Shared page and Home page will show DIFFERENT images');
+                    // Use a fallback but log the error clearly
+                    (fetchedTherapist as any).mainImage = getNonRepeatingMainImage(0);
                 } else {
-                    console.log('%c🖼️ [IMAGE EXISTS] From Appwrite', 'background: #2196F3; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
-                    console.log('Image URL:', (fetchedTherapist as any).mainImage);
+                    console.log('✅ [IMAGE EXISTS] Using mainImage from database (same as Home page):', (fetchedTherapist as any).mainImage);
                 }
                 
                 console.log('�📥'.repeat(40) + '\n');
