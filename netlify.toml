@@ -12,17 +12,6 @@
   NETLIFY_BUILD_DEBUG = "true"
   VITE_APP_NAME = "IndaStreet"
 
-# 🔥 CRITICAL: Prerender for Facebook/WhatsApp/Social Media crawlers
-# This generates static HTML so Facebook can read meta tags
-[[plugins]]
-  package = "@netlify/plugin-prerender"
-  [plugins.inputs]
-    # List of routes to prerender for social media
-    routes = [
-      "/",
-      "/#/therapist-profile/*"
-    ]
-
 # 🤖 EDGE FUNCTION: Meta tag injection for social media bots
 [[edge_functions]]
   path = "/#/therapist-profile/*"
