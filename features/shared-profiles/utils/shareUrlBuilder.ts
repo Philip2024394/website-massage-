@@ -42,8 +42,8 @@ export function generateTherapistShareURL(therapist: Therapist): string {
     }
     
     if (SHARE_URL_FORMAT === 'standard') {
-        // Standard profile route for sharing
-        return `${LIVE_SITE_URL}/therapist-profile/${id}`;
+        // Standard profile route for sharing (HashRouter format)
+        return `${LIVE_SITE_URL}/#/therapist-profile/${id}`;
     }
 
     // Default to SEO format: keyword-rich slug + ID

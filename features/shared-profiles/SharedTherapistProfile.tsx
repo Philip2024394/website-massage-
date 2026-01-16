@@ -112,6 +112,29 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
     });
     console.log('🧩'.repeat(40) + '\n');
     
+    // 🔷 OFFICIAL INDASTREET MASSAGE IMAGES - Use these for all shared profiles
+    const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
+    const OFFICIAL_MAIN_IMAGE = 'https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082';
+    
+    /**
+     * Apply official branded images to any therapist object
+     * This ensures consistent branding across all shared profiles
+     */
+    const applyOfficialImages = (therapist: any): any => {
+        const heroImageUrl = therapist.heroImageUrl;
+        const shouldUseOfficialHero = !heroImageUrl || heroImageUrl === '' || String(heroImageUrl).startsWith('data:image/svg+xml');
+        
+        console.log('🔷 [OFFICIAL IMAGES] Applying to therapist:', therapist.name);
+        console.log('   Main: Official Garden Forest (always)');
+        console.log('   Hero:', shouldUseOfficialHero ? 'Official Logo' : 'Database value');
+        
+        return {
+            ...therapist,
+            mainImage: OFFICIAL_MAIN_IMAGE,
+            heroImageUrl: shouldUseOfficialHero ? OFFICIAL_HERO_IMAGE : heroImageUrl
+        };
+    };
+    
     const [therapist, setTherapist] = useState<Therapist | null>(selectedTherapist || null);
     const [loading, setLoading] = useState(!selectedTherapist);
     const [error, setError] = useState<string | null>(null);
@@ -154,7 +177,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                     console.log('🔄 Skipping Appwrite fetch - using unified data');
                     console.log('🔄'.repeat(40) + '\n');
                     
-                    setTherapist(existingTherapist);
+                    setTherapist(applyOfficialImages(existingTherapist));
                     setLoading(false);
                     // Clear stored ID
                     sessionStorage.removeItem('direct_therapist_id');
@@ -170,7 +193,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('⚡ ID:', selectedTherapist.$id as string);
                 console.log('⚡ Skipping Appwrite fetch');
                 console.log('⚡'.repeat(40) + '\n');
-                setTherapist(selectedTherapist);
+                setTherapist(applyOfficialImages(selectedTherapist));
                 setLoading(false);
                 return;
             }
@@ -262,32 +285,9 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
                 console.log('📊 Rating:', fetchedTherapist.rating);
                 console.log('💰 Pricing:', fetchedTherapist.pricing);
-                // 🔷 OFFICIAL INDASTREET MASSAGE IMAGES - Use these for all shared profiles
-                const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
-                const OFFICIAL_MAIN_IMAGE = 'https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082';
                 
-                console.log('🔍 RAW mainImage from DB:', (fetchedTherapist as any).mainImage);
-                console.log('🔍 Is SVG placeholder?:', String((fetchedTherapist as any).mainImage || '').startsWith('data:image/svg+xml'));
-                
-                // ⚠️ FIX: Always use official main image for all shared profiles
-                console.log('🔷 [OFFICIAL MAIN IMAGE] Using garden forest image for all shared profiles');
-                (fetchedTherapist as any).mainImage = OFFICIAL_MAIN_IMAGE;
-                
-                // ✅ Use official InDaStreet Massage logo for all shared profiles
-                const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
-                
-                if (!heroImageUrl || heroImageUrl === '' || String(heroImageUrl).startsWith('data:image/svg+xml')) {
-                    console.log('🔷 [OFFICIAL LOGO] Using InDaStreet Massage branded hero image');
-                    (fetchedTherapist as any).heroImageUrl = OFFICIAL_HERO_IMAGE;
-                } else {
-                    console.log('✅ [HERO IMAGE EXISTS] Using heroImageUrl from database:', heroImageUrl);
-                    (fetchedTherapist as any).heroImageUrl = heroImageUrl;
-                }
-                
-                console.log('�📥'.repeat(40) + '\n');
-                
-                console.log('⏳ [STATE UPDATE] Setting therapist state with fetched data');
-                setTherapist(fetchedTherapist);
+                console.log('⏳ [STATE UPDATE] Setting therapist state with official images');
+                setTherapist(applyOfficialImages(fetchedTherapist));
 
                 // Track share analytics for profile view with chain tracking
                 try {

@@ -16,7 +16,7 @@
  */
 export function getPublicProfileUrl(memberId: string): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${origin}/therapist-profile/${memberId}`;
+  return `${origin}/#/therapist-profile/${memberId}`;
 }
 
 /**
@@ -27,8 +27,8 @@ export function getPublicProfileUrl(memberId: string): string {
 export function navigateToPublicProfile(memberId: string, setPage: (page: string) => void): void {
   console.log('🔗 Navigating to public profile:', memberId);
   setPage(`therapist-profile`);
-  // Note: The actual ID is passed via URL, not page state
-  window.history.pushState({}, '', `/therapist-profile/${memberId}`);
+  // Note: The actual ID is passed via URL, not page state (HashRouter format)
+  window.history.pushState({}, '', `/#/therapist-profile/${memberId}`);
 }
 
 /**

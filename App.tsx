@@ -392,7 +392,17 @@ const App = () => {
     // Detect direct path navigation for accept-booking links and membership page
     useEffect(() => {
         try {
-            const path = window.location.pathname || '';
+            // 🔥 CRITICAL FIX: Parse hash for hash URLs (/#/path)
+            // For /#/therapist-profile/123, pathname = "/" and hash = "#/therapist-profile/123"
+            let path = window.location.pathname || '';
+            const hash = window.location.hash || '';
+            
+            // If hash starts with #/, use hash as the path
+            if (hash.startsWith('#/')) {
+                path = hash.substring(1); // Remove # to get /therapist-profile/123
+                console.log('🔗 [HASH URL] Parsed path from hash:', path);
+            }
+            
             if (path.startsWith('/accept-booking/')) {
                 state.setPage('accept-booking');
             } else if (path === '/join' || path.startsWith('/join/')) {
@@ -400,7 +410,7 @@ const App = () => {
             } else if (path.startsWith('/therapist-profile/')) {
                 // Handle direct shared therapist profile URL (production links)
                 console.log('🔗 Direct therapist profile path detected:', path);
-                const match = path.match(/\/therapist-profile\/(\d+)-/);
+                const match = path.match(/\/therapist-profile\/([a-z0-9]+)-/);
                 if (match) {
                     const therapistId = match[1];
                     console.log('   Extracted therapist ID:', therapistId);
@@ -468,6 +478,32 @@ const App = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.therapists, state.places]);
+
+    // 🔥 CRITICAL: Listen for hash changes for SPA navigation
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash || '';
+            console.log('🔄 [HASH CHANGE] Hash changed to:', hash);
+            
+            if (hash.startsWith('#/')) {
+                const path = hash.substring(1); // Remove # to get /therapist-profile/123
+                console.log('🔗 [HASH CHANGE] Parsed path:', path);
+                
+                if (path.startsWith('/therapist-profile/')) {
+                    const match = path.match(/\/therapist-profile\/([a-z0-9]+)-/);
+                    if (match) {
+                        const therapistId = match[1];
+                        console.log('✅ [HASH CHANGE] Setting page to shared-therapist-profile, ID:', therapistId);
+                        state.setPage('shared-therapist-profile');
+                        sessionStorage.setItem('direct_therapist_id', therapistId);
+                    }
+                }
+            }
+        };
+        
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, [state.setPage]);
 
     // Navigate to deep-linked profile once data is available (requires state)
     useEffect(() => {

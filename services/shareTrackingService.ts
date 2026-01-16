@@ -355,6 +355,7 @@ class ShareTrackingService {
 
     /**
      * Generate trackable URL with sharing chain data
+     * 🔥 CRITICAL: Uses HashRouter format (/#/) for proper routing
      */
     generateTrackableUrl(
         memberType: 'therapist' | 'place' | 'facial',
@@ -364,7 +365,8 @@ class ShareTrackingService {
         parentShareChain?: ShareChainData
     ): string {
         const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com';
-        const profilePath = `/shared-${memberType}/${memberId}`;
+        // 🔥 CRITICAL FIX: Use /therapist-profile/ path with hash for HashRouter compatibility
+        const profilePath = `/#/therapist-profile/${memberId}`;
         
         // Generate unique share ID
         const shareId = `sh_${Date.now()}_${Math.random().toString(36).substring(2)}`;

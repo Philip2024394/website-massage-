@@ -199,7 +199,7 @@ export function generateShareableURL(
     const slug = generateTherapistSlug(therapist);
     const therapistId = (therapist as any).id ?? (therapist as any).$id ?? '';
     const pathSegment = therapistId ? `${therapistId}-${slug}` : slug;
-    return `${origin}/therapist-profile/${pathSegment}`;
+    return `${origin}/#/therapist-profile/${pathSegment}`;
 }
 
 /**
