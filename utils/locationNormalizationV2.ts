@@ -363,7 +363,7 @@ export function smokeTestLocationSystem(): boolean {
   // Test 2: normalizeLocationForSave
   try {
     const normalized = normalizeLocationForSave('Yogyakarta');
-    if (normalized.location_id === 'yogyakarta' && normalized.location === 'Yogyakarta') {
+    if (normalized.locationId === 'yogyakarta' && normalized.location === 'Yogyakarta') {
       passed++;
     } else {
       console.error('❌ normalizeLocationForSave failed');

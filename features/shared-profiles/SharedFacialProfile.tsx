@@ -11,6 +11,7 @@ import SocialMediaLinks from '../../components/SocialMediaLinks';
 import type { Place, UserLocation } from '../../types';
 import { generateFacialShareURL, generateShareText } from './utils/shareUrlBuilder';
 import { analyticsService } from '../../services/analyticsService';
+import { shareTrackingService } from '../../services/shareTrackingService';
 
 interface SharedFacialProfileProps {
     facialPlaces: Place[];
@@ -54,6 +55,50 @@ export const SharedFacialProfile: React.FC<SharedFacialProfileProps> = ({
                 Number(providerId),
                 sessionId
             ).catch(err => console.log('Analytics tracking skipped:', err));
+            
+            // Track share analytics for facial profile view with chain tracking
+            try {
+                console.log('📊 [SHARE TRACKING] Tracking facial profile view with chain tracking');
+                
+                // Parse sharing chain data from URL
+                const shareChain = shareTrackingService.parseShareChainFromUrl();
+                
+                // Detect if this is from a shared link based on referrer, URL params, or chain data
+                const isFromShare = shareChain ||
+                                   document.referrer.includes('wa.me') || 
+                                   document.referrer.includes('facebook.com') || 
+                                   document.referrer.includes('t.me') || 
+                                   document.referrer.includes('twitter.com') ||
+                                   window.location.pathname.includes('/share/') ||
+                                   window.location.hash.includes('shared=true') ||
+                                   window.location.search.includes('si=');
+                
+                if (isFromShare || window.location.search.includes('shared=1')) {
+                    console.log('📊 Facial shared link view detected - tracking analytics with chain data');
+                    console.log('🔗 Share chain data:', shareChain);
+                    
+                    // Use chain tracking method
+                    shareTrackingService.trackSharedProfileViewWithChain({
+                        memberId: place.$id,
+                        memberName: place.name || 'Unknown Facial Place',
+                        memberType: 'facial',
+                        shareChain,
+                        metadata: {
+                            referrer: document.referrer,
+                            url: window.location.href,
+                            timestamp: new Date().toISOString(),
+                            chainDepth: shareChain?.shareDepth || 0,
+                            originalSharer: shareChain?.originalSharerUserId
+                        }
+                    }).catch(err => console.warn('⚠️ Facial share tracking failed:', err));
+                    
+                    console.log('✅ [SHARE TRACKING] Facial profile view with chain tracked successfully');
+                } else {
+                    console.log('📊 Direct facial visit detected - not tracking as shared view');
+                }
+            } catch (shareTrackingError) {
+                console.warn('⚠️ [SHARE TRACKING] Failed to track facial view:', shareTrackingError);
+            }
         }
     }, [place, providerId]);
 

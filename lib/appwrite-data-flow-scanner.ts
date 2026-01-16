@@ -66,7 +66,7 @@ export class AppwriteDataFlowScanner {
         } catch (error: unknown) {
             console.error('❌ [APPWRITE SCANNER] Connection failed:', error);
             results.connectionStatus = 'failed';
-            results.errors.push((error as Error as any as any as any as any as any).message);
+            results.errors.push((error as Error).message);
             return results;
         }
     }

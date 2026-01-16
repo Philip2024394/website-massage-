@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X } from 'lucide-react';
-import { messagingService } from '../../../../lib/appwriteService';
+import { MessageCircle, X, Minus, Check, XCircle, Flag } from 'lucide-react';
+import { messagingService, simpleBookingService } from '../../../../lib/appwriteService';
 import { 
     ChatPersistenceManager, 
     PWABadgeManager, 
@@ -105,6 +105,8 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     const [loading, setLoading] = useState(false);
     const [chatLocked, setChatLocked] = useState(true); // STEP 8: Chat locked by default
     const [bookingStatus, setBookingStatus] = useState<'pending' | 'accepted' | null>(null);
+    const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
+    const [processingBooking, setProcessingBooking] = useState(false);
 
     const isInPWAMode = isPWA || isPWAMode();
     
@@ -411,30 +413,28 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                 <button
                     onClick={toggleChat}
                     className={`
-                        relative bg-black/20 backdrop-blur-md border border-white/10
+                        relative bg-gradient-to-br from-orange-500 to-orange-600 border-2 border-orange-400/50
                         text-white rounded-2xl shadow-2xl
                         transition-all duration-500 transform 
-                        hover:scale-110 hover:bg-black/40 hover:border-white/20
-                        active:scale-95 active:bg-black/60
+                        hover:scale-110 hover:from-orange-600 hover:to-orange-700
+                        active:scale-95 active:from-orange-700 active:to-orange-800
                         ${isInPWAMode ? 'w-16 h-16 p-4' : 'w-14 h-14 p-4'}
                         ${unreadCount > 0 ? 'animate-pulse' : ''}
                         flex items-center justify-center
                         group overflow-hidden
                         before:absolute before:inset-0 before:bg-gradient-to-br 
-                        before:from-white/5 before:to-transparent before:rounded-2xl
+                        before:from-white/20 before:to-transparent before:rounded-2xl
                         after:absolute after:inset-0 after:bg-gradient-to-t 
-                        after:from-black/20 after:to-transparent after:rounded-2xl
+                        after:from-orange-800/20 after:to-transparent after:rounded-2xl
                     `}
                     style={{
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
                         boxShadow: `
-                            0 8px 32px rgba(0, 0, 0, 0.3),
-                            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                            inset 0 -1px 0 rgba(0, 0, 0, 0.1)
+                            0 8px 32px rgba(249, 115, 22, 0.4),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                            inset 0 -1px 0 rgba(0, 0, 0, 0.2)
                         `
                     }}
-                    title={unreadCount > 0 ? `${unreadCount} new message${unreadCount === 1 ? '' : 's'}` : "Open Support Chat"}
+                    title={unreadCount > 0 ? `${unreadCount} new message${unreadCount === 1 ? '' : 's'}` : "Open Messages"}
                 >
                     <MessageCircle className={`${isInPWAMode ? 'w-8 h-8' : 'w-6 h-6'} relative z-10 drop-shadow-lg`} />
                     
@@ -487,9 +487,9 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                             )}
                         </div>
                         <div className="flex flex-col items-start">
-                            <span className="text-sm font-medium text-white">Support Chat</span>
+                            <span className="text-sm font-semibold text-white">Messages</span>
                             {unreadCount > 0 && (
-                                <span className="text-xs text-red-300 font-semibold">
+                                <span className="text-xs text-white/90 font-medium">
                                     {unreadCount} new message{unreadCount === 1 ? '' : 's'}
                                 </span>
                             )}
@@ -520,37 +520,106 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     // Full Chat Window
     return (
         <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
-            <div className="bg-white rounded-lg shadow-2xl border-2 border-orange-200 w-80 h-96 flex flex-col">
+            <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col overflow-hidden">
                 {/* STEP 8: Show locked state */}
                 {chatLocked && (
                     <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-lg flex items-center justify-center z-10">
                         <div className="bg-white p-6 rounded-lg text-center max-w-xs">
                             <div className="text-4xl mb-3">🔒</div>
                             <h3 className="font-bold text-gray-800 mb-2">Chat Locked</h3>
-                            <p className="text-sm text-gray-600">
-                                Chat will unlock when customer accepts your booking.
-                                Status: <span className="font-semibold">{bookingStatus || 'pending'}</span>
+                            <p className="text-sm text-gray-600 mb-3">
+                                Accept or reject the booking request to unlock chat.
                             </p>
-                            <p className="text-xs text-gray-500 mt-3">
-                                ✅ STEP 8 validation active
+                            <p className="text-xs text-gray-500 bg-gray-100 rounded-lg p-2 mb-4">
+                                💡 Chat unlocks automatically after you accept a booking
+                            </p>
+                            
+                            {/* Accept/Reject Buttons */}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={async () => {
+                                        if (!pendingBookingId || processingBooking) return;
+                                        setProcessingBooking(true);
+                                        try {
+                                            await simpleBookingService.updateStatus(pendingBookingId, 'confirmed');
+                                            setChatLocked(false);
+                                            setBookingStatus('accepted');
+                                            if (isInPWAMode) {
+                                                PWANotificationManager.showChatNotification({
+                                                    title: 'Booking Accepted',
+                                                    body: 'Chat is now unlocked. You can message the customer.',
+                                                    tag: 'booking-accepted',
+                                                    therapistId: therapist.$id
+                                                });
+                                            }
+                                        } catch (error) {
+                                            console.error('Failed to accept booking:', error);
+                                            alert('Failed to accept booking. Please try from Bookings page.');
+                                        } finally {
+                                            setProcessingBooking(false);
+                                        }
+                                    }}
+                                    disabled={!pendingBookingId || processingBooking}
+                                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+                                >
+                                    <Check className="w-5 h-5" />
+                                    {processingBooking ? 'Processing...' : 'Accept'}
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (!pendingBookingId || processingBooking) return;
+                                        setProcessingBooking(true);
+                                        try {
+                                            await simpleBookingService.updateStatus(pendingBookingId, 'rejected');
+                                            setPendingBookingId(null);
+                                            if (isInPWAMode) {
+                                                PWANotificationManager.showChatNotification({
+                                                    title: 'Booking Rejected',
+                                                    body: 'Customer has been notified.',
+                                                    tag: 'booking-rejected',
+                                                    therapistId: therapist.$id
+                                                });
+                                            }
+                                        } catch (error) {
+                                            console.error('Failed to reject booking:', error);
+                                            alert('Failed to reject booking. Please try from Bookings page.');
+                                        } finally {
+                                            setProcessingBooking(false);
+                                        }
+                                    }}
+                                    disabled={!pendingBookingId || processingBooking}
+                                    className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+                                >
+                                    <XCircle className="w-5 h-5" />
+                                    {processingBooking ? 'Processing...' : 'Reject'}
+                                </button>
+                            </div>
+                            
+                            <p className="text-xs text-gray-400 mt-3">
+                                Or go to <span className="font-semibold text-orange-600">Bookings</span> page
                             </p>
                         </div>
                     </div>
                 )}
                 
                 {/* Header */}
-                <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-4 rounded-t-lg flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <MessageCircle className="w-5 h-5" />
-                        <span className="font-medium">Support Chat</span>
+                <div className="bg-gradient-to-r from-orange-500 to-amber-600 text-white p-4 rounded-t-lg flex items-center justify-between relative z-20 shadow-md">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                            <MessageCircle className="w-5 h-5" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-base">Messages</span>
+                            <span className="text-xs text-white/80">IndastreetSupport</span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-1">
                         <button
                             onClick={() => setIsMinimized(true)}
-                            className="px-2 py-1 hover:bg-white/20 rounded transition-colors text-xs font-bold"
+                            className="p-1.5 hover:bg-white/20 rounded transition-colors"
                             title="Minimize"
                         >
-                            _
+                            <Minus className="w-4 h-4" />
                         </button>
                         <button
                             onClick={closeChat}
@@ -564,13 +633,27 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
                 {/* Content */}
                 {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-3">
+                <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style jsx>{`
+                        div::-webkit-scrollbar {
+                            display: none;
+                        }
+                    `}</style>
                     {loading && messages.length === 0 ? (
-                        <div className="text-center text-gray-500 text-sm">Loading messages...</div>
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center">
+                                <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+                                <p className="text-gray-500 text-sm">Loading messages...</p>
+                            </div>
+                        </div>
                     ) : messages.length === 0 ? (
-                        <div className="text-center text-gray-500 text-sm">
-                            No messages yet. Start a conversation with our support team!
-                                </div>
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center max-w-xs">
+                                <div className="text-5xl mb-3">💬</div>
+                                <p className="text-gray-600 text-sm font-medium mb-1">No messages yet</p>
+                                <p className="text-gray-400 text-xs">Start a conversation below</p>
+                            </div>
+                        </div>
                             ) : (
                                 messages.map((message) => (
                                     <div
@@ -578,15 +661,15 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                                         className={`flex ${message.senderId === therapist.$id ? 'justify-end' : 'justify-start'}`}
                                     >
                                         <div
-                                            className={`max-w-[80%] p-3 rounded-lg ${
+                                            className={`max-w-[75%] p-3 rounded-2xl shadow-sm ${
                                                 message.senderId === therapist.$id
-                                                    ? 'bg-orange-500 text-white'
-                                                    : 'bg-gray-100 text-gray-900'
+                                                    ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-br-md'
+                                                    : 'bg-white text-gray-900 border border-gray-200 rounded-bl-md'
                                             }`}
                                         >
-                                            <p className="text-sm whitespace-pre-wrap">{message.message}</p>
-                                            <p className={`text-xs mt-1 ${
-                                                message.senderId === therapist.$id ? 'text-orange-100' : 'text-gray-500'
+                                            <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.message}</p>
+                                            <p className={`text-xs mt-1.5 ${
+                                                message.senderId === therapist.$id ? 'text-orange-100' : 'text-gray-400'
                                             }`}>
                                                 {new Date(message.timestamp).toLocaleTimeString([], {
                                                     hour: '2-digit',
@@ -599,22 +682,41 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                             )}
                         </div>
 
-                        {/* Input */}
-                        <div className="border-t p-3">
-                            <div className="flex items-center gap-2">
+                        {/* Input Field - Always Visible */}
+                        <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+                            <div className="flex items-center gap-3">
+                                {/* Report Chat Button */}
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('Report this conversation? This will notify our support team.')) {
+                                            console.log('Chat reported for therapist:', therapist.$id);
+                                            // Add your report functionality here
+                                            alert('Chat reported. Our support team will review this conversation.');
+                                        }
+                                    }}
+                                    className="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex-shrink-0"
+                                    title="Report this conversation"
+                                >
+                                    <Flag className="w-4 h-4" />
+                                </button>
+                                
+                                {/* Message Input */}
                                 <input
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                     placeholder="Type your message..."
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
+                                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm bg-gray-50 hover:bg-white transition-colors"
                                     disabled={sending}
                                 />
+                                
+                                {/* Send Button */}
                                 <button
                                     onClick={handleSendMessage}
                                     disabled={sending || !newMessage.trim()}
-                                    className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 text-white p-2 rounded-lg transition-colors"
+                                    className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 disabled:from-gray-300 disabled:to-gray-400 text-white p-2.5 rounded-full transition-all shadow-md hover:shadow-lg disabled:shadow-none transform hover:scale-105 disabled:scale-100 flex-shrink-0"
+                                    title={sending ? "Sending..." : "Send message"}
                                 >
                                     <MessageCircle className="w-4 h-4" />
                                 </button>

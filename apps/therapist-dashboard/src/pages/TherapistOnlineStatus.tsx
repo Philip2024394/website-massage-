@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle } from "lucide-react";
+import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge, AlertTriangle, X } from "lucide-react";
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
@@ -9,6 +9,7 @@ import { EnhancedNotificationService } from "../../../../lib/enhancedNotificatio
 import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer";
 import { useLanguage } from '../../../../hooks/useLanguage';
 import { useTranslations } from '../../../../lib/useTranslations';
+import { FloatingChatWindow } from '../../../../chat/FloatingChatWindow';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -29,7 +30,7 @@ type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language: propLanguage = 'id' }) => {
   // Get language from context (takes priority over prop)
-  const { language: contextLanguage } = useLanguage();
+  const { language: contextLanguage, setLanguage } = useLanguage();
   const language = contextLanguage || propLanguage;
   
   // Get translations
@@ -96,6 +97,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   const [isIOS, setIsIOS] = useState(false);
   const [pwaEnforcementActive, setPwaEnforcementActive] = useState(false);
   const [forceReinstall, setForceReinstall] = useState(false);
+  const [showPWAInstallSection, setShowPWAInstallSection] = useState(true);
 
   // Load initial data once on mount
   useEffect(() => {
@@ -716,6 +718,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       currentPage="status" 
       onNavigate={handleNavigate}
       language={language}
+      onLanguageChange={setLanguage}
     >
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -733,6 +736,19 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 <h1 className="text-xl font-bold text-gray-900">{dict.therapistDashboard.onlineStatus}</h1>
                 <p className="text-sm text-gray-500">{dict.therapistDashboard.manageAvailability}</p>
               </div>
+              {/* Language Toggle */}
+              <button
+                onClick={() => {
+                  const newLang = language === 'id' ? 'en' : 'id';
+                  if (setLanguage) {
+                    setLanguage(newLang);
+                  }
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+              >
+                <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
+              </button>
               {isPremium && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl">
                   <Crown className="w-4 h-4 text-white" />
@@ -853,44 +869,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
                 </div>
               </div>
             </button>
-          </div>
-
-          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h4 className="font-semibold text-gray-900">{dict.therapistDashboard.advancedOnlineStatus}</h4>
-              <Crown className="w-5 h-5 text-yellow-500" />
-            </div>
-            {!isPremium ? (
-              <div className="space-y-2">
-                <div className="p-3 bg-white border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-900 font-semibold mb-1">📋 Pro Account (Current)</p>
-                  <p className="text-xs text-gray-700 mb-2">Busy status limited to 3 hours each time you set it. After 3 hours, status automatically resets to Offline and your profile loses ranking visibility.</p>
-                  <p className="text-xs text-gray-700">⚠️ Customer WhatsApp numbers are hidden to protect platform bookings. Upgrade to Premium for direct contact access.</p>
-                </div>
-                <div className="p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg">
-                  <p className="text-sm text-yellow-900 font-semibold mb-1">⭐ Premium Account (Upgrade)</p>
-                  <p className="text-xs text-yellow-900 mb-2">• <strong>Unlimited Busy status</strong> - Stay visible with high ranking as long as you want. Take breaks without losing your position.</p>
-                  <p className="text-xs text-yellow-900 mb-2">• <strong>Auto-Offline Timer</strong> - Schedule automatic offline time. Set it once and relax - your status will auto-switch at your chosen time daily.</p>
-                  <p className="text-xs text-yellow-900">• <strong>Customer WhatsApp Access</strong> - View and contact customers directly via WhatsApp from your bookings. Build relationships and get repeat business!</p>
-                </div>
-                <div className="mt-3 text-center">
-                  <button
-                    onClick={() => onNavigate?.('premium-upgrade')}
-                    className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-sm font-bold rounded-lg hover:from-yellow-500 hover:to-amber-600 transition-all shadow-sm flex items-center gap-2 mx-auto"
-                  >
-                    <Crown className="w-4 h-4" />
-                    {dict.therapistDashboard.upgradeToPremium}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="p-3 bg-green-50 border-2 border-green-400 rounded-lg">
-                <p className="text-sm text-green-900 font-semibold mb-1">⭐ Premium Account Active</p>
-                <p className="text-xs text-green-900 mb-1">• Unlimited Busy status</p>
-                <p className="text-xs text-green-900 mb-1">• Auto-Offline Timer unlocked</p>
-                <p className="text-xs text-green-900">• Customer WhatsApp access</p>
-              </div>
-            )}
           </div>
         </div>
 
@@ -1079,13 +1057,28 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         </div>
         
         {/* CRITICAL: Download App Button - Enhanced for Notification Sounds */}
-        <div className={`rounded-xl p-6 border-2 ${
+        {showPWAInstallSection && (
+        <div className={`rounded-xl p-6 border-2 relative ${
           pwaEnforcementActive 
             ? 'bg-red-50 border-red-500' 
             : isAppInstalled 
               ? 'bg-green-50 border-green-500' 
               : 'bg-orange-50 border-orange-500'
         }`}>
+          {/* Close Button - Orange X - Always visible with high contrast */}
+          <button
+                onClick={() => {
+                  setShowPWAInstallSection(false);
+                  // Allow bypass of PWA enforcement
+                  localStorage.setItem('pwa-bypass-allowed', 'true');
+                  console.log('✅ PWA installation bypass enabled');
+                }}
+            aria-label={language === 'id' ? 'Tutup' : 'Close'}
+            title={language === 'id' ? 'Tutup' : 'Close'}
+          >
+            <X className="w-6 h-6 text-white stroke-[3]" />
+          </button>
+          
           {/* Warning Banner for PWA Enforcement */}
           {pwaEnforcementActive && (
             <div className="mb-4 p-3 bg-red-100 border-2 border-red-400 rounded-xl">
@@ -1186,6 +1179,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
             </p>
           </div>
         </div>
+        )}
       </div>
     </div>
     

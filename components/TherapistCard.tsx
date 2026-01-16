@@ -907,35 +907,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 translatedDescriptionLength={translatedDescription.length}
             />
 
-            {/* Discount Notice - Shows when discount is active and not expired */}
-            {/* Discounted Prices Header */}
-            {isDiscountActive(therapist) && (
-                <div className={`text-center mb-1 px-4 ${getDynamicSpacing('mt-3', 'mt-2', 'mt-1', translatedDescription.length)}`}>
-                    <p className="text-black font-semibold text-sm flex items-center justify-center gap-1">
-                        🔥 Discounted Price's Displayed
-                    </p>
-                </div>
-            )}
 
-            <div className="text-center mb-4 mt-2">
-                <button
-                    onClick={() => {
-                        const isSharedProfile = window.location.pathname.includes('/share/');
-                        if (isSharedProfile) {
-                            // On shared profiles: navigate to mobile terms with custom context in same window
-                            const baseUrl = window.location.origin;
-                            const currentUrl = window.location.href;
-                            window.location.href = `${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}&context=sharedProfile`;
-                        } else {
-                            // On home page: go to verification standards page  
-                            onNavigate?.('verifiedProBadge');
-                        }
-                    }}
-                    className="text-sm font-medium hover:underline"
-                >
-                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
-                </button>
-            </div>
 
             <TherapistPricingGrid
                 pricing={pricing}
@@ -1117,7 +1089,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 setShowPriceListModal={setShowPriceListModal}
                 therapist={therapist}
                 displayRating={displayRating}
-                arrivalCountdown={arrivalCountdown}
+                arrivalCountdown={arrivalCountdown.toString()}
                 formatCountdown={formatCountdownDisplay}
                 menuData={menuData}
                 selectedServiceIndex={selectedServiceIndex}

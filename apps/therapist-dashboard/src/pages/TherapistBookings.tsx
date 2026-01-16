@@ -2,9 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../../../chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
-import { FloatingChatWindow } from '../../../../chat';
 import ChatWindow from '../components/ChatWindow';
 import { devLog, devWarn } from '../../../../utils/devMode';
+import TherapistSchedule from './TherapistSchedule';
+import DepositApprovalCard from '../../../../components/booking/DepositApprovalCard';
+import { pushNotificationsService } from '../../../../lib/pushNotificationsService';
 
 interface Booking {
   $id: string;
@@ -20,25 +22,130 @@ interface Booking {
   createdAt: string;
   notes?: string;
   customerId?: string;
+  isScheduled?: boolean;
+  depositRequired?: boolean;
+  depositAmount?: number;
+  depositPaid?: boolean;
+  depositStatus?: 'pending_approval' | 'approved' | 'rejected';
+  paymentProofUrl?: string;
+  paymentProofUploadedAt?: string;
+  depositNotes?: string;
 }
 
 interface TherapistBookingsProps {
   therapist: any;
   onBack: () => void;
   onNavigate?: (page: string) => void;
+  language?: 'en' | 'id';
 }
 
-const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate }) => {
+const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, language = 'id' }) => {
   const isPremium = true; // All features available for standard 30% commission plan
+  const [activeTab, setActiveTab] = useState<'bookings' | 'schedule'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'received' | 'scheduled' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [bankDetailsComplete, setBankDetailsComplete] = useState(false);
+  const [showBankDetailsAlert, setShowBankDetailsAlert] = useState(false);
+
+  // Translation labels
+  const labels = {
+    en: {
+      title: 'Bookings & Schedule',
+      subtitle: 'Manage appointments and availability',
+      bookings: 'Bookings',
+      schedule: 'My Schedule',
+      all: 'All',
+      received: 'Received',
+      scheduled: 'Scheduled', 
+      completed: 'Completed',
+      earnings: 'Earnings',
+      pendingApproval: 'Pending approval',
+      confirmedBookings: 'Confirmed bookings',
+      finishedSessions: 'Finished sessions',
+      loadingBookings: 'Loading bookings...',
+      pleaseWait: 'Please wait',
+      noBookings: 'No bookings found',
+      adjustSearch: 'Try adjusting your search',
+      searchPlaceholder: 'Search by name, service, or location',
+      date: 'Date',
+      time: 'Time',
+      service: 'Service',
+      duration: 'Duration',
+      location: 'Location',
+      customer: 'Customer',
+      phone: 'Phone',
+      price: 'Price',
+      status: 'Status',
+      notes: 'Notes',
+      minutes: 'minutes',
+      accept: 'Accept',
+      decline: 'Decline',
+      openChat: 'Open Chat',
+      pending: 'Pending',
+      confirmed: 'Confirmed',
+      cancelled: 'Cancelled',
+      scheduledBooking: 'Scheduled Booking',
+      depositRequired: '30% Deposit Required',
+      depositPaid: 'PAID',
+      depositUnpaid: 'UNPAID',
+      paymentProofUploaded: 'Payment Proof Uploaded',
+      viewProof: 'View Proof',
+      waitingPayment: 'Waiting for Customer Payment'
+    },
+    id: {
+      title: 'Booking & Jadwal',
+      subtitle: 'Kelola janji temu dan ketersediaan',
+      bookings: 'Booking',
+      schedule: 'Jadwal Saya',
+      all: 'Semua',
+      received: 'Diterima',
+      scheduled: 'Terjadwal',
+      completed: 'Selesai',
+      earnings: 'Pendapatan',
+      pendingApproval: 'Menunggu persetujuan',
+      confirmedBookings: 'Booking terkonfirmasi',
+      finishedSessions: 'Sesi selesai',
+      loadingBookings: 'Memuat booking...',
+      pleaseWait: 'Mohon tunggu',
+      noBookings: 'Tidak ada booking ditemukan',
+      adjustSearch: 'Coba sesuaikan pencarian Anda',
+      searchPlaceholder: 'Cari berdasarkan nama, layanan, atau lokasi',
+      date: 'Tanggal',
+      time: 'Waktu',
+      service: 'Layanan',
+      duration: 'Durasi',
+      location: 'Lokasi',
+      customer: 'Pelanggan',
+      phone: 'Telepon',
+      price: 'Harga',
+      status: 'Status',
+      notes: 'Catatan',
+      minutes: 'menit',
+      accept: 'Terima',
+      decline: 'Tolak',
+      openChat: 'Buka Chat',
+      pending: 'Menunggu',
+      confirmed: 'Dikonfirmasi',
+      cancelled: 'Dibatalkan',
+      scheduledBooking: 'Booking Terjadwal',
+      depositRequired: 'Butuh Deposit 30%',
+      depositPaid: 'LUNAS',
+      depositUnpaid: 'BELUM BAYAR',
+      paymentProofUploaded: 'Bukti Pembayaran Terupload',
+      viewProof: 'Lihat Bukti',
+      waitingPayment: 'Menunggu Pembayaran Pelanggan'
+    }
+  };
+
+  const currentLabels = labels[language];
 
   useEffect(() => {
     fetchBookings();
+    checkBankDetails();
     
     // Subscribe to real-time booking updates with audio notification
     let unsubscribe: (() => void) | null = null;
@@ -93,7 +200,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       // TODO: Fetch from Appwrite bookings collection
       // Filter by therapistId === therapist.$id
       
-      // Mock data for now
+      // Mock data with scheduled bookings requiring 30% deposit
       const mockBookings: Booking[] = [
         {
           $id: '1',
@@ -107,7 +214,15 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           time: '14:00',
           status: 'pending',
           createdAt: '2024-12-11T10:30:00',
-          notes: 'Prefer deep tissue pressure'
+          notes: 'Prefer deep tissue pressure',
+          isScheduled: true,
+          depositRequired: true,
+          depositAmount: 45000, // 30% of 150000
+          depositPaid: true,
+          depositStatus: 'pending_approval', // Needs therapist approval
+          paymentProofUrl: 'https://example.com/proof1.jpg',
+          paymentProofUploadedAt: '2024-12-11T11:00:00',
+          depositNotes: 'I transferred exactly 45,000 IDR via BCA mobile banking'
         },
         {
           $id: '2',
@@ -121,6 +236,13 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           time: '10:00',
           status: 'confirmed',
           createdAt: '2024-12-10T15:20:00',
+          isScheduled: true,
+          depositRequired: true,
+          depositAmount: 30000, // 30% of 100000
+          depositPaid: true,
+          depositStatus: 'approved', // Already approved
+          paymentProofUrl: 'https://example.com/proof2.jpg',
+          paymentProofUploadedAt: '2024-12-10T16:00:00'
         },
         {
           $id: '3',
@@ -134,8 +256,71 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           time: '16:00',
           status: 'completed',
           createdAt: '2024-12-09T12:00:00',
-          notes: 'Regular customer, knows the routine'
+          notes: 'Regular customer, knows the routine',
+          isScheduled: true,
+          depositRequired: true,
+          depositAmount: 60000, // 30% of 200000
+          depositPaid: true,
+          depositStatus: 'approved',
+          paymentProofUrl: 'https://example.com/proof3.jpg',
+          paymentProofUploadedAt: '2024-12-09T13:00:00'
         },
+        {
+          $id: '4',
+          customerName: 'Lisa Wong',
+          customerPhone: '+6281234567893',
+          serviceType: 'Hot Stone Massage',
+          duration: 75,
+          price: 175000,
+          location: 'Spa Resort, Villa 12',
+          date: '2024-12-17',
+          time: '15:30',
+          status: 'pending',
+          createdAt: '2024-12-12T09:15:00',
+          notes: 'First time customer',
+          isScheduled: false, // Immediate booking - no deposit required
+          depositRequired: false
+        },
+        {
+          $id: '5',
+          customerName: 'David Kim',
+          customerPhone: '+6281234567894',
+          serviceType: 'Deep Tissue Massage',
+          duration: 90,
+          price: 180000,
+          location: 'Kuta Beach Resort, Room 205',
+          date: '2024-12-18',
+          time: '19:00',
+          status: 'pending',
+          createdAt: '2024-12-12T14:20:00',
+          notes: 'Scheduled booking requiring deposit',
+          isScheduled: true,
+          depositRequired: true,
+          depositAmount: 54000, // 30% of 180000
+          depositPaid: false // No deposit yet - waiting for customer payment
+        },
+        {
+          $id: '6',
+          customerName: 'Emma Wilson',
+          customerPhone: '+6281234567895',
+          serviceType: 'Aromatherapy Massage',
+          duration: 60,
+          price: 120000,
+          location: 'Nusa Dua Hotel, Room 102',
+          date: '2024-12-19',
+          time: '11:00',
+          status: 'pending',
+          createdAt: '2024-12-12T16:45:00',
+          notes: 'Needs reupload of payment proof',
+          isScheduled: true,
+          depositRequired: true,
+          depositAmount: 36000, // 30% of 120000
+          depositPaid: true,
+          depositStatus: 'rejected',
+          paymentProofUrl: 'https://example.com/proof-blurry.jpg',
+          paymentProofUploadedAt: '2024-12-12T17:00:00',
+          depositNotes: 'Payment proof is too blurry, please upload clearer image'
+        }
       ];
       
       setBookings(mockBookings);
@@ -146,7 +331,46 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     }
   };
 
+  const checkBankDetails = async () => {
+    try {
+      // TODO: Check if therapist has complete bank details in Appwrite
+      // For now, simulate check - replace with actual API call
+      const hasCompleteBankDetails = therapist?.bankAccountNumber && 
+                                    therapist?.bankAccountName && 
+                                    therapist?.bankName;
+      
+      setBankDetailsComplete(!!hasCompleteBankDetails);
+    } catch (error) {
+      console.error('Failed to check bank details:', error);
+      setBankDetailsComplete(false);
+    }
+  };
+
   const handleAcceptBooking = async (bookingId: string) => {
+    const booking = bookings.find(b => b.$id === bookingId);
+    
+    // Check if this is a scheduled booking requiring bank details
+    if (booking?.isScheduled && !bankDetailsComplete) {
+      setShowBankDetailsAlert(true);
+      return;
+    }
+
+    // Check if scheduled booking requires deposit but not paid yet
+    if (booking?.isScheduled && booking?.depositRequired && !booking?.depositPaid) {
+      alert(language === 'en' 
+        ? 'This booking requires a 30% deposit. Customer must pay deposit before you can accept.'
+        : 'Booking ini memerlukan deposit 30%. Pelanggan harus membayar deposit sebelum Anda dapat menerima.');
+      return;
+    }
+
+    // Check if scheduled booking deposit is paid but not approved yet
+    if (booking?.isScheduled && booking?.depositRequired && booking?.depositPaid && booking?.depositStatus === 'pending_approval') {
+      alert(language === 'en' 
+        ? 'Please review and approve the deposit proof first before accepting this booking.'
+        : 'Silakan tinjau dan setujui bukti deposit terlebih dahulu sebelum menerima booking ini.');
+      return;
+    }
+
     try {
       // TODO: Update booking status to 'confirmed' in Appwrite
       devLog('Accepting booking:', bookingId);
@@ -175,6 +399,75 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       devLog('❌ Booking rejected and customer notified');
     } catch (error) {
       console.error('Failed to reject booking:', error);
+    }
+  };
+
+  const handleApproveDeposit = async (bookingId: string) => {
+    try {
+      const booking = bookings.find(b => b.$id === bookingId);
+      if (!booking) return;
+
+      // Update deposit status to approved
+      setBookings(prev => prev.map(b => 
+        b.$id === bookingId 
+          ? { ...b, depositStatus: 'approved' as const, status: 'confirmed' as const } 
+          : b
+      ));
+
+      // Send notification to customer
+      await pushNotificationsService.notifyDepositApproved(
+        therapist.name,
+        bookingId,
+        booking.depositAmount || 0
+      );
+
+      devLog('✅ Deposit approved and customer notified');
+    } catch (error) {
+      console.error('Failed to approve deposit:', error);
+    }
+  };
+
+  const handleRejectDeposit = async (bookingId: string, reason: string) => {
+    try {
+      const booking = bookings.find(b => b.$id === bookingId);
+      if (!booking) return;
+
+      // Update deposit status to rejected
+      setBookings(prev => prev.map(b => 
+        b.$id === bookingId 
+          ? { ...b, depositStatus: 'rejected' as const } 
+          : b
+      ));
+
+      // Send notification to customer
+      await pushNotificationsService.notifyDepositRejected(
+        therapist.name,
+        bookingId,
+        booking.depositAmount || 0,
+        reason
+      );
+
+      devLog('❌ Deposit rejected and customer notified');
+    } catch (error) {
+      console.error('Failed to reject deposit:', error);
+    }
+  };
+
+  const handleRequestReupload = async (bookingId: string, message: string) => {
+    try {
+      const booking = bookings.find(b => b.$id === bookingId);
+      if (!booking) return;
+
+      // Send notification to customer requesting re-upload
+      await pushNotificationsService.notifyDepositReuploadRequested(
+        therapist.name,
+        bookingId,
+        message
+      );
+
+      devLog('🔄 Re-upload requested and customer notified');
+    } catch (error) {
+      console.error('Failed to request reupload:', error);
     }
   };
 
@@ -250,8 +543,8 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-4xl mx-auto px-6 py-6">
+          <div className="flex items-center gap-4 mb-4">
             <button
               onClick={onBack}
               className="p-3 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
@@ -259,13 +552,41 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
               ←
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
-              <p className="text-sm text-gray-600">Manage your appointments and schedule</p>
+              <h1 className="text-2xl font-bold text-gray-900">{currentLabels.title}</h1>
+              <p className="text-sm text-gray-600">{currentLabels.subtitle}</p>
             </div>
+          </div>
+          
+          {/* Tab Navigation */}
+          <div className="flex gap-2 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`px-6 py-3 font-semibold transition-all relative ${
+                activeTab === 'bookings'
+                  ? 'text-orange-600 border-b-2 border-orange-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              📋 {currentLabels.bookings}
+            </button>
+            <button
+              onClick={() => setActiveTab('schedule')}
+              className={`px-6 py-3 font-semibold transition-all relative ${
+                activeTab === 'schedule'
+                  ? 'text-orange-600 border-b-2 border-orange-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              🕐 {currentLabels.schedule}
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Tab Content */}
+      {activeTab === 'schedule' ? (
+        <TherapistSchedule therapist={therapist} onBack={() => setActiveTab('bookings')} />
+      ) : (
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-6">
         {/* Stats Cards */}
@@ -275,37 +596,37 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
               <div className="p-2 bg-orange-100 rounded-lg">
                 <Clock className="w-5 h-5 text-orange-600" />
               </div>
-              <span className="text-sm font-medium text-gray-700">Received</span>
+              <span className="text-sm font-medium text-gray-700">{currentLabels.received}</span>
             </div>
             <p className="text-3xl font-black text-gray-900 mb-1">{stats.received}</p>
-            <p className="text-xs text-gray-500 font-medium">Pending approval</p>
+            <p className="text-xs text-gray-500 font-medium">{currentLabels.pendingApproval}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Scheduled</span>
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.scheduled}</span>
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                 <Calendar className="w-5 h-5 text-blue-500" />
               </div>
             </div>
             <p className="text-3xl font-black text-gray-900 mb-1">{stats.scheduled}</p>
-            <p className="text-xs text-gray-500 font-medium">Confirmed bookings</p>
+            <p className="text-xs text-gray-500 font-medium">{currentLabels.confirmedBookings}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Completed</span>
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.completed}</span>
               <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-green-500" />
               </div>
             </div>
             <p className="text-3xl font-black text-gray-900 mb-1">{stats.completed}</p>
-            <p className="text-xs text-gray-500 font-medium">Finished sessions</p>
+            <p className="text-xs text-gray-500 font-medium">{currentLabels.finishedSessions}</p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-all duration-200 hover:scale-[1.02]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Earnings</span>
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">{currentLabels.earnings}</span>
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
                 <Banknote className="w-5 h-5 text-orange-600" />
               </div>
@@ -322,17 +643,17 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
           <div className="flex flex-col gap-4">
             {/* Filter Buttons */}
             <div className="flex gap-2">
-              {['all', 'received', 'scheduled', 'completed'].map((f) => (
+              {(['all', 'received', 'scheduled', 'completed'] as const).map((f) => (
                 <button
                   key={f}
-                  onClick={() => setFilter(f as any)}
+                  onClick={() => setFilter(f)}
                   className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
                     filter === f
                       ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-200 scale-105'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
                 >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {currentLabels[f]}
                 </button>
               ))}
             </div>
@@ -344,7 +665,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by customer, service, or location..."
+                placeholder={currentLabels.searchPlaceholder}
                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-50 focus:outline-none transition-all bg-gray-50 focus:bg-white font-medium"
               />
             </div>
@@ -355,17 +676,17 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         {loading ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
             <div className="animate-spin rounded-full h-14 w-14 border-4 border-gray-100 border-t-orange-500 mx-auto mb-5"></div>
-            <p className="text-gray-700 font-semibold text-lg">Loading bookings...</p>
-            <p className="text-gray-500 text-sm mt-2">Please wait</p>
+            <p className="text-gray-700 font-semibold text-lg">{currentLabels.loadingBookings}</p>
+            <p className="text-gray-500 text-sm mt-2">{currentLabels.pleaseWait}</p>
           </div>
         ) : filteredBookings.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center">
             <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-5">
               <Calendar className="w-10 h-10 text-gray-300" />
             </div>
-            <p className="text-gray-800 font-bold text-xl mb-2">No bookings found</p>
+            <p className="text-gray-800 font-bold text-xl mb-2">{currentLabels.noBookings}</p>
             <p className="text-gray-500 font-medium">
-              {searchQuery ? 'Try adjusting your search' : 'New bookings will appear here'}
+              {searchQuery ? currentLabels.adjustSearch : 'New bookings will appear here'}
             </p>
           </div>
         ) : (
@@ -440,6 +761,97 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
                   </div>
                 )}
 
+                {/* Deposit and Payment Proof Section */}
+                {booking.isScheduled && (
+                  <div className="mb-5 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-orange-200 rounded-xl">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center">
+                        <span className="text-lg">📅</span>
+                      </div>
+                      <h4 className="font-bold text-orange-900">{currentLabels.scheduledBooking}</h4>
+                    </div>
+                    
+                    {booking.depositRequired && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-orange-200">
+                          <div>
+                            <p className="text-sm font-semibold text-orange-800">{currentLabels.depositRequired}</p>
+                            <p className="text-xs text-orange-600">Rp {booking.depositAmount?.toLocaleString('id-ID')}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            booking.depositPaid 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {booking.depositPaid ? `✅ ${currentLabels.depositPaid}` : `❌ ${currentLabels.depositUnpaid}`}
+                          </span>
+                        </div>
+
+                        {/* Payment Proof Display */}
+                        {booking.depositPaid && booking.paymentProofUrl && (
+                          <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center">
+                                <span className="text-sm">📄</span>
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-green-800">{currentLabels.paymentProofUploaded}</p>
+                                <p className="text-xs text-green-600">
+                                  {booking.paymentProofUploadedAt && 
+                                    new Date(booking.paymentProofUploadedAt).toLocaleString('id-ID')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => window.open(booking.paymentProofUrl, '_blank')}
+                                className="px-3 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                              >
+                                {currentLabels.viewProof} 👁️
+                              </button>
+                              <span className="text-xs text-green-700">
+                                {language === 'en' 
+                                  ? 'Customer paid deposit - booking ready to accept'
+                                  : 'Pelanggan sudah bayar deposit - booking siap diterima'}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Waiting for Payment */}
+                        {!booking.depositPaid && (
+                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 rounded bg-yellow-100 flex items-center justify-center">
+                                <span className="text-sm">⏳</span>
+                              </div>
+                              <p className="text-sm font-semibold text-yellow-800">{currentLabels.waitingPayment}</p>
+                            </div>
+                            <p className="text-xs text-yellow-700">
+                              {language === 'en'
+                                ? 'Customer must pay 30% deposit and upload payment proof before you can accept this booking.'
+                                : 'Pelanggan harus membayar deposit 30% dan upload bukti pembayaran sebelum Anda dapat menerima booking ini.'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Deposit Approval Card */}
+                {booking.isScheduled && 
+                 booking.depositRequired && 
+                 booking.depositPaid &&
+                 booking.depositStatus === 'pending_approval' && (
+                  <DepositApprovalCard
+                    booking={booking}
+                    onApprove={() => handleApproveDeposit(booking)}
+                    onReject={() => handleRejectDeposit(booking)}
+                    onRequestReupload={() => handleRequestReupload(booking)}
+                  />
+                )}
+
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   {booking.status === 'pending' && (
@@ -500,6 +912,44 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         )}
       </div>
 
+      {/* Bank Details Required Alert */}
+      {showBankDetailsAlert && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md mx-auto">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl">🏦</span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Bank Details Required</h3>
+              <p className="text-sm text-gray-600">
+                {language === 'en' 
+                  ? 'To accept scheduled bookings, you must complete your bank account information first.'
+                  : 'Untuk menerima booking terjadwal, Anda harus melengkapi informasi rekening bank terlebih dahulu.'
+                }
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowBankDetailsAlert(false)}
+                className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                {language === 'en' ? 'Cancel' : 'Batal'}
+              </button>
+              <button
+                onClick={() => {
+                  setShowBankDetailsAlert(false);
+                  onNavigate?.('bank-details'); // Navigate to bank details page
+                }}
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                {language === 'en' ? 'Add Bank Details' : 'Tambah Rekening'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Window */}
       {chatOpen && selectedBooking && (
         <ChatWindow
@@ -525,6 +975,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
         />
       )}
       </main>
+      )}
     </div>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />

@@ -19,8 +19,8 @@ export function getYogyakartaTherapists(): Array<{ id: string; name: string }> {
     // Try to get therapists from window context (populated by App.tsx)
     if (typeof window !== 'undefined' && (window as any).__YOGYAKARTA_THERAPISTS__) {
         cachedYogyaTherapists = (window as any).__YOGYAKARTA_THERAPISTS__;
-        console.log(`✅ Loaded ${cachedYogyaTherapists.length} Yogyakarta therapists from global context`);
-        return cachedYogyaTherapists;
+        console.log(`✅ Loaded ${cachedYogyaTherapists?.length || 0} Yogyakarta therapists from global context`);
+        return cachedYogyaTherapists || [];
     }
     
     // 🚨 CRITICAL FIX: Return empty array instead of fallback to prevent overriding real data

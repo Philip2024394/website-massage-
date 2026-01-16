@@ -28,6 +28,7 @@
     "files.exclude": {
       "**/app/apps": true,
       "**/app/packages": true
-    }
+    },
+    "i18n-ally.localesPaths": []
   }
 }

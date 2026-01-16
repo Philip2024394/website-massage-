@@ -7,7 +7,17 @@ import { lazy } from 'react';
 
 // Lazy-loaded therapist dashboard components
 const TherapistDashboard = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistDashboard'));
-const TherapistOnlineStatus = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus'));
+const TherapistOnlineStatus = lazy(() => 
+  import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus')
+    .then(module => {
+      console.log('[LAZY LOAD] TherapistOnlineStatus module loaded:', module);
+      return module;
+    })
+    .catch(err => {
+      console.error('[LAZY LOAD ERROR] TherapistOnlineStatus failed:', err);
+      throw err;
+    })
+);
 const TherapistBookings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistBookings'));
 const TherapistEarnings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistEarnings'));
 const TherapistChat = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistChat'));
@@ -21,6 +31,7 @@ const PremiumUpgrade = lazy(() => import('../../apps/therapist-dashboard/src/pag
 const CommissionPayment = lazy(() => import('../../apps/therapist-dashboard/src/pages/CommissionPayment'));
 const TherapistSchedule = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistSchedule'));
 const PackageTermsPage = lazy(() => import('../../apps/therapist-dashboard/src/pages/PackageTermsPage'));
+const SendDiscountPage = lazy(() => import('../../apps/therapist-dashboard/src/pages/SendDiscountPage'));
 
 // Placeholder component for routes under construction
 const TherapistPlaceholderPage = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistPlaceholderPage'));
@@ -114,6 +125,12 @@ export const therapistRoutes = {
     path: '/therapist/package-terms',
     component: PackageTermsPage,
     name: 'therapist-package-terms',
+    requiresAuth: true
+  },
+  sendDiscount: {
+    path: '/therapist/send-discount',
+    component: SendDiscountPage,
+    name: 'send-discount',
     requiresAuth: true
   },
   placeholder: {

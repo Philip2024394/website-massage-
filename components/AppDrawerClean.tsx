@@ -23,6 +23,9 @@ interface AppDrawerProps {
   isHome?: boolean;
   t?: any;
   language?: 'en' | 'id' | 'gb';
+  currentLanguage?: 'en' | 'id' | 'gb';
+  onLanguageChange?: (lang: string) => void;
+  onNavigate?: (page: string) => void;
   onMassageJobsClick?: () => void;
   onHotelPortalClick?: () => void;
   onVillaPortalClick?: () => void;
@@ -274,6 +277,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 <button onClick={() => handleItemClick(undefined, 'faq')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <HelpCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.faq}</span>
+                </button>
+                <button onClick={() => handleItemClick(undefined, 'verifiedProBadge')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <Sparkles className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 font-medium">Massage Therapist Standards</span>
                 </button>
                 <div className="space-y-2">
                   <button onClick={() => handleItemClick(undefined, 'simple-signup')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">

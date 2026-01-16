@@ -3,7 +3,6 @@ import { ArrowLeft } from 'lucide-react';
 import type { Therapist, Place, Booking } from '../types';
 import { FloatingChatWindow } from '../chat';
 import Button from '../components/Button';
-import { FloatingChatWindow } from '../chat';
 
 interface BookingPageProps {
     provider: Therapist | Place;
@@ -23,7 +22,7 @@ function BookingPage({ provider, providerType, onBook, onBack, bookings, t }: Bo
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
     const availableTimeSlots = useMemo(() => {
-        const slots = [];
+        const slots: string[] = [];
         const startHour = providerType === 'place' ? parseInt((provider as Place).openingTime.split(':')[0]) : 9;
         const endHour = providerType === 'place' ? parseInt((provider as Place).closingTime.split(':')[0]) : 21;
 

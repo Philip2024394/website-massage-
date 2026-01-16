@@ -594,7 +594,7 @@ const HomePage: React.FC<HomePageProps> = ({
     useEffect(() => {
         if (userLocation && userLocation.lat && userLocation.lng) {
             // First try postal code detection from address
-            let detectedCityId = null;
+            let detectedCityId: string | null = null;
             
             if (userLocation.address) {
                 detectedCityId = mapPostalCodeToCity(userLocation.address);
@@ -807,17 +807,17 @@ const HomePage: React.FC<HomePageProps> = ({
                     
                     // Get location coordinates
                     // 🔧 DEV-ONLY: Use override location if set, otherwise use real location
-                    const realCoords = 'lat' in locationToUse 
-                        ? { lat: (locationToUse || {}).lat, lng: (locationToUse || {}).lng }
+                    const realCoords = (locationToUse && 'lat' in locationToUse) 
+                        ? { lat: locationToUse.lat, lng: locationToUse.lng }
                         : autoDetectedLocation;
-                    const coords = (isDev && devLocationOverride) ? { lat: (devLocationOverride || {}).lat, lng: (devLocationOverride || {}).lng } : realCoords;
+                    const coords = (isDev && devLocationOverride) ? { lat: devLocationOverride?.lat || 0, lng: devLocationOverride?.lng || 0 } : realCoords;
 
-                    if (coords) {
+                    if (coords && coords.lat !== undefined && coords.lng !== undefined) {
                         console.log('📍 Using coordinates:', coords);
 
                         // Find ALL nearby therapists and places (25km radius) - NO status filtering for homepage
-                        const nearbyTherapistsResult = await findAllNearbyTherapists(coords, 25);
-                        const nearbyPlacesResult = await findAllNearbyPlaces(coords, 25);
+                        const nearbyTherapistsResult = await findAllNearbyTherapists(coords as { lat: number; lng: number }, 25);
+                        const nearbyPlacesResult = await findAllNearbyPlaces(coords as { lat: number; lng: number }, 25);
                         
                         console.log(`✅ Found ${nearbyTherapistsResult.length} nearby therapists within 25km`);
                         console.log(`✅ Found ${nearbyPlacesResult.length} nearby places within 25km`);
@@ -1063,7 +1063,7 @@ const HomePage: React.FC<HomePageProps> = ({
         };
         
         // Add event listener with defensive checks for React 19 concurrent rendering
-        let listenersAdded = [];
+        let listenersAdded: [string, () => void][] = [];
         try {
             if (typeof window !== 'undefined' && window.addEventListener) {
                 window.addEventListener('toggleDrawer', handleToggleDrawer);

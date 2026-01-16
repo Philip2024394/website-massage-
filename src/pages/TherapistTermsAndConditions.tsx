@@ -472,7 +472,7 @@ const TherapistTermsAndConditions: React.FC = () => {
               </tr>
               <tr>
                 <td>Repeated pattern of bypass</td>
-                <td colspan="3">Immediate permanent termination + legal action for lost revenue</td>
+                <td colSpan={3}>Immediate permanent termination + legal action for lost revenue</td>
               </tr>
             </tbody>
           </table>

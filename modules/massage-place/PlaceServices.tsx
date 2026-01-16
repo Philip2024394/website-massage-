@@ -219,26 +219,7 @@ const PlaceServices: React.FC<PlaceServicesProps> = ({
                 </div>
             )}
 
-            {/* Massage Therapist Standards Link */}
-            <div className="text-center mb-4 mt-2">
-                <button
-                    onClick={() => {
-                        const isSharedProfile = window.location.pathname.includes('/share/');
-                        if (isSharedProfile) {
-                            // On shared profiles: navigate to mobile terms with custom context in same window
-                            const baseUrl = window.location.origin;
-                            const currentUrl = window.location.href;
-                            window.location.href = `${baseUrl}/mobile-terms-and-conditions?returnTo=${encodeURIComponent(currentUrl)}&context=sharedProfile`;
-                        } else {
-                            // On home page: go to verification standards page  
-                            onNavigate?.('verifiedProBadge');
-                        }
-                    }}
-                    className="text-sm font-medium hover:underline"
-                >
-                    <span className="text-black">Massage Therapist </span><span className="text-orange-500">Standards</span>
-                </button>
-            </div>
+
 
             {/* Gallery Photo Modal */}
             {selectedGalleryPhoto && (

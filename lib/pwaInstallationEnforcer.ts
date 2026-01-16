@@ -101,11 +101,32 @@ export class PWAInstallationEnforcer {
             width: 90%;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
         `;
 
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
         content.innerHTML = `
+            <button id="pwa-modal-close-btn" style="
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: 36px;
+                height: 36px;
+                background: #f97316;
+                color: white;
+                border: 2px solid white;
+                border-radius: 50%;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                transition: all 0.2s;
+                z-index: 10;
+            " onmouseover="this.style.background='#ea580c'; this.style.transform='scale(1.1)';" onmouseout="this.style.background='#f97316'; this.style.transform='scale(1)';" title="Close">✕</button>
             <div style="font-size: 60px; margin-bottom: 20px;">📱</div>
             <h2 style="color: #f97316; margin: 0 0 16px 0; font-size: 24px; font-weight: bold;">
                 🚨 APP INSTALLATION REQUIRED
@@ -177,6 +198,15 @@ export class PWAInstallationEnforcer {
 
         modal.appendChild(content);
         document.body.appendChild(modal);
+
+        // Add close button event listener
+        const closeBtn = document.getElementById('pwa-modal-close-btn');
+        closeBtn?.addEventListener('click', () => {
+            // Enable bypass so modal doesn't reappear
+            localStorage.setItem(this.BYPASS_KEY, 'true');
+            console.log('✅ PWA installation modal closed - bypass enabled');
+            modal.remove();
+        });
 
         // Add event listeners
         if (isIOS) {

@@ -571,15 +571,44 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
                 {/* Chat Info */}
                 <div>
-                  <h3 className="font-bold text-lg">{chatRoom.providerName}</h3>
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    {chatRoom.providerName}
+                    {/* Lock Indicator for Booking in Progress */}
+                    {chatRoom.status === 'booking-in-progress' && (
+                      <span 
+                        className="text-sm bg-orange-400 px-2 py-1 rounded-full flex items-center gap-1 animate-pulse"
+                        title="Complete booking to unlock full chat"
+                      >
+                        🔒
+                      </span>
+                    )}
+                  </h3>
                   <p className="text-orange-100 text-sm">
-                    📍 Service Location
+                    {chatRoom.status === 'booking-in-progress' ? '📋 Complete Booking Form' : '📍 Service Location'}
                   </p>
                 </div>
               </div>
 
               {/* Controls */}
               <div className="flex items-center gap-2">
+                {/* Lock Status Indicator */}
+                {chatRoom.status === 'booking-in-progress' && (
+                  <button
+                    onClick={() => {
+                      addNotification(
+                        'info',
+                        'Chat Locked',
+                        'Complete the booking form below to unlock full chat features',
+                        { duration: 3000 }
+                      );
+                    }}
+                    className="p-2 hover:bg-orange-600 rounded-full transition-colors text-white animate-pulse"
+                    title="Chat locked until booking is complete"
+                  >
+                    🔒
+                  </button>
+                )}
+
                 {/* Bank Details for Therapists */}
                 {userRole === 'therapist' && (
                   <button
@@ -624,11 +653,36 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
 
             {/* Only show content for selected & non-minimized chat */}
             {isSelected && !isMinimized && (
-              <div className="flex flex-col h-[calc(100%-80px)]">
+              <div className="flex flex-col h-[calc(100%-80px)] relative">
                 
                 {/* BOOKING FORM for booking-in-progress status */}
                 {chatRoom.status === 'booking-in-progress' && (
-                  <div className="flex-1 flex flex-col p-4 overflow-y-auto">
+                  <div className="flex-1 flex flex-col p-4 overflow-y-auto scrollbar-hide relative">
+                    
+                    {/* Lock Overlay floating over the booking form */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50/95 to-white/95 backdrop-blur-md z-20 flex items-center justify-center">
+                      <div className="text-center px-6 py-8 max-w-sm bg-white/90 rounded-2xl shadow-2xl border-2 border-orange-200">
+                        <div className="mb-6 relative">
+                          <div className="inline-block text-7xl drop-shadow-2xl lock-bounce filter">
+                            🔒
+                          </div>
+                          <div className="absolute inset-0 flex items-center justify-center -z-10">
+                            <div className="w-24 h-24 bg-orange-200 rounded-full opacity-20 animate-ping"></div>
+                          </div>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3 drop-shadow">Chat Locked</h3>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4 font-medium">
+                          Complete the booking form below to unlock the full chat experience with <span className="text-orange-600 font-bold">{chatRoom.providerName}</span>
+                        </p>
+                        <div className="flex items-center justify-center gap-2 text-xs text-orange-700 font-bold bg-orange-100 rounded-full px-4 py-2 animate-pulse shadow-inner">
+                          <span className="text-base">⬇️</span>
+                          <span>Scroll down to fill the form</span>
+                          <span className="text-base">⬇️</span>
+                        </div>
+                        <div className="mt-4 text-xs text-gray-500">
+                          Form fields are below
+                        </div>\n                      </div>\n                    </div>
+
                     {/* Booking Details Banner */}
                     <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 mb-4">
                       <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -848,6 +902,19 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                     >
                       Confirm Booking
                     </button>
+
+                    {/* Lock Status Info */}
+                    <div className="mt-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-3">
+                      <div className="flex items-start gap-2">
+                        <span className="text-2xl animate-pulse">🔒</span>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-yellow-800 text-sm mb-1">Chat Locked</h4>
+                          <p className="text-xs text-yellow-700 leading-relaxed">
+                            Complete the booking form above to unlock the full chat. Once confirmed, you'll be able to message {chatRoom.providerName} directly.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -915,14 +982,37 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                       </div>
                     )}
 
-                    {/* Messages */}
+                    {/* Messages Container with Lock Overlay */}
                     {!isLoading && !messagesError && (
-                      <ChatMessages
-                        messages={messages}
-                        loading={messagesLoading}
-                        currentUserId={currentChatRoom?.customerId || ''}
-                        userRole="customer" // TODO: Get from auth context
-                      />
+                      <div className="flex-1 relative overflow-hidden">
+                        {/* Lock Overlay - Only visible when booking is in progress */}
+                        {chatRoom.status === 'booking-in-progress' && (
+                          <div className="absolute inset-0 bg-white bg-opacity-95 backdrop-blur-sm z-10 flex items-center justify-center">
+                            <div className="text-center px-6 py-8 max-w-xs">
+                              <div className="mb-4 animate-bounce">
+                                <div className="inline-block text-6xl drop-shadow-lg">🔒</div>
+                              </div>
+                              <h3 className="text-xl font-bold text-gray-800 mb-2">Chat Locked</h3>
+                              <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                                Complete the booking form to unlock chat with {chatRoom.providerName}
+                              </p>
+                              <div className="flex items-center justify-center gap-2 text-xs text-orange-600 font-medium">
+                                <span className="animate-pulse">⬇️</span>
+                                <span>Fill out the form below</span>
+                                <span className="animate-pulse">⬇️</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Messages */}
+                        <ChatMessages
+                          messages={messages}
+                          loading={messagesLoading}
+                          currentUserId={currentChatRoom?.customerId || ''}
+                          userRole="customer" // TODO: Get from auth context
+                        />
+                      </div>
                     )}
 
                     {/* Input */}

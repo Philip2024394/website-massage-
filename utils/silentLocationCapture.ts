@@ -57,7 +57,7 @@ export const captureSilentLocation = async (): Promise<CapturedLocation | null> 
     
     return null;
   } catch (error) {
-    console.log('ℹ️ Silent location capture failed (normal):', error.message);
+    console.log('ℹ️ Silent location capture failed (normally):', error instanceof Error ? error.message : error);
     return null;
   }
 };

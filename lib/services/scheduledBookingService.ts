@@ -263,9 +263,9 @@ class ScheduledBookingService {
 
     async getDateChangeRequests(therapistId?: string, userId?: string): Promise<DateChangeRequest[]> {
         try {
-            const queries = [];
-            if (therapistId) queries.push(Query.equal('therapistId', therapistId as any));
-            if (userId) queries.push(Query.equal('userId', userId as any));
+            const queries: any[] = [];
+            if (therapistId) queries.push(Query.equal('therapistId', therapistId));
+            if (userId) queries.push(Query.equal('userId', userId));
             
             const result = await databases.listDocuments(
                 this.DATABASE_ID,

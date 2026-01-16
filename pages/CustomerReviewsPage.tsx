@@ -53,7 +53,7 @@ const CustomerReviewsPage: React.FC<CustomerReviewsPageProps> = ({ user, onBack 
     try {
       // Basic review payload (adjust to actual schema as needed)
       await reviewService.create({
-        providerId: booking.providerId,
+        providerId: booking.providerId.toString(),
         providerType: booking.providerType,
         providerName: booking.providerName,
         rating: state.rating,

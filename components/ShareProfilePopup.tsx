@@ -13,17 +13,29 @@
  * - No dynamic URL rewriting
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Copy, Check, Share2 } from 'lucide-react';
+import { shareTrackingService, ShareChainData } from '../services/shareTrackingService';
 
 interface ShareProfilePopupProps {
   memberId: string;
   memberName: string;
+  memberType?: 'therapist' | 'place' | 'facial';
   onClose: () => void;
 }
 
-export default function ShareProfilePopup({ memberId, memberName, onClose }: ShareProfilePopupProps) {
+export default function ShareProfilePopup({ memberId, memberName, memberType = 'therapist', onClose }: ShareProfilePopupProps) {
   const [copied, setCopied] = useState(false);
+  const [shareChain, setShareChain] = useState<ShareChainData | null>(null);
+  
+  // Check if this page was loaded from a shared link to continue the chain
+  useEffect(() => {
+    const chainData = shareTrackingService.parseShareChainFromUrl();
+    if (chainData) {
+      setShareChain(chainData);
+      console.log('📊 Detected sharing chain:', chainData);
+    }
+  }, []);
   
   // Generate profile URL using HashRouter format (CRITICAL: Must include #/)
   const profileUrl = `${window.location.origin}/#/therapist-profile/${memberId}`;
@@ -33,50 +45,181 @@ export default function ShareProfilePopup({ memberId, memberName, onClose }: Sha
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(profileUrl);
+      // Generate trackable URL with chain data
+      const trackableUrl = shareTrackingService.generateTrackableUrl(
+        memberType,
+        memberId,
+        'copy',
+        undefined, // Could add current user ID if available
+        shareChain
+      );
+      
+      await navigator.clipboard.writeText(trackableUrl);
       setCopied(true);
-      console.log('📋 Profile link copied:', profileUrl);
+      console.log('📋 Trackable profile link copied:', trackableUrl);
+      
+      // Track copy action with chain data
+      await shareTrackingService.trackProfileShareWithChain({
+        memberId,
+        memberName,
+        memberType,
+        platform: 'copy',
+        parentShareChain: shareChain || undefined,
+        metadata: { url: trackableUrl }
+      });
       
       // Reset copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error('Failed to copy link:', error);
       // Fallback for older browsers
+      const trackableUrl = shareTrackingService.generateTrackableUrl(
+        memberType,
+        memberId,
+        'copy',
+        undefined,
+        shareChain
+      );
+      
       const textArea = document.createElement('textarea');
-      textArea.value = profileUrl;
+      textArea.value = trackableUrl;
       document.body.appendChild(textArea);
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopied(true);
+      
+      // Track copy action (fallback) with chain data
+      await shareTrackingService.trackProfileShareWithChain({
+        memberId,
+        memberName,
+        memberType,
+        platform: 'copy',
+        parentShareChain: shareChain,
+        metadata: { url: trackableUrl, method: 'fallback' }
+      });
+      
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const shareToWhatsApp = () => {
-    const text = encodeURIComponent(`Check out ${memberName}'s profile: ${profileUrl}`);
+  const shareToWhatsApp = async () => {
+    const trackableUrl = shareTrackingService.generateTrackableUrl(
+      memberType,
+      memberId,
+      'whatsapp',
+      undefined,
+      shareChain
+    );
+    const text = encodeURIComponent(`Check out ${memberName}'s profile: ${trackableUrl}`);
+    
+    // Track WhatsApp share with chain data
+    await shareTrackingService.trackProfileShareWithChain({
+      memberId,
+      memberName,
+      memberType,
+      platform: 'whatsapp',
+      parentShareChain: shareChain || undefined,
+      metadata: { shareText: `Check out ${memberName}'s profile: ${trackableUrl}` }
+    });
+    
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
-  const shareToFacebook = () => {
-    const url = encodeURIComponent(profileUrl);
+  const shareToFacebook = async () => {
+    const trackableUrl = shareTrackingService.generateTrackableUrl(
+      memberType,
+      memberId,
+      'facebook',
+      undefined,
+      shareChain
+    );
+    const url = encodeURIComponent(trackableUrl);
+    
+    // Track Facebook share with chain data
+    await shareTrackingService.trackProfileShareWithChain({
+      memberId,
+      memberName,
+      memberType,
+      platform: 'facebook',
+      parentShareChain: shareChain,
+      metadata: { shareUrl: trackableUrl }
+    });
+    
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
   };
 
-  const shareToTelegram = () => {
+  const shareToTelegram = async () => {
+    const trackableUrl = shareTrackingService.generateTrackableUrl(
+      memberType,
+      memberId,
+      'telegram',
+      undefined,
+      shareChain || undefined
+    );
     const text = encodeURIComponent(`Check out ${memberName}'s profile`);
-    const url = encodeURIComponent(profileUrl);
+    const url = encodeURIComponent(trackableUrl);
+    
+    // Track Telegram share with chain data
+    await shareTrackingService.trackProfileShareWithChain({
+      memberId,
+      memberName,
+      memberType,
+      platform: 'telegram',
+      parentShareChain: shareChain || undefined,
+      metadata: { shareText: `Check out ${memberName}'s profile`, shareUrl: trackableUrl }
+    });
+    
     window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
   };
 
-  const shareToX = () => {
-    const text = encodeURIComponent(`Check out ${memberName}'s profile: ${profileUrl}`);
+  const shareToX = async () => {
+    const trackableUrl = shareTrackingService.generateTrackableUrl(
+      memberType,
+      memberId,
+      'twitter',
+      undefined,
+      shareChain
+    );
+    const text = encodeURIComponent(`Check out ${memberName}'s profile: ${trackableUrl}`);
+    
+    // Track X (Twitter) share with chain data
+    await shareTrackingService.trackProfileShareWithChain({
+      memberId,
+      memberName,
+      memberType,
+      platform: 'twitter',
+      parentShareChain: shareChain || undefined,
+      metadata: { tweetText: `Check out ${memberName}'s profile: ${trackableUrl}` }
+    });
+    
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
-  const shareToEmail = () => {
+  const shareToEmail = async () => {
+    const trackableUrl = shareTrackingService.generateTrackableUrl(
+      memberType,
+      memberId,
+      'email',
+      undefined,
+      shareChain
+    );
     const subject = encodeURIComponent(`Check out ${memberName}'s profile`);
-    const body = encodeURIComponent(`I thought you might be interested in ${memberName}'s profile:\n\n${profileUrl}`);
+    const body = encodeURIComponent(`I thought you might be interested in ${memberName}'s profile:\n\n${trackableUrl}`);
+    
+    // Track email share with chain data
+    await shareTrackingService.trackProfileShareWithChain({
+      memberId,
+      memberName,
+      memberType,
+      platform: 'email',
+      parentShareChain: shareChain,
+      metadata: { 
+        subject: `Check out ${memberName}'s profile`, 
+        body: `I thought you might be interested in ${memberName}'s profile:\n\n${trackableUrl}` 
+      }
+    });
+    
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
@@ -100,6 +243,16 @@ export default function ShareProfilePopup({ memberId, memberName, onClose }: Sha
             </button>
           </div>
           <p className="text-white text-opacity-90">Share your profile with clients and contacts</p>
+          {shareChain && (
+            <div className="mt-3 p-2 bg-white bg-opacity-20 rounded-lg">
+              <p className="text-sm font-medium">
+                🔗 Sharing chain detected (depth: {shareChain.shareDepth})
+              </p>
+              <p className="text-xs text-white text-opacity-80 mt-1">
+                Your share will help extend this viral chain!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Content */}

@@ -291,8 +291,8 @@ export class ChatRecordingVerificationService {
      * 📋 GENERATE SUMMARY
      */
     private generateSummary(result: any): string {
-        const activeFeatures = [];
-        const inactiveFeatures = [];
+        const activeFeatures: string[] = [];
+        const inactiveFeatures: string[] = [];
         
         // Check each category
         if (result.collections.messages.status === 'active') {

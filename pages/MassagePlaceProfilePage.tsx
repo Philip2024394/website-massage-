@@ -1,32 +1,22 @@
-// Helper functions for location and taxi booking
-const getUserLocation = () => ({ lat: 0, lng: 0 });
-const createTaxiBookingLink = (destination: any) => '#';
-const openTaxiApp = (url: string) => window.open(url, '_blank');
-
 import React, { useState, useEffect } from 'react';
 import MassagePlaceCard from '../components/MassagePlaceCard';
 import { FloatingChatWindow } from '../chat';
 import RotatingReviews from '../components/RotatingReviews';
-import { FloatingChatWindow } from '../chat';
 import { AppDrawer } from '../components/AppDrawerClean';
-import { FloatingChatWindow } from '../chat';
 import SocialMediaLinks from '../components/SocialMediaLinks';
-import { FloatingChatWindow } from '../chat';
 import PageContainer from '../components/layout/PageContainer';
-import { FloatingChatWindow } from '../chat';
 import { Building, Sparkles } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import { FloatingChatWindow } from '../chat';
 import HomeIcon from '../components/icons/HomeIcon';
-import { FloatingChatWindow } from '../chat';
 import CityLocationDropdown from '../components/CityLocationDropdown';
-import { FloatingChatWindow } from '../chat';
 import { customLinksService } from '../lib/appwrite/services/customLinks.service';
-import { FloatingChatWindow } from '../chat';
 import { useChatProvider } from '../hooks/useChatProvider';
-import { FloatingChatWindow } from '../chat';
 import UniversalHeader from '../components/shared/UniversalHeader';
-import { FloatingChatWindow } from '../chat';
+
+// Helper functions for location and taxi booking
+const getUserLocation = () => ({ lat: 0, lng: 0 });
+const createTaxiBookingLink = (destination: any) => '#';
+const openTaxiApp = (url: string) => window.open(url, '_blank');
 
 // Helper function to check if discount is active and not expired
 const isDiscountActive = (place: Place): boolean => {
@@ -380,7 +370,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 }
                 
                 // Open taxi app
-                openTaxiApp((result as any).deepLink, 'bike');
+                openTaxiApp((result as any).deepLink);
             } else {
                 alert(`Error: ${(result as any).error || 'Unable to create booking link'}`);
             }
@@ -432,7 +422,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                 }
                 
                 // Open taxi app
-                openTaxiApp((result as any).deepLink, 'car');
+                openTaxiApp((result as any).deepLink);
             } else {
                 alert(`Error: ${(result as any).error || 'Unable to create booking link'}`);
             }
@@ -543,7 +533,7 @@ const MassagePlaceProfilePage: React.FC<MassagePlaceProfilePageProps> = ({
                     <MassagePlaceCard
                         place={{
                             ...place,
-                            distance: calculatedDistance,
+                            distance: calculatedDistance || 0,
                             isVerified: isPlaceVerified()
                         }}
                         userLocation={userLocation}

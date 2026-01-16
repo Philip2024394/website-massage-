@@ -19,9 +19,10 @@ interface Payment {
 interface TherapistEarningsProps {
   therapist: any;
   onBack: () => void;
+  language?: 'en' | 'id';
 }
 
-const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack }) => {
+const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, language = 'id' }) => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -30,6 +31,82 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
   const [selectedDaySlots, setSelectedDaySlots] = useState<any[]>([]);
   const membershipTier = therapist?.membershipTier || 'free'; // 'free' or 'plus'
   const commissionRate = membershipTier === 'plus' ? 0 : 0.30; // Premium: 0%, Pro: 30%
+
+  // Translation labels
+  const labels = {
+    en: {
+      title: 'Earnings & Payments',
+      subtitle: 'Track your income and payment history',
+      totalEarnings: 'Total Earnings',
+      totalPaid: 'Total Paid',
+      totalPending: 'Total Pending',
+      thisMonth: 'This month',
+      processed: 'Processed payments',
+      awaitingPayout: 'Awaiting payout',
+      bestTimesAnalytics: 'Best Times Analytics',
+      premiumFeature: 'Premium Feature',
+      peakBookingHours: 'Peak booking hours chart',
+      busyDaysHeatmap: 'Busy days heatmap',
+      customerDemographics: 'Customer demographics',
+      optimalSchedule: 'Optimal schedule recommendations',
+      upgradeToPremium: 'Upgrade to Premium',
+      to: 'to',
+      bookingCount: 'booking(s)',
+      averageBooking: 'average/booking',
+      clickToView: 'Click day to view time slots',
+      noPayments: 'No payments found',
+      newPayments: 'New payments will appear here',
+      loadingPayments: 'Loading payment history...',
+      pleaseWait: 'Please wait',
+      status: 'Status',
+      customer: 'Customer',
+      amount: 'Amount',
+      commission: 'Commission',
+      netEarning: 'Net Earning',
+      date: 'Date',
+      method: 'Method',
+      paid: 'Paid',
+      pending: 'Pending',
+      processing: 'Processing'
+    },
+    id: {
+      title: 'Pendapatan & Pembayaran',
+      subtitle: 'Lacak pendapatan dan riwayat pembayaran Anda',
+      totalEarnings: 'Total Pendapatan',
+      totalPaid: 'Total Dibayar',
+      totalPending: 'Total Pending',
+      thisMonth: 'Bulan ini',
+      processed: 'Pembayaran diproses',
+      awaitingPayout: 'Menunggu pembayaran',
+      bestTimesAnalytics: 'Analitik Waktu Terbaik',
+      premiumFeature: 'Fitur Premium',
+      peakBookingHours: 'Grafik jam booking puncak',
+      busyDaysHeatmap: 'Heatmap hari sibuk',
+      customerDemographics: 'Demografi pelanggan',
+      optimalSchedule: 'Rekomendasi jadwal optimal',
+      upgradeToPremium: 'Upgrade ke Premium',
+      to: 'sampai',
+      bookingCount: 'booking',
+      averageBooking: 'rata-rata/booking',
+      clickToView: 'Klik hari untuk lihat slot waktu',
+      noPayments: 'Tidak ada pembayaran ditemukan',
+      newPayments: 'Pembayaran baru akan muncul di sini',
+      loadingPayments: 'Memuat riwayat pembayaran...',
+      pleaseWait: 'Mohon tunggu',
+      status: 'Status',
+      customer: 'Pelanggan',
+      amount: 'Jumlah',
+      commission: 'Komisi',
+      netEarning: 'Pendapatan Bersih',
+      date: 'Tanggal',
+      method: 'Metode',
+      paid: 'Dibayar',
+      pending: 'Pending',
+      processing: 'Diproses'
+    }
+  };
+
+  const currentLabels = labels[language];
 
   useEffect(() => {
     fetchPayments();
@@ -140,10 +217,10 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
   return (
     <div className="min-h-screen bg-gray-50">
       <TherapistPageHeader
-        title="Earnings & Payments"
-        subtitle="Track your income and payment history"
+        title={currentLabels.title}
+        subtitle={currentLabels.subtitle}
         onBackToStatus={onBack}
-        icon={<BarChart3 className="w-6 h-6 text-purple-600" />}
+        icon={<BarChart3 className="w-6 h-6 text-orange-600" />}
       />
 
       <main className="max-w-sm mx-auto px-4 py-6">
@@ -153,7 +230,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <Banknote className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">Pending</span>
+              <span className="text-xs text-gray-500">{currentLabels.pending}</span>
             </div>
             <p className="text-lg font-bold text-gray-900">
               Rp {stats.totalDue.toLocaleString('id-ID')}
@@ -163,7 +240,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">Paid</span>
+              <span className="text-xs text-gray-500">{currentLabels.paid}</span>
             </div>
             <p className="text-lg font-bold text-gray-900">
               Rp {stats.totalPaid.toLocaleString('id-ID')}
@@ -184,7 +261,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div className="flex items-center gap-2 mb-2">
               <Calendar className="w-5 h-5 text-orange-500" />
-              <span className="text-xs text-gray-500">This Month</span>
+              <span className="text-xs text-gray-500">{currentLabels.thisMonth}</span>
             </div>
             <p className="text-lg font-bold text-gray-900">
               Rp {stats.monthlyEarnings.toLocaleString('id-ID')}
@@ -199,8 +276,8 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               <div className="flex items-center gap-3">
                 <BarChart3 className="w-5 h-5 text-orange-500" />
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">Best Times Analytics</h3>
-                  <p className="text-xs text-gray-500">Premium Feature</p>
+                  <h3 className="text-base font-bold text-gray-900">{currentLabels.bestTimesAnalytics}</h3>
+                  <p className="text-xs text-gray-500">{currentLabels.premiumFeature}</p>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-400 rounded-lg">
@@ -212,24 +289,24 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">Peak booking hours chart</span>
+                  <span className="text-sm text-gray-700">{currentLabels.peakBookingHours}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">Busy days heatmap</span>
+                  <span className="text-sm text-gray-700">{currentLabels.busyDaysHeatmap}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">Customer demographics</span>
+                  <span className="text-sm text-gray-700">{currentLabels.customerDemographics}</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 bg-orange-500 rounded-full mt-1.5"></div>
-                  <span className="text-sm text-gray-700">Optimal schedule recommendations</span>
+                  <span className="text-sm text-gray-700">{currentLabels.optimalSchedule}</span>
                 </div>
               </div>
             </div>
             <button className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-sm">
-              Upgrade to Premium
+              {currentLabels.upgradeToPremium}
             </button>
           </div>
         )}
@@ -240,7 +317,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-orange-500" />
-                <h2 className="text-base font-bold text-gray-900">Best Times Analytics</h2>
+                <h2 className="text-base font-bold text-gray-900">{currentLabels.bestTimesAnalytics}</h2>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-yellow-400 rounded-lg">
                 <Crown className="w-4 h-4 text-gray-900" />

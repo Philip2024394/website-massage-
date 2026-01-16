@@ -1249,6 +1249,16 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             });
         
         // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
+        case 'send-discount':
+            console.log('[ROUTE RESOLVE] send-discount → SendDiscountPage');
+            return renderRoute(therapistRoutes.sendDiscount.component, {
+                therapist: props.user,
+                onBack: () => props.onNavigate?.('therapist-status'),
+                onNavigate: props.onNavigate,
+                language: props.language
+            });
+        
+        // 🚫 DO NOT REDIRECT — ENTERPRISE ROUTE
         case 'schedule':
         case 'therapist-schedule':
             console.log('[ROUTE RESOLVE] therapist-schedule → TherapistSchedule');

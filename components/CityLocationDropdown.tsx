@@ -307,6 +307,7 @@ const CityLocationDropdown = ({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   />
                 </div>
 
@@ -416,19 +417,31 @@ const CityLocationDropdown = ({
                   <div className="px-4 py-3">
                     <input
                       type="text"
-                      placeholder="Type your city/area..."
-                      value={selectedCity && !cities.some(cat => cat.cities.some(c => c.name === selectedCity)) ? selectedCity : ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value.trim()) {
-                          handleCitySelect(value);
+                      placeholder="Type your city/area and press Enter..."
+                      defaultValue={selectedCity && !cities.some(cat => cat.cities.some(c => c.name === selectedCity)) ? selectedCity : ''}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const value = e.currentTarget.value.trim();
+                          if (value) {
+                            handleCitySelect(value);
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.currentTarget.value.trim();
+                        if (value) {
+                          onCityChange(value);
+                          if (onCoordinatesChange) {
+                            onCoordinatesChange(null);
+                          }
                         }
                       }}
                       className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
                       onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Can't find your location? Type it manually
+                      Can't find your location? Type it manually and press Enter
                     </p>
                   </div>
                 </div>

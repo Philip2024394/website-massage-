@@ -185,8 +185,8 @@ export const ReviewsPage: React.FC<ReviewsPageProps> = ({
       
       // Save to Appwrite
       await reviewService.createAnonymous({
-        providerId: providerId,
-        providerType: providerType,
+        providerId: providerId || '',
+        providerType: providerType as 'therapist' | 'place',
         providerName: providerName,
         rating: rating,
         reviewerName: userName.trim(),

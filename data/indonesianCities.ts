@@ -395,6 +395,96 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: false,
         isTouristDestination: true,
         aliases: ["Bukittinggi Minang", "Jam Gadang", "Fort de Kock"]
+      },
+      {
+        name: "Jambi",
+        locationId: "jambi",
+        province: "Jambi",
+        coordinates: { lat: -1.6101, lng: 103.6131 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Jambi Capital"]
+      },
+      {
+        name: "Bengkulu",
+        locationId: "bengkulu",
+        province: "Bengkulu",
+        coordinates: { lat: -3.7928, lng: 102.2608 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Bengkulu Capital"]
+      },
+      {
+        name: "Dumai",
+        locationId: "dumai",
+        province: "Riau",
+        coordinates: { lat: 1.6851, lng: 101.4500 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Dumai Riau", "Oil City"]
+      },
+      {
+        name: "Batam",
+        locationId: "batam-sumatra",
+        province: "Riau Islands",
+        coordinates: { lat: 1.1307, lng: 104.0530 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Batam Island", "Singapore Gateway"]
+      },
+      {
+        name: "Tanjung Pinang",
+        locationId: "tanjung-pinang",
+        province: "Riau Islands",
+        coordinates: { lat: 0.9167, lng: 104.4500 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Tanjung Pinang Riau Islands"]
+      },
+      {
+        name: "Pangkal Pinang",
+        locationId: "pangkal-pinang",
+        province: "Bangka Belitung",
+        coordinates: { lat: -2.1316, lng: 106.1170 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Bangka Belitung Capital"]
+      },
+      {
+        name: "Binjai",
+        locationId: "binjai",
+        province: "North Sumatra",
+        coordinates: { lat: 3.6000, lng: 98.4833 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Binjai North Sumatra"]
+      },
+      {
+        name: "Pematang Siantar",
+        locationId: "pematang-siantar",
+        province: "North Sumatra",
+        coordinates: { lat: 2.9667, lng: 99.0667 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Pematang Siantar North Sumatra"]
+      },
+      {
+        name: "Lubuklinggau",
+        locationId: "lubuklinggau",
+        province: "South Sumatra",
+        coordinates: { lat: -3.3000, lng: 102.8667 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Lubuklinggau South Sumatra"]
+      },
+      {
+        name: "Mentawai Islands",
+        locationId: "mentawai-islands",
+        province: "West Sumatra",
+        coordinates: { lat: -1.8833, lng: 99.1000 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Mentawai", "Surf Paradise", "Siberut Island"]
       }
     ]
   },
@@ -436,11 +526,38 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         isMainCity: true,
         isTouristDestination: false,
         aliases: ["Palangka Raya Central Kalimantan"]
+      },
+      {
+        name: "Samarinda",
+        locationId: "samarinda",
+        province: "East Kalimantan",
+        coordinates: { lat: -0.5017, lng: 117.1536 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Samarinda East Kalimantan"]
+      },
+      {
+        name: "Tarakan",
+        locationId: "tarakan",
+        province: "North Kalimantan",
+        coordinates: { lat: 3.3000, lng: 117.6333 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Tarakan North Kalimantan"]
+      },
+      {
+        name: "Singkawang",
+        locationId: "singkawang",
+        province: "West Kalimantan",
+        coordinates: { lat: 0.9083, lng: 108.9750 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Singkawang Beach", "Chinese Heritage Kalimantan"]
       }
     ]
   },
   {
-    category: "🏝️ Eastern Indonesia",
+    category: "🦅 Sulawesi",
     cities: [
       {
         name: "Makassar",
@@ -448,8 +565,8 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         province: "South Sulawesi",
         coordinates: { lat: -5.1477, lng: 119.4327 },
         isMainCity: true,
-        isTouristDestination: false,
-        aliases: ["Makassar South Sulawesi", "Ujung Pandang"]
+        isTouristDestination: true,
+        aliases: ["Ujung Pandang", "Makassar South Sulawesi"]
       },
       {
         name: "Manado",
@@ -461,13 +578,108 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         aliases: ["Manado North Sulawesi", "Bunaken Gateway"]
       },
       {
+        name: "Palu",
+        locationId: "palu",
+        province: "Central Sulawesi",
+        coordinates: { lat: -0.8917, lng: 119.8707 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Palu Central Sulawesi"]
+      },
+      {
+        name: "Kendari",
+        locationId: "kendari",
+        province: "Southeast Sulawesi",
+        coordinates: { lat: -3.9450, lng: 122.4989 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Kendari Southeast Sulawesi"]
+      },
+      {
+        name: "Mamuju",
+        locationId: "mamuju",
+        province: "West Sulawesi",
+        coordinates: { lat: -2.6794, lng: 118.8889 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Mamuju West Sulawesi"]
+      },
+      {
+        name: "Gorontalo",
+        locationId: "gorontalo",
+        province: "Gorontalo",
+        coordinates: { lat: 0.5435, lng: 123.0664 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["Gorontalo Province"]
+      },
+      {
+        name: "Bunaken",
+        locationId: "bunaken",
+        province: "North Sulawesi",
+        coordinates: { lat: 1.6167, lng: 124.7833 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Bunaken Island", "Diving Paradise", "Marine Park Manado"]
+      },
+      {
+        name: "Toraja (Rantepao)",
+        locationId: "toraja",
+        province: "South Sulawesi",
+        coordinates: { lat: -2.9667, lng: 119.9000 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Tana Toraja", "Rantepao", "Traditional Culture", "Tongkonan"]
+      },
+      {
+        name: "Wakatobi",
+        locationId: "wakatobi",
+        province: "Southeast Sulawesi",
+        coordinates: { lat: -5.4833, lng: 123.6000 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Wakatobi Islands", "Diving Sulawesi", "Marine Reserve"]
+      },
+      {
+        name: "Bitung",
+        locationId: "bitung",
+        province: "North Sulawesi",
+        coordinates: { lat: 1.4500, lng: 125.1833 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Bitung Port", "North Sulawesi Port"]
+      }
+    ]
+  },
+  {
+    category: "🏛️ Papua & Maluku",
+    cities: [
+      {
         name: "Jayapura",
         locationId: "jayapura",
         province: "Papua",
-        coordinates: { lat: -2.5489, lng: 140.7197 },
+        coordinates: { lat: -2.5355, lng: 140.7166 },
         isMainCity: true,
-        isTouristDestination: false,
-        aliases: ["Jayapura Papua"]
+        isTouristDestination: true,
+        aliases: ["Jayapura Papua", "Papua Capital"]
+      },
+      {
+        name: "Sorong",
+        locationId: "sorong",
+        province: "West Papua",
+        coordinates: { lat: -0.8833, lng: 131.2500 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Sorong West Papua", "Raja Ampat Gateway"]
+      },
+      {
+        name: "Raja Ampat",
+        locationId: "raja-ampat",
+        province: "West Papua",
+        coordinates: { lat: -0.2333, lng: 130.5167 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Four Kings", "Diving Mecca", "Marine Biodiversity", "Waisai"]
       },
       {
         name: "Ambon",
@@ -479,99 +691,162 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
         aliases: ["Ambon Maluku", "Spice Islands"]
       },
       {
-        name: "Raja Ampat",
-        locationId: "raja-ampat",
-        province: "West Papua",
-        coordinates: { lat: -0.2481, lng: 130.5176 },
-        isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Four Kings", "Diving Paradise"]
-      },
-      {
-        name: "Toraja",
-        locationId: "toraja",
-        province: "South Sulawesi",
-        coordinates: { lat: -2.9833, lng: 119.8833 },
-        isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Tana Toraja", "Cultural Tourism", "Tongkonan", "Rantepao"]
-      },
-      {
-        name: "Bunaken",
-        locationId: "bunaken",
-        province: "North Sulawesi",
-        coordinates: { lat: 1.6167, lng: 124.7667 },
-        isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Bunaken Marine Park", "Manado Diving", "Bunaken Island"]
-      },
-      {
-        name: "Wakatobi",
-        locationId: "wakatobi",
-        province: "Southeast Sulawesi",
-        coordinates: { lat: -5.4815, lng: 123.5928 },
-        isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Wakatobi Islands", "Diving Paradise", "Underwater Paradise"]
-      },
-      {
-        name: "Kupang",
-        locationId: "kupang",
-        province: "East Nusa Tenggara",
-        coordinates: { lat: -10.1718, lng: 123.6075 },
+        name: "Ternate",
+        locationId: "ternate",
+        province: "North Maluku",
+        coordinates: { lat: 0.7833, lng: 127.3667 },
         isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Ternate North Maluku", "Clove Island"]
+      },
+      {
+        name: "Merauke",
+        locationId: "merauke",
+        province: "Papua",
+        coordinates: { lat: -8.4667, lng: 140.3167 },
+        isMainCity: false,
         isTouristDestination: false,
-        aliases: ["Kupang NTT", "East Nusa Tenggara Capital"]
+        aliases: ["Merauke Papua", "Easternmost Indonesia"]
+      },
+      {
+        name: "Manokwari",
+        locationId: "manokwari",
+        province: "West Papua",
+        coordinates: { lat: -0.8700, lng: 134.0839 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Manokwari West Papua", "Cenderawasih Bay"]
+      },
+      {
+        name: "Banda Islands",
+        locationId: "banda-islands",
+        province: "Maluku",
+        coordinates: { lat: -4.5167, lng: 129.8833 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Banda Naira", "Nutmeg Islands", "Historic Spice Trade"]
       }
     ]
   },
   {
-    category: "🏖️ Beach Destinations",
+    category: "🌴 More Java Cities",
     cities: [
       {
-        name: "Bintan Island",
-        locationId: "bintan-island",
-        province: "Riau Islands",
-        coordinates: { lat: 1.1377, lng: 104.4553 },
+        name: "Tasikmalaya",
+        locationId: "tasikmalaya",
+        province: "West Java",
+        coordinates: { lat: -7.3506, lng: 108.2111 },
         isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Bintan", "Singapore Gateway"]
+        isTouristDestination: false,
+        aliases: ["Tasikmalaya West Java"]
       },
       {
-        name: "Batam",
-        locationId: "batam",
-        province: "Riau Islands",
-        coordinates: { lat: 1.1307, lng: 104.0530 },
-        isMainCity: true,
-        isTouristDestination: true,
-        aliases: ["Batam Island"]
-      },
-      {
-        name: "Belitung",
-        locationId: "belitung",
-        province: "Bangka Belitung",
-        coordinates: { lat: -2.7410, lng: 107.6398 },
+        name: "Cirebon",
+        locationId: "cirebon",
+        province: "West Java",
+        coordinates: { lat: -6.7063, lng: 108.5571 },
         isMainCity: false,
         isTouristDestination: true,
-        aliases: ["Belitung Island", "Laskar Pelangi"]
+        aliases: ["Cirebon West Java", "Batik City"]
       },
       {
-        name: "Derawan Islands",
-        locationId: "derawan-islands",
-        province: "East Kalimantan",
-        coordinates: { lat: 2.2833, lng: 118.2333 },
+        name: "Sukabumi",
+        locationId: "sukabumi",
+        province: "West Java",
+        coordinates: { lat: -6.9175, lng: 106.9269 },
         isMainCity: false,
-        isTouristDestination: true,
-        aliases: ["Derawan", "Turtle Island", "Sangalaki"]
+        isTouristDestination: false,
+        aliases: ["Sukabumi West Java"]
       },
       {
-        name: "Thousand Islands (Kepulauan Seribu)",
-        locationId: "thousand-islands",
-        province: "DKI Jakarta",
-        coordinates: { lat: -5.6167, lng: 106.5833 },
+        name: "Purwokerto",
+        locationId: "purwokerto",
+        province: "Central Java",
+        coordinates: { lat: -7.4197, lng: 109.2342 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Purwokerto Central Java", "Banyumas"]
+      },
+      {
+        name: "Tegal",
+        locationId: "tegal",
+        province: "Central Java",
+        coordinates: { lat: -6.8694, lng: 109.1402 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Tegal Central Java"]
+      },
+      {
+        name: "Magelang",
+        locationId: "magelang",
+        province: "Central Java",
+        coordinates: { lat: -7.4830, lng: 110.2181 },
         isMainCity: false,
         isTouristDestination: true,
-        aliases: ["Pulau Seribu", "Pramuka Island", "Jakarta Islands"]
+        aliases: ["Magelang Central Java", "Borobudur Gateway"]
+      },
+      {
+        name: "Salatiga",
+        locationId: "salatiga",
+        province: "Central Java",
+        coordinates: { lat: -7.3318, lng: 110.4920 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Salatiga Central Java"]
+      },
+      {
+        name: "Jember",
+        locationId: "jember",
+        province: "East Java",
+        coordinates: { lat: -8.1721, lng: 113.7038 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Jember East Java"]
+      },
+      {
+        name: "Kediri",
+        locationId: "kediri",
+        province: "East Java",
+        coordinates: { lat: -7.8186, lng: 112.0169 },
+        isMainCity: false,
+        isTouristDestination: false,
+        aliases: ["Kediri East Java"]
+      },
+      {
+        name: "Blitar",
+        locationId: "blitar",
+        province: "East Java",
+        coordinates: { lat: -8.0956, lng: 112.1681 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Blitar East Java", "Soekarno Grave"]
+      },
+      {
+        name: "Probolinggo",
+        locationId: "probolinggo",
+        province: "East Java",
+        coordinates: { lat: -7.7543, lng: 113.2159 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Probolinggo East Java", "Bromo Gateway"]
+      },
+      {
+        name: "Mount Bromo",
+        locationId: "mount-bromo",
+        province: "East Java",
+        coordinates: { lat: -7.9425, lng: 112.9530 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Bromo", "Bromo Tengger Semeru", "Cemoro Lawang"]
+      },
+      {
+        name: "Karimunjawa",
+        locationId: "karimunjawa",
+        province: "Central Java",
+        coordinates: { lat: -5.8333, lng: 110.4167 },
+        isMainCity: false,
+        isTouristDestination: true,
+        aliases: ["Karimunjawa Islands", "Java Sea Paradise"]
       }
     ]
   }

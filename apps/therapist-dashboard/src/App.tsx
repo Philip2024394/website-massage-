@@ -524,9 +524,9 @@ function App() {
       case 'status':
         return <TherapistOnlineStatus therapist={user} onBack={() => setCurrentPage('status')} onRefresh={refreshUser} onNavigate={setCurrentPage} />;
       case 'bookings':
-        return <TherapistBookings therapist={user} onBack={() => setCurrentPage('status')} onNavigate={setCurrentPage} />;
+        return <TherapistBookings therapist={user} onBack={() => setCurrentPage('status')} onNavigate={setCurrentPage} language={language} />;
       case 'earnings':
-        return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistEarnings therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'chat':
         return <TherapistChat therapist={user} onBack={() => setCurrentPage('status')} />;
       case 'package-terms':
@@ -542,10 +542,11 @@ function App() {
             onBack={() => setCurrentPage('status')}
             onNavigateToBookings={() => setCurrentPage('bookings')}
             onNavigateToChat={() => setCurrentPage('chat')}
+            language={language}
           />
         );
       case 'legal':
-        return <TherapistLegal therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistLegal therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'calendar':
         return (
           <TherapistCalendar 
@@ -554,18 +555,18 @@ function App() {
           />
         );
       case 'payment':
-        return <TherapistPaymentInfo therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistPaymentInfo therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'payment-status':
-        return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <TherapistPaymentStatus therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'custom-menu':
         console.log('🍽️ App.tsx renderPage: Rendering TherapistMenu');
         return <TherapistMenu therapist={user} onNavigate={setCurrentPage} />;
       case 'premium-upgrade':
         return <PremiumUpgrade therapist={user} onNavigate={setCurrentPage} />;
       case 'commission-payment':
-        return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} />;
+        return <CommissionPayment therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'schedule':
-        return <TherapistSchedule therapist={user} />;
+        return <TherapistSchedule therapist={user} language={language} />;
       case 'send-discount':
         return <SendDiscountPage therapist={user} language={language} />;
       case 'dashboard':
@@ -622,6 +623,7 @@ function App() {
         onNavigate={(page) => setCurrentPage(page as Page)}
         language={language}
         onLanguageChange={handleLanguageChange}
+        onLogout={handleLogout}
       >
         {renderPage()}
       </TherapistLayout>

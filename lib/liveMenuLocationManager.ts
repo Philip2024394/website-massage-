@@ -98,7 +98,7 @@ export class LiveMenuLocationManager {
     console.log(`📏 Calculating distances from:`, referenceLocation);
     console.log(`🎯 Search radius: ${radiusKm}km`);
 
-    const providersWithDistance = [];
+const providersWithDistance: any[] = [];
 
     for (const provider of providers) {
       try {

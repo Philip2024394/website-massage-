@@ -231,7 +231,7 @@ class LocationService {
                 
                 if (service.name === 'BigDataCloud (No API key required)') {
                     // BigDataCloud format
-                    const parts = [];
+                    const parts: string[] = [];
                     if (data.locality) parts.push(data.locality);
                     if (data.principalSubdivision) parts.push(data.principalSubdivision);
                     if (data.countryName) parts.push(data.countryName);

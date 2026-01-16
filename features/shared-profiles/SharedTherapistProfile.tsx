@@ -32,6 +32,7 @@ import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from '../
 import { shareLinkService } from '../../lib/services/shareLinkService';
 import PWAInstallBanner from '../../components/PWAInstallBanner';
 import { getNonRepeatingMainImage } from '../../lib/appwrite/image.service';
+import { shareTrackingService } from '../../services/shareTrackingService';
 
 interface SharedTherapistProfileProps {
     // NO LONGER REQUIRED - we fetch directly
@@ -141,7 +142,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
             
             if (therapistId) {
                 // Check if we can use existing therapist data (from home page load)
-                const existingTherapist = window.__THERAPISTS_CACHE?.find((t: any) => 
+                const existingTherapist = (window as any).__THERAPISTS_CACHE?.find((t: any) => 
                     (t.id || t.$id || '').toString() === therapistId
                 );
                 
@@ -280,7 +281,54 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('⏳ [STATE UPDATE] Setting therapist state with fetched data');
                 setTherapist(fetchedTherapist);
 
-                // Track analytics
+                // Track share analytics for profile view with chain tracking
+                try {
+                    console.log('\n' + '📊'.repeat(40));
+                    console.log('📊 [SHARE TRACKING] Tracking shared profile view with chain tracking');
+                    
+                    // Parse sharing chain data from URL
+                    const shareChain = shareTrackingService.parseShareChainFromUrl();
+                    
+                    // Detect if this is from a shared link based on referrer, URL params, or chain data
+                    const isFromShare = shareChain ||
+                                       document.referrer.includes('wa.me') || 
+                                       document.referrer.includes('facebook.com') || 
+                                       document.referrer.includes('t.me') || 
+                                       document.referrer.includes('twitter.com') ||
+                                       window.location.pathname.includes('/share/') ||
+                                       window.location.hash.includes('shared=true') ||
+                                       window.location.search.includes('si=');
+                    
+                    if (isFromShare || window.location.search.includes('shared=1')) {
+                        console.log('📊 Detected shared link view - tracking analytics with chain data');
+                        console.log('🔗 Share chain data:', shareChain);
+                        
+                        // Use chain tracking method
+                        await shareTrackingService.trackSharedProfileViewWithChain({
+                            memberId: fetchedTherapist.$id,
+                            memberName: fetchedTherapist.name || 'Unknown Therapist',
+                            memberType: 'therapist',
+                            shareChain: shareChain || undefined,
+                            metadata: {
+                                referrer: document.referrer,
+                                url: window.location.href,
+                                timestamp: new Date().toISOString(),
+                                chainDepth: shareChain?.shareDepth || 0,
+                                originalSharer: shareChain?.originalSharerUserId
+                            }
+                        });
+                        
+                        console.log('✅ [SHARE TRACKING] Profile view with chain tracked successfully');
+                    } else {
+                        console.log('📊 Direct visit detected - not tracking as shared view');
+                    }
+                    
+                    console.log('📊'.repeat(40) + '\n');
+                } catch (shareTrackingError) {
+                    console.warn('⚠️ [SHARE TRACKING] Failed to track view (non-critical):', shareTrackingError);
+                }
+
+                // Track analytics (existing code)
                 try {
                     console.log('\n' + '📊'.repeat(40));
                     console.log('📊 [ANALYTICS] Tracking shared link view');
@@ -641,11 +689,14 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         try {
             console.log('📊 [SHARED PROFILE] Tracking analytics:', { metric, therapistId: therapist.$id });
             const { analyticsService } = await import('../../services/analyticsService');
-            await analyticsService.trackEvent(metric, {
+            await analyticsService.trackEvent({
+                eventType: metric as any,
                 therapistId: therapist.$id,
-                therapistName: therapist.name,
-                location: therapist.location,
-                source: 'shared_profile'
+                metadata: {
+                    therapistName: therapist.name,
+                    location: therapist.location,
+                    source: 'shared_profile'
+                }
             });
             console.log('✅ [SHARED PROFILE] Analytics tracked successfully');
         } catch (error) {

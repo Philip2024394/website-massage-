@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../../../chat';
 import { MASSAGE_TYPES_CATEGORIZED } from '../../../../constants';
 import type { Therapist } from '../../../../types';
 import { therapistService, imageUploadService } from '../../../../lib/appwriteService';
 import { CLIENT_PREFERENCE_OPTIONS, CLIENT_PREFERENCE_LABELS, CLIENT_PREFERENCE_DESCRIPTIONS, type ClientPreference } from '../../../../utils/clientPreferencesUtils';
 import { showToast } from '../../../../utils/showToastPortal';
-import { loadGoogleMapsScript } from '../../../../constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
 import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalizationV2';
@@ -14,8 +12,7 @@ import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoin
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
-import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar, Menu as MenuIcon } from 'lucide-react';
-import { FloatingChatWindow } from '../../../../chat';
+import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -58,12 +55,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 }) => {
   console.log('🎨 TherapistPortalPage rendering with therapist:', therapist);
   
-  const [mapsApiLoaded, setMapsApiLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const markerRef = useRef<any>(null);
 
   // Package and payment state
   const [selectedPackage, setSelectedPackage] = useState<{ plan: 'pro' | 'plus', selectedAt: string } | null>(null);
@@ -234,83 +228,10 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   }, []);
 
-  // Load Google Maps
-  useEffect(() => {
-    const checkGoogleMaps = () => {
-      if ((window as any).google?.maps?.Geocoder) {
-        setMapsApiLoaded(true);
-        return true;
-      }
-      return false;
-    };
-
-    const loadMapsAPI = () => {
-      const apiKey = getStoredGoogleMapsApiKey();
-      if (!apiKey) {
-        console.warn('⚠️ Google Maps API key not configured');
-        return;
-      }
-
-      console.log('🗺️ Loading Google Maps API...');
-      loadGoogleMapsScript(
-        apiKey,
-        () => {
-          console.log('✅ Google Maps API loaded');
-          setMapsApiLoaded(true);
-        },
-        () => {
-          console.error('❌ Failed to load Google Maps API');
-        }
-      );
-    };
-
-    if (!checkGoogleMaps()) {
-      loadMapsAPI();
-    }
-  }, []);
-
-  // Initialize map when coordinates exist and API is loaded
-  useEffect(() => {
-    if (coordinates && mapsApiLoaded && mapRef.current) {
-      initializeMap(coordinates);
-    }
-  }, [coordinates, mapsApiLoaded]);
-
   // Reset profileSaved when any form field changes
   useEffect(() => {
     setProfileSaved(false);
   }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
-
-  const initializeMap = (coords: {lat: number, lng: number}) => {
-    try {
-      if (!mapRef.current || !(window as any).google || !(window as any).google.maps || !(window as any).google.maps.Map) {
-        console.warn('⚠️ Google Maps API not fully loaded yet');
-        return;
-      }
-
-      const map = new (window as any).google.maps.Map(mapRef.current, {
-        center: coords,
-        zoom: 15,
-        mapTypeControl: false,
-        streetViewControl: false,
-      });
-
-      // Clear existing marker
-      if (markerRef.current) {
-        markerRef.current.setMap(null);
-      }
-
-      // Add new marker
-      markerRef.current = new (window as any).google.maps.Marker({
-        position: coords,
-      map: map,
-      title: 'Your Location',
-    });
-    } catch (error) {
-      console.error('❌ Error initializing map:', error);
-      // Don't throw - allow page to continue loading
-    }
-  };
 
   const handleSetLocation = () => {
     if (!navigator.geolocation) {
@@ -336,10 +257,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         setCoordinates(coords);
         setLocationSet(true);
         showToast('✅ Location captured successfully!', 'success');
-        
-        if (mapsApiLoaded && mapRef.current) {
-          initializeMap(coords);
-        }
       },
       (error) => {
         console.error('Geolocation error:', error);
@@ -1053,9 +970,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   </p>
                 </div>
               )}
-              {coordinates && (
-                <div ref={mapRef} className="mt-3 w-full h-48 rounded-xl border border-gray-200" />
-              )}
             </div>
 
             {/* Description */}
@@ -1210,29 +1124,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   />
                 </div>
               </div>
-            </div>
-
-            {/* Custom Service Menu Feature - Available for all therapists */}
-            <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <MenuIcon className="w-5 h-5 text-orange-600" />
-                  <h3 className="font-bold text-gray-900">Custom Service Menu</h3>
-                </div>
-              </div>
-              <p className="text-sm text-gray-700 mb-4">
-                📋 Create your own custom service menu with personalized pricing. Your menu appears on your therapist card for customers to browse and book directly.
-              </p>
-              <button
-                onClick={() => {
-                  if (onNavigateToMenu) {
-                    onNavigateToMenu();
-                  }
-                }}
-                className="w-full px-4 py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-sm"
-              >
-                → Manage My Menu
-              </button>
             </div>
 
             {/* Validation Warning */}

@@ -30,6 +30,7 @@ import SystemHealthMonitor from './SystemHealthMonitor';
 import UpgradeSurtiningsih from './UpgradeSurtiningsih';
 import DatabaseDiagnostics from './DatabaseDiagnostics';
 import AdminRevenueDashboard from './AdminRevenueDashboard';
+import ShareAnalytics from '../components/ShareAnalytics';
 
 // Add custom styles for better mobile experience
 const mobileStyles = `
@@ -84,7 +85,7 @@ interface RecentActivity {
     status: 'success' | 'pending' | 'warning';
 }
 
-interface CardData {
+export interface CardData {
     $id: string;
     name: string;
     description: string;
@@ -99,6 +100,7 @@ interface CardData {
     profileImage?: string;
     status: 'active' | 'inactive' | 'pending';
     isVerified?: boolean;
+    isFacialPlace?: boolean;
     rating?: number;
     reviews?: number;
     specialties?: string[];
@@ -988,6 +990,16 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         );
     }
 
+    if (activeView === 'share-analytics') {
+        return (
+            <ShareAnalytics 
+                therapists={therapists}
+                places={places}
+                onBack={() => setActiveView('dashboard')}
+            />
+        );
+    }
+
     if (activeView === 'therapists' || activeView === 'places' || activeView === 'facials') {
         let cards, title;
         if (activeView === 'therapists') {
@@ -1680,6 +1692,16 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span className="hidden sm:inline">🏥 System Health</span>
                                 <span className="sm:hidden">🏥 Health</span>
+                            </button>
+
+                            {/* Share Analytics button */}
+                            <button
+                                onClick={() => setActiveView('share-analytics')}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 text-xs sm:text-sm"
+                            >
+                                <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">📊 Share Analytics</span>
+                                <span className="sm:hidden">📊 Share</span>
                             </button>
 
                             {/* System Settings button */}

@@ -5,7 +5,7 @@ import PageContainer from '../layout/PageContainer';
 interface UniversalHeaderProps {
     // Language props
     language?: string;
-    onLanguageChange?: (lang: string) => void;
+    onLanguageChange?: (lang: 'en' | 'id' | 'gb' | string) => void;
     showLanguageSelector?: boolean;
     
     // Menu props  

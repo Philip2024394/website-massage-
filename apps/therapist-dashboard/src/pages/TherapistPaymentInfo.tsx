@@ -10,9 +10,10 @@ import type { Therapist } from '../../../../types';
 interface TherapistPaymentInfoProps {
   therapist: Therapist | null;
   onBack: () => void;
+  language?: 'en' | 'id';
 }
 
-const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack }) => {
+const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack, language = 'id' }) => {
   const [bankName, setBankName] = useState(therapist?.bankName || '');
   const [accountName, setAccountName] = useState(therapist?.accountName || '');
   const [accountNumber, setAccountNumber] = useState(therapist?.accountNumber || '');
@@ -21,6 +22,74 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [nameMatchWarning, setNameMatchWarning] = useState(false);
+
+  // Translation labels
+  const labels = {
+    en: {
+      title: 'Payment Information',
+      subtitle: 'Manage your bank details',
+      directP2P: 'Direct P2P Payment System',
+      platformFacilitates: 'Our platform facilitates connections between therapists and clients. For your privacy and security:',
+      sharedAfterService: 'Your contact info is shared only after service completion',
+      directPayment: '100% payment goes directly to you',
+      noPlatformFees: 'No platform fees on your earnings',
+      updateAnytime: 'Update your details anytime',
+      bankInformation: 'Bank Information',
+      bankName: 'Bank Name',
+      accountName: 'Account Name',
+      accountNumber: 'Account Number',
+      idVerification: 'ID Verification',
+      ktpRequired: 'KTP/ID Card Required',
+      uploadKtp: 'Upload clear photo of your KTP',
+      clickToUpload: 'Click to upload',
+      pngJpg: 'PNG, JPG up to 5MB',
+      nameMatchNotice: 'Account name must match your KTP name for verification',
+      saveChanges: 'Save Changes',
+      saving: 'Saving...',
+      selectBank: 'Select your bank',
+      enterAccountName: 'Enter account holder name',
+      enterAccountNumber: 'Enter your account number',
+      imageFileOnly: 'Please upload an image file',
+      fileTooLarge: 'File size must be less than 5MB',
+      ktpSelected: 'KTP ID card selected',
+      allFieldsRequired: 'All fields are required',
+      paymentInfoUpdated: 'Payment information updated successfully!',
+      errorUpdating: 'Error updating payment information'
+    },
+    id: {
+      title: 'Informasi Pembayaran',
+      subtitle: 'Kelola detail bank Anda',
+      directP2P: 'Sistem Pembayaran P2P Langsung',
+      platformFacilitates: 'Platform kami memfasilitasi koneksi antara terapis dan klien. Untuk privasi dan keamanan Anda:',
+      sharedAfterService: 'Info kontak Anda dibagikan hanya setelah layanan selesai',
+      directPayment: '100% pembayaran langsung ke Anda',
+      noPlatformFees: 'Tidak ada biaya platform dari pendapatan Anda',
+      updateAnytime: 'Perbarui detail Anda kapan saja',
+      bankInformation: 'Informasi Bank',
+      bankName: 'Nama Bank',
+      accountName: 'Nama Akun',
+      accountNumber: 'Nomor Rekening',
+      idVerification: 'Verifikasi ID',
+      ktpRequired: 'KTP/Kartu ID Diperlukan',
+      uploadKtp: 'Upload foto KTP yang jelas',
+      clickToUpload: 'Klik untuk upload',
+      pngJpg: 'PNG, JPG maksimal 5MB',
+      nameMatchNotice: 'Nama akun harus sesuai dengan nama KTP untuk verifikasi',
+      saveChanges: 'Simpan Perubahan',
+      saving: 'Menyimpan...',
+      selectBank: 'Pilih bank Anda',
+      enterAccountName: 'Masukkan nama pemilik rekening',
+      enterAccountNumber: 'Masukkan nomor rekening Anda',
+      imageFileOnly: 'Harap upload file gambar',
+      fileTooLarge: 'Ukuran file harus kurang dari 5MB',
+      ktpSelected: 'KTP ID card dipilih',
+      allFieldsRequired: 'Semua field harus diisi',
+      paymentInfoUpdated: 'Informasi pembayaran berhasil diperbarui!',
+      errorUpdating: 'Error memperbarui informasi pembayaran'
+    }
+  };
+
+  const currentLabels = labels[language];
 
   const handleKtpUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

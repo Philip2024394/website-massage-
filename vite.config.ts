@@ -41,7 +41,7 @@ export default defineConfig({
     port: 3000,
     host: '127.0.0.1', // Explicit IPv4 binding (not 'true')
     open: false,
-    strictPort: true, // FAIL FAST if port unavailable (no silent fallback)
+    strictPort: false, // Allow fallback to next available port
     cors: true,
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -73,9 +73,7 @@ export default defineConfig({
     // Facebook-standard HMR - instant updates
     hmr: {
       overlay: true,
-      host: '127.0.0.1',
-      port: 3000,
-      clientPort: 3000,
+      // Remove hardcoded ports - let HMR use same port as server
     },
   },
   // Ensure preview also uses a low, predictable port
@@ -93,9 +91,6 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'es2020',
     chunkSizeWarningLimit: 1000,
-    esbuild: {
-      drop: ['console', 'debugger'], // Remove console and debugger in production
-    },
     rollupOptions: {
       external: [],
       input: {

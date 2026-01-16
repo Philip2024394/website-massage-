@@ -1,10 +1,14 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Menu, X, User, Calendar, DollarSign, MessageCircle, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift
+  Menu, X, User, Calendar, DollarSign, 
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, LogOut
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
+import { useUnreadBadge } from '../../../../chat/hooks/useUnreadBadge';
+import { useGestureSwipe } from '../../../../hooks/useGestureSwipe';
+import { FloatingUnreadBadge } from '../../../../components/UnreadBadge';
+import { pushNotificationsService } from '../../../../lib/pushNotificationsService';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -13,6 +17,7 @@ interface TherapistLayoutProps {
   onNavigate: (page: string) => void;
   language?: 'en' | 'id';
   onLanguageChange?: (lang: 'en' | 'id') => void;
+  onLogout?: () => void;
 }
 
 const TherapistLayout: React.FC<TherapistLayoutProps> = ({
@@ -21,9 +26,34 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   currentPage,
   onNavigate,
   language = 'id',
-  onLanguageChange
+  onLanguageChange,
+  onLogout
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Facebook-standard features
+  const { totalUnread, unreadByRoom } = useUnreadBadge();
+  
+  // Gesture swipe to open/close drawer
+  const { handlers: swipeHandlers } = useGestureSwipe(
+    () => setIsSidebarOpen(false), // Swipe left to close
+    () => setIsSidebarOpen(true),  // Swipe right to open
+    undefined,
+    undefined,
+    { threshold: 50, direction: 'horizontal' }
+  );
+  
+  // Request push notification permission on mount
+  useEffect(() => {
+    if (pushNotificationsService.isSupported() && 
+        pushNotificationsService.getPermissionStatus() === 'default') {
+      // Show a friendly prompt after 5 seconds
+      const timer = setTimeout(() => {
+        pushNotificationsService.requestPermission();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const menuLabels = {
     en: {
@@ -53,7 +83,6 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       earnings: 'Pendapatan',
       payment: 'Info Pembayaran',
       'payment-status': 'Riwayat Pembayaran',
-      chat: 'Chat Dukungan',
       membership: 'Keanggotaan',
       notifications: 'Notifikasi',
       calendar: 'Kalender',
@@ -69,20 +98,17 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   const labels = menuLabels[language] || menuLabels.id;
   
   const menuItems = [
-    { id: 'status', label: labels.status, icon: Clock, color: 'text-green-600' },
-    { id: 'schedule', label: labels.schedule, icon: Calendar, color: 'text-orange-500' },
-    { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-600' },
-    { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-blue-600' },
-    { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-pink-500' },
-    { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-purple-600' },
-    { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-blue-600' },
-    { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-teal-600' },
+    { id: 'status', label: labels.status, icon: Clock, color: 'text-orange-500' },
+    { id: 'dashboard', label: labels.dashboard, icon: User, color: 'text-orange-500' },
+    { id: 'bookings', label: labels.bookings, icon: Calendar, color: 'text-orange-500' },
+    { id: 'send-discount', label: labels['send-discount'], icon: Gift, color: 'text-orange-500' },
+    { id: 'earnings', label: labels.earnings, icon: DollarSign, color: 'text-orange-500' },
+    { id: 'payment', label: labels.payment, icon: CreditCard, color: 'text-orange-500' },
+    { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-orange-500' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
-    { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-600' },
-    { id: 'chat', label: labels.chat, icon: MessageCircle, color: 'text-pink-600' },
-    { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-red-600' },
-    { id: 'calendar', label: labels.calendar, icon: Calendar, color: 'text-indigo-600' },
-    { id: 'legal', label: labels.legal, icon: FileText, color: 'text-gray-600' },
+    { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
+    { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
+    { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
   ];
 
   const handleNavigate = (pageId: string) => {
@@ -141,16 +167,21 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
             </button>
             
-            {/* Burger Menu */}
+            {/* Burger Menu with unread indicator */}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors relative"
               aria-label="Toggle menu"
             >
               {isSidebarOpen ? (
                 <X className="w-6 h-6 text-gray-700" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-700" />
+                <>
+                  <Menu className="w-6 h-6 text-gray-700" />
+                  {totalUnread > 0 && (
+                    <FloatingUnreadBadge count={totalUnread} size="sm" />
+                  )}
+                </>
               )}
             </button>
           </div>
@@ -165,8 +196,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar with gesture support */}
       <aside
+        {...swipeHandlers}
         className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -229,7 +261,14 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                         : 'hover:bg-orange-50'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                    <div className="relative">
+                      <Icon className={`w-5 h-5 ${item.color} flex-shrink-0`} />
+                      
+                      {/* Unread badge for chat */}
+                      {item.id === 'chat' && totalUnread > 0 && (
+                        <FloatingUnreadBadge count={totalUnread} size="sm" />
+                      )}
+                    </div>
                     <span className="text-sm font-medium text-gray-700">
                       {item.label}
                     </span>
@@ -244,7 +283,24 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
             </div>
           </nav>
 
-            <div className="p-4 border-t border-gray-300" />
+          {/* Logout Button */}
+          {onLogout && (
+            <div className="p-4 border-t border-gray-300">
+              <button
+                onClick={() => {
+                  if (confirm(language === 'id' ? 'Yakin ingin keluar?' : 'Are you sure you want to logout?')) {
+                    onLogout();
+                  }
+                }}
+                className="flex items-center gap-3 w-full py-3 px-3 rounded-lg bg-red-50 hover:bg-red-100 transition-colors"
+              >
+                <LogOut className="w-5 h-5 text-red-600 flex-shrink-0" />
+                <span className="text-sm font-semibold text-red-600">
+                  {language === 'id' ? 'Keluar' : 'Logout'}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 

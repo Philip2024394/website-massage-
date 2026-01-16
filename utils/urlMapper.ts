@@ -37,7 +37,7 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'therapistPortal': '/dashboard/therapist',
     'therapistStatus': '/dashboard/therapist/status',
     'therapistAvailability': '/dashboard/therapist/availability',
-    'therapistBookings': '/dashboard/therapist/bookings',
+    'therapist-bookings': '/dashboard/therapist/bookings',
     'therapistProfile': '/dashboard/therapist/profile',
     'therapistMenu': '/dashboard/therapist/menu',
     

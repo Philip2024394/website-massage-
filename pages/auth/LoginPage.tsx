@@ -3,6 +3,7 @@ import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { membershipSignupService } from '../../lib/services/membershipSignup.service';
 import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslations } from '../../lib/useTranslations';
+import { translations } from '../../translations';
 
 interface LoginPageProps {
   onNavigate?: (page: string) => void;

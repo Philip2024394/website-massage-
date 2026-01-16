@@ -265,3 +265,28 @@ button:has(svg path[d="M4 6h16M4 12h16M4 18h16"]) {
 .animate-fade-in-down {
   animation: fade-in-down 0.3s ease-out;
 }
+
+/* Hide scrollbar utility classes */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Chat lock overlay animations */
+@keyframes lockBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.lock-bounce {
+  animation: lockBounce 2s ease-in-out infinite;
+}
+

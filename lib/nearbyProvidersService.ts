@@ -111,7 +111,7 @@ export const findNearbyTherapists = async (
         const allTherapists = await dataService.getTherapists();
         
         // Filter nearby available therapists using async processing
-        const nearbyTherapists = [];
+        const nearbyTherapists: any[] = [];
         
         for (const therapist of allTherapists) {
             // Exclude original therapist
@@ -146,7 +146,7 @@ export const findNearbyTherapists = async (
             }
 
             if (distanceResult.distance <= radiusKm) {
-                nearbyTherapists.push(therapist as any as any as any as any as any);
+                nearbyTherapists.push(therapist);
             }
         }
         
@@ -187,7 +187,7 @@ export const findAllNearbyTherapists = async (
         console.log(`📋 Retrieved ${allTherapists.length} therapists from database`);
         
         // Filter nearby therapists using sync Haversine calculation (NO STATUS FILTER)
-        const nearbyTherapists = [];
+        const nearbyTherapists: any[] = [];
         let parsedCount = 0;
         let withinRadiusCount = 0;
         
@@ -213,7 +213,7 @@ export const findAllNearbyTherapists = async (
             therapist.distance = distance;
             
             if (distance <= radiusKm) {
-                nearbyTherapists.push(therapist as any as any as any as any as any);
+                nearbyTherapists.push(therapist);
                 withinRadiusCount++;
                 console.log(`✅ ${therapist.name}: ${distance.toFixed(2)}km (status: ${therapist.status})`);
             } else {
@@ -314,7 +314,7 @@ export const findNearbyPlaces = async (
             }
             
             if (distanceResult.distance <= radiusKm) {
-                nearbyPlaces.push(place as any as any as any as any as any);
+                nearbyPlaces.push(place);
             }
         }
         
@@ -355,7 +355,7 @@ export const findAllNearbyPlaces = async (
         console.log(`📋 Retrieved ${allPlaces.length} places from database`);
         
         // Filter nearby places using sync Haversine calculation (NO isLive FILTER)
-        const nearbyPlaces = [];
+        const nearbyPlaces: any[] = [];
         let parsedCount = 0;
         let withinRadiusCount = 0;
         
@@ -381,7 +381,7 @@ export const findAllNearbyPlaces = async (
             place.distance = distance;
             
             if (distance <= radiusKm) {
-                nearbyPlaces.push(place as any as any as any as any as any);
+                nearbyPlaces.push(place);
                 withinRadiusCount++;
                 console.log(`✅ ${place.name}: ${distance.toFixed(2)}km (isLive: ${place.isLive})`);
             } else {

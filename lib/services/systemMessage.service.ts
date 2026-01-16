@@ -40,7 +40,7 @@ class SystemMessageService {
             });
 
             // Validate request locally first
-            const missingFields = [];
+            const missingFields: string[] = [];
             if (!request.conversationId) missingFields.push('conversationId');
             if (!request.recipientId) missingFields.push('recipientId');
             if (!request.recipientName) missingFields.push('recipientName');

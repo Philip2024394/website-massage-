@@ -90,7 +90,7 @@ export class ComprehensiveAdminDataFlowTest {
             overdueCommissions: 0,
             totalCommissionValue: 0,
             averageCommissionRate: 0,
-            errors: []
+            errors: [] as string[]
         };
 
         try {
