@@ -654,15 +654,27 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     // Use therapist's mainImage or shared profile image pool (better than gray placeholders)
     const displayImage = mainImage || getRandomSharedProfileImage();
     
+    // ✅ VALIDATE: Ensure displayImage is a valid URL string
+    const isValidUrl = typeof displayImage === 'string' && /^https?:\/\/.+/.test(displayImage);
+    const isSvgPlaceholder = typeof displayImage === 'string' && displayImage.startsWith('data:image/svg+xml');
+    
     console.log('%c🖼️ [TherapistCard] Image Debug', 'background: #9C27B0; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
     console.log('Therapist:', therapist.name);
     console.log('mainImage:', (therapist as any).mainImage || 'NOT SET');
     console.log('mainImage Value:', (therapist as any).mainImage);
     console.log('profileImage:', therapist.profileImage || 'NOT SET');
     console.log('Final displayImage:', displayImage);
+    console.log('displayImage TYPE:', typeof displayImage);
     console.log('Using fallback?', !mainImage ? 'YES (SharedProfile pool)' : 'NO');
-    console.log('Display Image URL Test:', /^https?:\/\/.+/.test(displayImage || '') ? '✅ Valid URL' : '❌ Invalid URL');
+    console.log('Is Valid URL?', isValidUrl ? '✅ YES' : '❌ NO');
+    console.log('Is SVG Placeholder?', isSvgPlaceholder ? '⚠️ YES (GRAY BOX)' : '✅ NO');
     console.log('Display Image Length:', displayImage?.length || 0);
+    
+    if (isSvgPlaceholder) {
+        console.error('%c❌ SVG PLACEHOLDER DETECTED!', 'background: red; color: white; padding: 4px 8px; font-weight: bold;');
+        console.error('This will show as gray box with text/number');
+        console.error('mainImage should be Appwrite or ImageKit URL, not SVG data URL');
+    }
 
     const openWhatsApp = () => {
         devLog('📱 Book Now clicked - showing booking form');
@@ -784,6 +796,28 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                 </button>
                 )}
             </div>
+            
+            {/* 🔍 MAIN IMAGE TROUBLESHOOTING - Remove after debugging */}
+            {window.location.pathname.includes('/shared') || window.location.hash.includes('therapist-profile') ? (
+                <div className="fixed bottom-4 left-4 bg-red-900/90 text-white p-4 rounded-lg shadow-2xl max-w-md z-50 text-xs font-mono">
+                    <div className="font-bold text-yellow-400 mb-2">🖼️ MAIN IMAGE DEBUG</div>
+                    <div className="space-y-1">
+                        <div><strong>Therapist:</strong> {therapist.name}</div>
+                        <div><strong>mainImage:</strong> {(therapist as any).mainImage ? String((therapist as any).mainImage).substring(0, 40) + '...' : '❌ NULL'}</div>
+                        <div><strong>profileImage:</strong> {therapist.profileImage ? String(therapist.profileImage).substring(0, 40) + '...' : '❌ NULL'}</div>
+                        <div><strong>displayImage:</strong> {String(displayImage).substring(0, 40)}...</div>
+                        <div><strong>TYPE:</strong> {typeof displayImage}</div>
+                        <div><strong>Valid URL?:</strong> {isValidUrl ? '✅ YES' : '❌ NO'}</div>
+                        <div><strong>SVG Placeholder?:</strong> {isSvgPlaceholder ? '⚠️ YES (GRAY)' : '✅ NO'}</div>
+                        <div className="mt-2 pt-2 border-t border-gray-400">
+                            {isSvgPlaceholder && <div className="text-red-300">❌ Will show gray box!</div>}
+                            {!isValidUrl && !isSvgPlaceholder && <div className="text-red-300">❌ Invalid URL!</div>}
+                            {isValidUrl && <div className="text-green-300">✅ Should display!</div>}
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+            
             {/* Main Image Banner wrapped in outer card rim (match MassagePlaceCard) */}
             <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible relative active:shadow-xl transition-all touch-manipulation pb-8">
                 <TherapistCardHeader
