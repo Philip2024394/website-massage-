@@ -178,11 +178,13 @@ class ShareLinkService {
             const storageType = this.normalizeTypeForStorage(entityType);
             
             // Check if slug exists and make it unique if needed
+            // Use a random suffix instead of sequential checking to avoid excessive API calls
             let finalSlug = slug;
-            let slugAttempt = 0;
-            while (await this.checkSlugExists(finalSlug)) {
-                slugAttempt++;
-                finalSlug = `${slug}-${slugAttempt}`;
+            const existingSlug = await this.checkSlugExists(finalSlug);
+            if (existingSlug) {
+                // Add random suffix to make unique (prevents 20+ sequential API calls)
+                const randomSuffix = Math.floor(Math.random() * 10000);
+                finalSlug = `${slug}-${randomSuffix}`;
             }
             
             const shareLink: Omit<ShareLink, '$id' | '$createdAt' | '$updatedAt'> = {
