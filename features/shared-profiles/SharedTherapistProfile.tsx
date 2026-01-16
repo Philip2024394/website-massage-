@@ -269,8 +269,12 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 if (!heroImageUrl || heroImageUrl === '') {
                     console.error('❌ [MISSING HERO IMAGE] heroImageUrl is null or empty in database');
                     console.error('   Home page must load first to persist heroImageUrl');
-                    console.error('   Using fallback image temporarily');
-                    // Fallback will be handled by TherapistProfileBase
+                    console.error('   Using ImageKit fallback temporarily');
+                    // Use ImageKit fallback instead of placeholder
+                    const fallbackImage = getHeroImageForTherapist(fetchedTherapist.$id, fetchedTherapist.location || 'Yogyakarta');
+                    (fetchedTherapist as any).heroImageUrl = fallbackImage;
+                    (fetchedTherapist as any).mainImage = fallbackImage;
+                    console.log('🔄 [FALLBACK] Using ImageKit hero image:', fallbackImage);
                 } else {
                     console.log('✅ [HERO IMAGE EXISTS] Using heroImageUrl from database:', heroImageUrl);
                     // Set both heroImageUrl and mainImage to the same value for consistency
