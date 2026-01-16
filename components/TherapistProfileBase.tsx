@@ -82,10 +82,10 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
         expiresAt: new Date(therapist.discountEndTime)
     } : null;
 
-    // 🔥 FIX: Use therapist's actual mainImage (same as card), fallback to hero only if needed
-    const therapistMainImage = (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture;
+    // 🔥 FIX: Use therapist's heroImageUrl (persisted in database), fallback to hero only if needed
+    const therapistHeroImageUrl = (therapist as any).heroImageUrl || (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture;
     const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
-    const heroImageRaw = therapistMainImage || fallbackHeroImage;
+    const heroImageRaw = therapistHeroImageUrl || fallbackHeroImage;
     
     // ✅ STEP 1-4: LOG AND RESOLVE TO STRING URL ONLY
     console.log("SHARED HERO IMAGE VALUE:", heroImageRaw);

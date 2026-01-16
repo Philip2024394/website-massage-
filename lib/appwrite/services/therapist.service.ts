@@ -155,22 +155,34 @@ export const therapistService = {
             
             // Add random main images and normalize status to therapists
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
-                const assignedMainImage = therapist.mainImage || getNonRepeatingMainImage(index);
+                // ✅ ONE-TIME PERSISTENCE: Save heroImageUrl to database if missing
+                let assignedHeroImageUrl = therapist.heroImageUrl;
                 
-                // ✅ PERSIST mainImage to database if missing (runs ONCE per therapist)
-                if (!therapist.mainImage && assignedMainImage) {
-                    console.log(`💾 [PERSIST] Saving mainImage to database for ${therapist.name}`);
+                if (!assignedHeroImageUrl || assignedHeroImageUrl === '') {
+                    // Compute image URL using array index (consistent assignment)
+                    assignedHeroImageUrl = getNonRepeatingMainImage(index);
+                    
+                    // Save to database (runs ONCE per therapist)
+                    console.log(`💾 [HERO IMAGE PERSISTED] ${therapist.$id} → ${assignedHeroImageUrl}`);
                     databases.updateDocument(
                         APPWRITE_CONFIG.databaseId,
                         APPWRITE_CONFIG.collections.therapists,
                         therapist.$id,
-                        { mainImage: assignedMainImage }
+                        { 
+                            heroImageUrl: assignedHeroImageUrl,
+                            mainImage: assignedHeroImageUrl // Mirror for backward compatibility
+                        }
                     ).then(() => {
-                        console.log(`✅ [PERSISTED] mainImage saved for ${therapist.name}`);
+                        console.log(`✅ [PERSISTED] heroImageUrl saved for ${therapist.name}`);
                     }).catch((err) => {
-                        console.error(`❌ [PERSIST FAILED] Could not save mainImage for ${therapist.name}:`, err);
+                        console.error(`❌ [PERSIST FAILED] Could not save heroImageUrl for ${therapist.name}:`, err);
                     });
+                } else {
+                    console.log(`✅ [HERO IMAGE EXISTS] ${therapist.name} → ${assignedHeroImageUrl}`);
                 }
+                
+                // Use heroImageUrl as mainImage for backward compatibility
+                const assignedMainImage = assignedHeroImageUrl;
                 
                 // Normalize status from database (lowercase) to enum format (capitalized)
                 const normalizeStatus = (status: string) => {

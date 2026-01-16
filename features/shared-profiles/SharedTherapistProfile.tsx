@@ -262,21 +262,20 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
                 console.log('📊 Rating:', fetchedTherapist.rating);
                 console.log('💰 Pricing:', fetchedTherapist.pricing);
-                console.log('🖼️ Main Image (raw):', (fetchedTherapist as any).mainImage || 'NOT SET');
-                console.log('🖼️ Profile Picture:', (fetchedTherapist as any).profilePicture || 'NOT SET');
                 
-                // ✅ CRITICAL: If mainImage is NOT set in database, DO NOT assign one here
-                // Therapist documents should have mainImage populated by therapist.service.ts
-                // If missing, it means the database needs updating - don't mask the issue
-                if (!(fetchedTherapist as any).mainImage) {
-                    console.error('❌ [CRITICAL] Therapist mainImage NOT SET in database!');
-                    console.error('   This therapist was not processed by therapist.service.ts');
-                    console.error('   Database document needs mainImage field populated');
-                    console.error('   Shared page and Home page will show DIFFERENT images');
-                    // Use a fallback but log the error clearly
-                    (fetchedTherapist as any).mainImage = getNonRepeatingMainImage(0);
+                // ✅ READ ONLY heroImageUrl from database (no derivation, no fallbacks)
+                const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
+                
+                if (!heroImageUrl || heroImageUrl === '') {
+                    console.error('❌ [MISSING HERO IMAGE] heroImageUrl is null or empty in database');
+                    console.error('   Home page must load first to persist heroImageUrl');
+                    console.error('   Using fallback image temporarily');
+                    // Fallback will be handled by TherapistProfileBase
                 } else {
-                    console.log('✅ [IMAGE EXISTS] Using mainImage from database (same as Home page):', (fetchedTherapist as any).mainImage);
+                    console.log('✅ [HERO IMAGE EXISTS] Using heroImageUrl from database:', heroImageUrl);
+                    // Set both heroImageUrl and mainImage to the same value for consistency
+                    (fetchedTherapist as any).heroImageUrl = heroImageUrl;
+                    (fetchedTherapist as any).mainImage = heroImageUrl;
                 }
                 
                 console.log('�📥'.repeat(40) + '\n');
