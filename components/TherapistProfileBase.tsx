@@ -85,7 +85,25 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     // 🔥 FIX: Use therapist's actual mainImage (same as card), fallback to hero only if needed
     const therapistMainImage = (therapist as any).mainImage || therapist.profileImage || (therapist as any).profilePicture;
     const fallbackHeroImage = getHeroImageForTherapist(therapist.$id, (therapist.location || ("a" as string)));
-    const heroImage = therapistMainImage || fallbackHeroImage;
+    const heroImageRaw = therapistMainImage || fallbackHeroImage;
+    
+    // ✅ STEP 1-4: LOG AND RESOLVE TO STRING URL ONLY
+    console.log("SHARED HERO IMAGE VALUE:", heroImageRaw);
+    console.log("TYPE:", typeof heroImageRaw);
+    
+    const resolvedHeroImage =
+        typeof heroImageRaw === "string"
+            ? heroImageRaw
+            : heroImageRaw?.url
+            ? heroImageRaw.url
+            : Array.isArray(heroImageRaw) && heroImageRaw[0]?.url
+            ? heroImageRaw[0].url
+            : fallbackHeroImage;
+    
+    console.log("RESOLVED HERO IMAGE:", resolvedHeroImage);
+    console.log("RESOLVED TYPE:", typeof resolvedHeroImage);
+    
+    const heroImage = resolvedHeroImage;
     const welcomeText = HERO_WELCOME_TEXT[language] || HERO_WELCOME_TEXT.id;
     
     // SEO-optimized image alt text
