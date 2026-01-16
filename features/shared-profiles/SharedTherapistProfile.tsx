@@ -265,15 +265,38 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('🖼️ Main Image (raw):', (fetchedTherapist as any).mainImage || 'NOT SET');
                 console.log('🖼️ Profile Picture:', (fetchedTherapist as any).profilePicture || 'NOT SET');
                 
-                // ✨ UNIFIED IMAGE LOGIC: Use same logic as home page (therapistService.getAll())
+                // 🔥 CRITICAL FIX: Use EXACT same image assignment as home page (therapistService.getAll())
+                // The home page uses therapist's ARRAY INDEX, not ID conversion
+                // We need to fetch ALL therapists and find this one's index to match home page exactly
                 if (!(fetchedTherapist as any).mainImage) {
-                    // Use therapist's index or ID to get consistent image (same as home page)
-                    const imageIndex = parseInt(fetchedTherapist.$id || '0', 36) % 100;
-                    const assignedImage = getNonRepeatingMainImage(imageIndex);
-                    (fetchedTherapist as any).mainImage = assignedImage;
-                    console.log('✨ [UNIFIED FLOW] Assigned mainImage from same pool as home page:', assignedImage);
+                    try {
+                        // Import therapistService to get the EXACT same list as home page
+                        const { therapistService } = await import('../../lib/appwriteService');
+                        const allTherapists = await therapistService.getAll();
+                        
+                        // Find this therapist's index in the array (SAME as home page)
+                        const therapistIndex = allTherapists.findIndex((t: any) => 
+                            (t.$id || t.id) === fetchedTherapist.$id
+                        );
+                        
+                        if (therapistIndex >= 0) {
+                            // Use EXACT same logic as therapistService.getAll() line 158
+                            const assignedImage = getNonRepeatingMainImage(therapistIndex);
+                            (fetchedTherapist as any).mainImage = assignedImage;
+                            console.log('✅ [EXACT MATCH] Using home page logic with array index', therapistIndex, '→', assignedImage);
+                        } else {
+                            // Fallback if not found in array (shouldn't happen)
+                            const imageIndex = parseInt(fetchedTherapist.$id || '0', 36) % 100;
+                            (fetchedTherapist as any).mainImage = getNonRepeatingMainImage(imageIndex);
+                            console.log('⚠️ [FALLBACK] Therapist not in array, using ID-based index:', imageIndex);
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Could not fetch therapist array, using ID-based index:', error);
+                        const imageIndex = parseInt(fetchedTherapist.$id || '0', 36) % 100;
+                        (fetchedTherapist as any).mainImage = getNonRepeatingMainImage(imageIndex);
+                    }
                 } else {
-                    console.log('✅ [UNIFIED FLOW] Using existing mainImage from Appwrite (consistent with home page)');
+                    console.log('✅ [APPWRITE] Using existing mainImage from database');
                 }
                 
                 console.log('�📥'.repeat(40) + '\n');
