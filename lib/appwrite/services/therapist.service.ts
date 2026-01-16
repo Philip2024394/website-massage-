@@ -157,6 +157,21 @@ export const therapistService = {
             const therapistsWithImages = response.documents.map((therapist: any, index: number) => {
                 const assignedMainImage = therapist.mainImage || getNonRepeatingMainImage(index);
                 
+                // ✅ PERSIST mainImage to database if missing (runs ONCE per therapist)
+                if (!therapist.mainImage && assignedMainImage) {
+                    console.log(`💾 [PERSIST] Saving mainImage to database for ${therapist.name}`);
+                    databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.therapists,
+                        therapist.$id,
+                        { mainImage: assignedMainImage }
+                    ).then(() => {
+                        console.log(`✅ [PERSISTED] mainImage saved for ${therapist.name}`);
+                    }).catch((err) => {
+                        console.error(`❌ [PERSIST FAILED] Could not save mainImage for ${therapist.name}:`, err);
+                    });
+                }
+                
                 // Normalize status from database (lowercase) to enum format (capitalized)
                 const normalizeStatus = (status: string) => {
                     if (!status) return 'Busy'; // Default to Busy instead of Offline
