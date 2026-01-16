@@ -233,12 +233,21 @@ async function syncNotifications() {
 self.addEventListener('fetch', (event) => {
     // Only cache GET requests
     if (event.request.method !== 'GET') {
-        return;
+        return; // Let browser handle non-GET
+    }
+
+    // 🔥 CRITICAL: Skip Service Worker in development mode (Vite HMR)
+    if (event.request.url.includes('127.0.0.1') || 
+        event.request.url.includes('localhost') ||
+        event.request.url.includes('@vite') ||
+        event.request.url.includes('@react-refresh') ||
+        event.request.url.includes('?t=')) {
+        return; // Let Vite handle dev requests
     }
 
     // Skip caching for API requests
     if (event.request.url.includes('/v1/') || event.request.url.includes('appwrite')) {
-        return;
+        return; // Let browser handle API
     }
 
     // Cache strategy: Network first, fallback to cache
