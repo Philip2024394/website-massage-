@@ -116,12 +116,13 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     
     console.log('%c🖼️ [TherapistProfileBase] Hero Image Debug', 'background: #FF9800; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 14px;');
     console.log('Therapist:', therapist.name);
+    console.log('heroImageUrl:', (therapist as any).heroImageUrl || 'NOT SET');
     console.log('mainImage:', (therapist as any).mainImage || 'NOT SET');
     console.log('profileImage:', therapist.profileImage || 'NOT SET');
     console.log('profilePicture:', (therapist as any).profilePicture || 'NOT SET');
     console.log('Selected heroImage:', heroImage);
-    console.log('Is using mainImage?', !!therapistMainImage);
-    console.log('Fallback used?', !therapistMainImage);
+    console.log('Is using heroImageUrl?', !!therapistHeroImageUrl);
+    console.log('Fallback used?', !therapistHeroImageUrl);
     console.log('Hero Image URL Test:', /^https?:\/\/.+/.test(heroImage || '') ? '✅ Valid URL' : '❌ Invalid URL');
     console.log('Hero Image Length:', heroImage?.length || 0);
 
