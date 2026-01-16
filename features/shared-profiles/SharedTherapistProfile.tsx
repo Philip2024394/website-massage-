@@ -55,7 +55,8 @@ interface SharedTherapistProfileProps {
  * - /therapist-profile/12345
  */
 const extractTherapistIdFromUrl = (): string | null => {
-    const path = window.location.pathname;
+    let path = window.location.pathname;
+    const hash = window.location.hash;
     const fullUrl = window.location.href;
     
     console.log('\n' + '='.repeat(80));
@@ -64,7 +65,14 @@ const extractTherapistIdFromUrl = (): string | null => {
     console.log('📍 Full URL:', fullUrl);
     console.log('📍 Pathname:', path);
     console.log('📍 Search:', window.location.search);
-    console.log('📍 Hash:', window.location.hash);
+    console.log('📍 Hash:', hash);
+    
+    // 🔥 CRITICAL FIX: Parse hash for hash URLs (/#/path)
+    // For /#/therapist-profile/123, pathname = "/" and hash = "#/therapist-profile/123"
+    if (hash.startsWith('#/')) {
+        path = hash.substring(1); // Remove # to get /therapist-profile/123
+        console.log('🔗 [HASH URL] Parsed path from hash:', path);
+    }
     
     // Match patterns: /share/therapist/:id or /therapist-profile/:id
     const match = path.match(/\/(share\/therapist|therapist-profile)\/([^\/]+)/);

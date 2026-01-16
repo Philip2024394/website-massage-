@@ -17,6 +17,7 @@ import type { Page, Language, LoggedInProvider } from './types/pageTypes';
 import type { User, Place, Therapist, UserLocation, Booking, Notification, Agent, AdminMessage } from './types';
 import { BookingStatus } from './types';
 import LoadingSpinner from './components/LoadingSpinner';
+import { databases, APPWRITE_DATABASE_ID as DATABASE_ID, COLLECTIONS } from './lib/appwrite';
 
 // Error Boundary for lazy loading failures
 class LazyLoadErrorBoundary extends React.Component<
@@ -222,6 +223,96 @@ interface AppRouterProps {
     t: any;
     currentPage: Page;
 }
+
+/**
+ * Helper component to fetch therapist from Appwrite when not in memory
+ * Used for direct link sharing (cold starts)
+ */
+const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => {
+    const [therapist, setTherapist] = React.useState<any>(null);
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState<string | null>(null);
+
+    // Official images constants (same as SharedTherapistProfile)
+    const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';
+    const OFFICIAL_MAIN_IMAGE = 'https://ik.imagekit.io/7grri5v7d/garden%20forest.png?updatedAt=1761334454082';
+
+    React.useEffect(() => {
+        const fetchTherapist = async () => {
+            try {
+                console.log('🔍 [FETCH] Loading therapist from Appwrite:', therapistId);
+                const fetchedTherapist = await databases.getDocument(
+                    DATABASE_ID, 
+                    COLLECTIONS.THERAPISTS, 
+                    therapistId
+                );
+                
+                // Apply official images
+                const therapistWithImages = {
+                    ...fetchedTherapist,
+                    heroImageUrl: OFFICIAL_HERO_IMAGE,
+                    mainImage: OFFICIAL_MAIN_IMAGE
+                };
+                
+                console.log('✅ [FETCH] Therapist loaded:', therapistWithImages.name);
+                setTherapist(therapistWithImages);
+                setLoading(false);
+            } catch (err: any) {
+                console.error('❌ [FETCH] Failed to load therapist:', err);
+                setError(err.message || 'Failed to load profile');
+                setLoading(false);
+            }
+        };
+
+        fetchTherapist();
+    }, [therapistId]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <LoadingSpinner />
+            </div>
+        );
+    }
+
+    if (error || !therapist) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                    <div className="text-6xl mb-4">❌</div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
+                    <p className="text-gray-600 mb-4">{error || 'Unable to load therapist profile'}</p>
+                    <button
+                        onClick={() => props.onNavigate?.('home')}
+                        className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                    >
+                        Back to Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Import the TherapistProfilePage component
+    const TherapistProfilePage = profileRoutes.therapistProfile.component;
+    
+    return (
+        <React.Suspense fallback={<LoadingSpinner />}>
+            <TherapistProfilePage
+                therapist={therapist}
+                onBack={() => props.onNavigate?.('home')}
+                onLanguageChange={props.onLanguageChange}
+                language={props.language}
+                selectedCity={props.selectedCity}
+                onCityChange={props.onCityChange}
+                therapists={props.therapists}
+                places={props.places}
+                onNavigate={props.onNavigate}
+                {...props}
+            />
+        </React.Suspense>
+    );
+};
 
 /**
  * Enterprise Router Component
@@ -605,22 +696,32 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== PROFILE ROUTES =====
         case 'therapist-profile':
-            console.log('🔧 [TherapistProfile] Rendering therapist profile page');
+            console.log('🔧 [TherapistProfile] Unified profile route');
             console.log('  - selectedTherapist:', props.selectedTherapist);
-            console.log('  - URL path:', window.location.pathname);
+            console.log('  - URL:', window.location.href);
             
-            // Check if accessing via URL with ID parameter
-            const pathMatch = window.location.pathname.match(/\/profile\/therapist\/(\d+-[\w-]+)/);
-            if (pathMatch && !props.selectedTherapist) {
-                // Extract ID from URL and find therapist
-                const urlId = pathMatch[1].split('-')[0];
+            // Parse ID from hash URL (/#/therapist-profile/123) or pathname
+            let pathForId = window.location.pathname;
+            const hashForId = window.location.hash;
+            if (hashForId.startsWith('#/')) {
+                pathForId = hashForId.substring(1); // Remove # to get /therapist-profile/123
+            }
+            
+            const pathMatch = pathForId.match(/\/therapist-profile\/([a-z0-9]+)/);
+            if (pathMatch) {
+                const urlId = pathMatch[1];
+                console.log('  - Extracted ID:', urlId);
+                
+                // Try to find in memory first (fast path)
                 const foundTherapist = props.therapists.find((t: any) => 
-                    (t.id || t.$id || '').toString() === urlId
+                    (t.$id || t.id || '').toString() === urlId
                 );
+                
                 if (foundTherapist) {
+                    console.log('  ✅ Found in memory:', foundTherapist.name);
                     return renderRoute(profileRoutes.therapistProfile.component, {
                         therapist: foundTherapist,
-                        onBack: () => props.setPage?.('home'), // Navigate back to home
+                        onBack: () => props.setPage?.('home'),
                         onLanguageChange: props.onLanguageChange,
                         language: props.language,
                         selectedCity: props.selectedCity,
@@ -629,6 +730,13 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         places: props.places,
                         onNavigate: props.onNavigate
                     });
+                } else {
+                    console.log('  🔍 Not in memory, fetching from Appwrite...');
+                    // Fallback: Render a wrapper that fetches from Appwrite
+                    return <TherapistProfileWithFetch 
+                        therapistId={urlId} 
+                        {...props}
+                    />;
                 }
             }
             
