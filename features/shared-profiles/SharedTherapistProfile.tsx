@@ -262,8 +262,17 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.log('📍 Location:', fetchedTherapist.location || fetchedTherapist.city);
                 console.log('📊 Rating:', fetchedTherapist.rating);
                 console.log('💰 Pricing:', fetchedTherapist.pricing);
+                console.log('🔍 RAW mainImage from DB:', (fetchedTherapist as any).mainImage);
+                console.log('🔍 Is SVG placeholder?:', String((fetchedTherapist as any).mainImage || '').startsWith('data:image/svg+xml'));
+                
+                // ⚠️ FIX: Check if mainImage is SVG placeholder and replace it
+                if ((fetchedTherapist as any).mainImage && String((fetchedTherapist as any).mainImage).startsWith('data:image/svg+xml')) {
+                    console.error('❌ [SVG PLACEHOLDER IN DATABASE] Replacing with ImageKit image');
+                    (fetchedTherapist as any).mainImage = null; // Clear the SVG placeholder
+                }
                 
                 // ✅ READ ONLY heroImageUrl from database (no derivation, no fallbacks)
+                const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
                 const heroImageUrl = (fetchedTherapist as any).heroImageUrl;
                 
                 if (!heroImageUrl || heroImageUrl === '') {
