@@ -128,6 +128,27 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
 
     return (
         <div className="bg-white">
+            {/* 🔍 TROUBLESHOOTING PANEL - Remove after debugging */}
+            {mode === 'shared' && (
+                <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg shadow-2xl max-w-md z-50 text-xs font-mono">
+                    <div className="font-bold text-yellow-400 mb-2">🔍 HERO IMAGE DEBUG</div>
+                    <div className="space-y-1">
+                        <div><strong>heroImageUrl:</strong> {(therapist as any).heroImageUrl || '❌ NULL'}</div>
+                        <div><strong>mainImage:</strong> {(therapist as any).mainImage || '❌ NULL'}</div>
+                        <div><strong>heroImageRaw:</strong> {String(heroImageRaw).substring(0, 50)}...</div>
+                        <div><strong>heroImageRaw TYPE:</strong> {typeof heroImageRaw}</div>
+                        <div><strong>resolvedHeroImage:</strong> {String(resolvedHeroImage).substring(0, 50)}...</div>
+                        <div><strong>resolved TYPE:</strong> {typeof resolvedHeroImage}</div>
+                        <div><strong>Is valid URL?:</strong> {/^https?:\/\/.+/.test(heroImage || '') ? '✅ YES' : '❌ NO'}</div>
+                        <div><strong>Final heroImage:</strong> {String(heroImage).substring(0, 50)}...</div>
+                        <div className="mt-2 pt-2 border-t border-gray-600">
+                            <div><strong>Service Worker:</strong> Check Network tab</div>
+                            <div><strong>Appwrite Bucket:</strong> 68f76bdd002387590584</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
             {/* Personalized Hero Banner - Only in shared mode */}
             {mode === 'shared' && (
                 <div className="w-full bg-white pt-0 pb-8 px-4">
