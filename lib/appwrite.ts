@@ -30,6 +30,9 @@ export const COLLECTIONS = {
     AGENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     BOOKINGS: 'bookings', // ✅ Production booking collection
     REVIEWS: '', // ⚠️ DISABLED - Collection doesn't exist (causes 404 errors on live site)
+    // Achievement System
+    ACHIEVEMENTS: 'achievements_collection_id', // ✅ Achievement badges and standards
+    THERAPIST_ACHIEVEMENTS: 'therapist_achievements_collection_id', // ✅ Therapist achievement assignments
     // Production Booking System
     THERAPIST_MATCHES: 'therapist_matches', // ✅ Therapist search results  
     CHAT_SESSIONS: 'chat_sessions', // ✅ Active chat sessions

@@ -31,6 +31,7 @@ import UpgradeSurtiningsih from './UpgradeSurtiningsih';
 import DatabaseDiagnostics from './DatabaseDiagnostics';
 import AdminRevenueDashboard from './AdminRevenueDashboard';
 import ShareAnalytics from '../components/ShareAnalytics';
+import AdminAchievementManager from '../components/AdminAchievementManager';
 
 // Add custom styles for better mobile experience
 const mobileStyles = `
@@ -136,7 +137,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue'>('dashboard');
+    const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'chat-monitor' | 'analytics' | 'email' | 'payments' | 'commission-deposits' | 'bookings' | 'reviews' | 'settings' | 'therapists' | 'places' | 'facials' | 'ktp-verification' | 'system-health' | 'premium-upgrade' | 'db-diagnostics' | 'revenue' | 'achievements'>('dashboard');
     
     // Card editing states
     const [therapists, setTherapists] = useState<CardData[]>([]);
@@ -906,6 +907,14 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         );
     }
 
+    if (activeView === 'achievements') {
+        return (
+            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+                <AdminAchievementManager onBack={() => setActiveView('dashboard')} />
+            </div>
+        );
+    }
+
     if (activeView === 'db-diagnostics') {
         return (
             <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
@@ -1662,6 +1671,16 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                 <FileCheck className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span className="hidden sm:inline">KTP Verification</span>
                                 <span className="sm:hidden">KTP</span>
+                            </button>
+
+                            {/* Achievement Manager button */}
+                            <button
+                                onClick={() => setActiveView('achievements')}
+                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-xs sm:text-sm"
+                            >
+                                <Award className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">Achievements</span>
+                                <span className="sm:hidden">Badges</span>
                             </button>
 
                             {/* Premium Upgrade button */}
