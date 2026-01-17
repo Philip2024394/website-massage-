@@ -95,7 +95,7 @@
     "express": "^5.1.0",
     "framer-motion": "^11.18.2",
     "i18next": "^25.7.4",
-    "lucide-react": "^0.561.0",
+    "lucide-react": "^0.562.0",
     "node-appwrite": "^20.3.0",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",

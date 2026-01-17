@@ -1,11 +1,14 @@
 /**
- * ChatMessages Component
+ * ChatMessages Component - Enhanced with Avatar System
  * 
  * Purpose: Displays chat messages with auto-scroll and read receipts
  * Data Flow: useChatMessages hook → Message list → UI rendering
  * 
  * Features:
  * - Displays messages from user, therapist, and system
+ * - Enhanced avatar system with race/gender matching
+ * - Therapist profile image on left side (small circle)
+ * - Customer avatar on left side (auto-assigned)
  * - Different styling for each sender type
  * - Auto-scroll to latest message
  * - Timestamp formatting
@@ -15,19 +18,28 @@
 
 import React, { useEffect, useRef } from 'react';
 import { ChatMessage } from './hooks/useChatMessages';
+import { type AvatarOption } from '../constants/chatAvatars';
 
 interface ChatMessagesProps {
   messages: ChatMessage[];
   loading: boolean;
   currentUserId: string;
   userRole: 'customer' | 'therapist';
+  therapistImage?: string;
+  customerAvatar?: AvatarOption;
+  therapistName?: string;
+  customerName?: string;
 }
 
 export const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   loading,
   currentUserId,
-  userRole
+  userRole,
+  therapistImage,
+  customerAvatar,
+  therapistName,
+  customerName
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,28 +67,84 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
     return message.senderId === currentUserId || message.senderType === userRole;
   };
 
+  // Get avatar for message sender
+  const getMessageAvatar = (message: ChatMessage) => {
+    if (message.senderType === 'system') {
+      return (
+        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">
+          🤖
+        </div>
+      );
+    }
+
+    if (message.senderType === 'therapist' && therapistImage) {
+      return (
+        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-orange-200 shadow-sm">
+          <img 
+            src={therapistImage} 
+            alt={therapistName || 'Therapist'}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+            }}
+          />
+        </div>
+      );
+    }
+
+    if (message.senderType === 'customer' && customerAvatar) {
+      return (
+        <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm">
+          <img 
+            src={customerAvatar.imageUrl} 
+            alt={customerAvatar.label}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+            }}
+          />
+        </div>
+      );
+    }
+
+    // Fallback avatar
+    const initials = (message.senderName || 'U').charAt(0).toUpperCase();
+    const bgColor = message.senderType === 'therapist' ? 'bg-orange-500' : 'bg-blue-500';
+    
+    return (
+      <div className={`w-8 h-8 rounded-full ${bgColor} text-white flex items-center justify-center text-sm font-semibold shadow-sm`}>
+        {initials}
+      </div>
+    );
+  };
+
   // Get message style based on sender
   const getMessageStyle = (message: ChatMessage) => {
     if (message.senderType === 'system') {
       return {
         container: 'justify-center',
         bubble: 'bg-gray-100 text-gray-700 border border-gray-200 text-xs max-w-sm',
-        alignment: 'text-center'
+        alignment: 'text-center',
+        showAvatar: false
       };
     }
 
     if (isOwnMessage(message)) {
       return {
-        container: 'justify-end',
-        bubble: 'bg-orange-500 text-white',
-        alignment: 'text-right'
+        container: 'justify-end flex-row-reverse',
+        bubble: 'bg-orange-500 text-white shadow-lg',
+        alignment: 'text-right',
+        showAvatar: true,
+        avatarMargin: 'mr-0 ml-2' // Avatar on right side
       };
     }
 
     return {
       container: 'justify-start',
-      bubble: 'bg-blue-100 text-blue-900',
-      alignment: 'text-left'
+      bubble: 'bg-blue-50 text-blue-900 border border-blue-200 shadow-sm',
+      alignment: 'text-left',
+      showAvatar: true,
+      avatarMargin: 'ml-0 mr-2' // Avatar on left side
     };
   };
 
@@ -104,7 +172,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
@@ -114,8 +182,15 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
         const style = getMessageStyle(message);
         
         return (
-          <div key={message.$id} className={`flex ${style.container}`}>
-            <div className={`max-w-xs lg:max-w-md`}>
+          <div key={message.$id} className={`flex items-end gap-2 ${style.container}`}>
+            {/* Avatar - positioned on left for others, right for own messages */}
+            {style.showAvatar && (
+              <div className={`flex-shrink-0 ${style.avatarMargin}`}>
+                {getMessageAvatar(message)}
+              </div>
+            )}
+
+            <div className="flex flex-col max-w-xs lg:max-w-md">
               {/* Sender name (if not own message and not system) */}
               {!isOwnMessage(message) && message.senderType !== 'system' && (
                 <div className="text-xs text-gray-500 mb-1 px-1">
@@ -124,16 +199,16 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
               )}
 
               {/* Message bubble */}
-              <div className={`${style.bubble} rounded-lg px-4 py-2 shadow-sm`}>
+              <div className={`${style.bubble} rounded-2xl px-4 py-3`}>
                 <p className="text-sm whitespace-pre-wrap break-words">
                   {message.content}
                 </p>
                 
                 {/* Timestamp and read receipt */}
-                <div className={`flex items-center gap-1 mt-1 text-xs opacity-70 ${style.alignment}`}>
+                <div className={`flex items-center gap-1 mt-2 text-xs opacity-70 ${style.alignment}`}>
                   <span>{formatTime(message.timestamp)}</span>
                   {isOwnMessage(message) && message.senderType !== 'system' && (
-                    <span>
+                    <span className="text-xs">
                       {message.read ? '✓✓' : '✓'}
                     </span>
                   )}

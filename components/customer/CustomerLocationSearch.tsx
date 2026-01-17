@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Filter, Sliders } from 'lucide-react';
+import { Search, MapPin, Filter, Settings } from 'lucide-react';
 import LocationSelector from '../../components/LocationSelector';
 import { LocationOption, locationService } from '../../lib/locationService';
 
@@ -59,7 +59,7 @@ const CustomerLocationSearch: React.FC<CustomerLocationSearchProps> = ({
         {/* Search Enhancement Button */}
         {selectedLocation && (
           <button className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-            <Sliders className="w-4 h-4" />
+            <Settings className="w-4 h-4" />
           </button>
         )}
       </div>

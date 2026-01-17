@@ -1,13 +1,15 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { FileText, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import TherapistPageHeader from '../components/TherapistPageHeader';
 
 interface TherapistLegalProps {
   therapist: any;
   onBack: () => void;
+  onNavigate?: (page: string) => void;
 }
 
-const TherapistLegal: React.FC<TherapistLegalProps> = ({ onBack }) => {
+const TherapistLegal: React.FC<TherapistLegalProps> = ({ onBack, onNavigate }) => {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['intro']));
 
@@ -68,7 +70,7 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
 3.3 Pricing
 - You set your own pricing for 60min, 90min, and 120min sessions
 - Commission structure: 
-  * Free tier: 25% to Indastreet, 75% to you
+  * Standard plan: 30% commission to Indastreet, 70% to you
   * Premium tier (Rp 250k/MONTH): 0% commission - you keep 100%!
 - Prices must be competitive and reasonable
 - You may not charge customers additional fees beyond agreed booking price`
@@ -76,23 +78,32 @@ These terms govern your use of the Indastreet platform as a massage therapist pr
     {
       id: 'payments',
       title: '4. Payments & Commission',
-      content: `4.1 Commission Structure
-- Free tier commission: 25% per completed booking (you receive 75%)
+      content: `4.1 Commission Structure - IMPORTANT
+⚠️ MANDATORY 30% COMMISSION: You acknowledge and agree that:
+- Standard plan commission: 30% per completed booking (you receive 70%)
 - Premium tier commission: 0% (you receive 100% of booking total)
 - Premium membership: Rp 200,000/month or Rp 2,000,000/year
+- The 30% commission is DUE AND PAYABLE for every completed booking
 - Payments are processed weekly on Mondays
 - Payment method: Bank transfer to your registered account
 
-4.2 Payment Terms
-- You must provide valid banking information
+4.2 Payment Terms & Unpaid Commission Penalties
+⛔ CRITICAL: If commission payments become overdue or unpaid:
+- Your account will be IMMEDIATELY SUSPENDED after 7 days of non-payment
+- Additional penalty fees of 5% per week will be charged on overdue amounts
+- Account reactivation requires FULL payment of commission + penalty fees
+- Repeated non-payment may result in PERMANENT account termination
+- You must provide valid banking information for commission deductions
 - Payments are made for all COMPLETED bookings only
 - Cancelled or no-show bookings are not paid
 - You are responsible for your own tax obligations
 
-4.3 Disputes
+4.3 Commission Collection & Disputes
+- Commission is automatically deducted from your booking earnings
 - Payment disputes must be raised within 14 days
 - We reserve the right to withhold payment pending investigation
-- Final payment decisions are at our discretion`
+- Final payment decisions are at our discretion
+- Non-payment of commission may result in legal action for debt collection`
     },
     {
       id: 'membership',
@@ -410,27 +421,22 @@ Last Updated: December 11, 2024`
   const content = activeTab === 'terms' ? termsContent : privacyContent;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-700 to-slate-800 text-white p-6">
-        <div className="max-w-sm mx-auto">
-          <button 
-            onClick={onBack}
-            className="text-white hover:bg-white/20 rounded-lg px-3 py-2 transition-colors mb-4"
-          >
-            ← Back to Dashboard
-          </button>
-          <div className="flex items-center gap-3 mb-4">
-            <FileText className="w-8 h-8" />
-            <h1 className="text-3xl font-bold">Legal & Policies</h1>
-          </div>
-          <p className="text-slate-200">Terms of Service and Privacy Policy for therapists</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
+        <TherapistPageHeader
+          title="Legal & Policies"
+          subtitle="Terms of Service and Privacy Policy for therapists"
+          onBackToStatus={onBack}
+          actions={
+            <div className="flex items-center gap-2">
+              <FileText className="w-6 h-6 text-orange-500" />
+            </div>
+          }
+        />
 
-      {/* Tab Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-sm mx-auto px-4">
+        {/* Tab Navigation */}
+        <div className="bg-white border-b">
+          <div className="px-4">
           <div className="flex gap-4">
             <button
               onClick={() => setActiveTab('terms')}
@@ -460,10 +466,10 @@ Last Updated: December 11, 2024`
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      {/* Content */}
-      <div className="max-w-sm mx-auto p-4">
+        {/* Content */}
+        <div className="p-4">
         <div className="bg-white rounded-lg shadow-sm border">
           {content.map((section, index) => (
             <div key={section.id} className={index !== 0 ? 'border-t' : ''}>
@@ -516,16 +522,17 @@ Last Updated: December 11, 2024`
               <h3 className="font-bold text-orange-900 mb-2">Questions or Concerns?</h3>
               <p className="text-sm text-orange-800 leading-relaxed mb-3">
                 If you have any questions about these terms or policies, or need clarification on any point, 
-                please contact our support team.
+                please contact our support team through our official contact page.
               </p>
-              <a 
-                href="mailto:indastreet.id@gmail.com"
+              <button 
+                onClick={() => onNavigate?.('contact-us') || window.open('mailto:indastreet.id@gmail.com', '_blank')}
                 className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
               >
                 Contact Support
-              </a>
+              </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

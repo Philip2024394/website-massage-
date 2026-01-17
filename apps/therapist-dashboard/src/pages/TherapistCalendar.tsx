@@ -52,83 +52,38 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      // TODO: Fetch from Appwrite bookings collection
-      // Filter by therapistId === therapist.$id
-      // Filter by status === 'confirmed'
-      // Include bookings from current month and next 2 months
-
-      // Mock data for premium feature demo
-      const mockBookings: Booking[] = [
-        {
-          $id: '1',
-          customerName: 'John Doe',
-          customerPhone: '+6281234567890',
-          serviceType: 'Balinese Massage',
-          duration: 90,
-          price: 150000,
-          location: 'Hotel Grand Bali, Room 302',
-          date: '2024-12-15',
-          time: '15:00',
-          status: 'confirmed',
-          reminderSent: false
-        },
-        {
-          $id: '2',
-          customerName: 'Sarah Johnson',
-          customerPhone: '+6281234567891',
-          serviceType: 'Thai Massage',
-          duration: 120,
-          price: 200000,
-          location: 'Villa Sunset, Seminyak',
-          date: '2024-12-15',
-          time: '18:00',
-          status: 'confirmed',
-          reminderSent: true
-        },
-        {
-          $id: '3',
-          customerName: 'Mike Wilson',
-          customerPhone: '+6281234567892',
-          serviceType: 'Deep Tissue',
-          duration: 60,
-          price: 120000,
-          location: 'Customer Home, Canggu',
-          date: '2024-12-17',
-          time: '14:00',
-          status: 'confirmed',
-          reminderSent: false
-        },
-        {
-          $id: '4',
-          customerName: 'Emma Brown',
-          customerPhone: '+6281234567893',
-          serviceType: 'Hot Stone',
-          duration: 90,
-          price: 180000,
-          location: 'Hotel Intercontinental',
-          date: '2024-12-20',
-          time: '10:00',
-          status: 'confirmed',
-          reminderSent: false
-        },
-        {
-          $id: '5',
-          customerName: 'David Lee',
-          customerPhone: '+6281234567894',
-          serviceType: 'Swedish Massage',
-          duration: 60,
-          price: 120000,
-          location: 'Spa Center Ubud',
-          date: '2024-12-22',
-          time: '16:00',
-          status: 'confirmed',
-          reminderSent: false
-        }
-      ];
-
-      setBookings(mockBookings);
+      // Fetch real calendar bookings from Appwrite
+      const { bookingService } = await import('../../../../lib/appwriteService');
+      
+      // Get confirmed bookings for this therapist's calendar
+      const realBookings = await bookingService.getProviderBookings(therapist.$id);
+      
+      // Transform and filter confirmed/scheduled bookings only
+      const transformedBookings: Booking[] = realBookings
+        .filter((doc: any) => doc.status === 'confirmed' || doc.status === 'scheduled')
+        .map((doc: any) => ({
+          $id: doc.$id,
+          customerName: doc.userName || doc.customerName || 'Unknown Customer',
+          customerPhone: doc.userPhone || doc.customerPhone || '',
+          serviceType: doc.service || doc.serviceType || 'Massage Service',
+          duration: doc.duration || 60,
+          price: doc.totalAmount || doc.price || 0,
+          location: doc.location || '',
+          date: doc.date ? new Date(doc.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          time: doc.time || '00:00',
+          status: doc.status || 'confirmed',
+          reminderSent: doc.reminderSent || false
+        }));
+      
+      setBookings(transformedBookings);
+      console.log('✅ Loaded', transformedBookings.length, 'calendar bookings for therapist', therapist.$id);
+      
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      console.error('Failed to fetch calendar bookings:', error);
+      
+      // Fallback to empty array instead of mock data
+      setBookings([]);
+      console.warn('❌ No calendar bookings loaded - service may be unavailable');
     } finally {
       setLoading(false);
     }

@@ -68,6 +68,7 @@ export { adminCommissionService, CommissionStatus, ADMIN_REACTIVATION_FEE } from
 export { adminRevenueTrackerService } from './adminRevenueTrackerService';
 export { availabilityEnforcementService, TherapistAvailabilityStatus } from './availabilityEnforcementService';
 export { secureBankCardService } from './secureBankCardService';
+export { commissionTrackingService } from './commissionTrackingService';
 
 // 🔒 Server-Enforced Contact Validation (Tamper Resistant)
 export { serverEnforcedChatService } from './serverEnforcedChatService';

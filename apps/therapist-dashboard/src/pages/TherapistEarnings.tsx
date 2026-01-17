@@ -123,17 +123,34 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     if (!therapist?.$id) return;
     
     try {
+      // Attempt to load analytics data with better error handling
+      const { analyticsService } = await import('../../../../lib/services/analyticsService');
+      
       const [hours, days] = await Promise.all([
-        analyticsService.getPeakBookingHours(therapist.$id),
-        analyticsService.getBusiestDays(therapist.$id)
+        analyticsService.getPeakBookingHours(therapist.$id).catch(err => {
+          console.log('ℹ️ Peak hours analytics unavailable:', err.message);
+          return []; // Return empty array instead of failing
+        }),
+        analyticsService.getBusiestDays(therapist.$id).catch(err => {
+          console.log('ℹ️ Busiest days analytics unavailable:', err.message);
+          return []; // Return empty array instead of failing
+        })
       ]);
       
       setPeakHours(hours);
       setBusiestDays(days);
+      
+      if (hours.length > 0 || days.length > 0) {
+        console.log('✅ Analytics loaded successfully');
+      } else {
+        console.log('ℹ️ No analytics data available yet');
+      }
+      
     } catch (error) {
-      // Silently fail if bookings collection is disabled
-      // Error is expected when analytics/bookings features are disabled
-      console.log('ℹ️ Analytics unavailable (bookings collection disabled)');
+      // Graceful degradation - analytics are optional
+      console.log('ℹ️ Analytics service unavailable (bookings collection may be disabled):', error.message);
+      setPeakHours([]);
+      setBusiestDays([]);
     }
   };
 

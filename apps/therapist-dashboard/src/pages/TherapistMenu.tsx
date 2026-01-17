@@ -260,6 +260,13 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
 
         {/* Content */}
         <div className="p-8 space-y-6">
+          {/* Info Text about Min Box */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              <strong>💡 Tip:</strong> Leave the "Min" box empty if you don't want that duration to appear on the menu price slider for customers.
+            </p>
+          </div>
+
           {/* All features available - no premium restriction */}
           <>
               {/* Services List - One Line Per Service */}

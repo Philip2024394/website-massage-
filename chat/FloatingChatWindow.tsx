@@ -33,6 +33,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { BookingBanner } from './BookingBanner';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
+import { getAutoAssignedAvatar, type AvatarOption } from '../constants/chatAvatars';
 
 interface FloatingChatWindowProps {
   userId?: string;
@@ -66,6 +67,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+
+  // Avatar state (automatically assigned)
+  const [userAvatar, setUserAvatar] = useState<AvatarOption | null>(null);
 
   // NEW: Booking form state for booking-in-progress chats
   const [bookingFormData, setBookingFormData] = useState({
@@ -256,6 +260,25 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       console.error('❌ Failed to share bank details:', err);
     }
   };
+
+  // Auto-assign avatar when chat opens
+  useEffect(() => {
+    if (activeChatRooms.length > 0 && !userAvatar) {
+      const autoAvatar = getAutoAssignedAvatar(userId);
+      setUserAvatar(autoAvatar);
+      
+      console.log('✅ Avatar auto-assigned:', {
+        avatar: autoAvatar.label,
+        imageUrl: autoAvatar.imageUrl
+      });
+      
+      addNotification(
+        'success', 
+        'Avatar Assigned', 
+        `Your chat avatar has been set!`
+      );
+    }
+  }, [activeChatRooms.length, userAvatar, userId]);
 
   // NEW: Handle getting GPS location with Google Geocoding
   const handleGetLocation = async () => {
@@ -1011,6 +1034,10 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           loading={messagesLoading}
                           currentUserId={currentChatRoom?.customerId || ''}
                           userRole="customer" // TODO: Get from auth context
+                          therapistImage={currentChatRoom?.profilePicture}
+                          customerAvatar={userAvatar}
+                          therapistName={currentChatRoom?.providerName}
+                          customerName={userName}
                         />
                       </div>
                     )}
@@ -1058,6 +1085,8 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
           </div>
         ))}
       </div>
+
+
     </>
   );
 };

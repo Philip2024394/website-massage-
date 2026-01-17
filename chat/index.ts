@@ -32,6 +32,8 @@ export { BookingBanner } from './BookingBanner';
 export { ChatMessages } from './ChatMessages';
 export { ChatInput } from './ChatInput';
 
+
+
 // Hooks (for custom implementations)
 export { useChatRooms } from './hooks/useChatRooms';
 export { useChatMessages } from './hooks/useChatMessages';
@@ -42,3 +44,12 @@ export { useNotifications } from './hooks/useNotifications';
 export type { ChatRoom } from './hooks/useChatRooms';
 export type { ChatMessage } from './hooks/useChatMessages';
 export type { Notification, NotificationType } from './hooks/useNotifications';
+
+// Enhanced Avatar System
+export { 
+  AVATAR_OPTIONS, 
+  LEGACY_AVATAR_OPTIONS,
+  getAutoAssignedAvatar,
+  getRandomAvatarByGender,
+  type AvatarOption
+} from '../constants/chatAvatars';

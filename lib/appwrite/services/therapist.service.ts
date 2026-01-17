@@ -720,6 +720,13 @@ export const therapistService = {
             // Handle custom menu field
             if (data.customMenu !== undefined) mappedData.customMenu = data.customMenu;
             
+            // Handle payment information fields
+            if (data.bankName !== undefined) mappedData.bankName = data.bankName;
+            if (data.accountName !== undefined) mappedData.accountName = data.accountName;
+            if (data.accountNumber !== undefined) mappedData.accountNumber = data.accountNumber;
+            if (data.ktpPhotoUrl !== undefined) mappedData.ktpPhotoUrl = data.ktpPhotoUrl;
+            if (data.ktpVerified !== undefined) mappedData.ktpVerified = data.ktpVerified;
+            
             // Handle discount fields - preserve from current document if not provided
             if (data.discountPercentage !== undefined) {
                 // Clamp discount percentage to schema range 0-100

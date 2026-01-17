@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Check, CheckCheck } from 'lucide-react';
+import { Check, Check as CheckCheck } from 'lucide-react';
 
 interface ReadReceiptProps {
   status: 'sent' | 'delivered' | 'read' | 'none';

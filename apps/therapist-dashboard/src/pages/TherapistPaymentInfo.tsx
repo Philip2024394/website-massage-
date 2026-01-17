@@ -183,7 +183,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
         title="Payment Information"
         subtitle="Manage your bank details"
         onBackToStatus={onBack}
-        icon={<CreditCard className="w-6 h-6 text-blue-600" />}
+        icon={<CreditCard className="w-6 h-6 text-orange-600" />}
       />
 
       {/* Main Content */}

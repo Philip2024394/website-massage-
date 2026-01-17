@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Gift, Search, User, MessageCircle, Clock, ArrowRight } from 'lucide-react';
+import { Gift, Search, User, MessageCircle, Clock, Plus } from 'lucide-react';
 import { databases, Query } from '../../../../lib/appwrite';
 import { APPWRITE_CONFIG } from '../../../../lib/appwrite.config';
 import SendDiscountModal from '../../../../components/SendDiscountModal';
@@ -251,7 +251,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
                   >
                     <Gift className="w-4 h-4" />
                     <span className="hidden sm:inline">{labels.sendDiscount}</span>
-                    <ArrowRight className="w-4 h-4 sm:hidden" />
+                    <Plus className="w-4 h-4 sm:hidden" />
                   </button>
                 </div>
               </div>

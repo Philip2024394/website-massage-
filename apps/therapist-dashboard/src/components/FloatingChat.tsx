@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Minus, Check, XCircle, Flag } from 'lucide-react';
+import { MessageCircle, X, XCircle, Check, Tag } from 'lucide-react';
 import { messagingService, simpleBookingService } from '../../../../lib/appwriteService';
 import { 
     ChatPersistenceManager, 
@@ -519,8 +519,8 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
     // Full Chat Window
     return (
-        <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50`}>
-            <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col overflow-hidden">
+        <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50 max-w-[calc(100vw-2rem)]`}>
+            <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-96 max-w-full h-[600px] max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
                 {/* STEP 8: Show locked state */}
                 {chatLocked && (
                     <div className="absolute inset-0 bg-gray-900 bg-opacity-75 rounded-lg flex items-center justify-center z-10">
@@ -619,7 +619,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                             className="p-1.5 hover:bg-white/20 rounded transition-colors"
                             title="Minimize"
                         >
-                            <Minus className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                         </button>
                         <button
                             onClick={closeChat}
@@ -697,7 +697,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                                     className="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-full transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex-shrink-0"
                                     title="Report this conversation"
                                 >
-                                    <Flag className="w-4 h-4" />
+                                    <Tag className="w-4 h-4" />
                                 </button>
                                 
                                 {/* Message Input */}

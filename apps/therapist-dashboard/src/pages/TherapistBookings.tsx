@@ -197,135 +197,46 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      // TODO: Fetch from Appwrite bookings collection
-      // Filter by therapistId === therapist.$id
+      // Fetch real bookings from Appwrite
+      const { bookingService } = await import('../../../../lib/appwriteService');
       
-      // Mock data with scheduled bookings requiring 30% deposit
-      const mockBookings: Booking[] = [
-        {
-          $id: '1',
-          customerName: 'John Doe',
-          customerPhone: '+6281234567890',
-          serviceType: 'Balinese Massage',
-          duration: 90,
-          price: 150000,
-          location: 'Hotel Grand Bali, Room 302',
-          date: '2024-12-15',
-          time: '14:00',
-          status: 'pending',
-          createdAt: '2024-12-11T10:30:00',
-          notes: 'Prefer deep tissue pressure',
-          isScheduled: true,
-          depositRequired: true,
-          depositAmount: 45000, // 30% of 150000
-          depositPaid: true,
-          depositStatus: 'pending_approval', // Needs therapist approval
-          paymentProofUrl: 'https://example.com/proof1.jpg',
-          paymentProofUploadedAt: '2024-12-11T11:00:00',
-          depositNotes: 'I transferred exactly 45,000 IDR via BCA mobile banking'
-        },
-        {
-          $id: '2',
-          customerName: 'Sarah Johnson',
-          customerPhone: '+6281234567891',
-          serviceType: 'Swedish Massage',
-          duration: 60,
-          price: 100000,
-          location: 'Villa Sunset, Seminyak',
-          date: '2024-12-16',
-          time: '10:00',
-          status: 'confirmed',
-          createdAt: '2024-12-10T15:20:00',
-          isScheduled: true,
-          depositRequired: true,
-          depositAmount: 30000, // 30% of 100000
-          depositPaid: true,
-          depositStatus: 'approved', // Already approved
-          paymentProofUrl: 'https://example.com/proof2.jpg',
-          paymentProofUploadedAt: '2024-12-10T16:00:00'
-        },
-        {
-          $id: '3',
-          customerName: 'Michael Chen',
-          customerPhone: '+6281234567892',
-          serviceType: 'Thai Massage',
-          duration: 120,
-          price: 200000,
-          location: 'Ubud Resort, Bungalow 5',
-          date: '2024-12-10',
-          time: '16:00',
-          status: 'completed',
-          createdAt: '2024-12-09T12:00:00',
-          notes: 'Regular customer, knows the routine',
-          isScheduled: true,
-          depositRequired: true,
-          depositAmount: 60000, // 30% of 200000
-          depositPaid: true,
-          depositStatus: 'approved',
-          paymentProofUrl: 'https://example.com/proof3.jpg',
-          paymentProofUploadedAt: '2024-12-09T13:00:00'
-        },
-        {
-          $id: '4',
-          customerName: 'Lisa Wong',
-          customerPhone: '+6281234567893',
-          serviceType: 'Hot Stone Massage',
-          duration: 75,
-          price: 175000,
-          location: 'Spa Resort, Villa 12',
-          date: '2024-12-17',
-          time: '15:30',
-          status: 'pending',
-          createdAt: '2024-12-12T09:15:00',
-          notes: 'First time customer',
-          isScheduled: false, // Immediate booking - no deposit required
-          depositRequired: false
-        },
-        {
-          $id: '5',
-          customerName: 'David Kim',
-          customerPhone: '+6281234567894',
-          serviceType: 'Deep Tissue Massage',
-          duration: 90,
-          price: 180000,
-          location: 'Kuta Beach Resort, Room 205',
-          date: '2024-12-18',
-          time: '19:00',
-          status: 'pending',
-          createdAt: '2024-12-12T14:20:00',
-          notes: 'Scheduled booking requiring deposit',
-          isScheduled: true,
-          depositRequired: true,
-          depositAmount: 54000, // 30% of 180000
-          depositPaid: false // No deposit yet - waiting for customer payment
-        },
-        {
-          $id: '6',
-          customerName: 'Emma Wilson',
-          customerPhone: '+6281234567895',
-          serviceType: 'Aromatherapy Massage',
-          duration: 60,
-          price: 120000,
-          location: 'Nusa Dua Hotel, Room 102',
-          date: '2024-12-19',
-          time: '11:00',
-          status: 'pending',
-          createdAt: '2024-12-12T16:45:00',
-          notes: 'Needs reupload of payment proof',
-          isScheduled: true,
-          depositRequired: true,
-          depositAmount: 36000, // 30% of 120000
-          depositPaid: true,
-          depositStatus: 'rejected',
-          paymentProofUrl: 'https://example.com/proof-blurry.jpg',
-          paymentProofUploadedAt: '2024-12-12T17:00:00',
-          depositNotes: 'Payment proof is too blurry, please upload clearer image'
-        }
-      ];
+      // Get bookings for this therapist
+      const realBookings = await bookingService.getProviderBookings(therapist.$id);
       
-      setBookings(mockBookings);
+      // Transform Appwrite booking documents to match Booking interface
+      const transformedBookings: Booking[] = realBookings.map((doc: any) => ({
+        $id: doc.$id,
+        customerName: doc.userName || doc.customerName || 'Unknown Customer',
+        customerPhone: doc.userPhone || doc.customerPhone || '',
+        serviceType: doc.service || doc.serviceType || 'Massage Service',
+        duration: doc.duration || 60,
+        price: doc.totalAmount || doc.price || 0,
+        location: doc.location || '',
+        date: doc.date ? new Date(doc.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        time: doc.time || '00:00',
+        status: doc.status || 'pending',
+        createdAt: doc.$createdAt || new Date().toISOString(),
+        notes: doc.notes || '',
+        customerId: doc.userId || doc.customerId,
+        isScheduled: doc.bookingType === 'scheduled' || false,
+        depositRequired: doc.depositRequired || false,
+        depositAmount: doc.depositAmount || 0,
+        depositPaid: doc.depositPaid || false,
+        depositStatus: doc.depositStatus || 'pending_approval',
+        paymentProofUrl: doc.paymentProofUrl || '',
+        paymentProofUploadedAt: doc.paymentProofUploadedAt || '',
+        depositNotes: doc.depositNotes || ''
+      }));
+      
+      setBookings(transformedBookings);
+      devLog('✅ Loaded', transformedBookings.length, 'real bookings for therapist', therapist.$id);
+      
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
+      console.error('Failed to fetch real bookings:', error);
+      
+      // Fallback to empty array instead of mock data
+      setBookings([]);
+      devWarn('❌ No bookings loaded - service may be unavailable');
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Search, Loader, MapPinIcon, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Search, Loader, MapPin as MapPinIcon, CheckCircle, AlertCircle } from 'lucide-react';
 import { locationService, LocationOption, DetectedLocation } from '../lib/locationService';
 
 interface LocationSelectorProps {

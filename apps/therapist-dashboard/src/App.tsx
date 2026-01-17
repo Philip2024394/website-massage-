@@ -546,7 +546,17 @@ function App() {
           />
         );
       case 'legal':
-        return <TherapistLegal therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
+        return <TherapistLegal 
+          therapist={user} 
+          onBack={() => setCurrentPage('status')} 
+          onNavigate={(page) => {
+            if (page === 'contact-us') {
+              // Open the main website's contact us page in new tab
+              window.open('/#/contact-us', '_blank');
+            }
+          }}
+          language={language} 
+        />;
       case 'calendar':
         return (
           <TherapistCalendar 

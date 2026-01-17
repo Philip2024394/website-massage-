@@ -28,8 +28,8 @@ const SharedTherapistProfile = lazy(() => import('../../features/shared-profiles
 const SharedPlaceProfile = lazy(() => import('../../features/shared-profiles/SharedPlaceProfile'));
 const SharedFacialProfile = lazy(() => import('../../features/shared-profiles/SharedFacialProfile'));
 
-// Legacy - for backwards compatibility
-const SharedTherapistProfilePage = lazy(() => import('../../pages/SharedTherapistProfilePage'));
+// Legacy - for backwards compatibility (using the same component as above)
+const SharedTherapistProfilePage = SharedTherapistProfile;
 
 export const profileRoutes = {
   therapist: {

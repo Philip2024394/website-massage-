@@ -56,77 +56,35 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      // TODO: Fetch from Appwrite notifications collection
-      // Filter by therapistId === therapist.$id
-      // Order by timestamp DESC
-
-      // Mock data for now
-      const mockNotifications: Notification[] = [
-        {
-          $id: '1',
-          type: 'booking',
-          title: 'New Booking Request',
-          message: 'John Doe requested a 90-minute Balinese Massage for Dec 15, 2024 at 3:00 PM',
-          timestamp: new Date(Date.now() - 5 * 60000).toISOString(), // 5 minutes ago
-          read: false,
-          priority: 'high',
-          actionLabel: 'View Booking',
-          relatedId: 'BK001'
-        },
-        {
-          $id: '2',
-          type: 'message',
-          title: 'New Message from Customer',
-          message: 'Sarah Johnson sent you a message about booking availability',
-          timestamp: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
-          read: false,
-          priority: 'medium',
-          actionLabel: 'View Chat',
-          relatedId: 'MSG001'
-        },
-        {
-          $id: '3',
-          type: 'reminder',
-          title: 'Upcoming Booking Reminder',
-          message: 'You have a booking with Mike Wilson in 3 hours (6:00 PM today)',
-          timestamp: new Date(Date.now() - 1 * 3600000).toISOString(), // 1 hour ago
-          read: false,
-          priority: 'high',
-          actionLabel: 'View Details'
-        },
-        {
-          $id: '4',
-          type: 'system',
-          title: 'Welcome to Indastreet!',
-          message: 'Your therapist profile is now live. Start receiving bookings from customers in your area.',
-          timestamp: new Date(Date.now() - 24 * 3600000).toISOString(), // 1 day ago
-          read: true,
-          priority: 'low'
-        },
-        {
-          $id: '5',
-          type: 'payment',
-          title: 'Payment Received',
-          message: 'You received Rp 127,500 for booking BK001. Admin commission (Rp 22,500) has been deducted.',
-          timestamp: new Date(Date.now() - 2 * 24 * 3600000).toISOString(), // 2 days ago
-          read: true,
-          priority: 'medium'
-        },
-        {
-          $id: '6',
-          type: 'system',
-          title: 'Premium Membership Benefits',
-          message: 'Upgrade to Premium to unlock verified badge, best times analytics, and 24/7 customer support chat.',
-          timestamp: new Date(Date.now() - 3 * 24 * 3600000).toISOString(), // 3 days ago
-          read: true,
-          priority: 'low',
-          actionLabel: 'View Plans'
-        }
-      ];
-
-      setNotifications(mockNotifications);
+      // Import notification service
+      const { notificationService } = await import('../../../../lib/appwriteService');
+      
+      // Fetch real notifications from Appwrite
+      const realNotifications = await notificationService.getByTherapist(therapist.$id);
+      
+      // Transform Appwrite notification documents to match interface
+      const transformedNotifications: Notification[] = realNotifications.map((doc: any) => ({
+        $id: doc.$id,
+        type: doc.type || 'system',
+        title: doc.title || 'Notification',
+        message: doc.message || '',
+        timestamp: doc.$createdAt || new Date().toISOString(),
+        read: doc.read || false,
+        actionUrl: doc.actionUrl || undefined,
+        actionLabel: doc.actionLabel || undefined,
+        priority: doc.priority || 'medium',
+        relatedId: doc.relatedId || undefined
+      }));
+      
+      setNotifications(transformedNotifications);
+      console.log('✅ Loaded', transformedNotifications.length, 'real notifications for therapist', therapist.$id);
+      
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
+      
+      // Fallback to empty array instead of mock data
+      setNotifications([]);
+      console.warn('❌ No notifications loaded - service may be unavailable');
     } finally {
       setLoading(false);
     }

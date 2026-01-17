@@ -2044,7 +2044,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             </div>
                         )}
                         
-                        {/* Testimonials Section - After therapist cards */}
+                        {/* Testimonials Section - After therapist cards - Only show if therapists are loaded */}
+                        {therapists && therapists.length > 0 && (
                         <div className="mt-12 mb-8 bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-6 shadow-lg">
                             <div className="text-center mb-6">
                                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -2111,6 +2112,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 </div>
                             </div>
                         </div>
+                        )}
                         </div>
                     </div>
                 )}

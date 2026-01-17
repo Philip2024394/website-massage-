@@ -110,19 +110,67 @@ const PaymentManagement: React.FC = () => {
         setLoading(true);
         try {
             // ✅ Connect to real Appwrite data sources
-            // 1. Load bookings from chat window sessions
-            // 2. Load scheduled bookings from member orders
-            // 3. Calculate 30% commission on each booking
+            // Import real services for payment data
+            const { bookingService, commissionTrackingService } = await import('../../../../lib/appwriteService');
             
-            // TODO: Implement actual Appwrite queries:
-            // const bookingsData = await databases.listDocuments('bookings');
-            // const chatBookings = await databases.listDocuments('chat_rooms', [Query.equal('hasBooking', true)]);
-            // const scheduledBookings = await databases.listDocuments('scheduled_bookings');
+            // Get all bookings to calculate commission payments
+            const allBookings = await bookingService.getAll();
             
-            // For now, using mock data structure that matches real data
-            const mockPayments: Payment[] = [
-                {
-                    $id: '1',
+            // Get existing commission records
+            const commissionRecords = await commissionTrackingService.getAll();
+            
+            // Transform commission records to payment structure
+            const realPayments: Payment[] = commissionRecords.map((commission: any) => ({
+                $id: commission.$id,
+                memberId: commission.providerId,
+                memberName: commission.providerName || 'Unknown Provider',
+                memberType: commission.providerType || 'therapist',
+                whatsappNumber: commission.whatsappNumber || '',
+                email: commission.email || '',
+                amount: commission.commissionAmount || 0,
+                currency: 'IDR',
+                dueDate: commission.dueDate ? new Date(commission.dueDate) : new Date(),
+                paidDate: commission.paidDate ? new Date(commission.paidDate) : undefined,
+                status: commission.status || 'pending',
+                paymentMethod: commission.paymentMethod || undefined,
+                invoiceNumber: commission.invoiceNumber || `INV-${commission.$id.slice(-6)}`,
+                description: `30% commission on ${commission.bookingCount || 1} booking(s)`,
+                commissionRate: 30,
+                bookingId: commission.bookingId,
+                lastReminderSent: commission.lastReminderSent ? new Date(commission.lastReminderSent) : undefined,
+                confirmationDate: commission.confirmationDate ? new Date(commission.confirmationDate) : undefined
+            }));
+            
+            // Get lead data (if available)
+            let realLeads: LeadGenerated[] = [];
+            try {
+                // Attempt to get leads data - this may not exist
+                const leadsData = await import('../../../../lib/services/leadTrackingService');
+                const leadRecords = await leadsData.leadTrackingService.getAll();
+                
+                realLeads = leadRecords.map((lead: any) => ({
+                    $id: lead.$id,
+                    leadId: lead.leadId || `LEAD-${lead.$id.slice(-6)}`,
+                    memberId: lead.memberId,
+                    memberName: lead.memberName || 'Unknown Member',
+                    customerName: lead.customerName || 'Unknown Customer',
+                    customerPhone: lead.customerPhone || '',
+                    serviceType: lead.serviceType || 'Service',
+                    leadValue: lead.leadValue || 0,
+                    leadDate: lead.$createdAt ? new Date(lead.$createdAt) : new Date(),
+                    status: lead.status || 'new',
+                    commissionOwed: lead.commissionOwed || 0,
+                    commissionPaid: lead.commissionPaid || false
+                }));
+            } catch (leadError) {
+                console.log('ℹ️ Lead tracking service not available:', leadError.message);
+            }
+            
+            setPayments(realPayments);
+            setLeads(realLeads);
+            
+            console.log('✅ Loaded', realPayments.length, 'real payment records');
+            console.log('✅ Loaded', realLeads.length, 'lead records');
                     memberId: 'therapist1',
                     memberName: 'Sarah Johnson',
                     memberType: 'therapist',
@@ -199,15 +247,14 @@ const PaymentManagement: React.FC = () => {
                     leadValue: 750000,
                     leadDate: new Date('2025-12-09'),
                     status: 'contacted',
-                    commissionOwed: 75000,
-                    commissionPaid: false
-                }
-            ];
-
-            setPayments(mockPayments);
-            setLeads(mockLeads);
+            
         } catch (error) {
-            console.error('Error loading payment data:', error);
+            console.error('Failed to load payment data:', error);
+            
+            // Fallback to empty arrays instead of mock data
+            setPayments([]);
+            setLeads([]);
+            console.warn('❌ Payment data not available - service may be unavailable');
         } finally {
             setLoading(false);
         }

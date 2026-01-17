@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, ChevronDown, X } from 'lucide-react';
+import { Search, MessageCircle, Phone, Mail, HelpCircle, Users, CreditCard, Shield, Clock, MapPin, ThumbsUp, ArrowLeft, Plus, X } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
@@ -703,9 +703,9 @@ const FAQPage: React.FC<FAQPageProps> = ({
                                                 {faq.question}
                                             </h3>
                                         </div>
-                                        <ChevronUp className={`
+                                        <Plus className={`
                                             w-7 h-7 text-gray-400 flex-shrink-0 transition-all duration-300 mt-1
-                                            ${isExpanded ? 'rotate-180 text-orange-500 scale-110' : 'group-hover:text-orange-500 group-hover:scale-110'}
+                                            ${isExpanded ? 'rotate-45 text-orange-500 scale-110' : 'group-hover:text-orange-500 group-hover:scale-110'}
                                         `} />
                                     </div>
                                     
