@@ -51,6 +51,5 @@ const ShareActions: React.FC<ShareActionsProps> = ({ therapist }) => {
     </div>
   );
 };
-};
 
 export default ShareActions;
