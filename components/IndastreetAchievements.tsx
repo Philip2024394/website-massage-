@@ -4,6 +4,9 @@ import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIE
 
 interface IndastreetAchievementsProps {
   therapistId: string;
+  therapistName?: string;    // Real therapist name
+  isVerified?: boolean;      // Real verification status
+  verifiedDate?: string;     // Real verification date
   mode?: 'authenticated' | 'shared' | 'public';
   achievements?: TherapistAchievement[];
   onViewAll?: () => void;
@@ -11,6 +14,9 @@ interface IndastreetAchievementsProps {
 
 const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
   therapistId,
+  therapistName = 'Therapist',
+  isVerified = false,
+  verifiedDate,
   mode = 'public',
   achievements = [],
   onViewAll
@@ -87,16 +93,18 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
             <h3 className="text-lg font-semibold text-orange-800">
               Indastreet Achievements
             </h3>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">✓</span>
+            {isVerified && (
+              <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1">
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                  <span className="text-gray-700 font-medium">{therapistName}</span>
+                  <span className="text-gray-600">Verified ID</span>
+                  <span className="text-gray-500">{verifiedDate || new Date().toLocaleDateString('en-GB')}</span>
                 </div>
-                <span className="text-gray-700 font-medium">Agnus</span>
-                <span className="text-gray-600">Verified ID</span>
-                <span className="text-gray-500">24/01/2026</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
         

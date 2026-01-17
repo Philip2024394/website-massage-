@@ -20,6 +20,18 @@ export interface TherapistAchievement {
   isActive: boolean;
 }
 
+// Therapist Verification Status
+export interface TherapistVerification {
+  $id: string;
+  therapistId: string;
+  isVerified: boolean;
+  verifiedAt?: string;
+  verifiedBy?: string; // Admin who verified
+  verificationType: 'identity' | 'background' | 'license' | 'training';
+  expiresAt?: string;  // For time-limited verifications
+  notes?: string;
+}
+
 export interface AchievementCategory {
   name: string;
   description: string;

@@ -10,7 +10,7 @@ interface AdminAchievementManagerProps {
 }
 
 const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<'achievements' | 'assign'>('achievements');
+  const [activeTab, setActiveTab] = useState<'achievements' | 'assign' | 'verification'>('achievements');
   const [achievements, setAchievements] = useState<Achievement[]>(SAMPLE_ACHIEVEMENTS);
   const [therapistAchievements, setTherapistAchievements] = useState<TherapistAchievement[]>([]);
   const [editingAchievement, setEditingAchievement] = useState<Achievement | null>(null);
@@ -22,11 +22,11 @@ const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBac
   const [selectedAchievementToAssign, setSelectedAchievementToAssign] = useState<string>('');
 
   useEffect(() => {
-    // Mock load therapists for assignment
+    // Mock load therapists for assignment and verification
     setTherapists([
-      { $id: 'th-1', name: 'Sarah Johnson', profilePicture: null },
-      { $id: 'th-2', name: 'Dewi Sari', profilePicture: null },
-      { $id: 'th-3', name: 'Maria Santos', profilePicture: null }
+      { $id: 'th-1', name: 'Sarah Johnson', profilePicture: null, isVerified: true, verifiedAt: '2024-01-15' },
+      { $id: 'th-2', name: 'Dewi Sari', profilePicture: null, isVerified: false },
+      { $id: 'th-3', name: 'Maria Santos', profilePicture: null, isVerified: true, verifiedAt: '2024-02-01' }
     ]);
   }, []);
 
@@ -170,6 +170,17 @@ const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBac
               }`}
             >
               Assign Achievements
+            </button>
+            <button
+              onClick={() => setActiveTab('verification')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'verification'
+                  ? 'border-orange-500 text-orange-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Shield className="inline w-4 h-4 mr-1" />
+              Verification Manager
             </button>
           </nav>
         </div>
@@ -344,6 +355,128 @@ const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBac
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'verification' && (
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">
+              <Shield className="inline w-6 h-6 mr-2 text-green-600" />
+              Therapist Verification Manager
+            </h2>
+            
+            <div className="space-y-6">
+              {/* Verification Actions */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-green-800 mb-4">Verify Therapist Identity</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Therapist</label>
+                    <select
+                      value={selectedTherapist}
+                      onChange={(e) => setSelectedTherapist(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Choose a therapist...</option>
+                      {therapists.map((therapist) => (
+                        <option key={therapist.$id} value={therapist.$id}>
+                          {therapist.name} {therapist.isVerified ? '(✓ Verified)' : '(Unverified)'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Verification Type</label>
+                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                      <option value="identity">Identity Verification</option>
+                      <option value="background">Background Check</option>
+                      <option value="license">Professional License</option>
+                      <option value="training">Training Certificate</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <button
+                      onClick={() => {
+                        if (selectedTherapist) {
+                          // Toggle verification status
+                          setTherapists(prev => prev.map(t => 
+                            t.$id === selectedTherapist 
+                              ? { ...t, isVerified: !t.isVerified, verifiedAt: !t.isVerified ? new Date().toLocaleDateString('en-GB') : undefined }
+                              : t
+                          ));
+                          alert('Verification status updated successfully!');
+                        }
+                      }}
+                      disabled={!selectedTherapist}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Toggle Verification
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Status List */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Verification Status</h3>
+                <div className="space-y-3">
+                  {therapists.map((therapist) => (
+                    <div key={therapist.$id} className={`flex items-center justify-between p-4 rounded-lg border ${
+                      therapist.isVerified ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${therapist.isVerified ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <div>
+                          <div className="font-medium text-gray-900">{therapist.name}</div>
+                          <div className="text-sm text-gray-600">
+                            {therapist.isVerified 
+                              ? `Verified on ${therapist.verifiedAt || 'Unknown date'}`
+                              : 'Not verified - requires identity check'
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {therapist.isVerified ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <Shield className="w-4 h-4 mr-1" />
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Unverified
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Verification Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {therapists.length}
+                  </div>
+                  <div className="text-sm text-blue-800">Total Therapists</div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-green-600">
+                    {therapists.filter(t => t.isVerified).length}
+                  </div>
+                  <div className="text-sm text-green-800">Verified</div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {Math.round((therapists.filter(t => t.isVerified).length / therapists.length) * 100)}%
+                  </div>
+                  <div className="text-sm text-orange-800">Verification Rate</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

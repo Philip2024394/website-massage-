@@ -166,6 +166,9 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 {/* Indastreet Achievements - Professional Standards Display */}
                 <IndastreetAchievements 
                     therapistId={(therapist as any).id || (therapist as any).$id}
+                    therapistName={therapist.name}
+                    isVerified={(therapist as any).isVerified || (therapist as any).verifiedBadge}
+                    verifiedDate={(therapist as any).verifiedAt}
                     mode={mode}
                     onViewAll={() => {
                         // For authenticated mode, navigate to achievement management
