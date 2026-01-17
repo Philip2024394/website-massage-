@@ -33,27 +33,35 @@ export const useAppState = () => {
       }
       
       // Handle share URLs - both SEO format and simple format
-      if (pathname.startsWith('/share/')) {
+      if (pathname.startsWith('/share/') || pathname.startsWith('/shared/')) {
         const segments = pathname.split('/').filter(Boolean);
-        // segments will be: ['share', 'pijat-yogyakarta-wiwid', '123'] OR ['share', 'therapist', '123']
         
-        if (segments.length >= 3) {
-          // SEO format: /share/{slug}/{id} - default to therapist
-          console.log('🔗 SEO SHARE URL DETECTED:', pathname);
-          return 'share-therapist';
-        } else if (segments[1] === 'therapist') {
-          console.log('🔗 EXPLICIT THERAPIST SHARE URL');
-          return 'share-therapist';
-        } else if (segments[1] === 'place') {
-          console.log('🔗 EXPLICIT PLACE SHARE URL');
-          return 'share-place';
-        } else if (segments[1] === 'facial') {
-          console.log('🔗 EXPLICIT FACIAL SHARE URL');
-          return 'share-facial';
-        } else {
-          // Short URL format: /share/12345
-          console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
-          return 'share-therapist'; // Default to therapist for short links
+        // Handle /shared/therapist pattern
+        if (segments[0] === 'shared' && segments[1] === 'therapist') {
+          console.log('🔗 SHARED THERAPIST URL DETECTED:', pathname);
+          return 'shared-therapist-profile';
+        }
+        
+        // Handle /share/* patterns
+        if (segments[0] === 'share') {
+          if (segments.length >= 3) {
+            // SEO format: /share/{slug}/{id} - default to therapist
+            console.log('🔗 SEO SHARE URL DETECTED:', pathname);
+            return 'share-therapist';
+          } else if (segments[1] === 'therapist') {
+            console.log('🔗 EXPLICIT THERAPIST SHARE URL');
+            return 'share-therapist';
+          } else if (segments[1] === 'place') {
+            console.log('🔗 EXPLICIT PLACE SHARE URL');
+            return 'share-place';
+          } else if (segments[1] === 'facial') {
+            console.log('🔗 EXPLICIT FACIAL SHARE URL');
+            return 'share-facial';
+          } else {
+            // Short URL format: /share/12345
+            console.log('🔗 SHORT SHARE URL DETECTED:', pathname);
+            return 'share-therapist'; // Default to therapist for short links
+          }
         }
       }
       

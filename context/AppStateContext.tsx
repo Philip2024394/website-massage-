@@ -106,7 +106,7 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
         if (hash.startsWith('/therapist-profile/')) {
             console.log('🔗 Initial URL detected: therapist profile ->', hash);
             return 'shared-therapist-profile';
-        } else if (hash.startsWith('/share/therapist/')) {
+        } else if (hash.startsWith('/share/therapist/') || hash.startsWith('/shared/therapist')) {
             console.log('🔗 Initial URL detected: share therapist ->', hash);
             return 'shared-therapist-profile';
         } else if (hash.startsWith('/profile/therapist/')) {

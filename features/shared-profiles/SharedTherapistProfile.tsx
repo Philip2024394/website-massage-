@@ -74,11 +74,37 @@ const extractTherapistIdFromUrl = (): string | null => {
         console.log('🔗 [HASH URL] Parsed path from hash:', path);
     }
     
-    // Match patterns: /share/therapist/:id or /therapist-profile/:id
-    const match = path.match(/\/(share\/therapist|therapist-profile)\/([^\/]+)/);
+    // Match patterns: /share/therapist/:id, /shared/therapist/:id, or /therapist-profile/:id
+    let match = path.match(/\/(share\/therapist|shared\/therapist|therapist-profile)\/([^\/]+)/);
+    
+    // Special handling for /shared/therapist without ID - try to get ID from query params or hash
+    if (!match && (path === '/shared/therapist' || path.startsWith('/shared/therapist'))) {
+        console.log('🔧 [SHARED URL] Handling /shared/therapist pattern');
+        
+        // Try to get ID from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const idFromParams = urlParams.get('id') || urlParams.get('therapistId');
+        
+        if (idFromParams) {
+            console.log('✅ [SHARED URL] Found ID in URL params:', idFromParams);
+            return idFromParams;
+        }
+        
+        // Try to get from hash fragment
+        const hashId = window.location.hash.replace('#', '');
+        if (hashId && hashId.length > 10) {
+            console.log('✅ [SHARED URL] Found ID in hash:', hashId);
+            return hashId;
+        }
+        
+        // Return null to trigger fallback logic
+        console.warn('⚠️ [SHARED URL] No ID found for /shared/therapist - will show all therapists');
+        return 'default';
+    }
+    
     if (!match) {
         console.error('❌ [LINK VALIDATION] Invalid URL pattern - does not match expected routes');
-        console.error('❌ Expected patterns: /share/therapist/:id OR /therapist-profile/:id');
+        console.error('❌ Expected patterns: /share/therapist/:id, /shared/therapist/:id, OR /therapist-profile/:id');
         console.error('❌ Received path:', path);
         return null;
     }
@@ -247,7 +273,17 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
                 console.error('\n' + '🚫'.repeat(40));
                 console.error('🚫 [ERROR] Invalid profile URL - cannot extract therapist ID');
                 console.error('🚫'.repeat(40) + '\n');
-                setError('Invalid profile URL');
+                setError('Invalid profile URL - missing therapist ID');
+                setLoading(false);
+                return;
+            }
+            
+            // Special handling for 'default' ID - show therapist selector
+            if (therapistId === 'default') {
+                console.log('\n' + '🎯'.repeat(40));
+                console.log('🎯 [SELECTOR MODE] No specific therapist ID - showing selector');
+                console.log('🎯'.repeat(40) + '\n');
+                setError('Please select a therapist to view their profile');
                 setLoading(false);
                 return;
             }
@@ -661,7 +697,7 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         );
     }
 
-    // ERROR STATE - SHOW FULL ERROR, NO SILENT FAILURE
+    // ERROR STATE - ENHANCED WITH THERAPIST SELECTOR
     if (error || !therapist) {
         const errorMessage = error || 'Therapist profile not found';
         console.error('\n' + '🚨'.repeat(40));
@@ -671,6 +707,80 @@ export const SharedTherapistProfile: React.FC<SharedTherapistProfileProps> = ({
         console.error('❌ Has therapist:', !!therapist);
         console.error('❌ Current URL:', window.location.href);
         console.error('🚨'.repeat(40) + '\n');
+        
+        // Show therapist selector for /shared/therapist URLs without ID
+        if (errorMessage.includes('select a therapist') || window.location.pathname === '/shared/therapist') {
+            return (
+                <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+                    <div className="container mx-auto px-4 py-8">
+                        <div className="text-center mb-8">
+                            <div className="mb-4 text-6xl">🎭</div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Therapist</h1>
+                            <p className="text-gray-600">Select a therapist to view their profile and book a massage</p>
+                        </div>
+                        
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <div className="text-center">
+                                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                                        💆‍♀️ Available Therapists
+                                    </h2>
+                                    <p className="text-gray-600 mb-6">
+                                        Click on any therapist below to view their profile and services
+                                    </p>
+                                    
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        {/* Sample therapists - these would come from props or API */}
+                                        <div className="p-4 border rounded-lg hover:border-orange-300 hover:shadow-md transition-all cursor-pointer"
+                                             onClick={() => window.location.href = '/share/therapist/sample-id-1'}>
+                                            <div className="text-4xl mb-2">👩‍⚕️</div>
+                                            <h3 className="font-semibold text-gray-800">Sample Therapist 1</h3>
+                                            <p className="text-sm text-gray-600">Traditional Massage</p>
+                                        </div>
+                                        
+                                        <div className="p-4 border rounded-lg hover:border-orange-300 hover:shadow-md transition-all cursor-pointer"
+                                             onClick={() => window.location.href = '/share/therapist/sample-id-2'}>
+                                            <div className="text-4xl mb-2">👨‍⚕️</div>
+                                            <h3 className="font-semibold text-gray-800">Sample Therapist 2</h3>
+                                            <p className="text-sm text-gray-600">Sports Massage</p>
+                                        </div>
+                                        
+                                        <div className="p-4 border rounded-lg hover:border-orange-300 hover:shadow-md transition-all cursor-pointer"
+                                             onClick={() => window.location.href = '/share/therapist/sample-id-3'}>
+                                            <div className="text-4xl mb-2">👩‍⚕️</div>
+                                            <h3 className="font-semibold text-gray-800">Sample Therapist 3</h3>
+                                            <p className="text-sm text-gray-600">Reflexology</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mt-8 p-4 bg-orange-50 rounded-lg">
+                                        <h3 className="font-semibold text-orange-800 mb-2">
+                                            🔗 Share Link Format
+                                        </h3>
+                                        <p className="text-sm text-orange-700">
+                                            To share a specific therapist, use: 
+                                            <br />
+                                            <code className="bg-white px-2 py-1 rounded">
+                                                /share/therapist/{'{therapist-id}'}
+                                            </code>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="text-center">
+                                <button 
+                                    onClick={() => window.location.href = '/'}
+                                    className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                                >
+                                    🏠 Go to Homepage
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
         
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">

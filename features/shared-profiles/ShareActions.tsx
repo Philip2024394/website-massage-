@@ -1,78 +1,56 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import type { Therapist } from '../../types';
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  WhatsappShareButton,
-  TelegramShareButton,
-  LinkedinShareButton,
-  EmailShareButton,
-  FacebookIcon,
-  TwitterIcon,
-  WhatsappIcon,
-  TelegramIcon,
-  LinkedinIcon,
-  EmailIcon,
-} from 'react-share';
-import { generateTherapistShareURL, generateShareText, copyShareURLToClipboard } from './utils/shareUrlBuilder';
+import ShareTherapistProfile from '../../components/ShareTherapistProfile';
 
 interface ShareActionsProps {
   therapist: Therapist;
 }
 
 const ShareActions: React.FC<ShareActionsProps> = ({ therapist }) => {
-  const shareUrl = useMemo(() => generateTherapistShareURL(therapist), [therapist]);
-  const shareText = useMemo(() => generateShareText(therapist.name, 'therapist', therapist.location), [therapist]);
-  const [copied, setCopied] = useState<boolean>(false);
-
-  const onCopy = async () => {
-    const ok = await copyShareURLToClipboard(shareUrl);
-    setCopied(ok);
-    setTimeout(() => setCopied(false), 2000);
+  const handleShareComplete = (platform: string, url: string) => {
+    console.log(`🔗 [SHARE TRACKING] Shared via ${platform}:`, url);
+    
+    // Track analytics here if needed
+    try {
+      // You can add analytics tracking here
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'share', {
+          method: platform,
+          content_type: 'therapist_profile',
+          item_id: therapist.id || therapist.$id
+        });
+      }
+    } catch (error) {
+      console.warn('Analytics tracking failed:', error);
+    }
   };
 
   return (
-    <div className="mt-6">
-      <div className="text-center mb-3">
-        <button
-          onClick={onCopy}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-        >
-          <span>Copy Share Link</span>
-          {copied && <span className="text-white/90 text-sm">✓ Copied</span>}
-        </button>
-        <a
-          href={shareUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 ml-3 bg-white border border-orange-600 text-orange-700 rounded-lg hover:bg-orange-50 transition-colors"
-        >
-          View Shared Page
-        </a>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-3">
-        <FacebookShareButton url={shareUrl} quote={shareText}>
-          <FacebookIcon size={40} round />
-        </FacebookShareButton>
-        <TwitterShareButton url={shareUrl} title={shareText}>
-          <TwitterIcon size={40} round />
-        </TwitterShareButton>
-        <WhatsappShareButton url={shareUrl} title={shareText} separator=" - ">
-          <WhatsappIcon size={40} round />
-        </WhatsappShareButton>
-        <TelegramShareButton url={shareUrl} title={shareText}>
-          <TelegramIcon size={40} round />
-        </TelegramShareButton>
-        <LinkedinShareButton url={shareUrl} title={shareText} summary={shareText}>
-          <LinkedinIcon size={40} round />
-        </LinkedinShareButton>
-        <EmailShareButton url={shareUrl} subject={`IndaStreet Massage: ${therapist.name}`} body={`${shareText}\n\n${shareUrl}`}>
-          <EmailIcon size={40} round />
-        </EmailShareButton>
+    <div className="flex flex-col items-center gap-4">
+      <ShareTherapistProfile 
+        therapist={therapist}
+        variant="primary"
+        showLabel={true}
+        onShareComplete={handleShareComplete}
+        className="w-full max-w-sm"
+      />
+      
+      {/* Additional sharing info */}
+      <div className="text-center">
+        <p className="text-sm text-gray-600 mb-2">
+          💡 <strong>Share this profile</strong> to help {therapist.name} reach more customers
+        </p>
+        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+          <div className="flex items-center justify-center gap-4">
+            <span>✅ Works on all platforms</span>
+            <span>🔒 No login required</span>
+            <span>🔗 Permanent link</span>
+          </div>
+        </div>
       </div>
     </div>
   );
+};
 };
 
 export default ShareActions;
