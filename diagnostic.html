@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 System Diagnostic - IndastreetMassage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .status-good {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .status-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .status-error {
+            background: #f56565;
+            color: white;
+        }
+        
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .section h2 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-card {
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-card-title {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        
+        .info-card-value {
+            color: #2d3748;
+            font-size: 1.1em;
+            word-break: break-all;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .log-container {
+            background: #1a202c;
+            color: #48bb78;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
+        
+        .log-timestamp {
+            color: #4299e1;
+        }
+        
+        .log-success {
+            color: #48bb78;
+        }
+        
+        .log-warning {
+            color: #ed8936;
+        }
+        
+        .log-error {
+            color: #f56565;
+        }
+        
+        .list-container {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .list-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .list-item strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 System Diagnostic Tool</h1>
+            <div id="overall-status" class="status-badge status-good">Analyzing...</div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 System Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-title">Browser</div>
+                    <div class="info-card-value" id="browser-info">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">Current URL</div>
+                    <div class="info-card-value" id="current-url">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">Timestamp</div>
+                    <div class="info-card-value" id="timestamp">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">Online Status</div>
+                    <div class="info-card-value" id="online-status">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⚙️ Service Workers</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-title">Active Workers</div>
+                    <div class="info-card-value" id="sw-count">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">Controller Status</div>
+                    <div class="info-card-value" id="sw-controller">-</div>
+                </div>
+            </div>
+            <div id="sw-list" class="list-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2>💾 Cache Storage</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-title">Cache Count</div>
+                    <div class="info-card-value" id="cache-count">-</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-title">Total Entries</div>
+                    <div class="info-card-value" id="cache-entries">-</div>
+                </div>
+            </div>
+            <div id="cache-list" class="list-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🗄️ Local Storage</h2>
+            <div class="info-card">
+                <div class="info-card-title">Stored Items</div>
+                <div class="info-card-value" id="storage-count">-</div>
+            </div>
+            <div id="storage-list" class="list-container"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🔧 Actions</h2>
+            <div class="button-group">
+                <button class="btn btn-danger" onclick="clearEverything()">🧹 Clear Everything</button>
+                <button class="btn btn-primary" onclick="runDiagnostic()">🔄 Refresh Diagnostic</button>
+                <button class="btn btn-success" onclick="window.location.href='/faq'">📄 Go to FAQ</button>
+                <button class="btn btn-success" onclick="window.location.href='/'">🏠 Go Home</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📝 Activity Log</h2>
+            <div id="log" class="log-container"></div>
+        </div>
+    </div>
+    
+    <script>
+        let logEntries = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = { timestamp, message, type };
+            logEntries.push(entry);
+            
+            const logDiv = document.getElementById('log');
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'log-entry';
+            
+            let colorClass = 'log-success';
+            let icon = '✓';
+            if (type === 'warning') {
+                colorClass = 'log-warning';
+                icon = '⚠';
+            } else if (type === 'error') {
+                colorClass = 'log-error';
+                icon = '✗';
+            }
+            
+            entryDiv.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span> 
+                <span class="${colorClass}">${icon} ${message}</span>
+            `;
+            
+            logDiv.insertBefore(entryDiv, logDiv.firstChild);
+        }
+        
+        async function runDiagnostic() {
+            log('Starting diagnostic scan...', 'info');
+            
+            // Browser info
+            const browserInfo = navigator.userAgent;
+            document.getElementById('browser-info').textContent = browserInfo.split(' ').slice(-2).join(' ');
+            document.getElementById('current-url').textContent = window.location.href;
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+            document.getElementById('online-status').textContent = navigator.onLine ? '🟢 Online' : '🔴 Offline';
+            
+            // Service Workers
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                document.getElementById('sw-count').textContent = registrations.length;
+                document.getElementById('sw-controller').textContent = navigator.serviceWorker.controller ? 
+                    '🟢 Active' : '🔴 None';
+                
+                const swList = document.getElementById('sw-list');
+                swList.innerHTML = '';
+                
+                if (registrations.length === 0) {
+                    swList.innerHTML = '<div class="list-item">✅ No service workers found (Good for dev!)</div>';
+                    log('No service workers registered', 'success');
+                } else {
+                    registrations.forEach((reg, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'list-item';
+                        div.innerHTML = `
+                            <strong>Worker ${index + 1}:</strong><br>
+                            Scope: ${reg.scope}<br>
+                            State: ${reg.active?.state || 'Unknown'}
+                        `;
+                        swList.appendChild(div);
+                        log(`Found service worker: ${reg.scope}`, 'warning');
+                    });
+                }
+            } else {
+                log('Service workers not supported', 'error');
+            }
+            
+            // Cache Storage
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                document.getElementById('cache-count').textContent = cacheNames.length;
+                
+                let totalEntries = 0;
+                const cacheList = document.getElementById('cache-list');
+                cacheList.innerHTML = '';
+                
+                for (const name of cacheNames) {
+                    const cache = await caches.open(name);
+                    const keys = await cache.keys();
+                    totalEntries += keys.length;
+                    
+                    const div = document.createElement('div');
+                    div.className = 'list-item';
+                    div.innerHTML = `<strong>${name}</strong>: ${keys.length} entries`;
+                    cacheList.appendChild(div);
+                    
+                    if (keys.length > 0) {
+                        log(`Cache "${name}" has ${keys.length} entries`, 'warning');
+                    }
+                }
+                
+                document.getElementById('cache-entries').textContent = totalEntries;
+                
+                if (cacheNames.length === 0) {
+                    cacheList.innerHTML = '<div class="list-item">✅ No caches found (Perfect!)</div>';
+                    log('No caches found', 'success');
+                }
+            }
+            
+            // Local Storage
+            const storageCount = localStorage.length;
+            document.getElementById('storage-count').textContent = storageCount;
+            
+            const storageList = document.getElementById('storage-list');
+            storageList.innerHTML = '';
+            
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<strong>${key}:</strong> ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`;
+                storageList.appendChild(div);
+            }
+            
+            if (storageCount === 0) {
+                storageList.innerHTML = '<div class="list-item">✅ Local storage is empty</div>';
+            }
+            
+            // Update overall status
+            const swCount = (await navigator.serviceWorker.getRegistrations()).length;
+            const cacheCount = (await caches.keys()).length;
+            const statusBadge = document.getElementById('overall-status');
+            
+            if (swCount === 0 && cacheCount === 0) {
+                statusBadge.textContent = '✅ All Clear - No Cache Issues';
+                statusBadge.className = 'status-badge status-good';
+                log('System is clean!', 'success');
+            } else if (swCount > 0 || cacheCount > 0) {
+                statusBadge.textContent = '⚠️ Cache Detected - May Cause Issues';
+                statusBadge.className = 'status-badge status-warning';
+                log('Caching detected - this may prevent UI updates', 'warning');
+            }
+            
+            log('Diagnostic complete', 'success');
+        }
+        
+        async function clearEverything() {
+            log('Starting complete cleanup...', 'info');
+            
+            try {
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of registrations) {
+                        await reg.unregister();
+                        log(`Unregistered service worker: ${reg.scope}`, 'success');
+                    }
+                }
+                
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                        log(`Deleted cache: ${name}`, 'success');
+                    }
+                }
+                
+                // Clear local storage
+                localStorage.clear();
+                log('Cleared local storage', 'success');
+                
+                // Clear session storage
+                sessionStorage.clear();
+                log('Cleared session storage', 'success');
+                
+                log('✨ Complete! Reloading page...', 'success');
+                
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 1500);
+                
+            } catch (error) {
+                log(`Error during cleanup: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run diagnostic on load
+        window.addEventListener('load', () => {
+            log('Diagnostic tool loaded', 'info');
+            runDiagnostic();
+        });
+    </script>
+</body>
+</html>

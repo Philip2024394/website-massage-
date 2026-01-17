@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Cache - IndaStreet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button.secondary {
+            background: #f59e0b;
+        }
+        
+        .button.success {
+            background: #10b981;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 2px solid #3b82f6;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        .spinner.show {
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        ul {
+            margin: 15px 0;
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Clear Cache & Service Worker</h1>
+        <p class="subtitle">Fix UI update issues by clearing all cached data</p>
+        
+        <button class="button" onclick="clearEverything()">
+            🚀 Clear Everything & Reload
+        </button>
+        
+        <button class="button secondary" onclick="clearCacheOnly()">
+            📦 Clear Cache Only
+        </button>
+        
+        <button class="button secondary" onclick="unregisterServiceWorker()">
+            🔧 Unregister Service Worker
+        </button>
+        
+        <button class="button success" onclick="window.location.href='/'">
+            🏠 Back to Home
+        </button>
+        
+        <div class="spinner" id="spinner"></div>
+        <div class="status" id="status"></div>
+    </div>
+    
+    <script>
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type} show`;
+            status.innerHTML = message;
+        }
+        
+        function showSpinner() {
+            document.getElementById('spinner').classList.add('show');
+        }
+        
+        function hideSpinner() {
+            document.getElementById('spinner').classList.remove('show');
+        }
+        
+        async function clearEverything() {
+            showSpinner();
+            showStatus('Clearing all data...', 'info');
+            
+            try {
+                let report = '<strong>✅ Cache Clear Report:</strong><ul>';
+                
+                // 1. Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    report += `<li>✅ Unregistered ${registrations.length} service worker(s)</li>`;
+                }
+                
+                // 2. Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+                report += `<li>✅ Deleted ${cacheNames.length} cache(s)</li>`;
+                
+                // 3. Clear localStorage
+                localStorage.clear();
+                report += '<li>✅ Cleared localStorage</li>';
+                
+                // 4. Clear sessionStorage
+                sessionStorage.clear();
+                report += '<li>✅ Cleared sessionStorage</li>';
+                
+                report += '</ul><p style="margin-top: 15px;">🔄 Reloading page in 2 seconds...</p>';
+                
+                hideSpinner();
+                showStatus(report, 'success');
+                
+                // Reload after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                
+            } catch (error) {
+                hideSpinner();
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function clearCacheOnly() {
+            showSpinner();
+            showStatus('Clearing caches...', 'info');
+            
+            try {
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                }
+                
+                hideSpinner();
+                showStatus(`✅ Deleted ${cacheNames.length} cache(s). Page reload recommended.`, 'success');
+            } catch (error) {
+                hideSpinner();
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function unregisterServiceWorker() {
+            showSpinner();
+            showStatus('Unregistering service workers...', 'info');
+            
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    
+                    hideSpinner();
+                    showStatus(`✅ Unregistered ${registrations.length} service worker(s). Page reload recommended.`, 'success');
+                } else {
+                    hideSpinner();
+                    showStatus('ℹ️ Service Worker not supported in this browser.', 'info');
+                }
+            } catch (error) {
+                hideSpinner();
+                showStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', async () => {
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                const cacheNames = await caches.keys();
+                
+                if (registrations.length > 0 || cacheNames.length > 0) {
+                    showStatus(`
+                        <strong>Found cached data:</strong>
+                        <ul>
+                            <li>${registrations.length} service worker(s)</li>
+                            <li>${cacheNames.length} cache(s)</li>
+                        </ul>
+                        <p style="margin-top: 10px;">Click "Clear Everything" to remove all cached data.</p>
+                    `, 'info');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
