@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Star, Shield, Trophy, Zap, Users, ChevronRight } from 'lucide-react';
-import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES } from '../../types/achievements';
+import { Award, Star, Shield, Zap, Users, ChevronRight, Clock, Target, Sparkles, Activity, TrendingUp, Diamond } from 'lucide-react';
+import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../types/achievements';
 
 interface IndastreetAchievementsProps {
   therapistId: string;
@@ -17,233 +17,203 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Mock achievements data - In production, this would come from Appwrite
-  const mockAchievements: TherapistAchievement[] = [
-    {
-      $id: 'ta-1',
-      therapistId: therapistId,
-      achievementId: 'verified-identity',
-      achievement: {
-        $id: 'verified-identity',
-        name: 'Identity Verified',
-        description: 'Government ID verified and authenticated by Indastreet',
-        badgeUrl: 'https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565',
-        category: 'verified',
-        rarity: 'common',
-        dateEarned: '2024-01-10',
-        isVisible: true
-      },
-      dateAwarded: '2024-01-10',
-      awardedBy: 'admin-001',
-      isActive: true
-    },
-    {
-      $id: 'ta-2',
-      therapistId: therapistId,
-      achievementId: 'cert-professional',
-      achievement: {
-        $id: 'cert-professional',
-        name: 'Certified Professional',
-        description: 'Verified professional massage therapy certification',
-        badgeUrl: 'https://ik.imagekit.io/7grri5v7d/professional-cert-badge.png',
-        category: 'professional',
-        rarity: 'uncommon',
-        dateEarned: '2024-01-15',
-        isVisible: true
-      },
-      dateAwarded: '2024-01-15',
-      awardedBy: 'admin-001',
-      isActive: true
-    },
-    {
-      $id: 'ta-3',
-      therapistId: therapistId,
-      achievementId: 'exp-3years',
-      achievement: {
-        $id: 'exp-3years',
-        name: '3+ Years Experience',
-        description: 'Successfully completed over 3 years of massage therapy service',
-        badgeUrl: 'https://ik.imagekit.io/7grri5v7d/experience-3yr-badge.png',
-        category: 'experience',
-        rarity: 'uncommon',
-        dateEarned: '2024-03-20',
-        isVisible: true
-      },
-      dateAwarded: '2024-03-20',
-      awardedBy: 'admin-001',
-      isActive: true
-    },
-    {
-      $id: 'ta-4',
-      therapistId: therapistId,
-      achievementId: 'balinese-specialist',
-      achievement: {
-        $id: 'balinese-specialist',
-        name: 'Balinese Specialist',
-        description: 'Expert in traditional Balinese massage techniques and therapy',
-        badgeUrl: 'https://ik.imagekit.io/7grri5v7d/balinese-specialist-badge.png',
-        category: 'specialization',
-        rarity: 'rare',
-        dateEarned: '2024-02-28',
-        isVisible: true
-      },
-      dateAwarded: '2024-02-28',
-      awardedBy: 'admin-001',
-      isActive: true
-    }
+  // Mock achieved achievement IDs - In production, this would come from Appwrite
+  const mockAchievedIds = [
+    'hygiene-approved',
+    'time-keeper',
+    'booking-commitment',
+    'profile-complete',
+    'fast-responder',
+    'growth-path'
   ];
 
-  const visibleAchievements = achievements?.length > 0 ? achievements : mockAchievements;
-  const displayedAchievements = isExpanded ? visibleAchievements : visibleAchievements.slice(0, 6);
+  // Get all available achievements from sample data
+  const allAchievements = SAMPLE_ACHIEVEMENTS;
+  
+  // Check which achievements are achieved
+  const achievementsWithStatus = allAchievements.map(achievement => ({
+    ...achievement,
+    isAchieved: mockAchievedIds.includes(achievement.$id)
+  }));
+
+  // Group by category
+  const achievementsByCategory = Object.entries(ACHIEVEMENT_CATEGORIES).map(([key, categoryInfo]) => {
+    const categoryAchievements = achievementsWithStatus.filter(a => a.category === key);
+    return {
+      key,
+      name: categoryInfo.name,
+      color: categoryInfo.color,
+      achievements: categoryAchievements
+    };
+  }).filter(category => category.achievements.length > 0);
+
+  const displayCategories = isExpanded ? achievementsByCategory : achievementsByCategory.slice(0, 3);
 
   const getCategoryIcon = (category: Achievement['category']) => {
     switch (category) {
-      case 'professional': return <Shield className="w-4 h-4" />;
-      case 'experience': return <Star className="w-4 h-4" />;
-      case 'specialization': return <Zap className="w-4 h-4" />;
-      case 'community': return <Users className="w-4 h-4" />;
-      case 'verified': return <Shield className="w-4 h-4" />;
-      case 'performance': return <Trophy className="w-4 h-4" />;
+      case 'professional_standards': return <Shield className="w-4 h-4" />;
+      case 'reliability_discipline': return <Clock className="w-4 h-4" />;
+      case 'quality_experience': return <Star className="w-4 h-4" />;
+      case 'platform_engagement': return <Activity className="w-4 h-4" />;
+      case 'premium_growth': return <TrendingUp className="w-4 h-4" />;
+      case 'specialty_badges': return <Diamond className="w-4 h-4" />;
       default: return <Award className="w-4 h-4" />;
     }
   };
 
-  const getRarityColor = (rarity: Achievement['rarity']) => {
-    switch (rarity) {
-      case 'common': return 'border-gray-300 bg-gray-50';
-      case 'uncommon': return 'border-green-300 bg-green-50';
-      case 'rare': return 'border-blue-300 bg-blue-50';
-      case 'epic': return 'border-purple-300 bg-purple-50';
-      case 'legendary': return 'border-yellow-300 bg-yellow-50 ring-2 ring-yellow-200';
-      default: return 'border-gray-300 bg-gray-50';
+  const getBadgeStyle = (achievement: any) => {
+    if (achievement.isAchieved) {
+      // Achieved - white containers
+      return 'border-gray-200 bg-white text-gray-800 shadow-sm';
+    } else {
+      // Not achieved - red containers
+      return 'border-red-300 bg-red-100 text-red-700';
     }
   };
 
-  const getRarityTextColor = (rarity: Achievement['rarity']) => {
-    switch (rarity) {
-      case 'common': return 'text-gray-600';
-      case 'uncommon': return 'text-green-600';
-      case 'rare': return 'text-blue-600';
-      case 'epic': return 'text-purple-600';
-      case 'legendary': return 'text-yellow-600';
-      default: return 'text-gray-600';
-    }
+  const getBadgeIcon = (achievement: any) => {
+    return achievement.isAchieved ? '✓' : '✗';
   };
-
-  if (!visibleAchievements || visibleAchievements.length === 0) {
-    return null;
-  }
 
   return (
-    <div className="mt-8 bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-lg border border-orange-200">
+    <div className="mt-8 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-            <Award className="w-5 h-5 text-white" />
+          <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+            <Award className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-orange-800">
+            <h3 className="text-lg font-semibold text-orange-800">
               Indastreet Achievements
             </h3>
-            <p className="text-sm text-orange-600">
-              Standards verified by our team
-            </p>
+            <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-1">
+                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs">✓</span>
+                </div>
+                <span className="text-gray-700 font-medium">Agnus</span>
+                <span className="text-gray-600">Verified ID</span>
+                <span className="text-gray-500">24/01/2026</span>
+              </div>
+            </div>
           </div>
         </div>
         
-        {visibleAchievements.length > 6 && (
+        {achievementsByCategory.length > 3 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-sm font-medium transition-colors"
           >
-            {isExpanded ? 'Show Less' : `View All (${visibleAchievements.length})`}
+            {isExpanded ? 'Show Less' : `View All`}
             <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
           </button>
         )}
       </div>
 
-      {/* Achievements Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedAchievements.map((therapistAchievement) => {
-          const achievement = therapistAchievement.achievement;
-          const categoryConfig = ACHIEVEMENT_CATEGORIES[achievement.category];
-          
-          return (
-            <div
-              key={therapistAchievement.$id}
-              className={`
-                relative p-4 rounded-lg border-2 transition-all hover:shadow-md cursor-pointer
-                ${getRarityColor(achievement.rarity)}
-              `}
-              title={achievement.description}
-            >
-              {/* Rarity indicator */}
-              {achievement.rarity === 'legendary' && (
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                  <Star className="w-3 h-3 text-yellow-800 fill-current" />
-                </div>
-              )}
-              
-              {/* Badge Image */}
-              <div className="flex items-center justify-center mb-3">
-                <div className="relative">
-                  <img
-                    src={achievement.badgeUrl}
-                    alt={achievement.name}
-                    className="w-12 h-12 object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://ik.imagekit.io/7grri5v7d/default-achievement-badge.png';
-                    }}
-                  />
-                </div>
+      {/* Categories */}
+      <div className="space-y-4">
+        {displayCategories.map((category) => (
+          <div key={category.key} className="border border-gray-100 rounded-lg p-3 bg-gray-50">
+            {/* Category Header */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white">
+                {getCategoryIcon(category.key as Achievement['category'])}
               </div>
-
-              {/* Content */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-1 mb-1">
-                  <div className={`${categoryConfig.color} w-3 h-3 rounded-full flex items-center justify-center`}>
-                    <div className="w-1 h-1 bg-white rounded-full"></div>
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-800 truncate">
-                    {achievement.name}
-                  </h4>
-                </div>
-                
-                <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                  {achievement.description}
-                </p>
-
-                <div className="flex items-center justify-center gap-2">
-                  <span className={`text-xs font-medium capitalize ${getRarityTextColor(achievement.rarity)}`}>
-                    {achievement.rarity}
-                  </span>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(achievement.dateEarned).getFullYear()}
-                  </span>
-                </div>
+              <h4 className="text-sm font-semibold text-orange-800">{category.name}</h4>
+              <div className="flex items-center gap-1 ml-auto">
+                <span className="text-xs text-green-600 font-medium">
+                  {category.achievements.filter(a => a.isAchieved).length}
+                </span>
+                <span className="text-xs text-orange-400">/</span>
+                <span className="text-xs text-orange-600">
+                  {category.achievements.length}
+                </span>
               </div>
             </div>
-          );
-        })}
+
+            {/* Achievement Badges - Compact Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {category.achievements.map((achievement) => (
+                <div
+                  key={achievement.$id}
+                  className={`
+                    relative p-2 rounded-md border text-center cursor-pointer transition-all hover:shadow-sm
+                    ${getBadgeStyle(achievement)}
+                  `}
+                  title={achievement.description}
+                >
+                  {/* Achievement Status Icon */}
+                  <div className="flex items-center justify-center mb-1">
+                    <span className={`text-lg ${achievement.isAchieved ? 'text-green-500' : 'text-red-500'}`}>
+                      {getBadgeIcon(achievement)}
+                    </span>
+                  </div>
+
+                  {/* Achievement Name */}
+                  <h5 className="text-xs font-medium leading-tight mb-1">
+                    {achievement.name}
+                  </h5>
+
+                  {/* Rarity Indicator */}
+                  <div className="flex items-center justify-center">
+                    <span className="text-xs opacity-75 capitalize">
+                      {achievement.rarity}
+                    </span>
+                  </div>
+
+                  {/* Legendary indicator */}
+                  {achievement.rarity === 'legendary' && achievement.isAchieved && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                      <Star className="w-2 h-2 text-yellow-800 fill-current" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Footer Info */}
-      <div className="mt-6 pt-4 border-t border-orange-200">
-        <div className="flex items-center justify-between text-xs text-orange-600">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            <span>All badges verified by Indastreet standards</span>
+      {/* Achievement Summary */}
+      <div className="mt-4 pt-3 border-t border-gray-200">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-gray-600">Achieved: {mockAchievedIds.length}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <span className="text-gray-600">Pending: {allAchievements.length - mockAchievedIds.length}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Shield className="w-3 h-3 text-orange-500" />
+              <span className="text-gray-600">Total: {allAchievements.length} standards</span>
+            </div>
           </div>
           {mode === 'authenticated' && onViewAll && (
             <button
               onClick={onViewAll}
-              className="hover:text-orange-700 font-medium"
+              className="text-orange-600 hover:text-orange-700 font-medium"
             >
-              Manage Achievements →
+              Manage →
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Achievement Accountability Notice */}
+      <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="flex items-start gap-2">
+          <div className="w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center mt-0.5">
+            <span className="text-white text-xs font-bold">!</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-xs text-amber-800 leading-relaxed">
+              <span className="font-semibold">Achievement Accountability:</span> Any achievement displayed but not practiced during your massage session gives you the obligation to no payment. Indastreet takes pride in our badge achievements so you can too.
+            </p>
+          </div>
         </div>
       </div>
     </div>

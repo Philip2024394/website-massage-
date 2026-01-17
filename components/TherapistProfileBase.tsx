@@ -163,6 +163,18 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     />
                 )}
 
+                {/* Indastreet Achievements - Professional Standards Display */}
+                <IndastreetAchievements 
+                    therapistId={(therapist as any).id || (therapist as any).$id}
+                    mode={mode}
+                    onViewAll={() => {
+                        // For authenticated mode, navigate to achievement management
+                        if (mode === 'authenticated' && onNavigate) {
+                            onNavigate('therapist-achievements');
+                        }
+                    }}
+                />
+
                 {/* Rotating Reviews Section */}
                 <div className="mt-8">
                     <RotatingReviews 
@@ -176,18 +188,6 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     />
                 </div>
 
-                {/* Indastreet Achievements - Professional Standards Display */}
-                <IndastreetAchievements 
-                    therapistId={(therapist as any).id || (therapist as any).$id}
-                    mode={mode}
-                    onViewAll={() => {
-                        // For authenticated mode, navigate to achievement management
-                        if (mode === 'authenticated' && onNavigate) {
-                            onNavigate('therapist-achievements');
-                        }
-                    }}
-                />
-
                 {/* Social Media Icons */}
                 <div className="mt-8">
                     <SocialMediaLinks />
@@ -200,11 +200,11 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     </div>
                 )}
 
-                {/* Indonesian SEO Hashtags - Only in authenticated mode */}
+                {/* Therapist Profile Google Search Rankings - Only in authenticated mode */}
                 {mode === 'authenticated' && (
-                    <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-2 font-medium">
-                            🇮🇩 Indonesian SEO Tags:
+                    <div className="mt-6 p-4 bg-gray-100 border border-gray-300 rounded-lg">
+                        <div className="text-sm text-black mb-2 font-medium">
+                            Therapist Profile Is Ranking On Google Search For:
                         </div>
                         <div className="text-sm text-blue-600 leading-relaxed">
                             {`#pijatpanggilan${city.toLowerCase()} #terapispijat${city.toLowerCase()} #massage${city.toLowerCase()} #spapanggilan #homeservicemassage #pijatrumahan #pijatwanita #pijattradisional #pijatbali #pijatjawa #terappijatprofesional #massagetherapy #relaxation #wellness #indonesiamassage #${therapist.name.toLowerCase().replace(/\s+/g, '')}`}

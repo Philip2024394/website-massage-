@@ -1,5 +1,13 @@
-import { databases, DATABASE_ID, COLLECTIONS } from '../appwriteService';
+import { databases } from '../appwrite/config';
+import { DATABASE_ID } from '../appwrite/config';
+import { APPWRITE_CONFIG } from '../appwrite/config';
 import { Achievement, TherapistAchievement } from '../../types/achievements';
+
+// Collection IDs
+const COLLECTIONS = {
+  ACHIEVEMENTS: 'achievements',
+  THERAPIST_ACHIEVEMENTS: 'therapist_achievements'
+};
 import { ID } from 'appwrite';
 
 export class AchievementService {

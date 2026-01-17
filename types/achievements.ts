@@ -3,7 +3,7 @@ export interface Achievement {
   name: string;
   description: string;
   badgeUrl: string;
-  category: 'professional' | 'experience' | 'specialization' | 'community' | 'verified' | 'performance';
+  category: 'professional_standards' | 'reliability_discipline' | 'quality_experience' | 'platform_engagement' | 'premium_growth' | 'specialty_badges';
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
   dateEarned: string;
   isVisible: boolean;
@@ -29,98 +29,239 @@ export interface AchievementCategory {
 
 // Predefined achievement constants
 export const ACHIEVEMENT_CATEGORIES = {
-  professional: {
-    name: 'Professional Certification',
-    description: 'Verified professional credentials and certifications',
+  professional_standards: {
+    name: 'Professional Standards',
+    description: 'EU/International standards for certified oils, hygiene, and licensed therapy',
     color: 'bg-blue-500'
   },
-  experience: {
-    name: 'Experience Level',
-    description: 'Years of experience and service milestones',
+  reliability_discipline: {
+    name: 'Reliability & Discipline',
+    description: 'Time management, distance reliability, and booking commitment',
     color: 'bg-green-500'
   },
-  specialization: {
-    name: 'Specialization',
-    description: 'Expertise in specific massage techniques',
+  quality_experience: {
+    name: 'Quality & Experience',
+    description: '5-star ratings, customer favorites, and advanced techniques',
     color: 'bg-purple-500'
   },
-  community: {
-    name: 'Community',
-    description: 'Contribution to the Indastreet community',
+  platform_engagement: {
+    name: 'Platform Engagement',
+    description: 'Profile completeness, response time, and availability accuracy',
     color: 'bg-orange-500'
   },
-  verified: {
-    name: 'Verification',
-    description: 'Identity and service verification badges',
-    color: 'bg-teal-500'
-  },
-  performance: {
-    name: 'Performance',
-    description: 'Outstanding service and customer satisfaction',
+  premium_growth: {
+    name: 'Premium & Growth',
+    description: 'Elite membership, continuous improvement, and platform trust',
     color: 'bg-yellow-500'
+  },
+  specialty_badges: {
+    name: 'Specialty Badges',
+    description: 'Traditional specialization, hotel approval, and wellness focus',
+    color: 'bg-teal-500'
   }
 } as const;
 
-// Sample achievement badges
+// Complete achievement badges based on your requirements
 export const SAMPLE_ACHIEVEMENTS: Achievement[] = [
+  // PROFESSIONAL STANDARDS
   {
-    $id: 'cert-professional',
-    name: 'Certified Professional',
-    description: 'Verified professional massage therapy certification',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565',
-    category: 'professional',
+    $id: 'certified-oils',
+    name: 'Certified Oils',
+    description: 'Uses certified, skin-safe massage oils. EU/International standard compliant. Builds customer trust & hygiene confidence.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/certified-oils-badge.png',
+    category: 'professional_standards',
+    rarity: 'rare',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'hygiene-approved',
+    name: 'Hygiene Approved',
+    description: 'Clean presentation, proper nail length, optional glove use where appropriate, high sanitation awareness.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/hygiene-badge.png',
+    category: 'professional_standards',
     rarity: 'uncommon',
-    dateEarned: '2024-01-15',
+    dateEarned: '',
     isVisible: true
   },
   {
-    $id: 'exp-5years',
-    name: '5 Years Experience',
-    description: 'Successfully completed 5 years of massage therapy service',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/experience-badge.png',
-    category: 'experience',
-    rarity: 'rare',
-    dateEarned: '2024-03-20',
-    isVisible: true
-  },
-  {
-    $id: 'verified-identity',
-    name: 'Identity Verified',
-    description: 'Government ID verified and authenticated',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/id-verified-badge.png',
-    category: 'verified',
-    rarity: 'common',
-    dateEarned: '2024-01-10',
-    isVisible: true
-  },
-  {
-    $id: 'top-rated',
-    name: 'Top Rated Therapist',
-    description: 'Maintained 4.8+ average rating with 50+ reviews',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/top-rated-badge.png',
-    category: 'performance',
+    $id: 'licensed-therapist',
+    name: 'Licensed Therapist',
+    description: 'Holds valid local or international certification. Verified documents on file.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/licensed-badge.png',
+    category: 'professional_standards',
     rarity: 'epic',
-    dateEarned: '2024-06-15',
+    dateEarned: '',
     isVisible: true
   },
+
+  // RELIABILITY & DISCIPLINE
   {
-    $id: 'balinese-expert',
-    name: 'Balinese Massage Expert',
-    description: 'Specialized training in traditional Balinese massage techniques',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/balinese-expert-badge.png',
-    category: 'specialization',
+    $id: 'time-keeper',
+    name: 'Time Keeper',
+    description: 'Always arrives on time. No late starts or cancellations. Strong booking discipline.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/time-keeper-badge.png',
+    category: 'reliability_discipline',
     rarity: 'rare',
-    dateEarned: '2024-02-28',
+    dateEarned: '',
     isVisible: true
   },
   {
-    $id: 'community-leader',
-    name: 'Community Leader',
-    description: 'Active contributor to therapist community and mentorship',
-    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/community-leader-badge.png',
-    category: 'community',
+    $id: 'distance-reliable',
+    name: 'Distance Reliable',
+    description: 'Consistently completes long-distance bookings. No last-minute refusals.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/distance-badge.png',
+    category: 'reliability_discipline',
+    rarity: 'uncommon',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'booking-commitment',
+    name: 'Booking Commitment',
+    description: 'Accepts and completes bookings responsibly. Low cancellation rate.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/commitment-badge.png',
+    category: 'reliability_discipline',
+    rarity: 'common',
+    dateEarned: '',
+    isVisible: true
+  },
+
+  // QUALITY & EXPERIENCE
+  {
+    $id: 'five-star-rated',
+    name: '5-Star Rated',
+    description: 'Consistently high customer reviews. Quality service confirmed by clients.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/five-star-badge.png',
+    category: 'quality_experience',
+    rarity: 'epic',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'customer-favorite',
+    name: 'Customer Favorite',
+    description: 'Frequently rebooked by customers. High repeat client rate.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/favorite-badge.png',
+    category: 'quality_experience',
+    rarity: 'rare',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'advanced-techniques',
+    name: 'Advanced Techniques',
+    description: 'Skilled in multiple massage styles. Traditional + modern methods.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/advanced-badge.png',
+    category: 'quality_experience',
+    rarity: 'rare',
+    dateEarned: '',
+    isVisible: true
+  },
+
+  // PLATFORM ENGAGEMENT
+  {
+    $id: 'profile-complete',
+    name: 'Profile Complete',
+    description: 'Full profile, photos, menu, pricing. Actively maintained dashboard.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/profile-complete-badge.png',
+    category: 'platform_engagement',
+    rarity: 'common',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'fast-responder',
+    name: 'Fast Responder',
+    description: 'Replies quickly to customer messages. High response score.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/fast-response-badge.png',
+    category: 'platform_engagement',
+    rarity: 'uncommon',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'verified-availability',
+    name: 'Verified Availability',
+    description: 'Online status accurate. Updates availability correctly.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/availability-badge.png',
+    category: 'platform_engagement',
+    rarity: 'common',
+    dateEarned: '',
+    isVisible: true
+  },
+
+  // PREMIUM & GROWTH
+  {
+    $id: 'elite-member',
+    name: 'Elite Member',
+    description: 'Premium or featured therapist. Consistently meets platform standards.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/elite-badge.png',
+    category: 'premium_growth',
     rarity: 'legendary',
-    dateEarned: '2024-07-01',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'growth-path',
+    name: 'Growth Path',
+    description: 'Shows continuous improvement. Increasing ratings & bookings over time.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/growth-badge.png',
+    category: 'premium_growth',
+    rarity: 'uncommon',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'platform-trusted',
+    name: 'Platform Trusted',
+    description: 'Long-term reliability. No policy violations. Strong professional record.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/trusted-badge.png',
+    category: 'premium_growth',
+    rarity: 'epic',
+    dateEarned: '',
+    isVisible: true
+  },
+
+  // SPECIALTY BADGES (OPTIONAL)
+  {
+    $id: 'traditional-specialist',
+    name: 'Traditional Specialist',
+    description: 'Expert in Indonesian traditional massage.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/traditional-badge.png',
+    category: 'specialty_badges',
+    rarity: 'rare',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'hotel-approved',
+    name: 'Hotel-Approved',
+    description: 'Experienced in hotel & spa environments.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/hotel-badge.png',
+    category: 'specialty_badges',
+    rarity: 'uncommon',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'long-session-expert',
+    name: 'Long Session Expert',
+    description: 'Comfortable with 90–120 min sessions.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/long-session-badge.png',
+    category: 'specialty_badges',
+    rarity: 'uncommon',
+    dateEarned: '',
+    isVisible: true
+  },
+  {
+    $id: 'wellness-focused',
+    name: 'Wellness Focused',
+    description: 'Strong relaxation & recovery approach.',
+    badgeUrl: 'https://ik.imagekit.io/7grri5v7d/wellness-badge.png',
+    category: 'specialty_badges',
+    rarity: 'common',
+    dateEarned: '',
     isVisible: true
   }
 ];

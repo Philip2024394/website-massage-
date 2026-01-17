@@ -3,7 +3,7 @@ import {
   Award, Plus, Edit3, Trash2, Eye, EyeOff, Save, X,
   Shield, Star, Zap, Users, Trophy, Search, Filter
 } from 'lucide-react';
-import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../../types/achievements';
+import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../../../../../types/achievements';
 
 interface AdminAchievementManagerProps {
   onBack: () => void;
@@ -43,7 +43,7 @@ const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBac
       name: '',
       description: '',
       badgeUrl: '',
-      category: 'professional',
+      category: 'professional_standards',
       rarity: 'common',
       dateEarned: new Date().toISOString().split('T')[0],
       isVisible: true
@@ -96,12 +96,12 @@ const AdminAchievementManager: React.FC<AdminAchievementManagerProps> = ({ onBac
 
   const getCategoryIcon = (category: Achievement['category']) => {
     switch (category) {
-      case 'professional': return <Shield className="w-4 h-4" />;
-      case 'experience': return <Star className="w-4 h-4" />;
-      case 'specialization': return <Zap className="w-4 h-4" />;
-      case 'community': return <Users className="w-4 h-4" />;
-      case 'verified': return <Shield className="w-4 h-4" />;
-      case 'performance': return <Trophy className="w-4 h-4" />;
+      case 'professional_standards': return <Shield className="w-4 h-4" />;
+      case 'reliability_discipline': return <Star className="w-4 h-4" />;
+      case 'quality_experience': return <Trophy className="w-4 h-4" />;
+      case 'platform_engagement': return <Users className="w-4 h-4" />;
+      case 'premium_growth': return <Zap className="w-4 h-4" />;
+      case 'specialty_badges': return <Award className="w-4 h-4" />;
       default: return <Award className="w-4 h-4" />;
     }
   };
