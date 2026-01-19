@@ -707,6 +707,8 @@ const HomePage: React.FC<HomePageProps> = ({
             isAvailable: false, // Ensure not bookable
             location: `${targetCity}, Indonesia`, // Dynamic location matching user's viewing area
             city: targetCity, // Set city field as well
+            locationId: targetCity.toLowerCase(), // Set locationId to match city
+            _locationArea: targetCity.toLowerCase(), // Set _locationArea for card display
             isShowcaseProfile: true, // Flag to identify showcase profiles
             originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
             showcaseCity: targetCity, // Track which city this showcase is for
