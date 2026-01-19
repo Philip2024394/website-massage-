@@ -90,6 +90,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
     const { requestInstall, isInstalled, isIOS, showIOSInstructions, setShowIOSInstructions } = usePWAInstall();
     const isMountedRef = React.useRef(true);
+    const ipDetectionRan = React.useRef(false);
     
     // Location state - now using auto-detected country
     const { city: contextCity, countryCode, autoDetected, detectionMethod, setCity, setCountry, clearCountry } = useCityContext();
@@ -124,23 +125,28 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         };
     }, []);
 
-    // Auto-detect location on component mount for mobile devices
+    // IP-based country detection - runs ONLY ONCE on initial mount
     useEffect(() => {
-        const autoDetectLocation = async () => {
-            const deviceInfo = deviceService.getDeviceInfo();
+        if (ipDetectionRan.current) return;
+        ipDetectionRan.current = true;
+        
+        const detectCountry = async () => {
+            // Skip if country already detected
+            if (countryCode && countryCode !== 'ID') {
+                console.log('✅ Country already detected:', countryCode);
+                return;
+            }
             
-            if (deviceInfo.type === 'mobile' && deviceInfo.supportsGPS) {
-                try {
-                    await locationService.requestLocationWithFallback();
-                } catch (error) {
-                    console.warn('⚠️ Failed to pre-load location:', error);
-                }
+            try {
+                // IP-based detection happens automatically via CityContext
+                console.log('🌍 IP detection initiated by CityContext');
+            } catch (error) {
+                console.warn('⚠️ IP detection skipped:', error);
             }
         };
         
-        const timer = setTimeout(autoDetectLocation, 1000);
-        return () => clearTimeout(timer);
-    }, []);
+        detectCountry();
+    }, []); // Empty deps - runs ONLY ONCE
 
     useEffect(() => {
         const img = new Image();
@@ -431,18 +437,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="landing-page-container relative w-full flex flex-col" style={{ minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#111827' }}>
+        <div className="landing-page-container relative w-full min-h-screen bg-gray-900">
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
+            
+            {/* Fixed background image */}
             <div
-                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat"
+                className="fixed inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                 }}
             />
-            <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
-            <div className="relative z-20 flex flex-col items-center justify-start text-white px-4 sm:px-6 text-center w-full py-4 sm:py-8 pt-8 sm:pt-16 pb-4 sm:pb-8">
+            
+            {/* Fixed overlay */}
+            <div className="fixed inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
+            
+            {/* Scrollable content */}
+            <div className="relative z-20 flex flex-col items-center text-white px-4 sm:px-6 text-center w-full py-8 sm:py-16 pb-24">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -494,8 +506,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             />
                         </div>
 
-                        {/* Cities List */}
-                        <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700">
+                        {/* Cities List - Scrollable container (max-height 60vh) */}
+                        <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '60vh' }}>
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (

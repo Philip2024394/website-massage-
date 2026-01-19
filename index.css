@@ -1,216 +1,63 @@
 /* Footer fixes - must come before Tailwind */
 @import url('./footer-fix.css');
 
-/* EMERGENCY MOBILE SCROLL FIX - HIGHEST PRIORITY */
-html, body {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  height: auto !important;
-  position: relative !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-}
-
-/* Fix for modals and popups in scrollable containers */
-.fixed {
-  position: fixed !important;
-}
-
-@media (max-width: 768px) {
-  html, body, #root, .mobile-lock-container {
-    overflow: visible !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-    height: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-  }
-  
-  /* Ensure fixed positioned modals work correctly on mobile */
-  .fixed {
-    position: fixed !important;
-    z-index: 9999 !important;
-  }
-}
-
-/* EMERGENCY FOOTER OVERRIDE - BEHIND DRAWERS */
-footer, 
-.HomePage footer,
-[class*="HomePage"] footer,
-div footer,
-footer[class*="fixed"] {
-  position: fixed !important;
-  bottom: 0px !important;
-  left: 0px !important;
-  right: 0px !important;
-  z-index: 50 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  transform: none !important;
-  transition: none !important;
-  display: block !important;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 📱 MOBILE-OPTIMIZED APP: Responsive mobile-first design */
+/* Clean, mobile-first layout - body scrolling enabled */
 html, body {
-  height: 100vh;
-  width: 100%;
-  max-width: 100%;
-  /* Mobile stability optimizations */
-  touch-action: manipulation;
   margin: 0;
   padding: 0;
-  overflow-x: hidden !important;
-}
-
-/* Allow vertical scrolling but prevent horizontal bounce on mobile */
-body {
   width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+
+html {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Footer positioning - relative, appears after content */
+footer {
   position: relative;
+  width: 100%;
+  z-index: 10;
 }
 
-/* CSS Custom Property for true mobile viewport height */
-:root {
-  --vh: 1vh; /* Will be updated by useMobileLock hook */
+.HomePage footer,
+[data-page="home"] footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
 }
 
-/* Mobile viewport fix for landing pages */
-@supports (-webkit-touch-callout: none) {
-  .min-h-screen {
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* EMERGENCY MOBILE SCROLL FIX - Override ALL blocking styles */
-body.landing-page,
-body.home-page,
-.landing-page,
-.home-page {
-  overflow: visible !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  position: relative !important;
-  height: auto !important;
-  min-height: 100vh !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-/* Override mobile-lock-container styles that block scrolling */
-.mobile-lock-container {
-  position: relative !important;
-  overflow: visible !important;
-  overflow-y: auto !important;
-  touch-action: pan-y !important;
-  height: auto !important;
-}
-
-/* Landing page container specific fixes */
+/* Landing page container - clean, scrollable */
 .landing-page-container {
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  position: relative !important;
-  height: auto !important;
-  min-height: 100vh !important;
-  /* Ensure content can scroll above fixed background */
-  z-index: 20;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* Fix background image stability during modal interactions */
-.landing-page-container .fixed {
-  /* Prevent background image from resizing/zooming */
-  transform: none !important;
-  transition: none !important;
+/* Root container */
+#root {
+  min-height: 100vh;
+  height: auto;
+  width: 100%;
+  position: relative;
+  background: white;
 }
 
-/* Ensure modal doesn't affect background */
-body:has([data-modal-open]) .landing-page-container .fixed {
-  transform: none !important;
-  background-size: cover !important;
-}
-
-/* HomePage container specific fixes */
-.home-page-container {
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  position: relative !important;
-  height: auto !important;
-  min-height: 100vh !important;
-}
-
-@media (max-width: 768px) {
-  /* EMERGENCY MOBILE SCROLL FIX - Force scrolling for landing/home pages */
-  .landing-page-container,
-  .home-page-container {
-    min-height: 100vh !important;
-    min-height: -webkit-fill-available !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    position: relative !important;
-    height: auto !important;
-    z-index: 20 !important;
-  }
-  
-  /* Override any mobile locks for main page containers */
-  .landing-page-container,
-  .home-page-container {
-    height: auto !important;
-    max-height: none !important;
-  }
-  
-  /* Ensure all child elements allow touch */
-  .landing-page-container *,
-  .home-page-container * {
-    -webkit-overflow-scrolling: touch;
-    touch-action: manipulation;
-  }
-}
-
-.landing-page * {
-  -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-}
-
-/* Landing page container mobile fixes */
-@media (max-width: 768px) {
-  .landing-page .min-h-screen {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-  
-  .landing-page .overflow-auto {
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-  }
-  
-  /* Prevent bottom white space */
-  .landing-page > div:last-child {
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-  
-  .landing-page .relative.z-20 {
-    padding-bottom: env(safe-area-inset-bottom, 16px) !important;
-  }
-}
-
-/* Smooth scrolling for mobile */
+/* Mobile optimizations */
 @media (max-width: 768px) {
   html {
     scroll-behavior: smooth;
@@ -218,403 +65,13 @@ body:has([data-modal-open]) .landing-page-container .fixed {
   
   body {
     -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
   }
   
-  /* Ensure full height containers work properly on mobile */
-  .mobile-full-height {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
+  /* Touch-friendly inputs */
+  input, textarea, select {
+    font-size: 16px; /* Prevent zoom on iOS */
   }
 }
-
-/* Utility class for components that need true mobile height */
-.mobile-vh-100 {
-  height: calc(var(--vh, 1vh) * 100);
-}
-
-/* Mobile container with safe areas for notch devices */
-.mobile-container {
-  width: 100vw;
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  -webkit-overflow-scrolling: touch;
-  
-  /* Handle notch devices (iPhone X+, other devices with safe areas) */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Scrollable elements - allow touch scrolling */
-.scrollable {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  touch-action: pan-y;
-}
-
-/* Scrollable content areas */
-.scrollable-content {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-}
-
-/* Mobile-specific optimizations */
-@media only screen and (max-width: 768px) {
-  /* CRITICAL: Override all mobile locks for landing page and home page */
-  body.landing-page,
-  body.home-page {
-    position: relative !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    height: auto !important;
-    min-height: 100vh !important;
-  }
-  
-  /* Critical: Disable ALL position fixed elements on scrollable pages */
-  body.landing-page .mobile-container,
-  body.landing-page [style*="position: fixed"],
-  body.landing-page [class*="fixed"],
-  body.home-page .mobile-container,
-  body.home-page [style*="position: fixed"],
-  body.home-page [class*="fixed"] {
-    position: relative !important;
-    overflow: visible !important;
-    height: auto !important;
-  }
-  
-  /* Critical: Force enable scrolling on main containers */
-  body.landing-page html,
-  body.landing-page body,
-  body.home-page html,
-  body.home-page body {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-    height: auto !important;
-  }
-  
-  /* Landing page main container */
-  body.landing-page .relative.min-h-screen {
-    position: relative !important;
-    min-height: 100vh !important;
-    min-height: -webkit-fill-available !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y !important;
-  }
-  
-  /* Disable mobile container locks on landing page */
-  body.landing-page .mobile-container {
-    position: relative !important;
-    overflow: visible !important;
-    height: auto !important;
-  }
-  
-  /* Force touch scrolling on all landing page elements */
-  body.landing-page * {
-    -webkit-overflow-scrolling: touch;
-    touch-action: manipulation;
-  }
-  
-  /* Disable hover effects on mobile (no hover capability) */
-  *:hover {
-    background-color: inherit !important;
-  }
-  
-  /* Handle 100vh mobile browser issue - accommodate address bar */
-  .full-height {
-    height: 100vh;
-    height: -webkit-fill-available;
-  }
-}
-
-/* ===== ENHANCED MOBILE DETECTION CSS CLASSES ===== */
-
-/* Device type classes */
-.mobile-device {
-  /* Styles specific to mobile devices */
-  -webkit-tap-highlight-color: rgba(255, 126, 0, 0.2);
-  touch-action: manipulation;
-  -webkit-overflow-scrolling: touch;
-}
-
-.tablet-device {
-  /* Styles specific to tablets */
-  touch-action: manipulation;
-}
-
-.desktop-device {
-  /* Styles specific to desktop */
-  cursor: default;
-}
-
-/* Screen size classes */
-.mobile-screen {
-  /* Mobile screen optimizations */
-  font-size: 16px; /* Prevent zoom on input focus */
-}
-
-.small-screen {
-  /* Extra small screens (≤640px) */
-  --container-padding: 12px;
-}
-
-.medium-screen {
-  /* Medium screens (769px-1024px) */
-  --container-padding: 20px;
-}
-
-.large-screen {
-  /* Large screens (≥1025px) */
-  --container-padding: 32px;
-}
-
-/* Orientation classes */
-.portrait {
-  /* Portrait mode optimizations */
-  --header-height: 60px;
-  --footer-height: 80px;
-}
-
-.landscape {
-  /* Landscape mode optimizations */
-  --header-height: 48px;
-  --footer-height: 60px;
-}
-
-.portrait-mode {
-  /* Portrait-specific layout adjustments */
-  --content-max-width: 100%;
-}
-
-.landscape-mode {
-  /* Landscape-specific layout adjustments */
-  --content-max-width: 90%;
-}
-
-/* Touch capability classes */
-.has-touch {
-  /* Touch-enabled devices */
-  --tap-target-size: 44px;
-  --button-padding: 12px 16px;
-}
-
-.has-touch button,
-.has-touch .button,
-.has-touch [role="button"] {
-  min-height: var(--tap-target-size);
-  min-width: var(--tap-target-size);
-  padding: var(--button-padding);
-}
-
-.no-touch .has-hover {
-  /* Desktop hover effects enabled */
-}
-
-.has-touch .has-hover {
-  /* Disable hover effects on touch devices */
-}
-
-.has-touch .has-hover:hover {
-  /* Override hover states for touch */
-  transform: none !important;
-  background-color: initial !important;
-}
-
-.touch-enabled {
-  /* Touch-optimized interactions */
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.no-touch {
-  /* Mouse/trackpad optimized */
-  scroll-behavior: auto;
-}
-
-/* Layout classes */
-.mobile-layout {
-  /* Mobile-specific layout */
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  min-height: calc(var(--vh, 1vh) * 100);
-}
-
-.desktop-layout {
-  /* Desktop-specific layout */
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Touch-friendly input styling */
-.has-touch input,
-.has-touch textarea,
-.has-touch select {
-  font-size: 16px; /* Prevent zoom on iOS */
-  padding: 12px;
-  border-radius: 8px;
-}
-
-/* Device-specific scrolling */
-.mobile-device .scrollable {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-.desktop-device .scrollable {
-  scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
-}
-
-/* Retina display optimizations */
-@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
-  .mobile-container {
-    /* Crisp rendering on high-DPI displays */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-#root {
-  /* CHANGED: Remove fixed height to allow scrolling */
-  min-height: 100vh;
-  min-height: 100dvh;
-  height: auto;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
-  position: relative !important;
-  background: white;
-  position: relative;
-  contain: layout style paint;
-}
-
-/* Ensure all containers respect viewport width */
-*, *::before, *::after {
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-/* Satellite Ring Effect for Status Dots */
-@keyframes satellite-ring {
-  0% {
-    box-shadow: 0 0 0 0 currentColor;
-    opacity: 1;
-  }
-  50% {
-    box-shadow: 0 0 0 10px transparent;
-    opacity: 0.5;
-  }
-  100% {
-    box-shadow: 0 0 0 20px transparent;
-    opacity: 0;
-  }
-}
-
-.status-dot-satellite {
-  position: relative;
-}
-
-.status-dot-satellite::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  animation: satellite-ring 2s ease-out infinite;
-  border: 2px solid currentColor;
-}
-
-/* 📱 PWA FULL-SCREEN: Additional support for hiding browser UI */
-@media (display-mode: fullscreen) {
-  body {
-    background: #ffffff;
-  }
-}
-
-@media (display-mode: standalone) {
-  body {
-    background: #ffffff;
-  }
-}
-
-/* Handle status bar on iOS PWA */
-@supports (-webkit-touch-callout: none) {
-  .ios-pwa-padding {
-    padding-top: 44px; /* Status bar height */
-  }
-}
-
-/* Mobile-Specific Optimizations */
-@media (max-width: 640px) {
-  /* Force all elements to fit within viewport */
-  body, #root {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-  }
-  
-  /* Compact modal sizing for mobile */
-  .modal-mobile {
-    max-width: calc(100vw - 1rem) !important;
-    max-height: 85vh !important;
-    margin: 0.5rem !important;
-  }
-  
-  /* Mobile-optimized buttons */
-  .btn-mobile {
-    min-height: 44px !important;
-    padding: 0.625rem 1rem !important;
-    font-size: 0.875rem !important;
-    touch-action: manipulation;
-  }
-  
-  /* Mobile-optimized inputs */
-  .input-mobile {
-    font-size: 16px !important; /* Prevents zoom on iOS */
-    min-height: 44px !important;
-    padding: 0.625rem !important;
-  }
-  
-  /* Mobile container spacing */
-  .container-mobile {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
-  }
-  
-  /* Mobile card spacing */
-  .card-mobile {
-    margin: 0.5rem !important;
-    padding: 0.75rem !important;
-    border-radius: 8px !important;
-  }
-  
-  /* Ensure images and media fit within screen */
-  img, video, iframe {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-  
-  /* Fix any absolute/fixed positioning that might overflow */
-  .fixed, .absolute {
-    max-width: 100vw !important;
   }
 }
 
