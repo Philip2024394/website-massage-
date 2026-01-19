@@ -1,29 +1,34 @@
-/* MobileLock.css - Mobile viewport stabilization */
+/* MobileLock.css - Mobile viewport stabilization - DISABLED FOR SCROLLING */
 
 .mobile-lock-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  overflow: hidden;
+  /* REMOVED: position: fixed; top: 0; left: 0; overflow: hidden; */
+  /* CHANGED: Allow scrolling and normal layout */
+  position: relative;
+  overflow: visible;
+  overflow-y: auto;
   background: var(--bg-color, #ffffff);
   z-index: 1;
+  height: auto;
+  min-height: 100vh;
 }
 
-/* Prevent scrolling on the container */
+/* Enable scrolling on the container */
 .mobile-lock-container {
-  touch-action: manipulation;
-  -webkit-overflow-scrolling: none;
-  overscroll-behavior: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: auto;
 }
 
 /* Mobile-specific optimizations */
 @media only screen and (max-width: 768px) {
   .mobile-lock-container {
-    /* Use CSS custom property for dynamic height */
-    height: calc(var(--vh, 1vh) * 100) !important;
+    /* CHANGED: Use auto height for scrolling */
+    height: auto !important;
+    min-height: 100vh !important;
     
-    /* Prevent zoom on mobile */
-    touch-action: manipulation;
+    /* Enable scrolling on mobile */
+    touch-action: pan-y;
+    overflow-y: auto;
     
     /* Smooth transitions */
     transition: all 0.3s ease-in-out;
