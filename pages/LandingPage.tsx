@@ -431,7 +431,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col overflow-hidden bg-gray-900">
+        <div className="relative min-h-screen w-full flex flex-col bg-gray-900 overflow-auto">
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
                 className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-in-out"
@@ -444,7 +444,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             />
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             <div 
-                className="relative z-20 flex-grow flex flex-col items-center justify-center text-white px-6 text-center w-full min-h-screen py-8 sm:pt-20"
+                className="relative z-20 flex flex-col items-center justify-start text-white px-4 sm:px-6 text-center w-full min-h-screen py-4 sm:py-8 pt-8 sm:pt-16"
                 style={{ opacity: 1 }} // Always visible for debugging
             >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
@@ -499,7 +499,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List */}
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
+                        <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700">
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (
