@@ -41,6 +41,9 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  position: relative;
 }
 
 /* CSS Custom Property for true mobile viewport height */
@@ -52,6 +55,33 @@ body {
 @supports (-webkit-touch-callout: none) {
   .min-h-screen {
     min-height: -webkit-fill-available;
+  }
+}
+
+/* Landing page mobile scrolling support */
+.landing-page {
+  -webkit-overflow-scrolling: touch !important;
+  overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  position: relative !important;
+  height: auto !important;
+}
+
+.landing-page * {
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+}
+
+/* Landing page container mobile fixes */
+@media (max-width: 768px) {
+  .landing-page .min-h-screen {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  .landing-page .overflow-auto {
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
   }
 }
 
@@ -113,13 +143,12 @@ body {
 
 /* Mobile-specific optimizations */
 @media only screen and (max-width: 768px) {
-  .mobile-lock {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    overflow: hidden !important;
+  /* Allow scrolling on mobile landing page */
+  body.landing-page {
+    position: relative !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
   }
   
   /* Disable hover effects on mobile (no hover capability) */
@@ -139,10 +168,9 @@ body {
 /* Device type classes */
 .mobile-device {
   /* Styles specific to mobile devices */
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
+  -webkit-tap-highlight-color: rgba(255, 126, 0, 0.2);
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tablet-device {
