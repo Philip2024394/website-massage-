@@ -1340,17 +1340,6 @@ const HomePage: React.FC<HomePageProps> = ({
                             </button>
                         </div>
                     </div>
-
-                    {/* Area Filter - Show when city is selected */}
-                    {contextCity && contextCity !== 'all' && (
-                        <div className="max-w-2xl mx-auto mt-4">
-                            <AreaFilter
-                                city={contextCity}
-                                selectedArea={selectedArea}
-                                onAreaChange={setSelectedArea}
-                            />
-                        </div>
-                    )}
                 </div>
                 </PageContainer>
             </div>
