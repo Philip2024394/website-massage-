@@ -1,13 +1,27 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { translations } from '../../../translations/index';
 
-/**
- * ADMIN DASHBOARD i18n Configuration
- * - Language: English ONLY (no switching)
- * - Cannot be changed by user
- * - Maintains professional environment
- */
+// Admin dashboard uses its own simplified translations
+const translations = {
+  en: {
+    common: {
+      dashboard: 'Admin Dashboard',
+      therapists: 'Therapists',
+      places: 'Places',
+      bookings: 'Bookings',
+      payments: 'Payments',
+      settings: 'Settings',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      search: 'Search',
+      loading: 'Loading...',
+      error: 'Error',
+      success: 'Success'
+    }
+  }
+};
 
 const resources = {
   en: translations.en || {},

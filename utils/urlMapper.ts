@@ -134,6 +134,16 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'employer-info': '/employer-info',
     'payment-info': '/payment-info',
     
+    // Admin Dashboard Routes (MERGED)
+    'admin': '/admin',
+    'admin-dashboard': '/admin',
+    'admin-therapists': '/admin/therapists',
+    'admin-bookings': '/admin/bookings',
+    'admin-chat': '/admin/chat',
+    'admin-revenue': '/admin/revenue',
+    'admin-commissions': '/admin/commissions',
+    'admin-live-listings': '/admin/live-listings',
+    
     // Floating Pages
     'women-reviews': '/women-reviews',
     'advanced-search': '/advanced-search',
@@ -141,6 +151,9 @@ export const pageToUrl: Partial<Record<Page, string>> = {
     'top-therapists': '/top-therapists',
     'special-offers': '/special-offers',
     'video-center': '/video-center',
+    'hotels-and-villas': '/hotels-and-villas',
+    'hotel-villa-safe-pass': '/hotel-villa-safe-pass',
+    'safePass': '/hotel-villa-safe-pass',
     
     // Floating Button URLs
     'chat-support': '/chat/support',

@@ -101,8 +101,8 @@ export const TermsPage: React.FC<TermsPageProps> = ({
               ? 'Pertanyaan tentang syarat ini? Hubungi kami di' 
               : 'Questions about these terms? Contact us at'
             }{' '}
-            <a href="mailto:support@indastreetmassage.com" className="text-orange-600 hover:text-orange-700 font-medium">
-              support@indastreetmassage.com
+            <a href="mailto:indastreet.id@gmail.com" className="text-orange-600 hover:text-orange-700 font-medium">
+              indastreet.id@gmail.com
             </a>
           </p>
         </div>

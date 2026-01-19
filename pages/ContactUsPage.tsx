@@ -1,10 +1,44 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Globe, Clock, CheckCircle } from 'lucide-react';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
+
+const CONTACT_CATEGORIES = [
+    { value: 'general', label: 'General Inquiry', responseTime: '48 hours' },
+    { value: 'therapist', label: 'Therapist Support', responseTime: '24-48 hours' },
+    { value: 'hotel', label: 'Hotel Partnership', responseTime: '48-72 hours' },
+    { value: 'technical', label: 'Technical Issue', responseTime: '24-48 hours' },
+    { value: 'billing', label: 'Billing & Payments', responseTime: '48 hours' },
+    { value: 'feedback', label: 'Feedback & Suggestions', responseTime: '72 hours' },
+    { value: 'careers', label: 'Career Opportunities', responseTime: '72 hours' },
+    { value: 'press', label: 'Press & Media', responseTime: '48-72 hours' },
+];
+
+const COUNTRIES = [
+    { code: 'ID', name: 'Indonesia', flag: '🇮🇩', phone: '+62' },
+    { code: 'US', name: 'United States', flag: '🇺🇸', phone: '+1' },
+    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', phone: '+44' },
+    { code: 'AU', name: 'Australia', flag: '🇦🇺', phone: '+61' },
+    { code: 'SG', name: 'Singapore', flag: '🇸🇬', phone: '+65' },
+    { code: 'MY', name: 'Malaysia', flag: '🇲🇾', phone: '+60' },
+    { code: 'TH', name: 'Thailand', flag: '🇹🇭', phone: '+66' },
+    { code: 'PH', name: 'Philippines', flag: '🇵🇭', phone: '+63' },
+    { code: 'JP', name: 'Japan', flag: '🇯🇵', phone: '+81' },
+    { code: 'KR', name: 'South Korea', flag: '🇰🇷', phone: '+82' },
+    { code: 'CN', name: 'China', flag: '🇨🇳', phone: '+86' },
+    { code: 'IN', name: 'India', flag: '🇮🇳', phone: '+91' },
+    { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', phone: '+971' },
+    { code: 'FR', name: 'France', flag: '🇫🇷', phone: '+33' },
+    { code: 'DE', name: 'Germany', flag: '🇩🇪', phone: '+49' },
+    { code: 'IT', name: 'Italy', flag: '🇮🇹', phone: '+39' },
+    { code: 'ES', name: 'Spain', flag: '🇪🇸', phone: '+34' },
+    { code: 'NL', name: 'Netherlands', flag: '🇳🇱', phone: '+31' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦', phone: '+1' },
+    { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', phone: '+64' },
+];
 
 interface ContactUsPageProps {
     onNavigate: (page: string) => void;
@@ -44,21 +78,34 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone: '',
-        userType: '',
-        subject: '',
+        whatsapp: '',
+        country: 'ID',
+        category: '',
         message: ''
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission
+        const selectedCategory = CONTACT_CATEGORIES.find(c => c.value === formData.category);
         console.log('Form submitted:', formData);
-        alert('Thank you for contacting us! We will respond within 24 hours.');
+        alert('Thank you for contacting us! We will respond within ' + 
+            (selectedCategory?.responseTime || '48-72 hours'));
+        
+        setFormData({
+            name: '',
+            email: '',
+            whatsapp: '',
+            country: 'ID',
+            category: '',
+            message: ''
+        });
     };
 
+    const selectedCategory = CONTACT_CATEGORIES.find(c => c.value === formData.category);
+    const selectedCountry = COUNTRIES.find(c => c.code === formData.country);
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-white">
             {/* Universal Header */}
             <UniversalHeader 
                 onMenuClick={() => setIsMenuOpen(true)}
@@ -67,25 +114,11 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 showLanguageSelector={false}
             />
             
-            {/* Back Arrow */}
-            <div className="max-w-4xl mx-auto px-4 pt-6">
-                <button
-                    onClick={() => onNavigate?.('home')}
-                    className="flex items-center gap-2 mb-4 text-gray-600 hover:text-gray-900 transition-colors group"
-                >
-                    <ArrowLeft className="w-5 h-5 group-hover:translate-x-[-2px] transition-transform" />
-                    <span className="font-medium">
-                        {language === 'id' ? 'Kembali ke Beranda' : 'Back to Home'}
-                    </span>
-                </button>
-            </div>
-            
             {/* Global App Drawer */}
             <AppDrawer
                 isOpen={isMenuOpen}
                 onClose={() => setIsMenuOpen(false)}
                 onMassageJobsClick={onMassageJobsClick}
-
                 onVillaPortalClick={onVillaPortalClick}
                 onTherapistPortalClick={onTherapistPortalClick}
                 onMassagePlacePortalClick={onMassagePlacePortalClick}
@@ -100,262 +133,250 @@ const ContactUsPage: React.FC<ContactUsPageProps> = ({
                 language={language}
             />
 
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-            {/* Hero Section */}
-            <div 
-                className="bg-gradient-to-r from-teal-600 to-blue-600 text-white py-20 relative bg-cover bg-center"
-                style={{
-                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20apps.png?updatedAt=1761568212865)',
-                }}
-            >
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-                    <h1 className="text-5xl font-bold mb-6 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">{t('contact.title')}</h1>
-                    <p className="text-xl text-white max-w-3xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        {t('contact.subtitle')}
-                    </p>
+            {/* Hero Section - Keep original */}
+            <div className="relative h-80 bg-gradient-to-r from-teal-600 to-blue-600 overflow-hidden">
+                <div 
+                    className="absolute inset-0 bg-cover bg-center opacity-20"
+                    style={{
+                        backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20apps.png?updatedAt=1761568212865)',
+                    }}
+                />
+                <div className="relative z-10 h-full flex items-center justify-center text-center px-4">
+                    <div>
+                        <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">Get in Touch</h1>
+                        <p className="text-xl text-teal-50 max-w-2xl mx-auto drop-shadow-md">
+                            We're here to help and answer any questions you might have
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-6xl mx-auto px-4 py-16">
+            {/* Main Content - Minimalistic White Design */}
+            <div className="max-w-4xl mx-auto px-4 py-16">
+                {/* Professional Service Notice */}
+                <div className="mb-12 text-center">
+                    <div className="inline-flex items-center gap-2 mb-4">
+                        <span className="text-orange-500 font-bold text-3xl">Inda</span>
+                        <span className="text-gray-900 font-bold text-3xl">Street</span>
+                    </div>
+                    <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
+                        <span className="font-semibold text-gray-900">IndaStreet</span> strives to offer the best possible professional service 
+                        in realistic time zones. We value your time and ensure quality responses.
+                    </p>
+                </div>
+
                 {/* Contact Form */}
-                <div className="grid md:grid-cols-2 gap-12 mb-16">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Contact Category */}
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('contact.form.title')}</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.nameLabel')}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder={t('contact.form.namePlaceholder')}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.emailLabel')}</label>
-                                <input
-                                    type="email"
-                                    required
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder={t('contact.form.emailPlaceholder')}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.phoneLabel')}</label>
-                                <input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder={t('contact.form.phonePlaceholder')}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.userTypeLabel')}</label>
-                                <select
-                                    required
-                                    value={formData.userType}
-                                    onChange={(e) => setFormData({...formData, userType: e.target.value})}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                >
-                                    <option value="">{t('contact.form.userTypeSelect')}</option>
-                                    <option value="therapist">{t('contact.form.userTypes.therapist')}</option>
-                                    <option value="hotel">{t('contact.form.userTypes.hotel')}</option>
-                                    <option value="employer">{t('contact.form.userTypes.employer')}</option>
-                                    <option value="agent">{t('contact.form.userTypes.agent')}</option>
-                                    <option value="client">{t('contact.form.userTypes.client')}</option>
-                                    <option value="other">{t('contact.form.userTypes.other')}</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.subjectLabel')}</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.subject}
-                                    onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder={t('contact.form.subjectPlaceholder')}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-gray-700 font-bold mb-2">{t('contact.form.messageLabel')}</label>
-                                <textarea
-                                    required
-                                    value={formData.message}
-                                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                                    rows={6}
-                                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-teal-500 focus:outline-none"
-                                    placeholder={t('contact.form.messagePlaceholder')}
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold rounded-lg hover:from-orange-600 hover:to-orange-700 transition-colors shadow-lg"
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            What can we help you with? *
+                        </label>
+                        <div className="relative">
+                            <select
+                                required
+                                value={formData.category}
+                                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                className="w-full px-6 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none appearance-none bg-white text-gray-700 font-medium transition-all"
                             >
-                                {t('contact.form.sendButton')}
-                            </button>
-                        </form>
+                                <option value="">Select your inquiry type</option>
+                                {CONTACT_CATEGORIES.map(cat => (
+                                    <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        {selectedCategory && (
+                            <div className="mt-3 flex items-center gap-2 text-sm">
+                                <Clock className="w-4 h-4 text-orange-500" />
+                                <span className="text-gray-600">
+                                    Expected response time: <span className="font-semibold text-orange-600">{selectedCategory.responseTime}</span>
+                                </span>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Support Info */}
+                    {/* Full Name */}
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6">{t('contact.support.title')}</h2>
-                        <div className="space-y-6">
-                            <div 
-                                className="bg-white rounded-xl p-6 shadow-lg relative bg-cover bg-center overflow-hidden"
-                                style={{
-                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/support%20indastreet.png?updatedAt=1761569793668)',
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-white/85"></div>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-teal-600 mb-3">🆘 {t('contact.support.quickSupport.title')}</h3>
-                                    <p className="text-gray-700 mb-4">
-                                        Need immediate help? Check our FAQ section or contact us via WhatsApp for instant support.
-                                    </p>
-                                    <button 
-                                        onClick={() => onNavigate('quick-support')}
-                                        className="text-orange-600 font-bold hover:text-orange-700"
-                                    >
-                                        {t('contact.support.quickSupport.button')}
-                                    </button>
-                                </div>
-                            </div>
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            Full Name *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="Enter your full name"
+                            className="w-full px-6 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none text-gray-700 font-medium transition-all"
+                        />
+                    </div>
 
-                            <div 
-                                className="bg-white rounded-xl p-6 shadow-lg relative bg-cover bg-center overflow-hidden"
-                                style={{
-                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20partners.png?updatedAt=1761568366041)',
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-white/85"></div>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-purple-600 mb-3">🤝 {t('contact.support.partnerships.title')}</h3>
-                                    <p className="text-gray-700 mb-4">
-                                        Interested in partnering with IndaStreet? Email us at partnerships@indastreetmassage.com
-                                    </p>
-                                    <button 
-                                        onClick={() => onNavigate('partnership-inquiries')}
-                                        className="text-orange-600 font-bold hover:text-orange-700"
-                                    >
-                                        {t('contact.support.partnerships.button')}
-                                    </button>
-                                </div>
-                            </div>
+                    {/* Email */}
+                    <div>
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            Email Address *
+                        </label>
+                        <div className="relative">
+                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <input
+                                type="email"
+                                required
+                                value={formData.email}
+                                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                placeholder="your.email@example.com"
+                                className="w-full pl-12 pr-6 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none text-gray-700 font-medium transition-all"
+                            />
+                        </div>
+                    </div>
 
-                            <div 
-                                className="bg-white rounded-xl p-6 shadow-lg relative bg-cover bg-center overflow-hidden"
-                                style={{
-                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20partners%20jogja.png?updatedAt=1761568590477)',
-                                }}
+                    {/* Country Selector */}
+                    <div>
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            Country *
+                        </label>
+                        <div className="relative">
+                            <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <select
+                                required
+                                value={formData.country}
+                                onChange={(e) => setFormData({...formData, country: e.target.value})}
+                                className="w-full pl-12 pr-12 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none appearance-none bg-white text-gray-700 font-medium transition-all"
                             >
-                                <div className="absolute inset-0 bg-white/85"></div>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-orange-600 mb-3">📰 {t('contact.support.pressMedia.title')}</h3>
-                                    <p className="text-gray-700 mb-4">
-                                        Media inquiries and press kit requests: press@indastreetmassage.com
-                                    </p>
-                                    <button 
-                                        onClick={() => onNavigate('press-media')}
-                                        className="text-orange-600 font-bold hover:text-orange-700"
-                                    >
-                                        {t('contact.support.pressMedia.button')}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div 
-                                className="bg-white rounded-xl p-6 shadow-lg relative bg-cover bg-center overflow-hidden"
-                                style={{
-                                    backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/indastreet%20partners%20jogja%20people.png?updatedAt=1761568732395)',
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-white/85"></div>
-                                <div className="relative z-10">
-                                    <h3 className="text-xl font-bold text-green-600 mb-3">💼 {t('contact.support.careers.title')}</h3>
-                                    <p className="text-gray-700 mb-4">
-                                        Join our growing team! View open positions at careers@indastreetmassage.com
-                                    </p>
-                                    <button 
-                                        onClick={() => onNavigate('career-opportunities')}
-                                        className="text-orange-600 font-bold hover:text-orange-700"
-                                    >
-                                        {t('contact.support.careers.button')}
-                                    </button>
-                                </div>
+                                {COUNTRIES.map(country => (
+                                    <option key={country.code} value={country.code}>
+                                        {country.flag} {country.name} ({country.phone})
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Office Hours */}
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 p-8 mb-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Support Hours</h2>
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-gradient-to-br from-teal-50 to-blue-50 rounded-xl p-6 border border-teal-100">
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">📧 Email Support</h3>
-                            <div className="space-y-2 text-gray-700">
-                                <p><span className="font-bold">Monday - Friday:</span> 9:00 AM - 6:00 PM WIB</p>
-                                <p><span className="font-bold">Saturday:</span> 10:00 AM - 4:00 PM WIB</p>
-                                <p><span className="font-bold">Sunday:</span> Closed</p>
-                                <p className="text-sm text-gray-500 mt-4">Typical response time: 2-6 hours</p>
+                    {/* WhatsApp Number */}
+                    <div>
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            WhatsApp Number *
+                        </label>
+                        <div className="relative">
+                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <div className="absolute left-12 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                                {selectedCountry?.phone}
+                            </div>
+                            <input
+                                type="tel"
+                                required
+                                value={formData.whatsapp}
+                                onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
+                                placeholder="8123456789"
+                                className="w-full pl-32 pr-6 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none text-gray-700 font-medium transition-all"
+                            />
+                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                            Enter your number without the country code
+                        </p>
+                    </div>
+
+                    {/* Message */}
+                    <div>
+                        <label className="block text-gray-700 font-semibold mb-3 text-sm uppercase tracking-wide">
+                            Your Message *
+                        </label>
+                        <textarea
+                            required
+                            value={formData.message}
+                            onChange={(e) => setFormData({...formData, message: e.target.value})}
+                            rows={6}
+                            placeholder="Please provide as much detail as possible..."
+                            className="w-full px-6 py-4 border border-gray-200 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 focus:outline-none text-gray-700 font-medium transition-all resize-none"
+                        />
+                    </div>
+
+                    {/* Response Time Notice */}
+                    {formData.category && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                            <div className="flex items-start gap-3">
+                                <Clock className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <h3 className="font-semibold text-gray-900 mb-2">Response Time</h3>
+                                    <p className="text-gray-700 text-sm leading-relaxed">
+                                        Based on your inquiry type, you can expect a response within{' '}
+                                        <span className="font-bold text-orange-600">{selectedCategory?.responseTime}</span>.
+                                        Response times may vary between 48-72 hours depending on the category and current volume.
+                                    </p>
+                                    <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
+                                        <CheckCircle className="w-4 h-4 text-green-600" />
+                                        <span>All inquiries are handled professionally across multiple time zones</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 border border-green-100">
-                            <h3 className="text-xl font-bold text-gray-900 mb-4">💬 WhatsApp Support</h3>
-                            <div className="space-y-2 text-gray-700">
-                                <p><span className="font-bold">Available:</span> 24 hours / 7 days</p>
-                                <p><span className="font-bold">Auto-Response:</span> Instant</p>
-                                <p><span className="font-bold">Live Support:</span> 8:00 AM - 10:00 PM WIB</p>
-                                <p className="text-sm text-gray-500 mt-4">Fastest way to get help!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    )}
 
-                {/* Social Media */}
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-6">Follow Us on Social Media</h2>
-                    <div className="flex justify-center gap-6 mb-8">
-                        <a href="#" className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors">
-                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                            </svg>
-                        </a>
-                        <a href="#" className="w-14 h-14 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white hover:from-purple-700 hover:to-pink-600 transition-colors">
-                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                        </a>
-                        <a href="#" className="w-14 h-14 bg-blue-400 rounded-full flex items-center justify-center text-white hover:bg-blue-500 transition-colors">
-                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                            </svg>
-                        </a>
-                        <a href="#" className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors">
-                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                            </svg>
-                        </a>
-                    </div>
-                    <p className="text-gray-600">
-                        Stay updated with the latest news, tips, and wellness content from IndaStreet
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        className="w-full py-5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                        Send Message
+                    </button>
+
+                    {/* Additional Info */}
+                    <p className="text-center text-gray-500 text-sm">
+                        By submitting this form, you agree to our{' '}
+                        <button 
+                            type="button"
+                            onClick={onPrivacyClick}
+                            className="text-orange-600 hover:text-orange-700 font-semibold"
+                        >
+                            Privacy Policy
+                        </button>
                     </p>
+                </form>
+
+                {/* Contact Methods */}
+                <div className="mt-20 grid md:grid-cols-3 gap-8">
+                    <div className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Mail className="w-7 h-7 text-orange-600" />
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-2">Email Us</h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                            indastreet.id@gmail.com
+                        </p>
+                        <span className="text-xs text-gray-500">24-48 hour response</span>
+                    </div>
+
+                    <div className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Phone className="w-7 h-7 text-green-600" />
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-2">WhatsApp</h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                            Available 24/7
+                        </p>
+                        <span className="text-xs text-gray-500">Instant response</span>
+                    </div>
+
+                    <div className="text-center p-6 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Globe className="w-7 h-7 text-blue-600" />
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-2">Global Support</h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                            Multi-timezone coverage
+                        </p>
+                        <span className="text-xs text-gray-500">Worldwide service</span>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     );
 };

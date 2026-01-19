@@ -23,6 +23,7 @@ import PremiumUpgrade from './pages/PremiumUpgrade';
 import CommissionPayment from './pages/CommissionPayment';
 import TherapistSchedule from './pages/TherapistSchedule';
 import SendDiscountPage from './pages/SendDiscountPage';
+import HotelVillaSafePass from './pages/HotelVillaSafePass';
 import TherapistLayout from './components/TherapistLayout';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
@@ -30,10 +31,11 @@ import FloatingChat from './components/FloatingChat';
 import PersistentBookingAlerts from './components/PersistentBookingAlerts';
 import BookingNotificationBar from './components/BookingNotificationBar';
 import { LanguageProvider } from '../../../context/LanguageContext';
+import { ChatProvider } from '../../../context/ChatProvider';
 import { useTranslations } from '../../../lib/useTranslations';
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
 
-type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount';
+type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -579,6 +581,8 @@ function App() {
         return <TherapistSchedule therapist={user} language={language} />;
       case 'send-discount':
         return <SendDiscountPage therapist={user} language={language} />;
+      case 'hotel-villa-safe-pass':
+        return <HotelVillaSafePass therapist={user} onBack={() => setCurrentPage('status')} language={language} />;
       case 'dashboard':
       default:
         return (
@@ -610,42 +614,44 @@ function App() {
   console.log('✅ Skipping onboarding - package selection handled on main site');
 
   return (
-    <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
-      {/* Booking Notification System */}
-      {showBookingAlerts && (
-        <PersistentBookingAlerts
-          therapist={user}
-          onAcceptBooking={handleAcceptBooking}
+    <ChatProvider>
+      <LanguageProvider value={{ language, setLanguage: handleLanguageChange }}>
+        {/* Booking Notification System */}
+        {showBookingAlerts && (
+          <PersistentBookingAlerts
+            therapist={user}
+            onAcceptBooking={handleAcceptBooking}
+            onViewBooking={handleViewBooking}
+          />
+        )}
+        
+        <BookingNotificationBar
           onViewBooking={handleViewBooking}
+          onNavigateToBookings={handleNavigateToBookings}
         />
-      )}
-      
-      <BookingNotificationBar
-        onViewBooking={handleViewBooking}
-        onNavigateToBookings={handleNavigateToBookings}
-      />
-      
-      <PWAInstallPrompt dashboardName="Therapist Dashboard" />
-      <ToastContainer />
-      <TherapistLayout
-        therapist={user}
-        currentPage={currentPage}
-        onNavigate={(page) => setCurrentPage(page as Page)}
-        language={language}
-        onLanguageChange={handleLanguageChange}
-        onLogout={handleLogout}
-      >
-        {renderPage()}
-      </TherapistLayout>
-      
-      {/* Persistent Floating Chat - Always visible when user data exists */}
-      {user && (
-        <FloatingChat 
-          therapist={user} 
-          isPWA={isPWAMode()} 
-        />
-      )}
-    </LanguageProvider>
+        
+        <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+        <ToastContainer />
+        <TherapistLayout
+          therapist={user}
+          currentPage={currentPage}
+          onNavigate={(page) => setCurrentPage(page as Page)}
+          language={language}
+          onLanguageChange={handleLanguageChange}
+          onLogout={handleLogout}
+        >
+          {renderPage()}
+        </TherapistLayout>
+        
+        {/* Persistent Floating Chat - Always visible when user data exists */}
+        {user && (
+          <FloatingChat 
+            therapist={user} 
+            isPWA={isPWAMode()} 
+          />
+        )}
+      </LanguageProvider>
+    </ChatProvider>
   );
 }
 

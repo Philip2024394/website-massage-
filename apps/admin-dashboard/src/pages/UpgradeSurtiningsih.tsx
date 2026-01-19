@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databases, Query } from '../../../../lib/appwrite';
-import { APPWRITE_CONFIG } from '../../../../lib/appwrite.config';
+import { databases, Query, APPWRITE_CONFIG } from '../lib/appwrite';
 
 const UpgradeToPremiumWithCommission: React.FC = () => {
     const [loading, setLoading] = useState(false);

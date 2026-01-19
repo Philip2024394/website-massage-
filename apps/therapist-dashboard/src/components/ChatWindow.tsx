@@ -549,8 +549,7 @@ export default function ChatWindow({
             
             // Notify admin
             await simpleBookingService.notifyAdmin(
-                `✅ Booking ${bookingId} accepted by therapist ${providerName}`,
-                { bookingId, therapistId: providerId, customerId }
+                `✅ Booking ${bookingId} accepted by therapist ${providerName}`
             );
             
             console.log('✅ Booking accepted and saved to database');
@@ -608,8 +607,7 @@ export default function ChatWindow({
             
             // Notify admin about rejection (will trigger ranking penalty)
             await simpleBookingService.notifyAdmin(
-                `❌ Booking ${bookingId} rejected by therapist ${providerName} - Ranking penalty applied`,
-                { bookingId, therapistId: providerId, customerId, action: 'rejection_penalty' }
+                `❌ Booking ${bookingId} rejected by therapist ${providerName} - Ranking penalty applied`
             );
             
             console.log('❌ Booking rejected - ranking penalty triggered');
@@ -656,8 +654,7 @@ export default function ChatWindow({
             
             // Notify admin
             await simpleBookingService.notifyAdmin(
-                `❌ Booking ${bookingId} cancelled by customer ${customerName}`,
-                { bookingId, therapistId: providerId, customerId }
+                `❌ Booking ${bookingId} cancelled by customer ${customerName}`
             );
             
             console.log('✅ Booking cancelled and saved to database');
@@ -1060,7 +1057,7 @@ export default function ChatWindow({
                         <div className="mt-4">
                             <div 
                                 className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-green-300"
-                                onClick={() => setEnlargedPaymentCard(msg.metadata.paymentCard)}
+                                onClick={() => setEnlargedPaymentCard(msg.metadata!.paymentCard)}
                                 title="Click to enlarge"
                             >
                                 <div className="flex items-center justify-between mb-3">

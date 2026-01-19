@@ -1,0 +1,56 @@
+/* MobileLock.css - Mobile viewport stabilization */
+
+.mobile-lock-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: var(--bg-color, #ffffff);
+  z-index: 1;
+}
+
+/* Prevent scrolling on the container */
+.mobile-lock-container {
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: none;
+  overscroll-behavior: none;
+}
+
+/* Mobile-specific optimizations */
+@media only screen and (max-width: 768px) {
+  .mobile-lock-container {
+    /* Use CSS custom property for dynamic height */
+    height: calc(var(--vh, 1vh) * 100) !important;
+    
+    /* Prevent zoom on mobile */
+    touch-action: manipulation;
+    
+    /* Smooth transitions */
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Ensure content fits within locked viewport */
+  .mobile-lock-container > * {
+    max-height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media only screen and (max-width: 768px) and (orientation: landscape) {
+  .mobile-lock-container {
+    /* Account for landscape viewport changes */
+    height: calc(var(--vh, 1vh) * 100) !important;
+  }
+}
+
+/* Handle notch and safe areas on newer devices */
+@supports (padding: max(0px)) {
+  .mobile-lock-container {
+    padding-top: max(env(safe-area-inset-top), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+  }
+}

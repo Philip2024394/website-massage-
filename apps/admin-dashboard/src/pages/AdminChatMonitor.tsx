@@ -156,16 +156,8 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             setLoading(true);
             setError(null);
             
-            // Dynamic import to match admin dashboard pattern
-            const { databases } = await import('appwrite');
-            const { Client, Query } = await import('appwrite');
-            const { APPWRITE_CONFIG } = await import('../../../../lib/appwrite.config');
-            
-            const client = new Client()
-                .setEndpoint(APPWRITE_CONFIG.endpoint)
-                .setProject(APPWRITE_CONFIG.projectId);
-            
-            const db = new databases(client);
+            // Use local appwrite config
+            const { databases, APPWRITE_CONFIG, Query } = await import('../lib/appwrite');
             
             console.log('📡 Fetching chat rooms from Appwrite...');
             
@@ -175,7 +167,7 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 Query.limit(500) // Fetch last 500 chat rooms
             ];
             
-            const response = await db.listDocuments(
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.chatRooms,
                 queries
@@ -201,21 +193,13 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         try {
             setLoadingMessages(true);
             
-            const { databases } = await import('appwrite');
-            const { Client, Query } = await import('appwrite');
-            const { APPWRITE_CONFIG } = await import('../../../../lib/appwrite.config');
-            
-            const client = new Client()
-                .setEndpoint(APPWRITE_CONFIG.endpoint)
-                .setProject(APPWRITE_CONFIG.projectId);
-            
-            const db = new databases(client);
+            const { databases, APPWRITE_CONFIG, Query } = await import('../lib/appwrite');
             
             console.log('📨 Fetching messages for room:', roomId);
             
-            const response = await db.listDocuments(
+            const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
-                APPWRITE_CONFIG.collections.chatMessages,
+                APPWRITE_CONFIG.collections.messages || 'messages',
                 [
                     Query.equal('roomId', roomId),
                     Query.orderAsc('$createdAt'),
@@ -240,21 +224,20 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
      */
     const fetchBookingDetails = async (bookingId: string) => {
         try {
-            const { bookingService } = await import('../../../../lib/appwriteService');
-            const { commissionTrackingService } = await import('../../../../lib/services/commissionTrackingService');
+            const { bookingService, commissionTrackingService } = await import('../lib/appwrite');
             
             console.log('📋 Fetching booking:', bookingId);
             
             // Fetch booking
-            const booking = await bookingService.getById(bookingId);
+            const booking = await bookingService.get(bookingId);
             setSelectedBooking(booking);
             
             // Try to fetch commission if it's a therapist booking
-            if (booking.providerType === 'therapist') {
+            if (booking?.providerType === 'therapist') {
                 try {
                     // Check if commission exists
-                    const hasCommission = await commissionTrackingService.hasUnpaidCommissions(booking.providerId);
-                    if (hasCommission) {
+                    const commission = await commissionTrackingService.getByBookingId(bookingId);
+                    if (commission) {
                         // Fetch commission details (this is a simplified approach)
                         console.log('💰 Commission exists for therapist:', booking.providerId);
                     }
@@ -288,7 +271,7 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             
             const { databases } = await import('appwrite');
             const { Client } = await import('appwrite');
-            const { APPWRITE_CONFIG } = await import('../../../../lib/appwrite.config');
+            const { APPWRITE_CONFIG } = await import('../lib/appwrite');
             
             const client = new Client()
                 .setEndpoint(APPWRITE_CONFIG.endpoint)
@@ -338,7 +321,7 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             
             const { databases } = await import('appwrite');
             const { Client } = await import('appwrite');
-            const { APPWRITE_CONFIG } = await import('../../../../lib/appwrite.config');
+            const { APPWRITE_CONFIG } = await import('../lib/appwrite');
             
             const client = new Client()
                 .setEndpoint(APPWRITE_CONFIG.endpoint)
@@ -390,7 +373,7 @@ const AdminChatMonitor: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             
             const { databases } = await import('appwrite');
             const { Client, ID } = await import('appwrite');
-            const { APPWRITE_CONFIG } = await import('../../../../lib/appwrite.config');
+            const { APPWRITE_CONFIG } = await import('../lib/appwrite');
             
             const client = new Client()
                 .setEndpoint(APPWRITE_CONFIG.endpoint)

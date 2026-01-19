@@ -40,7 +40,7 @@ const TherapistPageHeader: React.FC<TherapistPageHeaderProps> = ({
             </div>
           </div>
 
-          {/* Actions, Language Switcher and Home Icon on Right */}
+          {/* Actions and Home Icon on Right */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {/* Optional Actions */}
             {actions && (
@@ -48,32 +48,6 @@ const TherapistPageHeader: React.FC<TherapistPageHeaderProps> = ({
                 {actions}
               </div>
             )}
-            
-            {/* Language Switcher - Facebook Style */}
-            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-0.5">
-              <button
-                onClick={() => setLanguage('id')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                  language === 'id' 
-                    ? 'bg-white shadow-sm text-gray-900' 
-                    : 'text-gray-600 hover:bg-white/50'
-                }`}
-                title="Bahasa Indonesia"
-              >
-                <span className="text-sm">🇮🇩</span>
-              </button>
-              <button
-                onClick={() => setLanguage('gb')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                  language === 'gb' || language === 'en'
-                    ? 'bg-white shadow-sm text-gray-900' 
-                    : 'text-gray-600 hover:bg-white/50'
-                }`}
-                title="English"
-              >
-                <span className="text-sm">🇬🇧</span>
-              </button>
-            </div>
             
             {/* Home Icon - Always on Right */}
             <button

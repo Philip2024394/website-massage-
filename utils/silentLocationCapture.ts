@@ -1,8 +1,15 @@
 /**
  * Facebook-Style Silent Location Capture
  * 
- * Automatically captures user location in the background without intrusive prompts.
- * Location is stored securely and used for spam verification in bookings.
+ * Captures user GPS location for booking verification (NOT for city selection).
+ * 
+ * ⚠️ IMPORTANT: This uses GPS-only location detection.
+ * - Used ONLY for spam verification in bookings
+ * - Does NOT affect browsing city (selectedCity)
+ * - Does NOT auto-select city from GPS
+ * - Browsing city MUST be manually selected via CitySelectionPage
+ * 
+ * IP-based location intentionally disabled due to inaccuracy in Indonesia.
  */
 
 import { getCustomerLocation } from '../lib/nearbyProvidersService';

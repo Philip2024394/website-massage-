@@ -414,16 +414,22 @@ export const findAllNearbyPlaces = async (
 };
 
 /**
- * Get customer location with IP fallback - PRODUCTION-READY
- * Uses multiple strategies for maximum reliability:
- * 1. High-accuracy GPS (fresh, not cached)
- * 2. IP-based geolocation fallback
- * 3. Accuracy validation (rejects inaccurate results)
+ * Get customer location - GPS ONLY (NO IP-BASED DETECTION)
+ * 
+ * ⚠️ IP-based location intentionally disabled due to inaccuracy in Indonesia.
+ * ISPs often route traffic through Jakarta, causing incorrect city detection.
+ * 
+ * GPS is the ONLY acceptable location source:
+ * - High-accuracy GPS (fresh, not cached)
+ * - Accuracy validation (rejects inaccurate results)
+ * - NO IP geolocation fallback
+ * - NO browser locale/timezone detection
+ * - NO automatic city assignment
  */
 export const getCustomerLocation = async (): Promise<{ lat: number; lng: number }> => {
-    console.log('📍 Starting location detection...');
+    console.log('📍 Starting GPS location detection (NO IP fallback)...');
     
-    // Strategy 1: Try GPS with strict accuracy requirements
+    // GPS ONLY - Try GPS with strict accuracy requirements
     if (navigator.geolocation) {
         try {
             const gpsLocation = await new Promise<{ lat: number; lng: number }>((resolve, reject) => {
@@ -434,7 +440,7 @@ export const getCustomerLocation = async (): Promise<{ lat: number; lng: number 
                         
                         // Reject if accuracy is worse than 500 meters (inaccurate)
                         if (accuracy > 500) {
-                            console.warn(`⚠️ GPS accuracy too low: ${accuracy}m - trying fallback`);
+                            console.warn(`⚠️ GPS accuracy too low: ${accuracy}m - REJECTING (no fallback)`);
                             reject(new Error(`GPS accuracy insufficient: ${accuracy}m`));
                             return;
                         }
@@ -460,62 +466,16 @@ export const getCustomerLocation = async (): Promise<{ lat: number; lng: number 
             return gpsLocation;
             
         } catch (gpsError) {
-            console.warn('⚠️ GPS strategy failed, falling back to IP geolocation');
+            console.warn('⚠️ GPS failed - NO IP FALLBACK (intentionally disabled)');
+            throw gpsError;
         }
     }
     
-    // Strategy 2: IP-based geolocation fallback (for desktop/laptop or GPS failure)
-    try {
-        console.log('🌐 Attempting IP-based geolocation...');
-        
-        // Use multiple IP geolocation services for reliability
-        const ipServices = [
-            'https://ipapi.co/json/',
-            'https://ipinfo.io/json',
-            'https://ip-api.com/json/'
-        ];
-        
-        for (const service of ipServices) {
-            try {
-                const response = await fetch(service);
-                if (!response.ok) continue;
-                
-                const data = await response.json();
-                
-                // Handle different response formats
-                let lat: number | undefined;
-                let lng: number | undefined;
-                
-                if (data.latitude && data.longitude) {
-                    lat = parseFloat(data.latitude);
-                    lng = parseFloat(data.longitude);
-                } else if (data.lat && data.lon) {
-                    lat = parseFloat(data.lat);
-                    lng = parseFloat(data.lon);
-                } else if (data.loc) {
-                    // ipinfo.io format: "lat,lng"
-                    const [latStr, lngStr] = data.loc.split(',');
-                    lat = parseFloat(latStr);
-                    lng = parseFloat(lngStr);
-                }
-                
-                if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-                    console.log(`✅ IP geolocation successful using ${service}:`, { lat, lng });
-                    console.log(`📍 Approximate city: ${data.city || 'Unknown'}, ${data.country || 'Unknown'}`);
-                    return { lat, lng };
-                }
-            } catch (serviceError) {
-                console.warn(`⚠️ IP service ${service} failed, trying next...`);
-                continue;
-            }
-        }
-        
-        throw new Error('All IP geolocation services failed');
-        
-    } catch (ipError) {
-        console.error('❌ All location detection methods failed');
-        throw new Error('Unable to detect location. Please enable location permissions or check your internet connection.');
-    }
+    // NO IP-BASED GEOLOCATION FALLBACK
+    // IP-based location intentionally disabled due to inaccuracy in Indonesia.
+    // Users MUST enable GPS or manually select their city.
+    console.error('❌ GPS not available - location detection failed');
+    throw new Error('GPS location required. Please enable location permissions.');
 };
 
 

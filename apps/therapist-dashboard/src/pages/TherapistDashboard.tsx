@@ -11,7 +11,6 @@ import { extractLocationId, normalizeLocationForSave, assertValidLocationData } 
 import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../utils/geoDistance';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
-import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
 
 interface TherapistPortalPageProps {
@@ -102,7 +101,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   const [profileImageDataUrl, setProfileImageDataUrl] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>(() => {
     // 🔒 PRODUCTION HARDENING: Use centralized locationId extraction
-    const locationId = extractLocationId(therapist);
+    const locationId = therapist ? extractLocationId(therapist) : '';
     console.log('🔍 LOCATION ID LOAD (normalized):', locationId);
     return locationId;
   });
@@ -235,36 +234,67 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   const handleSetLocation = () => {
     if (!navigator.geolocation) {
-      showToast('❌ Geolocation not supported', 'error');
+      showToast('❌ GPS not supported on this device', 'error');
       return;
     }
 
-    showToast('📍 Getting your location...', 'info');
+    showToast('📍 Getting your GPS location... Please allow location access', 'info');
     
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const accuracy = position.coords.accuracy;
-        console.log(`📍 Location accuracy: ${accuracy}m`);
-        
-        if (accuracy > 500) {
-          showToast(`⚠️ Location accuracy is low (${Math.round(accuracy)}m). Try moving to an open area.`, 'warning');
-        }
+        console.log(`📍 GPS accuracy: ${accuracy}m`);
         
         const coords = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
+        
+        // Validate GPS coordinates are within Indonesia
+        const { validateTherapistGeopoint } = require('../../../../utils/locationValidation');
+        const validation = validateTherapistGeopoint({ geopoint: coords });
+        
+        if (!validation.isValid) {
+          showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
+          return;
+        }
+        
+        // Derive city from GPS coordinates
+        const { deriveLocationIdFromGeopoint } = require('../../../../utils/geoDistance');
+        const derivedCity = deriveLocationIdFromGeopoint(coords);
+        
         setCoordinates(coords);
         setLocationSet(true);
-        showToast('✅ Location captured successfully!', 'success');
+        
+        if (accuracy > 500) {
+          showToast(`⚠️ GPS accuracy is low (${Math.round(accuracy)}m). Consider moving to an open area for better accuracy.`, 'warning');
+        } else {
+          showToast(`✅ GPS location captured! You will appear in ${derivedCity} searches.`, 'success');
+        }
+        
+        console.log(`🎯 GPS-derived city: ${derivedCity}`);
       },
       (error) => {
-        console.error('Geolocation error:', error);
-        showToast('❌ Location access denied. Please enable location permissions.', 'error');
+        console.error('GPS error:', error);
+        let errorMessage = 'Location access denied.';
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'GPS position unavailable. Please try again or move to an area with better signal.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'GPS timeout. Please try again.';
+            break;
+        }
+        
+        showToast(`❌ ${errorMessage}`, 'error');
       },
       {
         enableHighAccuracy: true,
-        timeout: 15000,
+        timeout: 20000, // 20 seconds for GPS lock
         maximumAge: 0 // Always get fresh location, no cache
       }
     );
@@ -319,7 +349,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       showToast('❌ Error: Therapist data not loaded', 'error');
       return;
     }
-    console.log('� handleSaveProfile called');
     console.log('📝 Starting save with therapist:', therapist.$id || therapist.id);
     console.log('👤 Therapist name:', therapist.name);
     console.log('📧 Therapist email:', therapist.email);
@@ -328,14 +357,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     setSaving(true);
     
     try {
-      // Validation
+      // REQUIRED FIELDS VALIDATION
       const missingFields: string[] = [];
       if (!name.trim()) missingFields.push('Name');
       if (!whatsappNumber.trim() || whatsappNumber.trim() === '+62') missingFields.push('WhatsApp Number');
-      if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (required for marketplace)');
+      if (!coordinates || !coordinates.lat || !coordinates.lng) missingFields.push('GPS Location (MANDATORY - click SET GPS LOCATION button)');
       
       if (missingFields.length > 0) {
-        showToast(`❌ Please complete: ${missingFields.join(', ')}`, 'error');
+        showToast(`❌ Required fields missing: ${missingFields.join(', ')}`, 'error');
         setSaving(false);
         setProfileSaved(false);
         return;
@@ -372,29 +401,35 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       }
 
-      // 🌍 GEO-BASED SAVE LOGIC (MANDATORY GEOPOINT)
-      console.log('🌍 Validating geopoint requirement...');
+      // 🌍 GPS LOCATION VALIDATION - MANDATORY FOR GO LIVE
+      console.log('🌍 Validating MANDATORY GPS requirement...');
       
-      // STEP 1: Validate geopoint is present (MANDATORY)
+      // STEP 1: GPS coordinates are ABSOLUTELY REQUIRED
       if (!coordinates || !coordinates.lat || !coordinates.lng) {
-        showToast('❌ GPS location is required. Please set your location on the map.', 'error');
+        showToast('❌ GPS location is MANDATORY. Please click "SET GPS LOCATION" button above.', 'error');
         setSaving(false);
         return;
       }
       
       const geopoint = { lat: coordinates.lat, lng: coordinates.lng };
-      console.log('📍 Geopoint for save:', geopoint);
+      console.log('📍 GPS coordinates for save:', geopoint);
       
-      // STEP 2: Auto-derive locationId from geopoint (no manual override)
-      const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
-      console.log('🏷️ Auto-derived locationId:', derivedLocationId);
-      
-      // STEP 3: Validate geopoint bounds
+      // STEP 2: Validate GPS is within Indonesia bounds
       const validation = validateTherapistGeopoint({ geopoint });
       if (!validation.isValid) {
-        showToast(`❌ Invalid location: ${validation.error}`, 'error');
+        showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
         setSaving(false);
         return;
+      }
+      
+      // STEP 3: Auto-derive city from GPS (GPS IS SOURCE OF TRUTH)
+      const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
+      console.log('🏷️ GPS-derived city (AUTHORITATIVE):', derivedLocationId);
+      
+      // STEP 4: GPS city wins silently over manual selection
+      if (selectedCity && selectedCity !== 'all' && selectedCity !== derivedLocationId) {
+        console.log(`🔄 GPS overrides manual selection: "${selectedCity}" → "${derivedLocationId}"`);
+        // Silent override - GPS is always authoritative, no warning toast needed
       }
       
       console.log('✅ Geopoint validation passed');
@@ -411,15 +446,16 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
         
-        // 🌍 GEO-BASED FIELDS (SOURCE OF TRUTH)
-        geopoint: geopoint,  // Primary: lat/lng coordinates
-        locationId: derivedLocationId,  // Secondary: UI grouping only
+        // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH)
+        geopoint: geopoint,                    // Primary: lat/lng coordinates
+        city: derivedLocationId,               // 🔒 REQUIRED: GPS-derived city for filtering
+        locationId: derivedLocationId,         // 🔒 REQUIRED: GPS-derived city ID
+        coordinates: JSON.stringify(geopoint), // Legacy: serialized coordinates
         
-        // Legacy compatibility (keep for display)
-        coordinates: JSON.stringify(geopoint),
-        location: selectedCity !== 'all' ? selectedCity : null,
+        // ⚠️ LEGACY ONLY: Manual selection (NOT used for filtering)
+        location: selectedCity !== 'all' ? selectedCity : derivedLocationId,
         
-        // 🚨 DATABASE ENFORCEMENT: Prevent isLive=true without geopoint
+        // 🚨 ENFORCEMENT: Cannot go live without GPS
         isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
         status: therapist.status || 'available',
         availability: therapist.availability || 'Available',
@@ -447,13 +483,14 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         });
       }
       
-      // Verify locationId
-      if (savedTherapist.locationId === derivedLocationId) {
-        console.log('✅ LOCATION ID SAVE VERIFIED:', derivedLocationId);
+      // Verify locationId and city
+      if (savedTherapist.locationId === derivedLocationId && savedTherapist.city === derivedLocationId) {
+        console.log('✅ LOCATION ID & CITY SAVE VERIFIED:', derivedLocationId);
       } else {
-        console.error('❌ LOCATION ID SAVE FAILED!', {
+        console.error('❌ LOCATION SAVE FAILED!', {
           expected: derivedLocationId,
-          savedLocationId: savedTherapist.locationId
+          savedLocationId: savedTherapist.locationId,
+          savedCity: savedTherapist.city
         });
       }
 
@@ -530,7 +567,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     }
   };
 
-  const canSave = name.trim() && /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && selectedCity !== 'all';
+  // Form validation for save button - GPS is MANDATORY
+  const canSave = name.trim() && 
+                  /^\+62\d{6,15}$/.test(whatsappNumber.trim()) && 
+                  selectedCity !== 'all' &&
+                  coordinates && coordinates.lat && coordinates.lng; // GPS is MANDATORY
 
   // Handle "Go Live" button click
   const handleGoLive = async () => {
@@ -784,12 +825,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   return (
     <>
-    <TherapistLayout
-      therapist={therapist}
-      currentPage="dashboard"
-      onNavigate={handleNavigate}
-      language={language}
-    >
       <div className="min-h-screen bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
@@ -855,10 +890,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
           )}
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-gray-900 text-xl font-semibold">Profile Information</h2>
-          </div>
 
           {/* Form Content */}
           <div className="p-6 space-y-5">
@@ -902,6 +933,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <label className="text-sm font-medium text-gray-700 mb-2 block">
                 Profile Picture
               </label>
+              
+              {/* CRITICAL WARNING */}
+              <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-2xl">⚠️</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-red-900 mb-1">
+                      IMPORTANT: Upload ONLY Your Real Photo
+                    </p>
+                    <p className="text-xs text-red-800">
+                      Your account will be <span className="font-bold underline">IMMEDIATELY DEACTIVATED</span> if you upload any photo that is NOT a real picture of yourself (no cartoons, logos, celebrities, stock photos, or other people). Clients must be able to identify you.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <div className="flex items-center gap-4">
                 <div className="relative">
 
@@ -931,7 +978,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                     <Upload className="w-4 h-4" />
                     {uploadingImage ? 'Uploading...' : 'Upload Photo'}
                   </label>
-                  <p className="text-xs text-gray-500 mt-1.5">Max 5MB</p>
+                  <p className="text-xs text-gray-500 mt-1.5">Max 5MB • Must be your real photo</p>
                 </div>
               </div>
             </div>
@@ -950,23 +997,70 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 className="w-full"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Choose your city or tourist area (e.g., Depok West Java). When setting GPS location below, ensure it's within your selected city area.
+                Select your general area. <strong>Important:</strong> Your GPS location below will determine the exact city where you appear in searches.
               </p>
             </div>
 
-            {/* Location */}
+            {/* GPS Location - MANDATORY */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">GPS Location (optional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                GPS Location * <span className="text-red-500 font-bold">(REQUIRED TO GO LIVE)</span>
+              </label>
+              
+              {/* GPS Requirement Notice */}
+              <div className="mb-3 bg-red-50 border-2 border-red-500 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">📍</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-red-900 mb-1">
+                      GPS Location is MANDATORY
+                    </p>
+                    <p className="text-xs text-red-800">
+                      You cannot go live without setting your exact GPS coordinates. This ensures you appear in the correct city for customers.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <button
                 onClick={handleSetLocation}
-                className="w-full px-4 py-3 rounded-xl bg-green-500 text-white hover:bg-green-600 font-medium transition-all shadow-sm"
+                className={`w-full px-4 py-3 rounded-xl font-medium transition-all shadow-sm ${
+                  locationSet 
+                    ? 'bg-green-500 text-white hover:bg-green-600' 
+                    : 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
+                }`}
               >
-                {locationSet ? '✓ Location Set - Click to Update' : 'Set My GPS Location'}
+                {locationSet ? '✅ GPS Location Verified - Click to Update' : '📍 SET GPS LOCATION (REQUIRED)'}
               </button>
+              
               {locationSet && coordinates && (
-                <div className="mt-2 p-3 bg-green-50 border border-green-100 rounded-xl">
-                  <p className="text-sm text-green-800">
-                    ✓ Location: {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}
+                <div className="mt-3 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-lg">🎯</span>
+                    <p className="text-sm font-bold text-green-800">
+                      Location Verified via GPS
+                    </p>
+                  </div>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <p><strong>Coordinates:</strong> {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}</p>
+                    {(() => {
+                      const { deriveLocationIdFromGeopoint } = require('../../../../utils/geoDistance');
+                      const derivedCity = deriveLocationIdFromGeopoint(coordinates);
+                      return (
+                        <p><strong>GPS-Derived City:</strong> <span className="font-bold text-green-900">{derivedCity}</span></p>
+                      );
+                    })()}
+                    <p className="text-xs text-green-600 mt-1">
+                      ⚠️ Your profile will appear in the GPS-derived city, regardless of manual selection above.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {!locationSet && (
+                <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                  <p className="text-sm text-orange-800">
+                    ⚠️ GPS location not set. You cannot go live until you provide your exact coordinates.
                   </p>
                 </div>
               )}
@@ -1134,6 +1228,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   {!name.trim() && <li>• Full name</li>}
                   {!/^\+62\d{6,15}$/.test(whatsappNumber.trim()) && <li>• Valid WhatsApp number</li>}
                   {selectedCity === 'all' && <li>• City/Location</li>}
+                  {(!coordinates || !coordinates.lat || !coordinates.lng) && <li>• GPS Location (click SET GPS LOCATION button)</li>}
                 </ul>
               </div>
             )}
@@ -1366,7 +1461,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         </div>
       )}
       </div>
-    </TherapistLayout>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
       </>

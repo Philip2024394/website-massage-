@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles } from 'lucide-react';
+import { X as CloseIcon, Home, Heart, Briefcase, Info, BookOpen, Phone, MapPin, HelpCircle, Users, Building, UserPlus, Sparkles, Hotel } from 'lucide-react';
+import { useCityContext } from '../context/CityContext';
+import CitySwitcher from './CitySwitcher';
 
 // Helper function to get auth app URL for development and production
 const getAuthAppUrl = (): string => {
@@ -35,7 +37,6 @@ interface AppDrawerProps {
   onAgentPortalClick?: () => void;
   onCustomerPortalClick?: () => void;
   onAdminPortalClick?: () => void;
-  onNavigate?: (page: string) => void;
   onTermsClick?: () => void;
   onPrivacyClick?: () => void;
   onQRCodeClick?: () => void;
@@ -54,6 +55,7 @@ const drawerTranslations = {
     aboutUs: 'About Us',
     companyProfile: 'Company Profile',
     contact: 'Contact',
+    hotelsVillas: 'Hotels & Villas',
     blog: 'Blog',
     massageInBali: 'Massage in Bali',
     massageDirectory: 'Massage Directory',
@@ -77,6 +79,7 @@ const drawerTranslations = {
     aboutUs: 'Tentang Kami',
     companyProfile: 'Profil Perusahaan',
     contact: 'Kontak',
+    hotelsVillas: 'Hotel & Villa',
     blog: 'Blog',
     massageInBali: 'Pijat di Bali',
     massageDirectory: 'Direktori Pijat',
@@ -115,6 +118,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   onQRCodeClick,
   onLoginClick,
 }) => {
+  const { city } = useCityContext();
+  const [showCitySwitcher, setShowCitySwitcher] = useState(false);
+  
   console.log('🚪 AppDrawer render check:', { isHome, isOpen, shouldRender: isHome && isOpen });
   
   if (!isHome || !isOpen) return null;
@@ -219,6 +225,27 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
               </div>
 
               <div className="space-y-2">
+                {/* City Switcher Button */}
+                <button 
+                  onClick={() => setShowCitySwitcher(!showCitySwitcher)} 
+                  className="flex items-center gap-3 w-full py-2 px-3 rounded-lg bg-teal-50 hover:bg-teal-100 transition-colors border-2 border-teal-200"
+                >
+                  <MapPin className="w-5 h-5 text-teal-600 flex-shrink-0" />
+                  <div className="flex-grow text-left">
+                    <span className="text-sm text-gray-700 font-medium block">
+                      {language === 'id' ? 'Kota Saat Ini' : 'Current City'}
+                    </span>
+                    <span className="text-xs text-teal-600 font-semibold">{city}</span>
+                  </div>
+                </button>
+                
+                {/* City Switcher Dropdown */}
+                {showCitySwitcher && (
+                  <div className="ml-4 mb-2">
+                    <CitySwitcher onClose={() => setShowCitySwitcher(false)} />
+                  </div>
+                )}
+                
                 <button onClick={() => handleItemClick(undefined, 'indastreet-partners')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Home className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.partners}</span>
@@ -246,6 +273,10 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 <button onClick={() => handleItemClick(undefined, 'contact')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <Phone className="w-5 h-5 text-orange-500 flex-shrink-0" />
                   <span className="text-sm text-gray-700 font-medium">{dt.contact}</span>
+                </button>
+                <button onClick={() => handleItemClick(undefined, 'hotels-and-villas')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
+                  <Hotel className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 font-medium">{dt.hotelsVillas}</span>
                 </button>
                 <button onClick={() => handleItemClick(undefined, 'blog')} className="flex items-center gap-3 w-full py-2 px-3 rounded-lg hover:bg-orange-50 transition-colors">
                   <BookOpen className="w-5 h-5 text-orange-500 flex-shrink-0" />
@@ -292,6 +323,17 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                     <span className="text-sm text-gray-700 font-medium">{dt.websitePartners}</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Admin Access - Bottom Section */}
+              <div className="border-t-2 border-gray-300 pt-4 mt-4">
+                <button 
+                  onClick={() => handleItemClick(onAdminPortalClick, 'admin')} 
+                  className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                >
+                  <Building className="w-5 h-5 text-white flex-shrink-0" />
+                  <span className="text-sm text-white font-bold">{dt.admin} Portal</span>
+                </button>
               </div>
             </div>
           </nav>

@@ -837,7 +837,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
              * Facebook Lock: This layout is finalized
              * Contact admin before making any changes
              * ======================================== */}
-            <div className="px-4 mt-2 mb-1 text-right relative z-10">
+            <div className="px-4 mt-4 mb-1 text-right relative z-10" style={{ minHeight: '48px' }}>
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
                         <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

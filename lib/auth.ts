@@ -119,7 +119,7 @@ const INCLUDE_USER_ID = (typeof import.meta !== 'undefined' && (import.meta as a
 const DEBUG_AUTH = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_DEBUG_AUTH === '1') || (typeof process !== 'undefined' && process.env?.VITE_DEBUG_AUTH === '1');
 
 export const therapistAuth = {
-    async signUp(email: string, password: string): Promise<AuthResponse> {
+    async signUp(email: string, password: string, name?: string, whatsappNumber?: string): Promise<AuthResponse> {
         try {
             logger.debug('🔵 [Therapist Sign-Up] Starting...', { email });
             // Environment diagnostics
@@ -177,10 +177,10 @@ export const therapistAuth = {
                     // Required fields per schema
                     id: therapistId, // Required by Appwrite schema - document ID
                     email: normalizedEmail,
-                    name: normalizedEmail.split('@')[0],
+                    name: name || normalizedEmail.split('@')[0],
                     userId: user.$id, // ✅ ALWAYS link therapist to auth user ID
-                    whatsappNumber: '',
-                    countryCode: '+66', // Required by Appwrite schema - default Thailand
+                    whatsappNumber: whatsappNumber || '',
+                    countryCode: '+62', // Required by Appwrite schema - Indonesia
                     location: '',
                     pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }),
                     price60: '100', // Required string field for 60-minute massage
@@ -214,7 +214,9 @@ export const therapistAuth = {
                 console.log('🔗 [Therapist Sign-Up] Auto-generating share link...');
                 const { shareLinkService } = await import('../lib/services/shareLinkService');
                 const therapistName = normalizedEmail.split('@')[0];
-                const defaultCity = 'Bali'; // Default for new accounts
+                // ⚠️ NO defaultCity - therapist must set location via GPS in dashboard
+                // IP-based location intentionally disabled due to inaccuracy in Indonesia.
+                const defaultCity = 'unknown'; // Will be updated when therapist sets GPS location
                 
                 const shareLink = await shareLinkService.createShareLink(
                     'therapist',
@@ -370,7 +372,7 @@ export const therapistAuth = {
 
 // Place Authentication - Streamlined with only required attributes
 export const placeAuth = {
-    async signUp(email: string, password: string): Promise<AuthResponse> {
+    async signUp(email: string, password: string, name?: string, whatsappNumber?: string): Promise<AuthResponse> {
         try {
             const user = await account.create(ID.unique(), email, password);
             const generatedPlaceId = ID.unique();
@@ -382,9 +384,10 @@ export const placeAuth = {
                 id: generatedPlaceId,                          // ✅ Required: Document identifier
                 placeId: generatedPlaceId,                     // ✅ Required: Place-specific ID field
                 userId: user.$id,                              // ✅ ALWAYS link place to auth user ID
-                name: email.split('@')[0],                     // ✅ Required: Business name
+                name: name || email.split('@')[0],             // ✅ Required: Business name
                 category: 'massage-place',                     // ✅ Required: Business category
                 email,                                         // ✅ Required: Email address
+                whatsappNumber: whatsappNumber || '',          // ✅ WhatsApp number with +62 prefix
                 password: '',                                  // ✅ Required: Managed by Appwrite auth
                 pricing: JSON.stringify({ '60': 100, '90': 150, '120': 200 }), // ✅ Required: Pricing structure
                 status: 'Closed',                             // ✅ Required: Open/Closed status
@@ -413,7 +416,9 @@ export const placeAuth = {
                 console.log('🔗 [Place Sign-Up] Auto-generating share link...');
                 const { shareLinkService } = await import('../lib/services/shareLinkService');
                 const placeName = email.split('@')[0];
-                const defaultCity = 'Jakarta'; // Default for new massage places
+                // ⚠️ NO defaultCity - place must set location via GPS in dashboard
+                // IP-based location intentionally disabled due to inaccuracy in Indonesia.
+                const defaultCity = 'unknown'; // Will be updated when place sets GPS location
                 
                 const shareLink = await shareLinkService.createShareLink(
                     'place',

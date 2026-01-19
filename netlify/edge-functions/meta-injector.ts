@@ -12,7 +12,10 @@
  * 5. Return modified HTML to crawler
  */
 
-import type { Context } from "https://edge.netlify.com";
+// Type declaration for Netlify Edge Functions Context
+interface Context {
+  next: () => Promise<Response>;
+}
 
 // Official images for shared profiles
 const OFFICIAL_HERO_IMAGE = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage%20logo.png?updatedAt=1764533351258';

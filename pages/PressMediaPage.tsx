@@ -101,8 +101,8 @@ const PressMediaPage: React.FC<PressMediaPageProps> = ({ onNavigate }) => {
                             For press inquiries, interviews, and media partnerships, please reach out to our communications team.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 pb-20 justify-center items-center">
-                            <a href="mailto:press@indastreet.com" className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors">
-                                Email: press@indastreet.com
+                            <a href="mailto:indastreet.id@gmail.com" className="px-8 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors">
+                                Email: indastreet.id@gmail.com
                             </a>
                             <p className="text-gray-600">Response time: Within 24 hours</p>
                         </div>

@@ -111,7 +111,7 @@ const PaymentManagement: React.FC = () => {
         try {
             // ✅ Connect to real Appwrite data sources
             // Import real services for payment data
-            const { bookingService, commissionTrackingService } = await import('../../../../lib/appwriteService');
+            const { bookingService, commissionTrackingService } = await import('../lib/appwrite');
             
             // Get all bookings to calculate commission payments
             const allBookings = await bookingService.getAll();
@@ -144,24 +144,9 @@ const PaymentManagement: React.FC = () => {
             // Get lead data (if available)
             let realLeads: LeadGenerated[] = [];
             try {
-                // Attempt to get leads data - this may not exist
-                const leadsData = await import('../../../../lib/services/leadTrackingService');
-                const leadRecords = await leadsData.leadTrackingService.getAll();
-                
-                realLeads = leadRecords.map((lead: any) => ({
-                    $id: lead.$id,
-                    leadId: lead.leadId || `LEAD-${lead.$id.slice(-6)}`,
-                    memberId: lead.memberId,
-                    memberName: lead.memberName || 'Unknown Member',
-                    customerName: lead.customerName || 'Unknown Customer',
-                    customerPhone: lead.customerPhone || '',
-                    serviceType: lead.serviceType || 'Service',
-                    leadValue: lead.leadValue || 0,
-                    leadDate: lead.$createdAt ? new Date(lead.$createdAt) : new Date(),
-                    status: lead.status || 'new',
-                    commissionOwed: lead.commissionOwed || 0,
-                    commissionPaid: lead.commissionPaid || false
-                }));
+                // Lead tracking service not yet implemented
+                console.log('ℹ️ Lead tracking feature not yet implemented');
+                realLeads = []; // Empty for now
             } catch (leadError) {
                 console.log('ℹ️ Lead tracking service not available:', leadError.message);
             }
@@ -171,82 +156,6 @@ const PaymentManagement: React.FC = () => {
             
             console.log('✅ Loaded', realPayments.length, 'real payment records');
             console.log('✅ Loaded', realLeads.length, 'lead records');
-                    memberId: 'therapist1',
-                    memberName: 'Sarah Johnson',
-                    memberType: 'therapist',
-                    whatsappNumber: '+62812345678',
-                    email: 'sarah@example.com',
-                    amount: 500000,
-                    currency: 'IDR',
-                    dueDate: new Date('2025-12-15'),
-                    status: 'pending',
-                    invoiceNumber: 'INV-2025-001',
-                    description: '30% commission on bookings',
-                    commissionRate: 30,
-                    lastReminderSent: new Date('2025-12-08')
-                },
-                {
-                    $id: '2',
-                    memberId: 'place1',
-                    memberName: 'Bali Massage Spa',
-                    memberType: 'place',
-                    whatsappNumber: '+62823456789',
-                    email: 'bali@example.com',
-                    amount: 1500000,
-                    currency: 'IDR',
-                    dueDate: new Date('2025-12-01'),
-                    paidDate: new Date('2025-11-30'),
-                    status: 'paid',
-                    paymentMethod: 'stripe',
-                    invoiceNumber: 'INV-2025-002',
-                    description: '30% commission on bookings',
-                    commissionRate: 30,
-                    confirmationDate: new Date('2025-11-30')
-                },
-                {
-                    $id: '3',
-                    memberId: 'therapist2',
-                    memberName: 'Mike Chen',
-                    memberType: 'therapist',
-                    whatsappNumber: '+65987654321',
-                    email: 'mike@example.com',
-                    amount: 800000,
-                    currency: 'IDR',
-                    dueDate: new Date('2025-11-25'),
-                    status: 'overdue',
-                    invoiceNumber: 'INV-2025-003',
-                    description: '30% commission on bookings',
-                    commissionRate: 30,
-                    lastReminderSent: new Date('2025-12-05')
-                }
-            ];
-
-            const mockLeads: LeadGenerated[] = [
-                {
-                    $id: '1',
-                    leadId: 'LEAD-001',
-                    memberId: 'therapist1',
-                    memberName: 'Sarah Johnson',
-                    customerName: 'John Doe',
-                    customerPhone: '+62811222333',
-                    serviceType: 'Thai Massage',
-                    leadValue: 500000,
-                    leadDate: new Date('2025-12-08'),
-                    status: 'converted',
-                    commissionOwed: 50000,
-                    commissionPaid: true
-                },
-                {
-                    $id: '2',
-                    leadId: 'LEAD-002',
-                    memberId: 'place1',
-                    memberName: 'Bali Massage Spa',
-                    customerName: 'Jane Smith',
-                    customerPhone: '+62822333444',
-                    serviceType: 'Full Body Massage',
-                    leadValue: 750000,
-                    leadDate: new Date('2025-12-09'),
-                    status: 'contacted',
             
         } catch (error) {
             console.error('Failed to load payment data:', error);

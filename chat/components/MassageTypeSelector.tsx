@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Users, Baby, Globe } from 'lucide-react';
-import { getAutoAssignedAvatar, getAvatarsByType, type MassageSelection, type AvatarOption } from '../../constants/chatAvatars';
+import { getAutoAssignedAvatar, type MassageSelection, type AvatarOption } from '../../constants/chatAvatars';
 
 interface MassageTypeSelectorProps {
   onSelectionComplete: (selection: MassageSelection, avatar: AvatarOption) => void;
@@ -25,7 +25,9 @@ export const MassageTypeSelector: React.FC<MassageTypeSelectorProps> = ({
   const [previewAvatar, setPreviewAvatar] = useState<AvatarOption | null>(null);
   const [showRaceSelector, setShowRaceSelector] = useState(false);
 
-  // Auto-detect race based on location/browser language (optional)
+  // Auto-detect race based on browser timezone/language (for avatar selection ONLY)
+  // ⚠️ NOTE: This does NOT affect city selection - city must be selected manually
+  // This is only for customer avatar appearance in chat interface
   useEffect(() => {
     const detectUserRace = async () => {
       try {

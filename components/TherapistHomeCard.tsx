@@ -330,13 +330,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 }}
                 className={`bg-white rounded-2xl overflow-visible border border-gray-200 transition-all duration-300 ${readOnly ? 'cursor-default' : 'cursor-pointer hover:shadow-xl'} group ${readOnly ? 'opacity-90' : ''} relative`}
             >
-            {/* Image Container */}
-            <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl">
+            {/* Image Container - Fixed height for mobile stability */}
+            <div className="relative h-56 overflow-visible bg-transparent rounded-t-2xl" style={{ minHeight: '224px' }}>
                 <img
                     src={(therapist as any).mainImage || (therapist as any).profilePicture || '/default-avatar.jpg'}
                     alt={therapist.name}
                     className="w-full h-full object-cover transition-transform duration-500 rounded-t-2xl"
-                    style={{ aspectRatio: '400/224' }}
+                    style={{ aspectRatio: '400/224', minHeight: '224px' }}
                     loading="lazy"
                     width="400"
                     height="224"
@@ -367,13 +367,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                     </div>
                 )}
 
-                {/* Share Button - Bottom Right Corner of image */}
+                {/* Share Button - Bottom Right with stable positioning */}
                 {!readOnly && (
                     <button
                         onClick={handleShareClick}
                         className="absolute bottom-3 right-3 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                         title="Share this therapist"
                         aria-label="Share this therapist"
+                        style={{ position: 'absolute', bottom: '12px', right: '12px' }}
                     >
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -388,8 +389,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
              * Contact admin before making any changes
              * ======================================== */}
 
-            {/* Location info - Right side, positioned above profile section */}
-            <div className="px-4 mt-0 mb-0 text-right relative z-10">
+            {/* Location info - Right side, positioned above profile section with stable height */}
+            <div className="px-4 mt-0 mb-0 text-right relative z-10" style={{ minHeight: '48px' }}>
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
                         <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -451,6 +452,16 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                                     className="w-5 h-5 flex-shrink-0"
                                     title="Verified Therapist"
                                 />
+                            )}
+                            
+                            {/* Hotel/Villa Safe Pass Badge */}
+                            {(therapist as any).hotelVillaSafePassStatus === 'active' && (
+                                <div 
+                                    className="w-5 h-5 bg-blue-600 rounded-sm flex items-center justify-center flex-shrink-0"
+                                    title="Hotel & Villa Safe Pass Certified"
+                                >
+                                    <span className="text-white text-xs font-bold">🏨</span>
+                                </div>
                             )}
                             
                             {/* Preferred by Women Badge - Show if therapist accepts female clients */}

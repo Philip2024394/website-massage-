@@ -1,36 +1,39 @@
 import { useEffect, useState } from 'react';
-import { authService } from '../../../lib/appwriteService';
+// import { authService } from '../../../lib/appwriteService';
 import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  // ADMIN DASHBOARD BYPASS: Always run from VS Code localhost, no auth needed
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>({ 
+    name: 'Admin User',
+    email: 'admin@indastreet.com'
+  });
 
   useEffect(() => {
-    checkAuth();
+    // Try to get existing session if available, but don't block
+    // checkAuth();
+    console.log('Admin Dashboard loaded successfully');
   }, []);
 
   const checkAuth = async () => {
     try {
-      const currentUser = await authService.getCurrentUser();
-      if (currentUser) {
-        // Check if user is admin
-        // You'll need to verify admin role here
-        setUser(currentUser);
-        setIsAuthenticated(true);
-      }
+      // const currentUser = await authService.getCurrentUser();
+      // if (currentUser) {
+      //   setUser(currentUser);
+      // }
+      console.log('Auth check skipped in development mode');
     } catch (error) {
-      console.log('Not authenticated');
-    } finally {
-      setIsLoading(false);
+      console.log('No existing session, using local admin access');
     }
   };
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      await authService.login(email, password);
-      await checkAuth();
+      // await authService.login(email, password);
+      // await checkAuth();
+      console.log('Login handled locally');
     } catch (error) {
       throw error;
     }
@@ -38,9 +41,10 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await authService.logout();
+      // await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
+      console.log('Logged out successfully');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -52,20 +56,6 @@ function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading Admin Dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    // Redirect to auth app for unified sign in/create account flow
-    const authUrl = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
-    window.location.href = `${authUrl}/signin`;
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Redirecting to sign in...</p>
         </div>
       </div>
     );

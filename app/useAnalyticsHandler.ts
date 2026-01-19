@@ -9,7 +9,7 @@ export function useAnalyticsHandler() {
     const handleIncrementAnalytics = async (
         id: number | string, 
         type: 'therapist' | 'place', 
-        metric: string
+        metric: keyof Analytics
     ): Promise<void> => {
         try {
             // Map the metric to the appropriate analytics event type

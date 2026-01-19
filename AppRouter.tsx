@@ -117,8 +117,6 @@ const WellnessTourismUbudPage = React.lazy(() => import('./pages/blog/WellnessTo
 const SharedTherapistProfileLazy = React.lazy(() => import('./features/shared-profiles/SharedTherapistProfile'));
 // Import full shared profile directly (non-lazy) to guarantee rendering
 import SharedTherapistProfileDirect from './features/shared-profiles/SharedTherapistProfile';
-// Import lite version directly (non-lazy) to avoid chunk load issues
-import SharedTherapistProfileLiteDirect from './features/shared-profiles/SharedTherapistProfileLite';
 
 interface AppRouterProps {
     page: Page;
@@ -417,15 +415,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 loggedInProvider: props.loggedInProvider,
                 onQuickBookWithChat: props.handleQuickBookWithChat,
                 onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
-                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
                 onIncrementAnalytics: props.handleIncrementAnalytics,
                 onSelectTherapist: props.handleSetSelectedTherapist,
                 onSelectPlace: props.handleSetSelectedPlace,
                 onSetUserLocation: props.handleSetUserLocation,
                 selectedCity: props.selectedCity,
-                onCityChange: props.setSelectedCity,
+                onCityChange: props.setSelectedCity || props.onCityChange,
                 onLoginClick: props.handleNavigateToTherapistLogin,
-                t: props.t,
+                t: t,
                 language: props.language
             });
         
@@ -502,6 +500,30 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 t: t,
                 language: props.language,
                 onNavigate: props.onNavigate
+            });
+
+        case 'hotels-and-villas':
+            return renderRoute(publicRoutes.hotelsVillas.component, {
+                onNavigate: props.onNavigate,
+                onMassageJobsClick: () => props.onNavigate('massage-jobs'),
+                onVillaPortalClick: () => props.onNavigate('villa-portal'),
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                onAgentPortalClick: props.onAgentPortalClick,
+                onCustomerPortalClick: props.onCustomerPortalClick,
+                onAdminPortalClick: () => props.handleAdminLogin(),
+                onTermsClick: () => props.onNavigate('terms'),
+                onPrivacyClick: () => props.onNavigate('privacy'),
+                therapists: props.therapists,
+                places: props.places
+            });
+        
+        case 'hotel-villa-safe-pass':
+        case 'safePass':
+            return renderRoute(publicRoutes.safePass.component, {
+                onNavigate: props.onNavigate,
+                onTherapistPortalClick: props.onTherapistPortalClick,
+                language: props.language
             });
 
         // ===== JOIN ROUTES =====
@@ -1198,11 +1220,11 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 loggedInProvider: props.loggedInProvider,
                 onQuickBookWithChat: props.handleQuickBookWithChat,
                 onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
-                onShowRegisterPrompt: props.handleShowRegisterPrompt,
+                onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
                 onIncrementAnalytics: props.handleIncrementAnalytics,
                 selectedCity: props.selectedCity,
-                onCityChange: props.setSelectedCity,
-                t: props.t,
+                onCityChange: props.setSelectedCity || props.onCityChange,
+                t: t,
                 language: props.language
             });
 
@@ -1392,7 +1414,58 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 redirectToDashboard: true
             });
 
-        // ===== ADMIN ROUTES =====
+        // ===== ADMIN ROUTES (PROTECTED BY ROLE-BASED ACCESS CONTROL) =====
+        case 'admin':
+        case 'admin-dashboard':
+            return renderRoute(adminRoutes.dashboard.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-therapists':
+            return renderRoute(adminRoutes.therapists.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-bookings':
+            return renderRoute(adminRoutes.bookings.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-chat':
+            return renderRoute(adminRoutes.chat.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-revenue':
+            return renderRoute(adminRoutes.revenue.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-commissions':
+            return renderRoute(adminRoutes.commissions.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-ktp':
+            return renderRoute(adminRoutes.ktpVerification.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-achievements':
+            return renderRoute(adminRoutes.achievements.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-system-health':
+            return renderRoute(adminRoutes.systemHealth.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+            
+        case 'admin-settings':
+            return renderRoute(adminRoutes.settings.component, {
+                onNavigateHome: () => props.onNavigate('home')
+            });
+        
         case 'admin-live-listings':
             return renderRoute(adminRoutes.liveListings.component, {
                 therapists: props.therapists || [],

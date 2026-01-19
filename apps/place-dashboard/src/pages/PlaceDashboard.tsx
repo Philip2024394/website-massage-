@@ -12,6 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 import { loadGoogleMapsScript } from '../../../../constants/appConstants';
 import { getStoredGoogleMapsApiKey } from '../../../../utils/appConfig';
+import { deriveLocationIdFromGeopoint } from '../../../../utils/geoDistance';
 import Button from '../../../../components/Button';
 import MembershipPlansPage from './MembershipPlansPage';
 import ImageUpload from '../../../../components/ImageUpload';
@@ -637,10 +638,16 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             // Pricing
             pricing: JSON.stringify(pricing),
             
-            // Location
+            // 🌍 GPS-AUTHORITATIVE LOCATION (if coordinates available)
             location,
             coordinates: Array.isArray(coordinates) ? coordinates : [coordinates.lng || 106.8456, coordinates.lat || -6.2088],
-            city: selectedCity !== 'all' ? selectedCity : null,
+            // Derive city from GPS coordinates if available
+            city: coordinates && coordinates.lat && coordinates.lng 
+                ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng })
+                : (selectedCity !== 'all' ? selectedCity : null),
+            locationId: coordinates && coordinates.lat && coordinates.lng
+                ? deriveLocationIdFromGeopoint({ lat: coordinates.lat, lng: coordinates.lng })
+                : (selectedCity !== 'all' ? selectedCity : null),
             
             // Hours
             openingtime: openingTime,
@@ -674,7 +681,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
         console.log('📦 Sanitized languages:', (saveData as any).languages);
         console.log('📦 Sanitized additionalServices:', (saveData as any).additionalServices);
 
-        onSave(saveData);
+        onSave?.(saveData);
 
         // Show success message - profile goes live immediately
         const notification = document.createElement('div');
@@ -1089,8 +1096,8 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'bookings':
                 return (
                     <BookingsTab 
-                        upcomingbookings={upcomingBookings as any}
-                        pastbookings={pastBookings as any}
+                        upcomingBookings={upcomingBookings as any}
+                        pastBookings={pastBookings as any}
                         onUpdateBookingStatus={onUpdateBookingStatus as any}
                         t={t}
                         BookingCard={BookingCard as any}
@@ -1101,7 +1108,7 @@ const PlaceDashboardPage: React.FC<PlaceDashboardPageProps> = ({ onSave, onLogou
             case 'hotelVilla':
                 return <HotelVillaTab />;
             case 'notifications':
-                return <NotificationsTab placeId={placeId!} PushNotificationSettings={undefined} />;
+                return <NotificationsTab placeId={placeId!} PushNotificationSettings={null as any} />;
             case 'profile':
             default:
                 return (

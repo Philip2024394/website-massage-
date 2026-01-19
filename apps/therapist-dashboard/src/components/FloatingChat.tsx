@@ -634,7 +634,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
                 {/* Content */}
                 {/* Messages */}
                 <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                    <style jsx>{`
+                    <style>{`
                         div::-webkit-scrollbar {
                             display: none;
                         }

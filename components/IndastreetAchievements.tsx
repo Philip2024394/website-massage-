@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Star, Shield, Zap, Users, ChevronRight, Clock, Target, Sparkles, Activity, TrendingUp, Diamond } from 'lucide-react';
+import { Award, Star, Shield, Zap, Users, Plus, Clock, Target, Sparkles, Activity, TrendingUp } from 'lucide-react';
 import { Achievement, TherapistAchievement, ACHIEVEMENT_CATEGORIES, SAMPLE_ACHIEVEMENTS } from '../types/achievements';
 
 interface IndastreetAchievementsProps {
@@ -62,7 +62,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
       case 'quality_experience': return <Star className="w-4 h-4" />;
       case 'platform_engagement': return <Activity className="w-4 h-4" />;
       case 'premium_growth': return <TrendingUp className="w-4 h-4" />;
-      case 'specialty_badges': return <Diamond className="w-4 h-4" />;
+      case 'specialty_badges': return <Star className="w-4 h-4" />;
       default: return <Award className="w-4 h-4" />;
     }
   };
@@ -111,10 +111,10 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
         {achievementsByCategory.length > 3 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-sm font-medium transition-colors"
+            className="flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
           >
             {isExpanded ? 'Show Less' : `View All`}
-            <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+            <Plus className={`w-4 h-4 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-45' : ''}`} />
           </button>
         )}
       </div>

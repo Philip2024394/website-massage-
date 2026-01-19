@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 
-  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, LogOut
+  Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
 import { useUnreadBadge } from '../../../../chat/hooks/useUnreadBadge';
@@ -72,6 +72,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'custom-menu': 'Menu Prices',
       'commission-payment': 'Payments 30%',
       'send-discount': 'Send Discount',
+      'hotel-villa-safe-pass': 'Hotel Safe Pass',
       menu: 'Menu',
       logout: 'Logout',
     },
@@ -90,6 +91,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       'custom-menu': 'Harga Menu',
       'commission-payment': 'Pembayaran 30%',
       'send-discount': 'Kirim Diskon',
+      'hotel-villa-safe-pass': 'Hotel Safe Pass',
       menu: 'Menu',
       logout: 'Keluar',
     },
@@ -107,6 +109,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
     { id: 'payment-status', label: labels['payment-status'], icon: FileText, color: 'text-orange-500' },
     { id: 'commission-payment', label: labels['commission-payment'], icon: Wallet, color: 'text-orange-500' },
     { id: 'custom-menu', label: labels['custom-menu'], icon: ClipboardList, color: 'text-orange-500' },
+    { id: 'hotel-villa-safe-pass', label: labels['hotel-villa-safe-pass'], icon: Shield, color: 'text-orange-500' },
     { id: 'notifications', label: labels.notifications, icon: Bell, color: 'text-orange-500' },
     { id: 'legal', label: labels.legal, icon: FileText, color: 'text-orange-500' },
   ];
@@ -146,10 +149,9 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
                 <span className="text-sm font-bold text-gray-900">
                   {therapist?.name || 'Therapist'}
                 </span>
-                {therapist?.membershipTier && (
+                {therapist?.location && (
                   <span className="text-xs text-gray-500">
-                  {therapist.membershipTier === 'free' || therapist.membershipTier === 'commission' ? 'Pro - Pay As You Go' : 
-                   therapist.membershipTier === 'plus' || therapist.membershipTier === 'monthly' ? 'Plus - Everything For Success' : 'Pro Plan'}
+                    {therapist.location}
                   </span>
                 )}
               </div>

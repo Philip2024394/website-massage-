@@ -144,7 +144,7 @@ const FAQPage: React.FC<FAQPageProps> = ({
         {
             category: 'general',
             question: 'How can I contact customer support?',
-            answer: 'Reach us via WhatsApp at +62-XXX-XXXX, email at support@indastreet.id, or through our in-app chat feature. Our support team is available 7 days a week from 8 AM to 10 PM WIB.',
+            answer: 'Reach us via WhatsApp at +62-XXX-XXXX, email at indastreet.id@gmail.com, or through our in-app chat feature. Our support team is available 7 days a week from 8 AM to 10 PM WIB.',
             tags: ['support', 'contact', 'help']
         },
 

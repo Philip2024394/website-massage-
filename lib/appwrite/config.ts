@@ -46,6 +46,7 @@ export const APPWRITE_CONFIG = {
     facial_places: requireEnv('VITE_FACIAL_PLACES_COLLECTION_ID', 'facial_places_collection'),
     bookings: requireEnv('VITE_BOOKINGS_COLLECTION_ID', 'bookings_collection_id'),
     reviews: requireEnv('VITE_REVIEWS_COLLECTION_ID', 'reviews_collection_id'),
+    locations: requireEnv('VITE_LOCATIONS_COLLECTION_ID', 'locations'),
     
     // Communication - REQUIRED
     messages: requireEnv('VITE_MESSAGES_COLLECTION_ID', 'chat_messages'),

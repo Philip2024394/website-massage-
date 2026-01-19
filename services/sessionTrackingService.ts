@@ -192,21 +192,11 @@ class SessionTrackingService {
                 longitude: position.coords.longitude
             };
         } catch (error) {
-            // If geolocation fails, try IP-based location
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-                
-                return {
-                    country: data.country_name || 'Unknown',
-                    city: data.city || 'Unknown',
-                    latitude: data.latitude || 0,
-                    longitude: data.longitude || 0
-                };
-            } catch (ipError) {
-                console.error('Error getting location:', ipError);
-                return null;
-            }
+            // ⚠️ IP-based location intentionally disabled due to inaccuracy in Indonesia.
+            // ISPs often route traffic through Jakarta, causing incorrect city detection.
+            // If GPS fails, return null instead of using IP fallback.
+            console.log('📍 GPS location unavailable - NO IP fallback (intentionally disabled)');
+            return null;
         }
     }
 

@@ -238,8 +238,8 @@ const MembershipPlansPage: React.FC<MembershipPlansPageProps> = ({ onBack }) => 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
             Questions? Contact us at{' '}
-            <a href="mailto:support@indastreet.com" className="text-purple-600 hover:underline">
-              support@indastreet.com
+            <a href="mailto:indastreet.id@gmail.com" className="text-purple-600 hover:underline">
+              indastreet.id@gmail.com
             </a>
           </p>
         </div>

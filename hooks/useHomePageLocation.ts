@@ -8,6 +8,7 @@ import type { UserLocation, Therapist, Place } from '../types';
 import { getCustomerLocation, findAllNearbyTherapists, findAllNearbyPlaces } from '../lib/nearbyProvidersService';
 import { findCityByCoordinates, matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
+import { filterTherapistsByCity, filterPlacesByCity } from '../utils/cityFilterUtils';
 
 interface UseHomePageLocationProps {
     therapists: Therapist[];
@@ -111,24 +112,18 @@ export function useHomePageLocation({
             return;
         }
         
-        // Filter therapists by city
-        const filtered = therapists.filter(therapist => {
-            const city = therapist.city || therapist.location;
-            if (!city) return false;
-            
-            const normalizedCity = city.toLowerCase().trim();
-            const normalizedSelectedCity = effectiveSelectedCity.toLowerCase().trim();
-            
-            return matchesLocation(normalizedCity, normalizedSelectedCity);
-        });
+        // CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
+        // Use strict city filtering utility
+        console.log('🔒 STRICT FILTER: Applying city filter for "' + effectiveSelectedCity + '"');
+        const filtered = filterTherapistsByCity(therapists, effectiveSelectedCity);
         
-        console.log(`🌍 City filter (${effectiveSelectedCity}): ${filtered.length}/${therapists.length} therapists`);
+        console.log('🌍 City filter (' + effectiveSelectedCity + '): ' + filtered.length + '/' + therapists.length + ' therapists match');
+        
+        // Set city-filtered therapists
         setCityFilteredTherapists(filtered);
-    }, [selectedCity, propSelectedCity, therapists]);
-    
-    // Nearby providers logic (10km radius)
-    useEffect(() => {
-        const effectiveLocation = devLocationOverride || autoDetectedLocation;
+        
+        // Determine effective location for radius filtering
+        const effectiveLocation = devLocationOverride || autoDetectedLocation || (userLocation ? {lat: userLocation.lat, lng: userLocation.lng} : null);
         
         if (!effectiveLocation) {
             setNearbyTherapists([]);
@@ -153,7 +148,7 @@ export function useHomePageLocation({
                 return city && matchesLocation(city.toLowerCase(), adminViewArea.toLowerCase());
             });
             setNearbyTherapists(adminFiltered);
-            console.log(`🔐 Admin view: ${adminFiltered.length} therapists in ${adminViewArea}`);
+            console.log('🔐 Admin view: ' + adminFiltered.length + ' therapists in ' + adminViewArea);
             return;
         }
         
@@ -203,7 +198,10 @@ export function useHomePageLocation({
         previewTherapistId,
         adminViewArea,
         bypassRadiusForAdmin,
-        hasAdminPrivileges
+        hasAdminPrivileges,
+        selectedCity,
+        propSelectedCity,
+        userLocation
     ]);
     
     return {

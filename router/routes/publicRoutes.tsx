@@ -25,6 +25,8 @@ const HelpFaqPage = lazy(() => import('../../pages/HelpFaqPage'));
 const TopTherapistsPage = lazy(() => import('../../pages/TopTherapistsPage'));
 const SpecialOffersPage = lazy(() => import('../../pages/SpecialOffersPage'));
 const VideoCenterPage = lazy(() => import('../../pages/VideoCenterPage'));
+const HotelsVillasPage = lazy(() => import('../../pages/HotelsVillasPage'));
+const HotelVillaSafePassPage = lazy(() => import('../../pages/HotelVillaSafePassPage'));
 
 export const publicRoutes = {
   landing: {
@@ -116,7 +118,15 @@ export const publicRoutes = {
     path: '/video-center',
     component: VideoCenterPage,
     name: 'videoCenter'
-  }
+  },
+  hotelsVillas: {
+    path: '/hotels-and-villas',
+    component: HotelsVillasPage,
+    name: 'hotelsVillas'  },
+  safePass: {
+    path: '/hotel-villa-safe-pass',
+    component: HotelVillaSafePassPage,
+    name: 'safePass'  }
 };
 
 export type PublicRouteName = keyof typeof publicRoutes;

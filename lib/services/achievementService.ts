@@ -1,5 +1,4 @@
 import { databases } from '../appwrite/config';
-import { DATABASE_ID } from '../appwrite/config';
 import { APPWRITE_CONFIG } from '../appwrite/config';
 import { Achievement, TherapistAchievement } from '../../types/achievements';
 
@@ -19,7 +18,7 @@ export class AchievementService {
   async getAllAchievements(): Promise<Achievement[]> {
     try {
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS // You'll need to create this collection
       );
       return response.documents as Achievement[];
@@ -32,7 +31,7 @@ export class AchievementService {
   async createAchievement(achievement: Omit<Achievement, '$id'>): Promise<Achievement> {
     try {
       const response = await databases.createDocument(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         ID.unique(),
         achievement
@@ -47,7 +46,7 @@ export class AchievementService {
   async updateAchievement(achievementId: string, updates: Partial<Achievement>): Promise<Achievement> {
     try {
       const response = await databases.updateDocument(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         achievementId,
         updates
@@ -62,7 +61,7 @@ export class AchievementService {
   async deleteAchievement(achievementId: string): Promise<void> {
     try {
       await databases.deleteDocument(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         achievementId
       );
@@ -79,7 +78,7 @@ export class AchievementService {
   async getTherapistAchievements(therapistId: string): Promise<TherapistAchievement[]> {
     try {
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.THERAPIST_ACHIEVEMENTS, // You'll need to create this collection
         [
           `therapistId=\"${therapistId}\"`,
@@ -113,7 +112,7 @@ export class AchievementService {
     try {
       // Check if already assigned
       const existing = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.THERAPIST_ACHIEVEMENTS,
         [
           `therapistId=\"${therapistId}\"`,
@@ -137,7 +136,7 @@ export class AchievementService {
       };
       
       const response = await databases.createDocument(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.THERAPIST_ACHIEVEMENTS,
         ID.unique(),
         assignment
@@ -159,7 +158,7 @@ export class AchievementService {
   ): Promise<void> {
     try {
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.THERAPIST_ACHIEVEMENTS,
         [
           `therapistId=\"${therapistId}\"`,
@@ -170,7 +169,7 @@ export class AchievementService {
       
       for (const doc of response.documents) {
         await databases.updateDocument(
-          DATABASE_ID,
+          APPWRITE_CONFIG.databaseId,
           COLLECTIONS.THERAPIST_ACHIEVEMENTS,
           doc.$id,
           { isActive: false }
@@ -185,7 +184,7 @@ export class AchievementService {
   async getAllTherapistAchievements(): Promise<TherapistAchievement[]> {
     try {
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.THERAPIST_ACHIEVEMENTS,
         [`isActive=true`],
         100 // Limit
@@ -216,7 +215,7 @@ export class AchievementService {
   private async getAchievement(achievementId: string): Promise<Achievement> {
     try {
       const response = await databases.getDocument(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         achievementId
       );
@@ -230,7 +229,7 @@ export class AchievementService {
   async getAchievementsByCategory(category: Achievement['category']): Promise<Achievement[]> {
     try {
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         [`category=\"${category}\"`, `isVisible=true`]
       );
@@ -246,7 +245,7 @@ export class AchievementService {
       // Note: This is a basic search. For better search, you might want to implement
       // full-text search or use Appwrite's search capabilities
       const response = await databases.listDocuments(
-        DATABASE_ID,
+        APPWRITE_CONFIG.databaseId,
         COLLECTIONS.ACHIEVEMENTS,
         [`isVisible=true`]
       );

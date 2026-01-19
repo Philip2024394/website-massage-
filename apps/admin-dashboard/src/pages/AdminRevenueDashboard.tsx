@@ -54,12 +54,33 @@ import {
   Menu, Phone, ExternalLink, Database
 } from 'lucide-react';
 import {
-  adminRevenueTrackerService,
-  AdminBookingEntry,
-  AdminRevenueStats
-} from '../../../../lib/services/adminRevenueTrackerService';
-import { CommissionStatus } from '../../../../lib/services/adminCommissionService';
-import { BookingLifecycleStatus } from '../../../../lib/services/bookingLifecycleService';
+  adminRevenueTrackerService
+} from '../lib/appwrite';
+import type {
+  CommissionStatus,
+  BookingLifecycleStatus
+} from '../lib/appwrite';
+
+// Type definitions for admin revenue tracking
+type AdminBookingEntry = {
+  id: string;
+  bookingId: string;
+  source: string;
+  provider: string;
+  service: string;
+  duration: number;
+  totalValue: number;
+  commissionAmount: number;
+  status: string;
+  createdAt: string;
+};
+
+type AdminRevenueStats = {
+  totalRevenue: number;
+  totalCommission: number;
+  pendingCommission: number;
+  completedBookings: number;
+};
 
 // ============================================================================
 // COMMISSION SOURCE TRACKING

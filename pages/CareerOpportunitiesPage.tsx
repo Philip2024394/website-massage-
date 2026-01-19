@@ -272,7 +272,7 @@ const CareerOpportunitiesPage: React.FC<CareerOpportunitiesPageProps> = ({ onNav
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 p-8">
                         <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">Submit Your Application</h2>
                         <p className="text-gray-600 text-center mb-8">
-                            Don't see the right position? Send us your resume at <a href="mailto:careers@indastreet.com" className="text-green-600 font-bold">careers@indastreet.com</a>
+                            Don't see the right position? Send us your resume at <a href="mailto:indastreet.id@gmail.com" className="text-green-600 font-bold">indastreet.id@gmail.com</a>
                         </p>
                         
                         <div className="max-w-2xl mx-auto">

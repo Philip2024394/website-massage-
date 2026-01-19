@@ -35,29 +35,55 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Skip favicon and other non-essential requests that might fail
+  if (event.request.url.includes('favicon.ico') || 
+      event.request.url.includes('.ico') ||
+      event.request.url.includes('chrome-extension://')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Only cache GET requests to avoid unsupported method errors
-        if (event.request.method === 'GET') {
+        // Only cache successful GET requests
+        if (event.request.method === 'GET' && response.ok) {
           // Clone the response
           const responseClone = response.clone();
           
           // Cache the fetched response
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseClone);
+          }).catch((err) => {
+            console.log('Admin Dashboard SW: Cache put failed:', err);
           });
         }
         
         return response;
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log('Admin Dashboard SW: Fetch failed for:', event.request.url, error);
+        
         // If fetch fails, try to return from cache (only for GET requests)
         if (event.request.method === 'GET') {
-          return caches.match(event.request);
+          return caches.match(event.request).then((response) => {
+            if (response) {
+              return response;
+            }
+            // Return a fallback response for failed requests
+            return new Response('Offline - Resource not available', { 
+              status: 503, 
+              statusText: 'Service Unavailable',
+              headers: { 'Content-Type': 'text/plain' }
+            });
+          });
         }
+        
         // For non-GET requests, return a network error response
-        return new Response('Network error', { status: 500, statusText: 'Network Error' });
+        return new Response('Network error', { 
+          status: 500, 
+          statusText: 'Network Error',
+          headers: { 'Content-Type': 'text/plain' }
+        });
       })
   );
 });

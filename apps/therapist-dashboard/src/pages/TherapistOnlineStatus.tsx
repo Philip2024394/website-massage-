@@ -4,7 +4,6 @@ import { Power, Clock, CheckCircle, XCircle, Crown, Download, Smartphone, Badge,
 import { therapistService } from "../../../../lib/appwriteService";
 import { AvailabilityStatus } from "../../../../types";
 import { devLog, devWarn } from "../../../../utils/devMode";
-import TherapistLayout from '../components/TherapistLayout';
 import { EnhancedNotificationService } from "../../../../lib/enhancedNotificationService";
 import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer";
 import { useLanguage } from '../../../../hooks/useLanguage';
@@ -713,13 +712,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
   };
 
   return (
-    <TherapistLayout 
-      therapist={therapist} 
-      currentPage="status" 
-      onNavigate={handleNavigate}
-      language={language}
-      onLanguageChange={setLanguage}
-    >
+    <>
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -1189,7 +1182,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       userName={therapist?.name || 'Therapist'}
       userRole="therapist"
     />
-    </TherapistLayout>
+    </>
   );
 };
 

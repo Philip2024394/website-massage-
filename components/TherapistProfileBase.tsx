@@ -14,6 +14,7 @@
  */
 
 import React, { Suspense } from 'react';
+import { TrendingUp } from 'lucide-react';
 import TherapistCard from './TherapistCard';
 import RotatingReviews from './RotatingReviews';
 import SocialMediaLinks from './SocialMediaLinks';
@@ -22,6 +23,121 @@ import IndastreetAchievements from './IndastreetAchievements';
 import SharedProfileImageGallery from './shared/SharedProfileImageGallery';
 import type { Therapist, UserLocation } from '../types';
 import { getHeroImageForTherapist, HERO_WELCOME_TEXT } from '../config/heroImages';
+
+// SEO Hashtag Generator for different business types
+const generateSEOHashtags = (therapist: Therapist, city: string) => {
+  const cityLower = city.toLowerCase();
+  const businessName = therapist.name.toLowerCase().replace(/\s+/g, '');
+  
+  // Determine business type from therapist data
+  const businessType = (therapist as any).businessType || (therapist as any).portalType || 'massage_therapist';
+  const isPlace = (therapist as any).providerType === 'place';
+  
+  const baseHashtags = {
+    massage_therapist: [
+      `#pijatpanggilan${cityLower}`,
+      `#terapispijat${cityLower}`,
+      `#massage${cityLower}`,
+      '#homeservicemassage',
+      '#pijatrumahan',
+      '#pijatwanita',
+      '#pijattradisional',
+      '#terappijatprofesional',
+      '#massagetherapy',
+      '#relaxation',
+      '#wellness',
+      '#indonesiamassage'
+    ],
+    massage_place: [
+      `#spapijat${cityLower}`,
+      `#massagespa${cityLower}`,
+      `#pijat${cityLower}`,
+      '#spamassage',
+      '#wellnesscenter',
+      '#massagecenter',
+      '#sparelaxation',
+      '#traditionalmassage',
+      '#hotstone',
+      '#aromatherapy',
+      '#deeptissue',
+      '#swedishmassage'
+    ],
+    facial_place: [
+      `#facial${cityLower}`,
+      `#skincare${cityLower}`,
+      `#facialtreatment${cityLower}`,
+      '#beauty',
+      '#skinclinic',
+      '#facialclinic',
+      '#antiaging',
+      '#glowing',
+      '#facialwaxing',
+      '#microdemrabrasion',
+      '#chemicalpeel',
+      '#acnetreatment'
+    ],
+    facial_clinic: [
+      `#facialclinic${cityLower}`,
+      `#skintreatment${cityLower}`,
+      `#dermatology${cityLower}`,
+      '#medicalskincare',
+      '#cosmeticdermatology',
+      '#lasertherapy',
+      '#botox',
+      '#fillers',
+      '#skintightening',
+      '#pigmentation',
+      '#scartreatment',
+      '#professionalfacial'
+    ],
+    hotel: [
+      `#hotelspa${cityLower}`,
+      `#luxurymassage${cityLower}`,
+      `#resort${cityLower}`,
+      '#hotelmassage',
+      '#luxuryspa',
+      '#resortmassage',
+      '#vacationmassage',
+      '#sparetreat',
+      '#luxurywellness',
+      '#premiumspa',
+      '#hotelwellness',
+      '#spaluxury'
+    ],
+    wellness_center: [
+      `#wellness${cityLower}`,
+      `#holistichealing${cityLower}`,
+      `#wellnesscenter${cityLower}`,
+      '#holisticmassage',
+      '#wellnesstherapy',
+      '#mindandbody',
+      '#stressrelief',
+      '#naturalhealing',
+      '#therapeuticmassage',
+      '#bodyhealing',
+      '#wellnessretreat',
+      '#healthylifestyle'
+    ]
+  };
+  
+  // Select appropriate hashtags based on business type
+  let selectedHashtags = baseHashtags.massage_therapist; // default
+  
+  if (businessType === 'facial_clinic' || businessType === 'facial_place') {
+    selectedHashtags = baseHashtags.facial_clinic;
+  } else if (businessType === 'massage_spa' || (isPlace && businessType !== 'facial_clinic')) {
+    selectedHashtags = baseHashtags.massage_place;
+  } else if (businessType === 'hotel') {
+    selectedHashtags = baseHashtags.hotel;
+  } else if (businessType === 'wellness_center') {
+    selectedHashtags = baseHashtags.wellness_center;
+  }
+  
+  // Add business name hashtag
+  selectedHashtags.push(`#${businessName}`);
+  
+  return selectedHashtags.join(' ');
+};
 
 interface TherapistProfileBaseProps {
     // REQUIRED: Must be resolved BEFORE mounting this component
@@ -170,12 +286,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     isVerified={(therapist as any).isVerified || (therapist as any).verifiedBadge}
                     verifiedDate={(therapist as any).verifiedAt}
                     mode={mode}
-                    onViewAll={() => {
-                        // For authenticated mode, navigate to achievement management
-                        if (mode === 'authenticated' && onNavigate) {
-                            onNavigate('therapist-achievements');
-                        }
-                    }}
+                    onViewAll={undefined} // Remove manage button - no valid route for regular users
                 />
 
                 {/* Rotating Reviews Section */}
@@ -206,11 +317,24 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                 {/* Therapist Profile Google Search Rankings - Only in authenticated mode */}
                 {mode === 'authenticated' && (
                     <div className="mt-6 p-4 bg-gray-100 border border-gray-300 rounded-lg">
-                        <div className="text-sm text-black mb-2 font-medium">
-                            Therapist Profile Is Ranking On Google Search For:
+                        <div className="flex items-center gap-2 text-sm text-black mb-2 font-medium">
+                            <TrendingUp className="w-4 h-4 text-orange-500" />
+                            {(() => {
+                                const businessType = (therapist as any).businessType || (therapist as any).portalType || 'massage_therapist';
+                                if (businessType === 'facial_clinic' || businessType === 'facial_place') {
+                                    return 'Facial Clinic Is Ranking On Google Search For:';
+                                } else if (businessType === 'massage_spa' || (therapist as any).providerType === 'place') {
+                                    return 'Massage Spa Is Ranking On Google Search For:';
+                                } else if (businessType === 'hotel') {
+                                    return 'Hotel Spa Is Ranking On Google Search For:';
+                                } else {
+                                    return 'Therapist Profile Is Ranking On Google Search For:';
+                                }
+                            })()
+                            }
                         </div>
-                        <div className="text-sm text-blue-600 leading-relaxed">
-                            {`#pijatpanggilan${city.toLowerCase()} #terapispijat${city.toLowerCase()} #massage${city.toLowerCase()} #spapanggilan #homeservicemassage #pijatrumahan #pijatwanita #pijattradisional #pijatbali #pijatjawa #terappijatprofesional #massagetherapy #relaxation #wellness #indonesiamassage #${therapist.name.toLowerCase().replace(/\s+/g, '')}`}
+                        <div className="text-sm text-gray-700 leading-relaxed">
+                            {generateSEOHashtags(therapist, city)}
                         </div>
                     </div>
                 )}

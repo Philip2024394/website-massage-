@@ -8,6 +8,12 @@ export interface AvatarOption {
   ageGroup?: 'child' | 'young-adult' | 'adult' | 'senior';
 }
 
+export interface MassageSelection {
+  massageFor: 'male' | 'female' | 'children';
+  userRace: 'asian' | 'caucasian' | 'african' | 'mixed';
+  customerName?: string;
+}
+
 // Male Avatars by Race
 const MALE_AVATARS: AvatarOption[] = [
   { id: 1, imageUrl: 'https://ik.imagekit.io/7grri5v7d/avatar%2017.png?updatedAt=1764960013042', label: 'Asian Male 1', gender: 'male', race: 'asian' },
@@ -74,9 +80,22 @@ export const LEGACY_AVATAR_OPTIONS = [
 /**
  * Auto-assign random avatar from all available options
  * @param userId - Optional user ID for consistent assignment
+ * @param selection - Optional massage selection for targeted avatar assignment
  * @returns Random avatar option
  */
-export function getAutoAssignedAvatar(userId?: string): AvatarOption {
+export function getAutoAssignedAvatar(userId?: string): AvatarOption;
+export function getAutoAssignedAvatar(selection: MassageSelection): AvatarOption;
+export function getAutoAssignedAvatar(userIdOrSelection?: string | MassageSelection): AvatarOption {
+  // Handle MassageSelection parameter
+  if (typeof userIdOrSelection === 'object') {
+    const selection = userIdOrSelection;
+    const gender = selection.massageFor === 'children' ? 'child' : selection.massageFor;
+    return getRandomAvatarByGender(gender);
+  }
+  
+  // Handle string userId parameter (legacy behavior)
+  const userId = userIdOrSelection as string | undefined;
+  
   // Combine all available avatars (male + female + children)
   const allAvatars = [...MALE_AVATARS, ...FEMALE_AVATARS, ...CHILDREN_AVATARS];
   

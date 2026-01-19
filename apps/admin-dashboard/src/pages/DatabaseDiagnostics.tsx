@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { databases } from '../../../../lib/appwrite';
-import { APPWRITE_CONFIG } from '../../../../lib/appwrite.config';
+import { databases, APPWRITE_CONFIG } from '../lib/appwrite';
 
 const DatabaseDiagnostics: React.FC = () => {
     const [diagnostics, setDiagnostics] = useState<any>(null);

@@ -12,7 +12,18 @@
  * Run this script ONCE in your Appwrite database before using the achievement system.
  */
 
-import { Client, Databases, ID, Permission, Role } from 'node-appwrite';
+import { Client, Databases, ID, Permission, Role, IndexType } from 'node-appwrite';
+
+// Type definitions for attribute configuration
+interface AttributeConfig {
+  key: string;
+  type: 'string' | 'boolean' | 'datetime' | 'enum' | 'url';
+  size?: number;
+  required?: boolean;
+  default?: string | boolean;
+  array?: boolean;
+  elements?: string[];
+}
 
 const APPWRITE_CONFIG = {
   endpoint: 'https://syd.cloud.appwrite.io/v1',
@@ -26,7 +37,10 @@ async function setupAchievementCollections() {
     console.error('❌ Error: APPWRITE_API_KEY environment variable is required');
     console.log('\nGet your API key from:');
     console.log(`https://cloud.appwrite.io/console/project-${APPWRITE_CONFIG.projectId}/overview/keys`);
-    process.exit(1);
+    if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
+    return;
   }
 
   const client = new Client()
@@ -59,10 +73,10 @@ async function setupAchievementCollections() {
     console.log('✅ Achievements collection created');
 
     // Add attributes to achievements collection
-    const achievementAttributes = [
+    const achievementAttributes: AttributeConfig[] = [
       { key: 'name', type: 'string', size: 255, required: true },
       { key: 'description', type: 'string', size: 1000, required: true },
-      { key: 'badgeUrl', type: 'url', size: 500, required: true },
+      { key: 'badgeUrl', type: 'url', required: true },
       { key: 'category', type: 'enum', elements: ['professional', 'experience', 'specialization', 'community', 'verified', 'performance'], required: true },
       { key: 'rarity', type: 'enum', elements: ['common', 'uncommon', 'rare', 'epic', 'legendary'], required: true },
       { key: 'dateEarned', type: 'datetime', required: true },
@@ -72,15 +86,56 @@ async function setupAchievementCollections() {
 
     for (const attr of achievementAttributes) {
       console.log(`   Adding attribute: ${attr.key}`);
-      await databases.createStringAttribute(
-        APPWRITE_CONFIG.databaseId,
-        achievementsCollection.$id,
-        attr.key,
-        attr.size || 255,
-        attr.required || false,
-        attr.default,
-        attr.array || false
-      );
+      
+      if (attr.type === 'boolean') {
+        await databases.createBooleanAttribute(
+          APPWRITE_CONFIG.databaseId,
+          achievementsCollection.$id,
+          attr.key,
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as boolean) : undefined,
+          attr.array || false
+        );
+      } else if (attr.type === 'datetime') {
+        await databases.createDatetimeAttribute(
+          APPWRITE_CONFIG.databaseId,
+          achievementsCollection.$id,
+          attr.key,
+          attr.required || false,
+          undefined, // no default for datetime
+          attr.array || false
+        );
+      } else if (attr.type === 'enum') {
+        await databases.createEnumAttribute(
+          APPWRITE_CONFIG.databaseId,
+          achievementsCollection.$id,
+          attr.key,
+          attr.elements || [],
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as string) : undefined,
+          attr.array || false
+        );
+      } else if (attr.type === 'url') {
+        await databases.createUrlAttribute(
+          APPWRITE_CONFIG.databaseId,
+          achievementsCollection.$id,
+          attr.key,
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as string) : undefined,
+          attr.array || false
+        );
+      } else {
+        // Default to string attribute
+        await databases.createStringAttribute(
+          APPWRITE_CONFIG.databaseId,
+          achievementsCollection.$id,
+          attr.key,
+          attr.size || 255,
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as string) : undefined,
+          attr.array || false
+        );
+      }
     }
 
     // ============================
@@ -103,7 +158,7 @@ async function setupAchievementCollections() {
     console.log('✅ Therapist achievements collection created');
 
     // Add attributes to therapist achievements collection
-    const therapistAchievementAttributes = [
+    const therapistAchievementAttributes: AttributeConfig[] = [
       { key: 'therapistId', type: 'string', size: 36, required: true },
       { key: 'achievementId', type: 'string', size: 36, required: true },
       { key: 'dateAwarded', type: 'datetime', required: true },
@@ -114,15 +169,37 @@ async function setupAchievementCollections() {
 
     for (const attr of therapistAchievementAttributes) {
       console.log(`   Adding attribute: ${attr.key}`);
-      await databases.createStringAttribute(
-        APPWRITE_CONFIG.databaseId,
-        therapistAchievementsCollection.$id,
-        attr.key,
-        attr.size || 255,
-        attr.required || false,
-        attr.default,
-        attr.array || false
-      );
+      
+      if (attr.type === 'boolean') {
+        await databases.createBooleanAttribute(
+          APPWRITE_CONFIG.databaseId,
+          therapistAchievementsCollection.$id,
+          attr.key,
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as boolean) : undefined,
+          attr.array || false
+        );
+      } else if (attr.type === 'datetime') {
+        await databases.createDatetimeAttribute(
+          APPWRITE_CONFIG.databaseId,
+          therapistAchievementsCollection.$id,
+          attr.key,
+          attr.required || false,
+          undefined, // no default for datetime
+          attr.array || false
+        );
+      } else {
+        // Default to string attribute
+        await databases.createStringAttribute(
+          APPWRITE_CONFIG.databaseId,
+          therapistAchievementsCollection.$id,
+          attr.key,
+          attr.size || 255,
+          attr.required || false,
+          attr.default !== undefined ? (attr.default as string) : undefined,
+          attr.array || false
+        );
+      }
     }
 
     // Create indexes for better query performance
@@ -133,7 +210,7 @@ async function setupAchievementCollections() {
       APPWRITE_CONFIG.databaseId,
       therapistAchievementsCollection.$id,
       'therapistId_index',
-      'key',
+      IndexType.Key,
       ['therapistId']
     );
 
@@ -142,7 +219,7 @@ async function setupAchievementCollections() {
       APPWRITE_CONFIG.databaseId,
       achievementsCollection.$id,
       'category_index',
-      'key',
+      IndexType.Key,
       ['category']
     );
 
@@ -151,7 +228,7 @@ async function setupAchievementCollections() {
       APPWRITE_CONFIG.databaseId,
       therapistAchievementsCollection.$id,
       'active_achievements_index',
-      'key',
+      IndexType.Key,
       ['isActive', 'therapistId']
     );
 
@@ -168,20 +245,31 @@ async function setupAchievementCollections() {
     console.log('2. Seed the achievements collection with default achievement badges');
     console.log('3. Test the achievement assignment functionality in the admin dashboard');
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error setting up collections:', error);
     
-    if (error.message?.includes('Collection with the requested ID already exists')) {
+    if (error?.message?.includes('Collection with the requested ID already exists')) {
       console.log('\n💡 Collections may already exist. Check your Appwrite dashboard.');
     }
     
-    process.exit(1);
+    if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
+    return;
   }
 }
 
 // Seed default achievements
 async function seedDefaultAchievements() {
   console.log('\n🌱 Seeding default achievements...');
+
+  if (!APPWRITE_CONFIG.apiKey) {
+    console.error('❌ Error: APPWRITE_API_KEY environment variable is required');
+    if (typeof process !== 'undefined') {
+      process.exit(1);
+    }
+    return;
+  }
 
   const client = new Client()
     .setEndpoint(APPWRITE_CONFIG.endpoint)
@@ -190,7 +278,7 @@ async function seedDefaultAchievements() {
 
   const databases = new Databases(client);
 
-  const defaultAchievements = [
+  const defaultAchievements: any[] = [
     {
       name: 'Identity Verified',
       description: 'Government ID verified and authenticated by Indastreet',
@@ -259,17 +347,17 @@ async function seedDefaultAchievements() {
     }
 
     console.log(`\n🎯 Successfully seeded ${defaultAchievements.length} default achievements!`);
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error seeding achievements:', error);
   }
 }
 
 // Main execution
-if (require.main === module) {
+if (typeof require !== 'undefined' && require.main === module) {
   setupAchievementCollections()
     .then(() => {
       // Optionally seed default achievements
-      if (process.argv.includes('--seed')) {
+      if (typeof process !== 'undefined' && process.argv && process.argv.includes('--seed')) {
         return seedDefaultAchievements();
       }
     })

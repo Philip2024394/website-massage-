@@ -61,6 +61,7 @@ export type Page =
     | 'placeTerms' 
     | 'placeDiscountBadge' 
     | 'privacy' 
+    | 'terms'
     | 'cookies-policy' 
     | 'membership' 
     | 'packageTerms'
@@ -228,6 +229,11 @@ export type Page =
     | 'top-therapists'
     | 'special-offers'
     | 'video-center'
+    | 'hotels-and-villas'
+    | 'hotel-villa-safe-pass'
+    | 'safePass'
+    | 'send-discount'
+    | 'villa-portal'
     | 'sign-in'
     | 'therapist-signup'
     | 'massage-place-signup'
@@ -249,9 +255,21 @@ export type Page =
     | 'therapist-package-terms'
     | 'admin-live-listings'
     | 'massage-place-dashboard'
-    | 'facial-place-dashboard';
+    | 'facial-place-dashboard'
+    // Admin Dashboard Routes (MERGED from apps/admin-dashboard)
+    | 'admin'
+    | 'admin-dashboard'
+    | 'admin-therapists'
+    | 'admin-bookings'
+    | 'admin-chat'
+    | 'admin-revenue'
+    | 'admin-commissions'
+    | 'admin-ktp'
+    | 'admin-achievements'
+    | 'admin-system-health'
+    | 'admin-settings';
 
-export type Language = 'en' | 'id' | 'gb';
+export type Language = 'en' | 'id' | 'gb' | 'th' | 'vi' | 'ms' | 'tl' | 'zh' | 'ja' | 'ko' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ar' | 'hi' | 'nl' | 'tr' | 'pl' | 'sv' | 'da';
 
 export type LoggedInProvider = { 
     id: number | string; 

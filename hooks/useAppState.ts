@@ -97,7 +97,33 @@ export const useAppState = () => {
         return 'hotelVillaMenu';
       }
       
-      // 🔧 DISABLED: Provider auto-login to prevent confusion with customer landing page
+      // � CRITICAL: Check for admin routes in hash URL (/#/admin)
+      const hash = window.location.hash || '';
+      if (hash.startsWith('#/')) {
+        const hashPath = hash.substring(1); // Remove # to get /admin
+        console.log('🔗 [INIT] Hash URL detected:', hashPath);
+        
+        if (hashPath === '/admin' || hashPath.startsWith('/admin/')) {
+          console.log('🔗 [INIT] Admin route detected in hash:', hashPath);
+          if (hashPath === '/admin') {
+            return 'admin';
+          } else if (hashPath === '/admin/therapists') {
+            return 'admin-therapists';
+          } else if (hashPath === '/admin/bookings') {
+            return 'admin-bookings';
+          } else if (hashPath === '/admin/chat') {
+            return 'admin-chat';
+          } else if (hashPath === '/admin/revenue') {
+            return 'admin-revenue';
+          } else if (hashPath === '/admin/commissions') {
+            return 'admin-commissions';
+          } else {
+            return 'admin'; // Default to main admin dashboard
+          }
+        }
+      }
+      
+      // �🔧 DISABLED: Provider auto-login to prevent confusion with customer landing page
       // Providers should manually log in via their respective login pages
       // This ensures customers always see the landing page first
       // const storedProvider = getFromLocalStorage('app_logged_in_provider');

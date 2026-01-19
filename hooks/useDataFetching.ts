@@ -10,11 +10,12 @@ import { reviewService } from '../lib/reviewService';
 import { APP_CONFIG } from '../config/appConfig';
 import { robustCollectionQuery } from '../lib/robustApiWrapper';
 import { updateYogyakartaTherapists } from '../lib/therapistListProvider';
+import { filterTherapistsByCity, filterPlacesByCity } from '../utils/cityFilterUtils';
 
 export const useDataFetching = () => {
     const [isLoading, setIsLoading] = useState(false);
 
-    const fetchPublicData = useCallback(async (): Promise<{
+    const fetchPublicData = useCallback(async (activeCity?: string): Promise<{
         therapists: Therapist[];
         places: Place[];
         hotels: any[];
@@ -84,10 +85,18 @@ export const useDataFetching = () => {
             });
             console.log('✅ [STAGE 2] Therapists after review init:', therapistsWithReviews.length);
             
+            // CRITICAL CITY FILTERING: If activeCity is specified, filter all data by city
+            let finalTherapists = therapistsWithReviews;
+            if (activeCity && activeCity !== 'all') {
+                console.log(`🔒 CITY FILTER: Filtering ${therapistsWithReviews.length} therapists by city="${activeCity}"`);
+                finalTherapists = filterTherapistsByCity(therapistsWithReviews, activeCity);
+                console.log(`🔒 CITY FILTER: After filtering, ${finalTherapists.length} therapists remain`);
+            }
+            
             // ✅ CRITICAL FIX: Update therapist list provider state when real data arrives
-            if (therapistsWithReviews && therapistsWithReviews.length > 0) {
+            if (finalTherapists && finalTherapists.length > 0) {
                 console.log('🔄 Updating therapist list provider with fetched data...');
-                updateYogyakartaTherapists(therapistsWithReviews);
+                updateYogyakartaTherapists(finalTherapists);
                 console.log('✅ Therapist list provider updated - fallback data replaced with fetched data');
             }
             
@@ -95,10 +104,26 @@ export const useDataFetching = () => {
                 reviewService.initializeProvider(place) as Place
             );
             
+            // CRITICAL CITY FILTERING: Filter places by city if specified
+            let finalPlaces = placesWithReviews;
+            if (activeCity && activeCity !== 'all') {
+                console.log(`🔒 CITY FILTER: Filtering ${placesWithReviews.length} places by city="${activeCity}"`);
+                finalPlaces = filterPlacesByCity(placesWithReviews, activeCity);
+                console.log(`🔒 CITY FILTER: After filtering, ${finalPlaces.length} places remain`);
+            }
+            
             // Initialize review data for facial places
             const facialPlacesWithReviews = (facialPlacesData || []).map((facialPlace: Place) => 
                 reviewService.initializeProvider(facialPlace) as Place
             );
+            
+            // CRITICAL CITY FILTERING: Filter facial places by city if specified
+            let finalFacialPlaces = facialPlacesWithReviews;
+            if (activeCity && activeCity !== 'all') {
+                console.log(`🔒 CITY FILTER: Filtering ${facialPlacesWithReviews.length} facial places by city="${activeCity}"`);
+                finalFacialPlaces = filterPlacesByCity(facialPlacesWithReviews, activeCity);
+                console.log(`🔒 CITY FILTER: After filtering, ${finalFacialPlaces.length} facial places remain`);
+            }
             
             // Initialize review data for hotels (if needed)
             const hotelsWithReviews = (hotelsData || []).map((hotel: any) => 
@@ -106,9 +131,9 @@ export const useDataFetching = () => {
             );
             
             return {
-                therapists: therapistsWithReviews,
-                places: placesWithReviews,
-                facialPlaces: facialPlacesWithReviews,
+                therapists: finalTherapists,
+                places: finalPlaces,
+                facialPlaces: finalFacialPlaces,
                 hotels: hotelsWithReviews
             };
         } catch (error) {

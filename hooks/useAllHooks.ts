@@ -63,8 +63,8 @@ export const useAllHooks = () => {
             const customEvent = event as CustomEvent;
             console.log('🔄 [REFRESH EVENT] Data refresh triggered:', customEvent.detail);
             try {
-                console.log('🔄 [REFRESH EVENT] Calling fetchPublicData...');
-                const { therapists, places, hotels } = await dataFetching.fetchPublicData();
+                console.log('🔄 [REFRESH EVENT] Calling fetchPublicData with activeCity:', activeCity);
+                const { therapists, places, hotels } = await dataFetching.fetchPublicData(activeCity || undefined);
                 console.log('🔄 [REFRESH EVENT] Fetched data:', { 
                     therapistCount: therapists.length, 
                     placeCount: places.length,

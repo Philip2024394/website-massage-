@@ -1,6 +1,8 @@
 import React from 'react';
+import { MapPin } from 'lucide-react';
 import BurgerMenuIcon from '../icons/BurgerMenuIcon';
 import PageContainer from '../layout/PageContainer';
+import { useCityContext } from '../../context/CityContext';
 
 interface UniversalHeaderProps {
     // Language props
@@ -15,6 +17,9 @@ interface UniversalHeaderProps {
     // Navigation props
     onHomeClick?: () => void;
     showHomeButton?: boolean;
+    
+    // Location props
+    showCityInfo?: boolean;
     
     // Branding props
     title?: string;
@@ -75,6 +80,9 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     onHomeClick,
     showHomeButton = false,
     
+    // Location props
+    showCityInfo = false,
+    
     // Branding props
     title,
     showBrand = true,
@@ -84,6 +92,8 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     containerClassName = '',
     sticky = true
 }) => {
+    // Get city info from context
+    const { city, countryCode } = useCityContext();
 
     const headerClasses = `
         bg-white shadow-md w-full max-w-full z-[9997]
@@ -116,6 +126,15 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                                 <span className="text-black">Inda</span>
                                 <span className="text-orange-500">Street</span>
                             </h1>
+                            
+                            {/* City Display */}
+                            {showCityInfo && city && (
+                                <div className="hidden sm:flex items-center gap-1 text-xs text-gray-600 ml-2 bg-gray-100 px-2 py-1 rounded-full">
+                                    <MapPin className="w-3 h-3" />
+                                    <span>{city}, {countryCode}</span>
+                                </div>
+                            )}
+                            
                             {title && (
                                 <span className="text-sm text-gray-500 ml-2 hidden sm:inline">
                                     {title}

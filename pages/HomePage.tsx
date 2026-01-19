@@ -15,6 +15,7 @@ import HomeIcon from '../components/icons/HomeIcon';
 import FlyingButterfly from '../components/FlyingButterfly';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 import CityLocationDropdown from '../components/CityLocationDropdown';
+import AreaFilter from '../components/AreaFilter';
 import PageNumberBadge from '../components/PageNumberBadge';
 import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.config';
 import MusicPlayer from '../components/MusicPlayer';
@@ -25,6 +26,7 @@ import { matchProviderToCity } from '../constants/indonesianCities';
 import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
+import { useCityContext } from '../context/CityContext';
 
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
@@ -137,6 +139,9 @@ const HomePage: React.FC<HomePageProps> = ({
     t,
     language
 }) => {
+    // Get city from CityContext
+    const { city: contextCity, countryCode, country } = useCityContext();
+    
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
     // Use the page prop from the routing system instead of React Router DOM
     // This prevents HomePage from rendering on therapist profile routes and causing permission errors
@@ -181,8 +186,20 @@ const HomePage: React.FC<HomePageProps> = ({
         shuffleArray
     } = useHomePageState();
     
+    // Sync selectedCity with CityContext city
+    useEffect(() => {
+        if (contextCity && contextCity !== selectedCity) {
+            console.log('🔄 Syncing selectedCity with CityContext:', contextCity);
+            setSelectedCity(contextCity);
+        }
+    }, [contextCity]);
+    
     // Female therapist filter state
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
+    
+    // Area filter state
+    const [selectedArea, setSelectedArea] = useState<string | null>(null);
+    const [showAreaFilter, setShowAreaFilter] = useState(false);
     
     // FAB menu state
     const [fabMenuOpen, setFabMenuOpen] = useState(false);
@@ -291,6 +308,9 @@ const HomePage: React.FC<HomePageProps> = ({
         hasAdminPrivileges,
         onSetUserLocation
     });
+
+    // State for city-filtered places
+    const [cityFilteredPlaces, setCityFilteredPlaces] = useState<any[]>([]);
 
     
     // Google Maps Autocomplete (minimal UI state)
@@ -528,90 +548,35 @@ const HomePage: React.FC<HomePageProps> = ({
         }
     }, [loggedInProvider, _loggedInAgent, loggedInCustomer, userLocation, autoDetectedLocation]);
 
-    // Automatic location detection (seamless, no UI)
+    // ⚠️ AUTOMATIC LOCATION DETECTION INTENTIONALLY DISABLED
+    // 
+    // IP-based location intentionally disabled due to inaccuracy in Indonesia.
+    // ISPs often route traffic through Jakarta, causing incorrect city detection.
+    // 
+    // Users MUST:
+    // - Manually select their city via CitySelectionPage
+    // - OR manually enable GPS when they need nearby search
+    // 
+    // NO automatic GPS detection on page load.
+    // NO IP-based location detection.
+    // NO browser locale/timezone-based city detection.
     useEffect(() => {
-        const detectLocationAutomatically = async () => {
-            if (isLocationDetecting || autoDetectedLocation) return;
-            
-            setIsLocationDetecting(true);
-            try {
-                console.log('🌍 Automatically detecting user location...');
-                const location = await getCustomerLocation();
-                setAutoDetectedLocation(location);
-                
-                console.log('✅ Location detected:', location);
-                
-                // Use Google Maps Geocoding to get address from coordinates
-                let address = 'Auto-detected location';
-                
-                if ((window as any).google?.maps?.Geocoder) {
-                    try {
-                        const geocoder = new (window as any).google.maps.Geocoder();
-                        const result = await new Promise<any>((resolve, reject) => {
-                            geocoder.geocode(
-                                { location: { lat: location.lat, lng: location.lng } },
-                                (results: any[], status: string) => {
-                                    if (status === 'OK' && results && results.length > 0) {
-                                        resolve(results[0]);
-                                    } else {
-                                        reject(new Error('Geocoding failed'));
-                                    }
-                                }
-                            );
-                        });
-                        
-                        address = result.formatted_address || 'Auto-detected location';
-                        console.log('✅ Auto reverse geocoded address:', address);
-                    } catch (geoError) {
-                        console.warn('⚠️ Auto reverse geocoding failed, using default address:', geoError);
-                    }
-                }
-                
-                // Automatically update the app's user location if not set
-                if (!userLocation && onSetUserLocation) {
-                    onSetUserLocation({
-                        address,
-                        lat: location.lat,
-                        lng: location.lng
-                    });
-                }
-                
-            } catch (error) {
-                console.log('📍 Auto location detection failed (silent fallback):', error);
-                // Silent fallback - no error shown to user
-            } finally {
-                setIsLocationDetecting(false);
-            }
-        };
-
-        // Only auto-detect for regular users, not providers/agents
-        if (!loggedInProvider && !_loggedInAgent) {
-            detectLocationAutomatically();
-        }
+        // INTENTIONALLY EMPTY - no automatic location detection
+        // Users must explicitly choose their city or enable GPS manually
+        console.log('ℹ️ Automatic location detection disabled - users must select city manually');
     }, [loggedInProvider, _loggedInAgent, autoDetectedLocation, isLocationDetecting, userLocation, onSetUserLocation]);
 
-    // Auto-detect city from user location and update selectedCity
+    // ⚠️ AUTO-DETECT CITY INTENTIONALLY DISABLED
+    // 
+    // IP-based location intentionally disabled due to inaccuracy in Indonesia.
+    // Users MUST manually select their city via CitySelectionPage.
+    // 
+    // Even if userLocation (GPS) is available, we DO NOT auto-set selectedCity.
+    // The browsing city (selectedCity) must be explicitly chosen by the user.
     useEffect(() => {
-        if (userLocation && userLocation.lat && userLocation.lng) {
-            // First try postal code detection from address
-            let detectedCityId: string | null = null;
-            
-            if (userLocation.address) {
-                detectedCityId = mapPostalCodeToCity(userLocation.address);
-                if (detectedCityId) {
-                    console.log('🎯 Auto-detected city from postal code:', detectedCityId, 'from address:', userLocation.address);
-                    setSelectedCity(detectedCityId);
-                    return;
-                }
-            }
-            
-            // Fallback: Find the closest Indonesian city to user's location
-            const detectedCity = findCityByCoordinates(userLocation.lat, userLocation.lng);
-            if (detectedCity) {
-                console.log('🎯 Auto-detected city from coordinates:', detectedCity.name);
-                setSelectedCity(detectedCity.locationId);
-            }
-        }
+        // INTENTIONALLY EMPTY - no auto city detection from GPS coordinates
+        // GPS is ONLY used for distance calculations, NOT for setting browsing city
+        console.log('ℹ️ Auto city detection disabled - user must select city via CitySelectionPage');
     }, [userLocation]);
 
     // Map postal codes to cities for automatic detection
@@ -878,6 +843,9 @@ const HomePage: React.FC<HomePageProps> = ({
             return treatedAsLive || isOwner || featuredTherapist;
         });
         const filteredTherapists = liveTherapists.filter((t: any) => {
+            // CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
+            // This ensures the system never "feels broken"
+            
             // Always show featured sample therapists (like Budi) in ALL cities
             if (isFeaturedSample(t, 'therapist')) {
                 console.log(`✅ Including featured therapist "${t.name}" in city "${selectedCity}" (Budi shows everywhere in Indonesia)`);
@@ -886,35 +854,30 @@ const HomePage: React.FC<HomePageProps> = ({
             
             if (selectedCity === 'all') return true;
             
-            // 🌍 PRIMARY: GPS coordinates-based city detection (source of truth)
-            const therapistCoords = parseCoordinates(t.coordinates);
-            if (therapistCoords) {
-                const matchedCity = matchProviderToCity(therapistCoords, 25);
-                if (matchedCity && matchedCity.locationId === selectedCity) {
-                    console.log(`✅ GPS coordinate match for ${t.name}:`, { 
-                        coordinates: therapistCoords, 
-                        detectedCity: matchedCity.locationId, 
-                        filterCity: selectedCity 
-                    });
-                    return true;
-                }
+            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+            // Priority: city (GPS-derived) → locationId → location (legacy fallback)
+            const therapistCity = t.city || t.locationId || t.location;
+            
+            // If therapist has no city data, exclude them
+            if (!therapistCity) {
+                console.log(`❌ EXCLUDED: "${t.name}" has no city data`);
+                return false;
             }
             
-            // 🔄 FALLBACK: String-based location matching (only if GPS fails)
-            if (!therapistCoords) {
-                const matches = matchesLocation(t.location, selectedCity);
-                if (matches) {
-                    console.log(`✅ Fallback location string match for ${t.name}:`, { location: t.location, filter: selectedCity });
-                    return true;
-                }
+            // Normalize both cities for comparison
+            const normalizedTherapistCity = therapistCity.toLowerCase().trim();
+            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            
+            // EXACT MATCH REQUIRED
+            const matches = normalizedTherapistCity === normalizedSelectedCity;
+            
+            if (matches) {
+                console.log(`✅ INCLUDED: "${t.name}" matches city "${selectedCity}"`);
+            } else {
+                console.log(`❌ EXCLUDED: "${t.name}" (city: "${therapistCity}") does not match "${selectedCity}"`);
             }
             
-            console.log(`❌ No city match for ${t.name}:`, { 
-                coordinates: therapistCoords, 
-                locationString: t.location, 
-                filterCity: selectedCity 
-            });
-            return false;
+            return matches;
         });
         
         // Add showcase profiles from Yogyakarta ONLY to cities with no real therapists
@@ -939,40 +902,77 @@ const HomePage: React.FC<HomePageProps> = ({
         // Update city-filtered therapists state
         setCityFilteredTherapists(finalTherapistList);
         
-        // Filter hotels by selected city (similar logic to therapists)
-        const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
-        const filteredHotels = liveHotels.filter((h: any) => {
+        // Filter places by selected city (same logic as therapists)
+        const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
+        const filteredPlacesByCity = livePlaces.filter((p: any) => {
+            // Always show featured samples in ALL cities
+            if (isFeaturedSample(p, 'place')) {
+                return true;
+            }
+            
             if (selectedCity === 'all') return true;
             
-            // Try multiple matching strategies for city filtering
+            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+            const placeCity = p.city || p.locationId || p.location;
             
-            // 1. Direct location OR city field name match
-            if (h.location && h.location.toLowerCase().includes(selectedCity.toLowerCase())) {
+            // If place has no city data, exclude them
+            if (!placeCity) {
+                console.log(`❌ EXCLUDED PLACE: "${p.name}" has no city data`);
+                return false;
+            }
+            
+            // Normalize both cities for comparison
+            const normalizedPlaceCity = placeCity.toLowerCase().trim();
+            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            
+            // EXACT MATCH REQUIRED
+            const matches = normalizedPlaceCity === normalizedSelectedCity;
+            
+            if (matches) {
+                console.log(`✅ INCLUDED PLACE: "${p.name}" matches city "${selectedCity}"`);
+            } else {
+                console.log(`❌ EXCLUDED PLACE: "${p.name}" (city: "${placeCity}") does not match "${selectedCity}"`);
+            }
+            
+            return matches;
+        });
+        
+        // Save filtered places to state
+        setCityFilteredPlaces(filteredPlacesByCity);
+        
+        // Filter hotels by selected city (STRICT MATCHING - same as therapists/places)
+        const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
+        const filteredHotels = liveHotels.filter((h: any) => {
+            // Always show featured samples in ALL cities
+            if (isFeaturedSample(h, 'hotel')) {
                 return true;
             }
-            if (h.city && h.city.toLowerCase().includes(selectedCity.toLowerCase())) {
-                return true;
+            
+            if (selectedCity === 'all') return true;
+            
+            // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
+            const hotelCity = h.city || h.locationId || h.location;
+            
+            // If hotel has no city data, exclude it
+            if (!hotelCity) {
+                console.log(`❌ EXCLUDED HOTEL: "${h.name}" has no city data`);
+                return false;
             }
             
-            // 2. Coordinate-based matching
-            if (h.coordinates) {
-                const parsedCoords = parseCoordinates(h.coordinates);
-                if (parsedCoords) {
-                    const matchedCity = matchProviderToCity(parsedCoords, 25);
-                    if (matchedCity && matchedCity.locationId === selectedCity) {
-                        return true;
-                    }
-                }
+            // Normalize both cities for comparison
+            const normalizedHotelCity = hotelCity.toLowerCase().trim();
+            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            
+            // EXACT MATCH REQUIRED
+            const matches = normalizedHotelCity === normalizedSelectedCity;
+            
+            if (matches) {
+                console.log(`✅ INCLUDED HOTEL: "${h.name}" matches city "${selectedCity}"`);
+            } else {
+                console.log(`❌ EXCLUDED HOTEL: "${h.name}" (city: "${hotelCity}") does not match "${selectedCity}"`);
             }
             
-            // 3. Check aliases for common name variations (Yogya, Jogja for Yogyakarta)
-            const selectedCityLower = selectedCity.toLowerCase();
-            if (selectedCityLower === 'yogyakarta' && 
-                h.location && (h.location.toLowerCase().includes('yogya') || h.location.toLowerCase().includes('jogja'))) {
-                return true;
-            }
-            
-            return false;
+            return matches;
         });
         
         console.log('🏠 [HomePage RENDER] Provider Display Debug (Location-Filtered 25km radius):');
@@ -995,12 +995,12 @@ const HomePage: React.FC<HomePageProps> = ({
         console.log('  ⚠️ Therapists missing coordinates:', missingCoords);
         
         // Also log places
-        const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
+        const livePlacesCount = nearbyPlaces.filter((p: any) => p.isLive === true).length;
         console.log('  🏢 Total places prop:', places.length);
         console.log('  📍 Nearby places (location-filtered):', nearbyPlaces.length);
         const missingPlaceCoords = places.filter((p: any)=>!p.coordinates).length;
         console.log('  ⚠️ Places missing coordinates:', missingPlaceCoords);
-        console.log('  🔴 Live nearby places:', livePlaces.length);
+        console.log('  🔴 Live nearby places:', livePlacesCount);
         
         // Also log hotels 
         const liveHotelsCount = nearbyHotels.filter((h: any) => h.isLive === true).length;
@@ -1228,7 +1228,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </React19SafeWrapper>
 
             {/* Fixed Hero Section - Always Visible */}
-            <div className="bg-white sticky top-[60px] z-10 border-b border-gray-100">
+            <div className="bg-white sticky top-[60px] z-10">
                 <PageContainer className="px-3 sm:px-4 pt-3 pb-3">
                     {/* Hero Section - Optimized Layout */}
                     <div className="space-y-3 max-w-6xl mx-auto">
@@ -1248,8 +1248,8 @@ const HomePage: React.FC<HomePageProps> = ({
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
-                                    <span className="text-sm font-semibold text-gray-800">
-                                        {(() => {
+                                    <span className="text-lg font-bold text-gray-800">
+                                        {contextCity || (() => {
                                             if (!userLocation.address || userLocation.address.trim() === '') {
                                                 return `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}`;
                                             }
@@ -1262,35 +1262,9 @@ const HomePage: React.FC<HomePageProps> = ({
                                         })()}
                                     </span>
                                 </div>
-                                <div className="flex items-center justify-center gap-1">
-                                    <span className="text-xs font-medium text-orange-600">
-                                        {selectedCity === 'all' ? 'All Indonesia' : (() => {
-                                            for (const category of INDONESIAN_CITIES_CATEGORIZED) {
-                                                const foundCity = category.cities.find(city => city.name === selectedCity);
-                                                if (foundCity) {
-                                                    return `${foundCity.name}${foundCity.isTouristDestination ? ' 🏖️' : foundCity.isMainCity ? ' 🏙️' : ''}`;
-                                                }
-                                            }
-                                            return selectedCity;
-                                        })()}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-gray-500 font-medium">Indonesia's Massage Therapist Hub</p>
+                                <p className="text-base font-semibold text-gray-700">{country}'s Massage Therapist Hub</p>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center gap-2 max-w-md mx-auto py-1">
-                                <label className="text-sm font-medium text-gray-700">Search your city or area</label>
-                                <input
-                                    ref={locationInputRef}
-                                    type="text"
-                                    placeholder="Enter your location..."
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                />
-                                <p className="text-xs text-gray-500 text-center">
-                                    Or <button onClick={handleLocationAllow} className="text-orange-600 hover:underline">use my current location</button>
-                                </p>
-                            </div>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Toggle Buttons - Standard Height */}
@@ -1325,28 +1299,37 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     )}
 
-                    {/* City Dropdown + Facial Button - Responsive Grid */}
-                    <div className="flex flex-row gap-2 items-center max-w-2xl mx-auto">
-                        {/* City Dropdown - Flexible width, constrained on mobile */}
-                        <div className="relative flex-1 min-w-0 max-w-[200px] sm:max-w-none z-20">
-                            <CityLocationDropdown
-                                selectedCity={selectedCity}
-                                onCityChange={setSelectedCity}
-                                placeholder={translationsObject?.home?.viewingAllIndonesia || '🇮🇩 All Indonesia'}
-                                includeAll={true}
-                                showLabel={false}
-                                className="w-full"
-                            />
-                        </div>
-                        
-                        {/* Facial Button - Standard Orange Button */}
-                        <div className="flex justify-end flex-shrink-0">
+                    {/* City Display + Facial Button */}
+                    <div className="max-w-2xl mx-auto mt-4">
+                        {/* Selected City + Facial Button - Single Row */}
+                        <div className="flex flex-row gap-4 items-center justify-center">
+                            {/* Selected City Display */}
+                            {contextCity && contextCity !== 'all' && (
+                                <div className="flex items-center gap-2 bg-orange-50 rounded-lg px-4 py-2.5 border border-orange-200 flex-1 max-w-xs">
+                                    <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span className="font-semibold text-base text-orange-700">
+                                        {contextCity}
+                                    </span>
+                                    <button
+                                        onClick={() => onNavigate?.('advanced-search')}
+                                        className="ml-auto text-xs text-orange-600 hover:text-orange-800 underline font-medium"
+                                        title={t?.home?.changeCity || 'Change City'}
+                                    >
+                                        {t?.home?.change || 'Change'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Facial Button */}
                             <button
                                 onClick={() => {
                                     console.log('🏨 Facial button clicked - switching to facials tab');
                                     setActiveTab('facials');
                                 }}
-                                className="px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm bg-orange-500 text-white hover:bg-orange-600"
+                                className="px-4 py-2.5 rounded-lg transition-colors font-semibold text-sm min-h-[44px] flex items-center justify-center gap-2 shadow-sm bg-orange-500 text-white hover:bg-orange-600 flex-shrink-0"
                                 title="Facials Indonesia"
                                 aria-label="Browse Facial Spas"
                             >
@@ -1358,21 +1341,21 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                     </div>
                 </div>
-            </PageContainer>
+                </PageContainer>
             </div>
             
             {/* Scrollable Content Area */}
             <main className="w-full max-w-full overflow-x-hidden">
-            <PageContainer className="px-3 sm:px-4 pt-4 pb-24">
+            <PageContainer className="px-3 sm:px-4 pt-8 pb-24">
                 {/* Content changes based on active tab */}
                 {activeTab === 'home' && (
                     <div className="max-w-full overflow-x-hidden pb-8">
-                        <div className="mb-3 text-center">
+                        <div className="mb-3 text-center mt-[26px]">
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{t?.home?.therapistsTitle || 'Home Service Therapists'}</h3>
                             <p className="text-gray-600">
-                                {selectedCity === 'all' 
+                                {(contextCity === 'all' || !contextCity)
                                     ? (t?.home?.therapistsSubtitleAll || 'Find the best therapists across Indonesia')
-                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', selectedCity) || `Find the best therapists in ${selectedCity}`)
+                                    : (t?.home?.therapistsSubtitleCity?.replace('{city}', contextCity) || `Find the best therapists in ${contextCity}`)
                                 }
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
@@ -1608,6 +1591,33 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                     return isFemale;
                 });
                 console.log(`👩‍⚕️ [FEMALE FILTER] Filtered to ${baseList.length} female/female-friendly therapists`);
+            }
+            
+            // 🗺️ AREA FILTER: Apply if selectedArea is active (city-first location system)
+            if (selectedArea) {
+                baseList = baseList.filter((t: any) => {
+                    // Parse serviceAreas from JSON string (Appwrite format)
+                    let serviceAreas: string[] = [];
+                    if (t.serviceAreas) {
+                        try {
+                            if (typeof t.serviceAreas === 'string') {
+                                serviceAreas = JSON.parse(t.serviceAreas);
+                            } else if (Array.isArray(t.serviceAreas)) {
+                                serviceAreas = t.serviceAreas;
+                            }
+                        } catch (error) {
+                            console.warn('⚠️ Failed to parse serviceAreas for therapist:', t.name, error);
+                            return false;
+                        }
+                    }
+                    
+                    const servesArea = Array.isArray(serviceAreas) && serviceAreas.includes(selectedArea);
+                    if (servesArea) {
+                        console.log(`✅ AREA FILTER: ${t.name} serves area "${selectedArea}"`);
+                    }
+                    return servesArea;
+                });
+                console.log(`🗺️ [AREA FILTER] Filtered to ${baseList.length} therapists serving area "${selectedArea}"`);
             }
 
             // 🔍 ADVANCED FILTERS: Apply all advanced filter selections
@@ -2159,31 +2169,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 console.log(`🏨 Massage Places Tab → total: ${total}, live: ${live}`);
                             } catch {}
                             
-                            const livePlaces = (places?.filter((place: any) => {
-                                // Filter by live status first
-                                if (!place.isLive) return false;
-                                
-                                // Always show featured sample places (Sample Massage Spa) in ALL cities
-                                if (isFeaturedSample(place, 'place')) {
-                                    console.log(`✅ Including featured place "${place.name}" in city "${selectedCity}" (Sample Massage Spa shows everywhere in Indonesia)`);
-                                    return true;
-                                }
-                                
-                                // Apply city filtering if not 'all'
-                                if (selectedCity === 'all') return true;
-                                
-                                // Try to match place location to selected city
-                                if (place.coordinates) {
-                                    // Handle both array [lng, lat] and object {lat, lng} formats
-                                    const placeLocation = Array.isArray(place.coordinates)
-                                        ? { lat: place.coordinates[1], lng: place.coordinates[0] }
-                                        : { lat: place.coordinates.lat || 0, lng: place.coordinates.lng || 0 };
-                                    const matchedCity = matchProviderToCity(placeLocation, 25);
-                                    return matchedCity?.locationId === selectedCity;
-                                }
-                                
-                                return false;
-                            }) || []).slice();
+                            // Use city-filtered places instead of raw places
+                            const livePlaces = cityFilteredPlaces.slice();
 
                             // Sort places by status: Available/Open → Busy → Offline/Closed
                             const getPlaceStatusScore = (p: any) => {

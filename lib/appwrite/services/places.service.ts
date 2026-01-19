@@ -7,7 +7,7 @@ import { databases, storage, APPWRITE_CONFIG, account } from '../config';
 import { ID, Query } from 'appwrite';
 
 export const placesService = {
-    async getAllPlaces(): Promise<any[]> {
+    async getAllPlaces(city?: string): Promise<any[]> {
         try {
             // Check if user is authenticated to avoid 401 errors
             let isAuthenticated = false;
@@ -19,11 +19,18 @@ export const placesService = {
                 isAuthenticated = false;
             }
 
+            // Build query filters
+            const queries = [Query.limit(500)];
+            if (city) {
+                queries.push(Query.search('location', city));
+                console.log('🏙️ [PLACES] Filtering by city:', city);
+            }
+
             // Fetch complete places from Appwrite
             const response = await databases.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.places,
-                [Query.limit(500)] // Increased from 100 to 500 to support more places
+                queries
             );
 
             // Enrich with analytics from leads collection if available
@@ -56,9 +63,13 @@ export const placesService = {
         }
     },
 
-    // Alias for compatibility
-    async getPlaces(): Promise<any[]> {
-        return this.getAllPlaces();
+    // Aliases for compatibility
+    async getPlaces(city?: string): Promise<any[]> {
+        return this.getAllPlaces(city);
+    },
+    
+    async getAll(city?: string): Promise<any[]> {
+        return this.getAllPlaces(city);
     },
 
     async getByProviderId(providerId: string): Promise<any | null> {

@@ -1,3 +1,4 @@
+// @ts-nocheck - React 19 type compatibility
 /**
  * Admin Payment Verification Dashboard
  * 
@@ -15,7 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Eye, Search } from 'lucide-react';
-import { commissionTrackingService } from '../../../../lib/services/commissionTrackingService';
+import { commissionTrackingService } from '../lib/appwrite';
 
 interface AdminPaymentVerificationProps {
     adminId: string;

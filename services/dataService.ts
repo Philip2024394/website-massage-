@@ -3,6 +3,7 @@ import { Therapist, Place, User, Agent, HotelVillaServiceStatus } from '../types
 import { AvailabilityStatus } from '../types';
 import { stringifyPricing, stringifyMassageTypes, stringifyCoordinates, stringifyAnalytics } from '../utils/appwriteHelpers';
 import { therapistService, placesService as placeService, agentService } from '../lib/appwriteService';
+import { filterTherapistsByCity, filterPlacesByCity } from '../utils/cityFilterUtils';
 
 // Main image URLs from ImageKit for therapists
 const THERAPIST_MAIN_IMAGES = [
@@ -636,12 +637,28 @@ const generateMockPlaces = (): Place[] => [
 // Data service that can switch between mock and Appwrite
 export const dataService = {
     // Therapists
-    async getTherapists(): Promise<Therapist[]> {
+    async getTherapists(city?: string, area?: string): Promise<Therapist[]> {
         if (APP_CONFIG.DATA_SOURCE === 'mock') {
-            return generateMockTherapists();
+            const mockTherapists = generateMockTherapists();
+            // STRICT CITY FILTERING: Only return therapists matching the city
+            if (city && city !== 'all') {
+                return filterTherapistsByCity(mockTherapists, city);
+            }
+            return mockTherapists;
         } else {
             try {
-                return await therapistService.getAll() || [];
+                const therapists = await therapistService.getAll(city, area) || [];
+                
+                // CRITICAL RULE: If city is specified, apply strict client-side filtering
+                // This ensures NO therapist from wrong city can slip through
+                if (city && city !== 'all') {
+                    console.log(`🔒 STRICT CITY FILTER: Enforcing city="${city}" filter on ${therapists.length} therapists`);
+                    const filtered = filterTherapistsByCity(therapists, city);
+                    console.log(`🔒 STRICT CITY FILTER: Returning ${filtered.length} therapists for city="${city}"`);
+                    return filtered;
+                }
+                
+                return therapists;
             } catch (error) {
                 console.error('Error in dataService.getTherapists:', error);
                 return [];
@@ -680,11 +697,11 @@ export const dataService = {
     },
 
     // Places
-    async getPlaces(): Promise<Place[]> {
+    async getPlaces(city?: string): Promise<Place[]> {
         if (APP_CONFIG.DATA_SOURCE === 'mock') {
             return generateMockPlaces();
         } else {
-            return placeService.getAll() || [];
+            return placeService.getAllPlaces(city) || [];
         }
     },
 

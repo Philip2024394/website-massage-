@@ -11,7 +11,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Share2, Copy, MessageCircle, Facebook, Twitter, Linkedin, Send, Mail, Check, ExternalLink } from 'lucide-react';
+import { Share2, Copy, MessageCircle, Facebook, Linkedin, Send, Mail, Check, ExternalLink } from 'lucide-react';
 import { generateTherapistShareURL, generateShareText, copyShareURLToClipboard } from '../features/shared-profiles/utils/shareUrlBuilder';
 import type { Therapist } from '../types';
 
@@ -190,7 +190,7 @@ export const ShareTherapistProfile: React.FC<ShareTherapistProfileProps> = ({
                                     aria-label="Share via Twitter"
                                 >
                                     <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center">
-                                        <Twitter className="w-4 h-4" />
+                                        <Send className="w-4 h-4" />
                                     </div>
                                     <span className="text-xs text-gray-600 group-hover:text-gray-800">Twitter</span>
                                 </button>

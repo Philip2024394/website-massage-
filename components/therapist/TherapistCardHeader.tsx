@@ -25,16 +25,19 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
 
     return (
         <div className="h-48 w-full overflow-visible relative rounded-t-xl">
-            <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600">
+            {/* 🔒 MOBILE STABILITY: Reserved background prevents layout shift during image loading */}
+            <div className="absolute inset-0 rounded-t-xl overflow-hidden bg-gradient-to-r from-orange-400 to-orange-600" style={{ minHeight: '192px' }}>
                 <img 
                     key={displayImage}
                     src={displayImage} 
                     alt={`${therapist.name} cover`} 
                     className="w-full h-full object-cover rounded-t-xl"
-                    style={{ aspectRatio: '16/9' }}
+                    style={{ aspectRatio: '16/9', minHeight: '192px' }}
                     loading="eager"
                     decoding="async"
                     fetchPriority="high"
+                    width="400"
+                    height="192"
                     onError={(e) => {
                         console.error('🖼️ Main image failed to load:', displayImage);
                         // Fallback to a working ImageKit URL
@@ -106,7 +109,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 </div>
             )}
             
-            {/* Share Button - Bottom Right Corner of image banner */}
+            {/* Share Button - Bottom Right Corner with stable positioning */}
             <button
                 onClick={(e) => {
                     e.stopPropagation();
@@ -115,6 +118,7 @@ const TherapistCardHeader: React.FC<TherapistCardHeaderProps> = ({
                 className="absolute bottom-2 right-2 w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all z-30"
                 title="Share this therapist"
                 aria-label="Share this therapist"
+                style={{ position: 'absolute', bottom: '8px', right: '8px' }}
             >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />

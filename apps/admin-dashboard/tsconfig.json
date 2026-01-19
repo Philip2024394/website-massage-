@@ -24,6 +24,8 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    
+    /* Suppress deprecation warnings */
     "ignoreDeprecations": "6.0",
 
     /* Path aliases */
@@ -40,12 +42,13 @@
   },
   "include": [
     "src",
-    "../../lib/**/*",
-    "../../components/**/*",
-    "../../services/**/*",
-    "../../utils/**/*",
-    "../../constants/**/*",
-    "../../types/**/*",
-    "../../types.ts"
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "../../translations/**/*",
+    "../../context/**/*",
+    "../../modules/**/*",
+    "../../app/**/*"
   ]
 }

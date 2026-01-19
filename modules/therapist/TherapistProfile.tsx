@@ -82,6 +82,17 @@ const TherapistProfile: React.FC<TherapistProfileProps> = ({
                                     title="Verified Therapist"
                                 />
                             )}
+                            
+                            {/* Hotel/Villa Safe Pass Badge */}
+                            {(therapist as any).hotelVillaSafePassStatus === 'active' && (
+                                <div 
+                                    className="w-5 h-5 bg-blue-600 rounded-sm flex items-center justify-center flex-shrink-0"
+                                    title="Hotel & Villa Safe Pass Certified"
+                                >
+                                    <span className="text-white text-xs font-bold">🏨</span>
+                                </div>
+                            )}
+                            
                             <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                                 {therapist.name}
                             </h3>

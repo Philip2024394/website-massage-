@@ -28,6 +28,10 @@ export default defineConfig({
   },
   server: {
     port: 3004,
-    strictPort: true
+    strictPort: true,
+    hmr: {
+      port: 3005,
+      clientPort: 3005
+    }
   }
 });

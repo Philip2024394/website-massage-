@@ -4,6 +4,16 @@
  * Enterprise-grade real-time notifications with rich media support
  */
 
+// Extend NotificationOptions to include newer properties
+declare global {
+  interface NotificationOptions {
+    image?: string;
+    timestamp?: number;
+    vibrate?: number[];
+    actions?: NotificationAction[];
+  }
+}
+
 interface NotificationPayload {
   title: string;
   body: string;

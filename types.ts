@@ -346,6 +346,26 @@ export interface Therapist {
     operationalHours?: string; // JSON string of daily hours { monday: { start: '09:00', end: '17:00', enabled: true }, ... }
     workingDays?: string; // JSON string of working days array ['monday', 'tuesday', ...]
     manualBookings?: string; // JSON string of manual bookings (non-system bookings)
+    
+    // Service Area Model - City → Service Area filtering
+    // APPWRITE SCHEMA COMPATIBLE - Matches 'locations' collection
+    city?: string; // One of 15 Indonesian cities (REQUIRED in Appwrite)
+    serviceAreas?: string; // JSON string of area IDs ["jakarta-kemang", "jakarta-senopati"] (REQUIRED in Appwrite, size 200)
+    maxTravelDistance?: string; // Optional maximum travel distance in km (size 200)
+    country?: string; // Always "Indonesia" (size 255)
+    region?: string; // Province/region (enum in Appwrite)
+    
+    // Hotel / Villa Safe Pass compliance
+    hotelVillaSafePassStatus?: 'pending' | 'approved' | 'active' | 'rejected'; // Safe Pass approval status
+    hotelVillaLetters?: string; // JSON string of uploaded letter file URLs
+    safePassIssuedAt?: string; // Date when Safe Pass was issued
+    safePassExpiry?: string; // Safe Pass expiration date (2 years from issue)
+    safePassPaymentId?: string; // Payment transaction ID for Safe Pass fee
+    safePassCardUrl?: string; // URL to issued Safe Pass card image
+    safePassRejectionReason?: string; // Admin rejection reason if status = 'rejected'
+    safePassSubmittedAt?: string; // Date when therapist submitted application
+    safePassApprovedAt?: string; // Date when admin approved the letters
+    safePassApprovedBy?: string; // Admin ID who approved the Safe Pass
 }
 
 // Commission payment record
@@ -454,6 +474,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    whatsappNumber?: string; // WhatsApp number with country prefix (e.g., +62812345678)
     isActivated: boolean;
     userType?: string;
     role?: string;

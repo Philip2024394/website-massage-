@@ -3,12 +3,16 @@
  * openChat event is handled ONLY by useOpenChatListener.
  * Do NOT add additional event listeners for chat.
  */
+import { Helmet } from 'react-helmet';
 import { AppLayout } from './components/layout/AppLayout';
 import { AppFooterLayout } from './components/layout/AppFooterLayout';
 import GlobalHeader from './components/GlobalHeader';
 import AppRouter from './AppRouter';
 import { useAllHooks } from './hooks/useAllHooks';
 import { useAutoReviews } from './hooks/useAutoReviews';
+import { useMobileLock } from './hooks/useMobileLock';
+import { usePreventScroll } from './hooks/usePreventScroll';
+import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
@@ -23,6 +27,7 @@ import { bookingExpirationService } from './services/bookingExpirationService';
 // (Former cleanupLocalStorage import removed as localStorage persisted data is no longer used)
 import './lib/globalErrorHandler'; // Initialize global error handling
 import { LanguageProvider } from './context/LanguageContext';
+import { CityProvider, useCityContext } from './context/CityContext';
 import { agentShareAnalyticsService } from './lib/appwriteService';
 import { analyticsService, AnalyticsEventType } from './services/analyticsService';
 import type { Therapist, Place, Analytics } from './types';
@@ -44,6 +49,15 @@ import { PersistentChatWindow } from './components/PersistentChatWindow';
 
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
+    
+    // Mobile viewport lock for stable mobile experience
+    useMobileLock();
+    
+    // Prevent unwanted scrolling (allow .scrollable elements)
+    usePreventScroll();
+    
+    // Enhanced mobile detection and device-aware styling
+    const mobileDetection = useMobileDetection();
     
     // Forced booking modal state
     const [forcedBookingData, setForcedBookingData] = useState<any>(null);
@@ -149,6 +163,27 @@ const App = () => {
     // All hooks combined - MUST be called BEFORE any useEffect that depends on state
     const hooks = useAllHooks();
     const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
+    
+    // Log mobile detection info for debugging (only when mobile detected)
+    useEffect(() => {
+        if (mobileDetection.isMobileDevice || mobileDetection.isMobileScreen) {
+            console.log('📱 Mobile device detected:', {
+                device: mobileDetection.isMobileDevice ? 'Mobile Device' : 'Mobile Screen',
+                screen: `${mobileDetection.deviceInfo.viewportWidth}x${mobileDetection.deviceInfo.viewportHeight}`,
+                orientation: mobileDetection.isPortrait ? 'Portrait' : 'Landscape',
+                browser: mobileDetection.deviceInfo.browser,
+                os: mobileDetection.deviceInfo.os,
+                hasTouch: mobileDetection.hasTouch,
+                hasHover: mobileDetection.hasHover
+            });
+        }
+    }, [
+        mobileDetection.isMobileDevice, 
+        mobileDetection.isMobileScreen,
+        mobileDetection.isPortrait,
+        mobileDetection.deviceInfo.viewportWidth,
+        mobileDetection.deviceInfo.viewportHeight
+    ]);
     
     // Initialize auto-review system for Yogyakarta therapists (5-minute updates)
     useAutoReviews();
@@ -407,6 +442,24 @@ const App = () => {
                 state.setPage('accept-booking');
             } else if (path === '/join' || path.startsWith('/join/')) {
                 state.setPage('membership-select');
+            } else if (path === '/admin' || path.startsWith('/admin/')) {
+                // Handle admin routes
+                console.log('🔗 [ADMIN URL] Admin route detected:', path);
+                if (path === '/admin') {
+                    state.setPage('admin');
+                } else if (path === '/admin/therapists') {
+                    state.setPage('admin-therapists');
+                } else if (path === '/admin/bookings') {
+                    state.setPage('admin-bookings');
+                } else if (path === '/admin/chat') {
+                    state.setPage('admin-chat');
+                } else if (path === '/admin/revenue') {
+                    state.setPage('admin-revenue');
+                } else if (path === '/admin/commissions') {
+                    state.setPage('admin-commissions');
+                } else {
+                    state.setPage('admin'); // Default to main admin dashboard
+                }
             } else if (path.startsWith('/therapist-profile/')) {
                 // Handle direct shared therapist profile URL (production links)
                 console.log('🔗 Direct therapist profile path detected:', path);
@@ -489,7 +542,25 @@ const App = () => {
                 const path = hash.substring(1); // Remove # to get /therapist-profile/123
                 console.log('🔗 [HASH CHANGE] Parsed path:', path);
                 
-                if (path.startsWith('/therapist-profile/')) {
+                if (path === '/admin' || path.startsWith('/admin/')) {
+                    // Handle admin routes
+                    console.log('🔗 [HASH CHANGE] Admin route detected:', path);
+                    if (path === '/admin') {
+                        state.setPage('admin');
+                    } else if (path === '/admin/therapists') {
+                        state.setPage('admin-therapists');
+                    } else if (path === '/admin/bookings') {
+                        state.setPage('admin-bookings');
+                    } else if (path === '/admin/chat') {
+                        state.setPage('admin-chat');
+                    } else if (path === '/admin/revenue') {
+                        state.setPage('admin-revenue');
+                    } else if (path === '/admin/commissions') {
+                        state.setPage('admin-commissions');
+                    } else {
+                        state.setPage('admin'); // Default to main admin dashboard
+                    }
+                } else if (path.startsWith('/therapist-profile/')) {
                     const match = path.match(/\/therapist-profile\/([a-z0-9]+)-/);
                     if (match) {
                         const therapistId = match[1];
@@ -710,6 +781,7 @@ const App = () => {
     };
 
     return (
+        <CityProvider>
         <LanguageProvider value={{ 
             language: language as 'en' | 'id', 
             setLanguage: handleLanguageSelect
@@ -717,12 +789,32 @@ const App = () => {
         <ChatProvider>
         <PersistentChatProvider>
         <DeviceStylesProvider>
+            <Helmet>
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+            </Helmet>
             <AppLayout
-                isFullScreen={state.page === 'landing' || state.isFullScreen}
+                isFullScreen={
+                    state.page === 'landing' || 
+                    state.isFullScreen || 
+                    state.page === 'admin' || 
+                    state.page === 'admin-dashboard' ||
+                    state.page === 'admin-therapists' ||
+                    state.page === 'admin-bookings' ||
+                    state.page === 'admin-chat' ||
+                    state.page === 'admin-revenue' ||
+                    state.page === 'admin-commissions' ||
+                    state.page === 'admin-live-listings'
+                }
             >
             {/* Global Header only in PWA standalone and when page lacks its own header */}
             <GlobalHeader page={state.page} />
-            <div className={state.isFullScreen ? "flex-grow" : "flex-1"}>
+            <div className={`${state.isFullScreen ? "flex-grow" : "flex-1"} ${
+                mobileDetection.isMobileScreen ? 'mobile-layout' : 'desktop-layout'
+            } ${
+                mobileDetection.isPortrait ? 'portrait-mode' : 'landscape-mode'  
+            } ${
+                mobileDetection.hasTouch ? 'touch-enabled' : 'no-touch'
+            }`}>
                 <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
                 <AppRouter
                     page={state.page}
@@ -929,6 +1021,7 @@ const App = () => {
         </PersistentChatProvider>
         </ChatProvider>
         </LanguageProvider>
+        </CityProvider>
     );
 };
 

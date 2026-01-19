@@ -106,8 +106,9 @@ export const APPWRITE_CONFIG = {
         currencySymbol: 'Rp',
         locale: 'id-ID',
         timezone: 'Asia/Jakarta',
-        phonePrefix: '+62',
-        defaultCity: 'Bali'
+        phonePrefix: '+62'
+        // ⚠️ NO defaultCity - IP-based location intentionally disabled due to inaccuracy in Indonesia.
+        // Users MUST select city manually via CitySelectionPage.
     },
     
     // Language Configuration

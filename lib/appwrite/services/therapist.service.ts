@@ -91,25 +91,73 @@ export const therapistService = {
     async getTherapists(): Promise<any[]> {
         return this.getAll();
     },
-    async getAll(): Promise<any[]> {
+    async getAll(city?: string, area?: string): Promise<any[]> {
         try {
-            console.log('� [STAGE 1 - APPWRITE] Fetching therapists from collection:', APPWRITE_CONFIG.collections.therapists);
-            console.log('🔍 [STAGE 1] Using endpoint:', APPWRITE_CONFIG.endpoint);
-            console.log('🔍 [STAGE 1] Using project ID:', APPWRITE_CONFIG.projectId);
-            console.log('🔍 [STAGE 1] Using database ID:', APPWRITE_CONFIG.databaseId);
+            console.log('🏙️ [STAGE 1 - APPWRITE] Fetching therapists from collection:', APPWRITE_CONFIG.collections.therapists);
+            console.log('🏙️ [STAGE 1] Using endpoint:', APPWRITE_CONFIG.endpoint);
+            console.log('🏙️ [STAGE 1] Using project ID:', APPWRITE_CONFIG.projectId);
+            console.log('🏙️ [STAGE 1] Using database ID:', APPWRITE_CONFIG.databaseId);
+            if (city) {
+                console.log('🏙️ [STAGE 1] Filtering by city:', city);
+            }
+            if (area) {
+                console.log('🗺️ [STAGE 1] Filtering by service area:', area);
+            }
+            
+            // Build query filters
+            const queries = [Query.limit(500)]; // Fetch up to 500 therapists
+            if (city) {
+                // Add city filter - matches location field which contains city name
+                queries.push(Query.search('location', city));
+                console.log('🏙️ [STAGE 1] Added city query filter');
+            }
             
             const response = await rateLimitedDb.listDocuments(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.therapists,
-                [Query.limit(500)] // Fetch up to 500 therapists (Appwrite default is only 25)
+                queries
             );
             console.log('✅ [STAGE 1 - APPWRITE] Raw fetch result:', response.documents.length, 'documents');
             console.log('🔍 [STAGE 1] Response total:', response.total);
             console.log('🔍 [STAGE 1] First 3 therapist names:', response.documents.slice(0, 3).map(t => t.name));
             
+            // Client-side filtering by service area if specified
+            let filteredDocuments = response.documents;
+            if (area) {
+                console.log('🗺️ [STAGE 1 - CLIENT FILTER] Applying service area filter:', area);
+                filteredDocuments = response.documents.filter((therapist: any) => {
+                    // Parse serviceAreas from JSON string
+                    let serviceAreas: string[] = [];
+                    if (therapist.serviceAreas) {
+                        try {
+                            if (typeof therapist.serviceAreas === 'string') {
+                                serviceAreas = JSON.parse(therapist.serviceAreas);
+                            } else if (Array.isArray(therapist.serviceAreas)) {
+                                serviceAreas = therapist.serviceAreas;
+                            }
+                        } catch (error) {
+                            console.warn('⚠️ Failed to parse serviceAreas for therapist:', therapist.name, error);
+                            return false;
+                        }
+                    }
+                    
+                    if (!Array.isArray(serviceAreas) || serviceAreas.length === 0) {
+                        // If no serviceAreas defined, exclude from area-filtered results
+                        return false;
+                    }
+                    
+                    const hasArea = serviceAreas.includes(area);
+                    if (hasArea) {
+                        console.log('✅ Therapist', therapist.name, 'serves area:', area);
+                    }
+                    return hasArea;
+                });
+                console.log('🗺️ [STAGE 1 - CLIENT FILTER] Filtered to', filteredDocuments.length, 'therapists serving area:', area);
+            }
+            
             // 🔍 RAW DATA COMPARISON: Log raw Appwrite response for debugging
             console.log('🔍 [RAW APPWRITE DATA] First 5 therapists raw data:');
-            response.documents.slice(0, 5).forEach((therapist: any, index: number) => {
+            filteredDocuments.slice(0, 5).forEach((therapist: any, index: number) => {
                 console.log(`🔍 Therapist #${index + 1}:`, {
                     $id: (therapist as any).$id,
                     name: therapist.name,
@@ -121,6 +169,7 @@ export const therapistService = {
                     location: therapist.location,
                     locationId: therapist.locationId,
                     city: therapist.city,
+                    serviceAreas: therapist.serviceAreas,
                     role: therapist.role,
                     published: therapist.published,
                     visibility: therapist.visibility,
@@ -130,8 +179,8 @@ export const therapistService = {
             });
             
             // 🎯 BUDI COMPARISON: Find Budi and compare with others
-            const budiTherapist = response.documents.find(t => t.name?.toLowerCase().includes('budi'));
-            const nonBudiTherapist = response.documents.find(t => !t.name?.toLowerCase().includes('budi'));
+            const budiTherapist = filteredDocuments.find(t => t.name?.toLowerCase().includes('budi'));
+            const nonBudiTherapist = filteredDocuments.find(t => !t.name?.toLowerCase().includes('budi'));
             
             if (budiTherapist && nonBudiTherapist) {
                 console.log('🎯 [BUDI vs NON-BUDI COMPARISON]');
@@ -922,6 +971,35 @@ export const therapistService = {
             const err = error as Error; console.error('❌ Error uploading KTP ID:', err);
             throw error as Error;
         
+        }
+    },
+    async uploadHotelVillaLetter(therapistId: string, file: File, hotelVillaName: string): Promise<{ url: string; fileId: string }> {
+        try {
+            console.log('🏨 Uploading hotel/villa recommendation letter for therapist:', therapistId);
+            
+            // Upload file to Appwrite Storage
+            const bucketId = 'therapist-images';
+            const fileId = `hotel-villa-letter-${therapistId}-${Date.now()}`;
+            
+            const uploadedFile = await storage.createFile(
+                bucketId,
+                fileId,
+                file
+            );
+            
+            console.log('✅ Hotel/Villa letter uploaded:', (uploadedFile as any).$id);
+            
+            // Get file URL
+            const fileUrl = storage.getFileView(bucketId, (uploadedFile as any).$id);
+            
+            return {
+                url: String(fileUrl),
+                fileId: (uploadedFile as any).$id
+            };
+        } catch (error: unknown) {
+            const err = error as Error; 
+            console.error('❌ Error uploading hotel/villa letter:', err);
+            throw error as Error;
         }
     },
     async updateTherapist(therapistId: string, updates: any): Promise<any> {

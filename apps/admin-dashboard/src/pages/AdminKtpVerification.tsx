@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { FileCheck, CheckCircle, XCircle, Search, Eye, AlertCircle } from 'lucide-react';
-import { therapistService } from '@shared/appwriteService';
+import { therapistService } from '../lib/appwrite';
 
 interface TherapistKtpData {
   $id: string;
@@ -221,7 +221,7 @@ const AdminKtpVerification: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b">
-              <divImage Comparison Section */}
+              {/* Image Comparison Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Eye className="w-5 h-5 text-blue-600" />
@@ -269,7 +269,7 @@ const AdminKtpVerification: React.FC = () => {
 
                 {/* Verification Instructions */}
                 <div className="mt-4 p-4 bg-purple-50 border-2 border-purple-200 rounded-lg">
-                  <div classNamespace-y-4">
+                  <div className="space-y-4">
                   <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg">
                     <div className="flex items-start gap-3 mb-3">
                       <img 
@@ -311,7 +311,8 @@ const AdminKtpVerification: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
+            </div>
 
               {selectedKtp.ktpVerified && (
                 <div className="space-y-3">
@@ -329,8 +330,8 @@ const AdminKtpVerification: React.FC = () => {
                       <span className="font-semibold text-purple-900">✨ Verified badge is active on member's profile</span>
                     </div>
                   )}
-                />
-              </div>
+                </div>
+              )}
 
               {/* Bank Details */}
               {selectedKtp.bankName && (

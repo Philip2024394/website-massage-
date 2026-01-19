@@ -4,6 +4,9 @@ import UniversalHeader from '../components/shared/UniversalHeader';
 import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import FloatingPageFooter from '../components/FloatingPageFooter';
+import CityLocationDropdown from '../components/CityLocationDropdown';
+import AreaFilter from '../components/AreaFilter';
+import { useCityContext } from '../context/CityContext';
 
 interface AdvancedSearchPageProps {
     t: any;
@@ -14,6 +17,8 @@ interface AdvancedSearchPageProps {
 const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'en');
+    const { selectedCity, setSelectedCity } = useCityContext();
+    const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [filters, setFilters] = useState({
         massageType: '',
         gender: '',
@@ -71,7 +76,39 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
 
                 <div className="bg-white rounded-2xl p-6 shadow-lg">
                     
-                    {/* Verified Members Header */}
+                    {/* City Location Filter - Primary Filter */}
+                    <div className="mb-8">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {currentLanguage === 'id' ? '📍 Lokasi Kota' : '📍 City Location'}
+                        </label>
+                        <CityLocationDropdown
+                            selectedCity={selectedCity}
+                            onCityChange={(newCity) => {
+                                console.log('🏙️ City changed in advanced search:', newCity);
+                                setSelectedCity(newCity);
+                                setSelectedArea(null); // Reset area when city changes
+                            }}
+                            placeholder={currentLanguage === 'id' ? '🇮🇩 Semua Indonesia' : '🇮🇩 All Indonesia'}
+                            includeAll={true}
+                            showLabel={false}
+                            className="w-full"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            {currentLanguage === 'id' ? '💡 Filter terapis dan tempat berdasarkan kota' : '💡 Filter therapists and places by city'}
+                        </p>
+                    </div>
+
+                    {/* Area Filter - Sub-areas within selected city */}
+                    {selectedCity && selectedCity !== 'all' && (
+                        <div className="mb-8">
+                            <AreaFilter
+                                city={selectedCity}
+                                selectedArea={selectedArea}
+                                onAreaChange={setSelectedArea}
+                            />
+                        </div>
+                    )}
+                    <>                    {/* Verified Members Header */
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-center gap-2 mb-2">
                             <h3 className="text-xl font-bold text-gray-900">
@@ -265,6 +302,7 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             </button>
                         </div>
                     </div>
+                    </>
                 </div>
             </div>
 

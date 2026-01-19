@@ -163,14 +163,14 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
-      <div className="bg-gradient-to-r from-pink-500 to-orange-500 px-4 py-6 text-white">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-6 text-white">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
             <Gift className="w-7 h-7" />
           </div>
           <div>
             <h1 className="text-xl font-bold">{labels.title}</h1>
-            <p className="text-sm text-pink-100">{labels.subtitle}</p>
+            <p className="text-sm text-orange-100">{labels.subtitle}</p>
           </div>
         </div>
       </div>
@@ -246,7 +246,7 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
                     className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
                       customer.hasActiveDiscount
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 shadow-sm hover:shadow-md'
+                        : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 shadow-sm hover:shadow-md'
                     }`}
                   >
                     <Gift className="w-4 h-4" />

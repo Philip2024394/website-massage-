@@ -28,16 +28,237 @@ html, body {
   height: 100vh;
   width: 100%;
   max-width: 100%;
+  /* Mobile stability optimizations */
+  touch-action: manipulation;
+  overflow: hidden;
+  height: 100%;
   margin: 0;
   padding: 0;
   overflow-x: hidden !important;
+}
+
+/* Prevent bounce/scroll on mobile */
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* CSS Custom Property for true mobile viewport height */
+:root {
+  --vh: 1vh; /* Will be updated by useMobileLock hook */
+}
+
+/* Utility class for components that need true mobile height */
+.mobile-vh-100 {
+  height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Mobile container with safe areas for notch devices */
+.mobile-container {
+  width: 100vw;
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  -webkit-overflow-scrolling: touch;
   
-  /* Mobile-first optimization */
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  /* Handle notch devices (iPhone X+, other devices with safe areas) */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Scrollable elements - allow touch scrolling */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+/* Scrollable content areas */
+.scrollable-content {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+/* Mobile-specific optimizations */
+@media only screen and (max-width: 768px) {
+  .mobile-lock {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* Disable hover effects on mobile (no hover capability) */
+  *:hover {
+    background-color: inherit !important;
+  }
+  
+  /* Handle 100vh mobile browser issue - accommodate address bar */
+  .full-height {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+}
+
+/* ===== ENHANCED MOBILE DETECTION CSS CLASSES ===== */
+
+/* Device type classes */
+.mobile-device {
+  /* Styles specific to mobile devices */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.tablet-device {
+  /* Styles specific to tablets */
   touch-action: manipulation;
-  font-size: 16px; /* Prevent iOS zoom */
+}
+
+.desktop-device {
+  /* Styles specific to desktop */
+  cursor: default;
+}
+
+/* Screen size classes */
+.mobile-screen {
+  /* Mobile screen optimizations */
+  font-size: 16px; /* Prevent zoom on input focus */
+}
+
+.small-screen {
+  /* Extra small screens (≤640px) */
+  --container-padding: 12px;
+}
+
+.medium-screen {
+  /* Medium screens (769px-1024px) */
+  --container-padding: 20px;
+}
+
+.large-screen {
+  /* Large screens (≥1025px) */
+  --container-padding: 32px;
+}
+
+/* Orientation classes */
+.portrait {
+  /* Portrait mode optimizations */
+  --header-height: 60px;
+  --footer-height: 80px;
+}
+
+.landscape {
+  /* Landscape mode optimizations */
+  --header-height: 48px;
+  --footer-height: 60px;
+}
+
+.portrait-mode {
+  /* Portrait-specific layout adjustments */
+  --content-max-width: 100%;
+}
+
+.landscape-mode {
+  /* Landscape-specific layout adjustments */
+  --content-max-width: 90%;
+}
+
+/* Touch capability classes */
+.has-touch {
+  /* Touch-enabled devices */
+  --tap-target-size: 44px;
+  --button-padding: 12px 16px;
+}
+
+.has-touch button,
+.has-touch .button,
+.has-touch [role="button"] {
+  min-height: var(--tap-target-size);
+  min-width: var(--tap-target-size);
+  padding: var(--button-padding);
+}
+
+.no-touch .has-hover {
+  /* Desktop hover effects enabled */
+}
+
+.has-touch .has-hover {
+  /* Disable hover effects on touch devices */
+}
+
+.has-touch .has-hover:hover {
+  /* Override hover states for touch */
+  transform: none !important;
+  background-color: initial !important;
+}
+
+.touch-enabled {
+  /* Touch-optimized interactions */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.no-touch {
+  /* Mouse/trackpad optimized */
+  scroll-behavior: auto;
+}
+
+/* Layout classes */
+.mobile-layout {
+  /* Mobile-specific layout */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+.desktop-layout {
+  /* Desktop-specific layout */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Touch-friendly input styling */
+.has-touch input,
+.has-touch textarea,
+.has-touch select {
+  font-size: 16px; /* Prevent zoom on iOS */
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* Device-specific scrolling */
+.mobile-device .scrollable {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.desktop-device .scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+/* Retina display optimizations */
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+  .mobile-container {
+    /* Crisp rendering on high-DPI displays */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 #root {
