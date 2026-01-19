@@ -15,23 +15,22 @@ export function useMobileLock() {
                             window.location.hash === '#/home';
     
     if (isScrollablePage) {
-      // For scrollable pages, ONLY add the body class and set CSS custom property
-      // DO NOT lock height or add any viewport restrictions
+      // For scrollable pages, completely disable mobile lock
       const pageClass = window.location.pathname === '/' || window.location.hash === '' || window.location.hash === '#/' ? 'landing-page' : 'home-page';
       document.body.classList.add(pageClass);
       
-      // Only set CSS custom property for responsive units
+      // MINIMAL property setting to avoid conflicts
       const setVhProperty = () => {
         const vh = window.innerHeight;
         document.documentElement.style.setProperty('--vh', `${vh * 0.01}px`);
         
-        // Ensure scrolling is enabled
+        // Remove ALL restrictive styles
         document.documentElement.style.removeProperty('height');
         document.body.style.removeProperty('height');
-        document.documentElement.style.overflow = 'visible';
-        document.body.style.overflow = 'visible';
+        document.documentElement.style.removeProperty('overflow');
+        document.body.style.removeProperty('overflow');
         
-        console.log(`📱 Mobile scrolling enabled for ${pageClass} - vh: ${vh}px`);
+        console.log(`📱 Mobile lock DISABLED for ${pageClass} - vh: ${vh}px`);
       };
       
       setVhProperty();

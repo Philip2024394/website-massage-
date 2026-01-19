@@ -1,3 +1,6 @@
+/* Footer fixes - must come before Tailwind */
+@import url('./footer-fix.css');
+
 /* EMERGENCY MOBILE SCROLL FIX - HIGHEST PRIORITY */
 html, body {
   overflow-y: auto !important;
@@ -30,9 +33,6 @@ html, body {
     z-index: 9999 !important;
   }
 }
-
-/* Footer fixes - must come before Tailwind */
-@import url('./footer-fix.css');
 
 /* EMERGENCY FOOTER OVERRIDE - BEHIND DRAWERS */
 footer, 
@@ -124,6 +124,21 @@ body.home-page,
   position: relative !important;
   height: auto !important;
   min-height: 100vh !important;
+  /* Ensure content can scroll above fixed background */
+  z-index: 20;
+}
+
+/* Fix background image stability during modal interactions */
+.landing-page-container .fixed {
+  /* Prevent background image from resizing/zooming */
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Ensure modal doesn't affect background */
+body:has([data-modal-open]) .landing-page-container .fixed {
+  transform: none !important;
+  background-size: cover !important;
 }
 
 /* HomePage container specific fixes */
@@ -139,11 +154,8 @@ body.home-page,
 
 @media (max-width: 768px) {
   /* EMERGENCY MOBILE SCROLL FIX - Force scrolling for landing/home pages */
-  body.landing-page,
-  body.home-page,
   .landing-page-container,
-  .home-page-container,
-  .mobile-lock-container {
+  .home-page-container {
     min-height: 100vh !important;
     min-height: -webkit-fill-available !important;
     overflow-y: auto !important;
@@ -152,6 +164,7 @@ body.home-page,
     touch-action: pan-y !important;
     position: relative !important;
     height: auto !important;
+    z-index: 20 !important;
   }
   
   /* Override any mobile locks for main page containers */
