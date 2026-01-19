@@ -431,7 +431,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col bg-gray-900 overflow-auto">
+        <div className="landing-page-container relative min-h-screen w-full flex flex-col bg-gray-900 overflow-auto">
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
                 className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-in-out"

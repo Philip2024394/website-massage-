@@ -7,17 +7,31 @@ import { useEffect } from 'react';
 
 export function useMobileLock() {
   useEffect(() => {
-    // Check if this is a landing page that needs scrolling
-    const isLandingPage = window.location.pathname === '/' || window.location.hash === '' || window.location.hash === '#/';
+    // Check if this is a page that needs scrolling (landing or home page)
+    const isScrollablePage = window.location.pathname === '/' || 
+                            window.location.hash === '' || 
+                            window.location.hash === '#/' ||
+                            window.location.pathname === '/home' ||
+                            window.location.hash === '#/home';
     
-    if (isLandingPage) {
-      // For landing pages, allow scrolling and set body class
-      document.body.classList.add('landing-page');
+    if (isScrollablePage) {
+      // For scrollable pages, ONLY add the body class and set CSS custom property
+      // DO NOT lock height or add any viewport restrictions
+      const pageClass = window.location.pathname === '/' || window.location.hash === '' || window.location.hash === '#/' ? 'landing-page' : 'home-page';
+      document.body.classList.add(pageClass);
       
-      // Only set CSS custom property for vh units
+      // Only set CSS custom property for responsive units
       const setVhProperty = () => {
         const vh = window.innerHeight;
         document.documentElement.style.setProperty('--vh', `${vh * 0.01}px`);
+        
+        // Ensure scrolling is enabled
+        document.documentElement.style.removeProperty('height');
+        document.body.style.removeProperty('height');
+        document.documentElement.style.overflow = 'visible';
+        document.body.style.overflow = 'visible';
+        
+        console.log(`📱 Mobile scrolling enabled for ${pageClass} - vh: ${vh}px`);
       };
       
       setVhProperty();
@@ -29,7 +43,7 @@ export function useMobileLock() {
       }
       
       return () => {
-        document.body.classList.remove('landing-page');
+        document.body.classList.remove(pageClass);
         window.removeEventListener('resize', setVhProperty);
         window.removeEventListener('orientationchange', setVhProperty);
         

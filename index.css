@@ -67,6 +67,48 @@ body {
   height: auto !important;
 }
 
+/* Landing page container specific fixes */
+.landing-page-container {
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overflow-y: auto !important;
+  position: relative !important;
+}
+
+/* HomePage container specific fixes */
+.home-page-container {
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overflow-y: auto !important;
+  position: relative !important;
+}
+
+@media (max-width: 768px) {
+  .landing-page-container,
+  .home-page-container {
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    position: relative !important;
+  }
+  
+  /* Override any mobile locks for main page containers */
+  .landing-page-container,
+  .home-page-container {
+    height: auto !important;
+    max-height: none !important;
+  }
+  
+  /* Ensure all child elements allow touch */
+  .landing-page-container *,
+  .home-page-container * {
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
+  }
+}
+
 .landing-page * {
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
@@ -153,12 +195,62 @@ body {
 
 /* Mobile-specific optimizations */
 @media only screen and (max-width: 768px) {
-  /* Allow scrolling on mobile landing page */
-  body.landing-page {
+  /* CRITICAL: Override all mobile locks for landing page and home page */
+  body.landing-page,
+  body.home-page {
     position: relative !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+  
+  /* Critical: Disable ALL position fixed elements on scrollable pages */
+  body.landing-page .mobile-container,
+  body.landing-page [style*="position: fixed"],
+  body.landing-page [class*="fixed"],
+  body.home-page .mobile-container,
+  body.home-page [style*="position: fixed"],
+  body.home-page [class*="fixed"] {
+    position: relative !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  
+  /* Critical: Force enable scrolling on main containers */
+  body.landing-page html,
+  body.landing-page body,
+  body.home-page html,
+  body.home-page body {
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
+    height: auto !important;
+  }
+  
+  /* Landing page main container */
+  body.landing-page .relative.min-h-screen {
+    position: relative !important;
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+  
+  /* Disable mobile container locks on landing page */
+  body.landing-page .mobile-container {
+    position: relative !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  
+  /* Force touch scrolling on all landing page elements */
+  body.landing-page * {
+    -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
   }
   
   /* Disable hover effects on mobile (no hover capability) */
