@@ -9,6 +9,7 @@ import CityLocationDropdown from '../../../../components/CityLocationDropdown';
 import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalizationV2';
 import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../utils/geoDistance';
+import { getServiceAreasForCity } from '../../../../constants/serviceAreas';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
@@ -119,6 +120,21 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       }
     } catch {}
     return null;
+  });
+
+  // Service areas state
+  const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>(() => {
+    try {
+      const areas = therapist?.serviceAreas;
+      if (Array.isArray(areas)) return areas;
+      if (typeof areas === 'string' && areas) {
+        const parsed = JSON.parse(areas);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse service areas:', e);
+    }
+    return [];
   });
 
   const languageOptions = [
@@ -445,6 +461,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
+        serviceAreas: JSON.stringify(selectedServiceAreas), // Save service areas
         
         // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH)
         geopoint: geopoint,                    // Primary: lat/lng coordinates
@@ -1065,6 +1082,63 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Service Areas - Show when city is set */}
+            {selectedCity && selectedCity !== 'all' && (() => {
+              const availableAreas = getServiceAreasForCity(selectedCity);
+              if (availableAreas.length === 0) return null;
+              
+              return (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Service Areas in {selectedCity} *
+                  </label>
+                  <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-blue-800">
+                      <strong>Select areas where you provide service.</strong> Customers can filter by these areas to find you.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {availableAreas.map((area) => {
+                      const isSelected = selectedServiceAreas.includes(area.id);
+                      return (
+                        <button
+                          key={area.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedServiceAreas(prev => 
+                              isSelected 
+                                ? prev.filter(id => id !== area.id)
+                                : [...prev, area.id]
+                            );
+                          }}
+                          className={`
+                            px-4 py-2 rounded-full text-sm font-medium transition-all
+                            ${isSelected
+                              ? 'bg-teal-600 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }
+                          `}
+                        >
+                          {language === 'id' ? area.nameId : area.name}
+                          {area.popular && <span className="ml-1">⭐</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedServiceAreas.length === 0 && (
+                    <p className="text-xs text-orange-600 mt-2">
+                      ⚠️ Select at least one service area to help customers find you
+                    </p>
+                  )}
+                  {selectedServiceAreas.length > 0 && (
+                    <p className="text-xs text-green-600 mt-2">
+                      ✅ {selectedServiceAreas.length} area{selectedServiceAreas.length > 1 ? 's' : ''} selected
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Description */}
             <div>
