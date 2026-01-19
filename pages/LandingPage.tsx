@@ -444,8 +444,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             />
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             <div 
-                className="relative z-20 flex flex-col items-center justify-start text-white px-4 sm:px-6 text-center w-full min-h-screen py-4 sm:py-8 pt-8 sm:pt-16"
-                style={{ opacity: 1 }} // Always visible for debugging
+                className="relative z-20 flex flex-col items-center justify-start text-white px-4 sm:px-6 text-center w-full py-4 sm:py-8 pt-8 sm:pt-16 pb-4 sm:pb-8"
+                style={{ opacity: 1, minHeight: '100vh' }} // Always visible for debugging
             >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
@@ -617,9 +617,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     </div>
                 )}
                 
-                <div className="w-full max-w-sm sm:max-w-md px-2 space-y-3 sm:space-y-4">
-                    {/* Button removed - auto-redirect on city selection */}
-                </div>
                 <PWAInstallIOSModal
                     visible={
                         showIOSInstructions && isIOS && !isInstalled &&

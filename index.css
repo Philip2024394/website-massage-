@@ -83,6 +83,16 @@ body {
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
   }
+  
+  /* Prevent bottom white space */
+  .landing-page > div:last-child {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .landing-page .relative.z-20 {
+    padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+  }
 }
 
 /* Smooth scrolling for mobile */
