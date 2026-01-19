@@ -72,8 +72,6 @@ footer {
     font-size: 16px; /* Prevent zoom on iOS */
   }
 }
-  }
-}
 
 /* Small mobile screens */
 @media (max-width: 375px) {
