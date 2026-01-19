@@ -26,12 +26,12 @@ const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?upda
 
 // Multi-country data for location selectors with native language mapping
 const COUNTRIES = [
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', description: 'Southeast Asian archipelago', language: 'id' },
-  { code: 'PH', name: 'Philippines', flag: '🇵🇭', description: 'Pearl of the Orient Seas', language: 'tl' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', description: 'England, Scotland, Wales', language: 'en' },
-  { code: 'US', name: 'United States', flag: '🇺🇸', description: 'Land of opportunity', language: 'en' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺', description: 'Down under', language: 'en' },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪', description: 'Heart of Europe', language: 'de' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', description: 'Southeast Asian archipelago', language: 'id', languages: ['id', 'en'] },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭', description: 'Pearl of the Orient Seas', language: 'en', languages: ['en'] },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', description: 'England, Scotland, Wales', language: 'en', languages: ['en'] },
+  { code: 'US', name: 'United States', flag: '🇺🇸', description: 'Land of opportunity', language: 'en', languages: ['en'] },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', description: 'Down under', language: 'en', languages: ['en'] },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', description: 'Heart of Europe', language: 'de', languages: ['de', 'en'] },
 ];
 
 interface CityOption {
@@ -413,24 +413,45 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setCountry(newCountryCode, true); // Save preference
         console.log('🌍 Country manually changed to:', newCountryCode, '- Currency auto-updated');
         
-        // Auto-translate to country's language (instant with English fallback)
-        if (selectedCountryInfo && selectedCountryInfo.language !== currentLanguage) {
-            console.log('🌍 Switching to:', selectedCountryInfo.language);
+        // Auto-set language based on country (English-only for US, UK, AU; bilingual support for DE)
+        if (selectedCountryInfo) {
+            const defaultLang = selectedCountryInfo.language;
+            const availableLanguages = selectedCountryInfo.languages || [defaultLang];
             
-            try {
-                const newLang = selectedCountryInfo.language;
-                
-                // Load language resources (instant with fallback)
-                await loadLanguageResources(newLang);
-                
-                // Change language immediately
-                handleLanguageToggle(newLang as Language);
-                
-                console.log('✅ Language switched to:', newLang);
-            } catch (error) {
-                console.warn('⚠️ Language switch failed, using English:', error);
-                // Fallback to English
-                handleLanguageToggle('en');
+            // For English-only countries (US, UK, AU, PH), force English
+            if (availableLanguages.length === 1 && availableLanguages[0] === 'en') {
+                console.log('🌍 English-only country detected, setting language to English');
+                try {
+                    await loadLanguageResources('en');
+                    handleLanguageToggle('en');
+                    console.log('✅ Language set to English');
+                } catch (error) {
+                    console.warn('⚠️ Language switch failed:', error);
+                }
+            }
+            // For bilingual countries (Germany: de + en), use default but allow switching
+            else if (availableLanguages.length > 1) {
+                console.log(`🌍 Bilingual country detected (${availableLanguages.join(', ')}), using default: ${defaultLang}`);
+                try {
+                    await loadLanguageResources(defaultLang);
+                    handleLanguageToggle(defaultLang as Language);
+                    console.log(`✅ Language set to: ${defaultLang}`);
+                } catch (error) {
+                    console.warn('⚠️ Language switch failed, using English:', error);
+                    handleLanguageToggle('en');
+                }
+            }
+            // For other countries (Indonesia), use native language
+            else if (defaultLang !== currentLanguage) {
+                console.log('🌍 Switching to:', defaultLang);
+                try {
+                    await loadLanguageResources(defaultLang);
+                    handleLanguageToggle(defaultLang as Language);
+                    console.log('✅ Language switched to:', defaultLang);
+                } catch (error) {
+                    console.warn('⚠️ Language switch failed, using English:', error);
+                    handleLanguageToggle('en');
+                }
             }
         }
     };

@@ -112,7 +112,19 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
         
         const currentLang = language || 'en';
         
-        // Toggle between country's native language and English
+        // Language rules by country:
+        // - US, UK, AU, PH: English only (no toggle needed)
+        // - DE: German ↔ English (bilingual)
+        // - ID: Indonesian ↔ English (bilingual)
+        
+        // Check if current country is English-only
+        const englishOnlyCountries = ['US', 'GB', 'AU', 'PH'];
+        if (englishOnlyCountries.includes(activeCountryCode)) {
+            console.log('🌐 English-only country, no language toggle');
+            return; // No toggle for English-only countries
+        }
+        
+        // For bilingual countries (Germany, Indonesia), toggle between native and English
         const countryLanguage = getCountryLanguage(activeCountryCode);
         const newLanguage = currentLang === 'en' ? countryLanguage : 'en';
         
@@ -125,11 +137,15 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
         onLanguageChange(newLanguage);
     };
     
+    // Determine if language toggle should be visible
+    const showLanguageToggle = !['US', 'GB', 'AU', 'PH'].includes(activeCountryCode);
+    
     // Determine which flags to show
     const showCountryFlag = language !== 'en';
     const flagToShow = showCountryFlag ? getCountryFlag(activeCountryCode) : '🇬🇧';
     const toggleTooltip = language === 'en' 
         ? `Switch to ${getCountryLanguage(activeCountryCode) === 'id' ? 'Indonesian' : 
+            getCountryLanguage(activeCountryCode) === 'de' ? 'German' :
             getCountryLanguage(activeCountryCode) === 'ms' ? 'Malay' :
             getCountryLanguage(activeCountryCode) === 'th' ? 'Thai' :
             getCountryLanguage(activeCountryCode) === 'tl' ? 'Tagalog' :
@@ -189,7 +205,8 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                         )}
 
                         {/* Language Selector - Facebook-style Flag Toggle */}
-                        {showLanguageSelector && onLanguageChange && (
+                        {/* Only show for bilingual countries (DE, ID) - hide for English-only countries */}
+                        {showLanguageSelector && onLanguageChange && showLanguageToggle && (
                             <div className="flex items-center">
                                 {/* Simple flag toggle version */}
                                 <button 
