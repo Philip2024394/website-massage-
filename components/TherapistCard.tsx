@@ -77,6 +77,7 @@ interface TherapistCardProps {
     hideJoinButton?: boolean; // Hide "Therapist Join Free" button (for shared profile pages)
     customVerifiedBadge?: string; // Custom verified badge image URL (for shared profile pages)
     avatarOffsetPx?: number; // Fine-tune avatar overlap in pixels
+    selectedCity?: string; // Selected city for location display override
 }
 
 const TherapistCard: React.FC<TherapistCardProps> = ({ 
@@ -95,7 +96,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     hideJoinButton = false,
     customVerifiedBadge,
     loggedInProviderId,
-    avatarOffsetPx = 0
+    avatarOffsetPx = 0,
+    selectedCity
 }) => {
     // Use the translations prop
     const t = _t;
@@ -846,6 +848,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         </svg>
                         <span className="text-xs font-medium text-gray-700">
                             {(() => {
+                                // PRIORITY: If a specific city is selected, show that city
+                                if (selectedCity && selectedCity !== 'all') {
+                                    const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                                    const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+                                    if (selectedCityData) {
+                                        return selectedCityData.name;
+                                    }
+                                }
+                                
+                                // Otherwise show therapist's actual location
                                 const therapistLocationArea = (therapist as any)._locationArea;
                                 if (!therapistLocationArea) {
                                     return (therapist.location || 'Bali').split(',')[0].trim();
@@ -859,6 +871,16 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     {/* Serves area - second line */}
                     <div className="text-xs text-orange-500 font-medium">
                         {(() => {
+                            // PRIORITY: If a specific city is selected, show that city
+                            if (selectedCity && selectedCity !== 'all') {
+                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+                                const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+                                if (selectedCityData) {
+                                    return `Serves ${selectedCityData.name} area`;
+                                }
+                            }
+                            
+                            // Otherwise show therapist's actual location
                             const therapistLocationArea = (therapist as any)._locationArea;
                             let name: string;
                             if (!therapistLocationArea) {

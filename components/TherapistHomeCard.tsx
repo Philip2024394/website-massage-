@@ -186,6 +186,37 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             return `📍 ${customDisplay}`;
         }
         
+        // PRIORITY FIX: If a specific city is selected, always show that city
+        // This ensures when user selects "Kuta", all cards show "Kuta" as the service area
+        if (selectedCity && selectedCity !== 'all') {
+            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+            const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+            
+            if (selectedCityData) {
+                // Add service areas if available
+                if (therapist.serviceAreas) {
+                    try {
+                        const areas = JSON.parse(therapist.serviceAreas);
+                        if (Array.isArray(areas) && areas.length > 0) {
+                            // Get readable area names (remove city prefix like "jakarta-")
+                            const areaNames = areas.map((area: string) => {
+                                const parts = area.split('-');
+                                return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                            }).filter(Boolean);
+                            
+                            if (areaNames.length > 0) {
+                                return `${selectedCityData.name} - ${areaNames.join(', ')}`;
+                            }
+                        }
+                    } catch (e) {
+                        // If parsing fails, just show city name
+                    }
+                }
+                
+                return selectedCityData.name;
+            }
+        }
+        
         let cityName = '';
         
         if (!therapistLocationArea) {

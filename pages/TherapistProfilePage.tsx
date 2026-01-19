@@ -257,6 +257,7 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
                 userLocation={userLocation}
                 showHeader={false}
                 showSEOFooter={isSharedView}
+                selectedCity={cityState}
                 onRate={() => console.log('Rate therapist:', therapist)}
                 onQuickBookWithChat={onQuickBookWithChat ? () => onQuickBookWithChat(therapist) : undefined}
                 onChatWithBusyTherapist={onChatWithBusyTherapist}

@@ -150,6 +150,7 @@ interface TherapistProfileBaseProps {
     userLocation?: UserLocation | null;
     showHeader?: boolean;
     showSEOFooter?: boolean;
+    selectedCity?: string; // For location display override
     
     // Callbacks (optional - may not exist in shared mode)
     onRate?: () => void;
@@ -183,6 +184,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
     userLocation,
     showHeader = false,
     showSEOFooter = false,
+    selectedCity,
     onRate,
     onQuickBookWithChat,
     onChatWithBusyTherapist,
@@ -269,6 +271,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     activeDiscount={realDiscount}
                     t={t}
                     hideJoinButton={mode === 'shared'}
+                    selectedCity={selectedCity}
                 />
 
                 {/* Random Image Gallery - Only in shared mode */}
