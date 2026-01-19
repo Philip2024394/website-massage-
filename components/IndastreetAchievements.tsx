@@ -10,6 +10,7 @@ interface IndastreetAchievementsProps {
   mode?: 'authenticated' | 'shared' | 'public';
   achievements?: TherapistAchievement[];
   onViewAll?: () => void;
+  language?: 'en' | 'id' | 'gb';  // Language for translations
 }
 
 const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
@@ -19,7 +20,8 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
   verifiedDate,
   mode = 'public',
   achievements = [],
-  onViewAll
+  onViewAll,
+  language = 'en'
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   
@@ -91,7 +93,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
           </div>
           <div>
             <h3 className="text-lg font-semibold text-orange-800">
-              Indastreet Achievements
+              {language === 'id' ? 'Pencapaian Indastreet' : 'Indastreet Achievements'}
             </h3>
             {isVerified && (
               <div className="flex items-center gap-2 text-sm">
@@ -100,8 +102,7 @@ const IndastreetAchievements: React.FC<IndastreetAchievementsProps> = ({
                     <span className="text-white text-xs">✓</span>
                   </div>
                   <span className="text-gray-700 font-medium">{therapistName}</span>
-                  <span className="text-gray-600">Verified ID</span>
-                  <span className="text-gray-500">{verifiedDate || new Date().toLocaleDateString('en-GB')}</span>
+                  <span className="text-gray-600">{language === 'id' ? 'ID Terverifikasi' : 'Verified ID'}</span>
                 </div>
               </div>
             )}

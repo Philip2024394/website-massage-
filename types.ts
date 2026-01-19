@@ -349,11 +349,16 @@ export interface Therapist {
     
     // Service Area Model - City → Service Area filtering
     // APPWRITE SCHEMA COMPATIBLE - Matches 'locations' collection
-    city?: string; // One of 15 Indonesian cities (REQUIRED in Appwrite)
+    city?: string; // One of 15 Indonesian cities OR "custom" for custom locations (REQUIRED in Appwrite)
     serviceAreas?: string; // JSON string of area IDs ["jakarta-kemang", "jakarta-senopati"] (REQUIRED in Appwrite, size 200)
     maxTravelDistance?: string; // Optional maximum travel distance in km (size 200)
-    country?: string; // Always "Indonesia" (size 255)
+    country?: string; // Country name (e.g., "Indonesia", "Malaysia") (size 255)
     region?: string; // Province/region (enum in Appwrite)
+    
+    // Custom Location Support (Hybrid Approach)
+    customCity?: string; // Custom city name if city="custom" (size 255)
+    customArea?: string; // Custom area/neighborhood name (size 255)
+    isCustomLocation?: boolean; // Flag to indicate custom location
     
     // Hotel / Villa Safe Pass compliance
     hotelVillaSafePassStatus?: 'pending' | 'approved' | 'active' | 'rejected'; // Safe Pass approval status

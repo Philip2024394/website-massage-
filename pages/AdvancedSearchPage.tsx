@@ -78,29 +78,34 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                     
                     {/* City Location Filter - Primary Filter */}
                     <div className="mb-8">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
                             {currentLanguage === 'id' ? '📍 Lokasi Kota' : '📍 City Location'}
                         </label>
-                        <CityLocationDropdown
-                            selectedCity={selectedCity}
-                            onCityChange={(newCity) => {
-                                console.log('🏙️ City changed in advanced search:', newCity);
-                                setSelectedCity(newCity);
-                                setSelectedArea(null); // Reset area when city changes
-                            }}
-                            placeholder={currentLanguage === 'id' ? '🇮🇩 Semua Indonesia' : '🇮🇩 All Indonesia'}
-                            includeAll={true}
-                            showLabel={false}
-                            className="w-full"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <div className="relative">
+                            <CityLocationDropdown
+                                selectedCity={selectedCity}
+                                onCityChange={(newCity) => {
+                                    console.log('🏙️ City changed in advanced search:', newCity);
+                                    setSelectedCity(newCity);
+                                    setSelectedArea(null); // Reset area when city changes
+                                }}
+                                placeholder={currentLanguage === 'id' ? '🇮🇩 Semua Indonesia' : '🇮🇩 All Indonesia'}
+                                includeAll={true}
+                                showLabel={false}
+                                className="w-full rounded-xl border-2 border-gray-300 focus:border-orange-500 transition-colors"
+                            />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
                             {currentLanguage === 'id' ? '💡 Filter terapis dan tempat berdasarkan kota' : '💡 Filter therapists and places by city'}
                         </p>
                     </div>
 
                     {/* Area Filter - Sub-areas within selected city */}
                     {selectedCity && selectedCity !== 'all' && (
-                        <div className="mb-8">
+                        <div className="mb-8 p-4 bg-orange-50 rounded-xl border-2 border-orange-200">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                                {currentLanguage === 'id' ? '📍 Area dalam ' + selectedCity : '📍 Areas in ' + selectedCity}
+                            </label>
                             <AreaFilter
                                 city={selectedCity}
                                 selectedArea={selectedArea}

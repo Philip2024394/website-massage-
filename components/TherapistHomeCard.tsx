@@ -175,15 +175,49 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     // Get the location area from GPS-computed _locationArea (consistent with filtering)
     const therapistLocationArea = (therapist as any)._locationArea;
     
-    // Get display name for the therapist's actual location area
+    // Get display name for the therapist's actual location area with service areas
     const getLocationAreaDisplayName = () => {
+        // Check if this is a custom location
+        if (therapist.isCustomLocation && therapist.customCity) {
+            const customDisplay = therapist.customCity;
+            if (therapist.customArea) {
+                return `📍 ${customDisplay} - ${therapist.customArea}`;
+            }
+            return `📍 ${customDisplay}`;
+        }
+        
+        let cityName = '';
+        
         if (!therapistLocationArea) {
             // Fallback to database location field if no GPS-computed area
-            return (therapist.location || 'Bali').split(',')[0].trim();
+            cityName = (therapist.location || 'Bali').split(',')[0].trim();
+        } else {
+            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+            const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+            cityName = cityData?.name || therapistLocationArea;
         }
-        const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-        const cityData = allCities.find(city => city.locationId === therapistLocationArea);
-        return cityData?.name || therapistLocationArea;
+        
+        // Add service areas if available
+        if (therapist.serviceAreas) {
+            try {
+                const areas = JSON.parse(therapist.serviceAreas);
+                if (Array.isArray(areas) && areas.length > 0) {
+                    // Get readable area names (remove city prefix like "jakarta-")
+                    const areaNames = areas.map((area: string) => {
+                        const parts = area.split('-');
+                        return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                    }).filter(Boolean);
+                    
+                    if (areaNames.length > 0) {
+                        return `${cityName} - ${areaNames.join(', ')}`;
+                    }
+                }
+            } catch (e) {
+                // If parsing fails, just show city name
+            }
+        }
+        
+        return cityName;
     };
     
     const locationAreaDisplayName = getLocationAreaDisplayName();
@@ -390,7 +424,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
              * ======================================== */}
 
             {/* Location info - Right side, positioned above profile section with stable height */}
-            <div className="px-4 mt-0 mb-0 text-right relative z-10" style={{ minHeight: '48px' }}>
+            <div className="px-4 mt-3 mb-0 text-right relative z-10" style={{ minHeight: '48px' }}>
                 <div className="flex flex-col items-end gap-0.5">
                     <div className="flex items-center gap-1.5">
                         <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -510,7 +544,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* Client Preference - Menerima with Languages on same line (After profile section like profile card) */}
-            <div className="mx-4 mb-2">
+            <div className="mx-4 mb-7">
                 <div className="flex justify-between items-center">
                     <p className="text-xs text-gray-600 flex-shrink-0">
                         <span className="font-bold">Menerima:</span> {(therapist as any).clientPreference || 'Pria / Wanita'}
@@ -645,7 +679,7 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             {/* Content */}
             <div className="px-4 pb-4">
                 {/* Pricing */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-3 gap-2 mb-7">
                     {pricing["60"] > 0 && (
                         <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
                             <div className="text-xs text-gray-600 mb-1">60 min</div>

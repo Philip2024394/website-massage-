@@ -287,6 +287,7 @@ const TherapistProfileBase: React.FC<TherapistProfileBaseProps> = ({
                     verifiedDate={(therapist as any).verifiedAt}
                     mode={mode}
                     onViewAll={undefined} // Remove manage button - no valid route for regular users
+                    language={language}
                 />
 
                 {/* Rotating Reviews Section */}

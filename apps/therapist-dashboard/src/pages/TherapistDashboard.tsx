@@ -10,6 +10,8 @@ import { matchProviderToCity } from '../../../../constants/indonesianCities';
 import { extractLocationId, normalizeLocationForSave, assertValidLocationData } from '../../../../utils/locationNormalizationV2';
 import { extractGeopoint, deriveLocationIdFromGeopoint, validateTherapistGeopoint } from '../../../../utils/geoDistance';
 import { getServiceAreasForCity } from '../../../../constants/serviceAreas';
+import { useCityContext } from '../../../../context/CityContext';
+import { locations } from '../../../../locations';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
@@ -106,6 +108,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
     console.log('🔍 LOCATION ID LOAD (normalized):', locationId);
     return locationId;
   });
+  
+  // Get country from context (selected on landing page)
+  const { country, countryCode } = useCityContext();
+  
+  // Custom location state
+  const [customCity, setCustomCity] = useState<string>(therapist?.customCity || '');
+  const [customArea, setCustomArea] = useState<string>(therapist?.customArea || '');
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
@@ -442,8 +451,27 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
       const derivedLocationId = deriveLocationIdFromGeopoint(geopoint);
       console.log('🏷️ GPS-derived city (AUTHORITATIVE):', derivedLocationId);
       
-      // STEP 4: GPS city wins silently over manual selection
-      if (selectedCity && selectedCity !== 'all' && selectedCity !== derivedLocationId) {
+      // STEP 3.5: Handle custom locations
+      const isCustomLocation = selectedCity === 'custom';
+      if (isCustomLocation) {
+        // Validate custom location fields
+        if (!customCity.trim()) {
+          showToast('❌ Please enter a city name for custom location', 'error');
+          setSaving(false);
+          return;
+        }
+        
+        if (!coordinates) {
+          showToast('❌ GPS location is required for custom locations', 'error');
+          setSaving(false);
+          return;
+        }
+        
+        console.log('📍 Custom location:', { customCity, customArea, coordinates });
+      }
+      
+      // STEP 4: GPS city wins silently over manual selection (except for custom)
+      if (!isCustomLocation && selectedCity && selectedCity !== 'all' && selectedCity !== derivedLocationId) {
         console.log(`🔄 GPS overrides manual selection: "${selectedCity}" → "${derivedLocationId}"`);
         // Silent override - GPS is always authoritative, no warning toast needed
       }
@@ -461,12 +489,18 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         clientPreferences: clientPreferences,
         whatsappNumber: normalizedWhatsApp,
         massageTypes: JSON.stringify(selectedMassageTypes.slice(0, 5)),
-        serviceAreas: JSON.stringify(selectedServiceAreas), // Save service areas
+        serviceAreas: isCustomLocation ? JSON.stringify([]) : JSON.stringify(selectedServiceAreas), // No service areas for custom
+        country: country || 'Indonesia', // Save country from context
+        
+        // Custom location fields
+        isCustomLocation: isCustomLocation,
+        customCity: isCustomLocation ? customCity.trim() : '',
+        customArea: isCustomLocation ? customArea.trim() : '',
         
         // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH)
         geopoint: geopoint,                    // Primary: lat/lng coordinates
-        city: derivedLocationId,               // 🔒 REQUIRED: GPS-derived city for filtering
-        locationId: derivedLocationId,         // 🔒 REQUIRED: GPS-derived city ID
+        city: isCustomLocation ? 'custom' : derivedLocationId, // Use 'custom' for custom locations
+        locationId: isCustomLocation ? 'custom' : derivedLocationId, // Use 'custom' for custom locations
         coordinates: JSON.stringify(geopoint), // Legacy: serialized coordinates
         
         // ⚠️ LEGACY ONLY: Manual selection (NOT used for filtering)
@@ -1003,20 +1037,77 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
             {/* City/Tourist Location */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Location *
+                Location * {country && `(${country})`}
               </label>
               <CityLocationDropdown
                 selectedCity={selectedCity}
-                onCityChange={setSelectedCity}
-                placeholder="Select Location"
+                onCityChange={(city) => {
+                  setSelectedCity(city);
+                  setSelectedServiceAreas([]); // Reset areas when city changes
+                }}
+                placeholder={`Select City in ${country || 'Indonesia'}`}
                 showLabel={false}
                 includeAll={false}
                 className="w-full"
+                country={country} // Pass country filter
               />
               <p className="text-xs text-gray-500 mt-1">
-                Select your general area. <strong>Important:</strong> Your GPS location below will determine the exact city where you appear in searches.
+                Select your city or choose "Custom Location" for unlisted areas.
               </p>
             </div>
+
+            {/* Custom Location Inputs - Show when "custom" is selected */}
+            {selectedCity === 'custom' && (
+              <div className="bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-4">
+                <div className="flex items-start gap-2 mb-3">
+                  <span className="text-2xl">📍</span>
+                  <div>
+                    <p className="text-sm font-bold text-orange-900 mb-1">Custom Location Selected</p>
+                    <p className="text-xs text-orange-800">
+                      Enter your city and area details below. GPS location is required for custom locations.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    City/District Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={customCity}
+                    onChange={(e) => setCustomCity(e.target.value)}
+                    placeholder="e.g., Tangerang, Cikarang, Bogor"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter the name of your city or district
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Area/Neighborhood (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={customArea}
+                    onChange={(e) => setCustomArea(e.target.value)}
+                    placeholder="e.g., BSD City, Jababeka, Sentul City"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter your specific area or neighborhood (optional)
+                  </p>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-3">
+                  <p className="text-xs font-medium text-yellow-900">
+                    ⚠️ <strong>Important:</strong> Custom locations require GPS verification below. Your exact location ensures customers can find and filter you correctly.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* GPS Location - MANDATORY */}
             <div>

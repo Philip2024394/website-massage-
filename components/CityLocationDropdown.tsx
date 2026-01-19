@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { INDONESIAN_CITIES_CATEGORIZED, CityLocation } from '../constants/indonesianCities';
 import { citiesService } from '../lib/citiesService';
+import { locations } from '../locations';
+import { getPopularCustomLocations, type PopularCustomLocation } from '../utils/customLocationsService';
 
 interface CityLocationDropdownProps {
   selectedCity: string;
@@ -13,6 +15,7 @@ interface CityLocationDropdownProps {
   disabled?: boolean;
   includeAll?: boolean;
   onCoordinatesChange?: (coordinates: { lat: number; lng: number } | null) => void; // NEW: Auto-populate coordinates
+  country?: string; // NEW: Filter by country
 }
 
 const CityLocationDropdown = ({
@@ -24,12 +27,14 @@ const CityLocationDropdown = ({
   showLabel = false,
   disabled = false,
   includeAll = true,
-  onCoordinatesChange // NEW: Auto-populate coordinates callback
+  onCoordinatesChange, // NEW: Auto-populate coordinates callback
+  country // NEW: Filter by country
 }: CityLocationDropdownProps): JSX.Element => {
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState(INDONESIAN_CITIES_CATEGORIZED); // Start with static fallback
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [popularCustomLocations, setPopularCustomLocations] = useState<PopularCustomLocation[]>([]);
   const [baliExpanded, setBaliExpanded] = useState(false);
   const [lombokExpanded, setLombokExpanded] = useState(false);
   const [floresExpanded, setFloresExpanded] = useState(false);
@@ -101,6 +106,12 @@ const CityLocationDropdown = ({
         const categorizedCities = await citiesService.getCitiesByCategory();
         setCities(categorizedCities);
         console.log('✅ Cities loaded from Appwrite:', categorizedCities.length, 'categories');
+        
+        // Load popular custom locations
+        console.log('📍 Loading popular custom locations...');
+        const popularLocations = await getPopularCustomLocations(5); // Min 5 therapists
+        setPopularCustomLocations(popularLocations);
+        console.log('✅ Popular custom locations loaded:', popularLocations.length);
       } catch (error) {
         console.error('❌ Failed to load cities, using static fallback:', error);
         // Keep static fallback data
@@ -153,14 +164,30 @@ const CityLocationDropdown = ({
     }
   }, [isOpen]);
 
-  const handleCitySelect = (city: CityLocation | string) => {
+  const handleCitySelect = (city: CityLocation | string | PopularCustomLocation) => {
     if (typeof city === 'string') {
       // Handle 'all' option - clear coordinates
       onCityChange(city);
       if (onCoordinatesChange) {
         onCoordinatesChange(null); // Clear coordinates for "All Indonesia"
       }
-    } else {
+    } 
+    // Handle popular custom location selection
+    else if ('customCity' in city) {
+      console.log(`📍 Popular custom location selected: ${city.customCity} (${city.count} therapists)`);
+      onCityChange(city.locationId);
+      
+      // Auto-populate with custom location center coordinates
+      if (onCoordinatesChange && city.centerCoordinates) {
+        console.log(`📍 Auto-populating center coordinates for ${city.customCity}:`, city.centerCoordinates);
+        onCoordinatesChange({
+          lat: city.centerCoordinates.lat,
+          lng: city.centerCoordinates.lng
+        });
+      }
+    }
+    // Handle predefined city selection
+    else {
       // 🔒 STRICT: locationId must come from data, no runtime fallback
       if (!city.locationId) {
         console.error('❌ City missing locationId:', city.name);
@@ -186,20 +213,51 @@ const CityLocationDropdown = ({
     setSearchQuery('');
   };
 
-  // Filter cities based on search query
-  const filteredCities = searchQuery.trim()
-    ? cities.map(category => ({
+  // Filter cities based on search query and country
+  const filteredCities = (() => {
+    let filtered = cities;
+    
+    // Apply country filter if provided
+    if (country) {
+      filtered = cities.map(category => ({
+        ...category,
+        cities: category.cities.filter(city => {
+          // Check if city belongs to selected country from locations.ts
+          const locationEntry = locations.find(loc => 
+            loc.cities.includes(city.name) && loc.country === country
+          );
+          return !!locationEntry;
+        })
+      })).filter(category => category.cities.length > 0);
+    }
+    
+    // Apply search query filter
+    if (searchQuery.trim()) {
+      filtered = filtered.map(category => ({
         ...category,
         cities: category.cities.filter(city =>
           city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           city.aliases?.some(alias => alias.toLowerCase().includes(searchQuery.toLowerCase()))
         )
-      })).filter(category => category.cities.length > 0)
-    : cities;
+      })).filter(category => category.cities.length > 0);
+    }
+    
+    return filtered;
+  })();
 
   const getDisplayText = () => {
     if (selectedCity === 'all') {
       return placeholder;
+    }
+    
+    if (selectedCity === 'custom') {
+      return '📍 Enter Custom Location';
+    }
+    
+    // Check if it's a popular custom location
+    const customLocation = popularCustomLocations.find(loc => loc.locationId === selectedCity);
+    if (customLocation) {
+      return `📍 ${customLocation.customCity}`;
     }
     
     // Find the selected city by locationId or name - display readable name
@@ -253,7 +311,7 @@ const CityLocationDropdown = ({
           disabled={disabled}
           ref={buttonRef}
           className={`
-            w-full px-4 py-2.5 bg-white border-2 rounded-lg 
+            w-full px-4 py-3.5 bg-white border-2 rounded-lg 
             text-sm text-center cursor-pointer focus:outline-none 
             disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900
             transition-all duration-200
@@ -409,40 +467,68 @@ const CityLocationDropdown = ({
                   })
                 )}
                 
+                {/* Popular Custom Locations Section */}
+                {popularCustomLocations.length > 0 && (
+                  <div className="border-t-2 border-blue-200">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-blue-50 border-b border-blue-100">
+                      📍 Popular Other Locations
+                    </div>
+                    {popularCustomLocations.map((location, index) => (
+                      <button
+                        key={`custom-${location.locationId}-${index}`}
+                        type="button"
+                        onClick={() => {
+                          handleCitySelect(location);
+                          setIsOpen(false);
+                        }}
+                        className={`
+                          w-full px-4 py-2 text-left text-sm hover:bg-blue-50 transition-colors duration-150 border-b border-gray-100
+                          ${selectedCity === location.locationId ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-700'}
+                        `}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📍</span>
+                            <span className="font-medium">{location.customCity}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                            {location.count} therapist{location.count !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 {/* Custom Location Option */}
                 <div className="border-t-2 border-gray-200">
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
-                    📍 Other Location
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-orange-50 border-b border-orange-100">
+                    📍 Other Location (Custom)
                   </div>
-                  <div className="px-4 py-3">
-                    <input
-                      type="text"
-                      placeholder="Type your city/area and press Enter..."
-                      defaultValue={selectedCity && !cities.some(cat => cat.cities.some(c => c.name === selectedCity)) ? selectedCity : ''}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          const value = e.currentTarget.value.trim();
-                          if (value) {
-                            handleCitySelect(value);
-                          }
-                        }
-                      }}
-                      onBlur={(e) => {
-                        const value = e.currentTarget.value.trim();
-                        if (value) {
-                          onCityChange(value);
-                          if (onCoordinatesChange) {
-                            onCoordinatesChange(null);
-                          }
-                        }
-                      }}
-                      className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
-                      onClick={(e) => e.stopPropagation()}
-                      onMouseDown={(e) => e.stopPropagation()}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Can't find your location? Type it manually and press Enter
-                    </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onCityChange('custom');
+                      if (onCoordinatesChange) {
+                        onCoordinatesChange(null); // Clear coordinates for custom
+                      }
+                      setIsOpen(false);
+                    }}
+                    className={`
+                      w-full px-4 py-3 text-left text-sm hover:bg-orange-50 transition-colors duration-150 border-b border-gray-100
+                      ${selectedCity === 'custom' ? 'bg-orange-100 text-orange-800 font-medium' : 'text-gray-700'}
+                    `}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📍</span>
+                      <div>
+                        <div className="font-medium">Enter Custom Location</div>
+                        <div className="text-xs text-gray-500">For cities/areas not listed above</div>
+                      </div>
+                    </div>
+                  </button>
+                  <div className="px-4 py-2 text-xs text-gray-500 bg-yellow-50 border-t border-yellow-100">
+                    ⚠️ GPS location required for custom locations
                   </div>
                 </div>
               </>

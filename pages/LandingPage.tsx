@@ -268,6 +268,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     if ((window as any).setPage) {
                         console.log('🚀 Navigating to home via global setPage');
                         (window as any).setPage('home');
+                        // Scroll to top to show therapist cards immediately
+                        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                     } else {
                         console.log('🚀 Redirecting to /home');
                         window.location.href = '/home';
@@ -369,6 +371,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         if ((window as any).setPage) {
                             console.log('🚀 Navigating to home via global setPage');
                             (window as any).setPage('home');
+                            // Scroll to top to show therapist cards immediately
+                            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                         } else {
                             console.log('🚀 Redirecting to /home');
                             window.location.href = '/home';
