@@ -439,7 +439,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
-                    backgroundAttachment: 'fixed'
                 }}
             />
             <div className="fixed inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
