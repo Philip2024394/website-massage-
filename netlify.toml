@@ -38,18 +38,14 @@
   to = "/therapist/index.html"
   status = 200
 
-# Exclude XML files from SPA redirect (for sitemaps and RSS feeds)
-[[redirects]]
-  from = "/*.xml"
-  to = "/:splat"
-  status = 200
-  force = false
-
 # Main app SPA redirect - must handle all client-side routes (catch-all)
+# BUT exclude static files like XML, robots.txt, etc.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  conditions = {Role = [""], Language = [""], Country = [""]}
+  force = false
 
 # Security headers
 [[headers]]
@@ -61,3 +57,10 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=*, camera=(), microphone=()"
     Content-Security-Policy = "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data:; img-src 'self' https: data: blob:"
+
+# XML files should be served with proper content type
+[[headers]]
+  for = "/*.xml"
+  [headers.values]
+    Content-Type = "application/xml; charset=utf-8"
+    Cache-Control = "public, max-age=3600"
