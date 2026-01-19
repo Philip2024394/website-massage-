@@ -1,3 +1,36 @@
+/* EMERGENCY MOBILE SCROLL FIX - HIGHEST PRIORITY */
+html, body {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: auto !important;
+  position: relative !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+/* Fix for modals and popups in scrollable containers */
+.fixed {
+  position: fixed !important;
+}
+
+@media (max-width: 768px) {
+  html, body, #root, .mobile-lock-container {
+    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative !important;
+    height: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+  
+  /* Ensure fixed positioned modals work correctly on mobile */
+  .fixed {
+    position: fixed !important;
+    z-index: 9999 !important;
+  }
+}
+
 /* Footer fixes - must come before Tailwind */
 @import url('./footer-fix.css');
 
@@ -58,12 +91,27 @@ body {
   }
 }
 
-/* Landing page mobile scrolling support */
-.landing-page {
-  -webkit-overflow-scrolling: touch !important;
-  overflow-scrolling: touch !important;
-  touch-action: pan-y !important;
+/* EMERGENCY MOBILE SCROLL FIX - Override ALL blocking styles */
+body.landing-page,
+body.home-page,
+.landing-page,
+.home-page {
+  overflow: visible !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   position: relative !important;
+  height: auto !important;
+  min-height: 100vh !important;
+  touch-action: pan-y !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Override mobile-lock-container styles that block scrolling */
+.mobile-lock-container {
+  position: relative !important;
+  overflow: visible !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
   height: auto !important;
 }
 
@@ -72,7 +120,10 @@ body {
   -webkit-overflow-scrolling: touch !important;
   touch-action: pan-y !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   position: relative !important;
+  height: auto !important;
+  min-height: 100vh !important;
 }
 
 /* HomePage container specific fixes */
@@ -80,18 +131,27 @@ body {
   -webkit-overflow-scrolling: touch !important;
   touch-action: pan-y !important;
   overflow-y: auto !important;
+  overflow-x: hidden !important;
   position: relative !important;
+  height: auto !important;
+  min-height: 100vh !important;
 }
 
 @media (max-width: 768px) {
+  /* EMERGENCY MOBILE SCROLL FIX - Force scrolling for landing/home pages */
+  body.landing-page,
+  body.home-page,
   .landing-page-container,
-  .home-page-container {
+  .home-page-container,
+  .mobile-lock-container {
     min-height: 100vh !important;
     min-height: -webkit-fill-available !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     touch-action: pan-y !important;
     position: relative !important;
+    height: auto !important;
   }
   
   /* Override any mobile locks for main page containers */
@@ -415,11 +475,17 @@ body {
 }
 
 #root {
-  height: 100vh;
-  height: 100dvh;
+  /* CHANGED: Remove fixed height to allow scrolling */
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  position: relative !important;
   background: white;
   position: relative;
   contain: layout style paint;

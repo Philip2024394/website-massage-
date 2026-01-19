@@ -565,58 +565,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     </div>
                 </div>
                 
-                {/* Country Change Modal */}
-                {showCountryModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                        <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full border border-gray-700 shadow-2xl">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-white">Change Country</h3>
-                                <button
-                                    onClick={() => setShowCountryModal(false)}
-                                    className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-400" />
-                                </button>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-3">
-                                {COUNTRIES.map((country) => (
-                                    <button
-                                        key={country.code}
-                                        onClick={() => handleManualCountrySelect(country.code)}
-                                        className={`p-3 rounded-lg transition-all text-left ${
-                                            countryCode === country.code
-                                                ? 'bg-orange-500 border-2 border-orange-400'
-                                                : 'bg-gray-800 border-2 border-gray-700 hover:border-orange-400 hover:bg-gray-700'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xl">{country.flag}</span>
-                                                <div>
-                                                    <div className={`font-semibold text-sm ${
-                                                        countryCode === country.code ? 'text-white' : 'text-white'
-                                                    }`}>{country.name}</div>
-                                                    <div className={`text-xs ${
-                                                        countryCode === country.code ? 'text-orange-100' : 'text-gray-400'
-                                                    }`}>{country.description}</div>
-                                                </div>
-                                            </div>
-                                            {countryCode === country.code && (
-                                                <ChevronDown className="w-4 h-4 text-white rotate-0" />
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                            
-                            <p className="text-xs text-gray-400 text-center mt-4">
-                                Your city selection will be cleared when changing country
-                            </p>
-                        </div>
-                    </div>
-                )}
-                
                 <PWAInstallIOSModal
                     visible={
                         showIOSInstructions && isIOS && !isInstalled &&
@@ -625,6 +573,66 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     onClose={() => setShowIOSInstructions(false)}
                 />
             </div>
+            
+            {/* Country Change Modal - MOVED OUTSIDE main container */}
+            {showCountryModal && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                     style={{ 
+                         position: 'fixed', 
+                         top: '0', 
+                         left: '0', 
+                         width: '100vw', 
+                         height: '100vh',
+                         zIndex: 9999
+                     }}>
+                    <div className="bg-gray-900 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-700 shadow-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-white">Change Country</h3>
+                            <button
+                                onClick={() => setShowCountryModal(false)}
+                                className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
+                            >
+                                <X className="w-5 h-5 text-gray-400" />
+                            </button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                            {COUNTRIES.map((country) => (
+                                <button
+                                    key={country.code}
+                                    onClick={() => handleManualCountrySelect(country.code)}
+                                    className={`p-3 rounded-lg transition-all text-left ${
+                                        countryCode === country.code
+                                            ? 'bg-orange-500 border-2 border-orange-400'
+                                            : 'bg-gray-800 border-2 border-gray-700 hover:border-orange-400 hover:bg-gray-700'
+                                    }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xl">{country.flag}</span>
+                                            <div>
+                                                <div className={`font-semibold text-sm ${
+                                                    countryCode === country.code ? 'text-white' : 'text-white'
+                                                }`}>{country.name}</div>
+                                                <div className={`text-xs ${
+                                                    countryCode === country.code ? 'text-orange-100' : 'text-gray-300'
+                                                }`}>{country.description}</div>
+                                            </div>
+                                        </div>
+                                        {countryCode === country.code && (
+                                            <ChevronDown className="w-4 h-4 text-white rotate-0" />
+                                        )}
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <p className="text-xs text-gray-400 text-center mt-4">
+                            Your city selection will be cleared when changing country
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
