@@ -431,17 +431,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="landing-page-container relative w-full flex flex-col bg-gray-900" style={{ minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden' }}>
+        <div className="landing-page-container relative w-full flex flex-col" style={{ minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden', backgroundColor: '#111827' }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             <div
-                className="fixed inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat"
+                className="absolute inset-0 z-0 w-full h-full bg-cover bg-center bg-no-repeat"
                 style={{
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                 }}
             />
-            <div className="fixed inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
+            <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             <div className="relative z-20 flex flex-col items-center justify-start text-white px-4 sm:px-6 text-center w-full py-4 sm:py-8 pt-8 sm:pt-16 pb-4 sm:pb-8">
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
@@ -455,7 +455,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 
                 {/* Location Selector - NEW UX: Auto-detected country, city selection only */}
                 <div className="w-full max-w-2xl px-2 sm:px-4 mb-6">
-                    <div className="bg-black/90 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-xl">
+                    <div className="bg-gray-900 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
                         <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
                             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -526,7 +526,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                     <button
                                         onClick={handleCityNotListed}
                                         disabled={isDetectingLocation}
-                                        className="w-full p-3 mt-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800/50 hover:border-orange-400 hover:bg-gray-700/50 text-gray-300 hover:text-white transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full p-3 mt-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <div className="flex items-center gap-3">
                                             <MapPin className="w-4 h-4 flex-shrink-0 text-gray-400" />
