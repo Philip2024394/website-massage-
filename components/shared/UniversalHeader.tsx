@@ -3,12 +3,14 @@ import { MapPin } from 'lucide-react';
 import BurgerMenuIcon from '../icons/BurgerMenuIcon';
 import PageContainer from '../layout/PageContainer';
 import { useCityContext } from '../../context/CityContext';
+import { getCountryLanguage, getCountryFlag, type SupportedLanguage } from '../../context/LanguageContext';
 
 interface UniversalHeaderProps {
     // Language props
     language?: string;
-    onLanguageChange?: (lang: 'en' | 'id' | 'gb' | string) => void;
+    onLanguageChange?: (lang: SupportedLanguage | string) => void;
     showLanguageSelector?: boolean;
+    countryCode?: string; // Add country code to determine which languages to show
     
     // Menu props  
     onMenuClick?: () => void;
@@ -68,9 +70,10 @@ interface UniversalHeaderProps {
  */
 export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     // Language props
-    language = 'id',
+    language = 'en',
     onLanguageChange,
     showLanguageSelector = true,
+    countryCode,
     
     // Menu props
     onMenuClick,
@@ -93,7 +96,10 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     sticky = true
 }) => {
     // Get city info from context
-    const { city, countryCode } = useCityContext();
+    const { city: contextCity, countryCode: contextCountryCode, autoDetected, detectionMethod, setCity, setCountry, clearCountry } = useCityContext();
+    
+    // Use countryCode from props or context
+    const activeCountryCode = countryCode || contextCountryCode || 'ID';
 
     const headerClasses = `
         bg-white shadow-md w-full max-w-full z-[9997]
@@ -104,15 +110,31 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
     const handleLanguageToggle = () => {
         if (!onLanguageChange) return;
         
-        const currentLang = language || 'id';
-        const newLanguage = currentLang === 'id' ? 'en' : 'id';
+        const currentLang = language || 'en';
+        
+        // Toggle between country's native language and English
+        const countryLanguage = getCountryLanguage(activeCountryCode);
+        const newLanguage = currentLang === 'en' ? countryLanguage : 'en';
         
         console.log('🌐 UniversalHeader Language Toggle:');
+        console.log('  - Country:', activeCountryCode);
         console.log('  - Current:', currentLang);
+        console.log('  - Country Language:', countryLanguage);
         console.log('  - New:', newLanguage);
         
         onLanguageChange(newLanguage);
     };
+    
+    // Determine which flags to show
+    const showCountryFlag = language !== 'en';
+    const flagToShow = showCountryFlag ? getCountryFlag(activeCountryCode) : '🇬🇧';
+    const toggleTooltip = language === 'en' 
+        ? `Switch to ${getCountryLanguage(activeCountryCode) === 'id' ? 'Indonesian' : 
+            getCountryLanguage(activeCountryCode) === 'ms' ? 'Malay' :
+            getCountryLanguage(activeCountryCode) === 'th' ? 'Thai' :
+            getCountryLanguage(activeCountryCode) === 'tl' ? 'Tagalog' :
+            getCountryLanguage(activeCountryCode) === 'vi' ? 'Vietnamese' : 'Local language'}`
+        : 'Switch to English';
 
     return (
         <header className={headerClasses}>
@@ -128,10 +150,10 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                             </h1>
                             
                             {/* City Display */}
-                            {showCityInfo && city && (
+                            {showCityInfo && contextCity && (
                                 <div className="hidden sm:flex items-center gap-1 text-xs text-gray-600 ml-2 bg-gray-100 px-2 py-1 rounded-full">
                                     <MapPin className="w-3 h-3" />
-                                    <span>{city}, {countryCode}</span>
+                                    <span>{contextCity}, {activeCountryCode}</span>
                                 </div>
                             )}
                             
@@ -174,10 +196,10 @@ export const UniversalHeader: React.FC<UniversalHeaderProps> = ({
                                     onClick={handleLanguageToggle}
                                     className="flex items-center justify-center min-w-[44px] min-h-[44px] w-10 h-10 sm:w-11 sm:h-11 hover:bg-orange-50 rounded-full transition-colors flex-shrink-0 border-0 outline-none" 
                                     style={{ border: 'none', textDecoration: 'none' }}
-                                    title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+                                    title={toggleTooltip}
                                 >
                                     <span className="text-xl sm:text-2xl leading-none" style={{ textDecoration: 'none', border: 'none' }}>
-                                        {language === 'id' ? '🇮🇩' : '🇬🇧'}
+                                        {flagToShow}
                                     </span>
                                 </button>
                                 

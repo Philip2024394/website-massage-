@@ -220,7 +220,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setCity(city.name);
         setSearchQuery('');
         
-        console.log('📍 City selected:', city.name, '- navigating to home page');
+        console.log('📍 City selected:', city.name, 'in country:', city.country);
+        
+        // Auto-set language based on city's country
+        const selectedCountryInfo = COUNTRIES.find(c => c.code === city.country);
+        if (selectedCountryInfo && selectedCountryInfo.language !== currentLanguage) {
+            console.log('🌍 Auto-switching to country language:', selectedCountryInfo.language);
+            
+            try {
+                const newLang = selectedCountryInfo.language;
+                
+                // Load language resources
+                await loadLanguageResources(newLang);
+                
+                // Change language
+                handleLanguageToggle(newLang as Language);
+                
+                console.log('✅ Language auto-switched to:', newLang);
+            } catch (error) {
+                console.warn('⚠️ Language auto-switch failed, using English:', error);
+                handleLanguageToggle('en');
+            }
+        }
+        
+        // Update country in context
+        setCountry(city.country, false);
+        
+        console.log('📍 Navigating to home page...');
         
         // Small delay to show selection feedback
         setTimeout(async () => {
