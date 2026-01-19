@@ -38,6 +38,13 @@
   to = "/therapist/index.html"
   status = 200
 
+# Exclude XML files from SPA redirect (for sitemaps and RSS feeds)
+[[redirects]]
+  from = "/*.xml"
+  to = "/:splat"
+  status = 200
+  force = false
+
 # Main app SPA redirect - must handle all client-side routes (catch-all)
 [[redirects]]
   from = "/*"
