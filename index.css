@@ -6,7 +6,7 @@
 @tailwind utilities;
 
 /* Clean, mobile-first layout - body scrolling enabled */
-html, body {
+html, body, #root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -20,6 +20,12 @@ html {
 }
 
 body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+#root {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
@@ -46,6 +52,10 @@ footer {
   position: relative;
   width: 100%;
   min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 /* Root container */
@@ -55,6 +65,17 @@ footer {
   width: 100%;
   position: relative;
   background: white;
+}
+
+/* Ensure all main page containers can scroll */
+.HomePage,
+.home-page-container,
+.page-container,
+.main-container,
+[data-page] {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Mobile optimizations */
