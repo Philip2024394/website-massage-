@@ -1,4 +1,4 @@
-# Indastreet - Indonesia's #1 Massage Directory
+# IndaStreet - Global Massage & Wellness Directory
 # https://www.indastreetmassage.com/robots.txt
 
 User-agent: *
@@ -20,6 +20,20 @@ Allow: /contact
 Allow: /privacy-policy
 Allow: /service-terms
 
+# Country-specific pages
+Allow: /id
+Allow: /id/*
+Allow: /ph
+Allow: /ph/*
+Allow: /gb
+Allow: /gb/*
+Allow: /us
+Allow: /us/*
+Allow: /au
+Allow: /au/*
+Allow: /de
+Allow: /de/*
+
 # Disallow admin and portal areas
 Disallow: /admin
 Disallow: /therapist-portal
@@ -32,6 +46,11 @@ Disallow: /api/
 
 # Sitemaps
 Sitemap: https://www.indastreetmassage.com/sitemap.xml
+Sitemap: https://www.indastreetmassage.com/sitemap-global.xml
+
+# RSS Feeds
+Sitemap: https://www.indastreetmassage.com/rss.xml
+Sitemap: https://www.indastreetmassage.com/rss-global.xml
 
 # Crawl-delay for polite bots
 Crawl-delay: 1
