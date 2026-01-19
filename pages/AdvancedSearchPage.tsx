@@ -303,7 +303,6 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             </button>
                         </div>
                     </div>
-                    </>
                 </div>
             </div>
 
