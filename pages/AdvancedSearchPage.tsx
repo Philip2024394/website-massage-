@@ -108,7 +108,8 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                             />
                         </div>
                     )}
-                    <>                    {/* Verified Members Header */
+
+                    {/* Verified Members Header */}
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-center gap-2 mb-2">
                             <h3 className="text-xl font-bold text-gray-900">
