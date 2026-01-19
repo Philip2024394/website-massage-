@@ -454,11 +454,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             
             {/* Scrollable content */}
-            <div className="scrollable relative z-20 flex flex-col items-center text-white px-4 sm:px-6 text-center w-full py-8 sm:py-16" style={{ paddingBottom: '4rem' }}>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
+            <div className="scrollable relative z-20 flex flex-col items-center text-white px-4 sm:px-6 text-center w-full py-4 sm:py-16" style={{ paddingBottom: '2rem' }}>
+                <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-2 sm:mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
-                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-8">
+                <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4 sm:mb-8">
                     {currentCountryData?.name === 'Philippines' 
                         ? `${currentCountryData?.name}' Massage Hub`
                         : `${currentCountryData?.name}'s Massage Hub`
@@ -466,8 +466,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 </p>
                 
                 {/* Location Selector - NEW UX: Auto-detected country, city selection only */}
-                <div className="w-full max-w-2xl px-2 sm:px-4 mb-6">
-                    <div className="bg-gray-900 rounded-2xl p-4 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
+                <div className="w-full max-w-2xl px-2 sm:px-4 mb-4 sm:mb-6">
+                    <div className="bg-gray-900 rounded-2xl p-3 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
                         <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
                             <div className="flex items-center justify-between flex-wrap gap-2">

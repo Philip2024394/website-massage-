@@ -68,6 +68,15 @@ footer {
   touch-action: pan-y;
 }
 
+/* Mobile optimization - maximize viewport usage */
+@media (max-width: 768px) {
+  .landing-page-container {
+    /* Use full viewport height on mobile */
+    min-height: 100dvh; /* Dynamic viewport height - excludes mobile browser UI */
+    height: 100dvh;
+  }
+}
+
 /* Root container */
 #root {
   min-height: 100vh;
