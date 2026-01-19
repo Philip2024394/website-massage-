@@ -53,8 +53,8 @@ const App = () => {
     // Mobile viewport lock for stable mobile experience
     useMobileLock();
     
-    // Prevent unwanted scrolling (allow .scrollable elements)
-    usePreventScroll();
+    // DISABLED: This was blocking all mobile scrolling
+    // usePreventScroll();
     
     // Enhanced mobile detection and device-aware styling
     const mobileDetection = useMobileDetection();

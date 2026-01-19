@@ -437,7 +437,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="landing-page-container relative w-full bg-gray-900" style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
+        <div className="landing-page-container scrollable relative w-full bg-gray-900" style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
             {/* Absolute background image */}
@@ -454,7 +454,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             
             {/* Scrollable content */}
-            <div className="relative z-20 flex flex-col items-center text-white px-4 sm:px-6 text-center w-full py-8 sm:py-16" style={{ paddingBottom: '4rem' }}>
+            <div className="scrollable relative z-20 flex flex-col items-center text-white px-4 sm:px-6 text-center w-full py-8 sm:py-16" style={{ paddingBottom: '4rem' }}>
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
@@ -507,7 +507,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         </div>
 
                         {/* Cities List - Scrollable container (max-height 60vh) */}
-                        <div className="space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '60vh' }}>
+                        <div className="scrollable space-y-2 overflow-y-auto scrollbar-thin scrollbar-thumb-orange-500 scrollbar-track-gray-700" style={{ maxHeight: '60vh' }}>
                             {filteredCities.length > 0 ? (
                                 <>
                                     {filteredCities.map((city, index) => (
