@@ -338,17 +338,10 @@ const BookingPopup: React.FC<BookingPopupProps> = ({
       message += `- You have 5 minutes to respond\n`;
       message += `- After 5 minutes, request goes to next provider\n\n`;
       
-      if (isPlace) {
-        message += `🏢 Venue: ${therapistName}\n`;
-      } else {
-        message += `🛵 Therapist: ${therapistName}\n`;
-      }
-      message += `📞 INDASTREET Support: +62-XXX-XXXX`;
-
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-
-      // Show success message before closing
+      // WhatsApp number collected for admin purposes only
+      // All communication happens through platform chat system
+      
+      // Show success message before creating chat room
       console.log('✅ Booking created successfully, creating chat room...');
 
       // 🔥 CHAT FLOW RESTORATION: Create chat room and open chat window
