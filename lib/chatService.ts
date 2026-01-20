@@ -369,7 +369,7 @@ export async function getChatMessages(roomId: string): Promise<ChatMessage[]> {
 /**
  * Get chat room by booking ID
  */
-export async function getChatRoomByBookingId(bookingId: number): Promise<ChatRoom | null> {
+export async function getChatRoomByBookingId(bookingId: string): Promise<ChatRoom | null> {
     try {
         const response = await databases.listDocuments(
             DATABASE_ID,
@@ -415,17 +415,25 @@ export async function updateChatRoomStatus(
     status: ChatRoomStatus
 ): Promise<void> {
     try {
+        const updateData: Record<string, any> = {
+            status,
+            updatedAt: new Date().toISOString()
+        };
+
+        // Set appropriate timestamp fields based on status
+        if (status === ChatRoomStatus.Accepted) {
+            updateData.acceptedAt = new Date().toISOString();
+        } else if (status === ChatRoomStatus.Declined) {
+            updateData.declinedAt = new Date().toISOString();
+        } else if (status === ChatRoomStatus.Active) {
+            updateData.respondedAt = new Date().toISOString();
+        }
+
         await databases.updateDocument(
             DATABASE_ID,
             CHAT_ROOMS_COLLECTION,
             roomId,
-            {
-                status,
-                updatedAt: new Date().toISOString(),
-                ...(status === ChatRoomStatus.Active && {
-                    respondedAt: new Date().toISOString()
-                })
-            }
+            updateData
         );
     } catch (error) {
         console.error('Error updating chat room status:', error);

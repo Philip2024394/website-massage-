@@ -382,21 +382,23 @@ export function validateChatSession(data: unknown): ChatSessionPayload {
 // ============================================================================
 
 export interface ChatRoomPayload {
-    bookingId: string | number;
-    customerId: string;
-    customerName: string;
-    customerLanguage: 'en' | 'id';
-    customerPhoto?: string;
-    therapistId: string | number;
-    therapistName: string;
-    therapistLanguage: 'en' | 'id';
-    therapistType: 'therapist' | 'place';
-    therapistPhoto?: string;
-    status: string;
-    expiresAt: string;
-    unreadCount: number;
-    createdAt: string;
-    updatedAt: string;
+    bookingId?: string;                     // Size: 100, nullable - changed to string only
+    customerId: string;                     // Size: 255, required
+    customerName: string;                   // Size: 255, required
+    customerLanguage: 'en' | 'id';          // Size: 10, required
+    customerPhoto?: string;                 // Optional field
+    therapistId?: string;                   // Size: 255, nullable - changed to string only
+    therapistName: string;                  // Size: 255, required
+    therapistLanguage: 'en' | 'id';         // Size: 10, required
+    therapistType: 'therapist' | 'place';   // Size: 50, required
+    therapistPhoto?: string;                // Optional field
+    status: string;                         // Size: 50, required
+    expiresAt: string;                      // Required datetime
+    acceptedAt?: string;                    // Nullable datetime - newly added
+    declinedAt?: string;                    // Nullable datetime - newly added
+    unreadCount: number;                    // Required integer
+    createdAt: string;                      // Manual timestamp
+    updatedAt: string;                      // Manual timestamp
 }
 
 const CHAT_ROOM_ALLOWED_FIELDS = new Set([
@@ -412,22 +414,23 @@ const CHAT_ROOM_ALLOWED_FIELDS = new Set([
     'therapistPhoto',
     'status',
     'expiresAt',
+    'acceptedAt',      // Newly added datetime field
+    'declinedAt',      // Newly added datetime field
     'unreadCount',
     'createdAt',
     'updatedAt'
 ]);
 
 const CHAT_ROOM_REQUIRED_FIELDS = [
-    'bookingId',
     'customerId',
-    'customerName',
+    'customerName', 
     'customerLanguage',
-    'therapistId',
-    'therapistName',
+    'therapistName',        // Required in schema
     'therapistLanguage',
     'therapistType',
     'status',
     'expiresAt'
+    // Note: bookingId and therapistId are nullable in schema
 ];
 
 const CHAT_ROOM_LANGUAGES = ['en', 'id'];
@@ -453,10 +456,7 @@ export function validateChatRoom(data: unknown): ChatRoomPayload {
         }
     }
 
-    // Type validation
-    if (typeof obj.bookingId !== 'string' && typeof obj.bookingId !== 'number') {
-        throw new Error('chat_rooms validation failed: bookingId must be a string or number');
-    }
+    // Type validation for required fields
     if (typeof obj.customerId !== 'string') {
         throw new Error('chat_rooms validation failed: customerId must be a string');
     }
@@ -465,9 +465,6 @@ export function validateChatRoom(data: unknown): ChatRoomPayload {
     }
     if (!CHAT_ROOM_LANGUAGES.includes(obj.customerLanguage)) {
         throw new Error(`chat_rooms validation failed: customerLanguage must be one of [${CHAT_ROOM_LANGUAGES.join(', ')}]`);
-    }
-    if (typeof obj.therapistId !== 'string' && typeof obj.therapistId !== 'number') {
-        throw new Error('chat_rooms validation failed: therapistId must be a string or number');
     }
     if (typeof obj.therapistName !== 'string') {
         throw new Error('chat_rooms validation failed: therapistName must be a string');
@@ -485,13 +482,25 @@ export function validateChatRoom(data: unknown): ChatRoomPayload {
         throw new Error('chat_rooms validation failed: expiresAt must be a string (ISO datetime)');
     }
 
+    // Type validation for nullable fields
+    if (obj.bookingId !== undefined && obj.bookingId !== null && typeof obj.bookingId !== 'string') {
+        throw new Error('chat_rooms validation failed: bookingId must be a string when provided');
+    }
+    if (obj.therapistId !== undefined && obj.therapistId !== null && typeof obj.therapistId !== 'string') {
+        throw new Error('chat_rooms validation failed: therapistId must be a string when provided');
+    }
+    if (obj.acceptedAt !== undefined && obj.acceptedAt !== null && typeof obj.acceptedAt !== 'string') {
+        throw new Error('chat_rooms validation failed: acceptedAt must be a string (ISO datetime) when provided');
+    }
+    if (obj.declinedAt !== undefined && obj.declinedAt !== null && typeof obj.declinedAt !== 'string') {
+        throw new Error('chat_rooms validation failed: declinedAt must be a string (ISO datetime) when provided');
+    }
+
     // Construct clean payload
     const payload: ChatRoomPayload = {
-        bookingId: obj.bookingId,
         customerId: obj.customerId,
         customerName: obj.customerName,
         customerLanguage: obj.customerLanguage,
-        therapistId: obj.therapistId,
         therapistName: obj.therapistName,
         therapistLanguage: obj.therapistLanguage,
         therapistType: obj.therapistType,
@@ -502,7 +511,21 @@ export function validateChatRoom(data: unknown): ChatRoomPayload {
         updatedAt: obj.updatedAt || new Date().toISOString()
     };
 
-    // Optional fields
+    // Optional nullable fields
+    if (obj.bookingId !== undefined && obj.bookingId !== null) {
+        payload.bookingId = obj.bookingId;
+    }
+    if (obj.therapistId !== undefined && obj.therapistId !== null) {
+        payload.therapistId = obj.therapistId;
+    }
+    if (obj.acceptedAt !== undefined && obj.acceptedAt !== null) {
+        payload.acceptedAt = obj.acceptedAt;
+    }
+    if (obj.declinedAt !== undefined && obj.declinedAt !== null) {
+        payload.declinedAt = obj.declinedAt;
+    }
+
+    // Optional string fields
     if (obj.customerPhoto !== undefined) {
         if (typeof obj.customerPhoto !== 'string') {
             throw new Error('chat_rooms validation failed: customerPhoto must be a string');

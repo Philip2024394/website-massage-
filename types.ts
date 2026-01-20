@@ -261,7 +261,6 @@ export interface Therapist {
     latitude?: string; // Individual latitude field for easier access
     longitude?: string; // Individual longitude field for easier access
     phoneNumber?: string; // Contact phone number
-    city?: string; // Selected city/tourist destination
     activeMembershipDate: string;
     membershipStartDate?: string; // Date when therapist first became active
     
@@ -645,38 +644,37 @@ export enum MessageSenderType {
 
 export interface ChatRoom {
     $id?: string;
-    bookingId: number;
     
-    // Participants
-    customerId: string;        // Appwrite user ID
-    customerName: string;
-    customerLanguage: 'en' | 'id';
-    customerPhoto?: string;    // Profile photo URL
+    // Required fields from Appwrite schema
+    customerId: string;                  // Size: 255, required
+    customerName: string;               // Size: 255, required  
+    customerLanguage: string;           // Size: 10, required ('en' | 'id')
+    customerPhoto?: string;             // Size: 500, nullable
     
-    therapistId?: number;      // Provider ID (therapist or place)
-    therapistName?: string;
-    therapistLanguage: 'en' | 'id';
-    therapistType: 'therapist' | 'place';
-    therapistPhoto?: string;   // Profile photo URL
+    therapistId?: string;               // Size: 255, nullable - changed to string to match schema
+    therapistName: string;              // Size: 255, required
+    therapistLanguage: string;          // Size: 10, required ('en' | 'id')
+    therapistType: string;              // Size: 50, required ('therapist' | 'place' | 'facial')
+    therapistPhoto?: string;            // Size: 500, nullable
     
-    // Status & Timing
-    status: ChatRoomStatus;
-    expiresAt: string;         // ISO timestamp (booking time + 25 minutes)
-    respondedAt?: string;      // When therapist first replied
+    status: string;                     // Size: 50, required (ChatRoomStatus values)
+    expiresAt: string;                  // Required datetime - ISO timestamp
     
-    // Metadata
-    lastMessageAt?: string;
-    lastMessagePreview?: string;
-    unreadCount: number;       // For therapist side
-  providerProfilePicture?: string; // Provider profile picture URL
-  profilePicture?: string;   // Generic profile picture URL
-  serviceTime?: string;      // Booking service time
-  serviceDate?: string;      // Booking service date
-  serviceDuration?: number;  // Service duration in minutes
-  serviceType?: string;      // Type of service booked
+    // Optional datetime fields
+    acceptedAt?: string;                // Nullable datetime - when booking accepted
+    declinedAt?: string;                // Nullable datetime - when booking declined
+    lastMessageAt?: string;             // Nullable datetime - last message timestamp
     
-    createdAt?: string;
-    updatedAt?: string;
+    // Other fields
+    unreadCount: number;                // Required integer - for therapist notifications
+    lastMessagePreview?: string;        // Size: 200, nullable - preview of last message
+    bookingId?: string;                 // Size: 100, nullable - related booking reference
+    
+    // Appwrite system fields (auto-generated)
+    $createdAt?: string;                // Auto datetime
+    $updatedAt?: string;                // Auto datetime
+    createdAt?: string;                 // Manual datetime, required
+    updatedAt?: string;                 // Manual datetime, required
 }
 
 export interface ChatMessage {
