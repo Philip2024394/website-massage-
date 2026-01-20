@@ -1110,7 +1110,6 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               {isAppInstalled 
                 ? `✅ ${dict.therapistDashboard.appProperlyInstalled}`
                 : `⚠️ ${dict.therapistDashboard.browserGenericSounds}`
-    </TherapistLayout>
               }
             </p>
           </div>
@@ -1118,6 +1117,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         )}
       </div>
     </div>
+    </TherapistLayout>
     
     {/* Floating Chat Window - Always mounted, internally manages visibility */}
     <FloatingChatWindow
