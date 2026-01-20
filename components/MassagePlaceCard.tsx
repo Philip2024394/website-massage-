@@ -605,8 +605,8 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                         <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 180px)' }}>
                             {menuData.length > 0 ? (
                                 <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                                    {/* Table Header */}
-                                    <div className="grid grid-cols-12 gap-1 sm:gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-2 sm:px-3 py-2 text-[10px] sm:text-xs font-semibold text-orange-700 border-b border-orange-200">
+                                    {/* Table Header - Hidden on mobile */}
+                                    <div className="hidden sm:grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
                                         <div className="col-span-4">Service</div>
                                         <div className="col-span-2 text-center">60m</div>
                                         <div className="col-span-2 text-center">90m</div>
@@ -620,61 +620,127 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                             const isRowSelected = selectedServiceIndex === index;
 
                                             return (
-                                                <div key={index} className={`grid grid-cols-12 gap-1 sm:gap-2 px-2 sm:px-3 py-2 sm:py-3 transition-colors items-center ${
+                                                <div key={index} className={`transition-colors ${
                                                     isRowSelected ? 'bg-orange-50 border-l-4 border-orange-500' : 'hover:bg-orange-50'
                                                 }`}>
-                                                    {/* Service Name */}
-                                                    <div className="col-span-4 min-w-0">
-                                                        <div className="font-medium text-xs sm:text-sm text-gray-900 truncate">{service.serviceName || service.name || 'Service'}</div>
-                                                        {service.description && (
-                                                            <div className="text-[10px] sm:text-xs text-gray-500 mt-1 truncate">{service.description}</div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Price buttons */}
-                                                    {['60', '90', '120'].map((duration) => (
-                                                        <div key={duration} className="col-span-2 flex flex-col items-center gap-1 min-w-0">
-                                                            {service[`price${duration}`] ? (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setSelectedServiceIndex(index);
-                                                                        setSelectedDuration(duration as '60' | '90' | '120');
-                                                                    }}
-                                                                    className={`w-full px-0.5 sm:px-1 py-1 rounded text-[9px] sm:text-xs transition-all border-2 min-w-0 overflow-hidden ${
-                                                                        isRowSelected && selectedDuration === duration
-                                                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                            : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                                    }`}
-                                                                >
-                                                                    <span className="block truncate w-full">
-                                                                        {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                                                    </span>
-                                                                </button>
-                                                            ) : (
-                                                                <span className="text-xs text-gray-400">-</span>
+                                                    {/* Mobile Layout: Service name on top, prices below */}
+                                                    <div className="sm:hidden px-3 py-3">
+                                                        {/* Service Name */}
+                                                        <div className="mb-3">
+                                                            <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
+                                                            {service.description && (
+                                                                <div className="text-xs text-gray-500 mt-1">{service.description}</div>
                                                             )}
                                                         </div>
-                                                    ))}
 
-                                                    {/* Action Buttons */}
-                                                    <div className="col-span-2 text-center min-w-0">
-                                                        <button
-                                                            className={`w-full px-1 sm:px-2 py-1 text-[9px] sm:text-xs font-semibold rounded-lg transition-colors truncate ${
-                                                                isRowSelected && selectedDuration
-                                                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
-                                                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                            }`}
-                                                            onClick={(e) => {
-                                                                if (isRowSelected && selectedDuration) {
-                                                                    e.stopPropagation();
-                                                                    setShowPriceListModal(false);
-                                                                    // Trigger booking or navigate to place profile
-                                                                    onSelectPlace(place);
-                                                                }
-                                                            }}
-                                                            disabled={!isRowSelected || !selectedDuration}
-                                                        >
-                                                            {_t?.home?.bookNow || 'Book'}
+                                                        {/* Price buttons in row */}
+                                                        <div className="grid grid-cols-8 gap-2 items-end">
+                                                            {['60', '90', '120'].map((duration) => (
+                                                                <div key={duration} className="col-span-2">
+                                                                    <div className="text-[10px] text-gray-600 text-center mb-1 font-semibold">{duration}m</div>
+                                                                    {service[`price${duration}`] ? (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setSelectedServiceIndex(index);
+                                                                                setSelectedDuration(duration as '60' | '90' | '120');
+                                                                            }}
+                                                                            className={`w-full px-1 py-1.5 rounded text-[10px] transition-all border-2 ${
+                                                                                isRowSelected && selectedDuration === duration
+                                                                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                                    : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                            }`}
+                                                                        >
+                                                                            <span className="block truncate">
+                                                                                {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                            </span>
+                                                                        </button>
+                                                                    ) : (
+                                                                        <span className="text-xs text-gray-400 text-center block">-</span>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+
+                                                            {/* Action Button */}
+                                                            <div className="col-span-2">
+                                                                <div className="text-[10px] text-transparent text-center mb-1">-</div>
+                                                                <button
+                                                                    className={`w-full px-1 py-1.5 text-[10px] font-semibold rounded-lg transition-colors truncate ${
+                                                                        isRowSelected && selectedDuration
+                                                                            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
+                                                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                    }`}
+                                                                    onClick={(e) => {
+                                                                        if (isRowSelected && selectedDuration) {
+                                                                            e.stopPropagation();
+                                                                            setShowPriceListModal(false);
+                                                                            onSelectPlace(place);
+                                                                        }
+                                                                    }}
+                                                                    disabled={!isRowSelected || !selectedDuration}
+                                                                >
+                                                                    {_t?.home?.bookNow || 'Book'}
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Desktop/Tablet Layout: Original grid */}
+                                                    <div className="hidden sm:grid grid-cols-12 gap-2 px-3 py-3 items-center">
+                                                        {/* Service Name */}
+                                                        <div className="col-span-4 min-w-0">
+                                                            <div className="font-medium text-sm text-gray-900 truncate">{service.serviceName || service.name || 'Service'}</div>
+                                                            {service.description && (
+                                                                <div className="text-xs text-gray-500 mt-1 truncate">{service.description}</div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Price buttons */}
+                                                        {['60', '90', '120'].map((duration) => (
+                                                            <div key={duration} className="col-span-2 flex flex-col items-center gap-1 min-w-0">
+                                                                {service[`price${duration}`] ? (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedServiceIndex(index);
+                                                                            setSelectedDuration(duration as '60' | '90' | '120');
+                                                                        }}
+                                                                        className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 overflow-hidden ${
+                                                                            isRowSelected && selectedDuration === duration
+                                                                                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                                : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                        }`}
+                                                                    >
+                                                                        <span className="block truncate w-full">
+                                                                            {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                                                        </span>
+                                                                    </button>
+                                                                ) : (
+                                                                    <span className="text-xs text-gray-400">-</span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+
+                                                        {/* Action Buttons */}
+                                                        <div className="col-span-2 text-center min-w-0">
+                                                            <button
+                                                                className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-colors truncate ${
+                                                                    isRowSelected && selectedDuration
+                                                                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 cursor-pointer'
+                                                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                                }`}
+                                                                onClick={(e) => {
+                                                                    if (isRowSelected && selectedDuration) {
+                                                                        e.stopPropagation();
+                                                                        setShowPriceListModal(false);
+                                                                        onSelectPlace(place);
+                                                                    }
+                                                                }}
+                                                                disabled={!isRowSelected || !selectedDuration}
+                                                            >
+                                                                {_t?.home?.bookNow || 'Book'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                                         </button>
                                                     </div>
                                                 </div>

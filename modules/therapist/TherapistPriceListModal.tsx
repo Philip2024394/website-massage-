@@ -121,8 +121,8 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                 <div className="flex-1 p-4 max-h-[70vh] overflow-y-auto">
                     {menuData.length > 0 ? (
                         <div className="bg-white rounded-lg border border-orange-200 overflow-hidden shadow-lg">
-                            {/* Table Header */}
-                            <div className="grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
+                            {/* Table Header - Hidden on mobile */}
+                            <div className="hidden sm:grid grid-cols-12 gap-2 bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2 text-xs font-semibold text-orange-700 border-b border-orange-200">
                                 <div className="col-span-4">Service</div>
                                 <div className="col-span-2 text-center">60 Min</div>
                                 <div className="col-span-2 text-center">90 Min</div>
@@ -136,41 +136,126 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                     const isRowSelected = selectedServiceIndex === index;
 
                                     return (
-                                        <div key={index} className={`grid grid-cols-12 gap-2 px-3 py-3 transition-colors items-center ${
+                                        <div key={index} className={`transition-colors ${
                                             isRowSelected ? 'bg-orange-50 border-l-4 border-orange-500' : 'hover:bg-orange-50'
                                         }`}>
-                                            {/* Service Name */}
-                                            <div className="col-span-4">
-                                                <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
-                                                {service.description && (
-                                                    <div className="text-xs text-gray-500 mt-1 truncate">{service.description}</div>
-                                                )}
-                                            </div>
-
-                                            {/* Price buttons - improved mobile width */}
-                                            {['60', '90', '120'].map((duration) => (
-                                                <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
-                                                    {service[`price${duration}`] ? (
-                                                        <button
-                                                            onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
-                                                            className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 ${
-                                                                isRowSelected && selectedDuration === duration
-                                                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
-                                                                    : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
-                                                            }`}
-                                                        >
-                                                            <span className="block truncate text-xs">
-                                                                Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
-                                                            </span>
-                                                        </button>
-                                                    ) : (
-                                                        <span className="text-xs text-gray-400">-</span>
+                                            {/* Mobile Layout: Service name on top, prices below */}
+                                            <div className="sm:hidden px-3 py-3">
+                                                {/* Service Name */}
+                                                <div className="mb-3">
+                                                    <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
+                                                    {service.description && (
+                                                        <div className="text-xs text-gray-500 mt-1">{service.description}</div>
                                                     )}
                                                 </div>
-                                            ))}
 
-                                            {/* Action Buttons */}
-                                            <div className="col-span-2 text-center">
+                                                {/* Price buttons in row */}
+                                                <div className="grid grid-cols-8 gap-2 items-end">
+                                                    {['60', '90', '120'].map((duration) => (
+                                                        <div key={duration} className="col-span-2">
+                                                            <div className="text-[10px] text-gray-600 text-center mb-1 font-semibold">{duration}m</div>
+                                                            {service[`price${duration}`] ? (
+                                                                <button
+                                                                    onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                    className={`w-full px-1 py-1.5 rounded text-[10px] transition-all border-2 ${
+                                                                        isRowSelected && selectedDuration === duration
+                                                                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                            : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                    }`}
+                                                                >
+                                                                    <span className="block truncate">
+                                                                        Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
+                                                                    </span>
+                                                                </button>
+                                                            ) : (
+                                                                <span className="text-xs text-gray-400 text-center block">-</span>
+                                                            )}
+                                                        </div>
+                                                    ))}
+
+                                                    {/* Action Button */}
+                                                    <div className="col-span-2">
+                                                        <div className="text-[10px] text-transparent text-center mb-1">-</div>
+                                                        <button
+                                                            className={`w-full px-1 py-1.5 text-[10px] font-semibold rounded-lg transition-all duration-200 ${
+                                                                isRowSelected && selectedDuration
+                                                                    ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
+                                                                    : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
+                                                            }`}
+                                                            onClick={(e) => {
+                                                                if (isRowSelected && selectedDuration) {
+                                                                    e.stopPropagation();
+                                                                    console.log('🎯 PRICE SLIDER: User clicked "Pesan Sekarang"', {
+                                                                        service: service.serviceName,
+                                                                        duration: selectedDuration,
+                                                                        price: service[`price${selectedDuration}`]
+                                                                    });
+
+                                                                    const priceNum = Number(service[`price${selectedDuration}`]);
+                                                                    if (!isNaN(priceNum) && priceNum > 0) {
+                                                                        const formattedPrice = priceNum >= 1000 
+                                                                            ? `${Math.round(priceNum)}K` 
+                                                                            : `${priceNum * 1000}`;
+
+                                                                        console.log('🚀 PRICE SLIDER → Opening booking chat with pre-selected service:', {
+                                                                            serviceName: service.serviceName,
+                                                                            duration: selectedDuration,
+                                                                            formattedPrice
+                                                                        });
+
+                                                                        openBookingWithService(
+                                                                            service.serviceName,
+                                                                            selectedDuration as '60' | '90' | '120',
+                                                                            formattedPrice
+                                                                        );
+
+                                                                        setShowPriceListModal(false);
+                                                                        setSelectedServiceIndex(null);
+                                                                        setSelectedDuration(null);
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            {chatLang === 'id' ? 'Pesan' : 'Book'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Desktop/Tablet Layout: Original grid */}
+                                            <div className="hidden sm:grid grid-cols-12 gap-2 px-3 py-3 items-center">
+                                                {/* Service Name */}
+                                                <div className="col-span-4">
+                                                    <div className="font-medium text-sm text-gray-900">{service.serviceName || service.name || 'Service'}</div>
+                                                    {service.description && (
+                                                        <div className="text-xs text-gray-500 mt-1 truncate">{service.description}</div>
+                                                    )}
+                                                </div>
+
+                                                {/* Price buttons - improved mobile width */}
+                                                {['60', '90', '120'].map((duration) => (
+                                                    <div key={duration} className="col-span-2 flex flex-col items-center gap-1">
+                                                        {service[`price${duration}`] ? (
+                                                            <button
+                                                                onClick={() => handleSelectService(index, duration as '60' | '90' | '120')}
+                                                                className={`w-full px-1 py-1 rounded text-xs transition-all border-2 min-w-0 ${
+                                                                    isRowSelected && selectedDuration === duration
+                                                                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold border-transparent shadow-lg'
+                                                                        : 'bg-white text-gray-800 border-orange-200 hover:border-orange-400 hover:bg-orange-50'
+                                                                }`}
+                                                            >
+                                                                <span className="block truncate text-xs">
+                                                                    Rp {(Number(service[`price${duration}`]) * 1000).toLocaleString('id-ID')}
+                                                                </span>
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-xs text-gray-400">-</span>
+                                                        )}
+                                                    </div>
+                                                ))}
+
+                                                {/* Action Buttons */}
+                                                <div className="col-span-2 text-center">
                                                 <button
                                                     className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                         isRowSelected && selectedDuration
@@ -234,6 +319,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>
                                     );
                                 })}
                             </div>
