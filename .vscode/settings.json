@@ -1,4 +1,44 @@
 {
+  // 🔒 CRITICAL FILE PROTECTION - PRODUCTION APP WITH ACTIVE MEMBERS
+  // DO NOT REMOVE THESE SETTINGS - Required for file safety
+  
+  // Disable ALL auto-save and auto-formatting
+  "files.autoSave": "off",
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  
+  // Disable ALL auto-refactoring
+  "editor.codeActionsOnSave": {},
+  "editor.linkedEditing": false,
+  "editor.renameOnType": false,
+  
+  // Disable ALL auto-suggestions that modify code
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.acceptSuggestionOnEnter": "off",
+  
+  // Disable auto-import updates
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "javascript.updateImportsOnFileMove.enabled": "never",
+  
+  // Disable Prettier if installed
+  "prettier.enable": false,
+  
+  // Disable ESLint auto-fix
+  "eslint.autoFixOnSave": false,
+  "eslint.format.enable": false,
+  
+  // Confirmation required for deletions
+  "explorer.confirmDelete": true,
+  "explorer.confirmDragAndDrop": true,
+  
+  // Git safety
+  "git.confirmSync": true,
+  "git.confirmEmptyCommits": true,
+  
+  // Require manual save
+  "files.hotExit": "off",
+  
   "files.watcherExclude": {
     "**/node_modules/**": true,
     "**/dist/**": true,
