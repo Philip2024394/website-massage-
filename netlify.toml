@@ -1,11 +1,11 @@
 # Primary Netlify configuration
 [build]
   publish = "dist"
-  command = "corepack enable pnpm && pnpm i && pnpm run build:netlify"
+  command = "npm install -g pnpm@10.21.0 && pnpm install --no-frozen-lockfile && pnpm run build:netlify"
 
 [build.environment]
   NODE_VERSION = "20"
-  PNPM_VERSION = "10.22.0"
+  PNPM_VERSION = "10.21.0"
   ROLLUP_NO_NATIVE = "1"
   ROLLUP_NO_WASM = "1"
   NODE_OPTIONS = "--max-old-space-size=4096"
