@@ -1627,7 +1627,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-xs text-blue-800 text-center">
                   💡 You can close this modal to edit your profile and come back to submit payment anytime before midnight.
-      </TherapistLayout>
                 </p>
               </div>
             </div>
@@ -1635,6 +1634,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         </div>
       )}
       </div>
+      </TherapistLayout>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
       </>
