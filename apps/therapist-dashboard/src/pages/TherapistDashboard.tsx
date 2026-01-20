@@ -14,6 +14,7 @@ import { useCityContext } from '../../../../context/CityContext';
 import { locations } from '../../../../locations';
 import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
+import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
 
 interface TherapistPortalPageProps {
@@ -876,6 +877,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
 
   return (
     <>
+      <TherapistLayout
+        therapist={therapist}
+        currentPage="dashboard"
+        onNavigate={handleNavigate}
+        language={language}
+        onLogout={onLogout}
+      >
       <div className="min-h-screen bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
@@ -1619,6 +1627,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <p className="text-xs text-blue-800 text-center">
                   💡 You can close this modal to edit your profile and come back to submit payment anytime before midnight.
+      </TherapistLayout>
                 </p>
               </div>
             </div>
