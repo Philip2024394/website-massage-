@@ -195,17 +195,12 @@ class LocationService {
         // Try multiple geocoding services with CORS support
         const services = [
             {
-                name: 'LocationIQ',
-                url: `https://us1.locationiq.com/v1/reverse.php?key=pk.0123456789abcdef&lat=${lat}&lon=${lng}&format=json&addressdetails=1`,
-                // Using a demo key - in production, you should get your own free key from locationiq.com
-            },
-            {
-                name: 'Nominatim via CORS Proxy',
-                url: `https://cors-anywhere.herokuapp.com/https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
-            },
-            {
                 name: 'BigDataCloud (No API key required)',
                 url: `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
+            },
+            {
+                name: 'Nominatim (Direct)',
+                url: `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`,
             }
         ];
 
