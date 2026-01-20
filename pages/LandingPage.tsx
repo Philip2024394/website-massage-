@@ -625,7 +625,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
 
     return (
-        <div className="landing-page-container scrollable relative w-full bg-gray-900" style={{ minHeight: '100vh', paddingBottom: '2rem' }}>
+        <div className="landing-page-container scrollable relative w-full h-screen bg-gray-900 overflow-y-auto" style={{ paddingBottom: '2rem' }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
             {/* Absolute background image */}
@@ -635,6 +635,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundImage: `url('${imageSrc}')`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
+                    willChange: 'auto',
                 }}
             />
             

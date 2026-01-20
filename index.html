@@ -348,19 +348,22 @@
           }
         }
         
-        // Hide immediately when root has content (fastest)
+        // Hide when React renders AND images are loaded
         var observer = new MutationObserver(function(mutations) {
           var root = document.getElementById('root');
           if (root && root.children.length > 0) {
-            hideSplash();
-            observer.disconnect();
+            // Wait a tiny bit for images to start loading
+            setTimeout(function() {
+              hideSplash();
+              observer.disconnect();
+            }, 200);
           }
         });
         observer.observe(document.getElementById('root'), { childList: true });
         
         // Fallback: hide on load
         window.addEventListener('load', function() {
-          setTimeout(hideSplash, 50);
+          setTimeout(hideSplash, 300);
         });
         
         // Fallback: hide on first interaction
