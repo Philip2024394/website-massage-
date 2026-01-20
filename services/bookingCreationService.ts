@@ -225,7 +225,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
         errorMessage.includes('Invalid document structure')) {
       return {
         success: false,
-        error: 'Booking data validation failed. Please contact support.',
+        error: 'Booking data validation failed. Please contact support at indastreet.id@gmail.com.',
         errors: [errorMessage]
       };
     }

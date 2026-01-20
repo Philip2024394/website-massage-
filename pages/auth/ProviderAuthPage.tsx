@@ -132,7 +132,7 @@ const ProviderAuthPage: React.FC<ProviderAuthPageProps> = ({ mode, providerType,
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                     <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-xs w-full flex flex-col items-center">
                         <h2 className="text-lg font-bold text-orange-600 mb-2">Membership Expiring Soon</h2>
-                        <p className="text-gray-700 text-center mb-4">Your membership will expire on <span className="font-semibold">{membershipExpiry?.toLocaleDateString()}</span>.<br/>Please contact support to keep your account active.</p>
+                        <p className="text-gray-700 text-center mb-4">Your membership will expire on <span className="font-semibold">{membershipExpiry?.toLocaleDateString()}</span>.<br/>Please contact support at indastreet.id@gmail.com to keep your account active.</p>
                         <a
                             href="https://wa.me/6281392000050"
                             target="_blank"

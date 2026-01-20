@@ -294,7 +294,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
               {therapistMode ? (
                 <>Covering {locationService.getServiceAreaCoverage().totalCities} cities across Indonesia</>
               ) : (
-                <>Can't find your location? Contact support to add it.</>
+                <>Can't find your location? Contact support at indastreet.id@gmail.com to add it.</>
               )}
             </div>
           </div>

@@ -161,7 +161,7 @@ export function handleAppwriteError(error: any, operation: string): string {
     
     // Account blocked
     if (errorMessage.includes('blocked') || errorMessage.includes('disabled') || errorMessage.includes('User (role: guests) missing scope')) {
-        return '🚫 Your account has been blocked or disabled. Please contact admin for assistance.';
+        return '🚫 Your account has been blocked or disabled. Please contact support at indastreet.id@gmail.com for assistance.';
     }
     
     // Email not found
@@ -204,7 +204,7 @@ export function handleAppwriteError(error: any, operation: string): string {
         return `❌ ${cleanMessage}`;
     }
     
-    return `❌ ${operation} failed. Please try again or contact admin if the problem persists.`;
+    return `❌ ${operation} failed. Please try again or contact support at indastreet.id@gmail.com if the problem persists.`;
 }
 
 /**

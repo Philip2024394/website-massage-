@@ -1279,7 +1279,7 @@ class MembershipSignupService {
             }
             
             if (errorMessage.includes('User (role: guests) missing scope') || errorMessage.includes('blocked')) {
-                throw new Error('🚫 Your account has been blocked. Please contact admin for assistance.');
+                throw new Error('🚫 Your account has been blocked. Please contact support at indastreet.id@gmail.com for assistance.');
             }
             
             if (errorMessage.includes('Too many requests') || errorCode === 429) {
@@ -1299,7 +1299,7 @@ class MembershipSignupService {
             }
             
             // Default fallback with more helpful message
-            throw new Error(`❌ Sign in failed: ${errorMessage || 'Please contact admin if this problem persists.'}`);
+            throw new Error(`❌ Sign in failed: ${errorMessage || 'Please contact support at indastreet.id@gmail.com if this problem persists.'}`);
         }
     }
 

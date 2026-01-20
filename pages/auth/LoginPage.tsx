@@ -90,7 +90,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
       // Extract and display the specific error message
       const errorMessage = error instanceof Error 
         ? error.message 
-        : '❌ Sign in failed. Please try again or contact admin for assistance.';
+        : '❌ Sign in failed. Please try again or contact support at indastreet.id@gmail.com for assistance.';
       
       setError(errorMessage);
     } finally {

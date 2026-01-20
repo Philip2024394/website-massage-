@@ -349,7 +349,7 @@ export const therapistAuth = {
             if (!therapist) {
                 if (DEBUG_AUTH) console.error('❌ [Therapist Sign-In] Therapist document not found');
                 logger.debug('Search criteria - Email:', email, 'Normalized:', searchEmail);
-                throw new Error('Therapist profile not found yet. Wait a moment and retry sign-in. If still missing after 30s, re-register or contact support: ' + email);
+                throw new Error('Therapist profile not found yet. Wait a moment and retry sign-in. If still missing after 30s, re-register or contact support at indastreet.id@gmail.com: ' + email);
             }
             
             logger.debug('✅ [Therapist Sign-In] Therapist document found:', therapist.$id);

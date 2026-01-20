@@ -896,7 +896,7 @@ const PaymentStep: React.FC<{
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
                     <AlertTriangle className="w-5 h-5 mb-2" />
                     <p className="font-semibold">Deadline Expired</p>
-                    <p className="text-sm">Your account has been deactivated. Please contact support.</p>
+                    <p className="text-sm">Your account has been deactivated. Please contact support at indastreet.id@gmail.com.</p>
                 </div>
             )}
 

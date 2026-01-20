@@ -199,7 +199,7 @@ export const secureBankCardService = {
    */
   formatForChat(bankCard: SecureBankCard | null): string {
     if (!bankCard) {
-      return '💳 Bank card details not available. Please contact support.';
+      return '💳 Bank card details not available. Please contact support at indastreet.id@gmail.com.';
     }
     
     const masked = this.createMaskedCard(bankCard);

@@ -147,7 +147,7 @@ export const authService = {
                 throw new Error('Too many registration attempts. Please wait a moment');
             } else if ((error as any).code === 400) {
                 // Generic 400 error - don't expose technical details about email format
-                throw new Error('Unable to create account. Please try a different email or contact support.');
+                throw new Error('Unable to create account. Please try a different email or contact support at indastreet.id@gmail.com.');
             } else {
                 throw new Error((error as Error).message || 'Registration failed. Please try again');
             }
