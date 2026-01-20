@@ -340,24 +340,33 @@
           }
         }
         
-        // Wait for both React content AND background image
+        // Preload background image BEFORE React loads
+        var bgImg = new Image();
+        var imageLoaded = false;
+        bgImg.onload = function() {
+          imageLoaded = true;
+          if (contentReady) {
+            setTimeout(hideSplash, 100);
+          }
+        };
+        bgImg.onerror = function() {
+          imageLoaded = true;
+        };
+        bgImg.src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
+        
+        // Wait for React content
         var observer = new MutationObserver(function(mutations) {
           var root = document.getElementById('root');
           if (root && root.children.length > 0 && !contentReady) {
             contentReady = true;
             
-            // Preload landing page background image
-            var bgImg = new Image();
-            bgImg.onload = function() {
-              // Image loaded, hide splash after brief moment
-              setTimeout(hideSplash, 150);
-            };
-            bgImg.onerror = function() {
-              // Image failed, hide anyway
-              setTimeout(hideSplash, 150);
-            };
-            // Start loading the background image
-            bgImg.src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
+            // If image already loaded, hide immediately
+            if (imageLoaded) {
+              setTimeout(hideSplash, 100);
+            } else {
+              // Wait for image or timeout
+              setTimeout(hideSplash, 500);
+            }
             
             observer.disconnect();
           }
@@ -366,16 +375,16 @@
         
         // Fallback: hide on window load
         window.addEventListener('load', function() {
-          setTimeout(hideSplash, 400);
+          setTimeout(hideSplash, 200);
         });
         
         // Fallback: hide on first touch (user interaction)
         document.addEventListener('touchstart', function() {
-          setTimeout(hideSplash, 100);
+          setTimeout(hideSplash, 50);
         }, { once: true });
         
-        // Emergency fallback: max 3 seconds
-        setTimeout(hideSplash, 3000);
+        // Emergency fallback: max 2 seconds
+        setTimeout(hideSplash, 2000);
       })();
     </script>
     
