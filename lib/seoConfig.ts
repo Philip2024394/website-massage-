@@ -100,6 +100,66 @@ export const COUNTRY_SEO = {
     canonicalUrl: 'https://www.indastreetmassage.com/de',
     majorCities: ['Berlin', 'München', 'Hamburg', 'Frankfurt', 'Köln', 'Stuttgart', 'Düsseldorf', 'Leipzig'],
     hashtags: ['#MassageDeutschland', '#BerlinSpa', '#MünchenWellness', '#HamburgMassage', '#DeutschlandWellness', '#GermanMassage']
+  },
+  
+  MY: {
+    country: 'Malaysia',
+    code: 'MY',
+    language: 'en',
+    alternateLanguages: [],
+    title: 'IndaStreet Malaysia - Professional Massage & Spa Directory | KL, Penang, JB',
+    description: 'Find professional massage therapists and spa services across Malaysia. Coverage in Kuala Lumpur, KLCC, Bukit Bintang, Penang, Johor Bahru. Traditional massage, reflexology, spa treatments. Instant booking.',
+    keywords: 'massage Malaysia, massage KL, spa Kuala Lumpur, KLCC massage, Bukit Bintang spa, Penang massage, Johor Bahru spa, traditional massage, reflexology Malaysia, massage therapist Malaysia, mobile massage KL, spa Malaysia',
+    ogLocale: 'en_MY',
+    alternateLocales: [],
+    canonicalUrl: 'https://www.indastreetmassage.com/my',
+    majorCities: ['Kuala Lumpur', 'KLCC', 'Bukit Bintang', 'George Town', 'Johor Bahru', 'Petaling Jaya', 'Shah Alam', 'Ipoh'],
+    hashtags: ['#MassageMalaysia', '#KLSpa', '#PenangMassage', '#MalaysiaWellness', '#KualaLumpurMassage', '#MYMassage']
+  },
+  
+  SG: {
+    country: 'Singapore',
+    code: 'SG',
+    language: 'en',
+    alternateLanguages: [],
+    title: 'IndaStreet Singapore - Premium Massage & Spa Directory | Marina Bay, Orchard',
+    description: 'Find certified massage therapists and luxury spa services in Singapore. Coverage across Marina Bay, Orchard Road, Chinatown, Sentosa, Clarke Quay. TCM massage, aromatherapy, reflexology. Instant booking.',
+    keywords: 'massage Singapore, spa Singapore, Marina Bay massage, Orchard Road spa, massage therapist Singapore, TCM massage, reflexology Singapore, aromatherapy Singapore, mobile massage Singapore, luxury spa Singapore, wellness Singapore',
+    ogLocale: 'en_SG',
+    alternateLocales: [],
+    canonicalUrl: 'https://www.indastreetmassage.com/sg',
+    majorCities: ['Singapore', 'Marina Bay', 'Orchard Road', 'Chinatown', 'Sentosa', 'Clarke Quay', 'Bugis', 'Raffles Place'],
+    hashtags: ['#MassageSingapore', '#SGSpa', '#SingaporeWellness', '#MarinaBayMassage', '#OrchardSpa', '#SGMassage']
+  },
+  
+  TH: {
+    country: 'Thailand',
+    code: 'TH',
+    language: 'en',
+    alternateLanguages: [],
+    title: 'IndaStreet Thailand - Authentic Thai Massage & Spa Directory | Bangkok, Phuket',
+    description: 'Find professional Thai massage therapists and spa services across Thailand. Coverage in Bangkok, Sukhumvit, Phuket, Chiang Mai, Pattaya. Traditional Thai massage, oil massage, foot massage. Instant booking.',
+    keywords: 'massage Thailand, Thai massage, massage Bangkok, spa Phuket, Chiang Mai massage, Pattaya spa, Sukhumvit massage, traditional Thai massage, oil massage Thailand, foot massage Bangkok, massage therapist Thailand, Thailand wellness',
+    ogLocale: 'en_TH',
+    alternateLocales: [],
+    canonicalUrl: 'https://www.indastreetmassage.com/th',
+    majorCities: ['Bangkok', 'Sukhumvit', 'Silom', 'Phuket', 'Chiang Mai', 'Pattaya', 'Krabi', 'Koh Samui'],
+    hashtags: ['#MassageThailand', '#ThaiMassage', '#BangkokSpa', '#PhuketMassage', '#ThailandWellness', '#THMassage']
+  },
+  
+  VN: {
+    country: 'Vietnam',
+    code: 'VN',
+    language: 'en',
+    alternateLanguages: [],
+    title: 'IndaStreet Vietnam - Professional Massage & Spa Directory | Saigon, Hanoi',
+    description: 'Find professional massage therapists and spa services across Vietnam. Coverage in Ho Chi Minh City, Hanoi, Da Nang, Nha Trang, Hoi An. Vietnamese massage, reflexology, spa treatments. Instant booking.',
+    keywords: 'massage Vietnam, massage Saigon, spa Hanoi, Da Nang massage, Nha Trang spa, Hoi An massage, Ho Chi Minh massage, Vietnamese massage, reflexology Vietnam, massage therapist Vietnam, mobile massage Saigon, Vietnam wellness',
+    ogLocale: 'en_VN',
+    alternateLocales: [],
+    canonicalUrl: 'https://www.indastreetmassage.com/vn',
+    majorCities: ['Ho Chi Minh City', 'District 1', 'Hanoi', 'Da Nang', 'Nha Trang', 'Hoi An', 'Vung Tau', 'Dalat'],
+    hashtags: ['#MassageVietnam', '#SaigonSpa', '#HanoiMassage', '#VietnamWellness', '#DaNangMassage', '#VNMassage']
   }
 };
 

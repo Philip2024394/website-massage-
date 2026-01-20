@@ -27,7 +27,11 @@ const imageSrc = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?upda
 // Multi-country data for location selectors with native language mapping
 const COUNTRIES = [
   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', description: 'Southeast Asian archipelago', language: 'id', languages: ['id', 'en'] },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', description: 'Truly Asia', language: 'en', languages: ['en'] },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', description: 'Lion City', language: 'en', languages: ['en'] },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', description: 'Land of Smiles', language: 'en', languages: ['en'] },
   { code: 'PH', name: 'Philippines', flag: '🇵🇭', description: 'Pearl of the Orient Seas', language: 'tl', languages: ['tl', 'en'] },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', description: 'Timeless Charm', language: 'en', languages: ['en'] },
   { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', description: 'England, Scotland, Wales', language: 'en', languages: ['en'] },
   { code: 'US', name: 'United States', flag: '🇺🇸', description: 'Land of opportunity', language: 'en', languages: ['en'] },
   { code: 'AU', name: 'Australia', flag: '🇦🇺', description: 'Down under', language: 'en', languages: ['en'] },
@@ -70,6 +74,47 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Depok', region: 'West Java', description: 'University town', popular: false, country: 'ID' },
   ],
   
+  // MALAYSIA - Major cities
+  MY: [
+    { name: 'Kuala Lumpur', region: 'Federal Territory', description: 'Capital of Malaysia', popular: true, country: 'MY' },
+    { name: 'KLCC', region: 'Kuala Lumpur', description: 'Twin towers district', popular: true, country: 'MY' },
+    { name: 'Bukit Bintang', region: 'Kuala Lumpur', description: 'Shopping & entertainment', popular: true, country: 'MY' },
+    { name: 'George Town', region: 'Penang', description: 'UNESCO heritage city', popular: true, country: 'MY' },
+    { name: 'Johor Bahru', region: 'Johor', description: 'Gateway to Singapore', popular: true, country: 'MY' },
+    { name: 'Petaling Jaya', region: 'Selangor', description: 'Satellite city', popular: true, country: 'MY' },
+    { name: 'Shah Alam', region: 'Selangor', description: 'State capital', popular: false, country: 'MY' },
+    { name: 'Ipoh', region: 'Perak', description: 'Heritage city', popular: false, country: 'MY' },
+    { name: 'Malacca City', region: 'Malacca', description: 'Historic port city', popular: false, country: 'MY' },
+    { name: 'Kota Kinabalu', region: 'Sabah', description: 'Gateway to Borneo', popular: false, country: 'MY' },
+  ],
+  
+  // SINGAPORE - City-state
+  SG: [
+    { name: 'Singapore', region: 'Central', description: 'City-state', popular: true, country: 'SG' },
+    { name: 'Marina Bay', region: 'Downtown Core', description: 'Iconic waterfront', popular: true, country: 'SG' },
+    { name: 'Orchard Road', region: 'Orchard', description: 'Shopping paradise', popular: true, country: 'SG' },
+    { name: 'Chinatown', region: 'Outram', description: 'Historic district', popular: true, country: 'SG' },
+    { name: 'Sentosa', region: 'Southern Islands', description: 'Resort island', popular: true, country: 'SG' },
+    { name: 'Clarke Quay', region: 'Singapore River', description: 'Riverside dining & nightlife', popular: true, country: 'SG' },
+    { name: 'Bugis', region: 'Rochor', description: 'Shopping & culture', popular: false, country: 'SG' },
+    { name: 'Raffles Place', region: 'Downtown Core', description: 'Financial district', popular: false, country: 'SG' },
+  ],
+  
+  // THAILAND - Major cities
+  TH: [
+    { name: 'Bangkok', region: 'Central Thailand', description: 'Capital of Thailand', popular: true, country: 'TH' },
+    { name: 'Sukhumvit', region: 'Bangkok', description: 'Expat & nightlife hub', popular: true, country: 'TH' },
+    { name: 'Silom', region: 'Bangkok', description: 'Business district', popular: true, country: 'TH' },
+    { name: 'Siam', region: 'Bangkok', description: 'Shopping paradise', popular: true, country: 'TH' },
+    { name: 'Phuket', region: 'Southern Thailand', description: 'Beach paradise', popular: true, country: 'TH' },
+    { name: 'Patong', region: 'Phuket', description: 'Beach & nightlife', popular: true, country: 'TH' },
+    { name: 'Chiang Mai', region: 'Northern Thailand', description: 'Cultural hub', popular: true, country: 'TH' },
+    { name: 'Pattaya', region: 'Eastern Thailand', description: 'Beach resort city', popular: true, country: 'TH' },
+    { name: 'Krabi', region: 'Southern Thailand', description: 'Limestone cliffs & beaches', popular: false, country: 'TH' },
+    { name: 'Koh Samui', region: 'Southern Thailand', description: 'Tropical island', popular: false, country: 'TH' },
+    { name: 'Hua Hin', region: 'Central Thailand', description: 'Royal beach resort', popular: false, country: 'TH' },
+  ],
+  
   // PHILIPPINES - Major cities with areas
   PH: [
     { name: 'Manila', region: 'Metro Manila', description: 'Capital of Philippines', popular: true, country: 'PH' },
@@ -85,6 +130,21 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
     { name: 'Iloilo City', region: 'Iloilo', description: 'City of love', popular: false, country: 'PH' },
     { name: 'Mandaue', region: 'Cebu', description: 'Industrial city', popular: false, country: 'PH' },
     { name: 'Lapu-Lapu', region: 'Cebu', description: 'Mactan Island', popular: false, country: 'PH' },
+  ],
+  
+  // VIETNAM - Major cities
+  VN: [
+    { name: 'Ho Chi Minh City', region: 'Southern Vietnam', description: 'Economic capital', popular: true, country: 'VN' },
+    { name: 'District 1', region: 'Ho Chi Minh City', description: 'Downtown core', popular: true, country: 'VN' },
+    { name: 'District 3', region: 'Ho Chi Minh City', description: 'Expat area', popular: true, country: 'VN' },
+    { name: 'Hanoi', region: 'Northern Vietnam', description: 'Capital of Vietnam', popular: true, country: 'VN' },
+    { name: 'Old Quarter', region: 'Hanoi', description: 'Historic heart', popular: true, country: 'VN' },
+    { name: 'Da Nang', region: 'Central Vietnam', description: 'Coastal city', popular: true, country: 'VN' },
+    { name: 'Hoi An', region: 'Central Vietnam', description: 'Ancient town', popular: true, country: 'VN' },
+    { name: 'Nha Trang', region: 'Central Vietnam', description: 'Beach resort city', popular: true, country: 'VN' },
+    { name: 'Vung Tau', region: 'Southern Vietnam', description: 'Beach city near Saigon', popular: false, country: 'VN' },
+    { name: 'Dalat', region: 'Central Highlands', description: 'Mountain resort town', popular: false, country: 'VN' },
+    { name: 'Hue', region: 'Central Vietnam', description: 'Imperial city', popular: false, country: 'VN' },
   ],
   
   // UNITED KINGDOM - Major cities with areas
