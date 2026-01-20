@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.4';
-const CACHE_NAME = `push-notifications-v2-4`;
+const SW_VERSION = '2.2.5';
+const CACHE_NAME = `push-notifications-v2-5`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -124,41 +124,37 @@ self.addEventListener('fetch', (event) => {
                             console.log('✅ SW: Serving cached content');
                             return cachedResponse;
                         }
-                        // If no cache, return a custom "server starting" page instead of offline message
+                        // Network and cache both failed - return simple offline message
                         return new Response(`
                             <!DOCTYPE html>
                             <html>
                             <head>
-                                <title>Server Starting...</title>
+                                <title>Connection Required</title>
                                 <meta charset="utf-8">
                                 <meta name="viewport" content="width=device-width, initial-scale=1">
                                 <style>
                                     body { 
                                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                                         display: flex; align-items: center; justify-content: center;
-                                        height: 100vh; margin: 0; background: #f5f5f5;
-                                        text-align: center;
+                                        height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                        text-align: center; color: white;
                                     }
                                     .container { max-width: 400px; padding: 2rem; }
-                                    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #007bff;
-                                               border-radius: 50%; width: 40px; height: 40px;
-                                               animation: spin 1s linear infinite; margin: 0 auto 1rem; }
-                                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                                    h1 { color: #333; margin-bottom: 1rem; }
-                                    p { color: #666; line-height: 1.5; }
+                                    h1 { margin-bottom: 1rem; font-size: 2rem; }
+                                    p { line-height: 1.6; opacity: 0.9; margin-bottom: 1.5rem; }
+                                    button { 
+                                        background: white; color: #667eea; border: none; 
+                                        padding: 12px 24px; border-radius: 8px; font-size: 16px;
+                                        font-weight: 600; cursor: pointer; transition: transform 0.2s;
+                                    }
+                                    button:hover { transform: scale(1.05); }
                                 </style>
-                                <script>
-                                    // Auto-retry loading the page every 5 seconds
-                                    setTimeout(() => { window.location.reload(); }, 5000);
-                                </script>
                             </head>
                             <body>
                                 <div class="container">
-                                    <div class="spinner"></div>
-                                    <h1>🚀 Server Starting...</h1>
-                                    <p>Your massage booking platform is loading.<br>
-                                       This page will refresh automatically in 5 seconds.</p>
-                                    <p><small>If this continues, the development server may need to be restarted.</small></p>
+                                    <h1>📡 Connection Required</h1>
+                                    <p>Please check your internet connection and try again.</p>
+                                    <button onclick="window.location.reload()">Retry</button>
                                 </div>
                             </body>
                             </html>
