@@ -34,7 +34,7 @@ export const formatCountdownDisplay = (time: string): string => {
  * Get initial booking count from therapist ID
  */
 export const getInitialBookingCount = (therapistId: string): number => {
-    if (!therapistId) return Math.floor(Math.random() * 50) + 10;
+    if (!therapistId) return 23;
     
     // Create a simple hash from the therapist ID for consistency
     let hash = 0;
@@ -44,7 +44,7 @@ export const getInitialBookingCount = (therapistId: string): number => {
         hash = hash & hash; // Convert to 32-bit integer
     }
     
-    // Use the hash to generate a consistent booking count between 10-60
-    const bookingCount = Math.abs(hash % 51) + 10;
+    // Use the hash to generate a consistent booking count between 23-40
+    const bookingCount = Math.abs(hash % 18) + 23;
     return bookingCount;
 };

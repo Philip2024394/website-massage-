@@ -639,11 +639,8 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       }
       return;
     }
-    if (isAppInstalled) {
-      alert('App is already installed on your device!');
-      return;
-    }
     
+    // If there's a deferred prompt, trigger the browser's native install dialog
     if (deferredPrompt) {
       try {
         await deferredPrompt.prompt();
@@ -651,26 +648,37 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         if (choiceResult.outcome === 'accepted') {
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
+          localStorage.setItem('pwa-install-completed', 'true');
+          alert('✅ App installed successfully! You can now access it from your home screen.');
+        } else {
+          alert('❌ Installation cancelled. You can install the app later by clicking this button again.');
         }
         setDeferredPrompt(null);
       } catch (error) {
         console.error('Error installing app:', error);
+        alert('❌ Installation failed. Please try again or use your browser\'s menu to install.');
       }
     } else if (isIOS) {
-      // iOS specific instructions
+      // iOS specific instructions popup
       alert(
-        '📱 To install this app on your iPhone/iPad:\n\n' +
-        '1. Tap the Share button (⬆️) at the bottom\n' +
+        '📱 TO INSTALL ON iPhone/iPad:\n\n' +
+        '1. Tap the Share button (⬆️) at the bottom of Safari\n' +
         '2. Scroll down and tap "Add to Home Screen"\n' +
         '3. Tap "Add" to confirm\n\n' +
-        'The app will appear on your home screen!'
+        '✅ The app will appear on your home screen with full notification support!'
       );
     } else {
+      // Show simple instructions popup for other browsers
       alert(
-        '📱 To install this app:\n\n' +
-        '• On Chrome: Look for the install icon (⬇️) in the address bar\n' +
-        '• On Edge: Click the Apps menu and select "Install this site as an app"\n' +
-        '• On other browsers: Add this page to bookmarks for quick access'
+        '📱 TO DOWNLOAD THE APP:\n\n' +
+        '🔹 On Chrome/Edge:\n' +
+        '   • Look for the install icon (⬇️) in the address bar\n' +
+        '   • OR use the browser menu (⋮) > "Install app"\n\n' +
+        '🔹 On Firefox:\n' +
+        '   • Tap the menu (⋮) > "Install"\n\n' +
+        '🔹 On other browsers:\n' +
+        '   • Add this page to your home screen\n\n' +
+        '✅ Once installed, you\'ll get enhanced notifications!'
       );
     }
   };

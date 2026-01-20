@@ -36,7 +36,7 @@ export function useTherapistCardCalculations(therapist: Therapist) {
         loadBookingsCount();
     }, [therapist]);
 
-    // Generate consistent fake booking count for new therapists (18-26)
+    // Generate consistent booking count for therapists (23-40)
     const getInitialBookingCount = (therapistId: string): number => {
         // Create a simple hash from therapist ID for consistent random number
         let hash = 0;
@@ -44,8 +44,8 @@ export function useTherapistCardCalculations(therapist: Therapist) {
             hash = ((hash << 5) - hash) + therapistId.charCodeAt(i);
             hash = hash & hash; // Convert to 32bit integer
         }
-        // Generate number between 18-26 based on hash
-        return 18 + (Math.abs(hash) % 9);
+        // Generate number between 23-40 based on hash
+        return 23 + (Math.abs(hash) % 18);
     };
 
     const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;

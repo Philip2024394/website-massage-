@@ -319,14 +319,14 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
 
     const statusStyle = getStatusStyles();
 
-    // Generate consistent fake booking count for new therapists (18-26)
+    // Generate consistent booking count for therapists (23-40)
     const getInitialBookingCount = (therapistId: string): number => {
         let hash = 0;
         for (let i = 0; i < therapistId.length; i++) {
             hash = ((hash << 5) - hash) + therapistId.charCodeAt(i);
             hash = hash & hash;
         }
-        return 18 + (Math.abs(hash) % 9);
+        return 23 + (Math.abs(hash) % 18);
     };
 
     const joinedDateRaw = therapist.membershipStartDate || therapist.activeMembershipDate || (therapist as any).$createdAt;
