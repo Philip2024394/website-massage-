@@ -16,11 +16,11 @@ import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect } from 'react';
 
-// Lazy load heavy systems to improve FCP and reduce initial bundle
-const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
-const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
+// Temporarily disabled lazy loading to fix AsyncMode error
+// const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
+// const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
 // import './utils/disableLocalStorage';
@@ -139,21 +139,37 @@ const App = () => {
     // Chat minimization state
     const [isChatMinimized, setIsChatMinimized] = useState(true);
 
-    // ===== CRITICAL UX SAFETY: Clean URL → Hash URL Redirect =====
-    // Redirect clean URLs to hash URLs for HashRouter compatibility
-    // Example: /therapist-profile/abc → /#/therapist-profile/abc
+    // ===== CRITICAL HASHROUTER FIX: Clean URL → Hash URL Redirect =====
+    // Redirect ALL clean URLs to hash URLs for HashRouter compatibility
+    // Examples:
+    //   /home → /#/home
+    //   /therapist → /#/therapist
+    //   /therapist-profile/abc → /#/therapist-profile/abc
     useEffect(() => {
         const path = window.location.pathname;
         const hash = window.location.hash;
+        const search = window.location.search;
         
-        // Only redirect if:
-        // 1. Path starts with /therapist-profile/
-        // 2. URL doesn't already have #/
-        // 3. Not on admin dashboard or other routes
-        if (path.startsWith('/therapist-profile/') && !hash.includes('#/')) {
-            console.log('🔄 Clean URL detected, redirecting to hash URL');
+        // Skip redirect if:
+        // - Already has hash route (starts with #/)
+        // - Root path with no hash (let router handle)
+        // - Admin dashboard path
+        if (hash.startsWith('#/') || (path === '/' && !hash) || path.includes('/admin')) {
+            return;
+        }
+        
+        // Routes that need hash redirect
+        const needsRedirect = 
+            path === '/home' ||
+            path === '/therapist' ||
+            path === '/therapist-dashboard' ||
+            path.startsWith('/therapist-profile/') ||
+            path.startsWith('/dashboard/');
+        
+        if (needsRedirect) {
+            console.log('🔄 [HASHROUTER FIX] Clean URL detected, redirecting to hash URL');
             console.log('   From:', window.location.href);
-            const newUrl = window.location.origin + '/#' + path + window.location.search;
+            const newUrl = window.location.origin + '/#' + path + search;
             console.log('   To:', newUrl);
             window.location.replace(newUrl); // Silent redirect, no history entry
         }
@@ -376,24 +392,27 @@ const App = () => {
             return;
         }
         
+        // ⚠️ URL SYNC TEMPORARILY DISABLED - Causing redirect loops with HashRouter
+        // TODO: Fix URL mapping to work with hash routes (/#/page instead of /page)
         // Update browser URL when page changes
         const currentPath = window.location.pathname;
         const expectedUrl = getUrlForPage(state.page);
         
         console.log('\n' + '🔄'.repeat(50));
-        console.log('🔄 [URL SYNC] Checking if URL needs update');
+        console.log('🔄 [URL SYNC] DISABLED - Would cause redirect loop');
         console.log('🔄'.repeat(50));
         console.log('📍 Current path:', currentPath);
         console.log('📍 Expected URL:', expectedUrl);
         console.log('📍 Match:', currentPath === expectedUrl);
+        console.log('📍 URL sync disabled to prevent HashRouter conflicts');
         console.log('🔄'.repeat(50) + '\n');
         
-        // Only update if URL doesn't match (avoid unnecessary history entries)
-        if (currentPath !== expectedUrl && !currentPath.startsWith('/profile/therapist/') && !currentPath.startsWith('/profile/place/') && !currentPath.startsWith('/accept-booking/')) {
-            console.log('🚫 [REDIRECT] URL sync triggering updateBrowserUrl');
-            console.log('   From:', currentPath, '→ To:', expectedUrl);
-            updateBrowserUrl(state.page, undefined, false);
-        }
+        // DISABLED: Only update if URL doesn't match (avoid unnecessary history entries)
+        // if (currentPath !== expectedUrl && !currentPath.startsWith('/profile/therapist/') && !currentPath.startsWith('/profile/place/') && !currentPath.startsWith('/accept-booking/')) {
+        //     console.log('🚫 [REDIRECT] URL sync triggering updateBrowserUrl');
+        //     console.log('   From:', currentPath, '→ To:', expectedUrl);
+        //     updateBrowserUrl(state.page, undefined, false);
+        // }
     }, [state.page]);
 
     // Handle browser back/forward buttons
@@ -769,15 +788,16 @@ const App = () => {
         
         console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
         console.log('✅ FloatingChatWindow RENDERING NOW');
-        return (
-            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
-                <FloatingChatWindow
-                    userId={activeChat.customerId || 'guest'}
-                    userName={activeChat.customerName || 'Guest'}
-                    userRole="customer"
-                />
-            </Suspense>
-        );
+        return null; // Temporarily disabled to fix AsyncMode error
+        // return (
+        //     <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
+        //         <FloatingChatWindow
+        //             userId={activeChat.customerId || 'guest'}
+        //             userName={activeChat.customerName || 'Guest'}
+        //             userRole="customer"
+        //         />
+        //     </Suspense>
+        // );
     };
 
     return (
@@ -815,12 +835,23 @@ const App = () => {
             } ${
                 mobileDetection.hasTouch ? 'touch-enabled' : 'no-touch'
             }`}>
-                <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}>
+                {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense for React 19 compatibility */}
+                {/* <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}> */}
                 <AppRouter
                     page={state.page}
                     isLoading={state.isLoading}
 
-                    loggedInProvider={state.loggedInProvider}
+                    loggedInProvider={(() => {
+                        console.log('🔸 [APP.TSX] Passing loggedInProvider to AppRouter:', {
+                            hasProvider: !!state.loggedInProvider,
+                            providerId: state.loggedInProvider?.$id || state.loggedInProvider?.id,
+                            providerType: state.loggedInProvider?.type,
+                            providerName: state.loggedInProvider?.name,
+                            providerEmail: state.loggedInProvider?.email,
+                            timestamp: new Date().toISOString()
+                        });
+                        return state.loggedInProvider;
+                    })()}
                     loggedInCustomer={state.loggedInCustomer}
                     loggedInAgent={state.loggedInAgent}
                     language={language}
@@ -834,7 +865,17 @@ const App = () => {
                     notifications={state.notifications}
                     bookings={state.bookings}
                     // Pass loggedInProvider for therapists/places (has full profile data), otherwise use loggedInUser
-                    user={(state.loggedInProvider || state.loggedInCustomer || state.loggedInUser) as any}
+                    user={(() => {
+                        const resolvedUser = (state.loggedInProvider || state.loggedInCustomer || state.loggedInUser) as any;
+                        console.log('[APP.TSX] Resolved user for AppRouter:', {
+                            hasUser: !!resolvedUser,
+                            userId: resolvedUser?.$id || resolvedUser?.id,
+                            userName: resolvedUser?.name,
+                            source: state.loggedInProvider ? 'loggedInProvider' : state.loggedInCustomer ? 'loggedInCustomer' : 'loggedInUser',
+                            timestamp: new Date().toISOString()
+                        });
+                        return resolvedUser;
+                    })()}
                     userLocation={state.userLocation}
                     selectedPlace={state.selectedPlace}
                     selectedMassageType={state.selectedMassageType}
@@ -942,7 +983,7 @@ const App = () => {
 
                     setSelectedJobId={() => {}}
                 />
-                </Suspense>
+                {/* </Suspense> */}
             </div>
 
             {/* Floating Chat for Therapist Dashboard Pages */}
@@ -952,12 +993,14 @@ const App = () => {
                 state.page === 'schedule' || 
                 state.page === 'bookings'
             ) && (
-                <Suspense fallback={<div className="fixed bottom-4 right-4 w-80 h-96 bg-gray-100 rounded-lg animate-pulse" />}>
-                    <FloatingChat 
-                        therapist={state.loggedInProvider as any}
-                        isPWA={false}
-                    />
-                </Suspense>
+                // Temporarily disabled to fix AsyncMode error
+                null
+                // <Suspense fallback={<div className="fixed bottom-4 right-4 w-80 h-96 bg-gray-100 rounded-lg animate-pulse" />}>
+                //     <FloatingChat 
+                //         therapist={state.loggedInProvider as any}
+                //         isPWA={false}
+                //     />
+                // </Suspense>
             )}
 
             <AppFooterLayout

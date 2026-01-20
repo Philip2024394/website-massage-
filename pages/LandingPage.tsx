@@ -8,6 +8,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { MapPin, Play, Globe, Search, X, ChevronDown } from 'lucide-react';
 import { useCityContext } from '../context/CityContext';
 import UniversalHeader from '../components/shared/UniversalHeader';
+import { AppDrawer } from '../components/AppDrawerClean';
 import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
 import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
@@ -266,6 +267,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     const [selectedCity, setSelectedCity] = useState<string | null>(contextCity || null);
     const [showCountryModal, setShowCountryModal] = useState(false);
     const [cityNotListed, setCityNotListed] = useState(false);
+    
+    // Menu state for burger menu
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     
     // Use either prop name for backward compatibility
     const enterAppCallback = handleEnterApp || onEnterApp;

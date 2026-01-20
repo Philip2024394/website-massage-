@@ -13,6 +13,13 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   useEffect(() => {
     console.log('PWA Install Banner: Checking conditions...');
     
+    // NEW: Check if mobile device first
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (!isMobileDevice) {
+      console.log('PWA Install Banner: Not a mobile device, not showing');
+      return;
+    }
+    
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
@@ -141,12 +148,12 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   console.log('PWA Install Banner: Rendering banner! isIOS =', isIOS, 'deferredPrompt =', !!deferredPrompt);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[9999] bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-2xl transition-transform duration-500 ease-out transform translate-y-0" style={{
-      animation: 'slideUp 0.5s ease-out'
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-2xl transition-transform duration-500 ease-out transform translate-y-0" style={{
+      animation: 'slideDown 0.5s ease-out'
     }}>
       <style {...({} as any)}>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
+        @keyframes slideDown {
+          from { transform: translateY(-100%); }
           to { transform: translateY(0%); }
         }
       `}</style>

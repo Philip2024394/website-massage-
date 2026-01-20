@@ -31,8 +31,7 @@ export type Page =
     | 'therapistAvailability' // Therapist availability page
     | 'therapistPortal'
     | 'therapist' // Therapist portal/dashboard
-    | 'therapistProfile' // 🎯 NEW: Customer-facing therapist profile page 
-    | 'therapist-profile' // Hyphenated variant for routing
+    | 'therapist-profile' // Customer-facing therapist profile page (different from dashboard)
     | 'therapist-status'
     | 'therapist-schedule'
     | 'therapist-bookings'

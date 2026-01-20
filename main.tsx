@@ -17,7 +17,7 @@ import './utils/suppressNonCriticalErrors';
 import { initVersionCheck } from './lib/versionCheck';
 
 // 🔒 PRODUCTION STARTUP GUARD - Detects mount failures
-import { initializeStartupGuard } from './utils/startupGuard';
+// TEMPORARILY DISABLED: import { initializeStartupGuard } from './utils/startupGuard';
 
 // 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
 import './lib/appwrite-startup-validator';
@@ -28,8 +28,7 @@ const isAdminMode = import.meta.env.MODE === 'admin';
 logger.log(`🚀 main.tsx: Starting ${isAdminMode ? 'Admin' : 'Main'} app...`);
 
 // 🔒 Initialize startup guard IMMEDIATELY
-initializeStartupGuard();
-
+  // TEMPORARILY DISABLED: initializeStartupGuard();
 // Admin mode: Redirect to separate admin dashboard app
 if (isAdminMode) {
   logger.log('🔐 Redirecting to Admin Dashboard App...');
@@ -79,8 +78,8 @@ if (isAdminMode) {
     }
   }
   
-  // 🚀 PRODUCTION MODE: Register Service Worker only in production
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  // 🚀 PWA MODE: Register Service Worker in both preview and production for PWA features
+  if ('serviceWorker' in navigator && (import.meta.env.PROD || import.meta.env.MODE === 'production')) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
@@ -134,17 +133,22 @@ if (isAdminMode) {
       logger.log('✅ Dev mode indicator added');
     }
     
-    const reactRoot = ReactDOM.createRoot(root);
-    reactRoot.render(
-      <React.StrictMode>
-        <ProductionErrorBoundary>
-          <ErrorBoundary>
-            <AppErrorBoundary>
-              <App />
-            </AppErrorBoundary>
-          </ErrorBoundary>
-        </ProductionErrorBoundary>
-      </React.StrictMode>
+    // Temporarily disable concurrent features to debug removeChild error
+    const root = ReactDOM.createRoot(rootElement, {
+      onRecoverableError: (error, errorInfo) => {
+        console.warn('React Recoverable Error:', error);
+        // Don't throw on recoverable errors to prevent AsyncMode crashes
+      },
+    });
+    
+    root.render(
+      <ProductionErrorBoundary>
+        <ErrorBoundary>
+          <AppErrorBoundary>
+            <App />
+          </AppErrorBoundary>
+        </ErrorBoundary>
+      </ProductionErrorBoundary>
     );
     logger.log('✅ React app mounted successfully');
     

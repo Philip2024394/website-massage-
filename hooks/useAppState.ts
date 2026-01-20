@@ -121,6 +121,48 @@ export const useAppState = () => {
             return 'admin'; // Default to main admin dashboard
           }
         }
+        
+        // Therapist routes - ALL 13 DASHBOARD PAGES
+        if (hashPath.startsWith('/dashboard/therapist') || hashPath.startsWith('/therapist')) {
+          console.log('🔗 [INIT] Therapist route detected in hash:', hashPath);
+          if (hashPath === '/therapist' || hashPath === '/therapist-dashboard' || hashPath === '/dashboard/therapist') {
+            return 'dashboard';
+          } else if (hashPath === '/dashboard/therapist/status' || hashPath === '/therapist/status') {
+            return 'therapist-status';
+          } else if (hashPath === '/dashboard/therapist/bookings' || hashPath === '/therapist/bookings') {
+            return 'therapist-bookings';
+          } else if (hashPath === '/dashboard/therapist/earnings' || hashPath === '/therapist/earnings') {
+            return 'therapist-earnings';
+          } else if (hashPath === '/dashboard/therapist/chat' || hashPath === '/therapist/chat') {
+            return 'therapist-chat';
+          } else if (hashPath === '/dashboard/therapist/notifications' || hashPath === '/therapist/notifications') {
+            return 'therapist-notifications';
+          } else if (hashPath === '/dashboard/therapist/legal' || hashPath === '/therapist/legal') {
+            return 'therapist-legal';
+          } else if (hashPath === '/dashboard/therapist/calendar' || hashPath === '/therapist/calendar') {
+            return 'therapist-calendar';
+          } else if (hashPath === '/dashboard/therapist/payment' || hashPath === '/therapist/payment') {
+            return 'therapist-payment';
+          } else if (hashPath === '/dashboard/therapist/payment-status' || hashPath === '/therapist/payment-status') {
+            return 'therapist-payment-status';
+          } else if (hashPath === '/dashboard/therapist/menu' || hashPath === '/therapist/menu') {
+            return 'therapist-menu';
+          } else if (hashPath === '/dashboard/therapist/commission' || hashPath === '/therapist/commission') {
+            return 'therapist-commission';
+          } else if (hashPath === '/dashboard/therapist/schedule' || hashPath === '/therapist/schedule') {
+            return 'therapist-schedule';
+          } else if (hashPath === '/dashboard/therapist/package-terms' || hashPath === '/therapist/package-terms') {
+            return 'therapist-package-terms';
+          } else {
+            return 'dashboard';
+          }
+        }
+        
+        // Home route
+        if (hashPath === '/home') {
+          console.log('🔗 [INIT] Home route detected in hash');
+          return 'home';
+        }
       }
       
       // �🔧 DISABLED: Provider auto-login to prevent confusion with customer landing page

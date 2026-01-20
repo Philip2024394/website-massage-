@@ -34,6 +34,15 @@ class LazyLoadErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // TEMPORARY DIAGNOSTIC LOGGING - ISOLATION MODE
+    console.error('🚨 [LazyLoadErrorBoundary] ERROR CAUGHT:');
+    console.error('📛 Error Message:', error?.message);
+    console.error('📛 Error Name:', error?.name);
+    console.error('📛 Error Stack:', error?.stack);
+    console.error('📛 Component Stack:', errorInfo?.componentStack);
+    console.error('📛 Full Error Object:', error);
+    console.error('📛 Full ErrorInfo Object:', errorInfo);
+    
     logger.error('[LAZY LOAD ERROR]', error, errorInfo);
         if (typeof window !== 'undefined') {
             (window as any).__lazyErrorMessage = error?.message || 'Unknown error';
@@ -341,7 +350,25 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
      * Includes error boundary to catch lazy loading failures
      */
     const renderRoute = (Component: React.ComponentType<any>, componentProps: any = {}, routeName?: string) => {
-        const ErrorFallback = () => (
+        // DEBUG TRACE: Log renderRoute entry
+        console.log('🔵 [renderRoute ENTRY]', {
+            routeName: routeName || page,
+            hasComponent: !!Component,
+            componentType: typeof Component,
+            componentName: Component?.name,
+            propsKeys: Object.keys(componentProps),
+            timestamp: new Date().toISOString()
+        });
+
+        const ErrorFallback = () => {
+            // DEBUG TRACE: Log ErrorFallback render
+            console.log('🔴 [ErrorFallback RENDERED] Route failed, displaying error UI', {
+                routeName: routeName || page,
+                windowError: (typeof window !== 'undefined' && (window as any).__lazyErrorMessage) || 'No error message',
+                timestamp: new Date().toISOString()
+            });
+            
+            return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
                     <div className="text-6xl mb-4">⚠️</div>
@@ -373,11 +400,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     </button>
                 </div>
             </div>
-        );
+            );
+        };
+
+        // DEBUG TRACE: Log before rendering Component
+        console.log('🟢 [renderRoute] About to render Component', {
+            routeName: routeName || page,
+            componentName: Component?.name,
+            willRenderComponent: true,
+            timestamp: new Date().toISOString()
+        });
 
         return (
             <LazyLoadErrorBoundary fallback={<ErrorFallback />}>
-                <Suspense fallback={<LoadingSpinner />}>
+                {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense to fix React 19 AsyncMode errors */}
+                {/* <Suspense fallback={<LoadingSpinner />}> */}
                     <Component 
                         {...props} 
                         {...componentProps} 
@@ -386,7 +423,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onLanguageChange={handleLanguageSelect}
                         onNavigate={props.setPage}
                     />
-                </Suspense>
+                {/* </Suspense> */}
             </LazyLoadErrorBoundary>
         );
     };
@@ -402,33 +439,20 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(publicRoutes.landing.component);
         
         case 'home':
-            // 🔐 IMPORTANT: If therapist or place is logged in, redirect to their dashboard
+            // 🔐 IMPORTANT: If therapist or place is logged in, navigate to their dashboard
             // This ensures providers always see their dashboard when accessing home
             if (props.loggedInProvider) {
-                console.log('🏠 [ROUTER] Provider logged in, redirecting to dashboard:', props.loggedInProvider.type);
+                console.log('🏠 [ROUTER] Provider logged in, redirecting to proper dashboard page');
                 if (props.loggedInProvider.type === 'therapist') {
-                    // Redirect to therapist dashboard instead of public home
-                    return renderRoute(therapistRoutes.dashboard.component, {
-                        onNavigate: props.onNavigate,
-                        onBack: props.handleBackToHome,
-                        loggedInProvider: props.loggedInProvider,
-                        onLogout: props.handleProviderLogout,
-                        onSave: props.handleSaveTherapist,
-                        onStatusChange: props.handleTherapistStatusChange,
-                        t: t,
-                        language: props.language
-                    });
+                    // Navigate to therapist-status page (proper dashboard entry point)
+                    console.log('  → Navigating therapist to: dashboard');
+                    props.setPage('dashboard');
+                    return null; // Will re-render with correct page
                 } else if (props.loggedInProvider.type === 'place') {
-                    // Redirect to place dashboard instead of public home
-                    return renderRoute(placeRoutes.dashboard.component, {
-                        onNavigate: props.onNavigate,
-                        onBack: props.handleBackToHome,
-                        loggedInProvider: props.loggedInProvider,
-                        onLogout: props.handleProviderLogout,
-                        onSave: props.handleSavePlace,
-                        t: t,
-                        language: props.language
-                    });
+                    // Navigate to place dashboard
+                    console.log('  → Navigating place to: massage-place-dashboard');
+                    props.setPage('massage-place-dashboard');
+                    return null; // Will re-render with correct page
                 }
             }
             
@@ -1264,7 +1288,21 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
         case 'therapist':
         case 'therapistDashboard':
         case 'therapist-dashboard':
+            console.log('🔷 [SWITCH CASE] therapist-dashboard MATCHED');
+            console.log('🔷 [ROUTE DEBUG] Component reference:', {
+                component: therapistRoutes.dashboard.component,
+                componentName: therapistRoutes.dashboard.component?.name,
+                componentType: typeof therapistRoutes.dashboard.component,
+                isFunction: typeof therapistRoutes.dashboard.component === 'function'
+            });
             console.log('[ROUTE RESOLVE] therapist-dashboard → TherapistDashboard');
+            console.log('[ROUTE DEBUG] props.user:', {
+                hasUser: !!props.user,
+                userId: props.user?.$id || props.user?.id,
+                userName: props.user?.name,
+                userType: props.user?.type || props.user?.userType,
+                timestamp: new Date().toISOString()
+            });
             return renderRoute(therapistRoutes.dashboard.component, {
                 therapist: props.user,
                 onLogout: props.handleLogout,

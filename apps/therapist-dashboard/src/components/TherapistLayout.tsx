@@ -1,4 +1,3 @@
-// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { 
   Menu, X, User, Calendar, DollarSign, 

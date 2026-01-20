@@ -19,6 +19,9 @@ export interface SessionUser {
  */
 export async function restoreSession(): Promise<SessionUser | null> {
     try {
+        // DEBUG TRACE: Session check start
+        console.log('🔍 [SESSION RESTORE] Starting account.get() call');
+        
         // Check if there's an active session with timeout
         const user = await Promise.race([
             account.get(),
@@ -27,6 +30,14 @@ export async function restoreSession(): Promise<SessionUser | null> {
             )
         ]);
         
+        // DEBUG TRACE: Account result
+        console.log('🔍 [SESSION RESTORE] account.get() result:', {
+            hasUser: !!user,
+            userId: user?.$id,
+            email: user?.email,
+            name: user?.name
+        });
+        
         if (!user) {
             console.log('📭 No active session found');
             return null;
@@ -34,6 +45,9 @@ export async function restoreSession(): Promise<SessionUser | null> {
 
         console.log('✅ Active session found for:', user.email);
 
+        // DEBUG TRACE: Starting user type determination
+        console.log('🔍 [SESSION RESTORE] Starting determineUserType()');
+        
         // Try to find user in each collection to determine type with timeout
         const userType = await Promise.race([
             determineUserType(user.$id, user.email),
@@ -41,6 +55,14 @@ export async function restoreSession(): Promise<SessionUser | null> {
                 setTimeout(() => resolve(null), 8000)
             )
         ]);
+        
+        // DEBUG TRACE: User type result
+        console.log('🔍 [SESSION RESTORE] determineUserType() result:', {
+            hasUserType: !!userType,
+            type: userType?.type,
+            documentId: userType?.documentId,
+            hasData: !!userType?.data
+        });
         
         if (!userType) {
             console.log('⚠️ User found but not in any collection or timeout');
@@ -183,9 +205,10 @@ async function determineUserType(userId: string, email: string): Promise<Session
 
         // Check Therapists with timeout
         try {
-            console.log('🔍 Starting therapist check for:', email);
-            console.log('🔍 COLLECTIONS.THERAPISTS:', COLLECTIONS.THERAPISTS);
-            console.log('🔍 DATABASE_ID:', DATABASE_ID);
+            console.log('🔍 [THERAPIST CHECK] Starting therapist lookup');
+            console.log('🔍 [THERAPIST CHECK] Email:', email);
+            console.log('🔍 [THERAPIST CHECK] DATABASE_ID:', DATABASE_ID);
+            console.log('🔍 [THERAPIST CHECK] COLLECTIONS.THERAPISTS:', COLLECTIONS.THERAPISTS);
             
             const therapists = await Promise.race([
                 databases.listDocuments(
@@ -197,10 +220,19 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     setTimeout(() => reject(new Error('Therapist query timeout')), 3000)
                 )
             ]);
-            console.log('✅ Therapists query result:', therapists.documents.length, 'documents');
+            
+            console.log('🔍 [THERAPIST CHECK] Query completed');
+            console.log('🔍 [THERAPIST CHECK] Documents found:', therapists.documents.length);
+            console.log('🔍 [THERAPIST CHECK] Total documents:', therapists.total);
+            
             if (therapists.documents.length > 0) {
                 const therapist = therapists.documents[0];
-                console.log('✅ Found therapist:', therapist.name);
+                console.log('✅ [THERAPIST CHECK] Found therapist document:', {
+                    id: therapist.$id,
+                    name: therapist.name,
+                    email: therapist.email,
+                    hasAllFields: !!(therapist.name && therapist.email)
+                });
                 return {
                     type: 'therapist',
                     id: therapist.$id,
@@ -208,9 +240,15 @@ async function determineUserType(userId: string, email: string): Promise<Session
                     documentId: therapist.$id,
                     data: therapist
                 };
+            } else {
+                console.log('⚠️ [THERAPIST CHECK] No therapist document found for email:', email);
             }
         } catch (error) {
-            console.error('⚠️ Therapist check failed or timeout:', error);
+            console.error('🔴 [THERAPIST CHECK] Error or timeout:', {
+                error: error,
+                message: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : undefined
+            });
         }
 
         // Check Places (Massage Places) with timeout

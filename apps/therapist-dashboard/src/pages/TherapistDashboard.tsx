@@ -277,7 +277,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         };
         
         // Validate GPS coordinates are within Indonesia
-        const { validateTherapistGeopoint } = require('../../../../utils/locationValidation');
         const validation = validateTherapistGeopoint({ geopoint: coords });
         
         if (!validation.isValid) {
@@ -286,7 +285,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
         
         // Derive city from GPS coordinates
-        const { deriveLocationIdFromGeopoint } = require('../../../../utils/geoDistance');
         const derivedCity = deriveLocationIdFromGeopoint(coords);
         
         setCoordinates(coords);
@@ -1160,7 +1158,6 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   <div className="text-sm text-green-700 space-y-1">
                     <p><strong>Coordinates:</strong> {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}</p>
                     {(() => {
-                      const { deriveLocationIdFromGeopoint } = require('../../../../utils/geoDistance');
                       const derivedCity = deriveLocationIdFromGeopoint(coordinates);
                       return (
                         <p><strong>GPS-Derived City:</strong> <span className="font-bold text-green-900">{derivedCity}</span></p>

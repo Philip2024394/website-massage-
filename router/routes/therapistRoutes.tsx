@@ -5,8 +5,8 @@
 
 import { lazy } from 'react';
 
-// Lazy-loaded therapist dashboard components
-const TherapistDashboard = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistDashboard'));
+// Direct import for dashboard route to fix component load error
+import TherapistPortalPage from '../../apps/therapist-dashboard/src/pages/TherapistDashboard';
 const TherapistOnlineStatus = lazy(() => 
   import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus')
     .then(module => {
@@ -39,7 +39,7 @@ const TherapistPlaceholderPage = lazy(() => import('../../apps/therapist-dashboa
 export const therapistRoutes = {
   dashboard: {
     path: '/therapist',
-    component: TherapistDashboard,
+    component: TherapistPortalPage,
     name: 'therapist-dashboard',
     requiresAuth: true
   },

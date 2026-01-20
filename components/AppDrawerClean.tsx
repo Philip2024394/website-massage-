@@ -121,9 +121,9 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
   const { city } = useCityContext();
   const [showCitySwitcher, setShowCitySwitcher] = useState(false);
   
-  console.log('🚪 AppDrawer render check:', { isHome, isOpen, shouldRender: isHome && isOpen });
+  console.log('🚪 AppDrawer render check:', { isHome, isOpen, shouldRender: isOpen });
   
-  if (!isHome || !isOpen) return null;
+  if (!isOpen) return null;
 
   // Get drawer text based on language
   const dt = drawerTranslations[language] || drawerTranslations.en;

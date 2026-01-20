@@ -27,15 +27,24 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
 
     const restoreUserSession = useCallback(async () => {
         try {
-            console.log('🔄 Checking for existing Appwrite session...');
+            console.log('🔄 [SESSION RESTORE] Checking for existing Appwrite session...');
             const sessionUser = await restoreSession();
             
+            console.log('🔄 [SESSION RESTORE] restoreSession() result:', {
+                hasSessionUser: !!sessionUser,
+                type: sessionUser?.type,
+                email: sessionUser?.email,
+                id: sessionUser?.id,
+                documentId: sessionUser?.documentId,
+                hasData: !!sessionUser?.data
+            });
+            
             if (!sessionUser) {
-                console.log('📭 No session to restore');
+                console.log('📭 [SESSION RESTORE] No session to restore');
                 return;
             }
 
-            console.log('✅ Session restored for:', sessionUser.type, sessionUser.email);
+            console.log('✅ [SESSION RESTORE] Session restored for:', sessionUser.type, sessionUser.email);
 
             // Restore state based on user type (but don't auto-navigate to dashboards)
             switch (sessionUser.type) {
@@ -64,6 +73,12 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                     break;
                 
                 case 'therapist':
+                    console.log('🔧 [SESSION RESTORE] Setting therapist state:', {
+                        id: sessionUser.id,
+                        email: sessionUser.email,
+                        name: sessionUser.data?.name,
+                        hasData: !!sessionUser.data
+                    });
                     setLoggedInProvider({
                         id: sessionUser.id,
                         type: 'therapist',
@@ -77,6 +92,7 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
                         name: sessionUser.data?.name,
                         data: sessionUser.data
                     });
+                    console.log('✅ [SESSION RESTORE] Therapist state set successfully');
                     // Don't auto-navigate to therapist dashboard - let user manually access it
                     break;
                 
@@ -148,18 +164,22 @@ export const useSessionRestore = (props: UseSessionRestoreProps) => {
     useEffect(() => {
         let isMounted = true;
         
+        console.log('🚀 [SESSION RESTORE] useEffect triggered - will attempt restoration');
+        
         const runSessionRestore = async () => {
             try {
                 // Skip session restoration if the user explicitly wants to start fresh
                 const startFresh = sessionStorage.getItem('start_fresh');
                 if (startFresh) {
-                    console.log('🔄 Starting fresh - skipping session restoration');
+                    console.log('🔄 [SESSION RESTORE] Starting fresh - skipping session restoration');
                     return;
                 }
 
+                console.log('🚀 [SESSION RESTORE] Calling restoreUserSession()');
                 if (isMounted) {
                     await restoreUserSession();
                 }
+                console.log('🚀 [SESSION RESTORE] restoreUserSession() completed');
             } catch (error) {
                 if (isMounted) {
                     console.error('❌ Session restoration error:', error);

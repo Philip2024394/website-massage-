@@ -1,9 +1,9 @@
 /**
- * Shim: delegate legacy AppDrawer to the clean implementation
+ * Unified AppDrawer - Functional side drawer implementation
  */
 import React from 'react';
+import { AppDrawer as AppDrawerImpl } from './AppDrawerClean';
 
-// Placeholder AppDrawer component
-export const AppDrawer = ({ children }: { children?: React.ReactNode }) => {
-    return <div>{children}</div>;
-};
+// Export the functional drawer implementation
+export const AppDrawer = AppDrawerImpl;
+export default AppDrawer;
