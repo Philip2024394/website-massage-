@@ -28,8 +28,8 @@ interface TherapistOnlineStatusProps {
 }
 
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
-onLogout, 
-const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language: propLanguage = 'id' }) => {
+
+const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
   // Get language from context (takes priority over prop)
   const { language: contextLanguage, setLanguage } = useLanguage();
   const language = contextLanguage || propLanguage;
