@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FloatingChatWindow } from '../../../../chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../components/ChatWindow';
+import TherapistLayout from '../components/TherapistLayout';
 import { devLog, devWarn } from '../../../../utils/devMode';
 import TherapistSchedule from './TherapistSchedule';
 import DepositApprovalCard from '../../../../components/booking/DepositApprovalCard';
@@ -36,10 +37,11 @@ interface TherapistBookingsProps {
   therapist: any;
   onBack: () => void;
   onNavigate?: (page: string) => void;
+  onLogout?: () => void;
   language?: 'en' | 'id';
 }
 
-const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, language = 'id' }) => {
+const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
   const isPremium = true; // All features available for standard 30% commission plan
   const [activeTab, setActiveTab] = useState<'bookings' | 'schedule'>('bookings');
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -449,27 +451,24 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
   const filteredBookings = getFilteredBookings();
 
+  const handleNavigate = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+    }
+  };
+
   return (
     <>
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="bookings"
+      onNavigate={handleNavigate}
+      language={language}
+      onLogout={onLogout}
+    >
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-6">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={onBack}
-              className="p-3 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-            >
-              ←
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{currentLabels.title}</h1>
-              <p className="text-sm text-gray-600">{currentLabels.subtitle}</p>
-            </div>
-          </div>
-          
           {/* Tab Navigation */}
-          <div className="flex gap-2 border-b border-gray-200">
+          <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-4">
             <button
               onClick={() => setActiveTab('bookings')}
               className={`px-6 py-3 font-semibold transition-all relative ${
@@ -888,6 +887,7 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       </main>
       )}
     </div>
+    </TherapistLayout>
     {/* Floating Chat Window */}
     <FloatingChatWindow userId={'therapist'} userName={'Therapist'} userRole="therapist" />
     </>

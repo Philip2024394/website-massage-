@@ -4,7 +4,7 @@ import { Therapist } from '../../../../types';
 import { therapistMenusService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import { Plus, Trash2, Save, Menu as MenuIcon, CheckCircle2 } from 'lucide-react';
-import TherapistPageHeader from '../components/TherapistPageHeader';
+import TherapistLayout from '../components/TherapistLayout';
 
 interface MenuService {
   id: string;
@@ -20,9 +20,11 @@ interface MenuService {
 interface TherapistMenuProps {
   therapist: Therapist | null;
   onNavigate?: (page: string) => void;
+  onLogout?: () => void;
+  language?: 'en' | 'id';
 }
 
-const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) => {
+const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, onLogout, language = 'id' }) => {
   const [services, setServices] = useState<MenuService[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -214,31 +216,22 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
     }
   };
 
+  const handleNavigate = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+    }
+  };
+
   return (
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="custom-menu"
+      onNavigate={handleNavigate}
+      language={language}
+      onLogout={onLogout}
+    >
     <main className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
-        <TherapistPageHeader
-          title="Therapist Menu"
-          subtitle="Manage your service pricing"
-          onBackToStatus={handleBackToStatus}
-          actions={
-            <div className="flex items-center gap-2">
-              {autoSaveStatus === 'saving' && (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-orange-500 border-t-transparent"></div>
-                  <span className="text-xs text-gray-600">Saving...</span>
-                </>
-              )}
-              {autoSaveStatus === 'saved' && (
-                <>
-                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                  <span className="text-xs text-green-600 font-medium">Saved!</span>
-                </>
-              )}
-              <MenuIcon className="w-6 h-6 text-orange-500" />
-            </div>
-          }
-        />
 
         {/* Content Area */}
         <div className="px-8 py-6">
@@ -446,6 +439,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate }) 
           </div>
         </div>
       </main>
+    </TherapistLayout>
     );
 };
 

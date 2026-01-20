@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
-import TherapistPageHeader from '../components/TherapistPageHeader';
+import TherapistLayout from '../components/TherapistLayout';
 import { analyticsService } from '../../../../lib/services/analyticsService';
 
 interface Payment {
@@ -19,10 +19,12 @@ interface Payment {
 interface TherapistEarningsProps {
   therapist: any;
   onBack: () => void;
+  onNavigate?: (page: string) => void;
+  onLogout?: () => void;
   language?: 'en' | 'id';
 }
 
-const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, language = 'id' }) => {
+const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
@@ -231,15 +233,21 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <TherapistPageHeader
-        title={currentLabels.title}
-        subtitle={currentLabels.subtitle}
-        onBackToStatus={onBack}
-        icon={<BarChart3 className="w-6 h-6 text-orange-600" />}
-      />
+  const handleNavigate = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+    }
+  };
 
+  return (
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="earnings"
+      onNavigate={handleNavigate}
+      language={language}
+      onLogout={onLogout}
+    >
+    <div className="min-h-screen bg-gray-50">
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-4">
         {/* Stats Cards */}
@@ -502,6 +510,7 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
       </div>
       </main>
     </div>
+    </TherapistLayout>
   );
 };
 

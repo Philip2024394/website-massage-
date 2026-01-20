@@ -1,7 +1,7 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
 import { Save, CreditCard, Upload, FileCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
-import TherapistPageHeader from '../components/TherapistPageHeader';
+import TherapistLayout from '../components/TherapistLayout';
 import { therapistService } from '../../../../lib/appwriteService';
 import { showToast } from '../../../../utils/showToastPortal';
 import PaymentCard from '../../../../components/PaymentCard';
@@ -10,10 +10,12 @@ import type { Therapist } from '../../../../types';
 interface TherapistPaymentInfoProps {
   therapist: Therapist | null;
   onBack: () => void;
+  onNavigate?: (page: string) => void;
+  onLogout?: () => void;
   language?: 'en' | 'id';
 }
 
-const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack, language = 'id' }) => {
+const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, onBack, onNavigate, onLogout, language = 'id' }) => {
   const [bankName, setBankName] = useState(therapist?.bankName || '');
   const [accountName, setAccountName] = useState(therapist?.accountName || '');
   const [accountNumber, setAccountNumber] = useState(therapist?.accountNumber || '');
@@ -177,15 +179,21 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
     }
   }, [accountName, therapist?.name]);
 
-  return (
-    <div className="min-h-screen bg-white">
-      <TherapistPageHeader
-        title="Payment Information"
-        subtitle="Manage your bank details"
-        onBackToStatus={onBack}
-        icon={<CreditCard className="w-6 h-6 text-orange-600" />}
-      />
+  const handleNavigate = (page: string) => {
+    if (onNavigate) {
+      onNavigate(page);
+    }
+  };
 
+  return (
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="payment"
+      onNavigate={handleNavigate}
+      language={language}
+      onLogout={onLogout}
+    >
+    <div className="min-h-screen bg-white">
       {/* Main Content */}
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-6">
@@ -462,6 +470,7 @@ const TherapistPaymentInfo: React.FC<TherapistPaymentInfoProps> = ({ therapist, 
         </div>
       </main>
     </div>
+    </TherapistLayout>
   );
 };
 
