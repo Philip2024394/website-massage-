@@ -198,8 +198,12 @@ export function PersistentChatWindow() {
   // Handle customer form submission
   const handleCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('📋 Form submitted - starting booking process');
     
     if (!customerForm.name || !customerForm.whatsApp) {
+      console.warn('⚠️ Missing required fields');
       return;
     }
 
@@ -272,8 +276,12 @@ export function PersistentChatWindow() {
 
     try {
       setIsSending(true);
+      console.log('📤 Sending booking message...');
       const result = await sendMessage(bookingMessage);
+      console.log('📤 Message sent result:', result);
+      
       if (result.sent) {
+        console.log('✅ Message sent successfully, creating booking...');
         // Create booking with countdown timer and discount info
         createBooking({
           duration: selectedDuration || 60,
@@ -287,11 +295,20 @@ export function PersistentChatWindow() {
           scheduledDate: selectedDate || undefined,
           scheduledTime: selectedTime || undefined,
         });
+        console.log('✅ Booking created, switching to chat step...');
+      } else {
+        console.warn('⚠️ Message not sent, result:', result);
       }
+      
+      console.log('🔄 Setting booking step to chat...');
       setBookingStep('chat');
+      console.log('✅ Booking step set to chat');
     } catch (error: unknown) {
-      const err = error as Error; console.error('Failed to send booking request:', err);
+      const err = error as Error; 
+      console.error('❌ Failed to send booking request:', err);
+      console.error('❌ Error stack:', err.stack);
     } finally {
+      console.log('🏁 Finishing submission, setting isSending to false');
       setIsSending(false);
     }
   };
