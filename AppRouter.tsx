@@ -402,6 +402,37 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(publicRoutes.landing.component);
         
         case 'home':
+            // 🔐 IMPORTANT: If therapist or place is logged in, redirect to their dashboard
+            // This ensures providers always see their dashboard when accessing home
+            if (props.loggedInProvider) {
+                console.log('🏠 [ROUTER] Provider logged in, redirecting to dashboard:', props.loggedInProvider.type);
+                if (props.loggedInProvider.type === 'therapist') {
+                    // Redirect to therapist dashboard instead of public home
+                    return renderRoute(therapistRoutes.dashboard.component, {
+                        onNavigate: props.onNavigate,
+                        onBack: props.handleBackToHome,
+                        loggedInProvider: props.loggedInProvider,
+                        onLogout: props.handleProviderLogout,
+                        onSave: props.handleSaveTherapist,
+                        onStatusChange: props.handleTherapistStatusChange,
+                        t: t,
+                        language: props.language
+                    });
+                } else if (props.loggedInProvider.type === 'place') {
+                    // Redirect to place dashboard instead of public home
+                    return renderRoute(placeRoutes.dashboard.component, {
+                        onNavigate: props.onNavigate,
+                        onBack: props.handleBackToHome,
+                        loggedInProvider: props.loggedInProvider,
+                        onLogout: props.handleProviderLogout,
+                        onSave: props.handleSavePlace,
+                        t: t,
+                        language: props.language
+                    });
+                }
+            }
+            
+            // No provider logged in - show public home page
             return renderRoute(publicRoutes.home.component, {
                 page: page, // Pass the current page prop to HomePage
                 user: props.user, // Pass user prop for chat system

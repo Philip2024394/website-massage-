@@ -56,21 +56,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
       switch (role) {
         case 'therapist':
           if (onNavigate) {
-            onNavigate('therapist');
+            onNavigate('therapistDashboard'); // ✅ Fixed: Use correct page name
           } else {
             window.location.href = '/dashboard/therapist';
           }
           break;
         case 'massage_place':
+        case 'place':
           if (onNavigate) {
-            onNavigate('massagePlace');
+            onNavigate('placeDashboard'); // ✅ Fixed: Use correct page name
           } else {
             window.location.href = '/dashboard/massage-place';
           }
           break;
         case 'facial_place':
           if (onNavigate) {
-            onNavigate('facialPlace');
+            onNavigate('facialDashboard'); // ✅ Fixed: Use correct page name
           } else {
             window.location.href = '/dashboard/facial-place';
           }
@@ -78,7 +79,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
         default:
           // Default to therapist dashboard
           if (onNavigate) {
-            onNavigate('therapist');
+            onNavigate('therapistDashboard'); // ✅ Fixed: Use correct page name
           } else {
             window.location.href = '/dashboard/therapist';
           }

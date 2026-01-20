@@ -67,8 +67,28 @@ export const useNavigation = ({
         setSelectedPlace(null);
         setProviderAuthInfo(null);
         setProviderForBooking(null);
-        setPage('home');
-    }, [setSelectedPlace, setProviderAuthInfo, setProviderForBooking, setPage]);
+        
+        // 🔐 IMPORTANT: If therapist or place is logged in, go to their dashboard instead of public home
+        // This ensures providers stay in their workspace when clicking home button
+        if (loggedInProvider) {
+            console.log('🏠 Provider logged in, redirecting to dashboard:', loggedInProvider.type);
+            if (loggedInProvider.type === 'therapist') {
+                setPage('therapistDashboard');
+            } else if (loggedInProvider.type === 'place') {
+                setPage('placeDashboard');
+            } else {
+                setPage('home'); // Fallback for other types
+            }
+        } else if (loggedInCustomer) {
+            // Customer logged in - stay on public home but maintain session
+            console.log('🏠 Customer logged in, going to public home (session maintained)');
+            setPage('home');
+        } else {
+            // No one logged in - public home
+            console.log('🏠 No session, going to public home');
+            setPage('home');
+        }
+    }, [setSelectedPlace, setProviderAuthInfo, setProviderForBooking, setPage, loggedInProvider, loggedInCustomer]);
 
     const handleBackToProviderDashboard = useCallback(() => {
         if (loggedInProvider?.type === 'therapist') {
