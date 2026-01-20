@@ -179,9 +179,9 @@ export const VALIDATED_COLLECTIONS = {
   get notifications() { return getValidatedCollectionId('THERAPISTS' as any); },
   
   // Chat System
-  get chat_rooms() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get chat_messages() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get admin_messages() { return getValidatedCollectionId('THERAPISTS' as any); },
+  get chat_rooms() { return 'chat_rooms'; },
+  get chat_messages() { return 'chat_messages'; },
+  get admin_messages() { return 'admin_messages'; },
   
   // Booking System
   get hotel_bookings() { return getValidatedCollectionId('THERAPISTS' as any); },

@@ -25,7 +25,7 @@ import { Client, Functions } from 'appwrite';
 // ============================================================================
 
 const APPWRITE_ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = '675d5d0e00328cac5bb5';
+const APPWRITE_PROJECT_ID = '68f23b11000d25eb3664'; // Main project ID
 const SEND_MESSAGE_FUNCTION_ID = 'sendChatMessage'; // Appwrite Function ID
 
 // ============================================================================
