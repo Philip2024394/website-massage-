@@ -9,6 +9,7 @@ import { PWAInstallationEnforcer } from "../../../../lib/pwaInstallationEnforcer
 import { useLanguage } from '../../../../hooks/useLanguage';
 import { useTranslations } from '../../../../lib/useTranslations';
 import { FloatingChatWindow } from '../../../../chat/FloatingChatWindow';
+import TherapistLayout from '../components/TherapistLayout';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -22,11 +23,12 @@ interface TherapistOnlineStatusProps {
   onBack: () => void;
   onRefresh?: () => Promise<void>;
   onNavigate?: (page: string) => void;
+  onLogout?: () => void;
   language?: 'en' | 'id';
 }
 
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
-
+onLogout, 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, language: propLanguage = 'id' }) => {
   // Get language from context (takes priority over prop)
   const { language: contextLanguage, setLanguage } = useLanguage();
@@ -721,82 +723,14 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
 
   return (
     <>
+    <TherapistLayout
+      therapist={therapist}
+      currentPage="status"
+      onNavigate={handleNavigate}
+      language={language}
+      onLogout={onLogout}
+    >
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="w-full bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-sm mx-auto px-4 py-5">
-          {/* Top Row */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-orange-500 flex items-center justify-center">
-                <Power className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <h1 className="text-xl font-bold text-gray-900">{dict.therapistDashboard.onlineStatus}</h1>
-                <p className="text-sm text-gray-500">{dict.therapistDashboard.manageAvailability}</p>
-              </div>
-              {/* Language Toggle */}
-              <button
-                onClick={() => {
-                  const newLang = language === 'id' ? 'en' : 'id';
-                  if (setLanguage) {
-                    setLanguage(newLang);
-                  }
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                title={language === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-              >
-                <span className="text-xl">{language === 'id' ? '🇮🇩' : '🇬🇧'}</span>
-              </button>
-              {isPremium && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-xl">
-                  <Crown className="w-4 h-4 text-white" />
-                  <span className="text-xs font-bold text-white">PREMIUM</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Account Health Indicator */}
-          <div className="flex items-center justify-end gap-2">
-            <div className="flex items-center gap-2">
-              {/* Health Dot */}
-              <div className="relative">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    accountHealth === 'good'
-                      ? 'bg-green-500'
-                      : accountHealth === 'fair'
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
-                  } ${
-                    accountHealth === 'poor' ? 'animate-pulse' : ''
-                  }`}
-                />
-                {accountHealth === 'poor' && (
-                  <div className="absolute inset-0 w-3 h-3 rounded-full bg-red-500 animate-ping opacity-75" />
-                )}
-              </div>
-              
-              {/* Health Text */}
-              <span
-                className={`text-xs font-semibold ${
-                  accountHealth === 'good'
-                    ? 'text-green-600'
-                    : accountHealth === 'fair'
-                    ? 'text-yellow-600'
-                    : 'text-red-600'
-                }`}
-              >
-                {dict.therapistDashboard.accountHealth}: {accountHealth.charAt(0).toUpperCase() + accountHealth.slice(1)}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-sm mx-auto px-4 py-6 space-y-6">
         {/* Current Status Display */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -1176,6 +1110,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
               {isAppInstalled 
                 ? `✅ ${dict.therapistDashboard.appProperlyInstalled}`
                 : `⚠️ ${dict.therapistDashboard.browserGenericSounds}`
+    </TherapistLayout>
               }
             </p>
           </div>
