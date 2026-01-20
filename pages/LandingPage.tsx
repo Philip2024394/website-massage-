@@ -643,11 +643,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
             
             {/* Scrollable content */}
-            <div className="scrollable relative z-20 flex flex-col items-center text-white px-3 sm:px-6 text-center w-full py-3 sm:py-12" style={{ paddingBottom: '1rem' }}>
-                <h1 className="text-2xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-2 sm:mb-4">
+            <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full min-h-screen">
+                <div className="flex-1 flex flex-col justify-center w-full max-w-lg">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-3 sm:mb-4">
                     <span className="text-white">Inda</span><span className="text-orange-400">street</span>
                 </h1>
-                <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-4 sm:mb-8">
+                <p className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-5 sm:mb-8">
                     {currentCountryData?.name === 'Philippines' 
                         ? `${currentCountryData?.name}' Massage Hub`
                         : `${currentCountryData?.name}'s Massage Hub`
@@ -655,7 +656,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 </p>
                 
                 {/* Location Selector - NEW UX: Auto-detected country, city selection only */}
-                <div className="w-full max-w-lg px-2 sm:px-4 mb-2 sm:mb-6">
+                <div className="w-full max-w-lg px-2 sm:px-4">
                     <div className="bg-gray-900 rounded-xl p-2.5 sm:p-6 border border-gray-700 shadow-xl" style={{ backgroundColor: 'rgba(17, 24, 39, 0.95)' }}>
                         {/* Auto-detected Country Header */}
                         <div className="mb-4 p-3 sm:p-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
@@ -760,6 +761,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             )}
                         </div>
                     </div>
+                </div>
                 </div>
                 
                 <PWAInstallIOSModal
