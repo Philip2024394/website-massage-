@@ -200,6 +200,11 @@ export function PersistentChatWindow() {
     e.preventDefault();
     e.stopPropagation();
     
+    // 🔒 ADDITIONAL SAFEGUARDS: Prevent any form of navigation
+    if (e && e.nativeEvent) {
+      e.nativeEvent.stopImmediatePropagation();
+    }
+    
     console.log('📋 Form submitted - starting booking process');
     
     if (!customerForm.name || !customerForm.whatsApp) {
@@ -303,6 +308,9 @@ export function PersistentChatWindow() {
       console.log('🔄 Setting booking step to chat...');
       setBookingStep('chat');
       console.log('✅ Booking step set to chat');
+      
+      // 🔒 EXPLICIT RETURN FALSE: Block any remaining event propagation
+      return false;
     } catch (error: unknown) {
       const err = error as Error; 
       console.error('❌ Failed to send booking request:', err);
@@ -311,6 +319,9 @@ export function PersistentChatWindow() {
       console.log('🏁 Finishing submission, setting isSending to false');
       setIsSending(false);
     }
+    
+    // 🔒 FINAL SAFEGUARD: Return false to prevent any form submission
+    return false;
   };
 
   // Handle send message (with spam detection)
@@ -1315,7 +1326,12 @@ export function PersistentChatWindow() {
               )}
               
               <button
-                type="submit"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCustomerSubmit(e as any);
+                }}
                 disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                   (!isSending && customerForm.name && customerForm.whatsApp && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))

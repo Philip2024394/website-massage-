@@ -885,6 +885,50 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         console.log(`🎁 Discount Applied: ${bookingData.discountCode} (${bookingData.discountPercentage}%) - Original: ${bookingData.originalPrice} → Final: ${price}`);
       }
       
+      // 🔊 SEND NOTIFICATIONS: Therapist alert with sound + Admin notification
+      try {
+        // Import notification services dynamically to avoid circular dependencies
+        const { notificationService } = await import('../lib/appwriteService');
+        const { notificationSoundManager } = await import('../lib/notificationSound');
+        
+        // Send notification to therapist/provider
+        if (therapist?.id) {
+          console.log('🔔 Sending notification to therapist:', therapist.id);
+          await notificationService.sendNewBookingNotification(
+            therapist.id,
+            currentUserId,
+            currentUserName || chatState.customerName || 'Guest',
+            duration,
+            price,
+            lifecycleBooking.$id || booking.$id || ''
+          );
+          
+          // 🎵 PLAY MUSIC/SOUND for therapist (if they're online)
+          notificationSoundManager.play();
+          console.log('🎵 Notification sound played for therapist');
+        }
+        
+        // Send notification to admin
+        console.log('📧 Sending notification to admin dashboard');
+        await notificationService.sendAdminNotification({
+          type: 'new_booking',
+          bookingId: lifecycleBooking.$id || booking.$id || '',
+          therapistId: therapist?.id,
+          therapistName: therapist?.name,
+          customerId: currentUserId,
+          customerName: currentUserName || chatState.customerName || 'Guest',
+          duration,
+          price,
+          commission: adminCommission,
+          timestamp: new Date().toISOString()
+        });
+        console.log('✅ Admin notification sent');
+        
+      } catch (notificationError) {
+        // Don't fail booking if notification fails - just log error
+        console.error('⚠️ Failed to send notifications (booking still created):', notificationError);
+      }
+      
     } catch (error) {
       console.error('❌ [BookingLifecycle] Failed to create booking:', error);
       addSystemNotification('❌ Failed to create booking. Please try again.');
