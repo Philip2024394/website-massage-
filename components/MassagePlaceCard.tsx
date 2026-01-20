@@ -741,9 +741,6 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                                         </div>
                                                     </div>
                                                 </div>
-                                                        </button>
-                                                    </div>
-                                                </div>
                                             );
                                         })}
                                     </div>
