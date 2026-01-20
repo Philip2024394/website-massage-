@@ -1266,9 +1266,40 @@ class MembershipSignupService {
             const session = await account.createEmailPasswordSession(email, password);
             console.log('✅ Sign in successful');
             return session;
-        } catch (error) {
+        } catch (error: any) {
             console.error('❌ Sign in failed:', error);
-            throw error;
+            
+            // Parse Appwrite error and provide specific user-friendly messages
+            const errorMessage = error?.message || '';
+            const errorCode = error?.code;
+            
+            // Check for specific error scenarios
+            if (errorMessage.includes('Invalid credentials') || errorCode === 401) {
+                throw new Error('❌ Incorrect email or password. Please check your credentials and try again.');
+            }
+            
+            if (errorMessage.includes('User (role: guests) missing scope') || errorMessage.includes('blocked')) {
+                throw new Error('🚫 Your account has been blocked. Please contact admin for assistance.');
+            }
+            
+            if (errorMessage.includes('Too many requests') || errorCode === 429) {
+                throw new Error('⏱️ Too many login attempts. Please wait a few minutes and try again.');
+            }
+            
+            if (errorMessage.includes('email') && errorMessage.includes('not found')) {
+                throw new Error('📧 No account found with this email. Please sign up first.');
+            }
+            
+            if (errorMessage.includes('network') || errorMessage.includes('NetworkError')) {
+                throw new Error('🌐 Network error. Please check your internet connection and try again.');
+            }
+            
+            if (errorMessage.includes('rate limit')) {
+                throw new Error('⏱️ Too many attempts. Please wait 15 minutes before trying again.');
+            }
+            
+            // Default fallback with more helpful message
+            throw new Error(`❌ Sign in failed: ${errorMessage || 'Please contact admin if this problem persists.'}`);
         }
     }
 

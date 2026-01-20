@@ -141,28 +141,70 @@ if (isDevelopment) {
 export function handleAppwriteError(error: any, operation: string): string {
     console.error(`Appwrite ${operation} error:`, error);
     
-    // Rate limit error
-    if (error.code === 429 || error.message?.includes('rate limit')) {
+    const errorMessage = error?.message || '';
+    const errorCode = error?.code;
+    
+    // Rate limit errors
+    if (errorCode === 429 || errorMessage.includes('rate limit') || errorMessage.includes('Too many requests')) {
         return formatRateLimitError(operation);
     }
     
     // User already exists
-    if (error.code === 409 || error.message?.includes('already exists')) {
-        return 'An account with this email already exists. Please sign in instead.';
+    if (errorCode === 409 || errorMessage.includes('already exists') || errorMessage.includes('duplicate')) {
+        return '📧 An account with this email already exists. Please sign in instead.';
     }
     
-    // Invalid credentials
-    if (error.code === 401) {
-        return 'Invalid email or password. Please check your credentials and try again.';
+    // Invalid credentials - Most common login error
+    if (errorCode === 401 || errorMessage.includes('Invalid credentials') || errorMessage.includes('invalid_credentials')) {
+        return '❌ Incorrect email or password. Please check your credentials and try again.';
     }
     
-    // Network or server errors
-    if (error.code >= 500) {
-        return 'Server error. Please try again in a few moments.';
+    // Account blocked
+    if (errorMessage.includes('blocked') || errorMessage.includes('disabled') || errorMessage.includes('User (role: guests) missing scope')) {
+        return '🚫 Your account has been blocked or disabled. Please contact admin for assistance.';
     }
     
-    // Default error message
-    return error.message || `${operation} failed. Please try again.`;
+    // Email not found
+    if (errorMessage.includes('not found') || errorMessage.includes('user not found') || errorCode === 404) {
+        return '📧 No account found with this email. Please check your email or sign up first.';
+    }
+    
+    // Password too weak
+    if (errorMessage.includes('password') && (errorMessage.includes('weak') || errorMessage.includes('short') || errorMessage.includes('minimum'))) {
+        return '🔒 Password must be at least 8 characters long. Please choose a stronger password.';
+    }
+    
+    // Invalid email format
+    if (errorMessage.includes('email') && (errorMessage.includes('invalid') || errorMessage.includes('format'))) {
+        return '📧 Invalid email format. Please enter a valid email address.';
+    }
+    
+    // Network errors
+    if (errorMessage.includes('network') || errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        return '🌐 Network error. Please check your internet connection and try again.';
+    }
+    
+    // Server errors (500+)
+    if (errorCode >= 500) {
+        return '🔧 Server error. Please try again in a few moments.';
+    }
+    
+    // Session errors
+    if (errorMessage.includes('session') && errorMessage.includes('invalid')) {
+        return '⏱️ Your session has expired. Please sign in again.';
+    }
+    
+    // Default error message - be more helpful
+    if (errorMessage) {
+        // Clean up the error message - remove technical jargon
+        const cleanMessage = errorMessage
+            .replace(/AppwriteException:/gi, '')
+            .replace(/Error:/gi, '')
+            .trim();
+        return `❌ ${cleanMessage}`;
+    }
+    
+    return `❌ ${operation} failed. Please try again or contact admin if the problem persists.`;
 }
 
 /**

@@ -86,7 +86,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
 
     } catch (error) {
       console.error('❌ Sign in error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to sign in');
+      
+      // Extract and display the specific error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : '❌ Sign in failed. Please try again or contact admin for assistance.';
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
