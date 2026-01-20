@@ -2,7 +2,7 @@
   "name": "IndaStreet Massage - Therapist & Place",
   "short_name": "IndaStreet",
   "description": "Professional massage booking platform with instant notifications",
-  "start_url": "/?source=pwa",
+  "start_url": "/home?source=pwa",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "background_color": "#111827",

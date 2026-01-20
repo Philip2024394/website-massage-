@@ -10,6 +10,7 @@ import { useCityContext } from '../context/CityContext';
 import UniversalHeader from '../components/shared/UniversalHeader';
 import { loadLanguageResources } from '../lib/i18n';
 import { ipGeolocationService } from '../lib/ipGeolocationService';
+import { isPWA, shouldAllowRedirects } from '../utils/pwaDetection';
 import type { UserLocation } from '../types';
 import type { Language } from '../types/pageTypes';
 
@@ -326,6 +327,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         if (isDetectingLocation) return;
         if (!isMountedRef.current) return;
         
+        // 🛑 PWA MODE: Do NOT redirect - user is already in the app
+        if (isPWA()) {
+            console.log('🛑 PWA mode detected - skipping landing page redirect');
+            return;
+        }
+        
         // If no city selected, do nothing (button should be disabled)
         if (!selectedCity) {
             console.log('⚠️ No city selected - cannot proceed');
@@ -362,23 +369,29 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     console.log('🚀 Navigating to home via global setPage');
                     (window as any).setPage('home');
                 } else {
-                    // Final fallback - redirect via URL
-                    console.log('🚀 Fallback: Redirecting to /home');
-                    window.location.href = '/home';
+                    // Final fallback - redirect via URL (ONLY in browser mode)
+                    if (shouldAllowRedirects()) {
+                        console.log('🚀 Fallback: Redirecting to /home');
+                        window.location.href = '/home';
+                    }
                 }
                 return;
             }
             
-            // Final fallback - URL redirect
-            console.log('🚀 Final fallback: URL redirect');
-            window.location.href = '/home';
+            // Final fallback - URL redirect (ONLY in browser mode)
+            if (shouldAllowRedirects()) {
+                console.log('🚀 Final fallback: URL redirect');
+                window.location.href = '/home';
+            }
             
         } catch (error) {
             console.error('❌ Failed to handle enter click:', error);
             
-            // Emergency fallback
-            console.log('🚀 Emergency fallback: Direct URL navigation');
-            window.location.href = '/home';
+            // Emergency fallback (ONLY in browser mode)
+            if (shouldAllowRedirects()) {
+                console.log('🚀 Emergency fallback: Direct URL navigation');
+                window.location.href = '/home';
+            }
         } finally {
             // Don't reset loading state if component is unmounting
             if (isMountedRef.current) {
@@ -421,6 +434,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         
         console.log('📍 Navigating to home page...');
         
+        // 🛑 PWA MODE: Do NOT redirect - user is already in the app
+        if (isPWA()) {
+            console.log('🛑 PWA mode detected - skipping city selection redirect');
+            return;
+        }
+        
         // Small delay to show selection feedback
         setTimeout(async () => {
             try {
@@ -444,19 +463,27 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                         // Scroll to top to show therapist cards immediately
                         setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                     } else {
-                        console.log('🚀 Redirecting to /home');
-                        window.location.href = '/home';
+                        // Redirect via URL (ONLY in browser mode)
+                        if (shouldAllowRedirects()) {
+                            console.log('🚀 Redirecting to /home');
+                            window.location.href = '/home';
+                        }
                     }
                     return;
                 }
                 
-                // Final fallback - URL redirect
-                console.log('🚀 Final fallback: URL redirect to home');
-                window.location.href = '/home';
+                // Final fallback - URL redirect (ONLY in browser mode)
+                if (shouldAllowRedirects()) {
+                    console.log('🚀 Final fallback: URL redirect to home');
+                    window.location.href = '/home';
+                }
                 
             } catch (error) {
                 console.error('❌ Failed to navigate to home:', error);
-                window.location.href = '/home';
+                // Only redirect in browser mode
+                if (shouldAllowRedirects()) {
+                    window.location.href = '/home';
+                }
             }
         }, 300);
     };
@@ -547,6 +574,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             setSelectedCity(detectedCity);
             setCity(detectedCity);
             
+            // 🛑 PWA MODE: Do NOT redirect - user is already in the app
+            if (isPWA()) {
+                console.log('🛑 PWA mode detected - skipping GPS redirect');
+                setIsDetectingLocation(false);
+                return;
+            }
+            
             // Small delay to show feedback
             setTimeout(async () => {
                 // Navigate to home page
@@ -568,19 +602,27 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                             // Scroll to top to show therapist cards immediately
                             setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
                         } else {
-                            console.log('🚀 Redirecting to /home');
-                            window.location.href = '/home';
+                            // Redirect via URL (ONLY in browser mode)
+                            if (shouldAllowRedirects()) {
+                                console.log('🚀 Redirecting to /home');
+                                window.location.href = '/home';
+                            }
                         }
                         return;
                     }
                     
-                    // Final fallback - URL redirect
-                    console.log('🚀 Final fallback: URL redirect to home');
-                    window.location.href = '/home';
+                    // Final fallback - URL redirect (ONLY in browser mode)
+                    if (shouldAllowRedirects()) {
+                        console.log('🚀 Final fallback: URL redirect to home');
+                        window.location.href = '/home';
+                    }
                     
                 } catch (error) {
                     console.error('❌ Failed to navigate to home:', error);
-                    window.location.href = '/home';
+                    // Only redirect in browser mode
+                    if (shouldAllowRedirects()) {
+                        window.location.href = '/home';
+                    }
                 }
             }, 500);
             
@@ -600,11 +642,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                 if ((window as any).setPage) {
                     (window as any).setPage('home');
                 } else {
-                    window.location.href = '/home';
+                    // Only redirect in browser mode
+                    if (shouldAllowRedirects()) {
+                        window.location.href = '/home';
+                    }
                 }
             } catch (navError) {
                 console.error('❌ Navigation failed:', navError);
-                window.location.href = '/home';
+                // Only redirect in browser mode
+                if (shouldAllowRedirects()) {
+                    window.location.href = '/home';
+                }
             }
         } finally {
             if (isMountedRef.current) {

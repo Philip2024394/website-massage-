@@ -55,17 +55,16 @@ self.addEventListener('activate', (event) => {
     
     event.waitUntil(
         caches.keys().then((cacheNames) => {
+            // 🔥 AGGRESSIVE CACHE CLEARING - Delete ALL caches to prevent redirect loops
+            console.log(`🗑️ Deleting ALL caches (${cacheNames.length} found) to prevent PWA redirect issues`);
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    // Delete all old cache versions
-                    if (cacheName !== CACHE_NAME) {
-                        console.log(`🗑️ Deleting old cache: ${cacheName}`);
-                        return caches.delete(cacheName);
-                    }
+                    console.log(`🗑️ Deleting cache: ${cacheName}`);
+                    return caches.delete(cacheName);
                 })
             );
         }).then(() => {
-            console.log(`✅ Service Worker ${SW_VERSION}: Old caches cleared`);
+            console.log(`✅ Service Worker ${SW_VERSION}: All caches cleared - fresh start`);
             // Take control of all clients immediately
             return self.clients.claim();
         }).then(() => {
