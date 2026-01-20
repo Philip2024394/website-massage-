@@ -467,31 +467,29 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       onLogout={onLogout}
     >
     <div className="min-h-screen bg-white">
-          {/* Tab Navigation */}
-          <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-4">
-            <button
-              onClick={() => setActiveTab('bookings')}
-              className={`px-6 py-3 font-semibold transition-all relative ${
-                activeTab === 'bookings'
-                  ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              📋 {currentLabels.bookings}
-            </button>
-            <button
-              onClick={() => setActiveTab('schedule')}
-              className={`px-6 py-3 font-semibold transition-all relative ${
-                activeTab === 'schedule'
-                  ? 'text-orange-600 border-b-2 border-orange-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              🕐 {currentLabels.schedule}
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Tab Navigation */}
+      <div className="flex gap-2 border-b border-gray-200 bg-white px-4 pt-4">
+        <button
+          onClick={() => setActiveTab('bookings')}
+          className={`px-6 py-3 font-semibold transition-all relative ${
+            activeTab === 'bookings'
+              ? 'text-orange-600 border-b-2 border-orange-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          📋 {currentLabels.bookings}
+        </button>
+        <button
+          onClick={() => setActiveTab('schedule')}
+          className={`px-6 py-3 font-semibold transition-all relative ${
+            activeTab === 'schedule'
+              ? 'text-orange-600 border-b-2 border-orange-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          🕐 {currentLabels.schedule}
+        </button>
+      </div>
 
       {/* Tab Content */}
       {activeTab === 'schedule' ? (
