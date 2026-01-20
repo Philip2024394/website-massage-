@@ -33,17 +33,16 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event
+// Activate event - Clear ALL caches to prevent old redirect loops
 self.addEventListener('activate', (event) => {
   console.log('✅ Service Worker: Activating...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
+      console.log('🗑️ Clearing ALL caches to prevent old redirects');
       return Promise.all(
         cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('🗑️ Service Worker: Clearing old cache');
-            return caches.delete(cache);
-          }
+          console.log('🗑️ Deleting cache:', cache);
+          return caches.delete(cache);
         })
       );
     })

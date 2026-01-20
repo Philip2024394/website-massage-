@@ -34,7 +34,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "/?pwa=true",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#FF6B35",

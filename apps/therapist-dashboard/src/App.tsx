@@ -38,6 +38,12 @@ import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pw
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
 
 function App() {
+  // Detect PWA mode
+  const isPWA = 
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true ||
+    window.location.search.includes('pwa=true');
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);  // Auth check completion flag
   const [isLoading, setIsLoading] = useState(true);
@@ -253,6 +259,8 @@ function App() {
 
   const checkAuth = async () => {
     try {
+      console.log('🔐 Starting auth check... isPWA:', isPWA);
+      
       let currentUser = await authService.getCurrentUser();
       
       // If Appwrite session failed, try localStorage fallback
@@ -263,7 +271,7 @@ function App() {
           if (backupStr) {
             const backup = JSON.parse(backupStr);
             const age = Date.now() - backup.timestamp;
-            const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+            const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days for PWA persistence
             
             if (age < maxAge && backup.userId) {
               console.log('🔄 Restoring session from localStorage backup...');
@@ -315,14 +323,16 @@ function App() {
           setUser(therapistDoc);
           setIsAuthenticated(true);
           
-          // Store session backup in localStorage
+          // Store session backup in localStorage with auth role
           try {
             localStorage.setItem('therapist_session_backup', JSON.stringify({
               userId: therapistDoc.$id,
               email: therapistDoc.email,
               timestamp: Date.now()
             }));
-            console.log('✅ Session backup saved to localStorage');
+            localStorage.setItem('authUser', JSON.stringify(therapistDoc));
+            localStorage.setItem('authRole', 'therapist');
+            console.log('✅ Session backup and auth state saved to localStorage');
           } catch (err) {
             console.warn('⚠️ Failed to save session backup:', err);
           }
@@ -417,6 +427,8 @@ function App() {
   
   const handleLogout = async () => {
     try {
+      console.log('🚪 Logout initiated...');
+      
       // 🛑 STOP SYSTEM HEALTH MONITORING
       systemHealthService.stopHealthMonitoring();
       console.log('🛑 System health monitoring stopped');
@@ -428,6 +440,14 @@ function App() {
       // 🛑 CLEANUP PWA NOTIFICATIONS
       PWANotificationManager.cleanup();
       console.log('🛑 PWA notifications cleanup complete');
+      
+      // 🗑️ CLEAR ALL AUTH DATA FROM LOCALSTORAGE
+      localStorage.removeItem('therapist_session_backup');
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('authRole');
+      localStorage.removeItem('indastreet_language');
+      localStorage.removeItem('notificationTested');
+      console.log('🗑️ All localStorage auth data cleared');
       
       await authService.logout();
       setIsAuthenticated(false);
