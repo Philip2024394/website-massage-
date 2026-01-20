@@ -625,6 +625,7 @@ function App() {
               console.log('🍽️ App.tsx: Setting currentPage to custom-menu');
               setCurrentPage('custom-menu');
             }}
+            language={language}
           />
         );
     }
