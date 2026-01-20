@@ -712,21 +712,60 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 {/* Pricing */}
                 <div className="grid grid-cols-3 gap-2 mb-7">
                     {pricing["60"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                            <div className="text-xs text-gray-600 mb-1">60 min</div>
-                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
+                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
+                            isDiscountActive(therapist) 
+                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
+                                : 'bg-gray-200 min-h-[70px]'
+                        }`}>
+                            <div className="text-xs text-gray-600 mb-1 font-semibold">60 min</div>
+                            {isDiscountActive(therapist) ? (
+                                <>
+                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["60"])}</div>
+                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
+                                        Rp {formatPrice(Math.round(pricing["60"] * (1 - (therapist.discountPercentage || 0) / 100)))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["60"])}</div>
+                            )}
                         </div>
                     )}
                     {pricing["90"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                            <div className="text-xs text-gray-600 mb-1">90 min</div>
-                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
+                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
+                            isDiscountActive(therapist) 
+                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
+                                : 'bg-gray-200 min-h-[70px]'
+                        }`}>
+                            <div className="text-xs text-gray-600 mb-1 font-semibold">90 min</div>
+                            {isDiscountActive(therapist) ? (
+                                <>
+                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["90"])}</div>
+                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
+                                        Rp {formatPrice(Math.round(pricing["90"] * (1 - (therapist.discountPercentage || 0) / 100)))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["90"])}</div>
+                            )}
                         </div>
                     )}
                     {pricing["120"] > 0 && (
-                        <div className="text-center p-2 bg-gray-200 rounded-lg min-w-0">
-                            <div className="text-xs text-gray-600 mb-1">120 min</div>
-                            <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
+                        <div className={`text-center p-2 rounded-lg min-w-0 transition-all ${
+                            isDiscountActive(therapist) 
+                                ? 'bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-300 min-h-[85px]' 
+                                : 'bg-gray-200 min-h-[70px]'
+                        }`}>
+                            <div className="text-xs text-gray-600 mb-1 font-semibold">120 min</div>
+                            {isDiscountActive(therapist) ? (
+                                <>
+                                    <div className="text-xs font-bold text-gray-500 line-through">Rp {formatPrice(pricing["120"])}</div>
+                                    <div className="text-sm font-bold text-orange-600 animate-pulse">
+                                        Rp {formatPrice(Math.round(pricing["120"] * (1 - (therapist.discountPercentage || 0) / 100)))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-sm font-bold text-gray-900 break-words">Rp {formatPrice(pricing["120"])}</div>
+                            )}
                         </div>
                     )}
                 </div>

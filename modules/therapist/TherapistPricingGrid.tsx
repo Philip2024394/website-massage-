@@ -36,7 +36,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
 
             <div className="grid grid-cols-3 gap-2 text-center text-sm mt-1 px-4">
                 {/* 60 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
+                } flex flex-col justify-center ${
                     animatedPriceIndex === 0
                         ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
@@ -52,14 +54,14 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             {displayRating}
                         </div>
                     )}
-                    <p className="text-gray-600 text-xs mb-1">60 min</p>
+                    <p className="text-gray-600 text-xs mb-1 font-semibold">60 min</p>
                     {isDiscountActive(therapist) ? (
                         <>
-                            <p className="font-bold text-gray-800 text-sm leading-tight">
-                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                            </p>
-                            <p className="text-[11px] text-gray-500 line-through">
+                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
                                 IDR {formatPrice(Number(pricing["60"]))}
+                            </p>
+                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                                IDR {formatPrice(Math.round(Number(pricing["60"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
                             </p>
                         </>
                     ) : (
@@ -70,7 +72,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                 </div>
 
                 {/* 90 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
+                } flex flex-col justify-center ${
                     animatedPriceIndex === 1
                         ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
@@ -86,11 +90,16 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             {displayRating}
                         </div>
                     )}
-                    <p className="text-gray-600 text-xs mb-1">90 min</p>
+                    <p className="text-gray-600 text-xs mb-1 font-semibold">90 min</p>
                     {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
+                        <>
+                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
+                                IDR {formatPrice(Number(pricing["90"]))}
+                            </p>
+                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                                IDR {formatPrice(Math.round(Number(pricing["90"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                            </p>
+                        </>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
                             IDR {formatPrice(Number(pricing["90"]))}
@@ -99,7 +108,9 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                 </div>
                 
                 {/* 120 min pricing */}
-                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 min-h-[75px] flex flex-col justify-center ${
+                <div className={`p-2 rounded-lg border shadow-md relative transition-all duration-500 ${
+                    isDiscountActive(therapist) ? 'min-h-[95px]' : 'min-h-[75px]'
+                } flex flex-col justify-center ${
                     animatedPriceIndex === 2
                         ? 'bg-gray-100 border-orange-500 border-[3px] shadow-lg scale-[1.02]'
                         : isDiscountActive(therapist)
@@ -115,11 +126,16 @@ const TherapistPricingGrid: React.FC<TherapistPricingGridProps> = ({
                             {displayRating}
                         </div>
                     )}
-                    <p className="text-gray-600 text-xs mb-1">120 min</p>
+                    <p className="text-gray-600 text-xs mb-1 font-semibold">120 min</p>
                     {isDiscountActive(therapist) ? (
-                        <p className="font-bold text-gray-800 text-sm leading-tight">
-                            IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
-                        </p>
+                        <>
+                            <p className="text-[11px] text-gray-500 line-through mb-0.5">
+                                IDR {formatPrice(Number(pricing["120"]))}
+                            </p>
+                            <p className="font-bold text-orange-600 text-sm leading-tight animate-pulse">
+                                IDR {formatPrice(Math.round(Number(pricing["120"]) * (1 - (therapist.discountPercentage || 0) / 100)))}
+                            </p>
+                        </>
                     ) : (
                         <p className="font-bold text-gray-800 text-sm leading-tight">
                             IDR {formatPrice(Number(pricing["120"]))}
