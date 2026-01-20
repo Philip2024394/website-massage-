@@ -261,14 +261,14 @@
           left: 0;
           width: 100%;
           height: 100%;
-          background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+          background: #111827;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           z-index: 9999;
           opacity: 1;
-          transition: opacity 0.4s ease-out;
+          transition: opacity 0.3s ease-out;
         }
         
         #pwa-splash.hidden {
@@ -277,37 +277,28 @@
         }
         
         #pwa-splash img {
-          width: 120px;
-          height: 120px;
+          width: 140px;
+          height: 140px;
           object-fit: contain;
-          margin-bottom: 20px;
-          animation: pulse 2s ease-in-out infinite;
+          margin-bottom: 24px;
+          border-radius: 50%;
+          padding: 10px;
+          background: transparent;
         }
         
         #pwa-splash h1 {
           color: white;
-          font-size: 32px;
-          font-weight: bold;
+          font-size: 28px;
+          font-weight: 600;
           margin: 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         }
         
         #pwa-splash p {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 16px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 14px;
           margin: 8px 0 0 0;
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        }
-        
-        @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.05);
-            opacity: 0.8;
-          }
         }
     </style>
     
@@ -331,8 +322,9 @@
     <script>
       (function() {
         var splashHidden = false;
+        var contentReady = false;
         
-        // Hide splash when content is ready
+        // Hide splash smoothly
         function hideSplash() {
           if (splashHidden) return;
           splashHidden = true;
@@ -348,30 +340,42 @@
           }
         }
         
-        // Hide when React renders AND images are loaded
+        // Wait for both React content AND background image
         var observer = new MutationObserver(function(mutations) {
           var root = document.getElementById('root');
-          if (root && root.children.length > 0) {
-            // Wait a tiny bit for images to start loading
-            setTimeout(function() {
-              hideSplash();
-              observer.disconnect();
-            }, 200);
+          if (root && root.children.length > 0 && !contentReady) {
+            contentReady = true;
+            
+            // Preload landing page background image
+            var bgImg = new Image();
+            bgImg.onload = function() {
+              // Image loaded, hide splash after brief moment
+              setTimeout(hideSplash, 150);
+            };
+            bgImg.onerror = function() {
+              // Image failed, hide anyway
+              setTimeout(hideSplash, 150);
+            };
+            // Start loading the background image
+            bgImg.src = 'https://ik.imagekit.io/7grri5v7d/indastreet%20massage.png?updatedAt=1761978080830';
+            
+            observer.disconnect();
           }
         });
         observer.observe(document.getElementById('root'), { childList: true });
         
-        // Fallback: hide on load
+        // Fallback: hide on window load
         window.addEventListener('load', function() {
-          setTimeout(hideSplash, 300);
+          setTimeout(hideSplash, 400);
         });
         
-        // Fallback: hide on first interaction
-        document.addEventListener('touchstart', hideSplash, { once: true });
-        document.addEventListener('click', hideSplash, { once: true });
+        // Fallback: hide on first touch (user interaction)
+        document.addEventListener('touchstart', function() {
+          setTimeout(hideSplash, 100);
+        }, { once: true });
         
-        // Emergency fallback: force hide after 2 seconds max
-        setTimeout(hideSplash, 2000);
+        // Emergency fallback: max 3 seconds
+        setTimeout(hideSplash, 3000);
       })();
     </script>
     
