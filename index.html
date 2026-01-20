@@ -330,42 +330,47 @@
     <!-- Hide splash screen after React loads -->
     <script>
       (function() {
+        var splashHidden = false;
+        
         // Hide splash when content is ready
         function hideSplash() {
+          if (splashHidden) return;
+          splashHidden = true;
+          
           var splash = document.getElementById('pwa-splash');
-          if (splash && !splash.classList.contains('hidden')) {
-            splash.classList.add('hidden');
+          if (splash) {
+            splash.style.opacity = '0';
             setTimeout(function() {
               if (splash.parentNode) {
                 splash.remove();
               }
-            }, 400);
+            }, 300);
           }
         }
         
-        // Wait for React to mount
-        window.addEventListener('load', function() {
-          setTimeout(hideSplash, 300);
-        });
-        
-        // Also hide on first touch (mobile)
-        document.addEventListener('touchstart', function() {
-          setTimeout(hideSplash, 100);
-        }, { once: true });
-        
-        // Hide when root has content
+        // Hide immediately when root has content (fastest)
         var observer = new MutationObserver(function(mutations) {
           var root = document.getElementById('root');
           if (root && root.children.length > 0) {
-            setTimeout(hideSplash, 200);
+            hideSplash();
             observer.disconnect();
           }
         });
         observer.observe(document.getElementById('root'), { childList: true });
+        
+        // Fallback: hide on load
+        window.addEventListener('load', function() {
+          setTimeout(hideSplash, 50);
+        });
+        
+        // Fallback: hide on first interaction
+        document.addEventListener('touchstart', hideSplash, { once: true });
+        document.addEventListener('click', hideSplash, { once: true });
+        
+        // Emergency fallback: force hide after 2 seconds max
+        setTimeout(hideSplash, 2000);
       })();
     </script>
-    
-    iv id="overlay-root"></div>
     
     <!-- 🛠️ APPWRITE ERROR FIXES: Handle 404/400 database errors -->
     <script src="/appwrite-error-fixes.js"></script>
