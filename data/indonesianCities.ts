@@ -103,6 +103,51 @@ export const INDONESIAN_CITIES_CATEGORIZED: CityCategory[] = [
     category: "🌋 Java",
     cities: [
       {
+        name: "Jakarta Pusat",
+        locationId: "jakarta-pusat",
+        province: "DKI Jakarta",
+        coordinates: { lat: -6.1862, lng: 106.8341 },
+        isMainCity: true,
+        isTouristDestination: true,
+        aliases: ["Central Jakarta", "Jakarta Central"]
+      },
+      {
+        name: "Jakarta Barat",
+        locationId: "jakarta-barat",
+        province: "DKI Jakarta",
+        coordinates: { lat: -6.1675, lng: 106.7600 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["West Jakarta", "Jakarta West"]
+      },
+      {
+        name: "Jakarta Selatan",
+        locationId: "jakarta-selatan",
+        province: "DKI Jakarta",
+        coordinates: { lat: -6.2615, lng: 106.8106 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["South Jakarta", "Jakarta South"]
+      },
+      {
+        name: "Jakarta Timur",
+        locationId: "jakarta-timur",
+        province: "DKI Jakarta",
+        coordinates: { lat: -6.2250, lng: 106.9000 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["East Jakarta", "Jakarta East"]
+      },
+      {
+        name: "Jakarta Utara",
+        locationId: "jakarta-utara",
+        province: "DKI Jakarta",
+        coordinates: { lat: -6.1385, lng: 106.8827 },
+        isMainCity: true,
+        isTouristDestination: false,
+        aliases: ["North Jakarta", "Jakarta North"]
+      },
+      {
         name: "Jakarta",
         locationId: "jakarta",
         province: "DKI Jakarta",

@@ -49,31 +49,149 @@ interface CityOption {
 }
 
 const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
-  // INDONESIA - 80+ cities with regions
+  // INDONESIA - All 120+ Indonesian cities
   ID: [
-    { name: 'Jakarta', region: 'DKI Jakarta', description: 'Capital of Indonesia', popular: true, country: 'ID' },
+    // Bali Region
+    { name: 'Denpasar', region: 'Bali', description: 'Capital of Bali', popular: true, country: 'ID' },
     { name: 'Canggu', region: 'Bali', description: 'Surfing & digital nomad hub', popular: true, country: 'ID' },
     { name: 'Seminyak', region: 'Bali', description: 'Luxury beach resort area', popular: true, country: 'ID' },
     { name: 'Kuta', region: 'Bali', description: 'Famous beach & nightlife', popular: true, country: 'ID' },
     { name: 'Ubud', region: 'Bali', description: 'Cultural heart of Bali', popular: true, country: 'ID' },
     { name: 'Sanur', region: 'Bali', description: 'Relaxed beachside town', popular: true, country: 'ID' },
-    { name: 'Denpasar', region: 'Bali', description: 'Capital of Bali', popular: true, country: 'ID' },
     { name: 'Nusa Dua', region: 'Bali', description: 'Luxury resort enclave', popular: true, country: 'ID' },
     { name: 'Jimbaran', region: 'Bali', description: 'Seafood & sunset beaches', popular: true, country: 'ID' },
-    { name: 'Yogyakarta', region: 'DI Yogyakarta', description: 'Cultural & historical city', popular: true, country: 'ID' },
-    { name: 'Bandung', region: 'West Java', description: 'Cool mountain city', popular: true, country: 'ID' },
-    { name: 'Surabaya', region: 'East Java', description: 'Second largest city', popular: true, country: 'ID' },
-    { name: 'Medan', region: 'North Sumatra', description: 'Gateway to Sumatra', popular: true, country: 'ID' },
-    { name: 'Malang', region: 'East Java', description: 'Cool highland city', popular: false, country: 'ID' },
-    { name: 'Semarang', region: 'Central Java', description: 'Port city', popular: false, country: 'ID' },
-    { name: 'Palembang', region: 'South Sumatra', description: 'River city', popular: false, country: 'ID' },
-    { name: 'Makassar', region: 'South Sulawesi', description: 'Gateway to eastern Indonesia', popular: false, country: 'ID' },
-    { name: 'Batam', region: 'Riau Islands', description: 'Industrial island city', popular: false, country: 'ID' },
-    { name: 'Pekanbaru', region: 'Riau', description: 'Oil city', popular: false, country: 'ID' },
+    
+    // Jakarta & Surrounding
+    { name: 'Jakarta', region: 'DKI Jakarta', description: 'Capital of Indonesia', popular: true, country: 'ID' },
+    { name: 'Jakarta Pusat', region: 'DKI Jakarta', description: 'Central Jakarta', popular: true, country: 'ID' },
+    { name: 'Jakarta Barat', region: 'DKI Jakarta', description: 'West Jakarta', popular: false, country: 'ID' },
+    { name: 'Jakarta Selatan', region: 'DKI Jakarta', description: 'South Jakarta', popular: true, country: 'ID' },
+    { name: 'Jakarta Timur', region: 'DKI Jakarta', description: 'East Jakarta', popular: false, country: 'ID' },
+    { name: 'Jakarta Utara', region: 'DKI Jakarta', description: 'North Jakarta', popular: false, country: 'ID' },
     { name: 'Tangerang', region: 'Banten', description: 'Jakarta satellite city', popular: false, country: 'ID' },
-    { name: 'Bogor', region: 'West Java', description: 'Rain city', popular: false, country: 'ID' },
+    { name: 'Tangerang Selatan', region: 'Banten', description: 'South Tangerang', popular: false, country: 'ID' },
+    
+    // Yogyakarta & Central Java
+    { name: 'Yogyakarta', region: 'DI Yogyakarta', description: 'Cultural & historical city', popular: true, country: 'ID' },
+    { name: 'Semarang', region: 'Central Java', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Surakarta', region: 'Central Java', description: 'Solo - cultural hub', popular: false, country: 'ID' },
+    { name: 'Magelang', region: 'Central Java', description: 'Near Borobudur', popular: false, country: 'ID' },
+    { name: 'Pekalongan', region: 'Central Java', description: 'Batik city', popular: false, country: 'ID' },
+    { name: 'Salatiga', region: 'Central Java', description: 'Mountain city', popular: false, country: 'ID' },
+    { name: 'Tegal', region: 'Central Java', description: 'North coast city', popular: false, country: 'ID' },
+    
+    // East Java
+    { name: 'Surabaya', region: 'East Java', description: 'Second largest city', popular: true, country: 'ID' },
+    { name: 'Malang', region: 'East Java', description: 'Cool highland city', popular: true, country: 'ID' },
+    { name: 'Batu', region: 'East Java', description: 'Apple city', popular: false, country: 'ID' },
+    { name: 'Blitar', region: 'East Java', description: 'Historical city', popular: false, country: 'ID' },
+    { name: 'Kediri', region: 'East Java', description: 'Sugar city', popular: false, country: 'ID' },
+    { name: 'Madiun', region: 'East Java', description: 'City of industry', popular: false, country: 'ID' },
+    { name: 'Mojokerto', region: 'East Java', description: 'Historical town', popular: false, country: 'ID' },
+    { name: 'Pasuruan', region: 'East Java', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Probolinggo', region: 'East Java', description: 'Bromo gateway', popular: false, country: 'ID' },
+    
+    // West Java
+    { name: 'Bandung', region: 'West Java', description: 'Cool mountain city', popular: true, country: 'ID' },
     { name: 'Bekasi', region: 'West Java', description: 'Industrial hub', popular: false, country: 'ID' },
+    { name: 'Bogor', region: 'West Java', description: 'Rain city', popular: false, country: 'ID' },
     { name: 'Depok', region: 'West Java', description: 'University town', popular: false, country: 'ID' },
+    { name: 'Cimahi', region: 'West Java', description: 'Textile city', popular: false, country: 'ID' },
+    { name: 'Cirebon', region: 'West Java', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Sukabumi', region: 'West Java', description: 'Tea plantations', popular: false, country: 'ID' },
+    { name: 'Tasikmalaya', region: 'West Java', description: 'Craft city', popular: false, country: 'ID' },
+    { name: 'Banjar', region: 'West Java', description: 'Small city', popular: false, country: 'ID' },
+    
+    // Banten
+    { name: 'Serang', region: 'Banten', description: 'Capital of Banten', popular: false, country: 'ID' },
+    { name: 'Cilegon', region: 'Banten', description: 'Industrial city', popular: false, country: 'ID' },
+    
+    // North Sumatra
+    { name: 'Medan', region: 'North Sumatra', description: 'Gateway to Sumatra', popular: true, country: 'ID' },
+    { name: 'Binjai', region: 'North Sumatra', description: 'Rambutan city', popular: false, country: 'ID' },
+    { name: 'Gunungsitoli', region: 'North Sumatra', description: 'Nias island', popular: false, country: 'ID' },
+    { name: 'Padang Sidempuan', region: 'North Sumatra', description: 'South Tapanuli', popular: false, country: 'ID' },
+    { name: 'Pematangsiantar', region: 'North Sumatra', description: 'Simalungun', popular: false, country: 'ID' },
+    { name: 'Sibolga', region: 'North Sumatra', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Tanjungbalai', region: 'North Sumatra', description: 'Fishing port', popular: false, country: 'ID' },
+    { name: 'Tebing Tinggi', region: 'North Sumatra', description: 'Serbelawan', popular: false, country: 'ID' },
+    
+    // West Sumatra
+    { name: 'Padang', region: 'West Sumatra', description: 'Minang cuisine capital', popular: true, country: 'ID' },
+    { name: 'Bukittinggi', region: 'West Sumatra', description: 'Fort de Kock', popular: false, country: 'ID' },
+    { name: 'Padang Panjang', region: 'West Sumatra', description: 'Cultural city', popular: false, country: 'ID' },
+    { name: 'Pariaman', region: 'West Sumatra', description: 'Coastal city', popular: false, country: 'ID' },
+    { name: 'Payakumbuh', region: 'West Sumatra', description: 'Highland city', popular: false, country: 'ID' },
+    { name: 'Sawahlunto', region: 'West Sumatra', description: 'Coal mining heritage', popular: false, country: 'ID' },
+    { name: 'Solok', region: 'West Sumatra', description: 'Lake district', popular: false, country: 'ID' },
+    
+    // South Sumatra
+    { name: 'Palembang', region: 'South Sumatra', description: 'River city', popular: true, country: 'ID' },
+    { name: 'Lubuklinggau', region: 'South Sumatra', description: 'Musi Rawas', popular: false, country: 'ID' },
+    { name: 'Pagar Alam', region: 'South Sumatra', description: 'Highland resort', popular: false, country: 'ID' },
+    { name: 'Prabumulih', region: 'South Sumatra', description: 'Oil city', popular: false, country: 'ID' },
+    
+    // Riau & Riau Islands
+    { name: 'Pekanbaru', region: 'Riau', description: 'Oil & palm capital', popular: false, country: 'ID' },
+    { name: 'Dumai', region: 'Riau', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Batam', region: 'Riau Islands', description: 'Industrial island', popular: true, country: 'ID' },
+    { name: 'Tanjungpinang', region: 'Riau Islands', description: 'Bintan capital', popular: false, country: 'ID' },
+    
+    // Lampung
+    { name: 'Bandar Lampung', region: 'Lampung', description: 'Southern Sumatra', popular: false, country: 'ID' },
+    { name: 'Metro', region: 'Lampung', description: 'Small city', popular: false, country: 'ID' },
+    
+    // Bengkulu & Jambi
+    { name: 'Bengkulu', region: 'Bengkulu', description: 'Rafflesia city', popular: false, country: 'ID' },
+    { name: 'Jambi', region: 'Jambi', description: 'Batanghari river', popular: false, country: 'ID' },
+    { name: 'Sungai Penuh', region: 'Jambi', description: 'Highland city', popular: false, country: 'ID' },
+    
+    // Aceh
+    { name: 'Banda Aceh', region: 'Aceh', description: 'Veranda of Mecca', popular: false, country: 'ID' },
+    { name: 'Langsa', region: 'Aceh', description: 'Eastern Aceh', popular: false, country: 'ID' },
+    { name: 'Lhokseumawe', region: 'Aceh', description: 'Industrial city', popular: false, country: 'ID' },
+    { name: 'Sabang', region: 'Aceh', description: 'Weh island', popular: false, country: 'ID' },
+    { name: 'Subulussalam', region: 'Aceh', description: 'Mountain city', popular: false, country: 'ID' },
+    
+    // Kalimantan
+    { name: 'Balikpapan', region: 'East Kalimantan', description: 'Oil city', popular: false, country: 'ID' },
+    { name: 'Samarinda', region: 'East Kalimantan', description: 'Capital of East Kalimantan', popular: false, country: 'ID' },
+    { name: 'Bontang', region: 'East Kalimantan', description: 'LNG city', popular: false, country: 'ID' },
+    { name: 'Tarakan', region: 'North Kalimantan', description: 'Island city', popular: false, country: 'ID' },
+    { name: 'Pontianak', region: 'West Kalimantan', description: 'Equator city', popular: false, country: 'ID' },
+    { name: 'Singkawang', region: 'West Kalimantan', description: 'Thousand temples', popular: false, country: 'ID' },
+    { name: 'Palangka Raya', region: 'Central Kalimantan', description: 'Capital of Central Kalimantan', popular: false, country: 'ID' },
+    { name: 'Banjarmasin', region: 'South Kalimantan', description: 'River city', popular: false, country: 'ID' },
+    { name: 'Banjarbaru', region: 'South Kalimantan', description: 'Satellite city', popular: false, country: 'ID' },
+    
+    // Sulawesi
+    { name: 'Makassar', region: 'South Sulawesi', description: 'Gateway to eastern Indonesia', popular: true, country: 'ID' },
+    { name: 'Palopo', region: 'South Sulawesi', description: 'Luwu', popular: false, country: 'ID' },
+    { name: 'Parepare', region: 'South Sulawesi', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Palu', region: 'Central Sulawesi', description: 'Bay city', popular: false, country: 'ID' },
+    { name: 'Manado', region: 'North Sulawesi', description: 'Bunaken diving', popular: false, country: 'ID' },
+    { name: 'Bitung', region: 'North Sulawesi', description: 'Port city', popular: false, country: 'ID' },
+    { name: 'Kotamobagu', region: 'North Sulawesi', description: 'Bolaang Mongondow', popular: false, country: 'ID' },
+    { name: 'Tomohon', region: 'North Sulawesi', description: 'Flower city', popular: false, country: 'ID' },
+    { name: 'Kendari', region: 'Southeast Sulawesi', description: 'Capital of Southeast Sulawesi', popular: false, country: 'ID' },
+    { name: 'Baubau', region: 'Southeast Sulawesi', description: 'Buton island', popular: false, country: 'ID' },
+    { name: 'Gorontalo', region: 'Gorontalo', description: 'Diving paradise', popular: false, country: 'ID' },
+    
+    // Nusa Tenggara
+    { name: 'Mataram', region: 'West Nusa Tenggara', description: 'Lombok capital', popular: false, country: 'ID' },
+    { name: 'Bima', region: 'West Nusa Tenggara', description: 'Sumbawa', popular: false, country: 'ID' },
+    { name: 'Kupang', region: 'East Nusa Tenggara', description: 'NTT capital', popular: false, country: 'ID' },
+    
+    // Maluku & Papua
+    { name: 'Ambon', region: 'Maluku', description: 'Spice islands', popular: false, country: 'ID' },
+    { name: 'Tual', region: 'Maluku', description: 'Kei islands', popular: false, country: 'ID' },
+    { name: 'Ternate', region: 'North Maluku', description: 'Clove island', popular: false, country: 'ID' },
+    { name: 'Tidore Kepulauan', region: 'North Maluku', description: 'Sultan city', popular: false, country: 'ID' },
+    { name: 'Jayapura', region: 'Papua', description: 'Papua capital', popular: false, country: 'ID' },
+    { name: 'Sorong', region: 'Southwest Papua', description: 'Raja Ampat gateway', popular: false, country: 'ID' },
+    
+    // Bangka Belitung
+    { name: 'Pangkalpinang', region: 'Bangka Belitung Islands', description: 'Tin island', popular: false, country: 'ID' },
   ],
   
   // MALAYSIA - Major cities
