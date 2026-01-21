@@ -280,13 +280,15 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 } catch (error: any) {
                     console.error('❌ Sign in failed:', error);
                     
-                    // Provide specific error messages
+                    // Provide specific, helpful error messages
                     if (error.message?.includes('Invalid credentials') || error.message?.includes('Invalid email or password')) {
-                        setError('Incorrect email or password. Please try again.');
+                        setError('❌ Incorrect email or password. Please check:\n• Email is correct (case-sensitive)\n• Password is correct (case-sensitive)\n• No extra spaces in your input');
                     } else if (error.message?.includes('user') && error.message?.includes('not found')) {
-                        setError('No account found with this email. Please create an account first.');
+                        setError('❌ No account found with this email. Please:\n• Check the email spelling\n• Create a new account if you\'re a new user');
+                    } else if (error.message?.includes('rate limit') || error.code === 429) {
+                        setError('⚠️ Too many login attempts. Please wait a moment before trying again.');
                     } else {
-                        setError(error.message || 'Sign in failed. Please try again.');
+                        setError(`❌ Sign in failed: ${error.message || 'Unknown error'}. Please try again or contact support if the problem persists.`);
                     }
                 }
             } 
@@ -440,7 +442,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                 type="email" 
                                 value={email} 
                                 onChange={(e) => setEmail(e.target.value)} 
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" 
+                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                                    error && error.toLowerCase().includes('email') 
+                                        ? 'border-red-300 bg-red-50' 
+                                        : 'border-gray-300'
+                                }`}
                                 placeholder="your.email@example.com" 
                                 autoComplete="off"
                                 autoCorrect="off"
@@ -448,6 +454,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                 spellCheck="false"
                                 required 
                             />
+                            {error && error.toLowerCase().includes('email') && (
+                                <p className="mt-1 text-xs text-red-600">
+                                    ⚠️ Please check your email address (case-sensitive)
+                                </p>
+                            )}
                         </div>
 
                         {/* Account Type Dropdown - Only show for signup mode */}
@@ -501,7 +512,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                 type="text" 
                                 value={password} 
                                 onChange={(e) => setPassword(e.target.value)} 
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" 
+                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                                    error && error.toLowerCase().includes('password') 
+                                        ? 'border-red-300 bg-red-50' 
+                                        : 'border-gray-300'
+                                }`}
                                 placeholder="Enter your password" 
                                 autoComplete="off"
                                 autoCorrect="off"
@@ -509,6 +524,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                 spellCheck="false"
                                 required 
                             />
+                            {error && error.toLowerCase().includes('password') && (
+                                <p className="mt-1 text-xs text-red-600">
+                                    ⚠️ Password is case-sensitive. Check uppercase/lowercase letters
+                                </p>
+                            )}
                         </div>
 
                         {/* Terms Checkbox - Show for signup and unified modes */}
@@ -538,10 +558,21 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                             </div>
                         )}
 
-                        {/* Error Message */}
+                        {/* Error Message - Prominent display with icon */}
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                {error}
+                            <div className="bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg shadow-sm">
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-3 flex-1">
+                                        <p className="text-sm font-medium whitespace-pre-line">
+                                            {error}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
