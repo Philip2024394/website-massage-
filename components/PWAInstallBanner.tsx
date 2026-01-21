@@ -20,18 +20,22 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
       return;
     }
     
-    // Check if already installed
+    // Check if already installed - MULTIPLE CHECKS
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
     const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
+    const runningAsApp = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.matchMedia('(display-mode: fullscreen)').matches ||
+                         window.matchMedia('(display-mode: minimal-ui)').matches;
     
     console.log('PWA Install Banner: Standalone mode?', isStandalone);
     console.log('PWA Install Banner: iOS web app?', isInWebAppiOS);
-    console.log('PWA Install Banner: Install completed?', isInstalled);
+    console.log('PWA Install Banner: Running as app?', runningAsApp);
+    console.log('PWA Install Banner: Install completed flag?', isInstalled);
 
-    // Don't show if already installed
-    if (isStandalone || isInWebAppiOS || isInstalled) {
-      console.log('PWA Install Banner: App already installed, not showing banner');
+    // Don't show if already installed OR running as app
+    if (isStandalone || isInWebAppiOS || isInstalled || runningAsApp) {
+      console.log('PWA Install Banner: ✅ App already installed/running, not showing banner');
       return;
     }
 
@@ -102,46 +106,43 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     console.log('PWA Install: Install button clicked');
     
     if (!deferredPrompt) {
-      console.log('PWA Install: No deferred prompt available - showing manual instructions');
+      console.log('PWA Install: ⚠️ No install prompt available');
       
-      // Detect platform and show appropriate instructions
-      const isAndroid = /Android/i.test(navigator.userAgent);
+      // Detect platform - MOBILE ONLY
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
-      const isEdge = /Edg/i.test(navigator.userAgent);
-      const isFirefox = /Firefox/i.test(navigator.userAgent);
-      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
       
-      let instructions = '📱 TO INSTALL THE APP:\n\n';
-      
-      if (isIOS && isSafari) {
-        instructions += '🔹 Tap the Share button (⬆️) at the bottom\n' +
-                       '🔹 Scroll and tap "Add to Home Screen"\n' +
-                       '🔹 Tap "Add" to confirm\n\n' +
-                       '✅ The app icon will appear on your home screen!';
-      } else if (isAndroid && isChrome) {
-        instructions += '🔹 Tap the menu (⋮) in the top-right corner\n' +
-                       '🔹 Select "Install app" or "Add to Home screen"\n' +
-                       '🔹 Tap "Install" to confirm\n\n' +
-                       '✅ The app will open automatically after install!';
-      } else if (isEdge) {
-        instructions += '🔹 Look for the install icon (⬇️) in the address bar\n' +
-                       '🔹 Click it and select "Install"\n' +
-                       '🔹 Or tap menu (•••) → "Apps" → "Install this site as an app"\n\n' +
-                       '✅ App will be added to your device!';
-      } else if (isFirefox) {
-        instructions += '🔹 Tap the menu (⋮) button\n' +
-                       '🔹 Select "Install" or "Add to Home Screen"\n' +
-                       '🔹 Confirm the installation\n\n' +
-                       '✅ App icon will appear on your home screen!';
+      if (isIOS) {
+        // iOS SIMPLE instructions
+        alert(
+          '📱 TO INSTALL ON iPHONE/iPAD:\n\n' +
+          '1️⃣ Tap Share button (⬆️) at bottom\n' +
+          '2️⃣ Scroll down\n' +
+          '3️⃣ Tap "Add to Home Screen"\n' +
+          '4️⃣ Tap "Add"\n\n' +
+          '✅ App icon will appear on home screen!'
+        );
+      } else if (isAndroid) {
+        // Android SIMPLE instructions
+        alert(
+          '📱 TO INSTALL ON ANDROID:\n\n' +
+          '1️⃣ Tap menu button (3 dots ⋮)\n' +
+          '2️⃣ Look for "Install app"\n' +
+          '3️⃣ Or "Add to Home screen"\n' +
+          '4️⃣ Tap to install\n\n' +
+          '✅ App will open automatically!'
+        );
       } else {
-        instructions += '🔹 Look for "Add to Home Screen" in your browser menu\n' +
-                       '🔹 Or find the install icon in the address bar\n' +
-                       '🔹 Follow the prompts to complete installation\n\n' +
-                       '✅ Once installed, enjoy enhanced features!';
+        // Generic mobile
+        alert(
+          '📱 TO INSTALL:\n\n' +
+          '1️⃣ Open browser menu\n' +
+          '2️⃣ Look for "Install" or\n' +
+          '   "Add to Home Screen"\n' +
+          '3️⃣ Follow prompts\n\n' +
+          '✅ Check home screen for app icon!'
+        );
       }
-      
-      alert(instructions);
       return;
     }
 

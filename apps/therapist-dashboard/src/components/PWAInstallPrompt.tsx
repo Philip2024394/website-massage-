@@ -17,9 +17,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     console.log('PWA Dashboard: User agent:', navigator.userAgent);
     console.log('PWA Dashboard: Is standalone:', window.matchMedia('(display-mode: standalone)').matches);
     
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('PWA Dashboard: App already installed (standalone mode)');
+    // Check if already installed - MULTIPLE CHECKS
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isInWebAppiOS = (window.navigator as any).standalone === true;
+    const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
+    const runningAsApp = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.matchMedia('(display-mode: fullscreen)').matches ||
+                         window.matchMedia('(display-mode: minimal-ui)').matches;
+    
+    if (isStandalone || isInWebAppiOS || isInstalled || runningAsApp) {
+      console.log('PWA Dashboard: ✅ App already installed/running as app, not showing prompt');
       setIsInstalled(true);
       return;
     }
@@ -109,51 +116,51 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     const prompt = promptEvent || deferredPrompt;
     
     if (!prompt) {
-      console.log('⚠️ No install prompt available - showing platform-specific instructions');
+      console.log('PWA Dashboard: ⚠️ No install prompt available');
       
-      // Detect platform and show appropriate instructions
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
-      const isEdge = /Edg/i.test(navigator.userAgent);
-      const isFirefox = /Firefox/i.test(navigator.userAgent);
-      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      // Check if already installed first
+      const runningAsApp = window.matchMedia('(display-mode: standalone)').matches || 
+                           (window.navigator as any).standalone === true;
       
-      let instructions = '📱 TO INSTALL THE APP:\n\n';
-      
-      if (isIOS && isSafari) {
-        instructions += '🔹 Tap the Share button (⬆️) at the bottom\n' +
-                       '🔹 Scroll and tap "Add to Home Screen"\n' +
-                       '🔹 Tap "Add" to confirm\n\n' +
-                       '✅ The app icon will appear on your home screen!\n' +
-                       '🔔 You\'ll get enhanced notifications when installed.';
-      } else if (isAndroid && isChrome) {
-        instructions += '🔹 Tap the menu (⋮) in the top-right corner\n' +
-                       '🔹 Select "Install app" or "Add to Home screen"\n' +
-                       '🔹 Tap "Install" to confirm\n\n' +
-                       '✅ The app will open automatically after install!\n' +
-                       '🔔 You\'ll receive booking notifications even when closed.';
-      } else if (isEdge) {
-        instructions += '🔹 Look for the install icon (⬇️) in the address bar\n' +
-                       '🔹 Click it and select "Install"\n' +
-                       '🔹 Or tap menu (•••) → "Apps" → "Install this site as an app"\n\n' +
-                       '✅ App will be added to your device!\n' +
-                       '🔔 Get instant booking notifications.';
-      } else if (isFirefox) {
-        instructions += '🔹 Tap the menu (⋮) button\n' +
-                       '🔹 Select "Install" or "Add to Home Screen"\n' +
-                       '🔹 Confirm the installation\n\n' +
-                       '✅ App icon will appear on your home screen!\n' +
-                       '🔔 Receive booking alerts instantly.';
-      } else {
-        instructions += '🔹 Look for "Add to Home Screen" in your browser menu\n' +
-                       '🔹 Or find the install icon in the address bar\n' +
-                       '🔹 Follow the prompts to complete installation\n\n' +
-                       '✅ Once installed, enjoy enhanced features!\n' +
-                       '🔔 Get push notifications for new bookings.';
+      if (runningAsApp) {
+        alert('✅ APP ALREADY INSTALLED!\n\nYou\'re using the installed app right now.\n\n🔔 Check your device settings to enable notifications.');
+        return;
       }
       
-      alert(instructions);
+      // Detect platform - MOBILE ONLY, SIMPLE
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      
+      if (isIOS) {
+        // iOS SIMPLE
+        alert(
+          '📱 INSTALL ON iPHONE/iPAD:\n\n' +
+          '1️⃣ Tap Share (⬆️) at bottom\n' +
+          '2️⃣ Scroll down\n' +
+          '3️⃣ Tap "Add to Home Screen"\n' +
+          '4️⃣ Tap "Add"\n\n' +
+          '🔔 Get booking notifications!'
+        );
+      } else if (isAndroid) {
+        // Android SIMPLE
+        alert(
+          '📱 INSTALL ON ANDROID:\n\n' +
+          '1️⃣ Tap menu (3 dots ⋮)\n' +
+          '2️⃣ Look for "Install app"\n' +
+          '3️⃣ Or "Add to Home screen"\n' +
+          '4️⃣ Tap to install\n\n' +
+          '🔔 Get booking notifications!'
+        );
+      } else {
+        // Generic mobile
+        alert(
+          '📱 TO INSTALL:\n\n' +
+          '1️⃣ Open browser menu\n' +
+          '2️⃣ Find "Install" option\n' +
+          '3️⃣ Follow prompts\n\n' +
+          '🔔 Enable booking alerts!'
+        );
+      }
       return;
     }
 
