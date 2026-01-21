@@ -5,19 +5,9 @@
 
 import { lazy } from 'react';
 
-// Direct import for dashboard route to fix component load error
+// Direct imports to fix component load errors
 import TherapistPortalPage from '../../apps/therapist-dashboard/src/pages/TherapistDashboard';
-const TherapistOnlineStatus = lazy(() => 
-  import('../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus')
-    .then(module => {
-      console.log('[LAZY LOAD] TherapistOnlineStatus module loaded:', module);
-      return module;
-    })
-    .catch(err => {
-      console.error('[LAZY LOAD ERROR] TherapistOnlineStatus failed:', err);
-      throw err;
-    })
-);
+import TherapistOnlineStatus from '../../apps/therapist-dashboard/src/pages/TherapistOnlineStatus';
 const TherapistBookings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistBookings'));
 const TherapistEarnings = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistEarnings'));
 const TherapistChat = lazy(() => import('../../apps/therapist-dashboard/src/pages/TherapistChat'));
