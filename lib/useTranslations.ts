@@ -1,7 +1,17 @@
 import { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { LanguageContext } from '../context/LanguageContext';
 import { translationsService } from './appwriteService';
-import { translations as fallbackTranslations } from '../translations/index';
+
+// ⚠️ CRITICAL FIX: Lazy import fallback translations to avoid circular dependency
+// This prevents "Cannot access before initialization" errors in production
+let fallbackTranslations: any = null;
+const loadFallbackTranslations = async () => {
+  if (!fallbackTranslations) {
+    const module = await import('../translations/index');
+    fallbackTranslations = module.translations;
+  }
+  return fallbackTranslations;
+};
 
 const CACHE_KEY = 'indostreet_translations';
 const CACHE_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
@@ -54,12 +64,25 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
     // Normalize 'gb' to 'en' for dictionary selection while preserving requested language
     const normalizedLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
     
-    const [translations, setTranslations] = useState(fallbackTranslations);
-    const [loading, setLoading] = useState(false);
+    const [translations, setTranslations] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    
+    // Load fallback translations on mount
+    useEffect(() => {
+        loadFallbackTranslations().then(fallback => {
+            if (!translations) {
+                setTranslations(fallback);
+                setLoading(false);
+            }
+        });
+    }, []);
 
     const loadTranslations = useCallback(async () => {
         try {
             console.log('🔄 useTranslations: Loading translations for language:', currentLanguage);
+            
+            // Ensure fallback is loaded
+            const fallback = await loadFallbackTranslations();
             
             // Check for cached translations first
             const cached = getCachedTranslations();
@@ -81,12 +104,14 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
             } else {
                 // Use fallback translations when Appwrite is empty
                 console.log('⚠️ useTranslations: Appwrite empty, using fallback translations for', normalizedLang);
-                setTranslations(fallbackTranslations);
-                cacheTranslations(fallbackTranslations);
+                setTranslations(fallback);
+                cacheTranslations(fallback);
             }
         } catch (error) {
             console.error('❌ useTranslations: Error loading translations, using fallback:', error);
-            // Continue with fallback translations already set
+            // Load fallback on error
+            const fallback = await loadFallbackTranslations();
+            setTranslations(fallback);
         } finally {
             setLoading(false);
         }
