@@ -204,7 +204,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
     const renderDashboard = () => (
         <div className="space-y-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid gap-6 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'}}>
                 <StatCard
                     title="Total Therapists"
                     value={stats.totalTherapists}
@@ -258,7 +258,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid gap-6 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'}}>
                     <QuickActionButton
                         label="View Therapists"
                         onClick={() => setActiveView('therapists')}
@@ -313,10 +313,13 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
     };
 
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="h-screen bg-gray-100 flex flex-col overflow-hidden" style={{
+            width: '100vw',
+            maxWidth: 'none'
+        }}>
             {/* Header */}
-            <header className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <header className="bg-white shadow-sm border-b flex-shrink-0" style={{width: '100%'}}>
+                <div className="px-8 py-4 flex justify-between items-center w-full" style={{minWidth: '100%'}}>
                     <div className="flex items-center space-x-4">
                         <h1 className="text-2xl font-bold text-gray-800">
                             🎛️ Admin Dashboard
@@ -351,9 +354,9 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </div>
             </header>
 
-            <div className="flex">
+            <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar */}
-                <aside className="w-64 bg-white shadow-sm min-h-screen">
+                <aside className="w-64 bg-white shadow-sm flex-shrink-0 overflow-y-auto">
                     <nav className="p-4 space-y-2">
                         {navItems.map((item) => (
                             <button
@@ -373,7 +376,7 @@ const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome 
                 </aside>
 
                 {/* Main Content */}
-                <main className="flex-1 p-6">
+                <main className="flex-1 p-8 overflow-y-auto bg-gray-100 w-full">
                     {loading && activeView === 'dashboard' ? (
                         <div className="flex items-center justify-center h-64">
                             <div className="text-center">

@@ -9,24 +9,24 @@
 
 import { lazy } from 'react';
 
-// Unified admin dashboard (merged into main app)
-const AdminDashboardPage = lazy(() => import('../../pages/admin/AdminDashboardPage'));
+// NEWEST Admin Dashboard with full Appwrite integration and commission flow
+const AdminDashboard = lazy(() => import('../../apps/admin-dashboard/src/pages/AdminDashboard'));
 const AdminLiveListings = lazy(() => import('../../pages/AdminLiveListings'));
 
 export const adminRoutes = {
-  // Main Admin Dashboard - UNIFIED VERSION
+  // Main Admin Dashboard - NEWEST VERSION with Appwrite + Commission Flow
   dashboard: {
     path: '/admin',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-dashboard',
     requiresAuth: true,
     requiresAdmin: true
   },
   
-  // Admin sub-routes - ALL USE UNIFIED DASHBOARD
+  // Admin sub-routes - ALL USE NEWEST DASHBOARD (apps/admin-dashboard)
   therapists: {
     path: '/admin/therapists',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-therapists',
     requiresAuth: true,
     requiresAdmin: true
@@ -34,7 +34,7 @@ export const adminRoutes = {
   
   bookings: {
     path: '/admin/bookings',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-bookings',
     requiresAuth: true,
     requiresAdmin: true
@@ -42,7 +42,7 @@ export const adminRoutes = {
   
   chat: {
     path: '/admin/chat',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-chat',
     requiresAuth: true,
     requiresAdmin: true
@@ -50,7 +50,7 @@ export const adminRoutes = {
   
   revenue: {
     path: '/admin/revenue',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-revenue',
     requiresAuth: true,
     requiresAdmin: true
@@ -58,7 +58,7 @@ export const adminRoutes = {
   
   commissions: {
     path: '/admin/commissions',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-commissions',
     requiresAuth: true,
     requiresAdmin: true
@@ -66,7 +66,7 @@ export const adminRoutes = {
   
   ktpVerification: {
     path: '/admin/ktp',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-ktp',
     requiresAuth: true,
     requiresAdmin: true
@@ -74,7 +74,7 @@ export const adminRoutes = {
   
   achievements: {
     path: '/admin/achievements',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-achievements',
     requiresAuth: true,
     requiresAdmin: true
@@ -82,7 +82,7 @@ export const adminRoutes = {
   
   systemHealth: {
     path: '/admin/system-health',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-system-health',
     requiresAuth: true,
     requiresAdmin: true
@@ -90,7 +90,7 @@ export const adminRoutes = {
   
   settings: {
     path: '/admin/settings',
-    component: AdminDashboardPage,
+    component: AdminDashboard,
     name: 'admin-settings',
     requiresAuth: true,
     requiresAdmin: true

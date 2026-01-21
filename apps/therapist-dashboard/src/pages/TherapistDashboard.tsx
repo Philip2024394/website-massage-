@@ -881,7 +881,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         language={language}
         onLogout={onLogout}
       >
-      <div className="min-h-screen bg-white">
+      <div className="bg-white">
       {/* Payment Pending Banner - Show when payment not submitted */}
       {paymentPending && !showPaymentModal && therapist.isLive && (
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 shadow-lg">

@@ -1638,10 +1638,10 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 w-full overflow-x-auto">
+        <div className="h-screen bg-gray-100 flex flex-col overflow-hidden" style={{ width: '100vw', maxWidth: 'none' }}>
             <PageNumberBadge pageNumber={42} pageName="LiveAdminDashboard" isLocked={false} />
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
+            {/* Header - Full Width */}
+            <div className="bg-white shadow-sm border-b" style={{ width: '100%' }}>
                 <div className="px-8 py-6">
                     <div className="flex items-center justify-between gap-6">
                         <div>
@@ -1654,236 +1654,216 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             </p>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full lg:w-auto">
+                        <div className="flex items-center gap-4 flex-wrap">
                             {/* Auto-refresh toggle */}
                             <button
                                 onClick={() => setAutoRefresh(!autoRefresh)}
-                                className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                                     autoRefresh 
                                         ? 'bg-green-100 text-green-700' 
                                         : 'bg-gray-100 text-gray-600'
                                 }`}
                             >
-                                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-                                <span className="hidden sm:inline">Auto-refresh {autoRefresh ? 'ON' : 'OFF'}</span>
-                                <span className="sm:hidden">{autoRefresh ? 'ON' : 'OFF'}</span>
+                                <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
+                                <span>Auto-refresh {autoRefresh ? 'ON' : 'OFF'}</span>
                             </button>
 
                             {/* Manual refresh */}
                             <button
                                 onClick={fetchLiveData}
                                 disabled={loading}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-sm"
                             >
-                                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-                                <span className="hidden sm:inline">Refresh</span>
+                                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                <span>Refresh</span>
                             </button>
 
                             {/* Navigation buttons */}
                             <button
                                 onClick={() => setActiveView('therapists')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-sm"
                             >
-                                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Edit Therapists</span>
-                                <span className="sm:hidden">Therapists</span>
+                                <Edit3 className="w-4 h-4" />
+                                <span>Edit Therapists</span>
                             </button>
 
                             <button
                                 onClick={() => setActiveView('places')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
                             >
-                                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Edit Places</span>
-                                <span className="sm:hidden">Places</span>
+                                <Edit3 className="w-4 h-4" />
+                                <span>Edit Places</span>
                             </button>
 
                             <button
                                 onClick={() => setActiveView('facials')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 text-sm"
                             >
-                                <Edit3 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Edit Facials</span>
-                                <span className="sm:hidden">Facials</span>
+                                <Edit3 className="w-4 h-4" />
+                                <span>Edit Facials</span>
                             </button>
 
                             {/* Chat button */}
                             <button
                                 onClick={() => setActiveView('chat')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm"
                             >
-                                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Chat Center</span>
-                                <span className="sm:hidden">Chat</span>
+                                <MessageSquare className="w-4 h-4" />
+                                <span>Chat Center</span>
                             </button>
 
                             {/* ✅ NEW: Chat Monitor button */}
                             <button
                                 onClick={() => setActiveView('chat-monitor')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
                             >
-                                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">👁️ Monitor</span>
-                                <span className="sm:hidden">👁️</span>
+                                <ShieldCheck className="w-4 h-4" />
+                                <span>👁️ Monitor</span>
                             </button>
 
                             {/* Analytics button */}
                             <button
                                 onClick={() => setActiveView('analytics')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-sm"
                             >
-                                <BarChart className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Global Analytics</span>
-                                <span className="sm:hidden">Analytics</span>
+                                <BarChart className="w-4 h-4" />
+                                <span>Global Analytics</span>
                             </button>
 
                             {/* Email Marketing button */}
                             <button
                                 onClick={() => setActiveView('email')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
                             >
-                                <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Email Marketing</span>
-                                <span className="sm:hidden">Email</span>
+                                <MessageSquare className="w-4 h-4" />
+                                <span>Email Marketing</span>
                             </button>
 
                             {/* Payment Management button */}
                             <button
                                 onClick={() => setActiveView('payments')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm"
                             >
-                                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Payments</span>
-                                <span className="sm:hidden">Pay</span>
+                                <DollarSign className="w-4 h-4" />
+                                <span>Payments</span>
                             </button>
 
                             {/* 🔴 Revenue Dashboard button - Real-time ACCEPTED bookings */}
                             <button
                                 onClick={() => setActiveView('revenue')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs sm:text-sm animate-pulse"
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm animate-pulse"
                             >
-                                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">🔴 Revenue</span>
-                                <span className="sm:hidden">Rev</span>
+                                <TrendingUp className="w-4 h-4" />
+                                <span>🔴 Revenue</span>
                             </button>
 
                             {/* Commission & Deposits button */}
                             <button
                                 onClick={() => setActiveView('commission-deposits')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm"
                             >
-                                <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Commissions</span>
-                                <span className="sm:hidden">Comm</span>
+                                <ShieldCheck className="w-4 h-4" />
+                                <span>Commissions</span>
                             </button>
 
                             {/* Booking Management button */}
                             <button
                                 onClick={() => setActiveView('bookings')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                             >
-                                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Bookings</span>
-                                <span className="sm:hidden">Book</span>
+                                <Calendar className="w-4 h-4" />
+                                <span>Bookings</span>
                             </button>
 
                             {/* Reviews Management button */}
                             <button
                                 onClick={() => setActiveView('reviews')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm"
                             >
-                                <Star className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Reviews</span>
-                                <span className="sm:hidden">Rev</span>
+                                <Star className="w-4 h-4" />
+                                <span>Reviews</span>
                             </button>
 
                             {/* KTP Verification button */}
                             <button
                                 onClick={() => setActiveView('ktp-verification')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 text-sm"
                             >
-                                <FileCheck className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">KTP Verification</span>
-                                <span className="sm:hidden">KTP</span>
+                                <FileCheck className="w-4 h-4" />
+                                <span>KTP Verification</span>
                             </button>
 
                             {/* Achievement Manager button */}
                             <button
                                 onClick={() => setActiveView('achievements')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-sm"
                             >
-                                <Award className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Achievements</span>
-                                <span className="sm:hidden">Badges</span>
+                                <Award className="w-4 h-4" />
+                                <span>Achievements</span>
                             </button>
 
                             {/* Premium Upgrade button */}
                             <button
                                 onClick={() => setActiveView('premium-upgrade')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 text-sm"
                             >
-                                <Award className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Premium Upgrade</span>
-                                <span className="sm:hidden">Premium</span>
+                                <Award className="w-4 h-4" />
+                                <span>Premium Upgrade</span>
                             </button>
 
                             {/* Database Diagnostics button */}
                             <button
                                 onClick={() => setActiveView('db-diagnostics')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 text-sm"
                             >
-                                <Database className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">DB Diagnostics</span>
-                                <span className="sm:hidden">DB</span>
+                                <Database className="w-4 h-4" />
+                                <span>DB Diagnostics</span>
                             </button>
 
                             {/* System Health Monitor button */}
                             <button
                                 onClick={() => setActiveView('system-health')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
                             >
-                                <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">🏥 System Health</span>
-                                <span className="sm:hidden">🏥 Health</span>
+                                <Activity className="w-4 h-4" />
+                                <span>🏥 System Health</span>
                             </button>
 
                             {/* Share Analytics button */}
                             <button
                                 onClick={() => setActiveView('share-analytics')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 text-sm"
                             >
-                                <Share2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">📊 Share Analytics</span>
-                                <span className="sm:hidden">📊 Share</span>
+                                <Share2 className="w-4 h-4" />
+                                <span>📊 Share Analytics</span>
                             </button>
 
                             {/* System Settings button */}
                             <button
                                 onClick={() => setActiveView('settings')}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm"
                             >
-                                <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Settings</span>
-                                <span className="sm:hidden">Set</span>
+                                <Settings className="w-4 h-4" />
+                                <span>Settings</span>
                             </button>
 
                             {/* Logout */}
                             <button
                                 onClick={onLogout}
-                                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-gray-800 text-xs sm:text-sm"
+                                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 text-sm"
                             >
-                                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline">Logout</span>
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout</span>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="p-8">
+            {/* Main Content - Full Width */}
+            <div className="flex-1 p-8 overflow-y-auto bg-gray-100 w-full">
                 {/* Key Metrics Grid */}
-                <div className="grid grid-cols-4 gap-8 mb-10">
+                <div className="grid gap-6 mb-8 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'}}>
                     {/* Total Revenue */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <div className="flex items-center justify-between">
@@ -1954,7 +1934,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 </div>
 
                 {/* Secondary Metrics */}
-                <div className="grid grid-cols-3 gap-8 mb-10">
+                <div className="grid gap-6 mb-8 w-full" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))'}}>
                     {/* Therapists */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <div className="flex items-center justify-between mb-4">

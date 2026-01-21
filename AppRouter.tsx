@@ -1494,6 +1494,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
 
         // ===== ADMIN ROUTES (PROTECTED BY ROLE-BASED ACCESS CONTROL) =====
         case 'admin':
+        case 'adminDashboard': // camelCase variant
         case 'admin-dashboard':
             return renderRoute(adminRoutes.dashboard.component, {
                 onNavigateHome: () => props.onNavigate('home')

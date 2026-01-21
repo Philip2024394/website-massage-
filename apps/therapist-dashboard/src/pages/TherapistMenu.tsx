@@ -230,8 +230,8 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
       language={language}
       onLogout={onLogout}
     >
-    <main className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
+    <main className="bg-gray-50 pb-20">
+      <div className="max-w-sm mx-auto bg-white shadow-sm">
 
         {/* Content Area */}
         <div className="px-8 py-6">

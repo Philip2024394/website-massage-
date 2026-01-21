@@ -309,7 +309,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
       </aside>
 
       {/* Main Content */}
-      <main className="relative">
+      <main className="relative overflow-y-auto">
         <PullToRefresh 
           onRefresh={async () => {
             console.log('🔄 Dashboard refresh triggered');
@@ -335,7 +335,7 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
               await new Promise(resolve => setTimeout(resolve, 800));
             }
           }}
-          className="min-h-screen"
+          className=""
         >
           {children}
         </PullToRefresh>

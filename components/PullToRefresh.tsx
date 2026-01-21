@@ -43,12 +43,15 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
     const deltaY = currentY.current - startY.current;
 
     if (deltaY > 0) {
-      // Prevent default scrolling when pulling down
-      e.preventDefault();
-      
-      // Calculate pull distance with diminishing returns
-      const distance = Math.min(deltaY * 0.5, threshold * 1.5);
-      setPullDistance(distance);
+      // Only prevent default when actively pulling and at the top of page
+      const isAtTop = window.scrollY === 0;
+      if (isAtTop && deltaY > 10) { // Only prevent after minimal pull distance
+        e.preventDefault();
+        
+        // Calculate pull distance with diminishing returns
+        const distance = Math.min(deltaY * 0.5, threshold * 1.5);
+        setPullDistance(distance);
+      }
     }
   };
 
@@ -144,7 +147,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden ${className}`}
+      className={`relative ${className}`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -179,7 +182,6 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
 
       {/* Content */}
       <div style={{ 
-        minHeight: '100vh',
         paddingTop: isPulling || isRefreshing ? `${Math.max(pullDistance, 0)}px` : '0px',
         transition: isPulling ? 'none' : 'padding-top 0.3s ease-out'
       }}>

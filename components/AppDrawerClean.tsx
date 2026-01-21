@@ -325,14 +325,13 @@ export const AppDrawer: React.FC<AppDrawerProps> = ({
                 </div>
               </div>
 
-              {/* Admin Access - Bottom Section */}
-              <div className="border-t-2 border-gray-300 pt-4 mt-4">
+              {/* Admin Access - Footer Text Link */}
+              <div className="border-t border-gray-200 pt-4 mt-4">
                 <button 
                   onClick={() => handleItemClick(onAdminPortalClick, 'admin')} 
-                  className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  className="w-full text-center py-2 text-sm text-gray-500 hover:text-purple-600 transition-colors"
                 >
-                  <Building className="w-5 h-5 text-white flex-shrink-0" />
-                  <span className="text-sm text-white font-bold">{dt.admin} Portal</span>
+                  {dt.admin} Portal
                 </button>
               </div>
             </div>

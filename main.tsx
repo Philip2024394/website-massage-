@@ -1,3 +1,6 @@
+// CRITICAL: React 19 AsyncMode fix must be imported FIRST
+import './utils/reactCompatibility';
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
