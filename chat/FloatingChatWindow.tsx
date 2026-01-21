@@ -30,7 +30,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useChatContext } from '../context/ChatProvider';
 import { useChatMessages } from './hooks/useChatMessages';
 import { useNotifications } from './hooks/useNotifications';
-import { cancelBooking } from '../lib/chatService';
 import { BookingBanner } from './BookingBanner';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
@@ -245,6 +244,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     
     try {
       console.log('🚫 Cancelling booking:', currentChatRoom.bookingId);
+      
+      // Dynamic import to avoid circular dependency
+      const { cancelBooking } = await import('../lib/chatService');
       
       await cancelBooking(
         currentChatRoom.bookingId as string,
