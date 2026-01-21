@@ -267,10 +267,41 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     try {
       const audio = new Audio('/sounds/booking-notification.mp3');
       audio.volume = 1.0;  // Maximum volume
+      
+      // Set up Media Session API for lock screen controls
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: 'New Booking Notification',
+          artist: 'Indastreet Massage',
+          album: 'Therapist Notifications',
+          artwork: [
+            { src: '/icon-96.png', sizes: '96x96', type: 'image/png' },
+            { src: '/icon-128.png', sizes: '128x128', type: 'image/png' },
+            { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: '/icon-384.png', sizes: '384x384', type: 'image/png' },
+            { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }
+          ]
+        });
+
+        // Set up action handlers for media controls
+        navigator.mediaSession.setActionHandler('play', () => {
+          audio.play().catch(err => console.log('Play failed:', err));
+        });
+        
+        navigator.mediaSession.setActionHandler('pause', () => {
+          audio.pause();
+        });
+        
+        navigator.mediaSession.setActionHandler('stop', () => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
+      }
+      
       audio.play().catch(err => {
         console.log('Sound play failed (may need user interaction):', err);
       });
-      console.log('🔊 Playing notification sound');
+      console.log('🔊 Playing notification sound with media controls');
     } catch (error) {
       console.error('Failed to play notification sound:', error);
     }
