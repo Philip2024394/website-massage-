@@ -30,24 +30,41 @@ interface TherapistOnlineStatusProps {
 type OnlineStatus = 'available' | 'busy' | 'offline' | 'active';
 
 const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist, onBack, onRefresh, onNavigate, onLogout, language: propLanguage = 'id' }) => {
-  // Get language from context (takes priority over prop)
-  const { language: contextLanguage, setLanguage } = useLanguage();
-  const language = contextLanguage || propLanguage;
-  
-  // Get translations
-  const { dict, loading } = useTranslations(language);
-  
-  // Safety check for translations loading
-  if (loading || !dict || !dict.therapistDashboard) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
-          <p className="text-gray-600">Loading translations...</p>
+  try {
+    // Get language from context (takes priority over prop)
+    const { language: contextLanguage, setLanguage } = useLanguage();
+    const language = contextLanguage || propLanguage;
+    
+    // Get translations with error handling
+    let dict: any = {};
+    let loading = false;
+    
+    try {
+      const translationsResult = useTranslations(language);
+      dict = translationsResult?.dict || {};
+      loading = translationsResult?.loading || false;
+    } catch (error) {
+      console.warn('TherapistOnlineStatus: Translation error, using fallback:', error);
+      dict = { therapistDashboard: {} }; // Safe fallback
+      loading = false;
+    }
+    
+    // Ensure therapistDashboard section exists
+    if (!dict.therapistDashboard) {
+      dict.therapistDashboard = {};
+    }
+    
+    // Safety check for translations loading
+    if (loading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="inline-block w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-2"></div>
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
   
   // Safety check - redirect if no therapist data
   if (!therapist) {
@@ -1141,6 +1158,32 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
     />
     </>
   );
+  } catch (error) {
+    console.error('TherapistOnlineStatus render error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-6 max-w-md mx-auto">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Dashboard Error</h2>
+          <p className="text-gray-600 mb-4">Unable to load therapist dashboard. Please try refreshing the page.</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600"
+          >
+            Refresh Page
+          </button>
+          <div className="mt-4">
+            <button
+              onClick={onBack}
+              className="text-orange-500 hover:text-orange-600 underline"
+            >
+              Go Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default TherapistOnlineStatus;
