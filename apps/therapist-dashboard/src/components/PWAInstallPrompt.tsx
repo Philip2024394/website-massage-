@@ -19,12 +19,18 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       return;
     }
 
-    // Listen for beforeinstallprompt event
+    // Listen for beforeinstallprompt event with AUTO-TRIGGER
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
-      console.log('📱 PWA install prompt ready');
+      console.log('📱 PWA install prompt ready - AUTO-TRIGGERING...');
+      
+      // ⚡ AUTO-TRIGGER: Show install prompt immediately after 1 second
+      setTimeout(() => {
+        console.log('🚀 Auto-showing PWA install prompt for one-click installation');
+        handleInstallClick(e);
+      }, 1000);
     };
 
     // Listen for app installed event
@@ -32,6 +38,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       console.log('✅ PWA installed successfully');
       setIsInstalled(true);
       setShowInstallPrompt(false);
+      
+      // Auto-request notification permission after install
+      setTimeout(() => {
+        requestNotificationPermission();
+      }, 500);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -48,27 +59,40 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     };
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) {
+  const handleInstallClick = async (promptEvent?: any) => {
+    const prompt = promptEvent || deferredPrompt;
+    
+    if (!prompt) {
       console.log('⚠️ No install prompt available');
       return;
     }
 
-    // Show install prompt
-    deferredPrompt.prompt();
+    try {
+      // Show install prompt
+      await prompt.prompt();
 
-    // Wait for user response
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`📱 Install outcome: ${outcome}`);
+      // Wait for user response
+      const { outcome } = await prompt.userChoice;
+      console.log(`📱 Install outcome: ${outcome}`);
 
-    if (outcome === 'accepted') {
-      console.log('✅ User accepted install');
-      requestNotificationPermission();
+      if (outcome === 'accepted') {
+        console.log('✅ User accepted install - App will open in standalone mode');
+        localStorage.setItem('pwa-install-completed', 'true');
+        
+        // Request notification permission after short delay
+        setTimeout(() => {
+          requestNotificationPermission();
+        }, 500);
+      } else {
+        console.log('❌ User declined install');
+      }
+
+      // Clear the deferredPrompt
+      setDeferredPrompt(null);
+      setShowInstallPrompt(false);
+    } catch (error) {
+      console.error('❌ Install prompt error:', error);
     }
-
-    // Clear the deferredPrompt
-    setDeferredPrompt(null);
-    setShowInstallPrompt(false);
   };
 
   const requestNotificationPermission = async () => {
@@ -148,15 +172,10 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
-  // Don't show if already installed or dismissed recently
-  if (isInstalled || !showInstallPrompt) {
-    return null;
-  }
-
-  const dismissedTime = localStorage.getItem('pwa-install-dismissed');
-  if (dismissedTime && Date.now() - parseInt(dismissedTime) < 7 * 24 * 60 * 60 * 1000) {
-    return null;
-  }
+  // ALWAYS RETURN NULL - No custom UI shown
+  // Auto-trigger handles everything via native browser dialog
+  // This prevents confusing therapists with multiple prompts
+  return null;
 
   return (
     <>

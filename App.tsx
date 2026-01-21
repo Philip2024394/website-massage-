@@ -369,6 +369,21 @@ const App = () => {
         // Note: Chat is intentionally NOT closed on route change
         // to allow users to continue conversations while navigating
     }, [state.page]);
+    
+    // ===== LANDING PAGE NAVIGATION HANDLER =====
+    // Listen for navigateToLanding event from GlobalHeader logo click
+    useEffect(() => {
+        const handleNavigateToLanding = () => {
+            console.log('🏠 [APP] navigateToLanding event received - navigating to landing page');
+            navigation?.setPage('landing');
+        };
+        
+        window.addEventListener('navigateToLanding', handleNavigateToLanding);
+        
+        return () => {
+            window.removeEventListener('navigateToLanding', handleNavigateToLanding);
+        };
+    }, [navigation]);
         
     // ===== GLOBAL PAGE CHANGE MONITOR =====
     useEffect(() => {

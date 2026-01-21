@@ -66,200 +66,44 @@ export class PWAInstallationEnforcer {
     }
 
     /**
-     * Show installation blocking modal
+     * Show installation blocking modal (DISABLED - using auto-trigger only)
+     * No confusing modals or close buttons - clean UX
      */
-    static showInstallationBlockingModal(): HTMLElement {
-        // Remove existing modal if any
-        const existingModal = document.getElementById('pwa-installation-blocker');
-        if (existingModal) {
-            existingModal.remove();
-        }
-
-        // Create blocking modal
-        const modal = document.createElement('div');
-        modal.id = 'pwa-installation-blocker';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        `;
-
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: white;
-            border-radius: 20px;
-            padding: 32px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            position: relative;
-        `;
-
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-        content.innerHTML = `
-            <button id="pwa-modal-close-btn" style="
-                position: absolute;
-                top: 12px;
-                right: 12px;
-                width: 36px;
-                height: 36px;
-                background: #f97316;
-                color: white;
-                border: 2px solid white;
-                border-radius: 50%;
-                font-size: 20px;
-                font-weight: bold;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-                transition: all 0.2s;
-                z-index: 10;
-            " onmouseover="this.style.background='#ea580c'; this.style.transform='scale(1.1)';" onmouseout="this.style.background='#f97316'; this.style.transform='scale(1)';" title="Close">✕</button>
-            <div style="font-size: 60px; margin-bottom: 20px;">📱</div>
-            <h2 style="color: #f97316; margin: 0 0 16px 0; font-size: 24px; font-weight: bold;">
-                🚨 APP INSTALLATION REQUIRED
-            </h2>
-            <p style="color: #666; margin: 0 0 24px 0; line-height: 1.5;">
-                <strong>You MUST install the IndaStreet app to receive booking notifications with sound!</strong>
-            </p>
-            <div style="background: #fef3e2; border: 2px solid #f97316; border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left;">
-                <h4 style="color: #f97316; margin: 0 0 8px 0; font-size: 14px;">🔊 Why this is critical:</h4>
-                <ul style="color: #666; margin: 0; padding-left: 20px; font-size: 13px;">
-                    <li>Custom notification sounds work ONLY in installed app</li>
-                    <li>Background notifications when phone is locked</li>
-                    <li>Stronger vibration patterns for urgent bookings</li>
-                    <li>Faster app loading and better performance</li>
-                </ul>
-            </div>
-            
-            ${isIOS ? `
-                <div style="background: #e6f7ff; border-radius: 12px; padding: 16px; margin: 20px 0; text-align: left;">
-                    <h4 style="color: #1890ff; margin: 0 0 8px 0; font-size: 14px;">📱 iOS Installation Steps:</h4>
-                    <ol style="color: #666; margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.4;">
-                        <li>Tap the <strong>Share button (⬆️)</strong> at bottom of Safari</li>
-                        <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                        <li>Tap <strong>"Add"</strong> to confirm</li>
-                        <li>Open the app from your home screen</li>
-                    </ol>
-                </div>
-                <button id="pwa-ios-install-btn" style="
-                    width: 100%;
-                    background: #f97316;
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    padding: 16px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    margin-top: 16px;
-                ">I've Added It to Home Screen ✅</button>
-            ` : `
-                <button id="pwa-install-btn" style="
-                    width: 100%;
-                    background: #f97316;
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    padding: 16px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    margin: 16px 0;
-                ">📥 Install App Now</button>
-                <button id="pwa-manual-install-btn" style="
-                    width: 100%;
-                    background: #6b7280;
-                    color: white;
-                    border: none;
-                    border-radius: 12px;
-                    padding: 12px;
-                    font-size: 14px;
-                    cursor: pointer;
-                ">📋 Show Manual Instructions</button>
-            `}
-            
-            <p style="color: #999; font-size: 12px; margin: 20px 0 0 0;">
-                This ensures you never miss important booking notifications!
-            </p>
-        `;
-
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-
-        // Add close button event listener
-        const closeBtn = document.getElementById('pwa-modal-close-btn');
-        closeBtn?.addEventListener('click', () => {
-            // Enable bypass so modal doesn't reappear
-            localStorage.setItem(this.BYPASS_KEY, 'true');
-            console.log('✅ PWA installation modal closed - bypass enabled');
-            modal.remove();
-        });
-
-        // Add event listeners
-        if (isIOS) {
-            const iosBtn = document.getElementById('pwa-ios-install-btn');
-            iosBtn?.addEventListener('click', () => {
-                localStorage.setItem('pwa-added-to-homescreen', 'true');
-                modal.remove();
-                window.location.reload();
-            });
-        } else {
-            const installBtn = document.getElementById('pwa-install-btn');
-            const manualBtn = document.getElementById('pwa-manual-install-btn');
-            
-            installBtn?.addEventListener('click', async () => {
-                const success = await this.triggerInstallPrompt();
-                if (success) {
-                    modal.remove();
-                }
-            });
-
-            manualBtn?.addEventListener('click', () => {
-                this.showManualInstallInstructions();
-            });
-        }
-
-        return modal;
+    static showInstallationBlockingModal(): HTMLElement | null {
+        console.log('ℹ️ Installation modal disabled - using auto-trigger only');
+        console.log('💡 Native browser install prompt will appear automatically');
+        return null;
     }
 
     /**
-     * Trigger PWA install prompt
+     * Trigger PWA install prompt (manual fallback - can be called from buttons)
      */
     static async triggerInstallPrompt(): Promise<boolean> {
         const deferredPrompt = (window as any).deferredPrompt;
         
         if (deferredPrompt) {
             try {
+                console.log('🚀 Triggering PWA install prompt...');
                 await deferredPrompt.prompt();
                 const choiceResult = await deferredPrompt.userChoice;
                 
                 if (choiceResult.outcome === 'accepted') {
                     localStorage.setItem('pwa-install-completed', 'true');
                     console.log('✅ PWA installed successfully');
+                    this.showSuccessMessage();
                     return true;
+                } else {
+                    console.log('❌ User declined installation');
+                    return false;
                 }
             } catch (error) {
                 console.error('❌ PWA installation failed:', error);
+                return false;
             }
         } else {
-            // No install prompt available, show manual instructions
-            this.showManualInstallInstructions();
+            console.log('⚠️ No install prompt available - prompt may have been consumed or browser doesn\'t support it');
+            return false;
         }
-        
-        return false;
     }
 
     /**
@@ -303,20 +147,16 @@ The app icon will appear on your home screen/desktop!`);
     }
 
     /**
-     * Start monitoring installation status
+     * Start monitoring installation status with auto-trigger
      */
     static startMonitoring(): void {
+        console.log('👁️ PWA installation monitoring started with auto-trigger');
+        
         // Check immediately
-        if (this.shouldBlockAccess()) {
-            this.showInstallationBlockingModal();
+        const status = this.checkInstallationStatus();
+        if (!status.isInstalled && !status.canBypass) {
+            console.log('🚀 PWA not installed - will show install prompt automatically');
         }
-
-        // Check periodically
-        setInterval(() => {
-            if (this.shouldBlockAccess()) {
-                this.showInstallationBlockingModal();
-            }
-        }, this.CHECK_INTERVAL);
 
         // Listen for app install events
         window.addEventListener('appinstalled', () => {
@@ -324,16 +164,99 @@ The app icon will appear on your home screen/desktop!`);
             localStorage.setItem('pwa-install-completed', 'true');
             const modal = document.getElementById('pwa-installation-blocker');
             if (modal) modal.remove();
+            // Reload to refresh status
+            setTimeout(() => window.location.reload(), 500);
         });
 
-        // Store deferred prompt for manual triggering
+        // Auto-trigger install prompt when available
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             (window as any).deferredPrompt = e;
-            console.log('💾 PWA install prompt stored');
+            console.log('💾 PWA install prompt available');
+            
+            // Check if not installed and not bypassed
+            const currentStatus = this.checkInstallationStatus();
+            if (!currentStatus.isInstalled && !currentStatus.canBypass) {
+                console.log('🎯 Auto-triggering PWA install prompt...');
+                // Auto-trigger after short delay to ensure page is loaded
+                setTimeout(() => {
+                    this.autoTriggerInstallPrompt(e);
+                }, 1000);
+            }
         });
 
-        console.log('👁️ PWA installation monitoring started');
+        // Check periodically for non-installed users
+        const checkInterval = setInterval(() => {
+            const currentStatus = this.checkInstallationStatus();
+            if (currentStatus.isInstalled) {
+                clearInterval(checkInterval);
+                console.log('✅ PWA installed - stopping monitoring');
+            }
+            // No modal shown - only auto-trigger on beforeinstallprompt event
+        }, this.CHECK_INTERVAL);
+    }
+
+    /**
+     * Auto-trigger installation prompt (one-click install)
+     */
+    static async autoTriggerInstallPrompt(promptEvent: any): Promise<void> {
+        try {
+            console.log('🚀 Showing PWA install prompt automatically...');
+            
+            // Show the browser's native install prompt
+            await promptEvent.prompt();
+            
+            // Wait for user choice
+            const choiceResult = await promptEvent.userChoice;
+            
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ User accepted PWA installation!');
+                localStorage.setItem('pwa-install-completed', 'true');
+                
+                // Show success message
+                this.showSuccessMessage();
+                
+                // Reload after short delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                console.log('❌ User declined PWA installation');
+                // User declined - respect their choice, no confusing modals
+                // They can install later via browser menu if needed
+            }
+        } catch (error) {
+            console.error('❌ Auto-trigger PWA install failed:', error);
+            // Show simple alert only if critical error
+            console.log('💡 Tip: Use browser menu to install app manually');
+        }
+    }
+
+    /**
+     * Show success message after installation
+     */
+    static showSuccessMessage(): void {
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 999999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s ease-out;
+        `;
+        successDiv.textContent = '✅ App installed! Opening in app mode...';
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+            successDiv.remove();
+        }, 2000);
     }
 
     /**

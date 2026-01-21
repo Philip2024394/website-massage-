@@ -11,6 +11,11 @@ declare global {
 /**
  * 📱 PWA Enhanced Features for Therapist Dashboard
  * Provides persistent chat functionality and app-like experience
+ * 
+ * 🏠 HOME SCREEN ROUTING:
+ * When therapists install the app and tap the home screen icon, they are
+ * automatically routed to their Online Status dashboard page. This is configured
+ * in manifest.json with start_url: "/?pwa=true&page=status" and handled in App.tsx
  */
 
 // Detect if running as PWA

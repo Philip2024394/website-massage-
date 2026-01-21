@@ -25,7 +25,6 @@ import TherapistSchedule from './pages/TherapistSchedule';
 import SendDiscountPage from './pages/SendDiscountPage';
 import HotelVillaSafePass from './pages/HotelVillaSafePass';
 import TherapistLayout from './components/TherapistLayout';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
 import ToastContainer from './components/ToastContainer';
 import FloatingChat from './components/FloatingChat';
 import PersistentBookingAlerts from './components/PersistentBookingAlerts';
@@ -44,11 +43,32 @@ function App() {
     (window.navigator as any).standalone === true ||
     window.location.search.includes('pwa=true');
   
+  // Determine initial page from URL parameters (for PWA home screen launches)
+  const getInitialPage = (): Page => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    
+    // If opened from PWA home screen or with page parameter, always go to status page
+    if (isPWA || pageParam === 'status') {
+      console.log('🏠 PWA Home Screen Launch - Routing to Online Status Dashboard');
+      return 'status';
+    }
+    
+    // Support other page parameters for shortcuts
+    const validPages: Page[] = ['dashboard', 'status', 'bookings', 'earnings', 'chat', 'package-terms', 'notifications', 'legal', 'calendar', 'payment', 'payment-status', 'custom-menu', 'premium-upgrade', 'commission-payment', 'schedule', 'send-discount', 'hotel-villa-safe-pass'];
+    if (pageParam && validPages.includes(pageParam as Page)) {
+      return pageParam as Page;
+    }
+    
+    // Default to status page
+    return 'status';
+  };
+  
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);  // Auth check completion flag
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState<Page>('status');
+  const [currentPage, setCurrentPage] = useState<Page>(getInitialPage());
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [showBookingAlerts, setShowBookingAlerts] = useState(true);
   const [language, setLanguage] = useState<'en' | 'id'>(() => {
@@ -76,9 +96,11 @@ function App() {
         therapistNotificationManager.requestNotificationPermission();
         console.log('✅ Therapist notification system ready');
         
-        // Start PWA installation monitoring (non-blocking)
+        // 📱 Start AUTO PWA installation monitoring with immediate trigger
         PWAInstallationEnforcer.startMonitoring();
-        console.log('👁️ PWA installation monitoring started');
+        console.log('👁️ PWA installation monitoring started with AUTO-TRIGGER enabled');
+        console.log('   → Install prompt will show automatically when available');
+        console.log('   → One-click installation for therapists');
         
         // Register background sync for missed notifications
         await UltimateNotificationUtils.registerBackgroundSync();

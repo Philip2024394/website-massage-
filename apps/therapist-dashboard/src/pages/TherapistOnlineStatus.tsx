@@ -642,11 +642,15 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       return;
     }
     
+    // Try to get the deferred prompt from window object first
+    const promptEvent = deferredPrompt || (window as any).deferredPrompt;
+    
     // If there's a deferred prompt, trigger the browser's native install dialog
-    if (deferredPrompt) {
+    if (promptEvent) {
       try {
-        await deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
+        console.log('🚀 Triggering PWA install prompt from button click...');
+        await promptEvent.prompt();
+        const choiceResult = await promptEvent.userChoice;
         if (choiceResult.outcome === 'accepted') {
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
@@ -656,6 +660,7 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
           alert('❌ Installation cancelled. You can install the app later by clicking this button again.');
         }
         setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
       } catch (error) {
         console.error('Error installing app:', error);
         alert('❌ Installation failed. Please try again or use your browser\'s menu to install.');
@@ -670,18 +675,27 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
         '✅ The app will appear on your home screen with full notification support!'
       );
     } else {
-      // Show simple instructions popup for other browsers
-      alert(
-        '📱 TO DOWNLOAD THE APP:\n\n' +
-        '🔹 On Chrome/Edge:\n' +
-        '   • Look for the install icon (⬇️) in the address bar\n' +
-        '   • OR use the browser menu (⋮) > "Install app"\n\n' +
-        '🔹 On Firefox:\n' +
-        '   • Tap the menu (⋮) > "Install"\n\n' +
-        '🔹 On other browsers:\n' +
-        '   • Add this page to your home screen\n\n' +
-        '✅ Once installed, you\'ll get enhanced notifications!'
-      );
+      // Try using the PWA enforcer's trigger method as fallback
+      console.log('⚠️ No deferred prompt available, attempting fallback install...');
+      const installed = await PWAInstallationEnforcer.triggerInstallPrompt();
+      
+      if (!installed) {
+        // Only show instructions if the trigger failed
+        alert(
+          '📱 TO DOWNLOAD THE APP:\n\n' +
+          '🔹 On Chrome/Edge:\n' +
+          '   • Look for the install icon (⬇️) in the address bar\n' +
+          '   • OR use the browser menu (⋮) > "Install app"\n\n' +
+          '🔹 On Firefox:\n' +
+          '   • Tap the menu (⋮) > "Install"\n\n' +
+          '🔹 On other browsers:\n' +
+          '   • Add this page to your home screen\n\n' +
+          '✅ Once installed, you\'ll get enhanced notifications!'
+        );
+      } else {
+        setIsAppInstalled(true);
+        localStorage.setItem('pwa-installed', 'true');
+      }
     }
   };
 

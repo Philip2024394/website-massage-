@@ -81,10 +81,23 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
           >
             <BurgerMenuIcon className="w-6 h-6 text-gray-700" />
           </button>
-          <span className="text-xl font-bold">
+          <button
+            type="button"
+            aria-label="Go to landing page"
+            className="text-xl font-bold hover:opacity-80 transition-opacity cursor-pointer"
+            style={{ WebkitTapHighlightColor: 'transparent' } as React.CSSProperties}
+            onClick={() => {
+              try {
+                console.log('🏠 GlobalHeader logo clicked - navigating to landing page');
+                window.dispatchEvent(new CustomEvent('navigateToLanding'));
+              } catch (error) {
+                console.error('🏠 Error navigating to landing:', error);
+              }
+            }}
+          >
             <span className="text-black">Inda</span>
             <span className="text-orange-500">street</span>
-          </span>
+          </button>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-sm text-gray-500">

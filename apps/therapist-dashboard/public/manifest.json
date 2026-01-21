@@ -34,7 +34,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/?pwa=true",
+  "start_url": "/?pwa=true&page=status",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "theme_color": "#FF6B35",
@@ -45,24 +45,31 @@
   "screenshots": [],
   "shortcuts": [
     {
+      "name": "Online Status",
+      "short_name": "Status",
+      "description": "Manage your online availability",
+      "url": "/?page=status",
+      "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
+    },
+    {
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View your therapist dashboard",
-      "url": "/dashboard",
+      "url": "/?page=dashboard",
       "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Bookings",
       "short_name": "Bookings",
       "description": "Manage your bookings",
-      "url": "/bookings",
+      "url": "/?page=bookings",
       "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Support Chat",
       "short_name": "Chat",
       "description": "Contact support (Premium)",
-      "url": "/chat",
+      "url": "/?page=chat",
       "icons": [{ "src": "/icons/therapist-icon-96.png", "sizes": "96x96" }]
     }
   ],
