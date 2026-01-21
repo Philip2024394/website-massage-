@@ -12,12 +12,18 @@ html, body, #root {
   width: 100%;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pan-x;
+  /* Prevent browser pull-to-refresh and overscroll navigation */
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
 }
 
 html {
   overflow-y: scroll;
   overflow-x: hidden;
   height: auto !important;
+  /* Prevent overscroll navigation */
+  overscroll-behavior: contain;
 }
 
 body {
@@ -25,6 +31,8 @@ body {
   overflow-x: hidden;
   min-height: 100vh;
   height: auto !important;
+  /* Prevent overscroll navigation gestures */
+  overscroll-behavior: contain;
 }
 
 #root {

@@ -9,7 +9,22 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <!-- 🖥️ PREVIEW MODE: Auto-refresh if server disconnects -->
+    <!-- � PREVENT OVERSCROLL NAVIGATION: Stop browser back/forward gestures -->
+    <style>
+        /* Critical: Prevent browser pull-to-refresh and overscroll navigation */
+        html, body {
+            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            overscroll-behavior-x: none;
+        }
+        /* Prevent mobile browser bounce/elastic scrolling that triggers navigation */
+        body {
+            position: relative;
+            overflow-x: hidden;
+        }
+    </style>
+    
+    <!-- �🖥️ PREVIEW MODE: Auto-refresh if server disconnects -->
     <script>
         // Prevent offline messages in preview mode
         (function() {
