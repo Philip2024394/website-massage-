@@ -14,7 +14,29 @@ const isAdminMode = process.env.VITE_PORT === '3004' || process.argv.includes('-
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // ✅ SPA ROUTING PLUGIN: Handle client-side routes on refresh
+    {
+      name: 'spa-fallback',
+      configureServer(server) {
+        server.middlewares.use('/api', (req, res, next) => next());
+        server.middlewares.use((req, res, next) => {
+          // Skip API routes and static files
+          if (req.url?.startsWith('/api') || 
+              req.url?.includes('.') && !req.url?.includes('.html') ||
+              req.url?.startsWith('/@') ||
+              req.url?.startsWith('/node_modules')) {
+            return next();
+          }
+          
+          // For all other routes, serve index.html (SPA fallback)
+          req.url = '/';
+          next();
+        });
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -47,6 +69,11 @@ export default defineConfig({
       'Cache-Control': 'no-store, no-cache, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
+    },
+    // ✅ SPA ROUTING FIX: Configure middleware to handle client-side routes
+    middlewareMode: false,
+    fs: {
+      strict: false
     },
     // 🔧 CORS PROXY: Proxy Appwrite requests to avoid CORS issues
     proxy: {

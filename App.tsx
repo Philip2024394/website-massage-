@@ -343,6 +343,64 @@ const App = () => {
         };
     }, [state.page]); // Re-run when page changes to allow restoration on non-landing pages
 
+    // ✅ GLOBAL REFRESH HANDLER: Handle pull-to-refresh and page refresh events
+    useEffect(() => {
+        const handleAppRefresh = async (event: CustomEvent) => {
+            console.log('🔄 App refresh triggered:', event.detail);
+            
+            try {
+                // Clear any cached data if needed
+                if ('sessionCache' in window) {
+                    // Refresh session data
+                    const { sessionCache } = await import('./lib/sessionCache');
+                    sessionCache.clear();
+                }
+                
+                // Refresh therapist data if on home page
+                if (state.page === 'home' || state.page === 'landing') {
+                    console.log('🔄 Refreshing therapist data...');
+                    // Trigger therapist data refresh
+                    window.dispatchEvent(new CustomEvent('refresh-therapists'));
+                }
+                
+                // Refresh current page data based on route
+                const currentHash = window.location.hash;
+                if (currentHash.includes('therapist-profile')) {
+                    console.log('🔄 Refreshing therapist profile...');
+                    window.dispatchEvent(new CustomEvent('refresh-profile'));
+                } else if (currentHash.includes('dashboard')) {
+                    console.log('🔄 Refreshing dashboard data...');
+                    window.dispatchEvent(new CustomEvent('refresh-dashboard'));
+                }
+                
+                // Provide haptic feedback on mobile
+                if ('navigator' in window && 'vibrate' in navigator) {
+                    navigator.vibrate([50, 50, 50]); // Success pattern
+                }
+                
+            } catch (error) {
+                console.error('❌ Refresh error:', error);
+            }
+        };
+
+        // Listen for app refresh events
+        window.addEventListener('app-refresh', handleAppRefresh as EventListener);
+        
+        // Handle browser refresh/reload
+        const handleBeforeUnload = () => {
+            // Clear any temporary state before page reload
+            localStorage.removeItem('temp-booking-data');
+            sessionStorage.removeItem('temp-chat-state');
+        };
+        
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('app-refresh', handleAppRefresh as EventListener);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [state.page]);
+
     // Inbound share click tracking via URL params (agent/provider/platform)
     useEffect(() => {
         try {

@@ -689,62 +689,99 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       return;
     }
     
+    console.log('🚀 Install App button clicked - triggering native PWA install...');
+    
     // Try to get the deferred prompt from window object first
     const promptEvent = deferredPrompt || (window as any).deferredPrompt;
     
-    // If there's a deferred prompt, trigger the browser's native install dialog
+    // AUTO-TRIGGER: First try native browser installation
     if (promptEvent) {
       try {
-        console.log('🚀 Triggering PWA install prompt from button click...');
+        console.log('✅ Found deferred prompt - showing native install dialog...');
         await promptEvent.prompt();
         const choiceResult = await promptEvent.userChoice;
+        
         if (choiceResult.outcome === 'accepted') {
+          console.log('✅ User accepted PWA installation!');
           setIsAppInstalled(true);
           localStorage.setItem('pwa-installed', 'true');
           localStorage.setItem('pwa-install-completed', 'true');
-          alert('✅ App installed successfully! You can now access it from your home screen.');
+          
+          // Request notification permission immediately after install
+          setTimeout(async () => {
+            if ('Notification' in window && Notification.permission === 'default') {
+              const permission = await Notification.requestPermission();
+              if (permission === 'granted') {
+                new Notification('IndaStreet Therapist', {
+                  body: '🎉 App installed successfully! Notifications are now enabled.',
+                  icon: '/pwa-icon-192.png',
+                  tag: 'install-success'
+                });
+              }
+            }
+          }, 1000);
+          
+          return;
         } else {
-          alert('❌ Installation cancelled. You can install the app later by clicking this button again.');
+          console.log('❌ User declined PWA installation');
+          return;
         }
-        setDeferredPrompt(null);
-        (window as any).deferredPrompt = null;
       } catch (error) {
-        console.error('Error installing app:', error);
-        alert('❌ Installation failed. Please try again or use your browser\'s menu to install.');
-      }
-    } else if (isIOS) {
-      // iOS specific instructions popup
-      alert(
-        '📱 TO INSTALL ON iPhone/iPad:\n\n' +
-        '1. Tap the Share button (⬆️) at the bottom of Safari\n' +
-        '2. Scroll down and tap "Add to Home Screen"\n' +
-        '3. Tap "Add" to confirm\n\n' +
-        '✅ The app will appear on your home screen with full notification support!'
-      );
-    } else {
-      // Try using the PWA enforcer's trigger method as fallback
-      console.log('⚠️ No deferred prompt available, attempting fallback install...');
-      // const installed = await PWAInstallationEnforcer.triggerInstallPrompt();
-      const installed = false; // Temporary fallback
-      
-      if (!installed) {
-        // Only show instructions if the trigger failed
-        alert(
-          '📱 TO DOWNLOAD THE APP:\n\n' +
-          '🔹 On Chrome/Edge:\n' +
-          '   • Look for the install icon (⬇️) in the address bar\n' +
-          '   • OR use the browser menu (⋮) > "Install app"\n\n' +
-          '🔹 On Firefox:\n' +
-          '   • Tap the menu (⋮) > "Install"\n\n' +
-          '🔹 On other browsers:\n' +
-          '   • Add this page to your home screen\n\n' +
-          '✅ Once installed, you\'ll get enhanced notifications!'
-        );
-      } else {
-        setIsAppInstalled(true);
-        localStorage.setItem('pwa-installed', 'true');
+        console.error('❌ Error with native install prompt:', error);
+        // Continue to fallback methods below
       }
     }
+    
+    // FALLBACK: Try to trigger beforeinstallprompt event manually
+    console.log('⚠️ No native prompt available, attempting to trigger beforeinstallprompt...');
+    
+    // Dispatch a custom event to potentially trigger any cached prompts
+    window.dispatchEvent(new Event('beforeinstallprompt'));
+    
+    // Wait a moment to see if a prompt becomes available
+    setTimeout(async () => {
+      const newPrompt = (window as any).deferredPrompt;
+      if (newPrompt) {
+        console.log('✅ Found new deferred prompt after trigger...');
+        try {
+          await newPrompt.prompt();
+          const result = await newPrompt.userChoice;
+          if (result.outcome === 'accepted') {
+            setIsAppInstalled(true);
+            localStorage.setItem('pwa-installed', 'true');
+            localStorage.setItem('pwa-install-completed', 'true');
+          }
+          return;
+        } catch (error) {
+          console.error('Error with triggered prompt:', error);
+        }
+      }
+      
+      // FINAL FALLBACK: Show browser-specific instructions only if everything else fails
+      if (isIOS) {
+        // iOS specific instructions popup
+        alert(
+          '📱 TO INSTALL ON iPhone/iPad:\n\n' +
+          '1. Tap the Share button (⬆️) at the bottom of Safari\n' +
+          '2. Scroll down and tap "Add to Home Screen"\n' +
+          '3. Tap "Add" to confirm\n\n' +
+          '✅ The app will appear on your home screen with full notification support!'
+        );
+      } else {
+        // Show Android/Desktop instructions
+        alert(
+          '📱 TO INSTALL THE APP:\n\n' +
+          '🔹 Chrome/Edge:\n' +
+          '   • Look for install icon (⬇️) in address bar\n' +
+          '   • OR: Menu (⋮) → "Install app"\n\n' +
+          '🔹 Firefox:\n' +
+          '   • Menu (⋮) → "Install"\n\n' +
+          '🔹 Other browsers:\n' +
+          '   • Add to home screen from browser menu\n\n' +
+          '✅ Once installed, you\'ll get enhanced notifications!'
+        );
+      }
+    }, 500);
   };
 
   const getStatusColor = (statusType: OnlineStatus) => {

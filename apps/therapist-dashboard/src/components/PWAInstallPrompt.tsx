@@ -19,18 +19,42 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       return;
     }
 
-    // Listen for beforeinstallprompt event with AUTO-TRIGGER
+    // Listen for beforeinstallprompt event with SMART AUTO-TRIGGER
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
-      console.log('📱 PWA install prompt ready - AUTO-TRIGGERING...');
+      console.log('📱 PWA install prompt ready - preparing smart trigger...');
       
-      // ⚡ AUTO-TRIGGER: Show install prompt immediately after 1 second
-      setTimeout(() => {
-        console.log('🚀 Auto-showing PWA install prompt for one-click installation');
-        handleInstallClick(e);
-      }, 1000);
+      // Store globally for other components to access
+      (window as any).deferredPrompt = e;
+      
+      // AUTO-TRIGGER: Wait for user interaction, then show install prompt
+      // Only auto-trigger if user hasn't manually dismissed recently
+      const recentlyDismissed = localStorage.getItem('pwa-auto-dismissed');
+      const dismissTime = recentlyDismissed ? parseInt(recentlyDismissed) : 0;
+      const hoursSinceDismiss = (Date.now() - dismissTime) / (1000 * 60 * 60);
+      
+      if (!recentlyDismissed || hoursSinceDismiss > 24) {
+        console.log('🚀 Auto-triggering PWA install after user interaction...');
+        
+        // Wait for user to interact with page, then auto-show
+        const triggerOnInteraction = () => {
+          setTimeout(() => {
+            console.log('✨ Showing PWA install prompt automatically');
+            handleInstallClick(e);
+          }, 2000); // 2 second delay after interaction
+          
+          // Remove listeners after first trigger
+          document.removeEventListener('click', triggerOnInteraction);
+          document.removeEventListener('scroll', triggerOnInteraction);
+          document.removeEventListener('touchstart', triggerOnInteraction);
+        };
+        
+        document.addEventListener('click', triggerOnInteraction, { once: true });
+        document.addEventListener('scroll', triggerOnInteraction, { once: true });
+        document.addEventListener('touchstart', triggerOnInteraction, { once: true });
+      }
     };
 
     // Listen for app installed event
@@ -63,11 +87,29 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     const prompt = promptEvent || deferredPrompt;
     
     if (!prompt) {
-      console.log('⚠️ No install prompt available');
+      console.log('⚠️ No install prompt available - trying to trigger one...');
+      
+      // Try to trigger a fresh beforeinstallprompt event
+      window.dispatchEvent(new Event('beforeinstallprompt'));
+      
+      // If still no prompt after attempt, show instructions
+      setTimeout(() => {
+        if (!deferredPrompt) {
+          alert(
+            '📱 TO INSTALL THE APP:\n\n' +
+            '🔹 Chrome/Edge: Look for install icon (⬇️) in address bar\n' +
+            '🔹 Firefox: Menu → Install\n' +
+            '🔹 Safari iOS: Share → Add to Home Screen\n\n' +
+            '✅ Once installed, you\'ll get enhanced notifications!'
+          );
+        }
+      }, 500);
       return;
     }
 
     try {
+      console.log('🚀 Showing PWA install prompt...');
+      
       // Show install prompt
       await prompt.prompt();
 
@@ -84,11 +126,14 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
           requestNotificationPermission();
         }, 500);
       } else {
-        console.log('❌ User declined install');
+        console.log('❌ User declined install - marking as auto-dismissed');
+        // Mark as dismissed to prevent auto-trigger for 24 hours
+        localStorage.setItem('pwa-auto-dismissed', Date.now().toString());
       }
 
       // Clear the deferredPrompt
       setDeferredPrompt(null);
+      (window as any).deferredPrompt = null;
       setShowInstallPrompt(false);
     } catch (error) {
       console.error('❌ Install prompt error:', error);
@@ -167,15 +212,25 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
   };
 
   const handleDismiss = () => {
+    console.log('📱 PWA install banner dismissed by user');
     setShowInstallPrompt(false);
-    // Show again after 7 days
+    
+    // Mark as manually dismissed to prevent auto-trigger for 24 hours
+    localStorage.setItem('pwa-auto-dismissed', Date.now().toString());
+    
+    // Also set traditional dismissal markers
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
-  // ALWAYS RETURN NULL - No custom UI shown
-  // Auto-trigger handles everything via native browser dialog
-  // This prevents confusing therapists with multiple prompts
-  return null;
+  // Don't show UI if app is already installed
+  if (isInstalled) {
+    return null;
+  }
+
+  // Show install banner only if we have a prompt or if user is on supported device
+  if (!showInstallPrompt && !deferredPrompt) {
+    return null;
+  }
 
   return (
     <>

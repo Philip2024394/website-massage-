@@ -8,6 +8,7 @@ import { useUnreadBadge } from '../../../../chat/hooks/useUnreadBadge';
 import { useGestureSwipe } from '../../../../hooks/useGestureSwipe';
 import { FloatingUnreadBadge } from '../../../../components/UnreadBadge';
 import { pushNotificationsService } from '../../../../lib/pushNotificationsService';
+import PullToRefresh from '../../../../components/PullToRefresh';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ interface TherapistLayoutProps {
   language?: 'en' | 'id';
   onLanguageChange?: (lang: 'en' | 'id') => void;
   onLogout?: () => void;
+  onRefresh?: () => Promise<void> | void;
 }
 
 const TherapistLayout: React.FC<TherapistLayoutProps> = ({
@@ -26,7 +28,8 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
   onNavigate,
   language = 'id',
   onLanguageChange,
-  onLogout
+  onLogout,
+  onRefresh
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
@@ -307,7 +310,35 @@ const TherapistLayout: React.FC<TherapistLayoutProps> = ({
 
       {/* Main Content */}
       <main className="relative">
-        {children}
+        <PullToRefresh 
+          onRefresh={async () => {
+            console.log('🔄 Dashboard refresh triggered');
+            
+            if (onRefresh) {
+              await onRefresh();
+            } else {
+              // Default dashboard refresh
+              window.dispatchEvent(new CustomEvent('refresh-dashboard', {
+                detail: { 
+                  page: currentPage,
+                  therapistId: therapist?.$id,
+                  timestamp: Date.now()
+                }
+              }));
+              
+              // Provide haptic feedback
+              if ('navigator' in window && 'vibrate' in navigator) {
+                navigator.vibrate(50);
+              }
+              
+              // Wait for visual feedback
+              await new Promise(resolve => setTimeout(resolve, 800));
+            }
+          }}
+          className="min-h-screen"
+        >
+          {children}
+        </PullToRefresh>
       </main>
     </div>
   );

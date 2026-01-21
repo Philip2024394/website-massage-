@@ -121,18 +121,34 @@ self.addEventListener('fetch', (event) => {
                         console.log('✅ SW: Serving fresh content');
                         return response;
                     }
+                    
+                    // For SPA routing: If we get 404 for client-side routes, serve index.html
+                    if (response.status === 404) {
+                        console.log('🔄 SW: 404 detected, serving index.html for SPA routing');
+                        return caches.match('/') || fetch('/');
+                    }
+                    
                     // Don't show offline page for non-ok responses during install
                     // Let the browser handle errors naturally
                     return response;
                 })
                 .catch((error) => {
-                    // If network fails, try to return cached version
+                    // If network fails, try to return cached version or index.html for SPA
                     console.log('⚠️ SW: Network error:', error.message);
                     return caches.match(event.request).then((cachedResponse) => {
                         if (cachedResponse) {
                             console.log('✅ SW: Serving cached content');
                             return cachedResponse;
                         }
+                        
+                        // For SPA routing: serve index.html for navigation requests
+                        console.log('🔄 SW: Serving index.html for SPA routing');
+                        return caches.match('/') || caches.match('/index.html');
+                    }).then((response) => {
+                        if (response) {
+                            return response;
+                        }
+                        
                         // Only show offline page if truly offline (not during install)
                         // Check if navigator is online
                         if (!self.navigator.onLine) {
