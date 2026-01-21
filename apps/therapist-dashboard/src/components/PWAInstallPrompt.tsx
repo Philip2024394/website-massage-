@@ -28,7 +28,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Th
     // Validate technical requirements
     validatePWARequirements();
     
-    // Check if already installed
+    // COMPREHENSIVE STANDALONE MODE DETECTION
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
     const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
@@ -36,21 +36,46 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Th
                          window.matchMedia('(display-mode: fullscreen)').matches ||
                          window.matchMedia('(display-mode: minimal-ui)').matches;
     
-    if (isStandalone || isInWebAppiOS || isInstalled || runningAsApp) {
-      console.log('PWA Dashboard: ✅ App already installed');
+    // Check URL for standalone parameter (Android Chrome adds this)
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasStandaloneParam = urlParams.get('utm_source') === 'homescreen' || 
+                                window.location.search.includes('standalone=true');
+    
+    // Check if opened from installed app (various methods)
+    const isRunningStandalone = isStandalone || isInWebAppiOS || runningAsApp || hasStandaloneParam;
+    
+    console.log('PWA Dashboard: Installation Detection:', {
+      isStandalone,
+      isInWebAppiOS,
+      isInstalled,
+      runningAsApp,
+      hasStandaloneParam,
+      finalResult: isRunningStandalone
+    });
+    
+    if (isRunningStandalone) {
+      console.log('PWA Dashboard: ✅ App running in standalone mode - HIDING INSTALL PROMPT');
+      setInstallState('installed');
+      localStorage.setItem('pwa-install-completed', 'true');
+      return;
+    }
+    
+    if (isInstalled) {
+      console.log('PWA Dashboard: ✅ App marked as installed in localStorage');
       setInstallState('installed');
       return;
     }
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Check not already installed
+      // Check not already installed (double-check)
       const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
                                (window.navigator as any).standalone === true ||
                                localStorage.getItem('pwa-install-completed') === 'true';
       
       if (alreadyInstalled) {
         console.log('PWA Dashboard: ⛔ App already installed, ignoring prompt');
+        e.preventDefault();
         return;
       }
       
@@ -76,6 +101,22 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Th
         requestNotificationPermission();
       }, 1000);
     };
+    
+    // Monitor display-mode changes
+    const standaloneMediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        console.log('PWA Dashboard: 🔄 Display mode changed to standalone - HIDING PROMPT');
+        setInstallState('installed');
+        setShowPrompt(false);
+        localStorage.setItem('pwa-install-completed', 'true');
+      }
+    };
+    
+    // Add listener for display mode changes
+    if (standaloneMediaQuery.addEventListener) {
+      standaloneMediaQuery.addEventListener('change', handleDisplayModeChange);
+    }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
@@ -88,6 +129,9 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Th
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      if (standaloneMediaQuery.removeEventListener) {
+        standaloneMediaQuery.removeEventListener('change', handleDisplayModeChange);
+      }
     };
   }, []);
 
