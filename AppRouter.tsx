@@ -620,6 +620,15 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         console.log('✅ User session restored');
                     }
                     
+                    // Check for PWA redirect flag
+                    const pwaRedirect = sessionStorage.getItem('pwa-redirect-after-login');
+                    if (pwaRedirect) {
+                        console.log('🏠 PWA redirect detected - navigating to:', pwaRedirect);
+                        sessionStorage.removeItem('pwa-redirect-after-login');
+                        props.onNavigate(pwaRedirect as Page);
+                        return;
+                    }
+                    
                     // Navigate within React app instead of external redirect
                     const dashboardPageMap: Record<string, string> = {
                         'therapist': 'therapist-status',

@@ -62,6 +62,11 @@ const App = () => {
     // Forced booking modal state
     const [forcedBookingData, setForcedBookingData] = useState<any>(null);
     
+    // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
+    // All hooks combined - MUST be called BEFORE any useEffect that depends on state
+    const hooks = useAllHooks();
+    const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
+    
     // Fetch booking details and show forced modal
     const fetchAndShowForcedBooking = async (bookingId: string) => {
         try {
@@ -175,10 +180,28 @@ const App = () => {
         }
     }, []); // Run once on mount
     
-    // ===== CRITICAL FIX: INITIALIZE ALL HOOKS AT TOP =====
-    // All hooks combined - MUST be called BEFORE any useEffect that depends on state
-    const hooks = useAllHooks();
-    const { state, navigation, authHandlers, providerAgentHandlers, derived, restoreUserSession } = hooks;
+    // ===== PWA ROUTING DETECTION =====
+    // Detect if app opened from PWA home screen and route to therapist dashboard
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isPWA = urlParams.get('pwa') === 'true';
+        const pageParam = urlParams.get('page');
+        
+        if (isPWA && pageParam === 'status') {
+            console.log('🏠 PWA Home Screen Launch - Checking authentication status...');
+            
+            // Check if therapist is already authenticated
+            if (state.loggedInProvider && state.loggedInProvider.type === 'therapist') {
+                console.log('✅ Therapist authenticated - Routing to Status Dashboard');
+                navigation.setPage('therapist-status');
+            } else {
+                console.log('❌ Not authenticated - Routing to Therapist Login');
+                // Store intended destination for post-login redirect
+                sessionStorage.setItem('pwa-redirect-after-login', 'therapist-status');
+                navigation.setPage('signin');
+            }
+        }
+    }, [state.loggedInProvider]); // Also depend on auth state
     
     // Log mobile detection info for debugging (only when mobile detected)
     useEffect(() => {

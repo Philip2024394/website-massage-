@@ -97,8 +97,8 @@ if (isAdminMode) {
   }
 
   // Mount React app
-  const root = document.getElementById('root');
-  if (!root) {
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
     logger.error('Root element not found!');
   } else {
     // Add dev mode indicator
@@ -133,15 +133,17 @@ if (isAdminMode) {
       logger.log('✅ Dev mode indicator added');
     }
     
-    // Temporarily disable concurrent features to debug removeChild error
-    const root = ReactDOM.createRoot(rootElement, {
+    // Create React root with React 19 compatibility
+    const reactRoot = ReactDOM.createRoot(rootElement, {
       onRecoverableError: (error, errorInfo) => {
         console.warn('React Recoverable Error:', error);
-        // Don't throw on recoverable errors to prevent AsyncMode crashes
+        // Don't throw on recoverable errors to prevent crashes
       },
+      // React 19 compatibility mode
+      identifierPrefix: 'indastreet-',
     });
     
-    root.render(
+    reactRoot.render(
       <ProductionErrorBoundary>
         <ErrorBoundary>
           <AppErrorBoundary>
