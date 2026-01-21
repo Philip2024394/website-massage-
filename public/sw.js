@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.5';
-const CACHE_NAME = `push-notifications-v2-5`;
+const SW_VERSION = '2.2.6';
+const CACHE_NAME = `push-notifications-v2-6`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -78,6 +78,7 @@ self.addEventListener('activate', (event) => {
  * Ensures preview always displays fresh content and never shows offline messages
  * Strategy: Network first, then cache, with automatic retry
  * CRITICAL: Appwrite storage images are NEVER cached or intercepted
+ * CRITICAL: Don't intercept during PWA installation to avoid blocking install
  */
 self.addEventListener('fetch', (event) => {
     const url = event.request.url;
@@ -88,6 +89,12 @@ self.addEventListener('fetch', (event) => {
         url.includes('syd.cloud.appwrite.io/v1/storage/') ||
         event.request.destination === 'image'
     ) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+    
+    // ✅ BYPASS: API calls (let them fail naturally without offline page)
+    if (url.includes('/v1/') || url.includes('appwrite.io')) {
         event.respondWith(fetch(event.request));
         return;
     }
@@ -113,18 +120,22 @@ self.addEventListener('fetch', (event) => {
                         console.log('✅ SW: Serving fresh content');
                         return response;
                     }
-                    throw new Error('Server not available');
+                    // Don't show offline page for non-ok responses during install
+                    // Let the browser handle errors naturally
+                    return response;
                 })
-                .catch(() => {
+                .catch((error) => {
                     // If network fails, try to return cached version
-                    console.log('⚠️ SW: Network unavailable, checking cache...');
+                    console.log('⚠️ SW: Network error:', error.message);
                     return caches.match(event.request).then((cachedResponse) => {
                         if (cachedResponse) {
                             console.log('✅ SW: Serving cached content');
                             return cachedResponse;
                         }
-                        // Network and cache both failed - return simple offline message
-                        return new Response(`
+                        // Only show offline page if truly offline (not during install)
+                        // Check if navigator is online
+                        if (!self.navigator.onLine) {
+                            return new Response(`
                             <!DOCTYPE html>
                             <html>
                             <head>
@@ -160,6 +171,11 @@ self.addEventListener('fetch', (event) => {
                         `, {
                             headers: { 'Content-Type': 'text/html' }
                         });
+                        } else {
+                            // Network available but fetch failed - let browser handle it
+                            // This allows PWA installation to work properly
+                            return fetch(event.request);
+                        }
                     });
                 })
         );
