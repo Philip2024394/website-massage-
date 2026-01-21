@@ -11,6 +11,7 @@ import { devLog, devWarn } from "../../../../utils/devMode";
 // import { useTranslations } from '../../../../lib/useTranslations';
 import { FloatingChatWindow } from '../../../../chat/FloatingChatWindow';
 import TherapistLayout from '../components/TherapistLayout';
+import BookingRequestCard from '../components/BookingRequestCard';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -1217,6 +1218,12 @@ const TherapistOnlineStatus: React.FC<TherapistOnlineStatusProps> = ({ therapist
       </div>
     </div>
     </TherapistLayout>
+    
+    {/* Booking Request Floating Window - Shows countdown timer and accept/reject buttons */}
+    <BookingRequestCard 
+      therapistId={therapist?.$id || therapist?.id}
+      membershipTier="plus"
+    />
     
     {/* Floating Chat Window - Always mounted, internally manages visibility */}
     <FloatingChatWindow
