@@ -1,36 +1,46 @@
 /**
- * 🎪 STANDALONE CHAT PROVIDER
- * - Subscribes to Appwrite chat rooms on mount
- * - Maintains chat state independently of app state
- * - Guarantees chat visibility when booking has chatRoomId
- * 
- * CRITICAL: This replaces the fragile event-based chat system
- * with a solid Appwrite-first architecture
+ * 🎪 CHAT PROVIDER - Production Ready with Real Appwrite Integration
+ * - Real-time chat room subscriptions from Appwrite
+ * - User authentication integration
+ * - Booking data enrichment for banner display
+ * - Notification system integration
+ * - Fallback demo data for development
  */
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { client, databases, DATABASE_ID } from '../lib/appwrite';
+import { bookingChatIntegrationService } from '../lib/services/bookingChatIntegration.service';
+import { bookingNotificationService } from '../lib/services/bookingNotification.service';
 
-// Chat room collection ID - adjust to your actual collection
-const CHAT_ROOMS_COLLECTION_ID = 'chatRooms'; // TODO: Update with actual collection ID
+// Use CHAT_SESSIONS collection for production, fallback for development
+const CHAT_ROOMS_COLLECTION_ID = 'chat_sessions';
 
 interface ChatRoom {
   $id: string;
-  bookingId?: string;  // Optional - may not exist yet during booking flow
+  bookingId?: string;
   providerId: string;
   providerName: string;
   providerImage: string | null;
-  customerId?: string;  // Optional - filled after booking confirmed
-  customerName?: string;  // Optional - collected in chat
-  customerWhatsApp?: string;  // Optional - collected in chat
-  status: 'waiting' | 'active' | 'completed' | 'booking-in-progress';  // Added booking-in-progress
+  customerId?: string;
+  customerName?: string;
+  customerWhatsApp?: string;
+  status: 'waiting' | 'active' | 'completed' | 'booking-in-progress';
   pricing: Record<string, number>;
   createdAt: string;
-  $createdAt?: string; // Appwrite's automatic timestamp
+  $createdAt?: string;
   expiresAt: string | null;
   lastMessageAt?: string;
   unreadCount?: number;
-  duration?: number;  // Selected duration
+  duration?: number;
+  // Production booking data
+  serviceDate?: string;
+  serviceTime?: string;
+  serviceDuration?: string;
+  serviceType?: string;
+  bookingType?: 'book_now' | 'scheduled';
+  therapistPhoto?: string;
+  responseDeadline?: string;
+  bookingStatus?: string;
 }
 
 interface BookingChatData {
@@ -163,39 +173,95 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Fetch existing chat rooms for current user
+  // Fetch chat rooms with booking data integration
   const fetchUserChatRooms = async () => {
     try {
-      console.log('📊 ChatProvider: Loading existing chat rooms...');
+      console.log('📊 ChatProvider: Loading chat rooms with booking integration...');
       
-      // TODO: Get current user ID from auth context
-      // For now, we'll fetch all chat rooms and filter client-side
-      const response = await databases.listDocuments(
-        DATABASE_ID,
-        CHAT_ROOMS_COLLECTION_ID,
-        [
-          // TODO: Add proper query filters based on user role
-          // Query.equal('customerId', currentUserId)
-          // Query.equal('providerId', currentUserId)
-        ]
+      // Use production-ready integration service
+      const enrichedChatRooms = await bookingChatIntegrationService.fetchUserChatRoomsWithBookings();
+      
+      // Convert to our ChatRoom interface
+      const chatRooms: ChatRoom[] = enrichedChatRooms.map(room => ({
+        $id: room.$id,
+        bookingId: room.bookingId,
+        providerId: room.providerId,
+        providerName: room.providerName,
+        providerImage: room.providerImage,
+        customerId: room.customerId,
+        customerName: room.customerName,
+        customerWhatsApp: room.customerWhatsApp,
+        status: room.status as 'waiting' | 'active' | 'completed' | 'booking-in-progress',
+        pricing: room.pricing,
+        createdAt: room.createdAt,
+        expiresAt: null,
+        lastMessageAt: room.lastMessageAt,
+        unreadCount: room.unreadCount || 0,
+        duration: room.duration,
+        serviceDate: room.serviceDate,
+        serviceTime: room.serviceTime,
+        serviceDuration: room.serviceDuration,
+        serviceType: room.serviceType,
+        bookingType: room.bookingType,
+        therapistPhoto: room.therapistPhoto || room.providerImage,
+        responseDeadline: room.responseDeadline,
+        bookingStatus: room.bookingStatus
+      }));
+      
+      // Setup notification onboarding if user has active bookings
+      const hasActiveBookings = chatRooms.some(room => 
+        room.bookingStatus === 'pending' && room.responseDeadline
       );
-
-      const chatRooms = response.documents as ChatRoom[];
       
-      // Filter for rooms where user is involved (customer OR provider)
-      // TODO: Replace with proper user ID check
-      const userChatRooms = chatRooms.filter(room => {
-        // For now, return all rooms - will be filtered when user context is available
-        return true;
-      });
-
-      setActiveChatRooms(userChatRooms);
-      console.log(`📊 ChatProvider: Loaded ${userChatRooms.length} active chat rooms`);
+      if (hasActiveBookings && !bookingNotificationService.hasInteractedWithNotifications()) {
+        // Show notification permission prompt
+        bookingNotificationService.showNotificationOnboarding();
+      }
+      
+      setActiveChatRooms(chatRooms);
+      console.log(`📊 ChatProvider: Loaded ${chatRooms.length} chat rooms with booking data`);
       
     } catch (error) {
-      console.error('❌ ChatProvider: Failed to fetch chat rooms:', error);
-      // Don't throw - app should continue working without chat
-      setActiveChatRooms([]);
+      console.error('❌ ChatProvider: Error loading chat rooms:', error);
+      
+      // Fallback: Load demo data only in development
+      if (import.meta.env.DEV) {
+        console.log('🧪 Loading demo chat room for development...');
+        const demoChatRoom: ChatRoom = {
+          $id: 'demo-booking-chat',
+          bookingId: 'demo-booking-123',
+          providerId: 'demo-therapist-1',
+          providerName: 'Sarah (Demo Therapist)',
+          providerImage: 'https://images.unsplash.com/photo-1594824475317-d4da6a83c82b?w=150&h=150&fit=crop&crop=face',
+          customerId: 'demo-customer-1',
+          customerName: 'Demo Customer',
+          customerWhatsApp: '+628123456789',
+          status: 'active',
+          pricing: { '60': 350000, '90': 450000, '120': 650000 },
+          createdAt: new Date().toISOString(),
+          expiresAt: null,
+          duration: 60,
+          lastMessageAt: new Date().toISOString(),
+          unreadCount: 0,
+          serviceDate: new Date(Date.now() + 15 * 60 * 1000).toLocaleDateString(),
+          serviceTime: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: false 
+          }),
+          serviceDuration: '60',
+          serviceType: 'Deep Tissue Massage',
+          bookingType: 'book_now',
+          therapistPhoto: 'https://images.unsplash.com/photo-1594824475317-d4da6a83c82b?w=150&h=150&fit=crop&crop=face',
+          responseDeadline: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          bookingStatus: 'pending'
+        };
+        
+        setActiveChatRooms([demoChatRoom]);
+        console.log('✅ Demo chat room loaded for development');
+      } else {
+        setActiveChatRooms([]);
+      }
     }
   };
 

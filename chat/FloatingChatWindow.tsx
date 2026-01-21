@@ -120,14 +120,18 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
   // Refs
   const windowRef = useRef<HTMLDivElement>(null);
 
-  // Select first chat room by default
+  // Select first chat room by default and auto-open chat window
   useEffect(() => {
     if (activeChatRooms.length > 0 && !selectedChatId) {
       const firstRoom = activeChatRooms[0];
       setSelectedChatId(firstRoom.$id);
-      console.log('📬 [FloatingChatWindow] Auto-selected first chat room:', firstRoom.$id);
+      
+      // Auto-open the first chat room to show booking details
+      openChatRoom(firstRoom.$id);
+      
+      console.log('📬 [FloatingChatWindow] Auto-selected and opened first chat room:', firstRoom.$id);
     }
-  }, [activeChatRooms, selectedChatId]);
+  }, [activeChatRooms, selectedChatId, openChatRoom]);
 
   // Get current chat room
   const currentChatRoom = activeChatRooms.find(room => room.$id === selectedChatId);
@@ -996,7 +1000,7 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 {/* REGULAR CHAT for other statuses */}
                 {chatRoom.status !== 'booking-in-progress' && (
                   <>
-                    {/* Booking Banner with Cancel Button */}
+                    {/* Booking Banner with Real Booking Data */}
                     <BookingBanner
                       therapistName={chatRoom.providerName}
                       therapistPhoto={(chatRoom as any).therapistPhoto}
@@ -1006,6 +1010,9 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                       serviceType={(chatRoom as any).serviceType || 'Massage'}
                       bookingType={(chatRoom as any).bookingType || 'book_now'}
                       bookingStatus={chatRoom.status}
+                      responseDeadline={(chatRoom as any).responseDeadline}
+                      bookingId={(chatRoom as any).bookingId}
+                      chatRoomId={chatRoom.$id}
                       onCancelBooking={handleCancelBooking}
                     />
 

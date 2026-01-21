@@ -16,10 +16,10 @@ import { useMobileDetection } from './hooks/useMobileDetection';
 import { useTranslations } from './lib/useTranslations';
 import { DeviceStylesProvider } from './components/DeviceAware';
 import BookingStatusTracker from './components/BookingStatusTracker';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy } from 'react';
 
 // Temporarily disabled lazy loading to fix AsyncMode error
-// const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
+const FloatingChatWindow = lazy(() => import('./chat').then(m => ({ default: m.FloatingChatWindow })));
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from './services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
@@ -41,7 +41,7 @@ import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapp
 import { useServiceWorkerListener } from './app/useServiceWorkerListener';
 import { useUrlBookingHandler } from './app/useUrlBookingHandler';
 import { useAnalyticsHandler } from './app/useAnalyticsHandler';
-import { ChatProvider } from './context/ChatProvider';
+import { ChatProvider, useChatContext } from './context/ChatProvider';
 
 // 🔒 PERSISTENT CHAT SYSTEM - Facebook Messenger style
 import { PersistentChatProvider } from './context/PersistentChatProvider';
@@ -789,6 +789,52 @@ const App = () => {
         state.setPage('home');
     };
 
+    
+    // Component that runs inside ChatProvider to access chat context
+    const ChatRoomActivator = () => {
+        const chatContext = useChatContext();
+        const [realUser, setRealUser] = useState<any>(null);
+        
+        // Get real authenticated user
+        useEffect(() => {
+            const loadUser = async () => {
+                try {
+                    const { account } = await import('./lib/appwrite');
+                    const user = await account.get();
+                    setRealUser(user);
+                    console.log('🔐 Real user authenticated:', user.email);
+                } catch {
+                    console.log('👤 Using guest mode - no authenticated user');
+                }
+            };
+            loadUser();
+        }, []);
+        
+        // Auto-set activeChat when chat rooms are available
+        useEffect(() => {
+            if (chatContext && chatContext.activeChatRooms.length > 0 && !activeChat) {
+                const availableRoom = chatContext.activeChatRooms[0]; // Use first available room
+                
+                console.log('🎪 Auto-setting activeChat for room:', availableRoom.$id);
+                setActiveChat({
+                    chatRoomId: availableRoom.$id,
+                    bookingId: availableRoom.bookingId || 'temp-booking',
+                    providerId: availableRoom.providerId,
+                    providerName: availableRoom.providerName,
+                    providerImage: availableRoom.providerImage,
+                    userRole: realUser ? 'customer' : 'guest',
+                    pricing: availableRoom.pricing,
+                    customerName: realUser?.name || availableRoom.customerName || 'Guest User',
+                    customerWhatsApp: availableRoom.customerWhatsApp || '',
+                    customerId: realUser?.$id || availableRoom.customerId || 'guest'
+                });
+                setIsChatMinimized(false); // Show the chat
+            }
+        }, [chatContext?.activeChatRooms, activeChat, realUser]);
+        
+        return null; // This component doesn't render anything
+    };
+
     const renderChatWindow = () => {
         console.log('💬 JSX RENDER CYCLE - Checking ChatWindow condition');
         console.log('💬 activeChat value:', activeChat);
@@ -826,16 +872,17 @@ const App = () => {
         
         console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
         console.log('✅ FloatingChatWindow RENDERING NOW');
-        return null; // Temporarily disabled to fix AsyncMode error
-        // return (
-        //     <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
-        //         <FloatingChatWindow
-        //             userId={activeChat.customerId || 'guest'}
-        //             userName={activeChat.customerName || 'Guest'}
-        //             userRole="customer"
-        //         />
-        //     </Suspense>
-        // );
+        
+        // Re-enable FloatingChatWindow to test booking banner functionality
+        return (
+            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
+                <FloatingChatWindow
+                    userId={activeChat.customerId || 'demo-customer-1'}
+                    userName={activeChat.customerName || 'Demo Customer'}
+                    userRole="customer"
+                />
+            </Suspense>
+        );
     };
 
     return (
@@ -845,6 +892,8 @@ const App = () => {
             setLanguage: handleLanguageSelect
         }}>
         <ChatProvider>
+            {/* Auto-activate demo chat rooms */}
+            <ChatRoomActivator />
         <PersistentChatProvider>
         <DeviceStylesProvider>
             <Helmet>
