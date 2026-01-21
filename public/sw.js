@@ -438,15 +438,19 @@ self.addEventListener('message', (event) => {
     }
 
     if (event.data && event.data.type === 'test-notification') {
-        // Test notification functionality
+        // Test notification functionality with STRONG vibration
         self.registration.showNotification('🧪 Test Notification', {
-            body: 'Push notifications are working perfectly!',
+            body: 'Push notifications are working perfectly! You should feel STRONG vibrations now! 📳',
             icon: '/icon-192.png',
             badge: '/badge-72.png',
-            vibrate: [100, 50, 100],
-            requireInteraction: false,
+            vibrate: [500, 100, 500, 100, 500, 100, 500],  // 2+ seconds strong vibration
+            requireInteraction: true,
+            silent: false,  // Allow system sound
             tag: 'test'
         });
+        
+        // Also play sound
+        playNotificationSoundInClients();
     }
 });
 

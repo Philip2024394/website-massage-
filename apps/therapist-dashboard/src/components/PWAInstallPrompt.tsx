@@ -212,14 +212,19 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         console.log('✅ Notification permission granted');
         registerPushNotifications();
         
-        // Show welcome notification
+        // Show welcome notification with STRONG vibration and sound
         new Notification('IndaStreet ' + dashboardName, {
-          body: '🎉 Notifications enabled! You\'ll receive booking alerts instantly.',
+          body: '🎉 Notifications enabled! You\'ll receive booking alerts instantly. You should feel strong vibrations!',
           icon: '/icons/therapist-icon-192.png',
           badge: '/icons/therapist-icon-192.png',
-          vibrate: [200, 100, 200],
-          tag: 'welcome-notification'
+          vibrate: [500, 100, 500, 100, 500, 100, 500],  // 2+ seconds of strong vibration
+          requireInteraction: true,  // Notification stays until user dismisses
+          tag: 'welcome-notification',
+          silent: false  // Allow system sound
         });
+        
+        // Play notification sound
+        playNotificationSound();
       }
     }
   };
@@ -256,6 +261,19 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+  };
+
+  const playNotificationSound = () => {
+    try {
+      const audio = new Audio('/sounds/booking-notification.mp3');
+      audio.volume = 1.0;  // Maximum volume
+      audio.play().catch(err => {
+        console.log('Sound play failed (may need user interaction):', err);
+      });
+      console.log('🔊 Playing notification sound');
+    } catch (error) {
+      console.error('Failed to play notification sound:', error);
+    }
   };
 
   const handleDismiss = () => {
