@@ -223,7 +223,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         registerPushNotifications();
         
         // Show welcome notification with 2-MINUTE vibration and sound
-        new Notification('IndaStreet ' + dashboardName, {
+        new Notification('IndaStreet Therapist Dashboard', {
           body: '🎉 Notifications enabled! Click "Test Notification" to test 2-MINUTE vibration + looping sound.',
           icon: '/icons/therapist-icon-192.png',
           badge: '/icons/therapist-icon-192.png',
