@@ -190,7 +190,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         // This ensures when user selects "Kuta", all cards show "Kuta" as the service area
         if (selectedCity && selectedCity !== 'all') {
             const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-            const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+            // Normalize selectedCity to lowercase for matching with locationId
+            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
             
             if (selectedCityData) {
                 // Add service areas if available

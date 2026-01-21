@@ -851,7 +851,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                                 // PRIORITY: If a specific city is selected, show that city
                                 if (selectedCity && selectedCity !== 'all') {
                                     const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                    const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+                                    // Normalize selectedCity to lowercase for matching with locationId
+                                    const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+                                    const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
                                     if (selectedCityData) {
                                         return selectedCityData.name;
                                     }
@@ -874,7 +876,9 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             // PRIORITY: If a specific city is selected, show that city
                             if (selectedCity && selectedCity !== 'all') {
                                 const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                const selectedCityData = allCities.find(city => city.locationId === selectedCity);
+                                // Normalize selectedCity to lowercase for matching with locationId
+                                const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+                                const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
                                 if (selectedCityData) {
                                     return `Serves ${selectedCityData.name} area`;
                                 }
