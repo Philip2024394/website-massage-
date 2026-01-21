@@ -21,9 +21,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     
-    // Use internal translations
-    const { dict } = useTranslations();
-    const t = externalT || dict.auth;
+    // Use translations - fallback to empty object if not available
+    const translationsResult = useTranslations();
+    const t = externalT || translationsResult?.dict?.auth || {};
 
     // Use prop mode if provided, otherwise fallback to URL detection
     const mode = propMode || (
