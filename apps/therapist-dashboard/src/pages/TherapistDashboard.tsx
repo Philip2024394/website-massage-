@@ -469,10 +469,11 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         console.log('📍 Custom location:', { customCity, customArea, coordinates });
       }
       
-      // STEP 4: GPS city wins silently over manual selection (except for custom)
-      if (!isCustomLocation && selectedCity && selectedCity !== 'all' && selectedCity !== derivedLocationId) {
-        console.log(`🔄 GPS overrides manual selection: "${selectedCity}" → "${derivedLocationId}"`);
-        // Silent override - GPS is always authoritative, no warning toast needed
+      // STEP 4: GPS city ALWAYS wins - make dropdown match GPS-derived city
+      if (!isCustomLocation && derivedLocationId && derivedLocationId !== selectedCity) {
+        console.log(`🔄 GPS IS AUTHORITATIVE: Syncing dropdown "${selectedCity}" → GPS-derived "${derivedLocationId}"`);
+        // Update dropdown to match GPS - ensuring consistency
+        setSelectedCity(derivedLocationId);
       }
       
       console.log('✅ Geopoint validation passed');
@@ -496,14 +497,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         customCity: isCustomLocation ? customCity.trim() : '',
         customArea: isCustomLocation ? customArea.trim() : '',
         
-        // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH)
+        // 🌍 GPS-AUTHORITATIVE FIELDS (SOURCE OF TRUTH) - ALL FIELDS DERIVED FROM GPS
         geopoint: geopoint,                    // Primary: lat/lng coordinates
-        city: isCustomLocation ? 'custom' : derivedLocationId, // Use 'custom' for custom locations
-        locationId: isCustomLocation ? 'custom' : derivedLocationId, // Use 'custom' for custom locations
+        city: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived city
+        locationId: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived locationId
+        location: isCustomLocation ? 'custom' : derivedLocationId, // GPS-derived location (overrides dropdown)
         coordinates: JSON.stringify(geopoint), // Legacy: serialized coordinates
-        
-        // ⚠️ LEGACY ONLY: Manual selection (NOT used for filtering)
-        location: selectedCity !== 'all' ? selectedCity : derivedLocationId,
         
         // 🚨 ENFORCEMENT: Cannot go live without GPS
         isLive: geopoint && geopoint.lat && geopoint.lng ? true : false,
@@ -1045,6 +1044,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               <label className="text-sm font-medium text-gray-700 mb-2 block">
                 Location * {country && `(${country})`}
               </label>
+              
+              {/* Info Box: GPS is Authoritative */}
+              <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <span className="text-lg">ℹ️</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-medium text-blue-900">
+                      <strong>Important:</strong> Your GPS location (set below) determines your city automatically. This dropdown is for reference only - GPS is the authoritative source.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
               <CityLocationDropdown
                 selectedCity={selectedCity}
                 onCityChange={(city) => {
@@ -1058,7 +1070,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 country={country} // Pass country filter
               />
               <p className="text-xs text-gray-500 mt-1">
-                Select your city or choose "Custom Location" for unlisted areas.
+                Select your city or choose "Custom Location" for unlisted areas. GPS will auto-set this when you save.
               </p>
             </div>
 
