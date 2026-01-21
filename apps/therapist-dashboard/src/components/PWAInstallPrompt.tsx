@@ -33,6 +33,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
 
     // Listen for beforeinstallprompt event with SMART AUTO-TRIGGER
     const handleBeforeInstallPrompt = (e: Event) => {
+      // Double-check not already installed before doing anything
+      const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                               (window.navigator as any).standalone === true ||
+                               localStorage.getItem('pwa-install-completed') === 'true';
+      
+      if (alreadyInstalled) {
+        console.log('PWA Dashboard: ⛔ App already installed, ignoring install prompt');
+        return;
+      }
+      
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
@@ -52,10 +62,19 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         
         // Wait for user to interact with page, then auto-show
         const triggerOnInteraction = () => {
-          setTimeout(() => {
-            console.log('PWA Dashboard: ✨ Showing PWA install prompt automatically');
-            handleInstallClick(e);
-          }, 2000); // 2 second delay after interaction
+          // Triple-check before showing
+          const stillNotInstalled = !window.matchMedia('(display-mode: standalone)').matches && 
+                                    !(window.navigator as any).standalone &&
+                                    localStorage.getItem('pwa-install-completed') !== 'true';
+          
+          if (stillNotInstalled) {
+            setTimeout(() => {
+              console.log('PWA Dashboard: ✨ Showing PWA install prompt automatically');
+              handleInstallClick(e);
+            }, 2000); // 2 second delay after interaction
+          } else {
+            console.log('PWA Dashboard: ⛔ App became installed, canceling auto-trigger');
+          }
           
           // Remove listeners after first trigger
           document.removeEventListener('click', triggerOnInteraction);
@@ -113,19 +132,22 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
   }, []);
 
   const handleInstallClick = async (promptEvent?: any) => {
+    // FIRST: Check if already installed - ALWAYS check this first
+    const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                             (window.navigator as any).standalone === true ||
+                             localStorage.getItem('pwa-install-completed') === 'true';
+    
+    if (alreadyInstalled) {
+      console.log('PWA Dashboard: ⛔ Already installed, not showing anything');
+      setShowInstallPrompt(false);
+      setIsInstalled(true);
+      return;
+    }
+    
     const prompt = promptEvent || deferredPrompt;
     
     if (!prompt) {
-      console.log('PWA Dashboard: ⚠️ No install prompt available');
-      
-      // Check if already installed first
-      const runningAsApp = window.matchMedia('(display-mode: standalone)').matches || 
-                           (window.navigator as any).standalone === true;
-      
-      if (runningAsApp) {
-        alert('✅ APP ALREADY INSTALLED!\n\nYou\'re using the installed app right now.\n\n🔔 Check your device settings to enable notifications.');
-        return;
-      }
+      console.log('PWA Dashboard: ⚠️ No install prompt available, showing instructions');
       
       // Detect platform - MOBILE ONLY, SIMPLE
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);

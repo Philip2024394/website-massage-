@@ -66,6 +66,16 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
 
     // For non-iOS devices, capture install prompt
     const handleBeforeInstallPrompt = (e: any) => {
+      // Double-check not already installed
+      const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                               (window.navigator as any).standalone === true ||
+                               localStorage.getItem('pwa-install-completed') === 'true';
+      
+      if (alreadyInstalled) {
+        console.log('PWA Install Banner: ⛔ App already installed, ignoring install prompt');
+        return;
+      }
+      
       console.log('PWA Install Banner: ✅ beforeinstallprompt event fired - install prompt available!');
       e.preventDefault();
       setDeferredPrompt(e);
@@ -104,6 +114,17 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
 
   const handleInstall = async () => {
     console.log('PWA Install: Install button clicked');
+    
+    // FIRST: Check if already installed - ALWAYS check this first
+    const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
+                             (window.navigator as any).standalone === true ||
+                             localStorage.getItem('pwa-install-completed') === 'true';
+    
+    if (alreadyInstalled) {
+      console.log('PWA Install: ⛔ Already installed, not showing anything');
+      setShowBanner(false);
+      return;
+    }
     
     if (!deferredPrompt) {
       console.log('PWA Install: ⚠️ No install prompt available');
