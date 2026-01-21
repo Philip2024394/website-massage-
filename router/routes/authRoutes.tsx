@@ -6,9 +6,11 @@
 
 import { lazy } from 'react';
 
-const AuthPage = lazy(() => import('../../pages/auth/AuthPage'));
-const TherapistLoginPage = lazy(() => import('../../pages/auth/TherapistLoginPage'));
-const MassagePlaceLoginPage = lazy(() => import('../../pages/auth/MassagePlaceLoginPage'));
+// Direct imports to fix component load errors
+import AuthPage from '../../pages/auth/AuthPage';
+import TherapistLoginPage from '../../pages/auth/TherapistLoginPage';
+import MassagePlaceLoginPage from '../../pages/auth/MassagePlaceLoginPage';
+
 const FacialPortalPage = lazy(() => import('../../pages/FacialPortalPage'));
 const PackageOnboarding = lazy(() => import('../../pages/PackageOnboarding'));
 
