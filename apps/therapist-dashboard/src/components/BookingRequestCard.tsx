@@ -30,6 +30,7 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [audioPlaying, setAudioPlaying] = useState(false);
     const [processing, setProcessing] = useState<string | null>(null);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     // Audio element for notification
     const notificationAudio = React.useRef<HTMLAudioElement | null>(null);
@@ -201,31 +202,103 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    if (pendingBookings.length === 0) {
-        return null;
-    }
+    const pendingCount = pendingBookings.length;
+    const hasBookings = pendingCount > 0;
 
-    return (
-        <div className="space-y-4 mb-6">
-            {/* Sound Control */}
-            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                    {audioPlaying ? <Volume2 className="w-5 h-5 text-blue-600 animate-pulse" /> : <VolumeX className="w-5 h-5 text-gray-400" />}
-                    <span className="text-sm font-medium text-blue-900">
-                        {audioPlaying ? 'Notification Playing' : 'Notifications'}
-                    </span>
-                </div>
+    // Auto-expand when bookings arrive
+    React.useEffect(() => {
+        if (hasBookings) {
+            setIsExpanded(true);
+        }
+    }, [hasBookings]);
+
+    // Floating Icon - Always visible
+    if (!isExpanded) {
+        return (
+            <div className="fixed bottom-6 right-6 z-50">
                 <button
-                    onClick={toggleSound}
-                    className={`px-4 py-1 rounded-lg text-sm font-medium transition-colors ${
-                        soundEnabled 
-                            ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                            : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                    onClick={() => setIsExpanded(true)}
+                    className={`relative p-4 rounded-full shadow-2xl transition-all transform hover:scale-110 ${
+                        hasBookings 
+                            ? 'bg-orange-500 animate-pulse' 
+                            : 'bg-blue-500 hover:bg-blue-600'
                     }`}
                 >
-                    {soundEnabled ? 'Sound On' : 'Sound Off'}
+                    {/* Bell Icon */}
+                    <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="w-8 h-8 text-white"
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                    >
+                        <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" 
+                        />
+                    </svg>
+                    
+                    {/* Badge Count */}
+                    {hasBookings && (
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center border-2 border-white animate-bounce">
+                            {pendingCount}
+                        </span>
+                    )}
                 </button>
             </div>
+        );
+    }
+
+    // Expanded View - Full booking details
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                {/* Header with Close Button */}
+                <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 flex items-center justify-between rounded-t-2xl">
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                        🔔 Booking Notifications ({pendingCount})
+                    </h2>
+                    <button
+                        onClick={() => setIsExpanded(false)}
+                        className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                    {/* No bookings message */}
+                    {!hasBookings && (
+                        <div className="text-center py-12">
+                            <div className="text-6xl mb-4">✅</div>
+                            <h3 className="text-xl font-bold text-gray-700 mb-2">No Pending Bookings</h3>
+                            <p className="text-gray-500">You're all caught up! New bookings will appear here.</p>
+                        </div>
+                    )}
+
+                    {/* Sound Control */}
+                    {hasBookings && (
+                        <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="flex items-center gap-2">
+                                {audioPlaying ? <Volume2 className="w-5 h-5 text-blue-600 animate-pulse" /> : <VolumeX className="w-5 h-5 text-gray-400" />}
+                                <span className="text-sm font-medium text-blue-900">
+                                    {audioPlaying ? 'Notification Playing' : 'Notifications'}
+                                </span>
+                            </div>
+                            <button
+                                onClick={toggleSound}
+                                className={`px-4 py-1 rounded-lg text-sm font-medium transition-colors ${
+                                    soundEnabled 
+                                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                        : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                }`}
+                            >
+                                {soundEnabled ? 'Sound On' : 'Sound Off'}
+                            </button>
+                        </div>
+                    )}
 
             {/* Booking Request Cards */}
             {pendingBookings.map(booking => {
@@ -337,6 +410,8 @@ export const BookingRequestCard: React.FC<BookingRequestCardProps> = ({
                     </div>
                 );
             })}
+                </div>
+            </div>
         </div>
     );
 };
