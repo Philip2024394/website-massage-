@@ -22,7 +22,10 @@ interface BookingBannerProps {
   bookingTime: string;
   serviceDuration: string;
   serviceType: string;
+  bookingType?: 'book_now' | 'scheduled';
+  bookingStatus?: string;
   onClose?: () => void;
+  onCancelBooking?: () => void;
 }
 
 export const BookingBanner: React.FC<BookingBannerProps> = ({
@@ -32,9 +35,15 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
   bookingTime,
   serviceDuration,
   serviceType,
-  onClose
+  bookingType = 'book_now',
+  bookingStatus = 'pending',
+  onClose,
+  onCancelBooking
 }) => {
   const countdown = useBookingCountdown(bookingDate, bookingTime);
+  
+  // Show cancel button only for pending bookings before therapist accepts
+  const showCancelButton = onCancelBooking && (bookingStatus === 'pending' || bookingStatus === 'waiting_others');
 
   // Determine banner color based on countdown
   const getBannerColor = () => {
@@ -133,6 +142,17 @@ export const BookingBanner: React.FC<BookingBannerProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Cancel Button - Only show before therapist accepts */}
+      {showCancelButton && (
+        <button
+          onClick={onCancelBooking}
+          className="mt-3 w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+        >
+          <span>❌</span>
+          <span>Cancel Booking</span>
+        </button>
+      )}
     </div>
   );
 };

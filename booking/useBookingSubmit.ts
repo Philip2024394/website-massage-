@@ -230,7 +230,9 @@ export function useBookingSubmit(
             // ... rest of commission logic ...
 
             // ⚡ Create chat room with retry protection
-            console.log('📤 Creating chat room with retry protection...');
+            // Book Now (immediate): 5 minutes | Scheduled: 25 minutes
+            const timerDuration = isImmediateBooking ? 5 : 25;
+            console.log(`📤 Creating chat room with ${timerDuration} minute timer (${isImmediateBooking ? 'immediate' : 'scheduled'} booking)...`);
             const chatRoom = await withAppwriteRetry(
                 () => appwriteCircuitBreaker.execute(() =>
                     createChatRoom({
@@ -244,7 +246,7 @@ export function useBookingSubmit(
                         therapistLanguage: 'id', // Indonesian for therapists
                         therapistType: therapistType, // 'therapist' or 'place'
                         therapistPhoto: profilePicture || '',
-                        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes
+                        expiresAt: new Date(Date.now() + timerDuration * 60 * 1000).toISOString() // 5 or 25 minutes
                     })
                 ),
                 'Create Chat Room'

@@ -523,3 +523,43 @@ export function subscribeToChatRoom(
     return unsubscribe;
 }
 
+/**
+ * Cancel a booking before therapist accepts
+ * Updates booking status and sends cancellation message
+ */
+export async function cancelBooking(bookingId: string, roomId: string, userId?: string): Promise<void> {
+    try {
+        console.log('🚫 Cancelling booking:', bookingId);
+        
+        // Update booking status to cancelled
+        await databases.updateDocument(
+            DATABASE_ID,
+            APPWRITE_CONFIG.collections.bookings || 'bookings',
+            bookingId,
+            {
+                status: 'Cancelled',
+                cancelledAt: new Date().toISOString(),
+                cancelledBy: userId || 'customer'
+            }
+        );
+        
+        // Update chat room status
+        await databases.updateDocument(
+            DATABASE_ID,
+            CHAT_ROOMS_COLLECTION,
+            roomId,
+            {
+                status: ChatRoomStatus.Cancelled,
+                updatedAt: new Date().toISOString()
+            }
+        );
+        
+        // Send cancellation message
+        await sendBookingCancelledMessage(roomId, userId);
+        
+        console.log('✅ Booking cancelled successfully');
+    } catch (error) {
+        console.error('❌ Error cancelling booking:', error);
+        throw error;
+    }
+}

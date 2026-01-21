@@ -30,6 +30,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useChatContext } from '../context/ChatProvider';
 import { useChatMessages } from './hooks/useChatMessages';
 import { useNotifications } from './hooks/useNotifications';
+import { cancelBooking } from '../lib/chatService';
 import { BookingBanner } from './BookingBanner';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
@@ -232,6 +233,29 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
     } catch (err) {
       addNotification('error', 'Send Failed', 'Could not send message. Please try again.');
       throw err;
+    }
+  };
+
+  // Handle cancel booking
+  const handleCancelBooking = async () => {
+    if (!currentChatRoom) return;
+    
+    const confirmCancel = window.confirm('Are you sure you want to cancel this booking? This action cannot be undone.');
+    if (!confirmCancel) return;
+    
+    try {
+      console.log('🚫 Cancelling booking:', currentChatRoom.bookingId);
+      
+      await cancelBooking(
+        currentChatRoom.bookingId as string,
+        currentChatRoom.$id,
+        currentChatRoom.customerId
+      );
+      
+      addNotification('success', 'Booking Cancelled', 'Your booking has been cancelled successfully', { duration: 3000 });
+    } catch (err: any) {
+      console.error('❌ Failed to cancel booking:', err);
+      addNotification('error', 'Cancel Failed', err.message || 'Could not cancel booking. Please try again.');
     }
   };
 
@@ -944,45 +968,18 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                 {/* REGULAR CHAT for other statuses */}
                 {chatRoom.status !== 'booking-in-progress' && (
                   <>
-                    {/* Booking Banner */}
-                    <div className="bg-orange-50 border-b border-orange-200 p-4">
-                      <div className="space-y-3">
-                        {/* Time & Date */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-orange-600">🕐</span>
-                          <span className="font-medium text-gray-900">Booking Time:</span>
-                          <span className="text-gray-600">{(chatRoom as any).serviceTime} • {(chatRoom as any).serviceDate}</span>
-                        </div>
-
-                        {/* Provider */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-orange-600">👤</span>
-                          <span className="font-medium text-gray-900">Provider:</span>
-                          <span className="text-gray-600">{chatRoom.providerName}</span>
-                        </div>
-
-                        {/* Duration */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-orange-600">⏱️</span>
-                          <span className="font-medium text-gray-900">Duration:</span>
-                          <span className="text-gray-600">{(chatRoom as any).serviceDuration} min • {(chatRoom as any).serviceType}</span>
-                        </div>
-
-                        {/* Travel Time */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-orange-600">🚗</span>
-                          <span className="font-medium text-gray-900">Arrival Time:</span>
-                          <span className="text-gray-600">30-60 minutes to your location</span>
-                        </div>
-
-                        {/* Payment Method */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-orange-600">💳</span>
-                          <span className="font-medium text-gray-900">Payment:</span>
-                          <span className="text-gray-600">Cash / Bank Transfer</span>
-                        </div>
-                      </div>
-                    </div>
+                    {/* Booking Banner with Cancel Button */}
+                    <BookingBanner
+                      therapistName={chatRoom.providerName}
+                      therapistPhoto={(chatRoom as any).therapistPhoto}
+                      bookingDate={(chatRoom as any).serviceDate || 'Today'}
+                      bookingTime={(chatRoom as any).serviceTime || 'Now'}
+                      serviceDuration={String((chatRoom as any).serviceDuration || chatRoom.duration || 60)}
+                      serviceType={(chatRoom as any).serviceType || 'Massage'}
+                      bookingType={(chatRoom as any).bookingType || 'book_now'}
+                      bookingStatus={chatRoom.status}
+                      onCancelBooking={handleCancelBooking}
+                    />
 
                     {/* Loading state */}
                     {isLoading && (

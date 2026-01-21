@@ -22,16 +22,21 @@ interface BookingBannerProps {
     id?: string;
   };
   bookingCountdown: number | null;
+  onCancelBooking?: () => void;
 }
 
 export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
   currentBooking,
-  bookingCountdown
+  bookingCountdown,
+  onCancelBooking
 }) => {
   const getStatusMessage = (status: string) => {
+    const isBookNow = currentBooking.bookingType === 'book_now';
+    const timerText = isBookNow ? '5 minutes' : '25 minutes';
+    
     switch (status) {
       case 'pending':
-        return '⏰ Please wait while therapist connects (up to 5 minutes)';
+        return `⏰ Please wait while therapist connects (up to ${timerText})`;
       case 'waiting_others':
         return '🔍 Searching for available therapists...';
       case 'therapist_accepted':
@@ -55,11 +60,7 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
       <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            <h3 className="font-semibold text-sm">🎉 Welcome! Your booking request has been sent</h3>
-          </div>
-          
-          {/* 5 Minute Countdown Timer */}
+            <dCountdown Timer - 5 min for Book Now, 25 min for Scheduled */}
           {bookingCountdown !== null && currentBooking.status === 'pending' && (
             <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
               <Clock className="w-4 h-4" />
@@ -70,6 +71,21 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
           )}
         </div>
         
+        {/* Status Message */}
+        <p className="text-blue-100 text-xs mt-2">
+          {getStatusMessage(currentBooking.status)}
+        </p>
+        
+        {/* Cancel Button - Only show before therapist accepts */}
+        {(currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && onCancelBooking && (
+          <button
+            onClick={onCancelBooking}
+            className="mt-3 w-full bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-white/30 flex items-center justify-center gap-2"
+          >
+            <span>❌</span>
+            <span>Cancel Booking</span>
+          </button>
+        )}
         {/* Status Message */}
         <p className="text-blue-100 text-xs mt-2">
           {getStatusMessage(currentBooking.status)}
