@@ -127,7 +127,10 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ onBack }) => {
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+                                        if (error) setError(null); // Clear error when user starts typing
+                                    }}
                                     placeholder={language === 'id' ? 'email.anda@example.com' : 'your.email@example.com'}
                                     required
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"

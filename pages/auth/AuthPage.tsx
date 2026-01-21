@@ -459,7 +459,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                                 id="email" 
                                 type="email" 
                                 value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    if (error) setError(''); // Clear error when user starts typing
+                                }} 
                                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
                                     error && error.toLowerCase().includes('email') 
                                         ? 'border-red-300 bg-red-50' 
@@ -529,7 +532,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT
                                 id="password" 
                                 type="text" 
                                 value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (error) setError(''); // Clear error when user starts typing
+                                }} 
                                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
                                     error && error.toLowerCase().includes('password') 
                                         ? 'border-red-300 bg-red-50' 

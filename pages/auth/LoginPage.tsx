@@ -128,7 +128,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, email: e.target.value }));
+                  if (error) setError(null); // Clear error when user starts typing
+                }}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                 placeholder="Enter your email"
               />
@@ -145,7 +148,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, password: e.target.value }));
+                    if (error) setError(null); // Clear error when user starts typing
+                  }}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500 pr-10"
                   placeholder="Enter your password"
                 />

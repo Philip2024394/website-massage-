@@ -358,15 +358,32 @@ const CityLocationDropdown = ({
               <>
                 {/* Search Input */}
                 <div className="sticky top-0 bg-white border-b-2 border-gray-200 p-3 z-10">
-                  <input
-                    type="text"
-                    placeholder="🔍 Search location..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="🔍 Search location..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full px-3 py-2 pr-10 border-2 border-gray-300 rounded-lg text-sm focus:border-orange-500 focus:outline-none"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSearchQuery('');
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-all duration-200"
+                        title="Clear search"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                                 {filteredCities.length === 0 ? (

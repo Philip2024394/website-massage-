@@ -197,7 +197,10 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
                                 <input
                                     type="email"
                                     value={formData.email}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, email: e.target.value }));
+                                        if (error) setError(null); // Clear error when user starts typing
+                                    }}
                                     className="w-full pl-12 pr-5 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all font-medium"
                                     placeholder="you@example.com"
                                     required
@@ -216,7 +219,10 @@ const SignInPage: React.FC<SignInPageProps> = ({ onNavigate }) => {
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     value={formData.password}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                    onChange={(e) => {
+                                        setFormData(prev => ({ ...prev, password: e.target.value }));
+                                        if (error) setError(null); // Clear error when user starts typing
+                                    }}
                                     className="w-full pl-12 pr-12 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50 focus:bg-white transition-all font-medium"
                                     placeholder="Enter your password"
                                     required
