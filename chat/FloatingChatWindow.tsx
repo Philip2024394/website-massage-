@@ -469,8 +469,22 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
       const userId = authResult.userId!;
       const formattedWhatsApp = `+62${cleanedWhatsApp}`;
 
-      // Calculate price
+      // Calculate price - Use therapist's exact pricing from profile
       const price = chatRoom.pricing[String(chatRoom.duration)] || 0;
+      
+      // Validate price exists
+      if (!price || price === 0) {
+        console.error('⚠️ PRICING ERROR: No price found for duration', chatRoom.duration, 'in pricing:', chatRoom.pricing);
+        addNotification('error', 'Price Error', 'Could not determine service price. Please try again.');
+        return;
+      }
+      
+      console.log('💰 Booking price calculation:', {
+        duration: chatRoom.duration,
+        totalPrice: price,
+        adminCommission: Math.round(price * 0.30),
+        therapistReceives: Math.round(price * 0.70)
+      });
 
       // Prepare booking data
       const bookingData: any = {
@@ -744,13 +758,25 @@ export const FloatingChatWindow: React.FC<FloatingChatWindowProps> = ({
                           <span className="font-medium text-gray-900">{chatRoom.providerName}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Duration:</span>
-                          <span className="font-medium text-gray-900">{chatRoom.duration} minutes</span>
+                          <span className="text-gray-600">Service:</span>
+                          <span className="font-medium text-gray-900">{chatRoom.duration} minutes massage</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Price:</span>
+                          <span className="text-gray-600">Total Price:</span>
                           <span className="font-bold text-orange-600">
                             IDR {Math.round((chatRoom.pricing[String(chatRoom.duration)] || 0) / 1000)}K
+                          </span>
+                        </div>
+                        <div className="flex justify-between border-t border-orange-200 pt-2 mt-2">
+                          <span className="text-gray-500 text-xs">Admin Fee (30%):</span>
+                          <span className="text-gray-700 text-xs font-medium">
+                            IDR {Math.round((chatRoom.pricing[String(chatRoom.duration)] || 0) * 0.30 / 1000)}K
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500 text-xs">Therapist Receives:</span>
+                          <span className="text-green-600 text-xs font-bold">
+                            IDR {Math.round((chatRoom.pricing[String(chatRoom.duration)] || 0) * 0.70 / 1000)}K
                           </span>
                         </div>
                       </div>

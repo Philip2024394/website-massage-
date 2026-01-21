@@ -32,19 +32,40 @@ export function usePersistentChatIntegration() {
    * Convert Therapist type to ChatTherapist type
    */
   const convertToChatTherapist = useCallback((therapist: Therapist): ChatTherapist => {
-    // Parse pricing using existing helper
-    const pricing = parsePricing(therapist.pricing) || {
-      '60': 350000,
-      '90': 450000,
-      '120': 550000,
-    };
+    // Parse pricing using existing helper - MUST match therapist profile prices exactly
+    const pricing = parsePricing(therapist.pricing);
+    
+    // CRITICAL: If pricing fails to parse, log error - don't use fallback
+    // This ensures prices always match therapist profile
+    if (!pricing || Object.keys(pricing).length === 0) {
+      console.error('⚠️ PRICING ERROR: Could not parse pricing for therapist', therapist.name, therapist.pricing);
+      console.error('⚠️ This will cause price mismatch between profile and chat window!');
+      // Use fallback only as last resort
+      const fallbackPricing = {
+        '30': 250000,
+        '60': 350000,
+        '90': 450000,
+        '120': 550000,
+      };
+      console.warn('⚠️ Using fallback pricing - should fix therapist profile data!');
+      return {
+        id: therapist.id.toString(),
+        name: therapist.name,
+        image: (therapist as any).mainImage || (therapist as any).profilePicture,
+        status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
+        pricing: fallbackPricing,
+        duration: 60, // Default duration
+      };
+    }
+    
+    console.log('✅ Therapist pricing loaded:', therapist.name, pricing);
     
     return {
       id: therapist.id.toString(),
       name: therapist.name,
       image: (therapist as any).mainImage || (therapist as any).profilePicture,
       status: (therapist as any).availability_status || (therapist as any).availabilityStatus || 'available',
-      pricing,
+      pricing, // Use therapist's exact profile prices
       duration: 60, // Default duration
     };
   }, []);
