@@ -8,11 +8,14 @@ interface PWAInstallPromptProps {
 
 type InstallState = 'idle' | 'waiting' | 'downloading' | 'installed';
 
-const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Dashboard' }) => {
+const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Therapist Dashboard' }) => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [installState, setInstallState] = useState<InstallState>('idle');
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [showPrompt, setShowPrompt] = useState(false);
+  
+  // Ensure dashboardName is never undefined
+  const appName = dashboardName || 'Therapist Dashboard';
   
   // Technical validation states
   const [manifestValid, setManifestValid] = useState(false);
@@ -448,7 +451,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
                 <Smartphone className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="font-bold text-lg">Install {dashboardName}</h3>
+                <h3 className="font-bold text-lg">Install {appName}</h3>
                 <p className="text-sm opacity-90">Quick access + notifications</p>
               </div>
             </div>
