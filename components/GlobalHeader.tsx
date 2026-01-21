@@ -52,6 +52,9 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({ page, title }) => {
     shouldRender: isStandalone && !hasPageHeader 
   });
 
+  // Never show on landing/home page - they have their own headers
+  if (page === 'landing' || page === 'home') return null;
+  
   if (!isStandalone) return null;
   if (hasPageHeader) return null;
 
