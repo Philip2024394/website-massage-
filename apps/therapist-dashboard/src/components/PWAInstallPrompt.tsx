@@ -187,17 +187,19 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     }
 
     try {
-      console.log('🚀 Showing PWA install prompt...');
+      console.log('PWA Dashboard: 🚀 Showing install prompt...');
       
       // Show install prompt
-      await prompt.prompt();
+      const promptResult = await prompt.prompt();
+      console.log('PWA Dashboard: Prompt shown, waiting for user choice...');
 
       // Wait for user response
-      const { outcome } = await prompt.userChoice;
-      console.log(`📱 Install outcome: ${outcome}`);
+      const choiceResult = await prompt.userChoice;
+      const outcome = choiceResult?.outcome || 'dismissed';
+      console.log(`PWA Dashboard: 📱 Install outcome: ${outcome}`);
 
       if (outcome === 'accepted') {
-        console.log('✅ User accepted install - App will open in standalone mode');
+        console.log('PWA Dashboard: ✅ User accepted install - App will open in standalone mode');
         localStorage.setItem('pwa-install-completed', 'true');
         
         // Show success message
@@ -210,7 +212,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
           requestNotificationPermission();
         }, 1500);
       } else {
-        console.log('❌ User declined install - marking as auto-dismissed');
+        console.log('PWA Dashboard: ❌ User declined install - marking as auto-dismissed');
         // Mark as dismissed to prevent auto-trigger for 24 hours
         localStorage.setItem('pwa-auto-dismissed', Date.now().toString());
       }
@@ -220,7 +222,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       (window as any).deferredPrompt = null;
       setShowInstallPrompt(false);
     } catch (error) {
-      console.error('❌ Install prompt error:', error);
+      console.error('PWA Dashboard: ❌ Install prompt error:', error);
       
       // Show detailed error-specific instructions
       const errorMsg = String(error);

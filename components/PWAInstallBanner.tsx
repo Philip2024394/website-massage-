@@ -169,12 +169,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
 
     try {
       console.log('PWA Install: Showing install prompt');
-      await deferredPrompt.prompt();
+      const promptResult = await deferredPrompt.prompt();
+      console.log('PWA Install: Prompt shown, waiting for user choice...');
       
       const choiceResult = await deferredPrompt.userChoice;
-      console.log('PWA Install: User choice:', choiceResult.outcome);
+      const outcome = choiceResult?.outcome || 'dismissed';
+      console.log('PWA Install: User choice:', outcome);
       
-      if (choiceResult.outcome === 'accepted') {
+      if (outcome === 'accepted') {
         console.log('PWA Install: Installation accepted');
         localStorage.setItem('pwa-install-completed', 'true');
         setShowBanner(false);

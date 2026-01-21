@@ -7,17 +7,15 @@
  * Integrates with: systemNotificationMapper.ts, Appwrite booking statuses
  * 
  * CRITICAL: This file runs in service worker context (no DOM access)
- * VERSION: 2.2.8 - Updated Jan 21, 2026
- * - Fixed production bundle loading (cleared old cache)
- * - Synced with main service-worker.js version
- * - Integrated with systemNotificationMapper
- * - Standardized booking status notifications
- * - Added click routing to chat/booking pages
- * - PWA-ready for future enhancements
+ * VERSION: 2.2.9 - Updated Jan 21, 2026
+ * - FIXED: White page on refresh (improved network-first strategy)
+ * - FIXED: Removed aggressive caching causing stale content
+ * - FIXED: Proper fallback handling without offline page during install
+ * - Simplified fetch handler for better reliability
  */
 
-const SW_VERSION = '2.2.8';
-const CACHE_NAME = `push-notifications-v2-8`;
+const SW_VERSION = '2.2.9';
+const CACHE_NAME = `push-notifications-v2-9`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -111,89 +109,44 @@ self.addEventListener('fetch', (event) => {
         }
     } catch {}
     
-    // PRODUCTION MODE: Network-first strategy with cache fallback
-    // Only handle navigation requests (page loads)
+    // PRODUCTION MODE: Network-first strategy - ALWAYS try network first
+    // Only cache as fallback for offline scenarios
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
-                    // If we get a fresh response, return it immediately
-                    if (response.ok) {
-                        console.log('✅ SW: Serving fresh content');
-                        return response;
+                    // Always return fresh network response
+                    console.log('✅ SW: Serving fresh content from network');
+                    
+                    // Cache the response for offline use ONLY if it's valid
+                    if (response && response.ok && response.status === 200) {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, responseClone);
+                        });
                     }
                     
-                    // For SPA routing: If we get 404 for client-side routes, serve index.html
-                    if (response.status === 404) {
-                        console.log('🔄 SW: 404 detected, serving index.html for SPA routing');
-                        return caches.match('/') || fetch('/');
-                    }
-                    
-                    // Don't show offline page for non-ok responses during install
-                    // Let the browser handle errors naturally
                     return response;
                 })
                 .catch((error) => {
-                    // If network fails, try to return cached version or index.html for SPA
-                    console.log('⚠️ SW: Network error:', error.message);
+                    // Network failed - ONLY NOW try cache
+                    console.log('⚠️ SW: Network failed, trying cache:', error.message);
                     return caches.match(event.request).then((cachedResponse) => {
                         if (cachedResponse) {
-                            console.log('✅ SW: Serving cached content');
+                            console.log('✅ SW: Serving from cache');
                             return cachedResponse;
                         }
                         
-                        // For SPA routing: serve index.html for navigation requests
-                        console.log('🔄 SW: Serving index.html for SPA routing');
-                        return caches.match('/') || caches.match('/index.html');
-                    }).then((response) => {
-                        if (response) {
-                            return response;
-                        }
-                        
-                        // Only show offline page if truly offline (not during install)
-                        // Check if navigator is online
-                        if (!self.navigator.onLine) {
-                            return new Response(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <title>Connection Required</title>
-                                <meta charset="utf-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1">
-                                <style>
-                                    body { 
-                                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                                        display: flex; align-items: center; justify-content: center;
-                                        height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                                        text-align: center; color: white;
-                                    }
-                                    .container { max-width: 400px; padding: 2rem; }
-                                    h1 { margin-bottom: 1rem; font-size: 2rem; }
-                                    p { line-height: 1.6; opacity: 0.9; margin-bottom: 1.5rem; }
-                                    button { 
-                                        background: white; color: #667eea; border: none; 
-                                        padding: 12px 24px; border-radius: 8px; font-size: 16px;
-                                        font-weight: 600; cursor: pointer; transition: transform 0.2s;
-                                    }
-                                    button:hover { transform: scale(1.05); }
-                                </style>
-                            </head>
-                            <body>
-                                <div class="container">
-                                    <h1>📡 Connection Required</h1>
-                                    <p>Please check your internet connection and try again.</p>
-                                    <button onclick="window.location.reload()">Retry</button>
-                                </div>
-                            </body>
-                            </html>
-                        `, {
-                            headers: { 'Content-Type': 'text/html' }
+                        // Last resort: serve index.html for SPA routing
+                        console.log('🔄 SW: Serving index.html as last resort');
+                        return caches.match('/index.html').then(indexResponse => {
+                            if (indexResponse) {
+                                return indexResponse;
+                            }
+                            
+                            // Truly offline - return error response
+                            return new Response('Network error', { status: 503, statusText: 'Service Unavailable' });
                         });
-                        } else {
-                            // Network available but fetch failed - let browser handle it
-                            // This allows PWA installation to work properly
-                            return fetch(event.request);
-                        }
                     });
                 })
         );
