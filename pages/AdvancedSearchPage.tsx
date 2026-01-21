@@ -17,7 +17,9 @@ interface AdvancedSearchPageProps {
 const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, onNavigate }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>(language || 'en');
-    const { selectedCity, setSelectedCity } = useCityContext();
+    const { city: contextCity, setCity } = useCityContext();
+    // Use local state for selected city, initialized from context
+    const [selectedCity, setSelectedCity] = useState<string>(contextCity || 'all');
     const [selectedArea, setSelectedArea] = useState<string | null>(null);
     const [filters, setFilters] = useState({
         massageType: '',
@@ -87,6 +89,10 @@ const AdvancedSearchPage: React.FC<AdvancedSearchPageProps> = ({ t, language, on
                                 onCityChange={(newCity) => {
                                     console.log('🏙️ City changed in advanced search:', newCity);
                                     setSelectedCity(newCity);
+                                    // Sync with CityContext if not 'all'
+                                    if (newCity !== 'all') {
+                                        setCity(newCity);
+                                    }
                                     setSelectedArea(null); // Reset area when city changes
                                 }}
                                 placeholder={currentLanguage === 'id' ? '🇮🇩 Semua Indonesia' : '🇮🇩 All Indonesia'}
