@@ -14,6 +14,31 @@ if ('serviceWorker' in navigator) {
       try {
         const audio = new Audio(event.data.soundUrl || '/sounds/booking-notification.mp3');
         audio.volume = 1.0;
+        audio.loop = true; // Loop continuously until manually stopped
+        
+        // 2-MINUTE CONTINUOUS VIBRATION
+        const vibratePattern = [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 
+                                500, 100, 500, 100, 500, 100, 500, 100, 500];
+        
+        let vibrationCount = 0;
+        const maxVibrations = 12; // 12 x 10 seconds = 2 minutes
+        
+        const vibrateInterval = setInterval(() => {
+          if (vibrationCount >= maxVibrations) {
+            clearInterval(vibrateInterval);
+            return;
+          }
+          if (navigator.vibrate) {
+            navigator.vibrate(vibratePattern);
+            vibrationCount++;
+          }
+        }, 10000);
+        
+        // Initial vibration
+        if (navigator.vibrate) {
+          navigator.vibrate(vibratePattern);
+          vibrationCount++;
+        }
         
         // Set up Media Session API for lock screen controls
         if ('mediaSession' in navigator) {
@@ -37,16 +62,24 @@ if ('serviceWorker' in navigator) {
           
           navigator.mediaSession.setActionHandler('pause', () => {
             audio.pause();
+            if (navigator.vibrate) {
+              navigator.vibrate(0); // Stop vibration
+            }
+            clearInterval(vibrateInterval);
           });
           
           navigator.mediaSession.setActionHandler('stop', () => {
             audio.pause();
             audio.currentTime = 0;
+            if (navigator.vibrate) {
+              navigator.vibrate(0); // Stop vibration
+            }
+            clearInterval(vibrateInterval);
           });
         }
         
         audio.play().catch(err => console.log('Sound play failed:', err));
-        console.log('🔊 Playing notification sound from service worker with media controls');
+        console.log('🔊 Playing LOOPING notification sound with 2-MINUTE vibration from service worker');
       } catch (error) {
         console.error('Failed to play notification sound:', error);
       }

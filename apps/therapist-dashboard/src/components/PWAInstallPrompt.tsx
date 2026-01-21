@@ -222,12 +222,12 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         console.log('✅ Notification permission granted');
         registerPushNotifications();
         
-        // Show welcome notification with STRONG vibration and sound
+        // Show welcome notification with 2-MINUTE vibration and sound
         new Notification('IndaStreet ' + dashboardName, {
-          body: '🎉 Notifications enabled! Click "Test Notification" button to test sound & vibration.',
+          body: '🎉 Notifications enabled! Click "Test Notification" to test 2-MINUTE vibration + looping sound.',
           icon: '/icons/therapist-icon-192.png',
           badge: '/icons/therapist-icon-192.png',
-          vibrate: [500, 100, 500, 100, 500, 100, 500],  // 2+ seconds of strong vibration
+          vibrate: [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500],  // 10 seconds max
           requireInteraction: true,  // Notification stays until user dismisses
           tag: 'welcome-notification',
           silent: false  // Allow system sound
@@ -291,7 +291,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         priority: 'high'
       });
       
-      alert('✅ Test notification sent!\n\nYou should:\n• Feel strong vibrations (2+ seconds)\n• Hear notification sound\n• See media controls on lock screen');
+      alert('✅ Test notification sent!\n\nYou will:\n• Feel 2 MINUTES of continuous vibrations 📳\n• Hear looping notification sound 🔊\n• See media controls to STOP it (pause/stop button)');
     } catch (error) {
       console.error('Test notification failed:', error);
       alert('❌ Test failed: ' + error);
@@ -302,6 +302,35 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     try {
       const audio = new Audio('/sounds/booking-notification.mp3');
       audio.volume = 1.0;  // Maximum volume
+      audio.loop = true;   // Loop continuously until manually stopped
+      
+      // 2-MINUTE CONTINUOUS VIBRATION
+      // Vibration API has browser limits (typically 10 seconds max per call)
+      // So we loop the vibration every 10 seconds for 2 minutes (120 seconds)
+      const vibratePattern = [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 
+                              500, 100, 500, 100, 500, 100, 500, 100, 500]; // 10 seconds
+      
+      let vibrationCount = 0;
+      const maxVibrations = 12; // 12 x 10 seconds = 2 minutes
+      
+      const vibrateInterval = setInterval(() => {
+        if (vibrationCount >= maxVibrations) {
+          clearInterval(vibrateInterval);
+          console.log('✅ 2-minute vibration completed');
+          return;
+        }
+        if (navigator.vibrate) {
+          navigator.vibrate(vibratePattern);
+          vibrationCount++;
+          console.log(`📳 Vibration cycle ${vibrationCount}/${maxVibrations}`);
+        }
+      }, 10000); // Every 10 seconds
+      
+      // Initial vibration
+      if (navigator.vibrate) {
+        navigator.vibrate(vibratePattern);
+        vibrationCount++;
+      }
       
       // Set up Media Session API for lock screen controls
       if ('mediaSession' in navigator) {
@@ -325,18 +354,28 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         
         navigator.mediaSession.setActionHandler('pause', () => {
           audio.pause();
+          // Stop vibration when user pauses
+          if (navigator.vibrate) {
+            navigator.vibrate(0); // Stop vibration
+          }
+          clearInterval(vibrateInterval);
         });
         
         navigator.mediaSession.setActionHandler('stop', () => {
           audio.pause();
           audio.currentTime = 0;
+          // Stop vibration when user stops
+          if (navigator.vibrate) {
+            navigator.vibrate(0); // Stop vibration
+          }
+          clearInterval(vibrateInterval);
         });
       }
       
       audio.play().catch(err => {
         console.log('Sound play failed (may need user interaction):', err);
       });
-      console.log('🔊 Playing notification sound with media controls');
+      console.log('🔊 Playing notification sound (LOOPING) with 2-MINUTE vibration');
     } catch (error) {
       console.error('Failed to play notification sound:', error);
     }

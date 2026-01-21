@@ -183,12 +183,14 @@ self.addEventListener('push', (event) => {
             role = 'customer'
         } = data;
 
-        // ULTIMATE VIBRATION PATTERNS - Maximum strength for standby mode
+        // CONTINUOUS VIBRATION PATTERNS - 2 minutes of strong vibration
+        // Note: Browser limits single vibrate() to ~10 seconds, so patterns are 10s max
+        // Client-side code will loop these for full 2 minutes
         const vibrationPatterns = {
-            low: [200, 100, 200],
-            normal: [400, 200, 400, 200, 400],
-            high: [500, 100, 500, 100, 500, 100, 500],
-            critical: [1000, 200, 1000, 200, 1000, 200, 1000] // Maximum 7 second pattern
+            low: [200, 100, 200, 100, 200, 100, 200],
+            normal: [400, 200, 400, 200, 400, 200, 400],
+            high: [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500], // 10 seconds
+            critical: [1000, 200, 1000, 200, 1000, 200, 1000, 200, 1000] // 10 seconds
         };
 
         // ULTIMATE NOTIFICATION OPTIONS - Maximum visibility and persistence
@@ -438,12 +440,12 @@ self.addEventListener('message', (event) => {
     }
 
     if (event.data && event.data.type === 'test-notification') {
-        // Test notification functionality with STRONG vibration
+        // Test notification functionality with 2-MINUTE vibration
         self.registration.showNotification('🧪 Test Notification', {
-            body: 'Push notifications are working perfectly! You should feel STRONG vibrations now! 📳',
+            body: '2 MINUTES of vibration + looping sound! Use media controls to stop. 📳🔊',
             icon: '/icon-192.png',
             badge: '/badge-72.png',
-            vibrate: [500, 100, 500, 100, 500, 100, 500],  // 2+ seconds strong vibration
+            vibrate: [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500],  // 10 seconds (browser max)
             requireInteraction: true,
             silent: false,  // Allow system sound
             tag: 'test'
