@@ -13,8 +13,13 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
+    console.log('PWA Dashboard: Initializing install prompt...');
+    console.log('PWA Dashboard: User agent:', navigator.userAgent);
+    console.log('PWA Dashboard: Is standalone:', window.matchMedia('(display-mode: standalone)').matches);
+    
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('PWA Dashboard: App already installed (standalone mode)');
       setIsInstalled(true);
       return;
     }
@@ -24,7 +29,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       e.preventDefault();
       setDeferredPrompt(e);
       setShowInstallPrompt(true);
-      console.log('📱 PWA install prompt ready - preparing smart trigger...');
+      console.log('PWA Dashboard: ✅ beforeinstallprompt event fired - install prompt available!');
       
       // Store globally for other components to access
       (window as any).deferredPrompt = e;
@@ -36,12 +41,12 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       const hoursSinceDismiss = (Date.now() - dismissTime) / (1000 * 60 * 60);
       
       if (!recentlyDismissed || hoursSinceDismiss > 24) {
-        console.log('🚀 Auto-triggering PWA install after user interaction...');
+        console.log('PWA Dashboard: 🚀 Auto-triggering PWA install after user interaction...');
         
         // Wait for user to interact with page, then auto-show
         const triggerOnInteraction = () => {
           setTimeout(() => {
-            console.log('✨ Showing PWA install prompt automatically');
+            console.log('PWA Dashboard: ✨ Showing PWA install prompt automatically');
             handleInstallClick(e);
           }, 2000); // 2 second delay after interaction
           
@@ -54,12 +59,27 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         document.addEventListener('click', triggerOnInteraction, { once: true });
         document.addEventListener('scroll', triggerOnInteraction, { once: true });
         document.addEventListener('touchstart', triggerOnInteraction, { once: true });
+      } else {
+        console.log('PWA Dashboard: Recently dismissed, not auto-triggering');
       }
     };
 
+    // Check after 3 seconds if prompt didn't fire
+    const promptCheckTimer = setTimeout(() => {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (!isIOS && !deferredPrompt) {
+        console.log('PWA Dashboard: ⚠️ beforeinstallprompt did NOT fire within 3 seconds');
+        console.log('PWA Dashboard: Possible reasons:');
+        console.log('  - App already installed');
+        console.log('  - Browser doesn\'t support PWA installation');
+        console.log('  - PWA requirements not met (manifest, service worker, HTTPS)');
+        console.log('  - User previously dismissed the install prompt');
+      }
+    }, 3000);
+
     // Listen for app installed event
     const handleAppInstalled = () => {
-      console.log('✅ PWA installed successfully');
+      console.log('PWA Dashboard: ✅ App installed successfully');
       setIsInstalled(true);
       setShowInstallPrompt(false);
       
@@ -75,11 +95,13 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     // Check notification permission
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
+      console.log('PWA Dashboard: Current notification permission:', Notification.permission);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
+      clearTimeout(promptCheckTimer);
     };
   }, []);
 
@@ -87,23 +109,51 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     const prompt = promptEvent || deferredPrompt;
     
     if (!prompt) {
-      console.log('⚠️ No install prompt available - trying to trigger one...');
+      console.log('⚠️ No install prompt available - showing platform-specific instructions');
       
-      // Try to trigger a fresh beforeinstallprompt event
-      window.dispatchEvent(new Event('beforeinstallprompt'));
+      // Detect platform and show appropriate instructions
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
+      const isEdge = /Edg/i.test(navigator.userAgent);
+      const isFirefox = /Firefox/i.test(navigator.userAgent);
+      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
       
-      // If still no prompt after attempt, show instructions
-      setTimeout(() => {
-        if (!deferredPrompt) {
-          alert(
-            '📱 TO INSTALL THE APP:\n\n' +
-            '🔹 Chrome/Edge: Look for install icon (⬇️) in address bar\n' +
-            '🔹 Firefox: Menu → Install\n' +
-            '🔹 Safari iOS: Share → Add to Home Screen\n\n' +
-            '✅ Once installed, you\'ll get enhanced notifications!'
-          );
-        }
-      }, 500);
+      let instructions = '📱 TO INSTALL THE APP:\n\n';
+      
+      if (isIOS && isSafari) {
+        instructions += '🔹 Tap the Share button (⬆️) at the bottom\n' +
+                       '🔹 Scroll and tap "Add to Home Screen"\n' +
+                       '🔹 Tap "Add" to confirm\n\n' +
+                       '✅ The app icon will appear on your home screen!\n' +
+                       '🔔 You\'ll get enhanced notifications when installed.';
+      } else if (isAndroid && isChrome) {
+        instructions += '🔹 Tap the menu (⋮) in the top-right corner\n' +
+                       '🔹 Select "Install app" or "Add to Home screen"\n' +
+                       '🔹 Tap "Install" to confirm\n\n' +
+                       '✅ The app will open automatically after install!\n' +
+                       '🔔 You\'ll receive booking notifications even when closed.';
+      } else if (isEdge) {
+        instructions += '🔹 Look for the install icon (⬇️) in the address bar\n' +
+                       '🔹 Click it and select "Install"\n' +
+                       '🔹 Or tap menu (•••) → "Apps" → "Install this site as an app"\n\n' +
+                       '✅ App will be added to your device!\n' +
+                       '🔔 Get instant booking notifications.';
+      } else if (isFirefox) {
+        instructions += '🔹 Tap the menu (⋮) button\n' +
+                       '🔹 Select "Install" or "Add to Home Screen"\n' +
+                       '🔹 Confirm the installation\n\n' +
+                       '✅ App icon will appear on your home screen!\n' +
+                       '🔔 Receive booking alerts instantly.';
+      } else {
+        instructions += '🔹 Look for "Add to Home Screen" in your browser menu\n' +
+                       '🔹 Or find the install icon in the address bar\n' +
+                       '🔹 Follow the prompts to complete installation\n\n' +
+                       '✅ Once installed, enjoy enhanced features!\n' +
+                       '🔔 Get push notifications for new bookings.';
+      }
+      
+      alert(instructions);
       return;
     }
 
@@ -121,10 +171,15 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         console.log('✅ User accepted install - App will open in standalone mode');
         localStorage.setItem('pwa-install-completed', 'true');
         
+        // Show success message
+        setTimeout(() => {
+          alert('App installed successfully! 🎉\n\nYou can now find it on your home screen.\n🔔 Notification permissions will be requested next.');
+        }, 500);
+        
         // Request notification permission after short delay
         setTimeout(() => {
           requestNotificationPermission();
-        }, 500);
+        }, 1500);
       } else {
         console.log('❌ User declined install - marking as auto-dismissed');
         // Mark as dismissed to prevent auto-trigger for 24 hours
@@ -137,6 +192,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       setShowInstallPrompt(false);
     } catch (error) {
       console.error('❌ Install prompt error:', error);
+      
+      // Show detailed error-specific instructions
+      const errorMsg = String(error);
+      if (errorMsg.includes('user gesture')) {
+        alert('⚠️ Installation requires a user action.\n\nPlease try:\n1. Tap the install button again\n2. Or use your browser\'s menu to install\n\n🔔 Once installed, you\'ll get booking notifications!');
+      } else if (errorMsg.includes('already installed')) {
+        alert('✅ App is already installed!\n\nCheck your home screen or app drawer.\n\n🔔 Make sure notifications are enabled in app settings.');
+      } else {
+        alert('Installation failed. Please try adding the app manually from your browser menu.\n\nLook for "Add to Home Screen" or "Install App" option.\n\n🔔 This enables push notifications for bookings!');
+      }
     }
   };
 
@@ -221,6 +286,42 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     // Also set traditional dismissal markers
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
+
+  // Debug helper functions
+  const clearDismissal = () => {
+    localStorage.removeItem('pwa-auto-dismissed');
+    localStorage.removeItem('pwa-install-dismissed');
+    localStorage.removeItem('pwa-install-completed');
+    console.log('PWA Dashboard: ✅ Cleared all dismissal flags');
+    setShowInstallPrompt(true);
+    alert('✅ Installation prompt reset!\n\nThe install button should now work again.');
+  };
+
+  const getPWAStatus = () => {
+    const status = {
+      isInstalled: isInstalled || localStorage.getItem('pwa-install-completed') === 'true',
+      isAutoDismissed: !!localStorage.getItem('pwa-auto-dismissed'),
+      isDismissed: !!localStorage.getItem('pwa-install-dismissed'),
+      dismissTime: localStorage.getItem('pwa-auto-dismissed'),
+      isStandalone: window.matchMedia('(display-mode: standalone)').matches,
+      hasPrompt: !!deferredPrompt,
+      notificationPermission: notificationPermission,
+      isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+      userAgent: navigator.userAgent
+    };
+    console.log('PWA Dashboard Status:', status);
+    return status;
+  };
+
+  // Expose debug functions globally
+  if (typeof window !== 'undefined') {
+    (window as any).clearDashboardPWADismissal = clearDismissal;
+    (window as any).getDashboardPWAStatus = getPWAStatus;
+    (window as any).showDashboardPWAPrompt = () => {
+      setShowInstallPrompt(true);
+      console.log('PWA Dashboard: Manually showing install prompt');
+    };
+  }
 
   // Don't show UI if app is already installed
   if (isInstalled) {
