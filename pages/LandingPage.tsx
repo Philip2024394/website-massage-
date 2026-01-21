@@ -331,12 +331,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         if (isDetectingLocation) return;
         if (!isMountedRef.current) return;
         
-        // 🛑 PWA MODE: Do NOT redirect - user is already in the app
-        if (isPWA()) {
-            console.log('🛑 PWA mode detected - skipping landing page redirect');
-            return;
-        }
-        
         // If no city selected, do nothing (button should be disabled)
         if (!selectedCity) {
             console.log('⚠️ No city selected - cannot proceed');
@@ -437,12 +431,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         setCountry(city.country, false);
         
         console.log('📍 Navigating to home page...');
-        
-        // 🛑 PWA MODE: Do NOT redirect - user is already in the app
-        if (isPWA()) {
-            console.log('🛑 PWA mode detected - skipping city selection redirect');
-            return;
-        }
         
         // Small delay to show selection feedback
         setTimeout(async () => {
@@ -577,13 +565,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
             // Save the detected city
             setSelectedCity(detectedCity);
             setCity(detectedCity);
-            
-            // 🛑 PWA MODE: Do NOT redirect - user is already in the app
-            if (isPWA()) {
-                console.log('🛑 PWA mode detected - skipping GPS redirect');
-                setIsDetectingLocation(false);
-                return;
-            }
             
             // Small delay to show feedback
             setTimeout(async () => {
