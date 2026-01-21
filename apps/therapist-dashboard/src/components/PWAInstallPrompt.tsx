@@ -1,23 +1,31 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Download, X, Smartphone, Bell, Volume2 } from 'lucide-react';
+import { Download, X, Smartphone, Bell, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 
 interface PWAInstallPromptProps {
   dashboardName?: string;
 }
 
+type InstallState = 'idle' | 'waiting' | 'downloading' | 'installed';
+
 const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Dashboard' }) => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [installState, setInstallState] = useState<InstallState>('idle');
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
+  const [showPrompt, setShowPrompt] = useState(false);
+  
+  // Technical validation states
+  const [manifestValid, setManifestValid] = useState(false);
+  const [serviceWorkerActive, setServiceWorkerActive] = useState(false);
+  const [isHTTPS, setIsHTTPS] = useState(false);
 
   useEffect(() => {
-    console.log('PWA Dashboard: Initializing install prompt...');
-    console.log('PWA Dashboard: User agent:', navigator.userAgent);
-    console.log('PWA Dashboard: Is standalone:', window.matchMedia('(display-mode: standalone)').matches);
+    console.log('PWA Dashboard: Initializing...');
     
-    // Check if already installed - MULTIPLE CHECKS
+    // Validate technical requirements
+    validatePWARequirements();
+    
+    // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isInWebAppiOS = (window.navigator as any).standalone === true;
     const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
@@ -26,93 +34,44 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
                          window.matchMedia('(display-mode: minimal-ui)').matches;
     
     if (isStandalone || isInWebAppiOS || isInstalled || runningAsApp) {
-      console.log('PWA Dashboard: ✅ App already installed/running as app, not showing prompt');
-      setIsInstalled(true);
+      console.log('PWA Dashboard: ✅ App already installed');
+      setInstallState('installed');
       return;
     }
 
-    // Listen for beforeinstallprompt event with SMART AUTO-TRIGGER
+    // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Double-check not already installed before doing anything
+      // Check not already installed
       const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
                                (window.navigator as any).standalone === true ||
                                localStorage.getItem('pwa-install-completed') === 'true';
       
       if (alreadyInstalled) {
-        console.log('PWA Dashboard: ⛔ App already installed, ignoring install prompt');
+        console.log('PWA Dashboard: ⛔ App already installed, ignoring prompt');
         return;
       }
       
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowInstallPrompt(true);
-      console.log('PWA Dashboard: ✅ beforeinstallprompt event fired - install prompt available!');
+      setShowPrompt(true);
+      setInstallState('waiting');
+      console.log('PWA Dashboard: ✅ Install prompt ready');
       
-      // Store globally for other components to access
+      // Store globally
       (window as any).deferredPrompt = e;
-      
-      // AUTO-TRIGGER: Wait for user interaction, then show install prompt
-      // Only auto-trigger if user hasn't manually dismissed recently
-      const recentlyDismissed = localStorage.getItem('pwa-auto-dismissed');
-      const dismissTime = recentlyDismissed ? parseInt(recentlyDismissed) : 0;
-      const hoursSinceDismiss = (Date.now() - dismissTime) / (1000 * 60 * 60);
-      
-      if (!recentlyDismissed || hoursSinceDismiss > 24) {
-        console.log('PWA Dashboard: 🚀 Auto-triggering PWA install after user interaction...');
-        
-        // Wait for user to interact with page, then auto-show
-        const triggerOnInteraction = () => {
-          // Triple-check before showing
-          const stillNotInstalled = !window.matchMedia('(display-mode: standalone)').matches && 
-                                    !(window.navigator as any).standalone &&
-                                    localStorage.getItem('pwa-install-completed') !== 'true';
-          
-          if (stillNotInstalled) {
-            setTimeout(() => {
-              console.log('PWA Dashboard: ✨ Showing PWA install prompt automatically');
-              handleInstallClick(e);
-            }, 2000); // 2 second delay after interaction
-          } else {
-            console.log('PWA Dashboard: ⛔ App became installed, canceling auto-trigger');
-          }
-          
-          // Remove listeners after first trigger
-          document.removeEventListener('click', triggerOnInteraction);
-          document.removeEventListener('scroll', triggerOnInteraction);
-          document.removeEventListener('touchstart', triggerOnInteraction);
-        };
-        
-        document.addEventListener('click', triggerOnInteraction, { once: true });
-        document.addEventListener('scroll', triggerOnInteraction, { once: true });
-        document.addEventListener('touchstart', triggerOnInteraction, { once: true });
-      } else {
-        console.log('PWA Dashboard: Recently dismissed, not auto-triggering');
-      }
     };
-
-    // Check after 3 seconds if prompt didn't fire
-    const promptCheckTimer = setTimeout(() => {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      if (!isIOS && !deferredPrompt) {
-        console.log('PWA Dashboard: ⚠️ beforeinstallprompt did NOT fire within 3 seconds');
-        console.log('PWA Dashboard: Possible reasons:');
-        console.log('  - App already installed');
-        console.log('  - Browser doesn\'t support PWA installation');
-        console.log('  - PWA requirements not met (manifest, service worker, HTTPS)');
-        console.log('  - User previously dismissed the install prompt');
-      }
-    }, 3000);
 
     // Listen for app installed event
     const handleAppInstalled = () => {
       console.log('PWA Dashboard: ✅ App installed successfully');
-      setIsInstalled(true);
-      setShowInstallPrompt(false);
+      setInstallState('installed');
+      setShowPrompt(false);
+      localStorage.setItem('pwa-install-completed', 'true');
       
       // Auto-request notification permission after install
       setTimeout(() => {
         requestNotificationPermission();
-      }, 500);
+      }, 1000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -121,118 +80,115 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
     // Check notification permission
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
-      console.log('PWA Dashboard: Current notification permission:', Notification.permission);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      clearTimeout(promptCheckTimer);
     };
   }, []);
 
-  const handleInstallClick = async (promptEvent?: any) => {
-    // FIRST: Check if already installed - ALWAYS check this first
+  const validatePWARequirements = async () => {
+    // Check HTTPS
+    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
+    setIsHTTPS(isSecure);
+    console.log('PWA Dashboard: HTTPS:', isSecure);
+
+    // Check Service Worker
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        setServiceWorkerActive(!!registration.active);
+        console.log('PWA Dashboard: Service Worker active:', !!registration.active);
+      } catch (error) {
+        console.error('PWA Dashboard: Service Worker error:', error);
+      }
+    }
+
+    // Check Manifest
+    try {
+      const manifestLink = document.querySelector('link[rel="manifest"]');
+      if (manifestLink) {
+        const manifestUrl = (manifestLink as HTMLLinkElement).href;
+        const response = await fetch(manifestUrl);
+        const manifest = await response.json();
+        
+        // Validate required manifest fields
+        const isValid = !!(
+          manifest.name &&
+          manifest.short_name &&
+          manifest.icons &&
+          manifest.icons.length >= 2 &&
+          manifest.start_url &&
+          manifest.display
+        );
+        
+        setManifestValid(isValid);
+        console.log('PWA Dashboard: Manifest valid:', isValid);
+      }
+    } catch (error) {
+      console.error('PWA Dashboard: Manifest error:', error);
+    }
+  };
+
+  const handleInstallClick = async () => {
+    // Check if already installed
     const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
                              (window.navigator as any).standalone === true ||
                              localStorage.getItem('pwa-install-completed') === 'true';
     
     if (alreadyInstalled) {
-      console.log('PWA Dashboard: ⛔ Already installed, not showing anything');
-      setShowInstallPrompt(false);
-      setIsInstalled(true);
+      console.log('PWA Dashboard: ⛔ Already installed');
+      setInstallState('installed');
+      setShowPrompt(false);
       return;
     }
     
-    const prompt = promptEvent || deferredPrompt;
-    
-    if (!prompt) {
-      console.log('PWA Dashboard: ⚠️ No install prompt available, showing instructions');
-      
-      // Detect platform - MOBILE ONLY, SIMPLE
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isAndroid = /Android/i.test(navigator.userAgent);
-      
-      if (isIOS) {
-        // iOS SIMPLE
-        alert(
-          '📱 INSTALL ON iPHONE/iPAD:\n\n' +
-          '1️⃣ Tap Share (⬆️) at bottom\n' +
-          '2️⃣ Scroll down\n' +
-          '3️⃣ Tap "Add to Home Screen"\n' +
-          '4️⃣ Tap "Add"\n\n' +
-          '🔔 Get booking notifications!'
-        );
-      } else if (isAndroid) {
-        // Android SIMPLE
-        alert(
-          '📱 INSTALL ON ANDROID:\n\n' +
-          '1️⃣ Tap menu (3 dots ⋮)\n' +
-          '2️⃣ Look for "Install app"\n' +
-          '3️⃣ Or "Add to Home screen"\n' +
-          '4️⃣ Tap to install\n\n' +
-          '🔔 Get booking notifications!'
-        );
-      } else {
-        // Generic mobile
-        alert(
-          '📱 TO INSTALL:\n\n' +
-          '1️⃣ Open browser menu\n' +
-          '2️⃣ Find "Install" option\n' +
-          '3️⃣ Follow prompts\n\n' +
-          '🔔 Enable booking alerts!'
-        );
-      }
+    if (!deferredPrompt) {
+      console.error('PWA Dashboard: No install prompt available');
+      alert('❌ Install not available\n\nYour browser doesn\'t support app installation.\n\nRequirements:\n• Chrome/Edge browser\n• HTTPS connection\n• Valid PWA manifest');
       return;
     }
 
     try {
-      console.log('PWA Dashboard: 🚀 Showing install prompt...');
+      console.log('PWA Dashboard: Starting installation...');
+      setInstallState('downloading');
       
-      // Show install prompt
-      const promptResult = await prompt.prompt();
-      console.log('PWA Dashboard: Prompt shown, waiting for user choice...');
-
-      // Wait for user response
-      const choiceResult = await prompt.userChoice;
+      // Trigger native install prompt
+      await deferredPrompt.prompt();
+      
+      // Wait for user choice
+      const choiceResult = await deferredPrompt.userChoice;
       const outcome = choiceResult?.outcome || 'dismissed';
-      console.log(`PWA Dashboard: 📱 Install outcome: ${outcome}`);
+      
+      console.log(`PWA Dashboard: Install outcome: ${outcome}`);
 
       if (outcome === 'accepted') {
-        console.log('PWA Dashboard: ✅ User accepted install - App will open in standalone mode');
+        console.log('PWA Dashboard: ✅ Installation accepted');
+        setInstallState('installed');
         localStorage.setItem('pwa-install-completed', 'true');
         
-        // Show success message
-        setTimeout(() => {
-          alert('App installed successfully! 🎉\n\nYou can now find it on your home screen.\n🔔 Notification permissions will be requested next.');
-        }, 500);
+        // Clear deferred prompt
+        setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
         
-        // Request notification permission after short delay
+        // Auto-request notification permission
         setTimeout(() => {
           requestNotificationPermission();
-        }, 1500);
+        }, 1000);
+        
+        // Hide prompt after success
+        setTimeout(() => {
+          setShowPrompt(false);
+        }, 3000);
       } else {
-        console.log('PWA Dashboard: ❌ User declined install - marking as auto-dismissed');
-        // Mark as dismissed to prevent auto-trigger for 24 hours
-        localStorage.setItem('pwa-auto-dismissed', Date.now().toString());
+        console.log('PWA Dashboard: Installation cancelled by user');
+        setInstallState('waiting');
       }
-
-      // Clear the deferredPrompt
-      setDeferredPrompt(null);
-      (window as any).deferredPrompt = null;
-      setShowInstallPrompt(false);
     } catch (error) {
-      console.error('PWA Dashboard: ❌ Install prompt error:', error);
-      
-      // Show detailed error-specific instructions
-      const errorMsg = String(error);
-      if (errorMsg.includes('user gesture')) {
-        alert('⚠️ Installation requires a user action.\n\nPlease try:\n1. Tap the install button again\n2. Or use your browser\'s menu to install\n\n🔔 Once installed, you\'ll get booking notifications!');
-      } else if (errorMsg.includes('already installed')) {
-        alert('✅ App is already installed!\n\nCheck your home screen or app drawer.\n\n🔔 Make sure notifications are enabled in app settings.');
-      } else {
-        alert('Installation failed. Please try adding the app manually from your browser menu.\n\nLook for "Add to Home Screen" or "Install App" option.\n\n🔔 This enables push notifications for bookings!');
-      }
+      console.error('PWA Dashboard: Installation error:', error);
+      setInstallState('waiting');
+      alert('❌ Installation failed\n\nPlease try again or check:\n• Browser compatibility\n• Internet connection\n• Storage space');
     }
   };
 
@@ -256,11 +212,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         console.log('✅ Notification permission granted');
         registerPushNotifications();
         
-        // Show test notification
+        // Show welcome notification
         new Notification('IndaStreet ' + dashboardName, {
-          body: '🎉 Notifications enabled! You\'ll receive alerts even when the app is closed.',
-          icon: '/pwa-icon-192.png',
-          badge: '/pwa-icon-192.png',
+          body: '🎉 Notifications enabled! You\'ll receive booking alerts instantly.',
+          icon: '/icons/therapist-icon-192.png',
+          badge: '/icons/therapist-icon-192.png',
           vibrate: [200, 100, 200],
           tag: 'welcome-notification'
         });
@@ -276,9 +232,8 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      console.log('✅ Service Worker ready for push notifications');
+      console.log('✅ Service Worker ready');
 
-      // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(
@@ -286,16 +241,12 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         )
       });
 
-      console.log('✅ Push subscription:', subscription);
-
-      // Send subscription to server (implement this in your backend)
-      // await sendSubscriptionToServer(subscription);
+      console.log('✅ Push subscription created');
     } catch (error) {
-      console.error('❌ Failed to subscribe to push notifications:', error);
+      console.error('❌ Push subscription failed:', error);
     }
   };
 
-  // Helper function to convert VAPID key
   const urlBase64ToUint8Array = (base64String: string) => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -308,118 +259,169 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
   };
 
   const handleDismiss = () => {
-    console.log('📱 PWA install banner dismissed by user');
-    setShowInstallPrompt(false);
-    
-    // Mark as manually dismissed to prevent auto-trigger for 24 hours
-    localStorage.setItem('pwa-auto-dismissed', Date.now().toString());
-    
-    // Also set traditional dismissal markers
+    setShowPrompt(false);
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
 
   // Debug helper functions
-  const clearDismissal = () => {
-    localStorage.removeItem('pwa-auto-dismissed');
-    localStorage.removeItem('pwa-install-dismissed');
-    localStorage.removeItem('pwa-install-completed');
-    console.log('PWA Dashboard: ✅ Cleared all dismissal flags');
-    setShowInstallPrompt(true);
-    alert('✅ Installation prompt reset!\n\nThe install button should now work again.');
-  };
-
-  const getPWAStatus = () => {
-    const status = {
-      isInstalled: isInstalled || localStorage.getItem('pwa-install-completed') === 'true',
-      isAutoDismissed: !!localStorage.getItem('pwa-auto-dismissed'),
-      isDismissed: !!localStorage.getItem('pwa-install-dismissed'),
-      dismissTime: localStorage.getItem('pwa-auto-dismissed'),
-      isStandalone: window.matchMedia('(display-mode: standalone)').matches,
-      hasPrompt: !!deferredPrompt,
-      notificationPermission: notificationPermission,
-      isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
-      userAgent: navigator.userAgent
-    };
-    console.log('PWA Dashboard Status:', status);
-    return status;
-  };
-
-  // Expose debug functions globally
   if (typeof window !== 'undefined') {
-    (window as any).clearDashboardPWADismissal = clearDismissal;
-    (window as any).getDashboardPWAStatus = getPWAStatus;
-    (window as any).showDashboardPWAPrompt = () => {
-      setShowInstallPrompt(true);
-      console.log('PWA Dashboard: Manually showing install prompt');
+    (window as any).resetPWAInstall = () => {
+      localStorage.removeItem('pwa-install-completed');
+      localStorage.removeItem('pwa-install-dismissed');
+      setInstallState('idle');
+      setShowPrompt(true);
+      console.log('✅ PWA install reset');
+    };
+    
+    (window as any).getPWAStatus = () => {
+      return {
+        installState,
+        hasPrompt: !!deferredPrompt,
+        manifestValid,
+        serviceWorkerActive,
+        isHTTPS,
+        notificationPermission,
+        isStandalone: window.matchMedia('(display-mode: standalone)').matches
+      };
     };
   }
 
-  // Don't show UI if app is already installed
-  if (isInstalled) {
+  // Don't show if already installed
+  if (installState === 'installed') {
     return null;
   }
 
-  // Show install banner only if we have a prompt or if user is on supported device
-  if (!showInstallPrompt && !deferredPrompt) {
+  // Don't show if no prompt available and not waiting
+  if (!showPrompt && !deferredPrompt) {
     return null;
   }
 
+  // Render checklist UI
   return (
     <>
-      {/* Install Banner - Mobile Only */}
-      <div className="md:hidden fixed bottom-20 left-4 right-4 z-50 animate-slide-up">
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl shadow-2xl p-4 text-white">
+      <div className="fixed bottom-20 left-4 right-4 z-50 animate-slide-up md:hidden">
+        <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-2xl shadow-2xl p-5 text-white relative overflow-hidden">
+          {/* Background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+              backgroundSize: '20px 20px'
+            }}/>
+          </div>
+
+          {/* Close button */}
           <button
             onClick={handleDismiss}
-            className="absolute top-2 right-2 p-1 hover:bg-white/20 rounded-full transition-colors"
+            className="absolute top-3 right-3 p-1.5 hover:bg-white/20 rounded-full transition-colors z-10"
+            aria-label="Dismiss"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="flex items-start gap-4">
-            <div className="bg-white/20 rounded-xl p-3 flex-shrink-0">
-              <Smartphone className="w-8 h-8" />
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
+                <Smartphone className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Install {dashboardName}</h3>
+                <p className="text-sm opacity-90">Quick access + notifications</p>
+              </div>
             </div>
 
-            <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">Install {dashboardName}</h3>
-              <p className="text-sm opacity-90 mb-3">
-                Add to your home screen for quick access and notifications
-              </p>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <Bell className="w-4 h-4" />
-                  <span>Real-time booking alerts</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Volume2 className="w-4 h-4" />
-                  <span>Sound notifications (even when closed)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Smartphone className="w-4 h-4" />
-                  <span>Works offline</span>
-                </div>
+            {/* PWA Readiness Checklist */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 space-y-2.5">
+              <div className="flex items-center gap-3">
+                {manifestValid ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
+                ) : (
+                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+                )}
+                <span className="text-sm font-medium">PWA Ready</span>
               </div>
+              
+              <div className="flex items-center gap-3">
+                {deferredPrompt ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
+                ) : (
+                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+                )}
+                <span className="text-sm font-medium">
+                  {installState === 'waiting' ? 'Install Available' : 
+                   installState === 'downloading' ? 'Installing...' :
+                   installState === 'installed' ? 'Installed on Device' : 'Preparing...'}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                {notificationPermission === 'granted' ? (
+                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
+                ) : (
+                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
+                )}
+                <span className="text-sm font-medium">
+                  {notificationPermission === 'granted' ? 'Notification system ready' :
+                   notificationPermission === 'denied' ? 'Notifications blocked' :
+                   'Notifications pending'}
+                </span>
+              </div>
+            </div>
 
+            {/* Technical Requirements Status */}
+            <div className="text-xs opacity-75 mb-4 space-y-1">
+              <div className="flex items-center gap-2">
+                {isHTTPS ? '✅' : '⚠️'} <span>HTTPS: {isHTTPS ? 'Secure' : 'Required'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {serviceWorkerActive ? '✅' : '⚠️'} <span>Service Worker: {serviceWorkerActive ? 'Active' : 'Loading...'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {manifestValid ? '✅' : '⚠️'} <span>Manifest: {manifestValid ? 'Valid' : 'Checking...'}</span>
+              </div>
+            </div>
+
+            {/* Status Message */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-4">
+              <p className="text-sm font-medium">
+                {installState === 'idle' && '⏳ Preparing installation...'}
+                {installState === 'waiting' && '✅ Ready to install! Tap button below.'}
+                {installState === 'downloading' && '⬇️ Installing app to your device...'}
+                {installState === 'installed' && '🎉 App successfully installed!'}
+              </p>
+            </div>
+
+            {/* Install Button */}
+            {installState !== 'installed' && (
               <button
                 onClick={handleInstallClick}
-                className="w-full bg-white text-orange-600 font-bold py-3 px-6 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
+                disabled={!deferredPrompt || installState === 'downloading'}
+                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2"
               >
-                <Download className="w-5 h-5" />
-                Install App
+                {installState === 'downloading' ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Installing...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    Install App Now
+                  </>
+                )}
               </button>
+            )}
 
-              {notificationPermission === 'default' && (
-                <button
-                  onClick={requestNotificationPermission}
-                  className="w-full mt-2 bg-white/10 text-white font-semibold py-2 px-4 rounded-lg hover:bg-white/20 transition-all flex items-center justify-center gap-2 text-sm"
-                >
-                  <Bell className="w-4 h-4" />
-                  Enable Notifications
-                </button>
-              )}
-            </div>
+            {/* Notification Button */}
+            {installState === 'installed' && notificationPermission === 'default' && (
+              <button
+                onClick={requestNotificationPermission}
+                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Bell className="w-5 h-5" />
+                Enable Notifications
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -439,6 +441,16 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         
         .animate-slide-up {
           animation: slide-up 0.5s ease-out;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        .animate-spin {
+          animation: spin 1s linear infinite;
         }
       `}</style>
     </>
