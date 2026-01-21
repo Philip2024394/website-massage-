@@ -198,15 +198,25 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       return;
     }
 
+    // Check if already granted (prevent repeated requests)
     if (Notification.permission === 'granted') {
       console.log('✅ Notification permission already granted');
+      localStorage.setItem('notification-permission-requested', 'true');
       registerPushNotifications();
+      return;
+    }
+
+    // Check if we already requested before
+    const alreadyRequested = localStorage.getItem('notification-permission-requested') === 'true';
+    if (alreadyRequested && Notification.permission !== 'default') {
+      console.log('⚠️ Notification permission already handled');
       return;
     }
 
     if (Notification.permission !== 'denied') {
       const permission = await Notification.requestPermission();
       setNotificationPermission(permission);
+      localStorage.setItem('notification-permission-requested', 'true');
 
       if (permission === 'granted') {
         console.log('✅ Notification permission granted');
@@ -214,7 +224,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
         
         // Show welcome notification with STRONG vibration and sound
         new Notification('IndaStreet ' + dashboardName, {
-          body: '🎉 Notifications enabled! You\'ll receive booking alerts instantly. You should feel strong vibrations!',
+          body: '🎉 Notifications enabled! Click "Test Notification" button to test sound & vibration.',
           icon: '/icons/therapist-icon-192.png',
           badge: '/icons/therapist-icon-192.png',
           vibrate: [500, 100, 500, 100, 500, 100, 500],  // 2+ seconds of strong vibration
@@ -261,6 +271,31 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
       outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+  };
+
+  const sendTestNotification = async () => {
+    if (Notification.permission !== 'granted') {
+      alert('❌ Notifications not enabled\n\nPlease enable notifications first.');
+      return;
+    }
+
+    try {
+      console.log('🧪 Sending test notification...');
+      
+      // Send test notification via service worker
+      const registration = await navigator.serviceWorker.ready;
+      registration.active?.postMessage({
+        type: 'test-notification',
+        title: 'Test Notification',
+        body: 'You should feel STRONG vibrations and hear sound! 🎵',
+        priority: 'high'
+      });
+      
+      alert('✅ Test notification sent!\n\nYou should:\n• Feel strong vibrations (2+ seconds)\n• Hear notification sound\n• See media controls on lock screen');
+    } catch (error) {
+      console.error('Test notification failed:', error);
+      alert('❌ Test failed: ' + error);
+    }
   };
 
   const playNotificationSound = () => {
@@ -461,7 +496,7 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
               </button>
             )}
 
-            {/* Notification Button */}
+            {/* Notification Buttons */}
             {installState === 'installed' && notificationPermission === 'default' && (
               <button
                 onClick={requestNotificationPermission}
@@ -469,6 +504,17 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Da
               >
                 <Bell className="w-5 h-5" />
                 Enable Notifications
+              </button>
+            )}
+            
+            {/* Test Notification Button - Shows when notifications enabled */}
+            {installState === 'installed' && notificationPermission === 'granted' && (
+              <button
+                onClick={sendTestNotification}
+                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
+              >
+                <Bell className="w-5 h-5" />
+                Test Notification (Sound + Vibration)
               </button>
             )}
           </div>
