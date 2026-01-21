@@ -3,6 +3,7 @@ import { User, Lock, Mail, Square } from 'lucide-react';
 import HomeIcon from '../../components/icons/HomeIcon';
 import { authService, userService, therapistService, placesService } from '../../lib/appwriteService';
 import { ID } from '../../lib/appwrite';
+import { useTranslations } from '../../lib/useTranslations';
 
 interface AuthPageProps {
     onAuthSuccess: (userType: string) => void;
@@ -11,7 +12,7 @@ interface AuthPageProps {
     mode?: 'signin' | 'signup' | 'unified';
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: propMode }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t: externalT, mode: propMode }) => {
     const [email, setEmail] = useState('');
     const [accountType, setAccountType] = useState('');
     const [password, setPassword] = useState('');
@@ -19,6 +20,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
+    
+    // Use internal translations
+    const { dict } = useTranslations();
+    const t = externalT || dict.auth;
 
     // Use prop mode if provided, otherwise fallback to URL detection
     const mode = propMode || (
@@ -36,9 +41,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
     });
 
     const accountTypes = [
-        { value: 'therapist', label: 'Massage Therapist' },
-        { value: 'massage-place', label: 'Massage Place' },
-        { value: 'facial-place', label: 'Facial Place' },
+        { value: 'therapist', label: t?.massageTherapist || 'Massage Therapist' },
+        { value: 'massage-place', label: t?.massageSpa || 'Massage Place' },
+        { value: 'facial-place', label: t?.facialClinic || 'Facial Place' },
     ];
 
     const validateForm = () => {
@@ -46,30 +51,30 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
         setError('');
         
         if (!email || !password) {
-            setError('Please fill all required fields');
+            setError(t?.fillFieldsError || 'Please fill all required fields');
             return false;
         }
         
         // Accept any email input - no format validation
         if (!email || !email.trim()) {
-            setError('Please enter an email address');
+            setError(t?.pleaseEnterValidEmail || 'Please enter an email address');
             return false;
         }
         
         // Validate password length (Appwrite requires 8 characters minimum)
         if (password.length < 8) {
-            setError('Password must be at least 8 characters');
+            setError(t?.passwordMinLength || 'Password must be at least 8 characters');
             return false;
         }
         
         // For signup mode, require account type and terms
         if (mode === 'signup') {
             if (!accountType) {
-                setError('Please select an account type');
+                setError(t?.pleaseSelectPortalType || 'Please select an account type');
                 return false;
             }
             if (!acceptTerms) {
-                setError('Please accept terms & conditions');
+                setError(t?.pleaseAcceptTerms || 'Please accept terms & conditions');
                 return false;
             }
         }
@@ -82,7 +87,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
         // For unified mode (auth page), require everything
         if (mode === 'unified') {
             if (!accountType) {
-                setError('Please select an account type');
+                setError(t?.pleaseSelectPortalType || 'Please select an account type');
                 return false;
             }
             if (!acceptTerms) {
@@ -280,15 +285,16 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 } catch (error: any) {
                     console.error('❌ Sign in failed:', error);
                     
-                    // Provide specific, helpful error messages
+                    // Provide specific, helpful error messages with translations
                     if (error.message?.includes('Invalid credentials') || error.message?.includes('Invalid email or password')) {
-                        setError('❌ Incorrect email or password. Please check:\n• Email is correct (case-sensitive)\n• Password is correct (case-sensitive)\n• No extra spaces in your input');
+                        setError(t?.errorIncorrectCredentials || '❌ Incorrect email or password. Please check:\n• Email is correct (case-sensitive)\n• Password is correct (case-sensitive)\n• No extra spaces in your input');
                     } else if (error.message?.includes('user') && error.message?.includes('not found')) {
-                        setError('❌ No account found with this email. Please:\n• Check the email spelling\n• Create a new account if you\'re a new user');
+                        setError(t?.errorUserNotFound || '❌ No account found with this email. Please:\n• Check the email spelling\n• Create a new account if you\'re a new user');
                     } else if (error.message?.includes('rate limit') || error.code === 429) {
-                        setError('⚠️ Too many login attempts. Please wait a moment before trying again.');
+                        setError(t?.errorRateLimit || '⚠️ Too many login attempts. Please wait a moment before trying again.');
                     } else {
-                        setError(`❌ Sign in failed: ${error.message || 'Unknown error'}. Please try again or contact support if the problem persists.`);
+                        const errorMsg = (t?.errorGenericSignIn || '❌ Sign in failed: {error}. Please try again or contact support if the problem persists.').replace('{error}', error.message || 'Unknown error');
+                        setError(errorMsg);
                     }
                 }
             } 
@@ -297,7 +303,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                 try {
                     const existingUser = await userService.getByEmail(normalizedEmail);
                     if (existingUser) {
-                        setError('An account with this email already exists. Please sign in instead.');
+                        setError(t?.errorEmailAlreadyRegistered || '❌ This email is already registered. Please:\n• Use the Sign In button instead\n• Or use a different email address\n• Contact support if you forgot your password');
                         return;
                     }
                 } catch (error) {
@@ -319,8 +325,20 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                     onAuthSuccess(accountType);
                 } catch (error: any) {
                     console.error('❌ Account creation failed:', error);
-                    // Use the detailed error message from createNewAccount
-                    setError(error.message || 'Failed to create account. Please try again.');
+                    
+                    // Enhanced error messages for signup with translations
+                    if (error.message?.includes('already exists')) {
+                        setError(t?.errorEmailAlreadyRegistered || '❌ This email is already registered. Please:\n• Use the Sign In button instead\n• Or use a different email address\n• Contact support if you forgot your password');
+                    } else if (error.message?.includes('Password')) {
+                        setError(t?.errorPasswordRequirements || '❌ Password requirements not met:\n• Must be at least 8 characters long\n• Include letters and numbers\n• No spaces at start or end');
+                    } else if (error.message?.includes('rate limit') || error.code === 429) {
+                        setError(t?.errorRateLimit || '⚠️ Too many attempts. Please wait a moment before trying again.');
+                    } else if (error.message?.includes('email') && error.message?.includes('invalid')) {
+                        setError(t?.errorInvalidEmailFormat || '❌ Invalid email format. Please check:\n• Email contains @ symbol\n• Domain is valid (e.g., @gmail.com)\n• No spaces in the email');
+                    } else {
+                        const errorMsg = (t?.errorAccountCreation || '❌ Account creation failed: {error}. Please:\n• Check your internet connection\n• Verify all fields are correct\n• Try again or contact support').replace('{error}', error.message || 'Unknown error');
+                        setError(errorMsg);
+                    }
                 }
             }
             else {
@@ -435,7 +453,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                 <Mail className="w-4 h-4 inline mr-2" />
-                                Email Address
+                                {t?.email || 'Email Address'}
                             </label>
                             <input 
                                 id="email" 
@@ -447,7 +465,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                         ? 'border-red-300 bg-red-50' 
                                         : 'border-gray-300'
                                 }`}
-                                placeholder="your.email@example.com" 
+                                placeholder={t?.emailPlaceholder || 'your.email@example.com'} 
                                 autoComplete="off"
                                 autoCorrect="off"
                                 autoCapitalize="off"
@@ -456,7 +474,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                             />
                             {error && error.toLowerCase().includes('email') && (
                                 <p className="mt-1 text-xs text-red-600">
-                                    ⚠️ Please check your email address (case-sensitive)
+                                    {t?.hintEmailCaseSensitive || '⚠️ Please check your email address (case-sensitive)'}
                                 </p>
                             )}
                         </div>
@@ -466,7 +484,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                             <div className="relative">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     <User className="w-4 h-4 inline mr-2" />
-                                    Account Type {mode === 'signup' ? '(Required)' : ''}
+                                    {t?.selectPortalType || 'Account Type'} {mode === 'signup' ? '(Required)' : ''}
                                 </label>
                                 <div className="relative">
                                     <button
@@ -475,7 +493,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all flex justify-between items-center"
                                     >
                                         <span className={accountType ? 'text-gray-900' : 'text-gray-500'}>
-                                            {accountType ? accountTypes.find(t => t.value === accountType)?.label : 'Select account type'}
+                                            {accountType ? accountTypes.find(t => t.value === accountType)?.label : (t?.selectPortalType || 'Select account type')}
                                         </span>
                                         <span>▼</span>
                                     </button>
@@ -505,7 +523,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                 <Lock className="w-4 h-4 inline mr-2" />
-                                Password
+                                {t?.password || 'Password'}
                             </label>
                             <input 
                                 id="password" 
@@ -517,7 +535,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                         ? 'border-red-300 bg-red-50' 
                                         : 'border-gray-300'
                                 }`}
-                                placeholder="Enter your password" 
+                                placeholder={t?.passwordPlaceholder || 'Enter your password'} 
                                 autoComplete="off"
                                 autoCorrect="off"
                                 autoCapitalize="off"
@@ -526,7 +544,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                             />
                             {error && error.toLowerCase().includes('password') && (
                                 <p className="mt-1 text-xs text-red-600">
-                                    ⚠️ Password is case-sensitive. Check uppercase/lowercase letters
+                                    {t?.hintPasswordCaseSensitive || '⚠️ Password is case-sensitive. Check uppercase/lowercase letters'}
                                 </p>
                             )}
                         </div>
@@ -546,13 +564,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                     )}
                                 </button>
                                 <label className="text-sm text-gray-700 leading-relaxed">
-                                    I agree to the{' '}
+                                    {t?.iAgreeToThe || 'I agree to the'}{' '}
                                     <button type="button" className="text-orange-500 hover:underline font-medium">
-                                        Terms & Conditions
+                                        {t?.termsAndConditions || 'Terms & Conditions'}
                                     </button>
-                                    {' '}and{' '}
+                                    {' '}{t?.and || 'and'}{' '}
                                     <button type="button" className="text-orange-500 hover:underline font-medium">
-                                        Privacy Policy
+                                        {t?.privacyPolicy || 'Privacy Policy'}
                                     </button>
                                 </label>
                             </div>
@@ -588,7 +606,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess, onBack, t, mode: pro
                                     Processing...
                                 </div>
                             ) : (
-                                mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Continue'
+                                mode === 'signin' ? (t?.signInButton || 'Sign In') : mode === 'signup' ? (t?.createAccountButton || 'Create Account') : 'Continue'
                             )}
                         </button>
                     </form>

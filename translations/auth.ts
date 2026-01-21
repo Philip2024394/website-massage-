@@ -89,6 +89,20 @@ export const authTranslations = {
       accountNotFound: 'No account found with this email',
       passwordsMustMatch: 'Passwords must match',
       
+      // Enhanced Error Messages
+      errorIncorrectCredentials: '❌ Incorrect email or password. Please check:\n• Email is correct (case-sensitive)\n• Password is correct (case-sensitive)\n• No extra spaces in your input',
+      errorUserNotFound: '❌ No account found with this email. Please:\n• Check the email spelling\n• Create a new account if you\'re a new user',
+      errorRateLimit: '⚠️ Too many login attempts. Please wait a moment before trying again.',
+      errorGenericSignIn: '❌ Sign in failed: {error}. Please try again or contact support if the problem persists.',
+      errorEmailAlreadyRegistered: '❌ This email is already registered. Please:\n• Use the Sign In button instead\n• Or use a different email address\n• Contact support if you forgot your password',
+      errorPasswordRequirements: '❌ Password requirements not met:\n• Must be at least 8 characters long\n• Include letters and numbers\n• No spaces at start or end',
+      errorInvalidEmailFormat: '❌ Invalid email format. Please check:\n• Email contains @ symbol\n• Domain is valid (e.g., @gmail.com)\n• No spaces in the email',
+      errorAccountCreation: '❌ Account creation failed: {error}. Please:\n• Check your internet connection\n• Verify all fields are correct\n• Try again or contact support',
+      
+      // Field Hints
+      hintEmailCaseSensitive: '💡 Email is case-sensitive',
+      hintPasswordCaseSensitive: '💡 Password is case-sensitive',
+      
       createAccount: 'Create Account',
       nameLabel: 'Name',
       namePlaceholder: 'Your Name',
@@ -236,6 +250,20 @@ export const authTranslations = {
       invalidCredentials: 'Email atau kata sandi tidak valid',
       accountNotFound: 'Tidak ada akun dengan email ini',
       passwordsMustMatch: 'Kata sandi harus sama',
+      
+      // Enhanced Error Messages
+      errorIncorrectCredentials: '❌ Email atau kata sandi salah. Mohon periksa:\n• Email sudah benar (peka huruf besar/kecil)\n• Kata sandi sudah benar (peka huruf besar/kecil)\n• Tidak ada spasi berlebih',
+      errorUserNotFound: '❌ Tidak ada akun dengan email ini. Mohon:\n• Periksa ejaan email\n• Buat akun baru jika Anda pengguna baru',
+      errorRateLimit: '⚠️ Terlalu banyak percobaan login. Mohon tunggu sebentar sebelum mencoba lagi.',
+      errorGenericSignIn: '❌ Login gagal: {error}. Mohon coba lagi atau hubungi dukungan jika masalah berlanjut.',
+      errorEmailAlreadyRegistered: '❌ Email ini sudah terdaftar. Mohon:\n• Gunakan tombol Masuk sebagai gantinya\n• Atau gunakan alamat email berbeda\n• Hubungi dukungan jika lupa kata sandi',
+      errorPasswordRequirements: '❌ Persyaratan kata sandi tidak terpenuhi:\n• Minimal 8 karakter\n• Sertakan huruf dan angka\n• Tidak ada spasi di awal atau akhir',
+      errorInvalidEmailFormat: '❌ Format email tidak valid. Mohon periksa:\n• Email mengandung simbol @\n• Domain valid (mis. @gmail.com)\n• Tidak ada spasi dalam email',
+      errorAccountCreation: '❌ Pembuatan akun gagal: {error}. Mohon:\n• Periksa koneksi internet Anda\n• Verifikasi semua field sudah benar\n• Coba lagi atau hubungi dukungan',
+      
+      // Field Hints
+      hintEmailCaseSensitive: '💡 Email peka huruf besar/kecil',
+      hintPasswordCaseSensitive: '💡 Kata sandi peka huruf besar/kecil',
       
       createAccount: 'Buat Akun',
       nameLabel: 'Nama',
