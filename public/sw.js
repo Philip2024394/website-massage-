@@ -15,8 +15,8 @@
  * - PWA-ready for future enhancements
  */
 
-const SW_VERSION = '2.2.6';
-const CACHE_NAME = `push-notifications-v2-6`;
+const SW_VERSION = '2.2.7';
+const CACHE_NAME = `push-notifications-v2-7`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -45,7 +45,7 @@ self.addEventListener('install', (event) => {
         })
     );
     
-    // Force activation immediately - bypass waiting
+    // Skip waiting - activate immediately (but smoothly)
     self.skipWaiting();
 });
 
@@ -55,17 +55,18 @@ self.addEventListener('activate', (event) => {
     
     event.waitUntil(
         caches.keys().then((cacheNames) => {
-            // 🔥 AGGRESSIVE CACHE CLEARING - Delete ALL caches to prevent redirect loops
-            console.log(`🗑️ Deleting ALL caches (${cacheNames.length} found) to prevent PWA redirect issues`);
+            // Delete old caches but keep the current one
+            const cachesToDelete = cacheNames.filter(name => name !== CACHE_NAME);
+            console.log(`🗑️ Deleting ${cachesToDelete.length} old caches`);
             return Promise.all(
-                cacheNames.map((cacheName) => {
+                cachesToDelete.map((cacheName) => {
                     console.log(`🗑️ Deleting cache: ${cacheName}`);
                     return caches.delete(cacheName);
                 })
             );
         }).then(() => {
-            console.log(`✅ Service Worker ${SW_VERSION}: All caches cleared - fresh start`);
-            // Take control of all clients immediately
+            console.log(`✅ Service Worker ${SW_VERSION}: Old caches cleared`);
+            // Take control of all clients immediately but smoothly
             return self.clients.claim();
         }).then(() => {
             console.log(`✅ Service Worker ${SW_VERSION}: Activated and controlling all clients`);
