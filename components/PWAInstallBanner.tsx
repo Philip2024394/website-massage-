@@ -56,17 +56,31 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     // Detect iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     console.log('PWA Install Banner: Is iOS?', iOS);
+    console.log('PWA Install Banner: User agent:', navigator.userAgent);
+    console.log('PWA Install Banner: Is standalone mode:', (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches);
     setIsIOS(iOS);
 
     // For non-iOS devices, capture install prompt
     const handleBeforeInstallPrompt = (e: any) => {
-      console.log('PWA Install Banner: beforeinstallprompt event fired');
+      console.log('PWA Install Banner: ✅ beforeinstallprompt event fired - install prompt available!');
       e.preventDefault();
       setDeferredPrompt(e);
       setShowBanner(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Check after 3 seconds if prompt didn't fire
+    const promptCheckTimer = setTimeout(() => {
+      if (!iOS) {
+        console.log('PWA Install Banner: ⚠️ beforeinstallprompt did NOT fire within 3 seconds');
+        console.log('PWA Install Banner: Possible reasons:');
+        console.log('  - App already installed');
+        console.log('  - Browser doesn\'t support PWA installation');
+        console.log('  - PWA requirements not met (manifest, service worker, HTTPS)');
+        console.log('  - User previously dismissed the install prompt');
+      }
+    }, 3000);
 
     // For iOS or fallback, show banner after short delay
     const showBannerTimer = setTimeout(() => {
@@ -80,6 +94,7 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       clearTimeout(showBannerTimer);
+      clearTimeout(promptCheckTimer);
     };
   }, []);
 
@@ -87,9 +102,46 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
     console.log('PWA Install: Install button clicked');
     
     if (!deferredPrompt) {
-      console.log('PWA Install: No deferred prompt available');
-      // For browsers that don't support beforeinstallprompt
-      alert('To install this app:\n\n1. Open your browser menu\n2. Look for "Add to Home Screen" or "Install App"\n3. Follow the prompts');
+      console.log('PWA Install: No deferred prompt available - showing manual instructions');
+      
+      // Detect platform and show appropriate instructions
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent) && !/Edg/i.test(navigator.userAgent);
+      const isEdge = /Edg/i.test(navigator.userAgent);
+      const isFirefox = /Firefox/i.test(navigator.userAgent);
+      const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+      
+      let instructions = '📱 TO INSTALL THE APP:\n\n';
+      
+      if (isIOS && isSafari) {
+        instructions += '🔹 Tap the Share button (⬆️) at the bottom\n' +
+                       '🔹 Scroll and tap "Add to Home Screen"\n' +
+                       '🔹 Tap "Add" to confirm\n\n' +
+                       '✅ The app icon will appear on your home screen!';
+      } else if (isAndroid && isChrome) {
+        instructions += '🔹 Tap the menu (⋮) in the top-right corner\n' +
+                       '🔹 Select "Install app" or "Add to Home screen"\n' +
+                       '🔹 Tap "Install" to confirm\n\n' +
+                       '✅ The app will open automatically after install!';
+      } else if (isEdge) {
+        instructions += '🔹 Look for the install icon (⬇️) in the address bar\n' +
+                       '🔹 Click it and select "Install"\n' +
+                       '🔹 Or tap menu (•••) → "Apps" → "Install this site as an app"\n\n' +
+                       '✅ App will be added to your device!';
+      } else if (isFirefox) {
+        instructions += '🔹 Tap the menu (⋮) button\n' +
+                       '🔹 Select "Install" or "Add to Home Screen"\n' +
+                       '🔹 Confirm the installation\n\n' +
+                       '✅ App icon will appear on your home screen!';
+      } else {
+        instructions += '🔹 Look for "Add to Home Screen" in your browser menu\n' +
+                       '🔹 Or find the install icon in the address bar\n' +
+                       '🔹 Follow the prompts to complete installation\n\n' +
+                       '✅ Once installed, enjoy enhanced features!';
+      }
+      
+      alert(instructions);
       return;
     }
 
@@ -116,7 +168,14 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
       setDeferredPrompt(null);
     } catch (error) {
       console.error('PWA Install: Error during installation:', error);
-      alert('Installation failed. Please try adding the app manually from your browser menu.');
+      
+      // Show detailed error-specific instructions
+      const errorMsg = String(error);
+      if (errorMsg.includes('user gesture')) {
+        alert('⚠️ Installation requires a user action.\n\nPlease try:\n1. Tap the install button again\n2. Or use your browser\'s menu to install');
+      } else {
+        alert('Installation failed. Please try adding the app manually from your browser menu.\n\nLook for "Add to Home Screen" or "Install App" option.');
+      }
     }
   };
 
@@ -132,12 +191,35 @@ export const PWAInstallBanner: React.FC<PWAInstallBannerProps> = ({ onDismiss })
   const clearDismissal = () => {
     localStorage.removeItem('pwa-banner-dismissed');
     localStorage.removeItem('pwa-banner-dismissed-time');
-    console.log('PWA Install Banner: Cleared dismissal from localStorage');
+    localStorage.removeItem('pwa-install-completed');
+    console.log('PWA Install Banner: ✅ Cleared all dismissal flags from localStorage');
+    setShowBanner(true);
+    alert('✅ Installation banner reset!\n\nThe banner should now appear again.');
   };
 
-  // For debugging - call this in console: window.clearPWADismissal()
+  // Get PWA status for debugging
+  const getPWAStatus = () => {
+    const status = {
+      isInstalled: localStorage.getItem('pwa-install-completed') === 'true',
+      isDismissed: localStorage.getItem('pwa-banner-dismissed') === 'true',
+      dismissedTime: localStorage.getItem('pwa-banner-dismissed-time'),
+      isStandalone: (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches,
+      hasPrompt: !!deferredPrompt,
+      isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+      userAgent: navigator.userAgent
+    };
+    console.log('PWA Status:', status);
+    return status;
+  };
+
+  // For debugging - call these in console
   if (typeof window !== 'undefined') {
     (window as any).clearPWADismissal = clearDismissal;
+    (window as any).getPWAStatus = getPWAStatus;
+    (window as any).showPWABanner = () => {
+      setShowBanner(true);
+      console.log('PWA Install Banner: Manually showing banner');
+    };
   }
 
   if (!showBanner) {
