@@ -689,19 +689,34 @@ const HomePage: React.FC<HomePageProps> = ({
                        location.includes('jogja');
             });
         
+        console.log(`🔍 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase generation`);
+        
+        // If we have less than 5 Yogyakarta therapists, duplicate them to reach 5
+        let expandedTherapists = [...yogyaTherapists];
+        if (yogyaTherapists.length > 0 && yogyaTherapists.length < 5) {
+            console.log(`⚠️ Only ${yogyaTherapists.length} Yogyakarta therapists available, expanding to 5...`);
+            
+            // Keep duplicating until we have at least 5
+            while (expandedTherapists.length < 5) {
+                expandedTherapists = [...expandedTherapists, ...yogyaTherapists];
+            }
+            expandedTherapists = expandedTherapists.slice(0, 5); // Take exactly 5
+            console.log(`✅ Expanded to ${expandedTherapists.length} therapists for showcase`);
+        }
+        
         // Shuffle and take random 5 - different for each city
-        const shuffled = shuffleArray([...yogyaTherapists]);
+        const shuffled = shuffleArray([...expandedTherapists]);
         const selectedTherapists = shuffled.slice(0, 5);
         
-        console.log(`🎭 Selected ${selectedTherapists.length} random Yogyakarta therapists for showcase in ${targetCity}:`, 
+        console.log(`🎭 Selected ${selectedTherapists.length} therapists for showcase in ${targetCity}:`, 
                    selectedTherapists.map((t: any) => t.name));
         
         // Create showcase versions with busy status and target city location
         const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => ({
             ...therapist,
             // Override key properties for showcase
-            $id: `showcase-${therapist.$id || therapist.id}-${targetCity}`, // Unique ID for showcase version
-            id: `showcase-${therapist.$id || therapist.id}-${targetCity}`,
+            $id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`, // Unique ID with index for duplicates
+            id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`,
             status: 'busy', // Always busy to prevent bookings outside Yogyakarta
             availability: 'busy',
             isAvailable: false, // Ensure not bookable
@@ -738,12 +753,15 @@ const HomePage: React.FC<HomePageProps> = ({
             const defaultYogyaCoords = { lat: -7.7956, lng: 110.3695 };
             
             // Add default coordinates to therapists and places if missing
+            // PRESERVE existing location/city data - don't override with Yogyakarta
             const therapistsWithCoords = therapists.map((t: any) => {
                 const parsedCoords = parseCoordinates(t.coordinates);
                 return {
                     ...t,
                     coordinates: parsedCoords || defaultYogyaCoords,
-                    location: t.location || 'Yogyakarta'
+                    // CRITICAL: Preserve location/city data - only default to Yogyakarta if completely missing
+                    // This ensures showcase profiles keep their assigned city
+                    location: t.location || t.city || t.locationId || 'Yogyakarta'
                 };
             });
             
@@ -867,10 +885,15 @@ const HomePage: React.FC<HomePageProps> = ({
             }
             
             // Normalize both cities for comparison
-            const normalizedTherapistCity = therapistCity.toLowerCase().trim();
+            // Handle location strings like "Canggu, Indonesia" by extracting just the city part
+            let normalizedTherapistCity = therapistCity.toLowerCase().trim();
+            if (normalizedTherapistCity.includes(',')) {
+                // Extract city name before comma (e.g., "Canggu, Indonesia" → "canggu")
+                normalizedTherapistCity = normalizedTherapistCity.split(',')[0].trim();
+            }
             const normalizedSelectedCity = selectedCity.toLowerCase().trim();
             
-            // EXACT MATCH REQUIRED
+            // EXACT MATCH REQUIRED (after normalization)
             const matches = normalizedTherapistCity === normalizedSelectedCity;
             
             if (matches) {
