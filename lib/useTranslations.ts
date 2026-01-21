@@ -64,16 +64,18 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
     // Normalize 'gb' to 'en' for dictionary selection while preserving requested language
     const normalizedLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
     
-    const [translations, setTranslations] = useState<any>(null);
+    // CRITICAL: Start with empty object structure to prevent null errors
+    const [translations, setTranslations] = useState<any>({ en: {}, id: {} });
     const [loading, setLoading] = useState(true);
     
     // Load fallback translations on mount
     useEffect(() => {
         loadFallbackTranslations().then(fallback => {
-            if (!translations) {
-                setTranslations(fallback);
-                setLoading(false);
-            }
+            setTranslations(fallback);
+            setLoading(false);
+        }).catch(err => {
+            console.error('Failed to load fallback translations:', err);
+            setLoading(false);
         });
     }, []);
 
@@ -139,27 +141,18 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
     // Fix: Check if translations have actual content, not just if they exist
     const hasTranslationContent = (obj: any) => obj && Object.keys(obj).length > 0;
     
-    // Select appropriate translations based on current language
-    let finalTranslations = 
-        (hasTranslationContent(translations[normalizedLang]) ? translations[normalizedLang] : null) ||
-        (hasTranslationContent((fallbackTranslations as any)[normalizedLang]) ? (fallbackTranslations as any)[normalizedLang] : null) ||
-        (hasTranslationContent(translations.en) ? translations.en : null) ||
-        fallbackTranslations.en ||
-        fallbackTranslations;
+    // Select appropriate translations based on current language - with safe fallback
+    let finalTranslations = translations[normalizedLang];
     
-    console.log(`🧭 useTranslations Debug for requested=${currentLanguage}, normalized=${normalizedLang}:`);
-    console.log(`  📦 translations[${normalizedLang}] exists:`, !!translations[normalizedLang]);
-    console.log(`  📦 translations[${normalizedLang}] keys:`, translations[normalizedLang] ? Object.keys(translations[normalizedLang]) : 'none');
-    console.log(`  📦 translations[${normalizedLang}] has content:`, hasTranslationContent(translations[normalizedLang]));
-    console.log(`  🏠 translations[${normalizedLang}].home exists:`, !!(translations[normalizedLang] && translations[normalizedLang].home));
-    console.log(`  📦 fallbackTranslations[${normalizedLang}] exists:`, !!((fallbackTranslations as any)[normalizedLang]));
-    console.log(`  📦 fallbackTranslations[${normalizedLang}] keys:`, (fallbackTranslations as any)[normalizedLang] ? Object.keys((fallbackTranslations as any)[normalizedLang]) : 'none');
-    console.log(`  📦 fallbackTranslations[${normalizedLang}] has content:`, hasTranslationContent((fallbackTranslations as any)[normalizedLang]));
-    console.log(`  🏠 fallbackTranslations[${normalizedLang}].home exists:`, !!((fallbackTranslations as any)[normalizedLang] && (fallbackTranslations as any)[normalizedLang].home));
-    console.log(`  ✅ Final translation keys:`, Object.keys(finalTranslations || {}));
-    console.log(`  🏠 Final translation has home:`, !!(finalTranslations && finalTranslations.home));
-    const srcLang = currentLanguage === 'gb' ? 'en' : currentLanguage;
-    console.log(`  🎯 Translation source: ${hasTranslationContent(translations[srcLang]) ? 'Appwrite' : hasTranslationContent((fallbackTranslations as any)[srcLang]) ? 'Fallback' : 'Default'}`);
+    // Fallback chain if current language is empty
+    if (!hasTranslationContent(finalTranslations)) {
+        finalTranslations = translations.en || {};
+    }
+    
+    // Ensure we always return an object (never null/undefined)
+    if (!finalTranslations || typeof finalTranslations !== 'object') {
+        finalTranslations = {};
+    }
 
     // Helper function to get nested translation values
     const getNestedValue = (obj: any, path: string): string => {
@@ -180,28 +173,11 @@ export function useTranslations(language?: 'en' | 'id' | 'gb') {
     };
 
     return {
-        t: (key: string) => {
-            const result = getNestedValue(finalTranslations, key);
-            console.log(`🔑 Translation lookup: "${key}" => "${result}" (from ${Object.keys(finalTranslations || {}).length} keys)`);
-            if (key.includes('home.')) {
-                console.log(`🏠 Home section debug:`, finalTranslations?.home ? Object.keys(finalTranslations.home) : 'no home section');
-            }
-            return result;
-        },
+        t: (key: string) => getNestedValue(finalTranslations, key),
         // Expose the active language dictionary for object-style access
         dict: finalTranslations,
         loading,
         refresh: loadTranslations,
         hasLanguage: !!(translations[normalizedLang] && Object.keys(translations[normalizedLang]).length > 0),
-        // Add debug info
-        debug: {
-            requestedLanguage: currentLanguage,
-            normalizedLanguage: normalizedLang,
-            availableLanguages: Object.keys(translations),
-            hasRequestedLang: !!(translations[normalizedLang]),
-            fallbackUsed: !translations[normalizedLang],
-            translationKeys: translations[normalizedLang] ? Object.keys(translations[normalizedLang]) : [],
-            hasHomeKey: !!(translations[normalizedLang] && translations[normalizedLang].home)
-        }
     };
 }
