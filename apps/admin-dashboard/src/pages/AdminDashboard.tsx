@@ -802,16 +802,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'chat') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                         <h1 className="text-lg sm:text-xl font-bold text-gray-800">Admin Chat Center</h1>
                     </div>
@@ -835,16 +834,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'analytics') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                     <button
@@ -862,16 +860,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'email') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                     <button
@@ -889,16 +886,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'payments') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                     <button
@@ -916,16 +912,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'revenue') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                     <button
@@ -943,16 +938,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'commission-deposits') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                     </div>
                     <button
@@ -970,7 +964,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'bookings') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 w-full">
                 <BookingManagement onBack={() => setActiveView('dashboard')} />
             </div>
         );
@@ -978,7 +972,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'reviews') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 w-full">
                 <ReviewsManagement onBack={() => setActiveView('dashboard')} />
             </div>
         );
@@ -986,7 +980,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'settings') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 w-full">
                 <SystemSettings onBack={() => setActiveView('dashboard')} />
             </div>
         );
@@ -994,16 +988,15 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'ktp-verification') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
                         <h1 className="text-lg sm:text-xl font-bold text-gray-800">KTP Verification Center</h1>
                     </div>
@@ -1022,7 +1015,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'achievements') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 w-full">
                 <AdminAchievementManager onBack={() => setActiveView('dashboard')} />
             </div>
         );
@@ -1030,18 +1023,17 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'db-diagnostics') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
-                        <h1 className="text-lg sm:text-xl font-bold text-gray-800">Database Diagnostics</h1>
+                        <h1 className="text-xl font-bold text-gray-800">Database Diagnostics</h1>
                     </div>
                     <button
                         onClick={onLogout}
@@ -1058,18 +1050,17 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'premium-upgrade') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
-                        <h1 className="text-lg sm:text-xl font-bold text-gray-800">Premium Upgrade (30% Commission)</h1>
+                        <h1 className="text-xl font-bold text-gray-800">Premium Upgrade (30% Commission)</h1>
                     </div>
                     <button
                         onClick={onLogout}
@@ -1086,18 +1077,17 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
 
     if (activeView === 'system-health') {
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-                <div className="bg-white shadow-sm border-b px-4 sm:px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2 sm:gap-4">
+            <div className="min-h-screen bg-gray-50 w-full">
+                <div className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={() => setActiveView('dashboard')}
-                            className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                            className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                         >
-                            <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="hidden sm:inline">Back to Dashboard</span>
-                            <span className="sm:hidden">Back</span>
+                            <BarChart className="w-5 h-5" />
+                            <span>Back to Dashboard</span>
                         </button>
-                        <h1 className="text-lg sm:text-xl font-bold text-gray-800">System Health Monitor</h1>
+                        <h1 className="text-xl font-bold text-gray-800">System Health Monitor</h1>
                     </div>
                     <button
                         onClick={onLogout}
@@ -1139,7 +1129,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
         }
 
         return (
-            <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+            <div className="min-h-screen bg-gray-50 w-full">
                 {/* Loading Indicator */}
                 {loading && (
                     <div className="fixed top-0 left-0 right-0 bg-blue-500 text-white text-center py-2 z-50">
@@ -1149,18 +1139,17 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 
                 {/* Header */}
                 <div className="bg-white shadow-sm border-b">
-                    <div className="px-4 sm:px-6 py-4">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="px-6 py-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => setActiveView('dashboard')}
-                                    className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-800"
+                                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                                 >
-                                    <BarChart className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    <span className="hidden sm:inline">Back to Dashboard</span>
-                                    <span className="sm:hidden">Back</span>
+                                    <BarChart className="w-5 h-5" />
+                                    <span>Back to Dashboard</span>
                                 </button>
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                                <h1 className="text-2xl font-bold text-gray-800">
                                     <span className="text-black">Inda</span>
                                     <span className="text-orange-500">Street</span> {title}
                                 </h1>
@@ -1169,10 +1158,10 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             <div className="flex items-center gap-4">
                                 <button
                                     onClick={onLogout}
-                                    className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-800"
+                                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800"
                                 >
                                     <LogOut className="w-4 h-4" />
-                                    <span className="hidden sm:inline">Logout</span>
+                                    <span>Logout</span>
                                 </button>
                             </div>
                         </div>
@@ -1180,8 +1169,8 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                 </div>
 
                 {/* Filters */}
-                <div className="p-4 sm:p-6">
-                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="p-6">
+                    <div className="flex gap-4 mb-6">
                         <div className="flex-1 relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <input
@@ -1319,11 +1308,8 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                             }`}
                                         >
                                             {card.status === 'active' ? <EyeOff className="w-4 h-4" /> : card.status === 'inactive' ? <Clock className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            <span className="hidden sm:inline">
+                                            <span>
                                                 {card.status === 'active' ? 'Deactivate' : card.status === 'inactive' ? 'Set Pending' : 'Activate'}
-                                            </span>
-                                            <span className="sm:hidden">
-                                                {card.status === 'active' ? 'Deactivate' : card.status === 'inactive' ? 'Pending' : 'Activate'}
                                             </span>
                                         </button>
                                         
@@ -1333,7 +1319,7 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                                             title="Permanently delete this card"
                                         >
                                             <Trash2 className="w-4 h-4" />
-                                            <span className="hidden sm:inline">Delete</span>
+                                            <span>Delete</span>
                                         </button>
                                     </div>
                                 </div>
@@ -1618,13 +1604,13 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
                             <div className="p-4 sm:p-6 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
                                 <button
                                     onClick={() => setEditingCard(null)}
-                                    className="w-full sm:w-auto px-4 sm:px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg sm:border-none"
+                                    className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-lg"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSaveCard}
-                                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base"
+                                    className="flex items-center justify-center gap-2 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                                 >
                                     <Save className="w-4 h-4" />
                                     Save Changes
@@ -1638,7 +1624,19 @@ const LiveAdminDashboard: React.FC<LiveAdminDashboardProps> = ({ onLogout }) => 
     }
 
     return (
-        <div className="h-screen bg-gray-100 flex flex-col overflow-hidden" style={{ width: '100vw', maxWidth: 'none' }}>
+        <div 
+            className="h-screen bg-gray-100 flex flex-col overflow-hidden"
+            style={{ 
+                width: '100vw', 
+                maxWidth: 'none',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 1000
+            }}
+        >
             <PageNumberBadge pageNumber={42} pageName="LiveAdminDashboard" isLocked={false} />
             {/* Header - Full Width */}
             <div className="bg-white shadow-sm border-b" style={{ width: '100%' }}>

@@ -295,7 +295,8 @@ export function PersistentChatWindow() {
           originalPrice: hasDiscount ? originalPrice : undefined,
           discountCode: hasDiscount ? discountCode : undefined,
           discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-          location: customerForm.location,
+          serviceType: 'Traditional Massage', // Default service type
+          locationZone: customerForm.location,
           coordinates: customerForm.coordinates || undefined,
           scheduledDate: selectedDate || undefined,
           scheduledTime: selectedTime || undefined,
@@ -554,108 +555,11 @@ export function PersistentChatWindow() {
 
       {/* Enhanced Welcome Banner with Booking Details */}
       {chatState.currentBooking && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
-          {/* Welcome Header with Countdown */}
-          <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                <h3 className="font-semibold text-sm">🎉 Welcome! Your booking request has been sent</h3>
-              </div>
-              
-              {/* 5 Minute Countdown Timer */}
-              {chatState.bookingCountdown !== null && chatState.currentBooking.status === 'pending' && (
-                <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
-                  <Clock className="w-4 h-4" />
-                  <span className="text-sm font-mono font-bold">
-                    {Math.floor(chatState.bookingCountdown / 60)}:{(chatState.bookingCountdown % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
-              )}
-            </div>
-            
-            {/* Status Message */}
-            <p className="text-blue-100 text-xs mt-2">
-              {chatState.currentBooking.status === 'pending' && (
-                '⏰ Please wait while therapist connects (up to 5 minutes)'
-              )}
-              {chatState.currentBooking.status === 'waiting_others' && (
-                '🔍 Searching for available therapists...'
-              )}
-              {chatState.currentBooking.status === 'therapist_accepted' && (
-                '✅ Therapist accepted! Please confirm your booking below.'
-              )}
-              {chatState.currentBooking.status === 'user_confirmed' && (
-                '🎯 Booking confirmed! Therapist will contact you shortly.'
-              )}
-              {chatState.currentBooking.status === 'on_the_way' && (
-                '🚗 Therapist is on the way to your location!'
-              )}
-              {chatState.currentBooking.status === 'completed' && (
-                '✨ Service completed - Payment is ready'
-              )}
-              {chatState.currentBooking.status === 'cancelled' && (
-                '❌ Booking was cancelled'
-              )}
-            </p>
-          </div>
-          
-          {/* Booking Details */}
-          <div className="px-4 py-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-              {/* Service Details */}
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600">Service:</span>
-                <span className="font-medium text-gray-800">
-                  {chatState.currentBooking.serviceType} ({chatState.currentBooking.duration}min)
-                </span>
-              </div>
-              
-              {/* Customer Name */}
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600">Customer:</span>
-                <span className="font-medium text-gray-800">{chatState.currentBooking.customerName}</span>
-              </div>
-              
-              {/* Location */}
-              {chatState.currentBooking.locationZone && (
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-blue-500" />
-                  <span className="text-gray-600">Location:</span>
-                  <span className="font-medium text-gray-800">{chatState.currentBooking.locationZone}</span>
-                </div>
-              )}
-              
-              {/* Price */}
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600">Total:</span>
-                <span className="font-bold text-green-600">{formatPrice(chatState.currentBooking.totalPrice)}</span>
-              </div>
-              
-              {/* Booking Type & Time */}
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600">Type:</span>
-                <span className="font-medium text-gray-800">
-                  {(chatState.currentBooking.bookingType as string) === 'book_now' ? '🔥 Book Now' : '📅 Scheduled'}
-                  {chatState.currentBooking.scheduledDate && (
-                    ` - ${chatState.currentBooking.scheduledDate} ${chatState.currentBooking.scheduledTime}`
-                  )}
-                </span>
-              </div>
-              
-              {/* Booking ID */}
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-blue-500" />
-                <span className="text-gray-600">ID:</span>
-                <span className="font-mono text-xs text-gray-800">#{chatState.currentBooking.bookingId || chatState.currentBooking.id}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <BookingWelcomeBanner
+          currentBooking={chatState.currentBooking}
+          bookingCountdown={chatState.bookingCountdown}
+          onCancelBooking={() => cancelBooking()}
+        />
       )}
 
       {/* Content area */}

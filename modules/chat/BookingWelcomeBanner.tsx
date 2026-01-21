@@ -60,7 +60,11 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
       <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <dCountdown Timer - 5 min for Book Now, 25 min for Scheduled */}
+            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+            <h3 className="font-semibold text-sm">🎉 Welcome! Your booking request has been sent</h3>
+          </div>
+          
+          {/* Countdown Timer - 5 min for Book Now, 25 min for Scheduled */}
           {bookingCountdown !== null && currentBooking.status === 'pending' && (
             <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
               <Clock className="w-4 h-4" />
@@ -86,10 +90,6 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
             <span>Cancel Booking</span>
           </button>
         )}
-        {/* Status Message */}
-        <p className="text-blue-100 text-xs mt-2">
-          {getStatusMessage(currentBooking.status)}
-        </p>
       </div>
       
       {/* Booking Details */}
