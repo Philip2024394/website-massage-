@@ -460,24 +460,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
             return renderRoute(publicRoutes.landing.component);
         
         case 'home':
-            // 🔐 IMPORTANT: If therapist or place is logged in, navigate to their dashboard
-            // This ensures providers always see their dashboard when accessing home
-            if (props.loggedInProvider) {
-                console.log('🏠 [ROUTER] Provider logged in, redirecting to proper dashboard page');
-                if (props.loggedInProvider.type === 'therapist') {
-                    // Navigate to therapist-status page (proper dashboard entry point)
-                    console.log('  → Navigating therapist to: dashboard');
-                    props.setPage('dashboard');
-                    return null; // Will re-render with correct page
-                } else if (props.loggedInProvider.type === 'place') {
-                    // Navigate to place dashboard
-                    console.log('  → Navigating place to: massage-place-dashboard');
-                    props.setPage('massage-place-dashboard');
-                    return null; // Will re-render with correct page
-                }
-            }
-            
-            // No provider logged in - show public home page
+            // Allow everyone to access home page
+            // Note: Providers can still access their dashboards via direct navigation
             return renderRoute(publicRoutes.home.component, {
                 page: page, // Pass the current page prop to HomePage
                 user: props.user, // Pass user prop for chat system
