@@ -9,15 +9,14 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     
-    <!-- � PREVENT OVERSCROLL NAVIGATION: Stop browser back/forward gestures -->
+    <!-- 🔄 MOBILE PULL-TO-REFRESH: Allow native mobile refresh gesture -->
     <style>
-        /* Critical: Prevent browser pull-to-refresh and overscroll navigation */
+        /* Allow pull-to-refresh on mobile while preventing back/forward navigation */
         html, body {
-            overscroll-behavior: contain;
-            overscroll-behavior-y: contain;
+            overscroll-behavior-y: auto;
             overscroll-behavior-x: none;
         }
-        /* Prevent mobile browser bounce/elastic scrolling that triggers navigation */
+        /* Prevent mobile browser horizontal overscroll navigation */
         body {
             position: relative;
             overflow-x: hidden;
