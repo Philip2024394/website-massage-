@@ -49,7 +49,7 @@ import { scheduledBookingPaymentService } from '../lib/services/scheduledBooking
 
 // Extracted components
 import { ChatHeader } from '../modules/chat/ChatHeader';
-import { BookingWelcomeBanner } from '../modules/chat/BookingWelcomeBanner';
+import { BookingCountdown } from './BookingCountdown';
 import { DiscountValidator } from '../modules/chat/BookingFlow/DiscountValidator';
 import { useBookingForm } from '../modules/chat/hooks/useBookingForm';
 import { DURATION_OPTIONS, formatPrice, formatTime } from '../modules/chat/utils/chatHelpers';
@@ -1003,72 +1003,28 @@ export function PersistentChatWindow() {
         </div>
       </div>
 
-      {/* 🚨 PERSISTENT COUNTDOWN BANNER - ALWAYS VISIBLE AT TOP */}
+      {/* 🚨 CRITICAL: BOOKING COUNTDOWN TIMER - ALWAYS VISIBLE */}
       {chatState.currentBooking && 
-       (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && 
-       therapistResponseCountdown > 0 && (
-        <div className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center animate-pulse">
-                <Clock className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-orange-800">
-                  Waiting for Therapist Response
-                </div>
-                <div className="text-xs text-orange-600">
-                  {chatState.isTherapistView 
-                    ? 'Please respond to this booking request' 
-                    : 'We\'re finding the best therapist for you'}
-                </div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-orange-600 mb-1">
-                {Math.floor(therapistResponseCountdown / 60)}:
-                {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
-              </div>
-              <div className="text-xs text-orange-500">remaining</div>
-            </div>
-          </div>
-          
-          {/* Progress bar */}
-          <div className="w-full bg-orange-200 rounded-full h-2 mt-3 mb-3">
-            <div 
-              className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-              style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
-            ></div>
-          </div>
-          
-          {/* Action buttons */}
-          <div className="flex gap-2 justify-center">
-            {chatState.isTherapistView ? (
-              <>
-                <button
-                  onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Accept Booking
-                </button>
-                <button
-                  onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                >
-                  Decline
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => cancelBooking()}
-                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <X className="w-4 h-4" />
-                Cancel Booking
-              </button>
-            )}
-          </div>
-        </div>
+       chatState.currentBooking.responseDeadline &&
+       (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
+        <BookingCountdown
+          deadline={chatState.currentBooking.responseDeadline}
+          role={chatState.isTherapistView ? 'therapist' : 'user'}
+          bookingId={chatState.currentBooking.id}
+          onCancel={() => cancelBooking()}
+          onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
+          onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
+          onExpire={() => {
+            addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
+            setChatState(prev => ({
+              ...prev,
+              currentBooking: prev.currentBooking ? {
+                ...prev.currentBooking,
+                status: 'expired'
+              } : null
+            }));
+          }}
+        />
       )}
 
       {/* Enhanced Welcome Banner with Booking Details */}
@@ -1917,12 +1873,9 @@ export function PersistentChatWindow() {
                   )}
                 </div>
               </div>
-            )}
             
             {/* Messages */}
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">
-              
-              {/* Persistent Countdown Banner - Always visible when booking is pending */}
               {chatState.currentBooking?.status === 'pending' && (
                 <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 shadow-sm">
                   <div className="flex items-center justify-between">

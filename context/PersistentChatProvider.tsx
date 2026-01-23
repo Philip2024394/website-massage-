@@ -120,6 +120,7 @@ export interface BookingData {
   // Timestamps
   createdAt: string;
   pendingAt?: string;
+  responseDeadline?: string; // 5 minutes after createdAt for countdown
   acceptedAt?: string;
   confirmedAt?: string;
   completedAt?: string;
@@ -1158,6 +1159,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         discountedPrice: bookingData.discountCode ? price : undefined,
         createdAt: lifecycleBooking.createdAt,
         pendingAt: lifecycleBooking.pendingAt,
+        responseDeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes from now
         scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
         scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
       };
