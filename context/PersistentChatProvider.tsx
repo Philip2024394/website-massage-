@@ -649,15 +649,17 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     console.log('═══════════════════════════════════════════');
     console.log('🔍 [SEND MESSAGE] Validation Check');
     console.log('═══════════════════════════════════════════');
-    console.log('Current User ID:', currentUserId || '❌ MISSING');
-    console.log('Current User Name:', currentUserName || '❌ MISSING');
+    console.log('Current User ID:', currentUserId || '⚠️ Guest (not logged in)');
+    console.log('Current User Name:', currentUserName || 'Guest');
+    console.log('User Type:', currentUserId.startsWith('guest_') ? '👤 GUEST' : '🔐 AUTHENTICATED');
     console.log('Message Content Length:', messageContent?.trim()?.length || 0);
     console.log('Therapist:', chatState.therapist?.name || '❌ MISSING', chatState.therapist?.id || '');
     console.log('═══════════════════════════════════════════');
     
-    if (!currentUserId || !messageContent.trim() || !chatState.therapist) {
+    // ✅ GUEST ACCESS: currentUserId is always set (either authenticated or guest_xxx)
+    // No authentication required for booking
+    if (!messageContent.trim() || !chatState.therapist) {
       console.error('❌ Cannot send message: missing required data');
-      console.error('   - currentUserId:', !!currentUserId);
       console.error('   - messageContent:', !!messageContent.trim());
       console.error('   - therapist:', !!chatState.therapist);
       return { sent: false, warning: 'Missing required information to send message' };

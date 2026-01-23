@@ -1,0 +1,27 @@
+{
+  "$id": "6972e0c30012060a2762",
+  "$createdAt": "2024-12-20T10:30:00.000+00:00",
+  "$updatedAt": "2024-12-20T10:30:00.000+00:00",
+  "execute": [
+    "any"
+  ],
+  "name": "Send Chat Message (Server-Enforced)",
+  "enabled": true,
+  "live": true,
+  "logging": true,
+  "runtime": "node-18.0",
+  "deployment": "",
+  "vars": {},
+  "events": [],
+  "schedule": "",
+  "timeout": 15,
+  "entrypoint": "src/main.js",
+  "commands": "npm install",
+  "path": "functions/sendChatMessage",
+  "method": "POST",
+  "headers": [],
+  "scopes": [
+    "databases.read",
+    "databases.write"
+  ]
+}

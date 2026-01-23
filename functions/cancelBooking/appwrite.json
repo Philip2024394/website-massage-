@@ -1,0 +1,27 @@
+{
+  "$id": "cancelBooking",
+  "$createdAt": "2024-12-20T10:30:00.000+00:00",
+  "$updatedAt": "2024-12-20T10:30:00.000+00:00",
+  "execute": [
+    "any"
+  ],
+  "name": "Cancel Booking",
+  "enabled": true,
+  "live": true,
+  "logging": true,
+  "runtime": "node-18.0",
+  "deployment": "",
+  "vars": {},
+  "events": [],
+  "schedule": "",
+  "timeout": 15,
+  "entrypoint": "src/main.js",
+  "commands": "npm install",
+  "path": "functions/cancelBooking",
+  "method": "POST",
+  "headers": [],
+  "scopes": [
+    "databases.read",
+    "databases.write"
+  ]
+}

@@ -52,7 +52,7 @@ appwrite deploy function --function-id sendChatMessage
    - **Name**: Send Chat Message (Server-Enforced)
    - **Runtime**: Node.js 18
    - **Entry point**: `src/main.js`
-   - **Execute permissions**: `users`
+   - **Execute permissions**: `any` ⚠️ **CRITICAL: Must be "any" for guest access**
    - **Timeout**: 15 seconds
 4. Upload the entire `functions/sendChatMessage/` folder
 5. Click **"Deploy"**
@@ -73,7 +73,7 @@ All functions are defined in [config/appwrite.json](config/appwrite.json). Here'
   "entrypoint": "src/main.js",
   "enabled": true,
   "timeout": 15,
-  "execute": ["users"]
+  "execute": ["any"]
 }
 ```
 
@@ -82,6 +82,7 @@ All functions are defined in [config/appwrite.json](config/appwrite.json). Here'
 - Prevents WhatsApp/phone number sharing
 - Creates message records in database
 - **Required for booking form submission**
+- **✅ NOW SUPPORTS GUEST ACCESS** (no login required)
 
 **Environment Variables**: None required
 
@@ -97,7 +98,7 @@ All functions are defined in [config/appwrite.json](config/appwrite.json). Here'
   "entrypoint": "src/main.js",
   "enabled": true,
   "timeout": 30,
-  "execute": ["guests"]
+  "execute": ["any"]
 }
 ```
 
@@ -120,7 +121,7 @@ appwrite deploy function --function-id createBooking
   "entrypoint": "src/main.js",
   "enabled": true,
   "timeout": 30,
-  "execute": ["guests"]
+  "execute": ["any"]
 }
 ```
 
@@ -143,7 +144,7 @@ appwrite deploy function --function-id searchTherapists
   "entrypoint": "src/main.js",
   "enabled": true,
   "timeout": 15,
-  "execute": ["guests"]
+  "execute": ["any"]
 }
 ```
 
@@ -166,7 +167,7 @@ appwrite deploy function --function-id acceptTherapist
   "entrypoint": "src/main.js",
   "enabled": true,
   "timeout": 15,
-  "execute": ["guests"]
+  "execute": ["any"]
 }
 ```
 
