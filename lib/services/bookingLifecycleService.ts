@@ -85,12 +85,12 @@ export interface BookingLifecycleRecord {
   $id?: string;
   bookingId: string;
   customerId: string;
-  customerName: string;
+  // customerName moved to nested customerDetails in database
   customerPhone: string;
   
   // Provider info (therapist or business)
   therapistId?: string;
-  therapistName?: string;
+  // therapistName moved to nested therapistDetails in database
   businessId?: string;
   businessName?: string;
   providerType: 'therapist' | 'place' | 'facial';
@@ -190,10 +190,10 @@ export const bookingLifecycleService = {
    */
   async createBooking(data: {
     customerId: string;
-    customerName: string;
+    customerName?: string; // Optional for nested storage only
     customerPhone: string;
     therapistId?: string;
-    therapistName?: string;
+    therapistName?: string; // Optional for nested storage only
     businessId?: string;
     businessName?: string;
     providerType: 'therapist' | 'place' | 'facial';
@@ -223,10 +223,10 @@ export const bookingLifecycleService = {
     const bookingRecord: Omit<BookingLifecycleRecord, '$id'> = {
       bookingId,
       customerId: data.customerId,
-      customerName: data.customerName,
+      // customerName removed - only stored in nested customerDetails
       customerPhone: data.customerPhone,
       therapistId: data.therapistId,
-      therapistName: data.therapistName,
+      // therapistName removed - only stored in nested therapistDetails
       businessId: data.businessId,
       businessName: data.businessName,
       providerType: data.providerType,
@@ -245,12 +245,60 @@ export const bookingLifecycleService = {
       notes: data.notes,
     };
 
+    // COMPREHENSIVE SCHEMA CLEANUP - Only include accepted database fields
+    // Move ALL business data to nested objects for admin access
+    const recordWithUserId = {
+      // Core accepted database schema fields only
+      userId: data.userId || bookingRecord.customerId,
+      status: bookingRecord.bookingStatus.toLowerCase(),
+      serviceDuration: bookingRecord.duration,
+      price: bookingRecord.totalPrice,
+      location: bookingRecord.locationZone,
+      customerWhatsApp: bookingRecord.customerPhone,
+      
+      // ALL other data moved to nested admin-accessible objects (JSON stringified)
+      customerDetails: JSON.stringify({
+        id: bookingRecord.customerId,
+        name: data.customerName || 'Customer', // Access from original data
+        phone: bookingRecord.customerPhone
+      }),
+      therapistDetails: JSON.stringify({
+        id: bookingRecord.therapistId,
+        name: data.therapistName || 'Therapist' // Access from original data
+      }),
+      serviceDetails: JSON.stringify({
+        type: bookingRecord.serviceType,
+        duration: bookingRecord.duration,
+        locationZone: bookingRecord.locationZone,
+        coordinates: bookingRecord.locationCoordinates
+      }),
+      pricing: JSON.stringify({
+        total: bookingRecord.totalPrice,
+        commission: bookingRecord.adminCommission,
+        payout: bookingRecord.providerPayout
+      }),
+      booking: JSON.stringify({
+        id: bookingRecord.bookingId,
+        status: bookingRecord.bookingStatus,
+        createdAt: bookingRecord.createdAt,
+        pendingAt: bookingRecord.pendingAt,
+        responseDeadline: bookingRecord.responseDeadline,
+        notes: bookingRecord.notes
+      }),
+      metadata: JSON.stringify({
+        providerType: bookingRecord.providerType,
+        bookingType: bookingRecord.bookingType,
+        businessId: bookingRecord.businessId,
+        businessName: bookingRecord.businessName
+      })
+    };
+
     try {
       const result = await databases.createDocument(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.bookings || 'bookings',
         ID.unique(),
-        bookingRecord
+        recordWithUserId // Use the record that includes userId if provided
       );
 
       console.log(`✅ [BookingLifecycle] Created booking ${bookingId} in PENDING state`);

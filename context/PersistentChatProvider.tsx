@@ -1085,141 +1085,144 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     setChatState(prev => ({ ...prev, bookingCountdown: null }));
   }, []);
 
-  // Create a new booking using BookingLifecycleService
-  // 🔒 STRICT AVAILABILITY ENFORCEMENT - UI LEVEL
+  // Create a new booking using BookingEngine - SINGLE SOURCE OF TRUTH
+  // 🔒 CRITICAL: ALL booking creation must go through BookingEngine
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
-    console.log('🏗️ [CREATE BOOKING] Function called with data:', {
-      bookingData,
-      therapist: chatState.therapist?.name,
-      therapistId: chatState.therapist?.id,
-      selectedDuration: chatState.selectedDuration,
-      selectedService: chatState.selectedService
-    });
-
+    console.log('🚨 [DEPRECATED] PersistentChatProvider.createBooking called - REDIRECTING TO ENGINE');
+    console.log('🚨 This method is deprecated. Use BookingEngine.createBooking() directly.');
+    
+    // Import the centralized engine
+    const { BookingEngine } = await import('../lib/services/BookingEngine');
+    
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const price = bookingData.totalPrice || (bookingData as any).price || 0;
     
     if (!therapist) {
-      console.log('❌ [CREATE BOOKING] No therapist available');
-      return;
+      console.log('❌ [ENGINE REDIRECT] No therapist available');
+      addSystemNotification('❌ No therapist selected for booking');
+      return false;
     }
     
-    // Determine booking type
-    const isScheduled = !!(bookingData.scheduledDate || chatState.selectedDate);
-    const bookingType = isScheduled ? BookingType.SCHEDULED : BookingType.BOOK_NOW;
-    
-    console.log('📋 [CREATE BOOKING] Booking type determined:', {
-      isScheduled,
-      bookingType,
+    // Prepare parameters for centralized engine
+    const engineParams = {
+      customerId: currentUserId,
+      customerName: currentUserName || chatState.customerName || 'Guest',
+      customerPhone: chatState.customerWhatsApp || '',
+      therapistId: therapist?.id || '',
+      therapistName: therapist?.name || '',
+      serviceType: bookingData.serviceType || 'Traditional Massage',
       duration,
-      price
-    });
+      totalPrice: price,
+      locationZone: bookingData.locationZone || chatState.customerLocation, // BookingEngine will auto-detect if empty
+      coordinates: bookingData.coordinates || chatState.coordinates,
+      discountCode: bookingData.discountCode,
+      discountPercentage: bookingData.discountPercentage,
+      originalPrice: bookingData.originalPrice
+    };
     
-    // 🔒 STRICT AVAILABILITY CHECK - NO OVERRIDE ALLOWED
-    const therapistStatus = therapist?.availabilityStatus || therapist?.status;
-    const availabilityCheck = availabilityEnforcementService.canBook(therapistStatus, bookingType);
+    console.log('🔒 [ENGINE REDIRECT] Calling BookingEngine.createBooking with params:', engineParams);
     
-    console.log('🔒 [CREATE BOOKING] Availability check:', {
-      therapistStatus,
-      bookingType,
-      allowed: availabilityCheck.allowed,
-      reason: availabilityCheck.reason,
-      userMessage: availabilityCheck.userMessage
-    });
-    
-    if (!availabilityCheck.allowed) {
-      console.log(`🚫 [AvailabilityEnforcement] Booking blocked: ${availabilityCheck.reason}`);
-      addSystemNotification(availabilityCheck.userMessage || 'Booking not available');
-      return false; // EXIT - Booking creation failed
-    }
-    
-    console.log('✅ [CREATE BOOKING] Availability check passed, proceeding with booking creation');
-    
-    // Calculate commission (30% admin, 70% provider) - uses price which is already discounted if applicable
-    const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
-    
-    console.log('💰 [CREATE BOOKING] Commission calculated:', {
-      price,
-      adminCommission,
-      providerPayout
-    });
-    
-    // Create booking via lifecycle service (server-authoritative)
     try {
-      console.log('🌐 [CREATE BOOKING] Calling bookingLifecycleService.createBooking...');
+      // Call the SINGLE SOURCE OF TRUTH
+      const result = await BookingEngine.createBooking(engineParams);
       
-      const lifecycleBooking = await bookingLifecycleService.createBooking({
-        customerId: currentUserId,
-        customerName: currentUserName || chatState.customerName || 'Guest',
-        customerPhone: chatState.customerWhatsApp || '',
-        therapistId: therapist?.id,
-        therapistName: therapist?.name,
-        providerType: 'therapist',
-        serviceType: bookingData.serviceType || 'massage',
-        duration,
-        locationZone: bookingData.locationZone || chatState.customerLocation || '',
-        locationCoordinates: bookingData.coordinates || chatState.coordinates || undefined,
-        bookingType,
-        totalPrice: price,
-        notes: bookingData.scheduledDate ? `Scheduled: ${bookingData.scheduledDate} ${bookingData.scheduledTime || ''}` : undefined,
-        therapistStatus, // Pass status for API-level enforcement
-        // Include discount info if present
-        discountCode: bookingData.discountCode,
-        discountPercentage: bookingData.discountPercentage,
-        originalPrice: bookingData.originalPrice,
-      });
-      // Create local booking state aligned with lifecycle
-      const booking: BookingData = {
-        id: lifecycleBooking.bookingId,
-        bookingId: lifecycleBooking.bookingId,
-        documentId: lifecycleBooking.$id,
+      if (!result.success) {
+        console.error('❌ [ENGINE] Booking creation failed:', result.error);
+        addSystemNotification(`❌ ${result.error}`);
+        return false;
+      }
+      
+      const engineBooking = result.data!;
+      console.log('✅ [ENGINE] Booking created successfully:', engineBooking.bookingId);
+      
+      // Convert engine booking to chat state format for UI compatibility
+      const chatBooking: BookingData = {
+        id: engineBooking.bookingId,
+        bookingId: engineBooking.bookingId,
+        documentId: engineBooking.documentId,
         status: 'pending',
-        lifecycleStatus: BookingLifecycleStatus.PENDING,
-        therapistId: therapist?.id || '',
-        therapistName: therapist?.name || '',
+        lifecycleStatus: 'PENDING' as any,
+        therapistId: engineBooking.therapistId,
+        therapistName: engineBooking.therapistName,
         providerType: 'therapist',
-        customerId: currentUserId,
-        customerName: currentUserName || chatState.customerName || 'Guest',
-        customerPhone: chatState.customerWhatsApp,
-        serviceType: bookingData.serviceType || 'massage',
-        duration,
-        locationZone: bookingData.locationZone || chatState.customerLocation || '',
-        coordinates: bookingData.coordinates || chatState.coordinates || undefined,
-        bookingType,
-        totalPrice: price,
-        adminCommission,
-        providerPayout,
-        // Discount fields
+        customerId: engineBooking.customerId,
+        customerName: engineBooking.customerName,
+        customerPhone: engineBooking.customerPhone,
+        serviceType: engineBooking.serviceType,
+        duration: engineBooking.duration,
+        locationZone: engineBooking.locationZone,
+        coordinates: engineBooking.coordinates,
+        bookingType: 'BOOK_NOW' as any,
+        totalPrice: engineBooking.totalPrice,
+        adminCommission: engineBooking.adminCommission,
+        providerPayout: engineBooking.providerPayout,
         discountCode: bookingData.discountCode,
         discountPercentage: bookingData.discountPercentage,
         originalPrice: bookingData.originalPrice,
         discountedPrice: bookingData.discountCode ? price : undefined,
-        createdAt: lifecycleBooking.createdAt,
-        pendingAt: lifecycleBooking.pendingAt,
-        responseDeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes from now
+        createdAt: engineBooking.createdAt,
+        pendingAt: engineBooking.createdAt,
+        responseDeadline: engineBooking.responseDeadline,
         scheduledDate: bookingData.scheduledDate || chatState.selectedDate || undefined,
         scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
       };
       
-      console.log('💾 [CREATE BOOKING] Setting booking in chat state:', {
-        bookingId: booking.id,
-        status: booking.status,
-        responseDeadline: booking.responseDeadline,
-        therapistName: booking.therapistName,
-        price: booking.totalPrice
-      });
-      
-      setChatState(prev => ({ ...prev, currentBooking: booking }));
-      
-      console.log('🔄 [CREATE BOOKING] Transitioning to chat step');
-      
-      // ✅ CRITICAL: Transition to chat step to show countdown timer
+      // Update chat state for UI display
+      setChatState(prev => ({ ...prev, currentBooking: chatBooking }));
       setChatState(prev => ({ ...prev, bookingStep: 'chat' }));
       
-      console.log('✅ [CREATE BOOKING] Booking creation completed successfully');
+      // 🔥 CRITICAL: Create chat room immediately after booking creation
+      try {
+        const { createChatRoom } = await import('../lib/chatService');
+        const expiresAt = new Date(Date.now() + 25 * 60 * 1000).toISOString(); // 25 minutes
+        
+        // 🔥 VALIDATE: Ensure customerName is available
+        const customerName = engineBooking.customerName || chatState.customerName || currentUserName || 'Customer';
+        console.log('🔥 [ENGINE] Chat room creation data:', {
+          bookingId: engineBooking.bookingId,
+          customerId: engineBooking.customerId,
+          customerName: customerName,
+          therapistId: engineBooking.therapistId,
+          therapistName: engineBooking.therapistName
+        });
+        
+        if (!customerName || customerName.trim() === '') {
+          console.error('❌ [ENGINE] CRITICAL: customerName is empty!', {
+            engineBookingCustomerName: engineBooking.customerName,
+            chatStateCustomerName: chatState.customerName,
+            currentUserName: currentUserName
+          });
+          throw new Error('Customer name is required for chat room creation');
+        }
+        
+        const chatRoom = await createChatRoom({
+          bookingId: engineBooking.bookingId,
+          customerId: engineBooking.customerId,
+          customerName: customerName, // 🔥 CRITICAL: Validated customerName
+          customerLanguage: 'en',
+          customerPhoto: '',
+          therapistId: engineBooking.therapistId,
+          therapistName: engineBooking.therapistName,
+          therapistLanguage: 'id',
+          therapistType: 'therapist',
+          therapistPhoto: '',
+          expiresAt
+        });
+        
+        console.log('✅ [ENGINE] Chat room created:', chatRoom.$id);
+      } catch (chatError: any) {
+        console.error('❌ [ENGINE] Failed to create chat room:', chatError);
+        console.error('❌ [ENGINE] Chat error details:', {
+          message: chatError.message,
+          stack: chatError.stack,
+          customerName: engineBooking.customerName
+        });
+        // Don't fail the booking if chat room creation fails
+        addSystemNotification('⚠️ Booking created but chat setup pending. Please refresh if needed.');
+      }
       
-      // Single clear notification - details are in BookingWelcomeBanner above
+      // Show success notification
       if (bookingData.discountCode) {
         addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount! See countdown timer above.`);
       } else {
@@ -1228,88 +1231,26 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
       // Start 5 minute countdown for therapist response
       startCountdown(300, async () => {
-        // Therapist didn't respond in time - expire booking and broadcast to ALL therapists
-        if (lifecycleBooking.$id) {
-          await bookingLifecycleService.expireBooking(lifecycleBooking.$id, 'Therapist response timeout');
-        }
-        addSystemNotification('⏰ 5-minute timer expired! Your booking is now being sent to ALL available and busy therapists. First to accept gets the booking.');
+        console.log('⏰ [ENGINE] 5-minute timer expired for booking:', engineBooking.bookingId);
+        // Engine handles expiration automatically
+        addSystemNotification('⏰ 5-minute timer expired! Your booking is now being sent to ALL available and busy therapists.');
         setChatState(prev => ({
           ...prev,
           currentBooking: prev.currentBooking ? { 
             ...prev.currentBooking, 
             status: 'waiting_others',
-            lifecycleStatus: BookingLifecycleStatus.EXPIRED 
+            lifecycleStatus: 'EXPIRED' as any
           } : null,
         }));
       });
       
-      console.log('📋 [BookingLifecycle] Booking created:', booking);
-      console.log(`💰 Commission: Admin ${adminCommission} IDR (30%) | Provider ${providerPayout} IDR (70%)`);
-      if (bookingData.discountCode) {
-        console.log(`🎁 Discount Applied: ${bookingData.discountCode} (${bookingData.discountPercentage}%) - Original: ${bookingData.originalPrice} → Final: ${price}`);
-      }
+      console.log('✅ [ENGINE REDIRECT] Booking creation completed successfully');
+      return true;
       
-      // Return success indicator
-      const bookingSuccess = true;
-      
-      // 🔊 SEND NOTIFICATIONS: Therapist alert with sound + Admin notification
-      try {
-        // Import notification services dynamically to avoid circular dependencies
-        const { notificationService } = await import('../lib/appwriteService');
-        const { notificationSoundManager } = await import('../lib/notificationSound');
-        
-        // Send notification to therapist/provider
-        if (therapist?.id) {
-          console.log('🔔 Sending notification to therapist:', therapist.id);
-          await notificationService.sendNewBookingNotification(
-            therapist.id,
-            currentUserId,
-            currentUserName || chatState.customerName || 'Guest',
-            duration,
-            price,
-            lifecycleBooking.$id || booking.$id || ''
-          );
-          
-          // 🎵 PLAY MUSIC/SOUND for therapist (if they're online)
-          notificationSoundManager.play();
-          console.log('🎵 Notification sound played for therapist');
-        }
-        
-        // Send notification to admin
-        console.log('📧 Sending notification to admin dashboard');
-        await notificationService.sendAdminNotification({
-          type: 'new_booking',
-          bookingId: lifecycleBooking.$id || booking.$id || '',
-          therapistId: therapist?.id,
-          therapistName: therapist?.name,
-          customerId: currentUserId,
-          customerName: currentUserName || chatState.customerName || 'Guest',
-          duration,
-          price,
-          commission: adminCommission,
-          timestamp: new Date().toISOString()
-        });
-        console.log('✅ Admin notification sent');
-        
-      } catch (notificationError) {
-        // Don't fail booking if notification fails - just log error
-        console.error('⚠️ Failed to send notifications (booking still created):', notificationError);
-      }
-      
-      return bookingSuccess; // Booking created successfully
-      
-    } catch (error) {
-      console.error('❌ [BookingLifecycle] Failed to create booking:', error);
-      console.error('❌ [BookingLifecycle] Error details:', {
-        message: error?.message,
-        stack: error?.stack,
-        therapistId: therapist?.id,
-        customerId: currentUserId,
-        price,
-        bookingType
-      });
+    } catch (error: any) {
+      console.error('❌ [ENGINE REDIRECT] Unexpected error:', error);
       addSystemNotification('❌ Failed to create booking. Please try again.');
-      return false; // Booking creation failed
+      return false;
     }
   }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown]);
 

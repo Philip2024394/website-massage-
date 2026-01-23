@@ -28,6 +28,9 @@ import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
 
+// 🚨 DEVELOPMENT ONLY - BookingEngine Debug Panel
+import BookingDebugPanel from '../components/debug/BookingDebugPanel';
+
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
 import { useHomePageLocation } from '../hooks/useHomePageLocation';
@@ -2676,6 +2679,9 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* PWA Install Banner */}
             <PWAInstallBanner />
+            
+            {/* 🚨 DEVELOPMENT ONLY - BookingEngine Debug Panel */}
+            <BookingDebugPanel />
         </div>
     );
 };

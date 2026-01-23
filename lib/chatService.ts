@@ -146,31 +146,50 @@ export async function createChatRoom(data: {
             updatedAt: new Date().toISOString()
         };
 
+        // 🔥 DEBUG: Log customerName specifically
+        console.log('🔥 [CHAT SERVICE] Customer name validation:', {
+            customerName: data.customerName,
+            type: typeof data.customerName,
+            length: data.customerName?.length,
+            isEmpty: !data.customerName || data.customerName.trim() === '',
+            fullPayload: untrustedPayload
+        });
+
         // SCHEMA VALIDATION: Treat caller input as untrusted
         let validatedRoom;
         try {
             validatedRoom = validateChatRoom(untrustedPayload);
         } catch (validationError: any) {
             console.error('💥 chat_rooms validation failed:', validationError.message);
-            throw new Error(`Failed to create chat room: ${validationError.message}`);
+            console.error('💥 Failed payload:', JSON.stringify(untrustedPayload, null, 2));
+            throw new Error(`Invalid chat room data: ${validationError.message}`);
         }
 
-        const chatRoom = await databases.createDocument(
-            DATABASE_ID,
-            CHAT_ROOMS_COLLECTION,
+        // CREATE CHAT ROOM IN DATABASE
+        console.log('💾 [CHAT SERVICE] Creating chat room in database...');
+        const createdRoom = await databases.createDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.chatRooms!,
             ID.unique(),
-            validatedRoom  // Use validated payload
+            validatedRoom
         );
 
-        return chatRoom as unknown as ChatRoom;
-    } catch (error) {
-        console.error('Error creating chat room:', error);
-        throw error;
+        console.log('✅ [CHAT SERVICE] Chat room created successfully:', createdRoom.$id);
+        return createdRoom as ChatRoom;
+
+    } catch (error: any) {
+        console.error('❌ [CHAT SERVICE] Failed to create chat room:', error);
+        console.error('💥 [CHAT SERVICE] Full error details:', {
+            message: error.message,
+            stack: error.stack,
+            customerName: data.customerName
+        });
+        throw new Error(`Failed to create chat room: ${error.message}`);
     }
 }
 
 /**
- * Send a message in a chat room (with auto-translation)
+ * Send a message in a chat room with automatic translation
  */
 export async function sendMessage(data: {
     roomId: string;

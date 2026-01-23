@@ -75,7 +75,8 @@ const App = () => {
     // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
         const currentPath = window.location.pathname + window.location.hash;
-        const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || currentPath.includes('/home');
+        const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
+                          currentPath.includes('/home') || currentPath === '' || currentPath === '/#';
         
         if (isHomePage) {
             const pendingDeeplink = sessionStorage.getItem('pending_deeplink');
@@ -84,6 +85,10 @@ const App = () => {
                 console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
                 sessionStorage.removeItem('pending_deeplink');
             }
+            
+            // 🔥 ADDITIONAL FIX: Clear any direct therapist IDs that might trigger redirects
+            sessionStorage.removeItem('direct_therapist_id');
+            console.log('🚨 [REDIRECT FIX] Cleared all redirect-causing session storage items');
         }
     }, []); // Run once on mount
     
@@ -568,6 +573,12 @@ const App = () => {
     useEffect(() => {
         const handleNavigateToLanding = () => {
             console.log('🏠 [APP] navigateToLanding event received - navigating to landing page');
+            // Clear any pending deeplinks when explicitly navigating to home
+            const pending = sessionStorage.getItem('pending_deeplink');
+            if (pending) {
+                console.log('🗑️ [HOME_NAV] Clearing pending deeplink on home navigation:', pending);
+                sessionStorage.removeItem('pending_deeplink');
+            }
             navigation?.setPage('landing');
         };
         
@@ -702,6 +713,16 @@ const App = () => {
                 }
             } else if (path.startsWith('/profile/therapist/')) {
                 // Handle direct therapist profile URL with reviews
+                // 🚨 CRITICAL: Don't create deeplinks if user is trying to go to home
+                const currentUrl = window.location.href;
+                const isNavigatingToHome = currentUrl.includes('/home') || currentUrl.endsWith('/') || 
+                                         currentUrl.includes('/#/home') || currentUrl.includes('/#home');
+                
+                if (isNavigatingToHome) {
+                    console.log('🚫 [URL PROCESSING] Skipping therapist deeplink - user navigating to home');
+                    return;
+                }
+                
                 const match = path.match(/\/profile\/therapist\/(\d+)-/);
                 if (match && state.therapists?.length) {
                     const therapistId = match[1];
@@ -713,7 +734,8 @@ const App = () => {
                         state.setPage('therapist-profile');
                     }
                 } else if (match) {
-                    // Store for later when therapists are loaded
+                    // Store for later when therapists are loaded - but only if not going to home
+                    console.log('🔍 [URL PROCESSING] Creating pending deeplink for therapist:', match[1]);
                     sessionStorage.setItem('pending_deeplink', JSON.stringify({
                         provider: `therapist-${match[1]}`,
                         targetPage: 'therapist-profile'
@@ -809,7 +831,8 @@ const App = () => {
             // 🚨 CRITICAL FIX: Don't process deeplinks if user is explicitly on home page
             const currentPath = window.location.pathname + window.location.hash;
             const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
-                              currentPath.includes('/home') || state.page === 'home';
+                              currentPath.includes('/home') || state.page === 'home' || state.page === 'landing' ||
+                              currentPath === '' || currentPath === '/#';
                               
             if (isHomePage) {
                 console.log('🚫 [DEEPLINK] Skipping deeplink processing - user is on home page');
@@ -818,6 +841,8 @@ const App = () => {
                     console.log('🗑️ [DEEPLINK] Clearing pending deeplink from home page:', pending);
                     sessionStorage.removeItem('pending_deeplink');
                 }
+                // Also clear direct therapist IDs
+                sessionStorage.removeItem('direct_therapist_id');
                 return;
             }
             
@@ -982,6 +1007,12 @@ const App = () => {
 
     const handleFindNewTherapist = () => {
         setIsStatusTrackerOpen(false);
+        // Clear any pending deeplinks when explicitly navigating to home
+        const pending = sessionStorage.getItem('pending_deeplink');
+        if (pending) {
+            console.log('🗑️ [FIND_NEW] Clearing pending deeplink on home navigation:', pending);
+            sessionStorage.removeItem('pending_deeplink');
+        }
         // Optionally navigate back to therapist list
         state.setPage('home');
     };

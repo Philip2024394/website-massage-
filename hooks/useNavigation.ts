@@ -68,7 +68,12 @@ export const useNavigation = ({
         setProviderAuthInfo(null);
         setProviderForBooking(null);
         
-        // 🔐 IMPORTANT: If therapist or place is logged in, go to their dashboard instead of public home
+        // � CRITICAL FIX: Clear any redirect-causing session storage items when going to home
+        sessionStorage.removeItem('pending_deeplink');
+        sessionStorage.removeItem('direct_therapist_id');
+        console.log('🗑️ [HOME_NAV] Cleared all redirect-causing session storage items');
+        
+        // �🔐 IMPORTANT: If therapist or place is logged in, go to their dashboard instead of public home
         // This ensures providers stay in their workspace when clicking home button
         if (loggedInProvider) {
             console.log('🏠 Provider logged in, redirecting to dashboard:', loggedInProvider.type);

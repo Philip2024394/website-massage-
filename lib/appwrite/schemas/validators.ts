@@ -575,7 +575,7 @@ const BOOKING_ALLOWED_FIELDS = new Set([
 const BOOKING_REQUIRED_FIELDS = [
     'therapistId',
     'customerId',
-    'customerName',
+    // 'customerName' removed - now stored in nested customerDetails object
     'customerPhone',
     'startTime',
     'duration',
@@ -613,9 +613,7 @@ export function validateBooking(data: unknown): BookingPayload {
     if (typeof obj.customerId !== 'string') {
         throw new Error('bookings validation failed: customerId must be a string');
     }
-    if (typeof obj.customerName !== 'string') {
-        throw new Error('bookings validation failed: customerName must be a string');
-    }
+    // customerName validation removed - now stored in nested customerDetails
     if (typeof obj.customerPhone !== 'string') {
         throw new Error('bookings validation failed: customerPhone must be a string');
     }
