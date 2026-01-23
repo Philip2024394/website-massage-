@@ -1,4 +1,23 @@
 /**
+ * 🔒 CRITICAL BOOKING FLOW – DO NOT MODIFY
+ *
+ * This file is part of a production-stable booking system.
+ * Changes here have previously caused booking failures.
+ *
+ * AI RULE:
+ * - DO NOT refactor
+ * - DO NOT optimize
+ * - DO NOT change routing or state logic
+ *
+ * Only allowed changes:
+ * - Logging
+ * - Comments
+ * - E2E assertions
+ *
+ * Any behavior change requires human approval.
+ */
+
+/**
  * 🔒 RELEASE-LOCKED: DO NOT MODIFY WITHOUT PRODUCTION INCIDENT 🔒
  * 
  * ⚠️ BOOKING FLOW CONTRACT ⚠️

@@ -9,16 +9,8 @@ const databases = new Databases(client);
 const account = new Account(client);
 const storage = new Storage(client);
 
-// Suppress Appwrite localStorage warning (we've disabled localStorage globally)
-if (typeof window !== 'undefined') {
-    const originalWarn = console.warn;
-    console.warn = (...args: any[]) => {
-        if (typeof args[0] === 'string' && args[0].includes('Appwrite is using localStorage')) {
-            return; // Suppress: localStorage disabled globally via disableLocalStorage.ts
-        }
-        originalWarn.apply(console, args);
-    };
-}
+// Note: localStorage warnings from Appwrite will now display naturally
+// This ensures complete console honesty as per system integrity requirements
 
 export const appwriteClient = client;
 export const appwriteDatabases = databases;

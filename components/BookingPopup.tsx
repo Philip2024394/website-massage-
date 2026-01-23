@@ -1,3 +1,14 @@
+/**
+ * 📋 ACTIVE BOOKING FLOW #3: Menu Slider "Book Now"
+ * 
+ * This component handles booking when users:
+ * 1. Click "Price List" on therapist card
+ * 2. Select a service (60/90/120 min)
+ * 3. Click "Book Now" with pre-selected duration
+ * 
+ * Flow: TherapistCard → Price List Modal → BookingPopup → Chat Opens
+ * Source Attribution: 'price-slider'
+ */
 import React, { useState } from 'react';
 import { Clock, AlertTriangle, X, User } from 'lucide-react';
 import { databases } from '../lib/appwrite';

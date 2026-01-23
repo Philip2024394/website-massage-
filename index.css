@@ -40,8 +40,6 @@ body {
   position: relative;
   /* Prevent overscroll navigation gestures */
   overscroll-behavior: contain;
-  /* Firefox: Ensure scrolling works */
-  overflow: auto;
 }
 
 #root {
@@ -264,5 +262,50 @@ button:has(svg path[d="M4 6h16M4 12h16M4 18h16"]) {
 
 .lock-bounce {
   animation: lockBounce 2s ease-in-out infinite;
+}
+
+/* Chat window animations for smooth message appearance */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out;
+}
+
+/* Smooth hover transitions for chat bubbles */
+.chat-bubble-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.chat-bubble-hover:hover {
+  transform: scale(1.02);
+  filter: brightness(1.05);
+}
+
+.bg-gradient-to-r:hover {
+  background-size: 110% 110%;
 }
 

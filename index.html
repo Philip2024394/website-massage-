@@ -403,29 +403,11 @@
       })();
     </script>
     
-    <!-- 🛠️ APPWRITE ERROR FIXES: Handle 404/400 database errors -->
-    <script src="/appwrite-error-fixes.js"></script>
-    
     <!-- CACHE BUSTER: 2024-10-31-10:05:00 -->
     <script type="module" src="/index.tsx?v=20241031100500"></script>
     <script>
-      // 🔇 Suppress 401 errors in console (expected when not authenticated)
-      (function() {
-        const originalError = console.error;
-        console.error = function(...args) {
-          const message = args.join(' ');
-          // Suppress Appwrite 401/501 network errors
-          if (
-            message.includes('Failed to load resource: the server responded with a status of 401') ||
-            message.includes('Failed to load resource: the server responded with a status of 501') ||
-            message.includes('syd.cloud.appwrite.io/v1/account')
-          ) {
-            // Silently ignore these - they're expected when not logged in
-            return;
-          }
-          originalError.apply(console, args);
-        };
-      })();
+      // Note: All console errors will now display naturally as per system honesty requirements
+      // This includes 401/501 authentication errors which are expected when not logged in
       
       // 📱 PWA SERVICE WORKER: Disabled on localhost to avoid dev cache issues
       if ('serviceWorker' in navigator) {

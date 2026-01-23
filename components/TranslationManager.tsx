@@ -57,18 +57,9 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
         setProgress('Starting automatic translation...');
         addLog('🌐 Starting automatic translation to all languages...');
         
-        // Override console.log to capture progress
-        const originalLog = console.log;
-        console.log = (message: string) => {
-            originalLog(message);
-            if (typeof message === 'string' && (message.includes('✅') || message.includes('❌') || message.includes('🔄'))) {
-                addLog(message);
-                if (message.includes('[') && message.includes('/')) {
-                    setProgress(message);
-                }
-            }
-        };
-
+        // Note: Translation progress now logged directly to UI only
+        // Console logs will appear naturally without interception
+        
         try {
             await autoTranslationService.translateAllLanguages('en');
             addLog('🎉 Translation process completed successfully!');
@@ -78,7 +69,6 @@ const TranslationManager: React.FC<TranslationManagerProps> = ({ onClose }) => {
             addLog('❌ Translation failed: ' + (error as Error).message);
             setProgress('Translation failed');
         } finally {
-            console.log = originalLog; // Restore original console.log
             setIsTranslating(false);
         }
     };

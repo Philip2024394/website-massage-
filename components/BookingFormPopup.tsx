@@ -1,3 +1,11 @@
+/**
+ * ⚠️ DEPRECATED - NOT CURRENTLY USED
+ * This component is not actively imported in the main booking flows.
+ * Current active booking flows use:
+ * 1. BookingPopup.tsx (Menu slider "Book Now")
+ * 2. ScheduleBookingPopup.tsx (Scheduled bookings)
+ * 3. PersistentChatWindow.tsx (Direct "Book Now" chat)
+ */
 import React, { useState, useEffect } from 'react';
 import { MapPin, Home, Building2, X } from 'lucide-react';
 import { getDisplayRating, formatRating } from '../utils/ratingUtils';

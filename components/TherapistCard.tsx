@@ -1,4 +1,23 @@
 /**
+ * 🔒 CRITICAL BOOKING FLOW – DO NOT MODIFY
+ *
+ * This file is part of a production-stable booking system.
+ * Changes here have previously caused booking failures.
+ *
+ * AI RULE:
+ * - DO NOT refactor
+ * - DO NOT optimize
+ * - DO NOT change routing or state logic
+ *
+ * Only allowed changes:
+ * - Logging
+ * - Comments
+ * - E2E assertions
+ *
+ * Any behavior change requires human approval.
+ */
+
+/**
  * ⚠️ MOBILE RENDER STABILITY RULES ENFORCED ⚠️
  * 
  * CRITICAL: This component follows strict mobile render rules.
@@ -64,7 +83,7 @@ interface TherapistCardProps {
     userLocation?: { lat: number; lng: number } | null; // User's current location for distance calculation
     onRate: (therapist: Therapist) => void;
     onBook: (therapist: Therapist) => void;
-    onQuickBookWithChat?: (therapist: Therapist) => void; // Quick book after WhatsApp
+    // onQuickBookWithChat?: (therapist: Therapist) => void; // ❌ REMOVED: Complex event chain
     onChatWithBusyTherapist?: (therapist: Therapist) => void; // Chat with busy therapist
     onIncrementAnalytics: (metric: keyof Analytics) => void;
     onShowRegisterPrompt?: () => void; // Show registration popup
@@ -85,7 +104,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
     userLocation,
     onRate, 
     // onBook, // Removed - using industry standard booking flow instead
-    onQuickBookWithChat,
+    // onQuickBookWithChat, // ❌ REMOVED: Complex event chain - using direct integration
     onIncrementAnalytics,
     onShowRegisterPrompt,
     onNavigate,
@@ -997,12 +1016,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                             (e.target as HTMLElement).removeAttribute('data-clicking');
                         });
                         
-                        devLog('🟢 Book Now button clicked - opening PERSISTENT CHAT');
+                        console.log('[BOOKING] Profile Book Therapist clicked');
+                        devLog('🟫 Book Therapist button clicked - opening PERSISTENT CHAT');
                         
-                        // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
-                        // This chat window will NEVER disappear once opened
+                        // ✅ SIMPLIFIED DIRECT INTEGRATION: 2-layer chain (was 4-layer)
+                        // OLD: TherapistCard → onQuickBookWithChat → App.tsx → CustomEvent → Listener → Chat
+                        // NEW: TherapistCard → openBookingChat → PersistentChatProvider → Chat
                         openBookingChat(therapist);
                         
+                        console.log('[CHAT] Chat opened from profile - Direct Integration');
                         onIncrementAnalytics('bookings');
                         setBookingsCount(prev => prev + 1);
                     }}
@@ -1027,8 +1049,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                         
                         console.log('📅 Schedule button clicked - opening PERSISTENT CHAT');
                         
-                        // 🔒 OPEN PERSISTENT CHAT - Facebook Messenger style
-                        // This chat window will NEVER disappear once opened
+                        // ✅ SIMPLIFIED DIRECT INTEGRATION: Schedule booking
+                        // Direct call to PersistentChatProvider instead of complex event chain
                         openScheduleChat(therapist);
                         
                         onIncrementAnalytics('bookings');

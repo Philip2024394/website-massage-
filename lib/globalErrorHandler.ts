@@ -177,57 +177,7 @@ export async function safeAsyncOperation<T>(
  * Initialize global error handling
  */
 export function initializeGlobalErrorHandling() {
-    // Override fetch to add rate limit handling
-    if (typeof window !== 'undefined' && !(window.fetch as any).__rateLimitWrapped) {
-        const originalFetch = window.fetch;
-        
-        window.fetch = async (...args: Parameters<typeof fetch>) => {
-            try {
-                const response = await originalFetch.apply(window, args);
-                
-                // Check for rate limit response
-                if (response.status === 429) {
-                    const url = typeof args[0] === 'string' ? args[0] : 
-                               args[0] instanceof URL ? args[0].toString() :
-                               args[0] instanceof Request ? args[0].url : 'unknown';
-                    console.warn('🚫 Rate limit detected in fetch:', url);
-                    handleAppwriteError({ code: 429, message: 'Rate limit exceeded' }, `fetch: ${url}`);
-                }
-                
-                // Suppress 401 errors from Appwrite account endpoints (expected when not logged in)
-                if (response.status === 401) {
-                    const url = typeof args[0] === 'string' ? args[0] : 
-                               args[0] instanceof URL ? args[0].toString() :
-                               args[0] instanceof Request ? args[0].url : 'unknown';
-                    if (url.includes('syd.cloud.appwrite.io/v1/account')) {
-                        // Silently ignore - these are expected when user is not authenticated
-                        return response;
-                    }
-                }
-                
-                return response;
-            } catch (error) {
-                const url = typeof args[0] === 'string' ? args[0] : 
-                           args[0] instanceof URL ? args[0].toString() :
-                           args[0] instanceof Request ? args[0].url : 'unknown';
-                
-                // Suppress 401 errors from Appwrite account endpoints
-                if (url.includes('syd.cloud.appwrite.io/v1/account') && 
-                    (error as any)?.code === 401) {
-                    // Expected - user not authenticated, don't log
-                    throw error;
-                }
-                
-                handleAppwriteError(error, `fetch: ${url}`);
-                throw error;
-            }
-        };
-        
-        (window.fetch as any).__rateLimitWrapped = true;
-        console.log('🛡️ Global rate limit handling initialized');
-    }
-    
-    // Handle unhandled promise rejections
+    // Handle unhandled promise rejections only
     if (typeof window !== 'undefined') {
         window.addEventListener('unhandledrejection', (event) => {
             if (event.reason && typeof event.reason === 'object') {
@@ -237,6 +187,8 @@ export function initializeGlobalErrorHandling() {
                 }
             }
         });
+        
+        console.log('🛡️ Global error handling initialized (no fetch override)');
     }
 }
 

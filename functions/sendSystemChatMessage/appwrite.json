@@ -9,12 +9,14 @@
   "enabled": true,
   "logging": true,
   "entrypoint": "index.js",
-  "commands": "npm install",
+  "commands": "npm install --omit=dev",
   "ignore": [
     "node_modules",
     ".npm",
     "src",
-    "README.md"
+    "README.md",
+    ".git",
+    ".gitignore"
   ],
   "path": "functions/sendSystemChatMessage",
   "variables": {},

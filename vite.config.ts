@@ -116,7 +116,9 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false, // Disable for production builds
     minify: 'esbuild',
-    target: 'es2020',
+    // ✅ BROWSER COMPATIBILITY: ES2019 supports 95%+ of browsers (2026)
+    // Includes: Chrome 73+, Firefox 63+, Safari 12.1+, Edge 79+
+    target: ['es2019', 'chrome73', 'firefox63', 'safari12.1', 'edge79'],
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       external: [],

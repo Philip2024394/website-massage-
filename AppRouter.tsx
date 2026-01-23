@@ -315,8 +315,8 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
                 therapists={props.therapists}
                 places={props.places}
                 onNavigate={props.onNavigate}
-                // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
-                onQuickBookWithChat={props.handleQuickBookWithChat}
+                // Chat/booking handlers - SIMPLIFIED: Direct PersistentChatProvider integration
+                // onQuickBookWithChat={props.handleQuickBookWithChat} // ❌ REMOVED: Complex event chain
                 onChatWithBusyTherapist={props.handleChatWithBusyTherapist}
                 onShowRegisterPrompt={props.handleShowRegisterPromptForChat}
                 onIncrementAnalytics={props.handleIncrementAnalytics}
@@ -489,7 +489,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 userLocation: props.userLocation,
                 loggedInCustomer: props.loggedInCustomer,
                 loggedInProvider: props.loggedInProvider,
-                onQuickBookWithChat: props.handleQuickBookWithChat,
+                // onQuickBookWithChat: props.handleQuickBookWithChat, // ❌ REMOVED: Complex event chain
                 onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
                 onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
                 onIncrementAnalytics: props.handleIncrementAnalytics,
@@ -836,8 +836,8 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         therapists: props.therapists,
                         places: props.places,
                         onNavigate: props.onNavigate,
-                        // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
-                        onQuickBookWithChat: props.handleQuickBookWithChat,
+                        // Chat/booking handlers - SIMPLIFIED: Direct PersistentChatProvider integration  
+                        // onQuickBookWithChat: props.handleQuickBookWithChat, // ❌ REMOVED: Complex event chain
                         onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
                         onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
                         onIncrementAnalytics: props.handleIncrementAnalytics,
@@ -868,39 +868,64 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 }
             }
             
-            return renderRoute(profileRoutes.therapistProfile.component, {
-                therapist: props.selectedTherapist,
-                onBack: () => props.setPage?.('home'), // Navigate back to home
-                // Header props
-                onLanguageChange: props.onLanguageChange,
-                language: props.language,
-                selectedCity: props.selectedCity,
-                onCityChange: props.onCityChange,
-                therapists: props.therapists,
-                places: props.places,
-                onMassageJobsClick: props.onMassageJobsClick,
-                onHotelPortalClick: props.onHotelPortalClick,
-                onVillaPortalClick: props.onVillaPortalClick,
-                onTherapistPortalClick: props.onTherapistPortalClick,
-                onMassagePlacePortalClick: props.onMassagePlacePortalClick,
-                onFacialPortalClick: props.onFacialPortalClick,
-                onAgentPortalClick: props.onAgentPortalClick,
-                onCustomerPortalClick: props.onCustomerPortalClick,
-                onAdminPortalClick: props.onAdminPortalClick,
-                onTermsClick: props.onTermsClick,
-                onPrivacyClick: props.onPrivacyClick,
-                onNavigate: props.onNavigate,
-                // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
-                onQuickBookWithChat: props.handleQuickBookWithChat,
-                onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
-                onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
-                onIncrementAnalytics: props.handleIncrementAnalytics,
-                // Location and auth context
-                userLocation: props.userLocation,
-                loggedInCustomer: props.loggedInCustomer,
-                loggedInProvider: props.loggedInProvider,
-                t: props.t
-            });
+            // Fall back to props.selectedTherapist (if available)
+            if (props.selectedTherapist) {
+                return renderRoute(profileRoutes.therapistProfile.component, {
+                    therapist: props.selectedTherapist,
+                    onBack: () => props.setPage?.('home'), // Navigate back to home
+                    // Header props
+                    onLanguageChange: props.onLanguageChange,
+                    language: props.language,
+                    selectedCity: props.selectedCity,
+                    onCityChange: props.onCityChange,
+                    therapists: props.therapists,
+                    places: props.places,
+                    onMassageJobsClick: props.onMassageJobsClick,
+                    onHotelPortalClick: props.onHotelPortalClick,
+                    onVillaPortalClick: props.onVillaPortalClick,
+                    onTherapistPortalClick: props.onTherapistPortalClick,
+                    onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                    onFacialPortalClick: props.onFacialPortalClick,
+                    onAgentPortalClick: props.onAgentPortalClick,
+                    onCustomerPortalClick: props.onCustomerPortalClick,
+                    onAdminPortalClick: props.onAdminPortalClick,
+                    onTermsClick: props.onTermsClick,
+                    onPrivacyClick: props.onPrivacyClick,
+                    onNavigate: props.onNavigate,
+                    // Chat/booking handlers - SIMPLIFIED: Direct PersistentChatProvider integration
+                    // onQuickBookWithChat: props.handleQuickBookWithChat, // ❌ REMOVED: Complex event chain
+                    onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                    onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
+                    onIncrementAnalytics: props.handleIncrementAnalytics,
+                    // Location and auth context
+                    userLocation: props.userLocation,
+                    loggedInCustomer: props.loggedInCustomer,
+                    loggedInProvider: props.loggedInProvider,
+                    t: props.t
+                });
+            }
+            
+            // No therapist data available - show error page
+            console.log('❌ [TherapistProfile] No therapist data available');
+            console.log('  - selectedTherapist:', props.selectedTherapist);
+            console.log('  - URL path:', window.location.pathname);
+            console.log('  - URL hash:', window.location.hash);
+            
+            return (
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 text-center">
+                        <div className="text-6xl mb-4">❌</div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Not Found</h2>
+                        <p className="text-gray-600 mb-4">Unable to load therapist profile. The therapist may not exist or the link may be invalid.</p>
+                        <button
+                            onClick={() => props.onNavigate?.('home')}
+                            className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
+                </div>
+            );
         
         // NEW: Simple share routes
         case 'share-therapist':
@@ -941,7 +966,7 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                     {...props}
                     userLocation={props.userLocation}
                     loggedInCustomer={props.loggedInCustomer}
-                    handleQuickBookWithChat={props.handleQuickBookWithChat}
+                    // handleQuickBookWithChat={props.handleQuickBookWithChat} // ❌ REMOVED: Complex event chain
                     onNavigate={props.onNavigate}
                     language={props.language}
                 />

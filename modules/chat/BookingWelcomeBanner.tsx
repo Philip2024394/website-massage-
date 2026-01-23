@@ -36,7 +36,7 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
     
     switch (status) {
       case 'pending':
-        return `⏰ Please wait while therapist connects (up to ${timerText})`;
+        return `⏳ Waiting for therapist to respond (up to ${timerText}). You can cancel below if needed.`;
       case 'waiting_others':
         return '🔍 Searching for available therapists...';
       case 'therapist_accepted':
@@ -61,14 +61,14 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            <h3 className="font-semibold text-sm">🎉 Welcome! Your booking request has been sent</h3>
+            <h3 className="font-semibold text-sm">🎉 Booking Request Sent!</h3>
           </div>
           
-          {/* Countdown Timer - 5 min for Book Now, 25 min for Scheduled */}
+          {/* Enhanced Countdown Timer - 5 min for Book Now, 25 min for Scheduled */}
           {bookingCountdown !== null && currentBooking.status === 'pending' && (
-            <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
-              <Clock className="w-4 h-4" />
-              <span className="text-sm font-mono font-bold">
+            <div className="flex items-center gap-2 bg-white/30 px-4 py-2 rounded-full shadow-lg animate-pulse">
+              <Clock className="w-5 h-5" />
+              <span className="text-lg font-mono font-bold">
                 {Math.floor(bookingCountdown / 60)}:{(bookingCountdown % 60).toString().padStart(2, '0')}
               </span>
             </div>
@@ -84,48 +84,58 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         {(currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && onCancelBooking && (
           <button
             onClick={onCancelBooking}
-            className="mt-3 w-full bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-white/30 flex items-center justify-center gap-2"
+            className="mt-3 w-full bg-red-500/90 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 border border-white/50 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-95"
           >
             <span>❌</span>
-            <span>Cancel Booking</span>
+            <span>Cancel This Booking</span>
           </button>
         )}
       </div>
       
-      {/* Booking Details */}
-      <div className="px-4 py-3">
+      {/* Booking Details - Enhanced visibility */}
+      <div className="px-4 py-3 bg-white">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          {/* Service Details */}
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-500" />
-            <span className="text-gray-600">Service:</span>
-            <span className="font-medium text-gray-800">
-              {currentBooking.serviceType} ({currentBooking.duration}min)
-            </span>
+          {/* Service Details - More prominent */}
+          <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg">
+            <Sparkles className="w-5 h-5 text-blue-600" />
+            <div>
+              <div className="text-xs text-gray-500">Service</div>
+              <div className="font-bold text-gray-800">
+                {currentBooking.serviceType} ({currentBooking.duration}min)
+              </div>
+            </div>
+          </div>
+          
+          {/* Price - More prominent */}
+          <div className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg">
+            <CreditCard className="w-5 h-5 text-green-600" />
+            <div>
+              <div className="text-xs text-gray-500">Total Price</div>
+              <div className="font-bold text-green-700">
+                {formatPrice(currentBooking.totalPrice)}
+              </div>
+            </div>
           </div>
           
           {/* Customer Name */}
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-500" />
-            <span className="text-gray-600">Customer:</span>
-            <span className="font-medium text-gray-800">{currentBooking.customerName}</span>
+          <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+            <User className="w-4 h-4 text-gray-600" />
+            <div>
+              <div className="text-xs text-gray-500">Customer</div>
+              <div className="font-medium text-gray-800">{currentBooking.customerName}</div>
+            </div>
           </div>
           
           {/* Location */}
           {currentBooking.locationZone && (
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-blue-500" />
-              <span className="text-gray-600">Location:</span>
-              <span className="font-medium text-gray-800">{currentBooking.locationZone}</span>
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+              <MapPin className="w-4 h-4 text-gray-600" />
+              <div>
+                <div className="text-xs text-gray-500">Location</div>
+                <div className="font-medium text-gray-800">{currentBooking.locationZone}</div>
+              </div>
             </div>
           )}
-          
-          {/* Price */}
-          <div className="flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-blue-500" />
-            <span className="text-gray-600">Total:</span>
-            <span className="font-bold text-green-600">{formatPrice(currentBooking.totalPrice)}</span>
-          </div>
           
           {/* Booking Type & Time */}
           <div className="flex items-center gap-2">

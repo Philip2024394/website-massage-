@@ -189,10 +189,15 @@ const HomePage: React.FC<HomePageProps> = ({
     // Sync selectedCity with CityContext city
     useEffect(() => {
         if (contextCity && contextCity !== selectedCity) {
-            console.log('🔄 Syncing selectedCity with CityContext:', contextCity);
+            console.log('🔄 Syncing selectedCity with CityContext:', { contextCity, currentSelectedCity: selectedCity });
             setSelectedCity(contextCity);
         }
     }, [contextCity]);
+    
+    // Debug log for selectedCity changes
+    useEffect(() => {
+        console.log('🏠 HomePage selectedCity changed:', { selectedCity, contextCity });
+    }, [selectedCity, contextCity]);
     
     // Female therapist filter state
     const [showFemaleOnly, setShowFemaleOnly] = useState(false);
@@ -2026,7 +2031,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         </span>
                                     </div>
                                 )}
-                                <div className={isPreviewMode ? 'ring-4 ring-blue-400 rounded-lg' : ''}>
+                                <div className={isPreviewMode ? 'ring-4 ring-4 rounded-lg' : ''}>
                                 <TherapistHomeCard
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}
@@ -2035,6 +2040,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                     t={t}
                                     avatarOffsetPx={8}
                                     onClick={(selectedTherapist) => {
+                                        console.log('🎯 TherapistHomeCard onClick - selectedCity being passed:', selectedCity);
                                         // Set selected therapist and navigate to profile page with URL update
                                         onSelectTherapist?.(selectedTherapist);
                                         const therapistId = selectedTherapist.id || selectedTherapist.$id;

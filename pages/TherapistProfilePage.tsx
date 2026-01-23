@@ -84,13 +84,38 @@ const TherapistProfilePage: React.FC<TherapistProfilePageProps> = ({
         therapistExists: !!therapist,
         therapistId: therapist?.id || therapist?.$id,
         therapistName: therapist?.name,
-        currentPath: window.location.pathname
+        currentPath: window.location.pathname,
+        currentHash: window.location.hash,
+        propsReceived: {
+            therapist: !!therapist,
+            onBack: !!onBack,
+            userLocation: !!userLocation,
+            loggedInCustomer: !!loggedInCustomer,
+            loggedInProvider: !!loggedInProvider,
+            onBook: !!onBook,
+            onChatWithBusyTherapist: !!onChatWithBusyTherapist,
+            onShowRegisterPrompt: !!onShowRegisterPrompt,
+            onIncrementAnalytics: !!onIncrementAnalytics,
+            onNavigate: !!onNavigate,
+            t: !!t,
+            isSharedView: !!isSharedView,
+            onLanguageChange: !!onLanguageChange,
+            language: !!language,
+            selectedCity: !!selectedCity,
+            onCityChange: !!onCityChange,
+            therapists: Array.isArray(therapists) ? therapists.length : 'not-array',
+            places: Array.isArray(places) ? places.length : 'not-array'
+        }
     });
     
     // ⚠️ FAIL LOUDLY - NO SILENT EARLY RETURNS
     if (!therapist) {
         const errorMsg = 'TherapistProfilePage rendered WITHOUT therapist data';
         console.error('🚨', errorMsg);
+        console.error('🚨 Debug info:', {
+            currentURL: window.location.href,
+            referrer: document.referrer
+        });
         throw new Error(errorMsg); // Throw error instead of silent return
     }
 

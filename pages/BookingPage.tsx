@@ -1,3 +1,11 @@
+/**
+ * ⚠️ LEGACY BOOKING PAGE - Limited Usage
+ * This component is imported in AppRouter but not used in main booking flows.
+ * Current active booking flows:
+ * 1. TherapistCard → BookingPopup (Menu slider)
+ * 2. TherapistCard → ScheduleBookingPopup (Scheduled)
+ * 3. TherapistCard → PersistentChatWindow (Direct Book Now)
+ */
 import React, { useState, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type { Therapist, Place, Booking } from '../types';

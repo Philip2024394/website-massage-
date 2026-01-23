@@ -1,3 +1,15 @@
+/**
+ * 📅 ACTIVE BOOKING FLOW #2: Scheduled Booking
+ * 
+ * This component handles booking when users:
+ * 1. Click "Schedule" button on therapist card
+ * 2. Select date and time
+ * 3. Fill booking details
+ * 4. Pay deposit (for scheduled bookings)
+ * 
+ * Flow: TherapistCard → ScheduleBookingPopup → Deposit → Chat Opens
+ * Source Attribution: 'scheduled'
+ */
 import React, { useState, useEffect } from 'react';
 import { Clock, X, User, Phone, Calendar, Star } from 'lucide-react';
 import { databases, ID, Query } from '../lib/appwrite';

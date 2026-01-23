@@ -13,9 +13,6 @@ import './index.css';
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
 
-// Suppress non-critical Appwrite collection errors in console
-import './utils/suppressNonCriticalErrors';
-
 // Initialize version checking for cache busting
 import { initVersionCheck } from './lib/versionCheck';
 

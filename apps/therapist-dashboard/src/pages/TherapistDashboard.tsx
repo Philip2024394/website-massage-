@@ -16,6 +16,7 @@ import BookingRequestCard from '../components/BookingRequestCard';
 import ProPlanWarnings from '../components/ProPlanWarnings';
 import TherapistLayout from '../components/TherapistLayout';
 import { Star, Upload, X, CheckCircle, Square, Users, Save, DollarSign, Globe, Hand, User, MessageCircle, Image, MapPin, FileText, Calendar } from 'lucide-react';
+import { checkGeolocationSupport, getGeolocationOptions, formatGeolocationError, logBrowserInfo } from '../../../../utils/browserCompatibility';
 
 interface TherapistPortalPageProps {
   therapist: Therapist | null;
@@ -119,6 +120,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   
   // Location state
   const [locationSet, setLocationSet] = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false); // Add GPS loading state
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
     try {
       const coords = therapist?.coordinates;
@@ -259,15 +261,40 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
   }, [name, whatsappNumber, description, selectedCity, selectedMassageTypes, selectedGlobe, price60, price90, price120, yearsOfExperience, clientPreferences]);
 
   const handleSetLocation = () => {
-    if (!navigator.geolocation) {
-      showToast('❌ GPS not supported on this device', 'error');
+    console.log('🔘 Location button clicked');
+    
+    // Prevent multiple simultaneous requests
+    if (gpsLoading) {
+      console.log('⏳ GPS request already in progress');
       return;
     }
+    
+    // ✅ LOG BROWSER INFO for debugging
+    logBrowserInfo();
+    
+    // ✅ COMPREHENSIVE BROWSER COMPATIBILITY CHECK
+    const compatCheck = checkGeolocationSupport();
+    
+    if (!compatCheck.supported) {
+      console.error('❌ Browser compatibility issue:', compatCheck.error);
+      showToast(`❌ ${compatCheck.error}`, 'error');
+      return;
+    }
+    
+    const { browserInfo } = compatCheck;
+    console.log('✅ Browser supported:', browserInfo.name, browserInfo.version);
 
+    setGpsLoading(true);
     showToast('📍 Getting your GPS location... Please allow location access', 'info');
+    console.log('📍 Requesting GPS location...');
+    
+    // ✅ USE BROWSER-OPTIMIZED GEOLOCATION OPTIONS
+    const geoOptions = getGeolocationOptions(browserInfo);
+    console.log('🔧 Geolocation options:', geoOptions);
     
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log('✅ GPS position received:', position);
         const accuracy = position.coords.accuracy;
         console.log(`📍 GPS accuracy: ${accuracy}m`);
         
@@ -276,19 +303,26 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           lng: position.coords.longitude
         };
         
+        console.log('📍 Raw coordinates:', coords);
+        
         // Validate GPS coordinates are within Indonesia
         const validation = validateTherapistGeopoint({ geopoint: coords });
+        console.log('🔍 Validation result:', validation);
         
         if (!validation.isValid) {
+          console.error('❌ GPS validation failed:', validation.error);
           showToast(`❌ GPS location invalid: ${validation.error}`, 'error');
+          setGpsLoading(false);
           return;
         }
         
         // Derive city from GPS coordinates
         const derivedCity = deriveLocationIdFromGeopoint(coords);
+        console.log(`🎯 GPS-derived city: ${derivedCity}`);
         
         setCoordinates(coords);
         setLocationSet(true);
+        setGpsLoading(false);
         
         if (accuracy > 500) {
           showToast(`⚠️ GPS accuracy is low (${Math.round(accuracy)}m). Consider moving to an open area for better accuracy.`, 'warning');
@@ -296,32 +330,24 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
           showToast(`✅ GPS location captured! You will appear in ${derivedCity} searches.`, 'success');
         }
         
-        console.log(`🎯 GPS-derived city: ${derivedCity}`);
+        console.log('✅ Location state updated successfully');
       },
       (error) => {
-        console.error('GPS error:', error);
-        let errorMessage = 'Location access denied.';
+        setGpsLoading(false);
+        console.error('❌ GPS error occurred:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
         
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Location access denied. Please enable location permissions in your browser settings.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'GPS position unavailable. Please try again or move to an area with better signal.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'GPS timeout. Please try again.';
-            break;
-        }
+        // ✅ USE BROWSER-SPECIFIC ERROR FORMATTING
+        const errorMessage = formatGeolocationError(error, browserInfo);
+        console.error('📱 Formatted error:', errorMessage);
         
         showToast(`❌ ${errorMessage}`, 'error');
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000, // 20 seconds for GPS lock
-        maximumAge: 0 // Always get fresh location, no cache
-      }
+      geoOptions
     );
+    
+    console.log('⏳ Waiting for GPS response...');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1150,13 +1176,28 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               
               <button
                 onClick={handleSetLocation}
-                className={`w-full px-4 py-3 rounded-xl font-medium transition-all shadow-sm ${
-                  locationSet 
-                    ? 'bg-green-500 text-white hover:bg-green-600' 
-                    : 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
+                disabled={gpsLoading}
+                className={`w-full px-4 py-3 rounded-xl font-medium transition-all shadow-sm flex items-center justify-center gap-2 ${
+                  gpsLoading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : locationSet 
+                      ? 'bg-green-500 text-white hover:bg-green-600' 
+                      : 'bg-red-500 text-white hover:bg-red-600 animate-pulse'
                 }`}
               >
-                {locationSet ? '✅ GPS Location Verified - Click to Update' : '📍 SET GPS LOCATION (REQUIRED)'}
+                {gpsLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Getting Location...</span>
+                  </>
+                ) : locationSet ? (
+                  '✅ GPS Location Verified - Click to Update'
+                ) : (
+                  '📍 SET GPS LOCATION (REQUIRED)'
+                )}
               </button>
               
               {locationSet && coordinates && (

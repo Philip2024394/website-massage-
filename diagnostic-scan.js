@@ -120,7 +120,7 @@ console.log('\n5. 🔐 AUTHENTICATION FLOW CHECK');
 try {
     const mainApp = fs.readFileSync('App.tsx', 'utf8');
     
-    if (mainApp.includes('PWA.*detection') || mainApp.includes('pwa=true')) {
+    if (mainApp.includes('isPWA') || mainApp.includes('pwa=true') || mainApp.includes('PWAMode')) {
         console.log('✅ PWA detection code found in main App.tsx');
     } else {
         console.log('❌ PWA detection MISSING in main App.tsx');

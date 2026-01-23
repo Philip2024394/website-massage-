@@ -166,12 +166,22 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not op_mini all",
+      "Chrome >= 73",
+      "Firefox >= 63",
+      "Safari >= 12.1",
+      "Edge >= 79",
+      "iOS >= 12.2",
+      "ChromeAndroid >= 73",
+      "FirefoxAndroid >= 63",
+      "Samsung >= 10",
+      "last 2 versions"
     ],
     "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
+      "last 2 chrome versions",
+      "last 2 firefox versions",
+      "last 2 safari versions",
+      "last 2 edge versions"
     ]
   },
   "optionalDependencies": {

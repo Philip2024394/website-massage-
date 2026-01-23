@@ -177,6 +177,13 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
     
     // Get display name for the therapist's actual location area with service areas
     const getLocationAreaDisplayName = () => {
+        console.log('🏠 TherapistHomeCard getLocationAreaDisplayName:', {
+            therapistName: therapist.name,
+            selectedCity,
+            therapistLocation: therapist.location,
+            therapistLocationArea
+        });
+        
         // Check if this is a custom location
         if (therapist.isCustomLocation && therapist.customCity) {
             const customDisplay = therapist.customCity;
