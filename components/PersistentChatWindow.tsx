@@ -1004,28 +1004,56 @@ export function PersistentChatWindow() {
       </div>
 
       {/* 🚨 CRITICAL: BOOKING COUNTDOWN TIMER - ALWAYS VISIBLE */}
-      {chatState.currentBooking && 
-       chatState.currentBooking.responseDeadline &&
-       (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
-        <BookingCountdown
-          deadline={chatState.currentBooking.responseDeadline}
-          role={chatState.isTherapistView ? 'therapist' : 'user'}
-          bookingId={chatState.currentBooking.id}
-          onCancel={() => cancelBooking()}
-          onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
-          onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
-          onExpire={() => {
-            addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
-            setChatState(prev => ({
-              ...prev,
-              currentBooking: prev.currentBooking ? {
-                ...prev.currentBooking,
-                status: 'expired'
-              } : null
-            }));
-          }}
-        />
-      )}
+      {(() => {
+        // DEBUG: Log countdown rendering conditions
+        console.log('🔍 [COUNTDOWN DEBUG] Checking render conditions:', {
+          hasCurrentBooking: !!chatState.currentBooking,
+          hasResponseDeadline: !!chatState.currentBooking?.responseDeadline,
+          bookingStatus: chatState.currentBooking?.status,
+          responseDeadline: chatState.currentBooking?.responseDeadline,
+          isTherapistView: chatState.isTherapistView,
+          bookingId: chatState.currentBooking?.id
+        });
+
+        if (!chatState.currentBooking) {
+          console.log('❌ [COUNTDOWN] No current booking');
+          return null;
+        }
+        
+        if (!chatState.currentBooking.responseDeadline) {
+          console.log('❌ [COUNTDOWN] No responseDeadline in booking');
+          return null;
+        }
+        
+        const status = chatState.currentBooking.status;
+        if (status !== 'pending' && status !== 'requested') {
+          console.log('❌ [COUNTDOWN] Booking status not pending/requested:', status);
+          return null;
+        }
+
+        console.log('✅ [COUNTDOWN] All conditions met - rendering countdown');
+        
+        return (
+          <BookingCountdown
+            deadline={chatState.currentBooking.responseDeadline}
+            role={chatState.isTherapistView ? 'therapist' : 'user'}
+            bookingId={chatState.currentBooking.id}
+            onCancel={() => cancelBooking()}
+            onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
+            onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
+            onExpire={() => {
+              addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
+              setChatState(prev => ({
+                ...prev,
+                currentBooking: prev.currentBooking ? {
+                  ...prev.currentBooking,
+                  status: 'expired'
+                } : null
+              }));
+            }}
+          />
+        );
+      })()}
 
       {/* Enhanced Welcome Banner with Booking Details */}
       {/* 🔒 RULE: BookingWelcomeBanner is SINGLE SOURCE OF TRUTH for booking display */}

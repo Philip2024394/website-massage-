@@ -27,16 +27,44 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 }) => {
   const [remaining, setRemaining] = useState<number>(0);
 
+  // Format time as MM:SS
+  const formatTime = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // DEBUG: Log when component mounts
+  useEffect(() => {
+    console.log('🎯 [BookingCountdown] Component mounted:', {
+      deadline,
+      role,
+      bookingId,
+      hasDeadline: !!deadline,
+      deadlineValue: deadline
+    });
+  }, []);
+
   // Update countdown every second
   useEffect(() => {
     const updateCountdown = () => {
       const deadlineTime = new Date(deadline).getTime();
       const now = Date.now();
       const timeLeft = Math.max(0, deadlineTime - now);
+      
+      console.log('⏰ [BookingCountdown] Tick:', {
+        deadlineTime,
+        now,
+        timeLeft,
+        remaining: formatTime(timeLeft)
+      });
+      
       setRemaining(timeLeft);
 
       // Auto-expire when countdown reaches 0
       if (timeLeft === 0 && onExpire) {
+        console.log('⏰ [BookingCountdown] EXPIRED - calling onExpire');
         onExpire();
       }
     };
@@ -48,14 +76,6 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, [deadline, onExpire]);
-
-  // Format time as MM:SS
-  const formatTime = (milliseconds: number): string => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   // Calculate progress percentage (0-100)
   const progressPercentage = Math.max(0, Math.min(100, (remaining / (5 * 60 * 1000)) * 100));
