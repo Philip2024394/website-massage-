@@ -22,6 +22,7 @@ export enum TherapistAvailabilityStatus {
   BUSY = 'BUSY',              // Scheduled only - NO Book Now
   CLOSED = 'CLOSED',          // Scheduled only - NO Book Now
   RESTRICTED = 'RESTRICTED',  // Cannot accept ANY bookings
+  CONNECTING = 'CONNECTING',  // In process of connecting - treat as AVAILABLE
 }
 
 // ============================================================================
@@ -110,8 +111,8 @@ export const availabilityEnforcementService = {
         };
       }
 
-      // AVAILABLE - can accept Book Now
-      if (status === TherapistAvailabilityStatus.AVAILABLE) {
+      // AVAILABLE or CONNECTING - can accept Book Now
+      if (status === TherapistAvailabilityStatus.AVAILABLE || status === TherapistAvailabilityStatus.CONNECTING) {
         return {
           allowed: true,
           allowScheduled: true,
@@ -143,7 +144,7 @@ export const availabilityEnforcementService = {
         };
       }
 
-      // BUSY, CLOSED, AVAILABLE - all can accept scheduled
+      // BUSY, CLOSED, AVAILABLE, CONNECTING - all can accept scheduled
       return {
         allowed: true,
         allowScheduled: true,

@@ -345,6 +345,7 @@ export function PersistentChatWindow() {
 
   // Handle customer form submission
   const handleCustomerSubmit = async (e: React.FormEvent) => {
+    console.log('🎯 [HANDLE CUSTOMER SUBMIT] Function called');
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during Order Now booking
     lockChat();
     console.log('🔒 Chat locked for Order Now form submission');
@@ -650,7 +651,31 @@ export function PersistentChatWindow() {
         } else {
           console.warn('⚠️ Message not sent, result:', result);
           console.warn('⚠️ Result details:', { sent: result.sent, warning: result.warning });
-          console.log('🔄 [FALLBACK] Message failed but switching to chat anyway for user feedback...');
+          console.log('🔄 [FALLBACK] Message failed but creating booking anyway...');
+          
+          // 🔧 FIX: Create booking even if message fails
+          if (!isScheduleMode) {
+            console.log('📝 [FALLBACK] Creating immediate booking despite message failure...');
+            try {
+              const bookingCreated = await createBooking({
+                duration: selectedDuration || 60,
+                price: discountedPrice,
+                totalPrice: discountedPrice,
+                originalPrice: hasDiscount ? originalPrice : undefined,
+                discountCode: hasDiscount ? discountCode : undefined,
+                discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
+                serviceType: 'Traditional Massage',
+                locationZone: customerForm.location,
+                coordinates: customerForm.coordinates || undefined,
+              });
+              
+              console.log('✅ [FALLBACK] Booking created despite message failure:', bookingCreated);
+            } catch (bookingError) {
+              console.error('❌ [FALLBACK] Booking creation also failed:', bookingError);
+            }
+          }
+          
+          console.log('🔄 [FALLBACK] Switching to chat for user feedback...');
           setBookingStep('chat');
         }
       } catch (innerError) {

@@ -167,16 +167,16 @@ export function validateAllCollections(): { valid: boolean; errors: string[] } {
  */
 export const VALIDATED_COLLECTIONS = {
   // Core Collections
-  get bookings() { return getValidatedCollectionId('THERAPISTS' as any); },
+  get bookings() { return 'bookings'; }, // ✅ Fixed: Use correct bookings collection ID
   get therapists() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get places() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get users() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get hotels() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get agents() { return getValidatedCollectionId('THERAPISTS' as any); },
+  get places() { return getValidatedCollectionId('PLACES' as any); },
+  get users() { return getValidatedCollectionId('USERS' as any); },
+  get hotels() { return getValidatedCollectionId('HOTELS' as any); },
+  get agents() { return getValidatedCollectionId('AGENTS' as any); },
   
   // Reviews & Notifications
-  get reviews() { return getValidatedCollectionId('THERAPISTS' as any); },
-  get notifications() { return getValidatedCollectionId('THERAPISTS' as any); },
+  get reviews() { return getValidatedCollectionId('REVIEWS' as any); },
+  get notifications() { return getValidatedCollectionId('NOTIFICATIONS' as any); },
   
   // Chat System
   get chat_rooms() { return 'chat_rooms'; },
@@ -197,7 +197,7 @@ export const VALIDATED_COLLECTIONS = {
   get analytics_events() { return getValidatedCollectionId('THERAPISTS' as any); },
   
   // Financial
-  get commission_records() { return getValidatedCollectionId('THERAPISTS' as any); },
+  get commission_records() { return 'commission_records'; }, // ✅ Fixed: Use correct commission_records collection ID
   get bank_details() { return getValidatedCollectionId('THERAPISTS' as any); },
   get payment_transactions() { return getValidatedCollectionId('THERAPISTS' as any); },
   get bankaccounts() { return getValidatedCollectionId('THERAPISTS' as any); },

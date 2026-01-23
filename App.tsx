@@ -75,12 +75,13 @@ const App = () => {
     // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
         const currentPath = window.location.pathname + window.location.hash;
-        const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home';
+        const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || currentPath.includes('/home');
         
         if (isHomePage) {
             const pendingDeeplink = sessionStorage.getItem('pending_deeplink');
             if (pendingDeeplink) {
                 console.log('🚨 [REDIRECT FIX] Clearing unwanted pending deeplink on home page visit:', pendingDeeplink);
+                console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
                 sessionStorage.removeItem('pending_deeplink');
             }
         }
@@ -805,6 +806,21 @@ const App = () => {
     // Navigate to deep-linked profile once data is available (requires state)
     useEffect(() => {
         try {
+            // 🚨 CRITICAL FIX: Don't process deeplinks if user is explicitly on home page
+            const currentPath = window.location.pathname + window.location.hash;
+            const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
+                              currentPath.includes('/home') || state.page === 'home';
+                              
+            if (isHomePage) {
+                console.log('🚫 [DEEPLINK] Skipping deeplink processing - user is on home page');
+                const pending = sessionStorage.getItem('pending_deeplink');
+                if (pending) {
+                    console.log('🗑️ [DEEPLINK] Clearing pending deeplink from home page:', pending);
+                    sessionStorage.removeItem('pending_deeplink');
+                }
+                return;
+            }
+            
             const pending = sessionStorage.getItem('pending_deeplink');
             if (!pending) return;
             
@@ -843,7 +859,7 @@ const App = () => {
         } catch (e) {
             console.warn('Deeplink navigation failed:', e);
         }
-    }, [state.therapists, state.places]);
+    }, [state.therapists, state.places, state.page]);
 
     // Play welcome music only for customers (never for members) and only once
     useEffect(() => {
