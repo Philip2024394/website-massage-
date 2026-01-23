@@ -12,9 +12,9 @@ html, body, #root {
   width: 100%;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pan-x;
-  /* Prevent browser pull-to-refresh and overscroll navigation */
-  overscroll-behavior: contain;
-  overscroll-behavior-y: contain;
+  /* Allow natural scroll behavior */
+  overscroll-behavior: auto;
+  overscroll-behavior-y: auto;
   overscroll-behavior-x: none;
 }
 
@@ -24,8 +24,8 @@ html {
   height: 100%;
   /* Firefox fix: Explicit height for proper scrolling */
   min-height: 100%;
-  /* Prevent overscroll navigation */
-  overscroll-behavior: contain;
+  /* Allow natural scroll behavior */
+  overscroll-behavior: auto;
   /* Firefox-specific scrollbar fix */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
@@ -35,11 +35,11 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  height: 100%;
-  /* Firefox fix: Ensure body can expand */
+  height: auto;
+  /* Firefox fix: Ensure body can expand with content */
   position: relative;
-  /* Prevent overscroll navigation gestures */
-  overscroll-behavior: contain;
+  /* Allow natural scroll behavior */
+  overscroll-behavior: auto;
 }
 
 #root {

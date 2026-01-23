@@ -1106,6 +1106,7 @@ const App = () => {
                 overflowY: 'auto', 
                 overflowX: 'hidden', 
                 minHeight: '100vh',
+                height: 'auto',
                 position: 'relative'
             }}>
                 {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense for React 19 compatibility */}
