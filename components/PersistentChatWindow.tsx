@@ -1950,9 +1950,7 @@ export function PersistentChatWindow() {
                   {/* Booking Information Bubble */}
                   <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
                     <h4 className="font-semibold text-gray-800 text-sm mb-4 flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                        <Sparkles className="w-3 h-3 text-gray-600" />
-                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                       Booking Details
                     </h4>
                     
