@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Button from '../components/Button';
 import { locationService } from '../services/locationService';
 import { deviceService } from '../services/deviceService';
@@ -371,7 +371,7 @@ const CITIES_BY_COUNTRY: Record<string, CityOption[]> = {
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, onLanguageSelect, handleLanguageSelect, language = 'id', onLanguageChange }) => {
     console.log('🎬 LandingPage component mounted');
-    const [imageLoaded, setImageLoaded] = useState(false);
+    // Removed unused imageLoaded state that caused unnecessary re-renders
     const [currentLanguage, setCurrentLanguage] = useState<Language>(language);
     const defaultLanguage: Language = 'id';
     const [isDetectingLocation, setIsDetectingLocation] = useState(false);
@@ -438,12 +438,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
         detectCountry();
     }, []); // Empty deps - runs ONLY ONCE
 
-    useEffect(() => {
-        const img = new Image();
-        img.src = imageSrc;
-        img.onload = () => setImageLoaded(true);
-        img.onerror = () => setImageLoaded(true);
-    }, []);
+    // Removed image preload effect - not needed for background images
+    // Background images load progressively and don't need preloading state
 
     const handleEnterClick = async () => {
         if (isDetectingLocation) return;
@@ -765,21 +761,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
     };
 
     
-    // Get cities for the currently detected/selected country
-    const availableCities = CITIES_BY_COUNTRY[countryCode] || [];
-    const filteredCities = searchQuery.trim()
-        ? availableCities.filter(city =>
-            city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            city.region.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        : availableCities;
-    const currentCountryData = COUNTRIES.find(c => c.code === countryCode);
+    // Get cities for the currently detected/selected country - memoize to prevent re-renders
+    const availableCities = useMemo(() => CITIES_BY_COUNTRY[countryCode] || [], [countryCode]);
+    const filteredCities = useMemo(() => 
+        searchQuery.trim()
+            ? availableCities.filter(city =>
+                city.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                city.region.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+            : availableCities,
+        [searchQuery, availableCities]
+    );
+    const currentCountryData = useMemo(() => COUNTRIES.find(c => c.code === countryCode), [countryCode]);
 
     return (
         <div className="landing-page-container scrollable relative w-full h-screen bg-gray-900 overflow-y-auto" style={{ maxHeight: '100vh' }}>
             <PageNumberBadge pageNumber={1} pageName="LandingPage" />
             
-            {/* Fixed background image - stays in place while scrolling */}
+            {/* Fixed background image - stays in place while scrolling - optimized for performance */}
             <div
                 className="fixed inset-0 z-0 w-full h-full bg-gray-900"
                 style={{
@@ -787,11 +786,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                     backgroundSize: 'cover',
                     backgroundPosition: 'center center',
                     backgroundRepeat: 'no-repeat',
+                    willChange: 'contents', // Hint browser to optimize layer
                 }}
             />
             
-            {/* Absolute overlay */}
-            <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" />
+            {/* Absolute overlay - optimized for GPU acceleration */}
+            <div 
+                className="absolute inset-0 z-10 bg-gradient-to-b from-black/60 via-black/40 to-black/60 pointer-events-none" 
+                style={{ willChange: 'contents' }}
+            />
             
             {/* Scrollable content */}
             <div className="scrollable relative z-20 flex flex-col items-center justify-center text-white px-3 sm:px-6 text-center w-full min-h-screen">

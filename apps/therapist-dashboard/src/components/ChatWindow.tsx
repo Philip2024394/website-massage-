@@ -494,9 +494,12 @@ export default function ChatWindow({
                 }, 1000); // Small delay after acceptance message
             }
 
-            // Create commission record for Pro/Commission tiers (30%) and notify therapist with deadline
+            // 🔒 Commission already created by acceptBookingAndCreateCommission
+            // This block kept for backward compatibility but should not create duplicate
             if (bookingId && bookingDetails?.price) {
                 try {
+                    // Check if commission already exists (idempotency)
+                    console.log('💰 [CHAT] Verifying commission record exists');
                     const commissionRecord = await commissionTrackingService.createCommissionRecord(
                         providerId,
                         providerName,

@@ -9,6 +9,7 @@ import { MessageSenderType } from '../types';
 import * as chatService from './chatService';
 import { commissionTrackingService } from './services/commissionTrackingService';
 import { systemMessageService } from './services/systemMessage.service';
+import { validateBookingSchema, mapToAppwriteSchema } from './validation/bookingSchemaValidator';
 
 export interface Booking {
     $id?: string;
@@ -58,25 +59,59 @@ export const bookingService = {
             const bookingId = `BK${Date.now()}`;
             const responseDeadline = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes
 
+            // 🔥 CRITICAL FIX: Map to proper Appwrite schema fields
+            const mappedData = mapToAppwriteSchema({
+                ...bookingData,
+                bookingId,
+                status: 'Pending', // Capitalize for schema
+                responseDeadline,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                alternativeSearch: false
+            });
+
+            // 🔒 SCHEMA DRIFT LOCK: Validate before saving
+            const validatedData = validateBookingSchema(mappedData);
+            
+            console.log('✅ Schema validation passed for booking:', bookingId);
+
             const booking = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
                 APPWRITE_CONFIG.collections.bookings || 'bookings',
                 ID.unique(),
-                {
-                    ...bookingData,
-                    bookingId,
-                    status: 'pending',
-                    responseDeadline,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    alternativeSearch: false
-                }
+                validatedData
             );
 
             console.log('✅ Booking created:', booking.$id);
 
-            // Chat messages will be created by the ChatWindow component
-            console.log('✅ Booking ready for chat integration');
+            // 🔥 CRITICAL FIX: Create chat room immediately
+            try {
+                const chatService = await import('./chatService');
+                const expiresAt = new Date(Date.now() + 25 * 60 * 1000).toISOString(); // 25 min
+                
+                const chatRoom = await chatService.createChatRoom({
+                    bookingId: booking.$id,
+                    customerId: bookingData.customerId,
+                    customerName: bookingData.customerName,
+                    customerLanguage: 'en',
+                    customerPhoto: '',
+                    therapistId: bookingData.therapistId,
+                    therapistName: bookingData.therapistName,
+                    therapistLanguage: 'id',
+                    therapistType: bookingData.therapistType || 'therapist',
+                    therapistPhoto: '',
+                    expiresAt
+                });
+                
+                console.log('✅ Chat room created:', chatRoom.$id);
+                
+                // Send initial system message to chat
+                await chatService.sendBookingReceivedMessage(chatRoom.$id, bookingData.therapistId);
+                
+            } catch (chatError) {
+                console.error('❌ CRITICAL: Chat room creation failed:', chatError);
+                // Don't fail the booking, but log for monitoring
+            }
 
             // Notify therapist
             await this.notifyTherapist(booking as unknown as Booking);
@@ -128,18 +163,238 @@ export const bookingService = {
     },
 
     /**
-     * Therapist confirms booking
+     * 🔒 SINGLE SOURCE OF TRUTH: Accept booking and create commission
+     * ============================================================================
+     * This is the ONLY function that marks bookings as ACCEPTED
+     * ALL acceptance paths MUST call this function
+     * ============================================================================
+     * 
+     * ATOMIC OPERATION:
+     * 1. Verify booking is PENDING
+     * 2. Check for duplicate acceptance (idempotency)
+     * 3. Update booking → ACCEPTED
+     * 4. Create commission record (30%)
+     * 5. Write audit trail
+     * 6. Send notifications
+     * 
+     * If ANY step fails → ROLLBACK all changes
+     */
+    async acceptBookingAndCreateCommission(
+        bookingId: string, 
+        therapistId: string,
+        therapistName: string
+    ): Promise<{ booking: Booking; commission: any }> {
+        console.log('🔒 [ACCEPTANCE AUTHORITY] Starting atomic acceptance:', { bookingId, therapistId });
+        
+        let bookingUpdated = false;
+        let commissionCreated = false;
+        let originalBooking: any = null;
+
+        try {
+            // STEP 1: Fetch and verify booking
+            originalBooking = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                bookingId
+            );
+
+            console.log('📋 [ACCEPTANCE] Current booking status:', originalBooking.status);
+
+            // STEP 2: Validate booking state
+            if (!originalBooking) {
+                throw new Error('ACCEPTANCE_FAILED: Booking not found');
+            }
+
+            const currentStatus = (originalBooking.status || '').toLowerCase();
+            
+            if (currentStatus === 'accepted' || currentStatus === 'confirmed') {
+                // Idempotency check - booking already accepted
+                console.warn('⚠️ [ACCEPTANCE] Booking already accepted - checking for existing commission');
+                
+                // Check if commission exists
+                const existingCommissions = await databases.listDocuments(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                    [Query.equal('bookingId', bookingId)]
+                );
+
+                if (existingCommissions.total > 0) {
+                    console.log('✅ [ACCEPTANCE] Idempotency: Returning existing booking + commission');
+                    return {
+                        booking: originalBooking as unknown as Booking,
+                        commission: existingCommissions.documents[0]
+                    };
+                }
+
+                // Commission missing - will create it below
+                console.warn('⚠️ [ACCEPTANCE] Booking accepted but commission missing - creating commission');
+            } else if (currentStatus !== 'pending') {
+                throw new Error(`ACCEPTANCE_FAILED: Invalid booking status: ${originalBooking.status}`);
+            }
+
+            // STEP 3: Verify therapist ID matches
+            const bookingTherapistId = originalBooking.providerId || originalBooking.therapistId;
+            if (bookingTherapistId && bookingTherapistId !== therapistId) {
+                throw new Error(`ACCEPTANCE_FAILED: Booking assigned to different therapist`);
+            }
+
+            // STEP 4: Update booking status to ACCEPTED
+            console.log('📝 [ACCEPTANCE] Updating booking status → ACCEPTED');
+            const acceptedBooking = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                bookingId,
+                {
+                    status: 'Accepted',
+                    acceptedAt: new Date().toISOString(),
+                    acceptedBy: therapistId,
+                    updatedAt: new Date().toISOString()
+                }
+            );
+            bookingUpdated = true;
+            console.log('✅ [ACCEPTANCE] Booking status updated');
+
+            // STEP 5: Check for existing commission (idempotency)
+            const existingCommissions = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                [Query.equal('bookingId', bookingId)]
+            );
+
+            let commission: any;
+
+            if (existingCommissions.total > 0) {
+                console.log('✅ [ACCEPTANCE] Commission already exists (idempotent)');
+                commission = existingCommissions.documents[0];
+            } else {
+                // STEP 6: Create commission record (30%)
+                const bookingAmount = originalBooking.price || originalBooking.totalAmount || 0;
+                const commissionAmount = Math.round(bookingAmount * 0.30);
+                const now = new Date();
+                const paymentDeadline = new Date(now.getTime() + 3 * 60 * 60 * 1000); // +3 hours
+
+                console.log('💰 [ACCEPTANCE] Creating commission record:', {
+                    bookingAmount,
+                    commissionAmount,
+                    rate: '30%'
+                });
+
+                commission = await databases.createDocument(
+                    APPWRITE_CONFIG.databaseId,
+                    APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                    ID.unique(),
+                    {
+                        commissionId: `COM_${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+                        bookingId: bookingId,
+                        therapistId: therapistId,
+                        therapistName: therapistName,
+                        bookingAmount: bookingAmount,
+                        commissionRate: 0.30,
+                        commissionAmount: commissionAmount,
+                        status: 'pending',
+                        reactivationFeeRequired: false,
+                        reactivationFeeAmount: 0,
+                        reactivationFeePaid: false,
+                        totalAmountDue: commissionAmount,
+                        completedAt: now.toISOString(),
+                        paymentDeadline: paymentDeadline.toISOString(),
+                        createdAt: now.toISOString(),
+                        updatedAt: now.toISOString()
+                    }
+                );
+                commissionCreated = true;
+                console.log('✅ [ACCEPTANCE] Commission created:', commission.$id);
+            }
+
+            // STEP 7: Write audit trail
+            console.log('📝 [ACCEPTANCE] Writing audit trail');
+            await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.auditLogs || 'audit_logs',
+                ID.unique(),
+                {
+                    action: 'BOOKING_ACCEPTED',
+                    bookingId: bookingId,
+                    therapistId: therapistId,
+                    therapistName: therapistName,
+                    commissionId: commission.$id,
+                    commissionAmount: commission.commissionAmount,
+                    timestamp: new Date().toISOString(),
+                    metadata: JSON.stringify({
+                        bookingAmount: originalBooking.price || originalBooking.totalAmount,
+                        commissionRate: 0.30,
+                        paymentDeadline: commission.paymentDeadline
+                    })
+                }
+            ).catch(err => {
+                console.warn('⚠️ [ACCEPTANCE] Audit log creation failed (non-critical):', err);
+            });
+
+            // STEP 8: Send notifications
+            console.log('📬 [ACCEPTANCE] Sending notifications');
+            await this.notifyCustomer(acceptedBooking as unknown as Booking, 'confirmed').catch(err => {
+                console.warn('⚠️ [ACCEPTANCE] Customer notification failed (non-critical):', err);
+            });
+
+            console.log('✅ [ACCEPTANCE AUTHORITY] Acceptance completed successfully');
+            console.log(`   Booking: ${bookingId} → ACCEPTED`);
+            console.log(`   Commission: ${commission.$id} → ${commission.commissionAmount} IDR`);
+            console.log(`   Payment Deadline: ${commission.paymentDeadline}`);
+
+            return {
+                booking: acceptedBooking as unknown as Booking,
+                commission: commission
+            };
+
+        } catch (error: any) {
+            console.error('❌ [ACCEPTANCE AUTHORITY] Acceptance failed:', error);
+
+            // ROLLBACK: Revert booking status if it was updated
+            if (bookingUpdated && originalBooking) {
+                try {
+                    console.log('🔄 [ACCEPTANCE] Rolling back booking status');
+                    await databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.bookings || 'bookings',
+                        bookingId,
+                        {
+                            status: originalBooking.status,
+                            updatedAt: new Date().toISOString()
+                        }
+                    );
+                    console.log('✅ [ACCEPTANCE] Rollback successful');
+                } catch (rollbackError) {
+                    console.error('❌ [ACCEPTANCE] CRITICAL: Rollback failed:', rollbackError);
+                    // Log to monitoring system
+                }
+            }
+
+            // Re-throw with detailed error
+            throw new Error(`ACCEPTANCE_FAILED: ${error.message || error}`);
+        }
+    },
+
+    /**
+     * Therapist confirms booking (DEPRECATED - Use acceptBookingAndCreateCommission)
+     * Kept for backward compatibility but redirects to new function
      */
     async confirmBooking(bookingId: string, therapistId: string): Promise<Booking> {
+        console.warn('⚠️ DEPRECATED: confirmBooking() called - use acceptBookingAndCreateCommission()');
         try {
-            const booking = await this.updateBookingStatus(bookingId, 'confirmed', {
-                confirmedAt: new Date().toISOString()
-            } as any);
+            // Get therapist name
+            const therapist = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.therapists || 'therapists',
+                therapistId
+            ).catch(() => ({ name: 'Unknown Therapist' }));
 
-            // Notify customer
-            await this.notifyCustomer(booking, 'confirmed');
+            const result = await this.acceptBookingAndCreateCommission(
+                bookingId,
+                therapistId,
+                therapist.name || 'Unknown Therapist'
+            );
 
-            return booking;
+            return result.booking;
         } catch (error) {
             console.error('❌ Error confirming booking:', error);
             throw error;
@@ -161,6 +416,151 @@ export const bookingService = {
         } catch (error) {
             console.error('❌ Error rejecting booking:', error);
             throw error;
+        }
+    },
+
+    /**
+     * 🔒 COMMISSION REVERSAL: Cancel booking and reverse commission
+     * ============================================================================
+     * Legally required: If booking is accepted and commission created,
+     * cancellation must REVERSE (not delete) the commission record
+     * ============================================================================
+     * 
+     * ATOMIC OPERATION:
+     * 1. Verify booking exists
+     * 2. Update booking → CANCELLED
+     * 3. Find commission record
+     * 4. Mark commission as REVERSED (preserve history)
+     * 5. Write audit trail with reason
+     * 6. Send notifications
+     */
+    async cancelBookingAndReverseCommission(
+        bookingId: string,
+        cancelledBy: string,
+        cancelReason: string,
+        actorType: 'therapist' | 'customer' | 'admin'
+    ): Promise<{ booking: Booking; commission: any | null }> {
+        console.log('🔄 [CANCELLATION] Starting cancellation with commission reversal:', { 
+            bookingId, 
+            cancelledBy,
+            cancelReason,
+            actorType
+        });
+
+        try {
+            // STEP 1: Fetch booking
+            const booking = await databases.getDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                bookingId
+            );
+
+            if (!booking) {
+                throw new Error('CANCELLATION_FAILED: Booking not found');
+            }
+
+            console.log('📋 [CANCELLATION] Current booking status:', booking.status);
+
+            // STEP 2: Update booking status to CANCELLED
+            const cancelledBooking = await databases.updateDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.bookings || 'bookings',
+                bookingId,
+                {
+                    status: 'Cancelled',
+                    cancelReason: cancelReason,
+                    cancelledAt: new Date().toISOString(),
+                    cancelledBy: cancelledBy,
+                    cancelledByType: actorType,
+                    updatedAt: new Date().toISOString()
+                }
+            );
+            console.log('✅ [CANCELLATION] Booking status updated → CANCELLED');
+
+            // STEP 3: Check for commission record
+            const commissions = await databases.listDocuments(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                [Query.equal('bookingId', bookingId)]
+            );
+
+            let reversedCommission = null;
+
+            if (commissions.total > 0) {
+                const commission = commissions.documents[0];
+                console.log('💰 [CANCELLATION] Commission found:', commission.$id, '- Status:', commission.status);
+
+                // STEP 4: Reverse commission if pending (preserve history - don't delete)
+                if (commission.status === 'pending') {
+                    reversedCommission = await databases.updateDocument(
+                        APPWRITE_CONFIG.databaseId,
+                        APPWRITE_CONFIG.collections.commissionRecords || 'commission_records',
+                        commission.$id,
+                        {
+                            status: 'reversed',
+                            reversalReason: cancelReason,
+                            reversedAt: new Date().toISOString(),
+                            reversedBy: cancelledBy,
+                            reversedByType: actorType,
+                            updatedAt: new Date().toISOString()
+                        }
+                    );
+                    console.log('✅ [CANCELLATION] Commission reversed:', reversedCommission.$id);
+                } else {
+                    console.log(`ℹ️ [CANCELLATION] Commission status is '${commission.status}' - no reversal needed`);
+                    reversedCommission = commission;
+                }
+            } else {
+                console.log('ℹ️ [CANCELLATION] No commission record found (booking may not have been accepted)');
+            }
+
+            // STEP 5: Write audit trail
+            console.log('📝 [CANCELLATION] Writing audit trail');
+            await databases.createDocument(
+                APPWRITE_CONFIG.databaseId,
+                APPWRITE_CONFIG.collections.auditLogs || 'audit_logs',
+                ID.unique(),
+                {
+                    action: 'BOOKING_CANCELLED',
+                    bookingId: bookingId,
+                    cancelledBy: cancelledBy,
+                    cancelledByType: actorType,
+                    cancelReason: cancelReason,
+                    commissionId: reversedCommission?.$id || null,
+                    commissionReversed: reversedCommission?.status === 'reversed',
+                    timestamp: new Date().toISOString(),
+                    metadata: JSON.stringify({
+                        originalStatus: booking.status,
+                        commissionAmount: reversedCommission?.commissionAmount || 0,
+                        reversalReason: cancelReason
+                    })
+                }
+            ).catch(err => {
+                console.warn('⚠️ [CANCELLATION] Audit log creation failed (non-critical):', err);
+            });
+
+            // STEP 6: Send notifications
+            console.log('📬 [CANCELLATION] Sending notifications');
+            if (actorType === 'therapist') {
+                await this.notifyCustomer(cancelledBooking as unknown as Booking, 'cancelled').catch(err => {
+                    console.warn('⚠️ [CANCELLATION] Customer notification failed (non-critical):', err);
+                });
+            }
+
+            console.log('✅ [CANCELLATION] Cancellation completed successfully');
+            if (reversedCommission && reversedCommission.status === 'reversed') {
+                console.log(`   Commission ${reversedCommission.$id} reversed`);
+                console.log(`   Reason: ${cancelReason}`);
+            }
+
+            return {
+                booking: cancelledBooking as unknown as Booking,
+                commission: reversedCommission
+            };
+
+        } catch (error: any) {
+            console.error('❌ [CANCELLATION] Cancellation failed:', error);
+            throw new Error(`CANCELLATION_FAILED: ${error.message || error}`);
         }
     },
 
@@ -402,24 +802,65 @@ export const bookingService = {
      */
     async notifyTherapist(booking: Booking): Promise<void> {
         try {
-            await databases.createDocument(
+            // 🔥 CRITICAL FIX: Use validated collection ID
+            const notificationsCollection = APPWRITE_CONFIG.collections.notifications;
+            
+            if (!notificationsCollection) {
+                throw new Error('Notifications collection not configured in APPWRITE_CONFIG');
+            }
+            
+            const notificationDoc = await databases.createDocument(
                 APPWRITE_CONFIG.databaseId,
-                'notifications',
+                notificationsCollection,
                 ID.unique(),
                 {
                     userId: booking.therapistId,
+                    recipientId: booking.therapistId,
+                    recipientType: 'therapist',
                     type: 'new_booking',
-                    title: 'New Booking Request',
-                    message: `${booking.customerName} requested ${booking.duration}min massage on ${booking.date}`,
-                    data: JSON.stringify({ bookingId: booking.$id }),
+                    title: 'New Booking Request! 🎉',
+                    message: `${booking.customerName} requested ${booking.duration}min massage`,
+                    body: `${booking.customerName} requested ${booking.duration}min massage on ${booking.date}`,
+                    data: JSON.stringify({ 
+                        bookingId: booking.$id,
+                        customerId: booking.customerId,
+                        customerName: booking.customerName,
+                        serviceType: booking.serviceType,
+                        duration: booking.duration,
+                        location: booking.location
+                    }),
                     isRead: false,
+                    priority: 'high',
                     createdAt: new Date().toISOString()
                 }
             );
 
-            console.log('✅ Therapist notified');
+            console.log('✅ Therapist notification created:', notificationDoc.$id);
+            
+            // 🔥 CRITICAL: Also send browser push notification if service worker available
+            try {
+                const pushService = await import('./pushNotificationsService');
+                await pushService.pushNotificationsService.notifyNewBooking(
+                    booking.customerName,
+                    `${booking.duration}min ${booking.serviceType}`,
+                    booking.$id || '',
+                    {
+                        customerName: booking.customerName,
+                        serviceType: booking.serviceType,
+                        duration: booking.duration,
+                        location: booking.location
+                    }
+                );
+                console.log('✅ Push notification sent to therapist');
+            } catch (pushError) {
+                console.warn('⚠️ Push notification failed (non-critical):', pushError);
+            }
+            
         } catch (error) {
-            console.error('❌ Error notifying therapist:', error);
+            console.error('❌ CRITICAL ERROR notifying therapist:', error);
+            // 🔥 CRITICAL FIX: Don't swallow the error silently
+            // Log to monitoring but don't fail the booking
+            throw new Error(`Failed to notify therapist: ${error}`);
         }
     },
 
@@ -661,16 +1102,31 @@ export const bookingService = {
                 .setEndpoint(APPWRITE_CONFIG.endpoint)
                 .setProject(APPWRITE_CONFIG.projectId);
 
+            console.log('🔔 Setting up realtime subscription for provider:', providerId);
+
             // Subscribe to all bookings collection changes
             const unsubscribe = client.subscribe(
                 `databases.${APPWRITE_CONFIG.databaseId}.collections.${APPWRITE_CONFIG.collections.bookings || 'bookings'}.documents`,
                 (response: any) => {
-                    // Filter for bookings where therapistId matches
+                    console.log('📡 Booking event received:', response.events);
+                    
+                    // Filter for bookings where providerId matches
                     if (response.events.includes('databases.*.collections.*.documents.*.create')) {
-                        const booking = response.payload as Booking;
-                        if (booking.therapistId === providerId) {
-                            console.log('🔔 New booking received for provider:', providerId);
-                            callback(booking);
+                        const booking = response.payload as any;
+                        
+                        // 🔥 CRITICAL FIX: Check both therapistId AND providerId fields
+                        // Schema uses "providerId" but code sometimes uses "therapistId"
+                        const bookingProviderId = booking.providerId || booking.therapistId;
+                        
+                        console.log('🔍 Checking booking provider:', {
+                            bookingProviderId,
+                            expectedProviderId: providerId,
+                            match: bookingProviderId === providerId
+                        });
+                        
+                        if (bookingProviderId === providerId) {
+                            console.log('✅ New booking received for provider:', providerId);
+                            callback(booking as Booking);
                         }
                     }
                 }

@@ -979,7 +979,12 @@ const App = () => {
                 mobileDetection.isPortrait ? 'portrait-mode' : 'landscape-mode'  
             } ${
                 mobileDetection.hasTouch ? 'touch-enabled' : 'no-touch'
-            }`}>
+            }`} style={{ 
+                overflowY: 'auto', 
+                overflowX: 'hidden', 
+                minHeight: '100vh',
+                position: 'relative'
+            }}>
                 {/* PRODUCTION-FREEZE FIX: Temporarily disable Suspense for React 19 compatibility */}
                 {/* <Suspense fallback={<div className="p-6 text-gray-600">Loading…</div>}> */}
                 <AppRouter

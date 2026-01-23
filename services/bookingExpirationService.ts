@@ -175,34 +175,37 @@ class BookingExpirationService {
 
   private async broadcastBookingToAll(booking: any) {
     try {
-      console.log(`🔍 Looking for available therapists to broadcast booking ${booking.$id}...`);
+      console.log(`🔍 Broadcasting booking ${booking.$id} to ALL therapists (Available AND Busy)...`);
       
-      // Get all available therapists
-      const availableTherapists = await databases.listDocuments(
+      // Get ALL therapists with status Available OR Busy (exclude Closed/Restricted)
+      const eligibleTherapists = await databases.listDocuments(
         DATABASE_ID,
         VALIDATED_COLLECTIONS.therapists,
-        [Query.equal('status', 'Available')]
+        [Query.or([
+          Query.equal('status', 'Available'),
+          Query.equal('status', 'Busy')
+        ])]
       );
 
-      // Also try to get total therapist count for debugging
+      // Also get total therapist count for debugging
       const totalTherapists = await databases.listDocuments(
         DATABASE_ID,
         VALIDATED_COLLECTIONS.therapists,
         []
       );
 
-      console.log(`📊 Therapist Status: ${availableTherapists.documents.length} available out of ${totalTherapists.documents.length} total`);
+      console.log(`📊 Therapist Status: ${eligibleTherapists.documents.length} eligible (Available + Busy) out of ${totalTherapists.documents.length} total`);
 
-      if (availableTherapists.documents.length === 0) {
-        console.log('⚠️ No available therapists to broadcast to - all therapists may be busy or offline');
+      if (eligibleTherapists.documents.length === 0) {
+        console.log('⚠️ No eligible therapists to broadcast to - all therapists may be offline or restricted');
         return;
       }
 
-      console.log(`📢 Broadcasting expired booking ${booking.$id} to ${availableTherapists.documents.length} therapist(s)`);
+      console.log(`📢 Broadcasting expired booking ${booking.$id} to ${eligibleTherapists.documents.length} therapist(s) - FIRST TO ACCEPT GETS THE BOOKING`);
 
       // In a real app, you'd send WhatsApp messages or notifications here
       // For now, we'll just log it
-      for (const therapist of availableTherapists.documents) {
+      for (const therapist of eligibleTherapists.documents) {
         console.log(`📱 Notifying therapist ${therapist.$id}: ${therapist.name} (Status: ${therapist.status})`);
         // TODO: Implement actual WhatsApp/notification sending
         // Example: sendWhatsAppMessage(therapist.phone, message);
@@ -216,7 +219,7 @@ class BookingExpirationService {
         {
           broadcast: true,
           broadcastAt: new Date().toISOString(),
-          broadcastCount: availableTherapists.documents.length
+          broadcastCount: eligibleTherapists.documents.length
         }
       );
 

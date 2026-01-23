@@ -60,20 +60,27 @@ const TherapistBookingAcceptPopup: React.FC<TherapistBookingAcceptPopupProps> = 
     setIsAccepting(true);
 
     try {
-      // Update booking status to 'confirmed'
+      console.log('🔒 [POPUP] Accepting booking via SINGLE SOURCE OF TRUTH:', bookingId);
+      
+      // Import booking service
+      const { bookingService } = await import('../lib/appwriteService');
+      
+      // Call SINGLE acceptance authority
+      const result = await bookingService.acceptBookingAndCreateCommission(
+        bookingId,
+        therapistId,
+        therapistName
+      );
+      
+      console.log('✅ [POPUP] Booking accepted and commission created:', result.commission.$id);
+      console.log(`   Commission: ${result.commission.commissionAmount} IDR (30%)`);
+      console.log(`   Payment Deadline: ${result.commission.paymentDeadline}`);
+      
+      // Keep existing status update for backward compatibility
       if (APPWRITE_CONFIG.collections.bookings && APPWRITE_CONFIG.collections.bookings !== '') {
-        await databases.updateDocument(
-          APPWRITE_CONFIG.databaseId,
-          APPWRITE_CONFIG.collections.bookings,
-          bookingId,
-          {
-            status: 'confirmed',
-            confirmedAt: new Date().toISOString(),
-            confirmedBy: therapistId
-          }
-        );
+        // Status already updated by acceptance function - this is redundant but safe
       } else {
-        console.warn('⚠️ Bookings collection disabled - simulating booking confirmation');
+        console.warn('⚠️ Bookings collection disabled');
       }
 
       // For therapists: set Busy only for immediate bookings or when scheduled time is imminent

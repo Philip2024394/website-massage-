@@ -40,7 +40,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     };
 
     const content = (
-        <div className={isFullScreen ? "h-full flex flex-col mobile-optimized" : "max-w-md mx-auto h-full bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
+        <div className={isFullScreen ? "min-h-screen flex flex-col mobile-optimized" : "max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col mobile-optimized container-mobile"}>
             <div className="flex-1 content-landscape overflow-y-auto overflow-x-hidden">
                 {children}
             </div>

@@ -26,7 +26,7 @@ import { Client, Functions } from 'appwrite';
 
 const APPWRITE_ENDPOINT = 'https://syd.cloud.appwrite.io/v1';
 const APPWRITE_PROJECT_ID = '68f23b11000d25eb3664'; // Main project ID
-const SEND_MESSAGE_FUNCTION_ID = 'sendChatMessage'; // Appwrite Function ID
+const SEND_MESSAGE_FUNCTION_ID = '6972e0c30012060a2762'; // Appwrite Function ID (deployed sendChatMessage)
 
 // ============================================================================
 // TYPES
@@ -108,10 +108,16 @@ class ServerEnforcedChatService {
       // Parse the response
       let response: SendMessageResponse;
       
+      console.log('🔍 [SERVER] Raw execution response:', execution);
+      console.log('🔍 [SERVER] Response body:', execution.responseBody);
+      console.log('🔍 [SERVER] Status code:', execution.statusCode);
+      
       try {
         response = JSON.parse(execution.responseBody);
-      } catch {
+        console.log('🔍 [SERVER] Parsed response:', response);
+      } catch (parseError) {
         console.error('❌ [SERVER] Failed to parse response:', execution.responseBody);
+        console.error('❌ [SERVER] Parse error:', parseError);
         return {
           success: false,
           error: 'PARSE_ERROR',

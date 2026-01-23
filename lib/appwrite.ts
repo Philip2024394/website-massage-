@@ -36,6 +36,7 @@ export const COLLECTIONS = {
     // Production Booking System
     THERAPIST_MATCHES: 'therapist_matches', // ✅ Therapist search results  
     CHAT_SESSIONS: 'chat_sessions', // ✅ Active chat sessions
+    CHAT_MESSAGES: 'chat_messages', // ✅ Chat messages
     ANALYTICS: '', // ⚠️ DISABLED - Collection doesn't exist
     ANALYTICS_EVENTS: '', // ⚠️ DISABLED - Collection doesn't exist
     ADMINS: '', // ⚠️ DISABLED - Collection doesn't exist
@@ -54,7 +55,7 @@ export const COLLECTIONS = {
 };
 
 // Storage bucket IDs
+// Storage bucket IDs
 export const STORAGE_BUCKETS = {
     PARTNER_IMAGES: 'partner_images_bucket'
 };
-

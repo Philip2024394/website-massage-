@@ -166,6 +166,8 @@ export interface SelectedService {
   serviceName: string;
   duration: number; // 60, 90, or 120
   price: number;
+  // Enhanced for scheduled bookings (deposit added AFTER therapist accepts)
+  isScheduled?: boolean;
 }
 
 // Chat window state
@@ -226,7 +228,7 @@ interface PersistentChatContextValue {
   isLocked: boolean;
   isConnected: boolean;
   openChat: (therapist: ChatTherapist, mode?: 'book' | 'schedule' | 'price') => void;
-  openChatWithService: (therapist: ChatTherapist, service: SelectedService) => void; // From Menu Harga
+  openChatWithService: (therapist: ChatTherapist, service: SelectedService, options?: { isScheduled?: boolean }) => void; // Enhanced Menu Harga integration
   minimizeChat: () => void;
   maximizeChat: () => void;
   closeChat: () => void;
@@ -446,6 +448,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   // Open chat with therapist
   const openChat = useCallback(async (therapist: ChatTherapist, mode: 'book' | 'schedule' | 'price' = 'book') => {
     console.log('💬 Opening chat with:', therapist.name, 'mode:', mode);
+    console.log('🔒 Locking chat to prevent accidental closure during booking');
+    
+    // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during booking
+    setIsLocked(true);
     
     // Set initial state
     setChatState(prev => ({
@@ -460,8 +466,6 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       selectedService: null, // Reset pre-selected service
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
     }));
-    
-    setIsLocked(true);
 
     // Load existing messages
     if (currentUserId) {
@@ -476,23 +480,56 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }
   }, [currentUserId, loadMessages]);
 
+  // Add local message (legacy compatibility) - MOVED HERE to fix initialization order
+  const addMessage = useCallback((message: Omit<LegacyMessage, 'id' | 'timestamp'>) => {
+    const newMessage: ChatMessage = {
+      $id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      senderId: message.senderId,
+      senderName: message.senderName,
+      senderType: message.senderId === 'system' ? 'system' : 'customer',
+      recipientId: chatState.therapist?.id || '',
+      recipientName: chatState.therapist?.name || '',
+      message: message.message,
+      createdAt: new Date().toISOString(),
+      read: false,
+      messageType: message.type === 'booking' ? 'booking' : message.type === 'system' ? 'system' : 'text',
+      roomId: '',
+      isSystemMessage: message.type === 'system',
+    };
+
+    setChatState(prev => ({
+      ...prev,
+      messages: [...prev.messages, newMessage],
+    }));
+  }, [chatState.therapist]);
+
   // Open chat with pre-selected service from Menu Harga
-  // This skips the duration selection and goes directly to confirmation
-  const openChatWithService = useCallback(async (therapist: ChatTherapist, service: { serviceName: string; duration: number; price: number }) => {
-    console.log('💬 Opening chat with pre-selected service:', therapist.name, service);
+  // Enhanced to support both immediate and scheduled bookings with deposits
+  const openChatWithService = useCallback(async (
+    therapist: ChatTherapist, 
+    service: { serviceName: string; duration: number; price: number },
+    options?: { isScheduled?: boolean; depositRequired?: boolean; depositPercentage?: number }
+  ) => {
+    console.log('💬 Opening chat with pre-selected service:', therapist.name, service, options);
     
-    // Set state with pre-selected service - skip duration step
+    const isScheduled = options?.isScheduled || false;
+    
+    // Set state with pre-selected service
     setChatState(prev => ({
       ...prev,
       isOpen: true,
       isMinimized: false,
       therapist,
-      bookingMode: 'price', // Price mode from Menu Harga
-      bookingStep: 'confirmation', // Skip to confirmation since service already selected
+      bookingMode: isScheduled ? 'schedule' : 'price', // Schedule mode for scheduled bookings, price mode for immediate
+      bookingStep: isScheduled ? 'datetime' : 'confirmation', // For scheduled: go to datetime selection, for immediate: skip to confirmation
       selectedDuration: service.duration,
       selectedDate: null,
       selectedTime: null,
-      selectedService: service, // Store the pre-selected service details
+      selectedService: {
+        ...service,
+        isScheduled
+        // Deposit info will be added AFTER therapist accepts
+      }, // Store the pre-selected service details
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
     }));
     
@@ -505,11 +542,25 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         setChatState(prev => ({
           ...prev,
           messages,
-          // Keep confirmation step even with history - user chose specific service
+          // Keep step flow based on booking type
         }));
       }
     }
-  }, [currentUserId, loadMessages]);
+
+    // Add system message about the booking type
+    const systemMessage = isScheduled 
+      ? `📅 Scheduled booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')} (Deposit required after therapist accepts)`
+      : `🚀 Immediate booking selected: ${service.serviceName} (${service.duration} min) - Total: Rp ${service.price.toLocaleString('id-ID')}`;
+    
+    addMessage({
+      id: Date.now().toString(),
+      text: systemMessage,
+      sender: 'system',
+      timestamp: new Date(),
+      isSystemNotification: true
+    });
+
+  }, [currentUserId, loadMessages, addMessage]);
 
   // Minimize chat - reset booking flow to duration selection
   const minimizeChat = useCallback(() => {
@@ -593,34 +644,23 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Add local message (legacy compatibility)
-  const addMessage = useCallback((message: Omit<LegacyMessage, 'id' | 'timestamp'>) => {
-    const newMessage: ChatMessage = {
-      $id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      senderId: message.senderId,
-      senderName: message.senderName,
-      senderType: message.senderId === 'system' ? 'system' : 'customer',
-      recipientId: chatState.therapist?.id || '',
-      recipientName: chatState.therapist?.name || '',
-      message: message.message,
-      createdAt: new Date().toISOString(),
-      read: false,
-      messageType: message.type === 'booking' ? 'booking' : message.type === 'system' ? 'system' : 'text',
-      roomId: '',
-      isSystemMessage: message.type === 'system',
-    };
-
-    setChatState(prev => ({
-      ...prev,
-      messages: [...prev.messages, newMessage],
-    }));
-  }, [chatState.therapist]);
-
   // Send message - SAVES TO APPWRITE (with spam detection)
   const sendMessage = useCallback(async (messageContent: string): Promise<{ sent: boolean; warning?: string }> => {
+    console.log('═══════════════════════════════════════════');
+    console.log('🔍 [SEND MESSAGE] Validation Check');
+    console.log('═══════════════════════════════════════════');
+    console.log('Current User ID:', currentUserId || '❌ MISSING');
+    console.log('Current User Name:', currentUserName || '❌ MISSING');
+    console.log('Message Content Length:', messageContent?.trim()?.length || 0);
+    console.log('Therapist:', chatState.therapist?.name || '❌ MISSING', chatState.therapist?.id || '');
+    console.log('═══════════════════════════════════════════');
+    
     if (!currentUserId || !messageContent.trim() || !chatState.therapist) {
-      console.warn('Cannot send message: missing user, content, or therapist');
-      return { sent: false };
+      console.error('❌ Cannot send message: missing required data');
+      console.error('   - currentUserId:', !!currentUserId);
+      console.error('   - messageContent:', !!messageContent.trim());
+      console.error('   - therapist:', !!chatState.therapist);
+      return { sent: false, warning: 'Missing required information to send message' };
     }
 
     const therapist = chatState.therapist;
@@ -793,7 +833,7 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     if (!availabilityCheck.allowed) {
       console.log(`🚫 [AvailabilityEnforcement] Booking blocked: ${availabilityCheck.reason}`);
       addSystemNotification(availabilityCheck.userMessage || 'Booking not available');
-      return; // EXIT - Do not proceed with booking
+      return false; // EXIT - Booking creation failed
     }
     
     // Calculate commission (30% admin, 70% provider) - uses price which is already discounted if applicable
@@ -864,11 +904,11 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
       // Start 5 minute countdown for therapist response
       startCountdown(300, async () => {
-        // Therapist didn't respond in time - expire booking
+        // Therapist didn't respond in time - expire booking and broadcast to ALL therapists
         if (lifecycleBooking.$id) {
           await bookingLifecycleService.expireBooking(lifecycleBooking.$id, 'Therapist response timeout');
         }
-        addSystemNotification('⏰ No therapist accepted in 5 minutes. Your request is sent to other available therapists.');
+        addSystemNotification('⏰ 5-minute timer expired! Your booking is now being sent to ALL available and busy therapists. First to accept gets the booking.');
         setChatState(prev => ({
           ...prev,
           currentBooking: prev.currentBooking ? { 
@@ -884,6 +924,9 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       if (bookingData.discountCode) {
         console.log(`🎁 Discount Applied: ${bookingData.discountCode} (${bookingData.discountPercentage}%) - Original: ${bookingData.originalPrice} → Final: ${price}`);
       }
+      
+      // Return success indicator
+      const bookingSuccess = true;
       
       // 🔊 SEND NOTIFICATIONS: Therapist alert with sound + Admin notification
       try {
@@ -929,9 +972,12 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         console.error('⚠️ Failed to send notifications (booking still created):', notificationError);
       }
       
+      return bookingSuccess; // Booking created successfully
+      
     } catch (error) {
       console.error('❌ [BookingLifecycle] Failed to create booking:', error);
       addSystemNotification('❌ Failed to create booking. Please try again.');
+      return false; // Booking creation failed
     }
   }, [chatState.therapist, chatState.selectedDuration, chatState.customerLocation, chatState.coordinates, chatState.selectedDate, chatState.selectedTime, chatState.customerName, chatState.customerWhatsApp, currentUserId, currentUserName, addSystemNotification, startCountdown]);
 

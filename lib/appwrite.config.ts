@@ -1,5 +1,24 @@
 // Google Maps API Configuration
-export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+// Handle both Vite (import.meta.env) and Node.js (process.env) environments
+const getEnvVar = (key: string, defaultValue: string = ''): string => {
+    // Try import.meta.env first (Vite build environment)
+    try {
+        if (import.meta?.env && (import.meta.env as any)[key]) {
+            return (import.meta.env as any)[key];
+        }
+    } catch (e) {
+        // import.meta not available, fall through to process.env
+    }
+    
+    // Fallback to process.env (Node.js/testing environment)
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+        return process.env[key];
+    }
+    
+    return defaultValue;
+};
+
+export const GOOGLE_MAPS_API_KEY = getEnvVar('VITE_GOOGLE_MAPS_API_KEY', '');
 
 // ⚠️ DEPRECATED: This config file is being phased out
 // ⚠️ USE INSTEAD: lib/appwrite-collection-validator.ts with VALIDATED_COLLECTIONS

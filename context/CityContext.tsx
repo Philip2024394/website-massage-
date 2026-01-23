@@ -46,24 +46,26 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         console.log('📍 CityContext: Location initialized:', location);
         
+        // Batch all state updates together to prevent multiple re-renders
+        // React 18+ automatically batches these updates
         setCountryCodeState(location.countryCode);
         setAutoDetected(location.detected);
         setDetectionMethod(location.method);
-        currencyService.setCountry(location.countryCode);
-        
-        // If city was detected or saved, set it
         if (location.city) {
           setCity(location.city);
         }
+        setIsLoading(false);
+        
+        // Update currency service after state updates to prevent additional re-renders
+        currencyService.setCountry(location.countryCode);
         
       } catch (error) {
         console.error('❌ CityContext: Failed to initialize location:', error);
-        // Fallback to Indonesia
+        // Fallback to Indonesia - batch updates
         setCountryCodeState('ID');
         setDetectionMethod('default');
-        currencyService.setCountry('ID');
-      } finally {
         setIsLoading(false);
+        currencyService.setCountry('ID');
       }
     };
 

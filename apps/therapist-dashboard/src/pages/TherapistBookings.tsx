@@ -205,30 +205,40 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
       // Get bookings for this therapist
       const realBookings = await bookingService.getProviderBookings(therapist.$id);
       
-      // Transform Appwrite booking documents to match Booking interface
-      const transformedBookings: Booking[] = realBookings.map((doc: any) => ({
-        $id: doc.$id,
-        customerName: doc.userName || doc.customerName || 'Unknown Customer',
-        customerPhone: doc.userPhone || doc.customerPhone || '',
-        serviceType: doc.service || doc.serviceType || 'Massage Service',
-        duration: doc.duration || 60,
-        price: doc.totalAmount || doc.price || 0,
-        location: doc.location || '',
-        date: doc.date ? new Date(doc.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        time: doc.time || '00:00',
-        status: doc.status || 'pending',
-        createdAt: doc.$createdAt || new Date().toISOString(),
-        notes: doc.notes || '',
-        customerId: doc.userId || doc.customerId,
-        isScheduled: doc.bookingType === 'scheduled' || false,
-        depositRequired: doc.depositRequired || false,
-        depositAmount: doc.depositAmount || 0,
-        depositPaid: doc.depositPaid || false,
-        depositStatus: doc.depositStatus || 'pending_approval',
-        paymentProofUrl: doc.paymentProofUrl || '',
-        paymentProofUploadedAt: doc.paymentProofUploadedAt || '',
-        depositNotes: doc.depositNotes || ''
-      }));
+      // 🔒 INCOME PROTECTION: Always show bookings even if incomplete
+      const transformedBookings: Booking[] = realBookings.map((doc: any) => {
+        const booking = {
+          $id: doc.$id,
+          customerName: doc.userName || doc.customerName || 'Unknown Customer',
+          customerPhone: doc.userPhone || doc.customerPhone || '',
+          serviceType: doc.service || doc.serviceType || 'Massage Service',
+          duration: doc.duration || 60,
+          price: doc.totalAmount || doc.price || 0,
+          location: doc.location || '',
+          date: doc.date ? new Date(doc.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          time: doc.time || '00:00',
+          status: doc.status || 'pending',
+          createdAt: doc.$createdAt || new Date().toISOString(),
+          notes: doc.notes || '',
+          customerId: doc.userId || doc.customerId,
+          isScheduled: doc.bookingType === 'scheduled' || false,
+          depositRequired: doc.depositRequired || false,
+          depositAmount: doc.depositAmount || 0,
+          depositPaid: doc.depositPaid || false,
+          depositStatus: doc.depositStatus || 'pending_approval',
+          paymentProofUrl: doc.paymentProofUrl || '',
+          paymentProofUploadedAt: doc.paymentProofUploadedAt || '',
+          depositNotes: doc.depositNotes || ''
+        };
+
+        // 🔒 Check if communication setup is incomplete
+        // This is non-blocking - booking still shows even if check fails
+        checkBookingCommunicationSetup(doc.$id).catch(err => {
+          devWarn('Communication setup check failed (non-critical):', err);
+        });
+
+        return booking;
+      });
       
       setBookings(transformedBookings);
       devLog('✅ Loaded', transformedBookings.length, 'real bookings for therapist', therapist.$id);
@@ -242,6 +252,55 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
     } finally {
       setLoading(false);
     }
+  };
+
+  /**
+   * 🔒 INCOME PROTECTION: Check if booking communication is set up
+   * Non-blocking - won't prevent booking from displaying
+   */
+  const checkBookingCommunicationSetup = async (bookingId: string) => {
+    try {
+      const { databases, APPWRITE_CONFIG, Query } = await import('../../../../lib/appwrite');
+      
+      // Check if chat room exists
+      const chatRooms = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.chat_rooms || 'chat_rooms',
+        [Query.equal('bookingId', bookingId)]
+      );
+
+      const hasChatRoom = chatRooms.documents.length > 0;
+
+      if (!hasChatRoom) {
+        devWarn(`⚠️ Booking ${bookingId} has NO chat room - communication may be broken`);
+        
+        // Show visual warning to therapist (non-blocking)
+        showCommunicationWarning(bookingId);
+      }
+    } catch (error) {
+      // Don't fail - this is just a check
+      devWarn('Failed to check communication setup:', error);
+    }
+  };
+
+  /**
+   * Show user-friendly warning that communication setup is completing
+   */
+  const showCommunicationWarning = (bookingId: string) => {
+    // Add friendly, non-technical indicator to booking card
+    const friendlyMessage = language === 'id' 
+      ? '📋 Booking terkonfirmasi. Setup komunikasi sedang diproses — mohon tunggu sebentar.'
+      : '📋 A booking was confirmed. Communication setup is completing — please stand by.';
+    
+    setBookings(prev => prev.map(b => {
+      if (b.$id === bookingId) {
+        return {
+          ...b,
+          notes: (b.notes ? b.notes + '\n\n' : '') + friendlyMessage
+        };
+      }
+      return b;
+    }));
   };
 
   const checkBankDetails = async () => {
@@ -301,17 +360,38 @@ const TherapistBookings: React.FC<TherapistBookingsProps> = ({ therapist, onBack
 
   const handleRejectBooking = async (bookingId: string) => {
     try {
-      // TODO: Update booking status to 'cancelled' in Appwrite
-      devLog('Rejecting booking:', bookingId);
+      devLog('🔄 Cancelling booking with commission reversal:', bookingId);
       
+      // Prompt for cancellation reason
+      const reason = prompt('Cancellation reason (required):');
+      if (!reason) {
+        devLog('Cancellation aborted - no reason provided');
+        return;
+      }
+      
+      // Import centralized cancellation function
+      const { bookingService } = await import('../../../../lib/appwriteService');
+      
+      // Call SINGLE cancellation authority
+      const result = await bookingService.cancelBookingAndReverseCommission(
+        bookingId,
+        therapist.$id,
+        reason,
+        'therapist'
+      );
+      
+      // Update UI
       setBookings(prev => prev.map(b => 
         b.$id === bookingId ? { ...b, status: 'cancelled' as const } : b
       ));
       
-      // TODO: Send notification to customer and offer to reassign
-      devLog('❌ Booking rejected and customer notified');
-    } catch (error) {
-      console.error('Failed to reject booking:', error);
+      devLog('✅ Booking cancelled');
+      if (result.commission && result.commission.status === 'reversed') {
+        devLog('✅ Commission reversed:', result.commission.$id);
+      }
+    } catch (error: any) {
+      console.error('❌ Failed to cancel booking:', error);
+      alert(error.message || 'Failed to cancel booking. Please try again.');
     }
   };
 

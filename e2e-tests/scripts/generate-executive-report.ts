@@ -1,0 +1,195 @@
+/**
+ * Executive Report Generator
+ * 
+ * Generates business-level summary for stakeholders
+ */
+
+import { FailureAnalyzer } from '../intelligence/FailureAnalyzer';
+import fs from 'fs';
+import path from 'path';
+
+interface TestResultFile {
+  suites: Array<{
+    specs: Array<{
+      title: string;
+      tests: Array<{
+        status: string;
+        results: Array<{
+          status: string;
+          error?: {
+            message: string;
+            stack: string;
+          };
+        }>;
+      }>;
+    }>;
+  }>;
+}
+
+async function generateExecutiveReport() {
+  const testResultsDir = path.join(process.cwd(), 'test-results');
+  if (!fs.existsSync(testResultsDir)) {
+    console.log('# ❌ E2E Test Results Not Available\n\nNo test results found. Please run E2E tests first.');
+    return;
+  }
+
+  const analyzer = new FailureAnalyzer();
+  const files = fs.readdirSync(testResultsDir, { recursive: true }) as string[];
+  const jsonFiles = files.filter(f => f.endsWith('.json'));
+
+  let totalTests = 0;
+  let passed = 0;
+  let failed = 0;
+  let sev1Count = 0;
+  let sev2Count = 0;
+  let revenueRisk = false;
+  const failures: Array<{
+    test: string;
+    severity: string;
+    impact: string;
+    recommendation: string;
+  }> = [];
+
+  // Analyze all test results
+  for (const file of jsonFiles) {
+    const filePath = path.join(testResultsDir, file);
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    try {
+      const results: TestResultFile = JSON.parse(content);
+      
+      for (const suite of results.suites) {
+        for (const spec of suite.specs) {
+          for (const test of spec.tests) {
+            totalTests++;
+            
+            if (test.status === 'passed') {
+              passed++;
+            } else if (test.status === 'failed') {
+              failed++;
+              
+              const error = test.results[0]?.error;
+              if (error) {
+                const errorObj = new Error(error.message);
+                const diagnosis = await FailureAnalyzer.analyze(
+                  errorObj,
+                  { 
+                    error: errorObj,
+                    testName: spec.title,
+                    databaseState: {}
+                  }
+                );
+
+                if (diagnosis.severity === 'SEV-1') {
+                  sev1Count++;
+                  revenueRisk = true;
+                } else if (diagnosis.severity === 'SEV-2') {
+                  sev2Count++;
+                }
+
+                failures.push({
+                  test: spec.title,
+                  severity: diagnosis.severity,
+                  impact: diagnosis.businessImpact,
+                  recommendation: diagnosis.recommendation
+                });
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Skip unparseable files
+    }
+  }
+
+  // Generate markdown report
+  const report = `# 🚨 E2E Test Executive Summary
+
+## 📊 Test Results Overview
+
+- **Total Tests:** ${totalTests}
+- **Passed:** ${passed} ✅
+- **Failed:** ${failed} ❌
+- **Pass Rate:** ${totalTests > 0 ? Math.round((passed / totalTests) * 100) : 0}%
+
+## 🎯 Critical Findings
+
+${sev1Count > 0 ? `### 🚨 SEV-1 (Revenue Critical): ${sev1Count} failures
+
+**⚠️ DEPLOYMENT BLOCKED**
+
+These failures directly impact revenue generation and must be fixed before deployment.
+
+${failures.filter(f => f.severity === 'SEV-1').map(f => `
+#### ${f.test}
+
+- **Business Impact:** ${f.impact}
+- **Action Required:** ${f.recommendation}
+`).join('\n')}
+` : '### ✅ SEV-1 (Revenue Critical): No failures\n\nAll revenue-critical tests passed.'}
+
+${sev2Count > 0 ? `### ⚠️ SEV-2 (User Experience): ${sev2Count} failures
+
+These failures impact user experience and should be addressed.
+
+${failures.filter(f => f.severity === 'SEV-2').map(f => `
+#### ${f.test}
+
+- **Business Impact:** ${f.impact}
+- **Recommendation:** ${f.recommendation}
+`).join('\n')}
+` : '### ✅ SEV-2 (User Experience): No failures\n\nAll user experience tests passed.'}
+
+## 🚦 Deployment Decision
+
+${revenueRisk ? `
+### ❌ **DEPLOYMENT BLOCKED**
+
+**Reason:** SEV-1 (Revenue Critical) failures detected
+
+**Action Required:**
+1. Fix all SEV-1 failures listed above
+2. Re-run E2E tests to verify fixes
+3. Ensure 100% pass rate for revenue-critical tests
+4. Only then proceed with deployment
+
+**Risk:** Deploying with these failures may result in:
+- Lost revenue from failed bookings
+- Commission tracking errors
+- Customer trust issues
+- Financial audit problems
+` : `
+### ✅ **DEPLOYMENT APPROVED**
+
+All revenue-critical tests passed. Safe to deploy to production.
+
+${sev2Count > 0 ? `
+**Note:** ${sev2Count} SEV-2 (User Experience) failures detected. Consider fixing these in the next release.
+` : ''}
+`}
+
+## 📅 Report Generated
+
+${new Date().toLocaleString('en-US', { 
+  weekday: 'long', 
+  year: 'numeric', 
+  month: 'long', 
+  day: 'numeric', 
+  hour: '2-digit', 
+  minute: '2-digit',
+  timeZoneName: 'short'
+})}
+
+---
+
+*This report was generated by the AI E2E Revenue Guard system*
+`;
+
+  console.log(report);
+}
+
+generateExecutiveReport().catch((error) => {
+  console.error('❌ Report generation failed:', error);
+  process.exit(1);
+});

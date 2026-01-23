@@ -21,25 +21,40 @@ html, body, #root {
 html {
   overflow-y: scroll;
   overflow-x: hidden;
-  height: auto !important;
+  height: 100%;
+  /* Firefox fix: Explicit height for proper scrolling */
+  min-height: 100%;
   /* Prevent overscroll navigation */
   overscroll-behavior: contain;
+  /* Firefox-specific scrollbar fix */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  height: auto !important;
+  height: 100%;
+  /* Firefox fix: Ensure body can expand */
+  position: relative;
   /* Prevent overscroll navigation gestures */
   overscroll-behavior: contain;
+  /* Firefox: Ensure scrolling works */
+  overflow: auto;
 }
 
 #root {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  height: auto !important;
+  /* Allow root to grow with content */
+  height: auto;
+  /* Firefox fix: Ensure root can scroll */
+  position: relative;
+  /* Firefox: Force scrolling context */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Ensure all scrollable elements work on mobile */
@@ -74,6 +89,11 @@ footer {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+  /* Optimize rendering to prevent flashing */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Mobile optimization - maximize viewport usage */

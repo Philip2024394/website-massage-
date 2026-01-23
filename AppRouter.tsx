@@ -315,7 +315,28 @@ const TherapistProfileWithFetch: React.FC<any> = ({ therapistId, ...props }) => 
                 therapists={props.therapists}
                 places={props.places}
                 onNavigate={props.onNavigate}
-                {...props}
+                // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
+                onQuickBookWithChat={props.handleQuickBookWithChat}
+                onChatWithBusyTherapist={props.handleChatWithBusyTherapist}
+                onShowRegisterPrompt={props.handleShowRegisterPromptForChat}
+                onIncrementAnalytics={props.handleIncrementAnalytics}
+                // Location and auth context
+                userLocation={props.userLocation}
+                loggedInCustomer={props.loggedInCustomer}
+                loggedInProvider={props.loggedInProvider}
+                // Portal navigation
+                onMassageJobsClick={props.onMassageJobsClick}
+                onHotelPortalClick={props.onHotelPortalClick}
+                onVillaPortalClick={props.onVillaPortalClick}
+                onTherapistPortalClick={props.onTherapistPortalClick}
+                onMassagePlacePortalClick={props.onMassagePlacePortalClick}
+                onFacialPortalClick={props.onFacialPortalClick}
+                onAgentPortalClick={props.onAgentPortalClick}
+                onCustomerPortalClick={props.onCustomerPortalClick}
+                onAdminPortalClick={props.onAdminPortalClick}
+                onTermsClick={props.onTermsClick}
+                onPrivacyClick={props.onPrivacyClick}
+                t={props.t}
             />
         </React.Suspense>
     );
@@ -814,7 +835,28 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         onCityChange: props.onCityChange,
                         therapists: props.therapists,
                         places: props.places,
-                        onNavigate: props.onNavigate
+                        onNavigate: props.onNavigate,
+                        // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
+                        onQuickBookWithChat: props.handleQuickBookWithChat,
+                        onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                        onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
+                        onIncrementAnalytics: props.handleIncrementAnalytics,
+                        // Location and auth context
+                        userLocation: props.userLocation,
+                        loggedInCustomer: props.loggedInCustomer,
+                        loggedInProvider: props.loggedInProvider,
+                        onMassageJobsClick: props.onMassageJobsClick,
+                        onHotelPortalClick: props.onHotelPortalClick,
+                        onVillaPortalClick: props.onVillaPortalClick,
+                        onTherapistPortalClick: props.onTherapistPortalClick,
+                        onMassagePlacePortalClick: props.onMassagePlacePortalClick,
+                        onFacialPortalClick: props.onFacialPortalClick,
+                        onAgentPortalClick: props.onAgentPortalClick,
+                        onCustomerPortalClick: props.onCustomerPortalClick,
+                        onAdminPortalClick: props.onAdminPortalClick,
+                        onTermsClick: props.onTermsClick,
+                        onPrivacyClick: props.onPrivacyClick,
+                        t: props.t
                     });
                 } else {
                     console.log('  🔍 Not in memory, fetching from Appwrite...');
@@ -847,7 +889,17 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                 onAdminPortalClick: props.onAdminPortalClick,
                 onTermsClick: props.onTermsClick,
                 onPrivacyClick: props.onPrivacyClick,
-                onNavigate: props.onNavigate
+                onNavigate: props.onNavigate,
+                // Chat/booking handlers - CRITICAL for "Book Now" and "Schedule" buttons
+                onQuickBookWithChat: props.handleQuickBookWithChat,
+                onChatWithBusyTherapist: props.handleChatWithBusyTherapist,
+                onShowRegisterPrompt: props.handleShowRegisterPromptForChat,
+                onIncrementAnalytics: props.handleIncrementAnalytics,
+                // Location and auth context
+                userLocation: props.userLocation,
+                loggedInCustomer: props.loggedInCustomer,
+                loggedInProvider: props.loggedInProvider,
+                t: props.t
             });
         
         // NEW: Simple share routes

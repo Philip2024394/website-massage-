@@ -28,7 +28,7 @@ interface TherapistPriceListModalProps {
     handleSelectService: (index: number, duration: '60' | '90' | '120') => void;
     setSelectedServiceIndex: (index: number) => void;
     setSelectedDuration: (duration: '60' | '90' | '120') => void;
-    openBookingWithService: (therapist: any, service: any) => void;
+    openBookingWithService: (therapist: any, service: any, options?: { bookingType?: 'immediate' | 'scheduled' }) => void;
     chatLang: string;
 }
 
@@ -192,6 +192,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                     });
 
                                                                     const priceNum = Number(service[`price${selectedDuration}`]);
+
                                                                     if (!isNaN(priceNum) && priceNum > 0) {
                                                                         const formattedPrice = priceNum >= 1000 
                                                                             ? `${Math.round(priceNum)}K` 
@@ -203,11 +204,11 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                                             formattedPrice
                                                                         });
 
-                                                                        openBookingWithService(
-                                                                            service.serviceName,
-                                                                            selectedDuration as '60' | '90' | '120',
-                                                                            formattedPrice
-                                                                        );
+                                                                        openBookingWithService(therapist, {
+                                                                            serviceName: service.serviceName,
+                                                                            duration: parseInt(selectedDuration),
+                                                                            price: priceNum * 1000
+                                                                        });
 
                                                                         setShowPriceListModal(false);
                                                                         setSelectedServiceIndex(null);
@@ -254,73 +255,131 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                     </div>
                                                 ))}
 
-                                                {/* Action Buttons */}
-                                                <div className="col-span-2 text-center">
-                                                <button
-                                                    className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
-                                                        isRowSelected && selectedDuration
-                                                            ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
-                                                            : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
-                                                    }`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        
-                                                        // If no selection yet, auto-select first available duration for this service
-                                                        const availableDurations: string[] = [];
-                                                        if (service.price60) availableDurations.push('60');
-                                                        if (service.price90) availableDurations.push('90');
-                                                        if (service.price120) availableDurations.push('120');
-                                                        
-                                                        console.log('🎯 PRICE SLIDER: User clicked "Pesan Sekarang"', {
-                                                            serviceName: service.name || service.serviceName,
-                                                            serviceIndex: index,
-                                                            isRowSelected,
-                                                            selectedDuration,
-                                                            availableDurations,
-                                                            therapistId: therapist.id,
-                                                            therapistName: therapist.name
-                                                        });
-                                                        
-                                                        if (availableDurations.length > 0) {
-                                                            // If this row is already selected with a duration, proceed to booking
-                                                            if (isRowSelected && selectedDuration) {
-                                                                const serviceName = service.name || service.serviceName || 'Massage Service';
-                                                                const servicePrice = Number(service[`price${selectedDuration}`]) * 1000;
-                                                                const serviceDuration = parseInt(selectedDuration);
-                                                                
-                                                                console.log('🚀 PRICE SLIDER → Opening booking chat with pre-selected service:', {
-                                                                    serviceName,
-                                                                    duration: serviceDuration,
-                                                                    price: servicePrice
-                                                                });
-                                                                
-                                                                // Close the price list modal
-                                                                setShowPriceListModal(false);
-                                                                
-                                                                // Open chat with pre-selected service details (skips duration selection)
-                                                                openBookingWithService(therapist, {
-                                                                    serviceName,
-                                                                    duration: serviceDuration,
-                                                                    price: servicePrice
-                                                                });
-                                                            } else {
-                                                                // Auto-select first available duration for this service
-                                                                const firstDuration = availableDurations[0] as '60' | '90' | '120';
-                                                                handleSelectService(index, firstDuration);
-                                                                console.log('🎯 Auto-selected:', { serviceIndex: index, duration: firstDuration });
+                                                {/* Action Buttons - Both Immediate & Scheduled */}
+                                                <div className="col-span-2 space-y-1">
+                                                    {/* Book Now Button */}
+                                                    <button
+                                                        className={`w-full px-1 py-1 text-xs font-semibold rounded transition-all duration-200 ${
+                                                            isRowSelected && selectedDuration
+                                                                ? 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer shadow-lg scale-105'
+                                                                : 'bg-orange-500 text-white hover:bg-orange-600 cursor-pointer'
+                                                        }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            
+                                                            // If no selection yet, auto-select first available duration for this service
+                                                            const availableDurations: string[] = [];
+                                                            if (service.price60) availableDurations.push('60');
+                                                            if (service.price90) availableDurations.push('90');
+                                                            if (service.price120) availableDurations.push('120');
+                                                            
+                                                            console.log('🎯 IMMEDIATE BOOKING (Menu): User clicked "Book Now"', {
+                                                                serviceName: service.name || service.serviceName,
+                                                                serviceIndex: index,
+                                                                isRowSelected,
+                                                                selectedDuration,
+                                                                availableDurations,
+                                                                therapistId: therapist.id,
+                                                                therapistName: therapist.name
+                                                            });
+                                                            
+                                                            if (availableDurations.length > 0) {
+                                                                // If this row is already selected with a duration, proceed to immediate booking
+                                                                if (isRowSelected && selectedDuration) {
+                                                                    const serviceName = service.name || service.serviceName || 'Massage Service';
+                                                                    const servicePrice = Number(service[`price${selectedDuration}`]) * 1000;
+                                                                    const serviceDuration = parseInt(selectedDuration);
+                                                                    
+                                                                    console.log('🚀 IMMEDIATE BOOKING → Opening booking chat (No Deposit)');
+                                                                    
+                                                                    // Close the price list modal
+                                                                    setShowPriceListModal(false);
+                                                                    
+                                                                    // Open chat with immediate booking - NO DEPOSIT
+                                                                    openBookingWithService(therapist, {
+                                                                        serviceName,
+                                                                        duration: serviceDuration,
+                                                                        price: servicePrice
+                                                                    });
+                                                                } else {
+                                                                    // Auto-select first available duration for this service
+                                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                    handleSelectService(index, firstDuration);
+                                                                    console.log('🎯 Auto-selected (Immediate):', { serviceIndex: index, duration: firstDuration });
+                                                                }
                                                             }
+                                                        }}
+                                                    >
+                                                        {isRowSelected && selectedDuration 
+                                                            ? (chatLang === 'id' ? '✓ Pesan' : '✓ Book')
+                                                            : (chatLang === 'id' ? 'Pesan' : 'Book')
                                                         }
-                                                    }}
-                                                >
-                                                    {isRowSelected && selectedDuration 
-                                                        ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
-                                                        : (chatLang === 'id' ? 'Pilih' : 'Select')
-                                                    }
-                                                </button>
+                                                    </button>
+
+                                                    {/* Schedule Button */}
+                                                    <button
+                                                        className={`w-full px-1 py-1 text-xs font-semibold rounded transition-all duration-200 border ${
+                                                            isRowSelected && selectedDuration
+                                                                ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-lg scale-105'
+                                                                : 'bg-white border-blue-500 text-blue-600 hover:bg-blue-50 cursor-pointer'
+                                                        }`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            
+                                                            // If no selection yet, auto-select first available duration for this service
+                                                            const availableDurations: string[] = [];
+                                                            if (service.price60) availableDurations.push('60');
+                                                            if (service.price90) availableDurations.push('90');
+                                                            if (service.price120) availableDurations.push('120');
+                                                            
+                                                            console.log('📅 SCHEDULED BOOKING (Menu): User clicked "Schedule"', {
+                                                                serviceName: service.name || service.serviceName,
+                                                                serviceIndex: index,
+                                                                isRowSelected,
+                                                                selectedDuration,
+                                                                availableDurations,
+                                                                therapistId: therapist.id,
+                                                                therapistName: therapist.name
+                                                            });
+                                                            
+                                                            if (availableDurations.length > 0) {
+                                                                // If this row is already selected with a duration, proceed to scheduled booking
+                                                                if (isRowSelected && selectedDuration) {
+                                                                    const serviceName = service.name || service.serviceName || 'Massage Service';
+                                                                    const servicePrice = Number(service[`price${selectedDuration}`]) * 1000;
+                                                                    const serviceDuration = parseInt(selectedDuration);
+                                                                    
+                                                                    console.log('🚀 SCHEDULED BOOKING → Opening booking chat (Deposit after therapist accepts)');
+                                                                    
+                                                                    // Close the price list modal
+                                                                    setShowPriceListModal(false);
+                                                                    
+                                                                    // Open chat with scheduled booking - deposit AFTER therapist accepts
+                                                                    openBookingWithService(therapist, {
+                                                                        serviceName,
+                                                                        duration: serviceDuration,
+                                                                        price: servicePrice
+                                                                    }, { 
+                                                                        bookingType: 'scheduled'
+                                                                    });
+                                                                } else {
+                                                                    // Auto-select first available duration for this service
+                                                                    const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                                    handleSelectService(index, firstDuration);
+                                                                    console.log('🎯 Auto-selected (Scheduled):', { serviceIndex: index, duration: firstDuration });
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isRowSelected && selectedDuration 
+                                                            ? (chatLang === 'id' ? '📅 Jadwal' : '📅 Schedule')
+                                                            : (chatLang === 'id' ? '📅 Jadwal' : '📅 Schedule')
+                                                        }
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    );
+                                    )
                                 })}
                             </div>
                         </div>
@@ -372,8 +431,9 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                         );
                                     })}
 
-                                    {/* Action Button */}
-                                    <div className="col-span-2 text-center">
+                                    {/* Action Buttons - Both Immediate & Scheduled */}
+                                    <div className="col-span-2 space-y-2">
+                                        {/* Book Now Button */}
                                         <button
                                             className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 ${
                                                 selectedServiceIndex === 0 && selectedDuration
@@ -389,7 +449,7 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 if (therapist.price90) availableDurations.push('90');
                                                 if (therapist.price120) availableDurations.push('120');
                                                 
-                                                console.log('🎯 PRICE SLIDER (Fallback): User clicked "Pesan Sekarang"', {
+                                                console.log('🎯 IMMEDIATE BOOKING (Price Slider): User clicked "Book Now"', {
                                                     selectedServiceIndex,
                                                     selectedDuration,
                                                     availableDurations,
@@ -398,18 +458,18 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                 });
                                                 
                                                 if (availableDurations.length > 0) {
-                                                    // If already selected, proceed to booking
+                                                    // If already selected, proceed to immediate booking
                                                     if (selectedServiceIndex === 0 && selectedDuration) {
                                                         const priceKey = `price${selectedDuration}` as keyof typeof therapist;
                                                         const servicePrice = Number(therapist[priceKey]) * 1000;
                                                         const serviceDuration = parseInt(selectedDuration);
                                                         
-                                                        console.log('🚀 PRICE SLIDER (Fallback) → Opening booking chat with pre-selected service');
+                                                        console.log('🚀 IMMEDIATE BOOKING → Opening booking chat (No Deposit Required)');
                                                         
                                                         // Close the price list modal
                                                         setShowPriceListModal(false);
                                                         
-                                                        // Open chat with pre-selected service details
+                                                        // Open chat with immediate booking - NO DEPOSIT
                                                         openBookingWithService(therapist, {
                                                             serviceName: 'Traditional Massage',
                                                             duration: serviceDuration,
@@ -420,14 +480,76 @@ const TherapistPriceListModal: React.FC<TherapistPriceListModalProps> = ({
                                                         const firstDuration = availableDurations[0] as '60' | '90' | '120';
                                                         setSelectedServiceIndex(0);
                                                         setSelectedDuration(firstDuration);
-                                                        console.log('🎯 Auto-selected (Fallback):', { duration: firstDuration });
+                                                        console.log('🎯 Auto-selected (Immediate):', { duration: firstDuration });
                                                     }
                                                 }
                                             }}
                                         >
                                             {selectedServiceIndex === 0 && selectedDuration 
                                                 ? (chatLang === 'id' ? '✓ Pesan Sekarang' : '✓ Book Now')
-                                                : (chatLang === 'id' ? 'Pilih' : 'Select')
+                                                : (chatLang === 'id' ? 'Pilih & Pesan' : 'Select & Book')
+                                            }
+                                        </button>
+
+                                        {/* Schedule Booking Button */}
+                                        <button
+                                            className={`w-full px-2 py-1 text-xs font-semibold rounded-lg transition-all duration-200 border-2 ${
+                                                selectedServiceIndex === 0 && selectedDuration
+                                                    ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-lg scale-105'
+                                                    : 'bg-white border-blue-500 text-blue-600 hover:bg-blue-50 cursor-pointer'
+                                            }`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                
+                                                // Get available durations from therapist pricing
+                                                const availableDurations: string[] = [];
+                                                if (therapist.price60) availableDurations.push('60');
+                                                if (therapist.price90) availableDurations.push('90');
+                                                if (therapist.price120) availableDurations.push('120');
+                                                
+                                                console.log('📅 SCHEDULED BOOKING (Price Slider): User clicked "Schedule"', {
+                                                    selectedServiceIndex,
+                                                    selectedDuration,
+                                                    availableDurations,
+                                                    therapistId: therapist.id,
+                                                    therapistName: therapist.name
+                                                });
+                                                
+                                                if (availableDurations.length > 0) {
+                                                    // If already selected, proceed to scheduled booking with deposit
+                                                    if (selectedServiceIndex === 0 && selectedDuration) {
+                                                        const priceKey = `price${selectedDuration}` as keyof typeof therapist;
+                                                        const servicePrice = Number(therapist[priceKey]) * 1000;
+                                                        const serviceDuration = parseInt(selectedDuration);
+                                                        
+                                                        console.log('🚀 SCHEDULED BOOKING → Opening booking chat with deposit requirement');
+                                                        
+                                                        // Close the price list modal
+                                                        setShowPriceListModal(false);
+                                                        
+                                                        // Open chat with scheduled booking requiring 30% deposit
+                                                        openBookingWithService(therapist, {
+                                                            serviceName: 'Traditional Massage',
+                                                            duration: serviceDuration,
+                                                            price: servicePrice
+                                                        }, { 
+                                                            bookingType: 'scheduled',
+                                                            requireDeposit: true,
+                                                            depositPercentage: 30
+                                                        });
+                                                    } else {
+                                                        // Auto-select first available duration
+                                                        const firstDuration = availableDurations[0] as '60' | '90' | '120';
+                                                        setSelectedServiceIndex(0);
+                                                        setSelectedDuration(firstDuration);
+                                                        console.log('🎯 Auto-selected (Scheduled):', { duration: firstDuration });
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            {selectedServiceIndex === 0 && selectedDuration 
+                                                ? (chatLang === 'id' ? '📅 Jadwalkan (30% DP)' : '📅 Schedule (30% Deposit)')
+                                                : (chatLang === 'id' ? '📅 Jadwalkan' : '📅 Schedule')
                                             }
                                         </button>
                                     </div>

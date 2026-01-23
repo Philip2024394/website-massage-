@@ -18,6 +18,7 @@ import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/s
 import { FlagIcon } from './FlagIcon';
 import { BookingNotificationBanner } from './BookingNotificationBanner';
 import { locationService } from '../services/locationService';
+import { scheduledBookingPaymentService } from '../lib/services/scheduledBookingPaymentService';
 
 // Extracted components
 import { ChatHeader } from '../modules/chat/ChatHeader';
@@ -25,6 +26,8 @@ import { BookingWelcomeBanner } from '../modules/chat/BookingWelcomeBanner';
 import { DiscountValidator } from '../modules/chat/BookingFlow/DiscountValidator';
 import { useBookingForm } from '../modules/chat/hooks/useBookingForm';
 import { DURATION_OPTIONS, formatPrice, formatTime } from '../modules/chat/utils/chatHelpers';
+import ScheduledBookingDepositModal from './ScheduledBookingDepositModal';
+import { BookingChatLockIn } from '../lib/validation/bookingChatLockIn';
 
 export function PersistentChatWindow() {
   const {
@@ -49,6 +52,54 @@ export function PersistentChatWindow() {
     confirmPayment,
     addSystemNotification,
   } = usePersistentChat();
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 🔒 CRITICAL VALIDATION - BOOKING-IN-CHAT LOCK-IN SYSTEM
+  // ═══════════════════════════════════════════════════════════════════════════
+  // This section enforces business-critical rules that MUST NOT regress
+  
+  // RULE 1: Chat CANNOT render without valid booking object
+  // NOTE: Only validate when in 'chat' step - allow booking flow steps without booking
+  React.useEffect(() => {
+    if (chatState.isOpen && chatState.currentBooking && chatState.bookingStep === 'chat') {
+      try {
+        // Validate booking data schema
+        const validatedBooking = BookingChatLockIn.validateBookingData(
+          chatState.currentBooking
+        );
+        
+        // Validate countdown timer
+        BookingChatLockIn.validateCountdownTimer(chatState.bookingCountdown);
+        
+        // Development warnings for missing optional fields
+        if (process.env.NODE_ENV !== 'production') {
+          BookingChatLockIn.warnMissingOptionalFields(validatedBooking);
+        }
+      } catch (error) {
+        // CRITICAL ERROR - Log and prevent render
+        console.error('═'.repeat(80));
+        console.error('🚨 BOOKING VALIDATION FAILED - CHAT CANNOT RENDER 🚨');
+        console.error('═'.repeat(80));
+        console.error(error);
+        console.error('═'.repeat(80));
+        
+        // Close chat to prevent corrupted state
+        closeChat();
+      }
+    }
+  }, [chatState.isOpen, chatState.currentBooking, chatState.bookingCountdown, chatState.bookingStep, closeChat]);
+  
+  // RULE 2: Guard against opening chat without booking
+  // NOTE: Only enforce for 'chat' step - allow 'duration' step for initial booking flow
+  if (chatState.isOpen && !chatState.currentBooking && chatState.bookingStep === 'chat') {
+    BookingChatLockIn.guardChatRequiresBooking(
+      chatState.isOpen,
+      chatState.currentBooking,
+      'PersistentChatWindow'
+    );
+  }
+  
+  // ═══════════════════════════════════════════════════════════════════════════
 
   const [messageInput, setMessageInput] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -75,6 +126,9 @@ export function PersistentChatWindow() {
   
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(0);
+  const [isProcessingDeposit, setIsProcessingDeposit] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -197,6 +251,28 @@ export function PersistentChatWindow() {
 
   // Handle customer form submission
   const handleCustomerSubmit = async (e: React.FormEvent) => {
+    console.log('═══════════════════════════════════════════');
+    console.log('🚀 [ORDER NOW] Form submission started');
+    console.log('Current URL:', window.location.href);
+    console.log('Current booking step:', chatState.bookingStep);
+    console.log('Chat is open:', chatState.isOpen);
+    console.log('Chat is locked:', isLocked);
+    console.log('═══════════════════════════════════════════');
+    
+    // Monitor for URL changes
+    const originalURL = window.location.href;
+    const urlCheckInterval = setInterval(() => {
+      if (window.location.href !== originalURL) {
+        console.error('🚨 URL CHANGED UNEXPECTEDLY!');
+        console.error('Original URL:', originalURL);
+        console.error('New URL:', window.location.href);
+        clearInterval(urlCheckInterval);
+      }
+    }, 100);
+    
+    // Clear interval after 10 seconds
+    setTimeout(() => clearInterval(urlCheckInterval), 10000);
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -251,10 +327,9 @@ export function PersistentChatWindow() {
       `🧍 Massage For: ${massageForText}\n` +
       `🏢 Massage At: ${locationTypeText}\n` +
       locationDetails +
-      (mapsLink 
-        ? `🔐 GPS Location: ${mapsLink}\n` 
-        : `📍 GPS: Not provided - please ask customer for location\n`) +
       `⏱️ Duration: ${selectedDuration} minutes\n`;
+    
+    // 📍 Note: GPS coordinates are sent silently to therapist (not shown to customer for privacy)
     
     // Add price info with discount if applicable
     if (hasDiscount) {
@@ -281,41 +356,121 @@ export function PersistentChatWindow() {
 
     try {
       setIsSending(true);
+      console.log('═══════════════════════════════════════════');
+      console.log('📤 PRE-SEND VALIDATION');
+      console.log('═══════════════════════════════════════════');
+      console.log('✓ Customer Name:', customerForm.name);
+      console.log('✓ Customer WhatsApp:', `${customerForm.countryCode}${customerForm.whatsApp}`);
+      console.log('✓ Massage For:', customerForm.massageFor);
+      console.log('✓ Location Type:', customerForm.locationType);
+      console.log('✓ Location:', customerForm.location);
+      console.log('✓ Coordinates:', customerForm.coordinates);
+      console.log('✓ Selected Duration:', selectedDuration);
+      console.log('✓ Original Price:', originalPrice);
+      console.log('✓ Discounted Price:', discountedPrice);
+      console.log('✓ Therapist:', therapist?.name, therapist?.id);
+      console.log('✓ Therapist Pricing:', therapist?.pricing);
+      console.log('✓ Booking Message Length:', bookingMessage.length, 'chars');
+      console.log('═══════════════════════════════════════════');
       console.log('📤 Sending booking message...');
-      const result = await sendMessage(bookingMessage);
-      console.log('📤 Message sent result:', result);
       
-      if (result.sent) {
-        console.log('✅ Message sent successfully, creating booking...');
-        // Create booking with countdown timer and discount info
-        createBooking({
-          duration: selectedDuration || 60,
-          price: discountedPrice, // Use discounted price
-          totalPrice: discountedPrice,
-          originalPrice: hasDiscount ? originalPrice : undefined,
-          discountCode: hasDiscount ? discountCode : undefined,
-          discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-          serviceType: 'Traditional Massage', // Default service type
-          locationZone: customerForm.location,
-          coordinates: customerForm.coordinates || undefined,
-          scheduledDate: selectedDate || undefined,
-          scheduledTime: selectedTime || undefined,
-        });
-        console.log('✅ Booking created, switching to chat step...');
-      } else {
-        console.warn('⚠️ Message not sent, result:', result);
+      try {
+        const result = await sendMessage(bookingMessage);
+        console.log('📤 Message sent result:', result);
+        console.log('📤 result.sent value:', result.sent);
+        console.log('📤 Full result object:', JSON.stringify(result, null, 2));
+        
+        if (result.sent) {
+          console.log('✅ Message sent successfully, creating booking...');
+          // Check if this is a scheduled booking (requires 30% deposit)
+          const isScheduledBooking = !!(selectedDate && selectedTime);
+          
+          if (isScheduledBooking) {
+            // Create scheduled booking with deposit requirement
+            console.log('📅 Creating scheduled booking...');
+            try {
+              await handleScheduledBookingWithDeposit({
+                duration: selectedDuration || 60,
+                totalPrice: discountedPrice,
+                originalPrice: hasDiscount ? originalPrice : undefined,
+                discountCode: hasDiscount ? discountCode : undefined,
+                discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
+                serviceType: 'Traditional Massage',
+                locationZone: customerForm.location,
+                coordinates: customerForm.coordinates || undefined,
+                scheduledDate: selectedDate,
+                scheduledTime: selectedTime,
+              });
+              console.log('✅ Scheduled booking created');
+            } catch (schedError) {
+              console.error('❌ Scheduled booking failed:', schedError);
+              throw schedError;
+            }
+          } else {
+            // Regular immediate booking
+            console.log('📝 Creating immediate booking...');
+            try {
+              const bookingCreated = await createBooking({
+                duration: selectedDuration || 60,
+                price: discountedPrice,
+                totalPrice: discountedPrice,
+                originalPrice: hasDiscount ? originalPrice : undefined,
+                discountCode: hasDiscount ? discountCode : undefined,
+                discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
+                serviceType: 'Traditional Massage',
+                locationZone: customerForm.location,
+                coordinates: customerForm.coordinates || undefined,
+              });
+              
+              console.log('📝 createBooking returned:', bookingCreated);
+              
+              // 🔒 CRITICAL: Only switch to chat step if booking was actually created
+              // createBooking returns false if therapist is unavailable or booking fails
+              if (bookingCreated) {
+                console.log('═══════════════════════════════════════════');
+                console.log('✅ [ORDER NOW] Booking created successfully');
+                console.log('Switching to chat step...');
+                console.log('Current URL (should NOT change):', window.location.href);
+                console.log('═══════════════════════════════════════════');
+                setBookingStep('chat');
+                console.log('✅ Booking step set to chat');
+              } else {
+                console.log('═══════════════════════════════════════════');
+                console.log('❌ [ORDER NOW] Booking creation FAILED');
+                console.log('Reason: Therapist unavailable or error');
+                console.log('Current URL:', window.location.href);
+                console.log('═══════════════════════════════════════════');
+                console.warn('⚠️ Booking creation failed (therapist may be unavailable), staying in booking flow');
+                // User will see error notification from createBooking
+              }
+            } catch (bookingError) {
+              console.error('❌ createBooking threw error:', bookingError);
+              throw bookingError;
+            }
+          }
+        } else {
+          console.warn('⚠️ Message not sent, result:', result);
+          console.warn('⚠️ Result details:', { sent: result.sent, warning: result.warning });
+        }
+      } catch (innerError) {
+        console.error('❌ Error in booking flow:', innerError);
+        console.error('❌ Error name:', (innerError as Error).name);
+        console.error('❌ Error message:', (innerError as Error).message);
+        console.error('❌ Error stack:', (innerError as Error).stack);
+        throw innerError; // Re-throw to outer catch
       }
-      
-      console.log('🔄 Setting booking step to chat...');
-      setBookingStep('chat');
-      console.log('✅ Booking step set to chat');
       
       // 🔒 EXPLICIT RETURN FALSE: Block any remaining event propagation
       return false;
     } catch (error: unknown) {
       const err = error as Error; 
-      console.error('❌ Failed to send booking request:', err);
-      console.error('❌ Error stack:', err.stack);
+      console.error('❌ [OUTER CATCH] Failed to send booking request:', err);
+      console.error('❌ [OUTER CATCH] Error name:', err.name);
+      console.error('❌ [OUTER CATCH] Error message:', err.message);
+      console.error('❌ [OUTER CATCH] Error stack:', err.stack);
+      
+      // Prevent any default action even on error
+      return false;
     } finally {
       console.log('🏁 Finishing submission, setting isSending to false');
       setIsSending(false);
@@ -323,6 +478,81 @@ export function PersistentChatWindow() {
     
     // 🔒 FINAL SAFEGUARD: Return false to prevent any form submission
     return false;
+  };
+
+  // Handle scheduled booking with 30% deposit
+  const handleScheduledBookingWithDeposit = async (bookingData: any) => {
+    try {
+      const therapist = chatState.therapist;
+      if (!therapist) return;
+      
+      // Calculate 30% deposit
+      const totalPrice = bookingData.totalPrice;
+      const depositAmount = Math.round(totalPrice * 0.30);
+      setDepositAmount(depositAmount);
+      
+      // Create scheduled booking with deposit requirement
+      const scheduledDeposit = await scheduledBookingPaymentService.createScheduledBookingWithDeposit({
+        bookingId: `scheduled_${Date.now()}`,
+        customerId: chatState.currentUserId || 'guest',
+        customerName: chatState.customerName || 'Guest Customer',
+        therapistId: therapist.id,
+        therapistName: therapist.name,
+        providerType: 'therapist',
+        serviceType: bookingData.serviceType,
+        duration: bookingData.duration,
+        totalPrice: totalPrice,
+        scheduledDate: bookingData.scheduledDate,
+        scheduledTime: bookingData.scheduledTime,
+        location: bookingData.locationZone || 'Location TBD',
+        coordinates: bookingData.coordinates
+      });
+      
+      // Show deposit payment modal
+      setShowDepositModal(true);
+      
+      // Add system message about deposit requirement
+      addSystemNotification(
+        `📅 Scheduled booking created! Please pay 30% deposit (${formatPrice(depositAmount)}) to confirm your appointment. Deposits are non-refundable.`
+      );
+      
+      console.log('💰 Scheduled booking created with deposit requirement:', scheduledDeposit);
+    } catch (error) {
+      console.error('❌ Failed to create scheduled booking with deposit:', error);
+      addSystemNotification('❌ Failed to create scheduled booking. Please try again.');
+    }
+  };
+  
+  // Handle deposit payment submission
+  const handleDepositPayment = async (paymentProofFile: File, paymentMethod: string) => {
+    if (!chatState.currentBooking) return;
+    
+    try {
+      setIsProcessingDeposit(true);
+      
+      // Process deposit payment
+      await scheduledBookingPaymentService.processDepositPayment(
+        chatState.currentBooking.id,
+        paymentProofFile,
+        paymentMethod as any,
+        'Customer deposit payment for scheduled booking'
+      );
+      
+      // Close modal
+      setShowDepositModal(false);
+      
+      // Add confirmation message
+      addSystemNotification(
+        '✅ Deposit payment submitted! Your booking will be confirmed once the therapist approves your payment proof. You will receive notifications about your upcoming appointment.'
+      );
+      
+      console.log('💳 Deposit payment submitted successfully');
+    } catch (error) {
+      console.error('❌ Failed to process deposit payment:', error);
+      addSystemNotification('❌ Failed to process deposit payment. Please try again.');
+    } finally {
+      setIsProcessingDeposit(false);
+    }
   };
 
   // Handle send message (with spam detection)
@@ -448,6 +678,11 @@ export function PersistentChatWindow() {
     };
   };
 
+  // Don't render if chat is not open
+  if (!chatState.isOpen) {
+    return null;
+  }
+
   // Full chat window
   return (
     <>
@@ -554,13 +789,47 @@ export function PersistentChatWindow() {
       </div>
 
       {/* Enhanced Welcome Banner with Booking Details */}
-      {chatState.currentBooking && (
-        <BookingWelcomeBanner
-          currentBooking={chatState.currentBooking}
-          bookingCountdown={chatState.bookingCountdown}
-          onCancelBooking={() => cancelBooking()}
-        />
-      )}
+      {/* 🔒 RULE: BookingWelcomeBanner is SINGLE SOURCE OF TRUTH for booking display */}
+      {chatState.currentBooking && (() => {
+        try {
+          // Validate booking data before render
+          const validatedBooking = BookingChatLockIn.validateBookingData(
+            chatState.currentBooking
+          );
+          const validatedCountdown = BookingChatLockIn.validateCountdownTimer(
+            chatState.bookingCountdown
+          );
+          
+          // RULE: Only BookingWelcomeBanner can render booking info
+          // No inline booking banners allowed
+          return (
+            <BookingWelcomeBanner
+              currentBooking={validatedBooking}
+              bookingCountdown={validatedCountdown}
+              onCancelBooking={() => cancelBooking()}
+            />
+          );
+        } catch (error) {
+          console.error('🚨 CRITICAL: Failed to render BookingWelcomeBanner:', error);
+          return (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 m-4">
+              <div className="flex items-center gap-2 text-red-800 font-bold mb-2">
+                <AlertTriangle className="w-5 h-5" />
+                <span>Booking Data Error</span>
+              </div>
+              <p className="text-sm text-red-700">
+                Invalid booking data detected. Please refresh and try again.
+              </p>
+              <button
+                onClick={() => closeChat()}
+                className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+              >
+                Close Chat
+              </button>
+            </div>
+          );
+        }
+      })()}
 
       {/* Content area */}
       <div className="flex-1 overflow-y-auto bg-white">
@@ -869,7 +1138,15 @@ export function PersistentChatWindow() {
               </p>
             </div>
             
-            <form onSubmit={handleCustomerSubmit} className="space-y-4">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleCustomerSubmit(e);
+                return false;
+              }} 
+              className="space-y-4"
+            >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <User className="w-4 h-4 inline mr-1" />
@@ -1230,12 +1507,7 @@ export function PersistentChatWindow() {
               )}
               
               <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleCustomerSubmit(e as any);
-                }}
+                type="submit"
                 disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                   (!isSending && customerForm.name && customerForm.whatsApp && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
@@ -1431,6 +1703,19 @@ export function PersistentChatWindow() {
         </form>
       )}
     </div>
+    
+    {/* Scheduled Booking Deposit Modal */}
+    <ScheduledBookingDepositModal
+      isOpen={showDepositModal}
+      onClose={() => setShowDepositModal(false)}
+      onSubmitPayment={handleDepositPayment}
+      depositAmount={depositAmount}
+      therapistName={chatState.therapist?.name || 'Therapist'}
+      scheduledDate={selectedDate || 'TBD'}
+      scheduledTime={selectedTime || 'TBD'}
+      serviceType="Traditional Massage"
+      isProcessing={isProcessingDeposit}
+    />
     </>
   );
 }

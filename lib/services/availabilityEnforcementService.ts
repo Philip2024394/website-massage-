@@ -40,20 +40,24 @@ export interface AvailabilityCheckResult {
 // ============================================================================
 
 const SYSTEM_MESSAGES = {
-  BUSY_BOOK_NOW: `Sorry, this therapist is currently busy.
-Book Now will be available when the therapist is free.
-You may place a scheduled booking instead.`,
+  BUSY_BOOK_NOW: `⚠️ This therapist is currently BUSY and not available for Book Now.
 
-  CLOSED_BOOK_NOW: `Sorry, this therapist is currently closed.
-Book Now will be available when the therapist is available.
-You may place a scheduled booking instead.`,
+Please check back later or search for another therapist with GREEN "Available" status.
 
-  RESTRICTED: `Sorry, this therapist is currently unavailable.
-They cannot accept any bookings at this time.
-Please select another therapist.`,
+You may also place a scheduled booking instead.`,
 
-  INVALID_STATUS: `Unable to verify therapist availability.
-Please try again later.`,
+  CLOSED_BOOK_NOW: `⚠️ This therapist is currently OFFLINE and not available for Book Now.
+
+Please check back later or search for another therapist with GREEN "Available" status.
+
+You may also place a scheduled booking instead.`,
+
+  RESTRICTED: `⚠️ This therapist is not in service and cannot accept any bookings at this time.
+
+Please search for another therapist with GREEN "Available" status.`,
+
+  INVALID_STATUS: `⚠️ Unable to verify therapist availability.
+Please try again later or select another therapist.`,
 };
 
 // ============================================================================

@@ -105,16 +105,35 @@ export function usePersistentChatIntegration() {
   
   /**
    * Open chat with pre-selected service from Menu Harga
-   * - Skips duration selection
-   * - Goes directly to confirmation with service details + arrival time
+   * - Enhanced to support both immediate and scheduled bookings with deposits
+   * - Skips duration selection for immediate bookings
+   * - Triggers deposit modal for scheduled bookings
    */
   const openBookingWithService = useCallback((
     therapist: Therapist, 
-    service: { serviceName: string; duration: number; price: number }
+    service: { serviceName: string; duration: number; price: number },
+    options?: { bookingType?: 'immediate' | 'scheduled' }
   ) => {
-    console.log('🔒 [PersistentChatIntegration] Opening chat with pre-selected service:', therapist.name, service);
+    console.log('🔒 [PersistentChatIntegration] Opening chat with service and options:', {
+      therapist: therapist.name,
+      service,
+      options
+    });
+
+    const bookingType = options?.bookingType || 'immediate';
     const chatTherapist = convertToChatTherapist(therapist);
-    openChatWithService(chatTherapist, service);
+
+    // For scheduled bookings, mark as scheduled (deposit happens AFTER therapist accepts)
+    if (bookingType === 'scheduled') {
+      console.log('📅 [PersistentChatIntegration] Opening scheduled booking (deposit after acceptance)');
+      openChatWithService(chatTherapist, service, {
+        isScheduled: true
+      });
+    } else {
+      // For immediate bookings - no deposit ever
+      console.log('🚀 [PersistentChatIntegration] Opening immediate booking (no deposit)');
+      openChatWithService(chatTherapist, service);
+    }
   }, [openChatWithService, convertToChatTherapist]);
   
   /**
