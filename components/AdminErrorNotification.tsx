@@ -147,42 +147,6 @@ export const AdminErrorNotification: React.FC<AdminErrorNotificationProps> = ({
 
   return (
     <div className={`fixed ${positionClasses[position]} z-[9999] max-w-md`}>
-      {/* Control Panel */}
-      <div className="bg-gray-900 text-white p-3 rounded-lg shadow-lg mb-2">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4" />
-            <span className="text-sm font-semibold">FB AI Compliance Monitor</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleMonitoring}
-              className={`p-1 rounded ${isMonitoring ? 'bg-green-600' : 'bg-red-600'}`}
-            >
-              {isMonitoring ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-            </button>
-            <button
-              onClick={clearErrors}
-              className="p-1 bg-gray-700 hover:bg-gray-600 rounded"
-            >
-              <RefreshCw className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between text-xs">
-          <span>Status: {isMonitoring ? 'Monitoring' : 'Paused'}</span>
-          <span>Last: {lastCheck.toLocaleTimeString()}</span>
-        </div>
-        
-        <div className="flex items-center gap-4 text-xs mt-1">
-          <span className="flex items-center gap-1">
-            {errors.length === 0 ? <CheckCircle className="w-3 h-3 text-green-400" /> : <AlertTriangle className="w-3 h-3 text-red-400" />}
-            {errors.length} errors
-          </span>
-        </div>
-      </div>
-
       {/* Error List */}
       {errors.length > 0 && (
         <div className="space-y-2 max-h-96 overflow-y-auto">
