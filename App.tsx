@@ -74,23 +74,46 @@ const App = () => {
     
     // 🚨 CRITICAL FIX: Clear pending deeplinks on app start to prevent unwanted redirects
     useEffect(() => {
-        const currentPath = window.location.pathname + window.location.hash;
-        const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
-                          currentPath.includes('/home') || currentPath === '' || currentPath === '/#';
-        
-        if (isHomePage) {
-            const pendingDeeplink = sessionStorage.getItem('pending_deeplink');
-            if (pendingDeeplink) {
-                console.log('🚨 [REDIRECT FIX] Clearing unwanted pending deeplink on home page visit:', pendingDeeplink);
-                console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
-                sessionStorage.removeItem('pending_deeplink');
-            }
+        const clearRedirectsForHomePage = () => {
+            const currentPath = window.location.pathname + window.location.hash;
+            const isHomePage = currentPath === '/' || currentPath === '/home' || currentPath === '/#/home' || 
+                              currentPath.includes('/home') || currentPath === '' || currentPath === '/#';
             
-            // 🔥 ADDITIONAL FIX: Clear any direct therapist IDs that might trigger redirects
-            sessionStorage.removeItem('direct_therapist_id');
-            console.log('🚨 [REDIRECT FIX] Cleared all redirect-causing session storage items');
-        }
-    }, []); // Run once on mount
+            if (isHomePage) {
+                const pendingDeeplink = sessionStorage.getItem('pending_deeplink');
+                const directTherapistId = sessionStorage.getItem('direct_therapist_id');
+                
+                if (pendingDeeplink) {
+                    console.log('🚨 [REDIRECT FIX] Clearing unwanted pending deeplink on home page visit:', pendingDeeplink);
+                    sessionStorage.removeItem('pending_deeplink');
+                }
+                
+                if (directTherapistId) {
+                    console.log('🚨 [REDIRECT FIX] Clearing direct_therapist_id on home page visit:', directTherapistId);
+                    sessionStorage.removeItem('direct_therapist_id');
+                }
+                
+                console.log('🚨 [REDIRECT FIX] Current path:', currentPath);
+                console.log('🚨 [REDIRECT FIX] Cleared all redirect-causing session storage items');
+            }
+        };
+        
+        // Run immediately on mount
+        clearRedirectsForHomePage();
+        
+        // Also run on any navigation/hash changes to ensure home page stays protected
+        const handleLocationChange = () => {
+            clearRedirectsForHomePage();
+        };
+        
+        window.addEventListener('popstate', handleLocationChange);
+        window.addEventListener('hashchange', handleLocationChange);
+        
+        return () => {
+            window.removeEventListener('popstate', handleLocationChange);
+            window.removeEventListener('hashchange', handleLocationChange);
+        };
+    }, []); // Run once on mount and set up listeners
     
     // Fetch booking details and show forced modal
     const fetchAndShowForcedBooking = async (bookingId: string) => {

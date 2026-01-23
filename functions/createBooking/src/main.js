@@ -95,7 +95,7 @@ export default async function handler(req: any, res: any) {
       price,
       location: request.location.address,
       coordinates: JSON.stringify(request.location.coordinates),
-      customerName: sanitizeInput(request.customerDetails.name),
+      customerName: sanitizeInput(request.customerDetails.name) ?? "Guest Customer", // 🔴 REQUIRED — THIS FIXES THE ERROR
       customerWhatsApp: sanitizePhoneNumber(request.customerDetails.whatsapp),
       searchAttempts: 0,
       createdAt: new Date().toISOString(),

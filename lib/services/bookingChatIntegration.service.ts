@@ -12,6 +12,7 @@
 
 import { databases, account, DATABASE_ID, COLLECTIONS } from '../appwrite';
 import { ID, Query } from 'appwrite';
+import { resolveBookingIdentity, validateBookingIdentity } from '../utils/bookingIdentityResolver';
 
 export interface BookingChatData {
   bookingId: string;
@@ -204,6 +205,11 @@ class BookingChatIntegrationService {
         throw new Error('Authentication required');
       }
 
+      // 🚫 DO NOT MODIFY - CANONICAL IDENTITY RESOLUTION
+      // Booking identity is resolved exclusively via resolveBookingIdentity().
+      const identity = resolveBookingIdentity(currentUser);
+      validateBookingIdentity(identity);
+
       // Create booking first
       const bookingId = ID.unique();
       const now = new Date();
@@ -217,7 +223,8 @@ class BookingChatIntegrationService {
         {
           bookingId,
           customerId: currentUser.$id,
-          customerName: currentUser.name || 'Customer',
+          customerName: identity.customerName, // 🎯 CANONICAL IDENTITY FIELD
+          userName: identity.userName, // 🎯 DERIVED COMPATIBILITY FIELD
           therapistId: bookingData.therapistId,
           therapistName: bookingData.therapistName,
           service: bookingData.serviceType,

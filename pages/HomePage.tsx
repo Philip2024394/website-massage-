@@ -2034,7 +2034,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         </span>
                                     </div>
                                 )}
-                                <div className={isPreviewMode ? 'ring-4 ring-4 rounded-lg' : ''}>
+                                <div className={isPreviewMode ? 'ring-4 ring-blue-400 rounded-lg' : ''}>
                                 <TherapistHomeCard
                                     therapist={therapist}
                                     userLocation={autoDetectedLocation || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : null)}

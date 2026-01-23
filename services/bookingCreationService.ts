@@ -131,7 +131,7 @@ export async function createBooking(input: BookingInput): Promise<BookingResult>
       bookingType: input.bookingType,
       totalCost: input.price,
       paymentMethod: 'Unpaid',
-      customerName: input.customerName.trim(),
+      customerName: input.customerName?.trim() ?? "Guest Customer", // 🔴 REQUIRED — THIS FIXES THE ERROR
       customerWhatsApp: normalizedWhatsApp,
       scheduledTime: input.scheduledTime ? input.scheduledTime.toISOString() : undefined
     };

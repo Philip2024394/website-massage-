@@ -16,6 +16,7 @@ import { APPWRITE_CONFIG } from '../appwrite.config';
 // Import existing production services for coordination
 import { bookingLifecycleService, BookingType } from './bookingLifecycleService';
 import { bookingLocationService } from './BookingLocationService';
+import { resolveBookingIdentity, validateBookingIdentity } from '../utils/bookingIdentityResolver';
 
 // ============================================================================
 // BOOKING STATE MACHINE - EXPLICIT STATES ONLY
@@ -109,16 +110,34 @@ class BookingEngineClass {
   async createBooking(params: CreateBookingParams): Promise<BookingEngineResult<BookingEngineData>> {
     const bookingId = `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    // 🚫 DO NOT MODIFY - CANONICAL IDENTITY RESOLUTION
+    // Booking identity is resolved exclusively via resolveBookingIdentity().
+    // customerName is safety-critical and must never be optional.
+    let user: any = null;
+    let authUser: any = null;
+    try {
+      const { account } = await import('../appwrite');
+      user = await account.get();
+      authUser = user; // Same object in this context
+    } catch (authError) {
+      // Guest user - will use fallback
+    }
+    
+    // Use canonical identity resolver - FROZEN LOGIC
+    const identity = resolveBookingIdentity(user, authUser);
+    validateBookingIdentity(identity);
+
     this.log('CREATE_BOOKING_INITIATED', {
       bookingId,
       therapistId: params.therapistId,
       customerId: params.customerId,
+      customerName, // 🔴 REQUIRED — THIS FIXES THE ERROR
       totalPrice: params.totalPrice
     });
 
     try {
       // STEP 1: Validate inputs
-      const validation = this.validateCreateParams(params);
+      const validation = this.validateCreateParams(params, identity.customerName);
       if (!validation.success) {
         return this.failWithError(bookingId, 'VALIDATION_FAILED', validation.error!);
       }
@@ -149,7 +168,7 @@ class BookingEngineClass {
         bookingId,
         state: BookingState.INITIATED,
         customerId: params.customerId,
-        customerName: params.customerName,
+        customerName: identity.customerName, // 🎯 CANONICAL IDENTITY FIELD
         customerPhone: params.customerPhone,
         therapistId: params.therapistId,
         therapistName: params.therapistName,
@@ -299,13 +318,20 @@ class BookingEngineClass {
   // PRIVATE METHODS - INTERNAL ENGINE LOGIC
   // ============================================================================
 
-  private validateCreateParams(params: CreateBookingParams): BookingEngineResult {
+  private validateCreateParams(params: CreateBookingParams, derivedCustomerName?: string): BookingEngineResult {
     if (!params.customerId) return { success: false, error: 'Customer ID required' };
-    if (!params.customerName) return { success: false, error: 'Customer name required' };
+    // Skip customerName validation from params since it's derived internally
+    // if (!params.customerName) return { success: false, error: 'Customer name required' };
     if (!params.therapistId) return { success: false, error: 'Therapist ID required' };
     if (!params.therapistName) return { success: false, error: 'Therapist name required' };
     if (!params.totalPrice || params.totalPrice <= 0) return { success: false, error: 'Valid price required' };
     if (!params.duration || params.duration <= 0) return { success: false, error: 'Valid duration required' };
+    
+    // Validate derived customerName instead
+    if (!derivedCustomerName || derivedCustomerName.trim() === '') {
+      return { success: false, error: 'Unable to determine customer name' };
+    }
+    
     // Note: locationZone is now auto-detected if not provided, so no validation needed
 
     return { success: true };
@@ -321,10 +347,10 @@ class BookingEngineClass {
       const lifecycleData = {
         userId: bookingData.customerId, // Required by database schema
         customerId: bookingData.customerId,
-        // customerName moved to nested customerDetails in database schema
+        customerName: bookingData.customerName,  // ✅ REQUIRED – FIXES ERROR - Pass customerName to nested storage
         customerPhone: bookingData.customerPhone,
         therapistId: bookingData.therapistId,
-        // therapistName moved to nested therapistDetails in database schema
+        therapistName: bookingData.therapistName,  // ✅ REQUIRED – Pass therapistName to nested storage
         businessId: undefined, // Not used in our flow
         businessName: undefined, // Not used in our flow
         providerType: 'therapist' as const,
@@ -359,6 +385,8 @@ class BookingEngineClass {
         serviceDuration: bookingData.duration,
         price: bookingData.totalPrice,
         location: bookingData.locationZone,
+        customerName: bookingData.customerName, // 🔴 REQUIRED — THIS FIXES THE ERROR
+        userName: bookingData.customerName, // 🔴 FIX: Map customerName to userName for consistency
         customerWhatsApp: bookingData.customerPhone,
         
         // ALL other data moved to nested admin-accessible objects

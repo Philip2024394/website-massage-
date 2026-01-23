@@ -4,13 +4,13 @@
  */
 
 // Core booking flow components
-export { TherapistAcceptanceUI } from './TherapistAcceptanceUI';
-export { OnTheWayStatusUI } from './OnTheWayStatusUI';
-export { ArrivalConfirmationUI } from './ArrivalConfirmationUI';
+export { TherapistAcceptanceUI, type TherapistAcceptanceUIProps } from './TherapistAcceptanceUI';
+export { OnTheWayStatusUI, type OnTheWayStatusUIProps } from './OnTheWayStatusUI';
+export { ArrivalConfirmationUI, type ArrivalConfirmationUIProps } from './ArrivalConfirmationUI';
 
 // Status and progress components
 export { BookingProgressStepper, type BookingProgressStep } from './BookingProgressStepper';
-export { ConnectionStatusIndicator } from './ConnectionStatusIndicator';
+export { ConnectionStatusIndicator, type ConnectionStatusIndicatorProps } from './ConnectionStatusIndicator';
 
 // Enhanced UI components
 export { EnhancedTimerComponent } from './EnhancedTimerComponent';

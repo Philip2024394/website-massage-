@@ -548,7 +548,9 @@ export interface Booking {
     providerType: 'therapist' | 'place';
     providerName: string;
     userId: string; // From the User interface
-    userName: string;
+    // 🚫 DO NOT MODIFY - Identity fields are safety-critical
+    customerName: string; // REQUIRED - Canonical booking identity field - NEVER OPTIONAL
+    userName?: string;    // OPTIONAL - Compatibility field only
     service: '60' | '90' | '120';
     startTime: string; // ISO string
     status: BookingStatus;

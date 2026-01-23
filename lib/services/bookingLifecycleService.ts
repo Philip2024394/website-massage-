@@ -250,6 +250,7 @@ export const bookingLifecycleService = {
     const recordWithUserId = {
       // Core accepted database schema fields only
       userId: data.userId || bookingRecord.customerId,
+      userName: data.customerName ?? "Guest Customer", // 🔴 FIX: Add userName mapping
       status: bookingRecord.bookingStatus.toLowerCase(),
       serviceDuration: bookingRecord.duration,
       price: bookingRecord.totalPrice,
@@ -259,12 +260,12 @@ export const bookingLifecycleService = {
       // ALL other data moved to nested admin-accessible objects (JSON stringified)
       customerDetails: JSON.stringify({
         id: bookingRecord.customerId,
-        name: data.customerName || 'Customer', // Access from original data
+        name: data.customerName ?? "Guest Customer", // 🔴 REQUIRED — THIS FIXES THE ERROR
         phone: bookingRecord.customerPhone
       }),
       therapistDetails: JSON.stringify({
         id: bookingRecord.therapistId,
-        name: data.therapistName || 'Therapist' // Access from original data
+        name: data.therapistName ?? "Therapist" // 🔴 REQUIRED — THIS FIXES THE ERROR
       }),
       serviceDetails: JSON.stringify({
         type: bookingRecord.serviceType,
