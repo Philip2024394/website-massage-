@@ -384,3 +384,26 @@ describe('🔒 REVENUE-SAFETY REGRESSION GUARD', () => {
  * Run tests: npm test booking-revenue-safety.test.ts
  * CI/CD: These tests MUST pass or deployment MUST be blocked.
  */
+
+    // 🚫 IDENTITY INVARIANT TEST - Added for booking identity consolidation
+    it('🚫 INVARIANT: A booking cannot be created without customerName', async () => {
+        // This test ensures the canonical identity resolver never allows empty customerName
+        const invalidBookingData = {
+            customerId: TEST_CUSTOMER_ID,
+            customerName: '', // ❌ Invalid - empty customerName
+            therapistId: TEST_THERAPIST_ID,
+            therapistName: 'Test Therapist',
+            serviceType: '90',
+            duration: 90,
+            totalPrice: 150000,
+            customerPhone: '+62812345678',
+            coordinates: { lat: -6.2088, lng: 106.8456 }
+        };
+
+        // Should throw error and prevent booking creation
+        await expect(
+            bookingService.createBooking(invalidBookingData)
+        ).rejects.toThrow(/customerName/);
+    }, 10000);
+
+});

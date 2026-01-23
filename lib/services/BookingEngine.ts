@@ -215,6 +215,13 @@ class BookingEngineClass {
         responseDeadline: responseDeadline.toISOString()
       });
 
+      // 📊 Production observability log
+      console.info("BOOKING_CREATED", {
+        bookingId,
+        customerName: identity.customerName,
+        source: "canonical",
+      });
+
       return {
         success: true,
         data: bookingData,
