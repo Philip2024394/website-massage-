@@ -1055,6 +1055,25 @@ export function PersistentChatWindow() {
         );
       })()}
 
+      {/* 🧪 DEBUG: FORCE VISIBLE COUNTDOWN - REMOVE AFTER TESTING */}
+      <div style={{
+        backgroundColor: '#ffff00 !important',
+        border: '5px solid blue !important',
+        padding: '20px',
+        margin: '10px 0',
+        color: 'black !important',
+        fontSize: '18px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        zIndex: '9999 !important',
+        position: 'relative'
+      }}>
+        🚨 DEBUG: COUNTDOWN TEST - If you see this, CSS is working!
+        {chatState.currentBooking ? '✅ Has Booking' : '❌ No Booking'}
+        {chatState.currentBooking?.responseDeadline ? '✅ Has Deadline' : '❌ No Deadline'}
+        Status: {chatState.currentBooking?.status || 'none'}
+      </div>
+
       {/* Enhanced Welcome Banner with Booking Details */}
       {/* 🔒 RULE: BookingWelcomeBanner is SINGLE SOURCE OF TRUTH for booking display */}
       {chatState.currentBooking && (() => {

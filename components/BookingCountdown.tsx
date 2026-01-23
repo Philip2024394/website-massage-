@@ -84,7 +84,21 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
   const isExpired = remaining <= 0;
 
   return (
-    <div className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm">
+    <div 
+      className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm"
+      style={{ 
+        display: 'block !important',
+        opacity: '1 !important',
+        visibility: 'visible !important',
+        height: 'auto !important',
+        overflow: 'visible !important',
+        position: 'relative',
+        zIndex: 999,
+        minHeight: '120px',
+        backgroundColor: '#ff6b35 !important', // Debug: bright color to make it visible
+        border: '3px solid red !important' // Debug: red border to spot it easily
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center animate-pulse">
