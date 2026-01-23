@@ -1088,17 +1088,45 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
   // Create a new booking using BookingLifecycleService
   // 🔒 STRICT AVAILABILITY ENFORCEMENT - UI LEVEL
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
+    console.log('🏗️ [CREATE BOOKING] Function called with data:', {
+      bookingData,
+      therapist: chatState.therapist?.name,
+      therapistId: chatState.therapist?.id,
+      selectedDuration: chatState.selectedDuration,
+      selectedService: chatState.selectedService
+    });
+
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const price = bookingData.totalPrice || (bookingData as any).price || 0;
+    
+    if (!therapist) {
+      console.log('❌ [CREATE BOOKING] No therapist available');
+      return;
+    }
     
     // Determine booking type
     const isScheduled = !!(bookingData.scheduledDate || chatState.selectedDate);
     const bookingType = isScheduled ? BookingType.SCHEDULED : BookingType.BOOK_NOW;
     
+    console.log('📋 [CREATE BOOKING] Booking type determined:', {
+      isScheduled,
+      bookingType,
+      duration,
+      price
+    });
+    
     // 🔒 STRICT AVAILABILITY CHECK - NO OVERRIDE ALLOWED
     const therapistStatus = therapist?.availabilityStatus || therapist?.status;
     const availabilityCheck = availabilityEnforcementService.canBook(therapistStatus, bookingType);
+    
+    console.log('🔒 [CREATE BOOKING] Availability check:', {
+      therapistStatus,
+      bookingType,
+      allowed: availabilityCheck.allowed,
+      reason: availabilityCheck.reason,
+      userMessage: availabilityCheck.userMessage
+    });
     
     if (!availabilityCheck.allowed) {
       console.log(`🚫 [AvailabilityEnforcement] Booking blocked: ${availabilityCheck.reason}`);
@@ -1106,11 +1134,21 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       return false; // EXIT - Booking creation failed
     }
     
+    console.log('✅ [CREATE BOOKING] Availability check passed, proceeding with booking creation');
+    
     // Calculate commission (30% admin, 70% provider) - uses price which is already discounted if applicable
     const { adminCommission, providerPayout } = bookingLifecycleService.calculateCommission(price);
     
+    console.log('💰 [CREATE BOOKING] Commission calculated:', {
+      price,
+      adminCommission,
+      providerPayout
+    });
+    
     // Create booking via lifecycle service (server-authoritative)
     try {
+      console.log('🌐 [CREATE BOOKING] Calling bookingLifecycleService.createBooking...');
+      
       const lifecycleBooking = await bookingLifecycleService.createBooking({
         customerId: currentUserId,
         customerName: currentUserName || chatState.customerName || 'Guest',
@@ -1164,10 +1202,22 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         scheduledTime: bookingData.scheduledTime || chatState.selectedTime || undefined,
       };
       
+      console.log('💾 [CREATE BOOKING] Setting booking in chat state:', {
+        bookingId: booking.id,
+        status: booking.status,
+        responseDeadline: booking.responseDeadline,
+        therapistName: booking.therapistName,
+        price: booking.totalPrice
+      });
+      
       setChatState(prev => ({ ...prev, currentBooking: booking }));
+      
+      console.log('🔄 [CREATE BOOKING] Transitioning to chat step');
       
       // ✅ CRITICAL: Transition to chat step to show countdown timer
       setChatState(prev => ({ ...prev, bookingStep: 'chat' }));
+      
+      console.log('✅ [CREATE BOOKING] Booking creation completed successfully');
       
       // Single clear notification - details are in BookingWelcomeBanner above
       if (bookingData.discountCode) {
@@ -1250,6 +1300,14 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
     } catch (error) {
       console.error('❌ [BookingLifecycle] Failed to create booking:', error);
+      console.error('❌ [BookingLifecycle] Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        therapistId: therapist?.id,
+        customerId: currentUserId,
+        price,
+        bookingType
+      });
       addSystemNotification('❌ Failed to create booking. Please try again.');
       return false; // Booking creation failed
     }
