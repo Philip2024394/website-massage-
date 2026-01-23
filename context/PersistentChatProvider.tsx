@@ -1164,6 +1164,9 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       
       setChatState(prev => ({ ...prev, currentBooking: booking }));
       
+      // ✅ CRITICAL: Transition to chat step to show countdown timer
+      setChatState(prev => ({ ...prev, bookingStep: 'chat' }));
+      
       // Single clear notification - details are in BookingWelcomeBanner above
       if (bookingData.discountCode) {
         addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount! See countdown timer above.`);

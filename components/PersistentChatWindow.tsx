@@ -253,6 +253,15 @@ export function PersistentChatWindow() {
     }
   }, [chatState.currentBooking?.status, therapistResponseCountdown]);
 
+  // Reset countdown timer when a new booking is created
+  useEffect(() => {
+    if (chatState.currentBooking && 
+        (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested')) {
+      console.log('🔄 Resetting countdown timer for new booking:', chatState.currentBooking.id);
+      setTherapistResponseCountdown(300); // Reset to 5 minutes
+    }
+  }, [chatState.currentBooking?.id]); // Only reset when booking ID changes (new booking)
+
   // Format countdown to MM:SS
   const formatCountdown = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -275,10 +284,25 @@ export function PersistentChatWindow() {
   const { therapist, messages, bookingStep, selectedDuration, isMinimized } = chatState;
   const isScheduleMode = chatState.bookingMode === 'schedule';
 
-  // Get price for duration
+  // Get price for duration - consistent with TherapistCard pricing logic
   const getPrice = (minutes: number) => {
+    // Check for separate price fields first (price60, price90, price120)
+    const hasValidSeparateFields = Boolean(
+      (therapist.price60 && parseInt(therapist.price60) > 0) ||
+      (therapist.price90 && parseInt(therapist.price90) > 0) ||
+      (therapist.price120 && parseInt(therapist.price120) > 0)
+    );
+
+    if (hasValidSeparateFields) {
+      const priceField = `price${minutes}` as keyof typeof therapist;
+      const price = therapist[priceField];
+      return price ? parseInt(price as string) * 1000 : 0;
+    }
+
+    // Fallback to JSON pricing format
     const pricing = therapist.pricing || {};
-    return pricing[minutes.toString()] || pricing['60'] || 0;
+    const basePrice = pricing[minutes.toString()] || pricing['60'] || 0;
+    return basePrice * 1000; // Multiply by 1000 to match TherapistCard format
   };
 
   // Handle duration selection
@@ -979,6 +1003,74 @@ export function PersistentChatWindow() {
         </div>
       </div>
 
+      {/* 🚨 PERSISTENT COUNTDOWN BANNER - ALWAYS VISIBLE AT TOP */}
+      {chatState.currentBooking && 
+       (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && 
+       therapistResponseCountdown > 0 && (
+        <div className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center animate-pulse">
+                <Clock className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-orange-800">
+                  Waiting for Therapist Response
+                </div>
+                <div className="text-xs text-orange-600">
+                  {chatState.isTherapistView 
+                    ? 'Please respond to this booking request' 
+                    : 'We\'re finding the best therapist for you'}
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-orange-600 mb-1">
+                {Math.floor(therapistResponseCountdown / 60)}:
+                {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
+              </div>
+              <div className="text-xs text-orange-500">remaining</div>
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="w-full bg-orange-200 rounded-full h-2 mt-3 mb-3">
+            <div 
+              className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+              style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
+            ></div>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex gap-2 justify-center">
+            {chatState.isTherapistView ? (
+              <>
+                <button
+                  onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Accept Booking
+                </button>
+                <button
+                  onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Decline
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => cancelBooking()}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                Cancel Booking
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Enhanced Welcome Banner with Booking Details */}
       {/* 🔒 RULE: BookingWelcomeBanner is SINGLE SOURCE OF TRUTH for booking display */}
       {chatState.currentBooking && (() => {
@@ -1130,7 +1222,7 @@ export function PersistentChatWindow() {
                         </div>
                         <div className="text-right">
                           <div className="font-bold text-orange-500 text-lg">
-                            {formatPrice(price)}
+                            {(Math.round(price / 1000))}k
                           </div>
                           <div className="text-xs text-gray-400 group-hover:text-orange-400">Book Now →</div>
                         </div>
@@ -1156,7 +1248,7 @@ export function PersistentChatWindow() {
               </div>
               <h4 className="font-semibold text-gray-800">Schedule Appointment</h4>
               <p className="text-sm text-gray-500 mt-1">
-                {selectedDuration} min • {formatPrice(getPrice(selectedDuration || 60))}
+                {DURATION_OPTIONS.find(opt => opt.minutes === selectedDuration)?.label || `${selectedDuration} min`} • {formatPrice(getPrice(selectedDuration || 60))}
               </p>
             </div>
             
@@ -1330,7 +1422,7 @@ export function PersistentChatWindow() {
                 </div>
               ) : (
                 <p className="text-base text-gray-700 mt-1">
-                  <span className="font-bold">{selectedDuration} min</span> • <span className="font-bold">IDR {(getPrice(selectedDuration || 60)).toLocaleString('id-ID')}</span>
+                  <span className="font-bold">{DURATION_OPTIONS.find(opt => opt.minutes === selectedDuration)?.label || `${selectedDuration} min`}</span> • <span className="font-bold">{Math.round(getPrice(selectedDuration || 60) / 1000)}k</span>
                 </p>
               )}
               {isScheduleMode && selectedDate && selectedTime && (
@@ -1740,8 +1832,161 @@ export function PersistentChatWindow() {
         {/* Chat Messages Step */}
         {bookingStep === 'chat' && (
           <div className="flex flex-col h-full">
+            {/* Persistent Countdown Banner - Always visible when booking is pending */}
+            {/* Persistent Countdown Banner - Always visible when booking is pending */}
+            {(() => {
+              const shouldShow = chatState.currentBooking && 
+                               (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && 
+                               therapistResponseCountdown > 0;
+              
+              console.log('🔍 Countdown Banner Debug:', {
+                bookingStep: chatState.bookingStep,
+                hasBooking: !!chatState.currentBooking,
+                bookingStatus: chatState.currentBooking?.status,
+                bookingId: chatState.currentBooking?.id,
+                countdownValue: therapistResponseCountdown,
+                shouldShow: shouldShow,
+                currentTime: new Date().toISOString()
+              });
+              
+              return shouldShow;
+            })() && (
+              <div className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-orange-800">
+                        Waiting for Therapist Response
+                      </div>
+                      <div className="text-xs text-orange-600">
+                        {chatState.isTherapistView 
+                          ? 'Please respond to this booking request' 
+                          : 'We\'re finding the best therapist for you'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-orange-600 mb-1">
+                      {Math.floor(therapistResponseCountdown / 60)}:
+                      {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
+                    </div>
+                    <div className="text-xs text-orange-500">remaining</div>
+                  </div>
+                </div>
+                
+                {/* Progress bar */}
+                <div className="w-full bg-orange-200 rounded-full h-2 mt-3 mb-3">
+                  <div 
+                    className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                    style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
+                  ></div>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex gap-2 justify-center">
+                  {chatState.isTherapistView ? (
+                    <>
+                      {/* Therapist buttons */}
+                      <button
+                        onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Accept Booking
+                      </button>
+                      <button
+                        onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Decline
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* User cancel button */}
+                      <button
+                        onClick={() => cancelBooking()}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" />
+                        Cancel Booking
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
             {/* Messages */}
             <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+              
+              {/* Persistent Countdown Banner - Always visible when booking is pending */}
+              {chatState.currentBooking?.status === 'pending' && (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-orange-300 rounded-full flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-orange-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-orange-800 text-sm">
+                          Waiting for Therapist Response
+                        </h4>
+                        <p className="text-orange-600 text-xs">
+                          {chatState.isTherapistView 
+                            ? 'Please respond to this booking request' 
+                            : 'Therapist will respond soon'}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-orange-600 mb-1">
+                        {Math.floor(therapistResponseCountdown / 60)}:
+                        {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
+                      </div>
+                      
+                      {/* Progress bar */}
+                      <div className="w-20 bg-orange-200 rounded-full h-2">
+                        <div 
+                          className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                          style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="flex gap-2 mt-3">
+                    {chatState.isTherapistView ? (
+                      <>
+                        <button
+                          onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                          className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                          className="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Decline
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => cancelBooking()}
+                        className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        Cancel Booking
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {messages.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   {/* Animated welcome */}
@@ -1790,7 +2035,7 @@ export function PersistentChatWindow() {
                       {/* Price */}
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Price:</span>
-                        <span className="font-semibold">{formatPrice(getPrice(chatState.selectedDuration || 60))}</span>
+                        <span className="font-semibold">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
                       </div>
                       
                       {/* Arrival Time */}
@@ -1805,70 +2050,72 @@ export function PersistentChatWindow() {
                         <span>Cash • Transfer</span>
                       </div>
                     </div>
+                    
+                    {/* Response Countdown Section (if booking is pending) */}
+                    {chatState.currentBooking?.status === 'pending' && (
+                      <>
+                        <div className="border-t border-gray-200 pt-4 mt-4">
+                          <h5 className="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
+                            <div className="w-5 h-5 bg-orange-300 rounded-full flex items-center justify-center">
+                              <Clock className="w-3 h-3 text-orange-600" />
+                            </div>
+                            Waiting for Response
+                          </h5>
+                          
+                          <div className="text-center mb-3">
+                            <div className="text-xl font-bold text-orange-600 mb-1">
+                              {Math.floor(therapistResponseCountdown / 60)}:
+                              {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {chatState.isTherapistView 
+                                ? 'Please respond to this booking request' 
+                                : 'Therapist will respond soon'}
+                            </div>
+                          </div>
+                          
+                          {/* Progress bar */}
+                          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                            <div 
+                              className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
+                              style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
+                            ></div>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex gap-2">
+                            {chatState.isTherapistView ? (
+                              <>
+                                {/* Therapist buttons */}
+                                <button
+                                  onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                                  className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                                  className="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                                >
+                                  Decline
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                {/* User cancel button */}
+                                <button
+                                  onClick={() => cancelBooking()}
+                                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                                >
+                                  Cancel Booking
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  
-                  {/* Booking Response Countdown Bubble */}
-                  {chatState.currentBooking?.status === 'pending' && (
-                    <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
-                      <h4 className="font-semibold text-gray-800 text-sm mb-4 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-orange-300 rounded-full flex items-center justify-center">
-                          <Clock className="w-3 h-3 text-orange-600" />
-                        </div>
-                        Waiting for Response
-                      </h4>
-                      
-                      <div className="text-center mb-4">
-                        <div className="text-2xl font-bold text-orange-600 mb-1">
-                          {Math.floor(therapistResponseCountdown / 60)}:
-                          {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {chatState.isTherapistView 
-                            ? 'Please respond to this booking request' 
-                            : 'Therapist will respond soon'}
-                        </div>
-                      </div>
-                      
-                      {/* Progress bar */}
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                        <div 
-                          className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-                          style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
-                        ></div>
-                      </div>
-                      
-                      {/* Action buttons */}
-                      <div className="flex gap-3">
-                        {chatState.isTherapistView ? (
-                          <>
-                            {/* Therapist buttons */}
-                            <button
-                              onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                              className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                              className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            >
-                              Decline
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            {/* User cancel button */}
-                            <button
-                              onClick={() => cancelBooking()}
-                              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                            >
-                              Cancel Booking
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
                   
                   {/* Subtle animation hint */}
                   <div className="mt-8 opacity-60">
