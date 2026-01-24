@@ -22,7 +22,7 @@ const BookingConfirmationModal: React.FC<BookingConfirmationModalProps> = ({
   if (!isOpen) return null;
 
   const handleShare = () => {
-    const text = `Saya baru booking massage di IndaStreet! ${bookingDetails.therapistName || bookingDetails.placeName} - ${bookingDetails.massageType || 'Traditional Balinese'}`;
+    const text = `Saya baru booking treatment di IndaStreet! ${bookingDetails.therapistName || bookingDetails.placeName} - ${bookingDetails.massageType || 'Professional Treatment'}`;
     
     if (navigator.share) {
       navigator.share({

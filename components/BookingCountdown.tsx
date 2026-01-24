@@ -6,10 +6,22 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, X } from 'lucide-react';
 
+// CSS for forcing visibility with !important declarations
+const countdownStyles = `
+.countdown-container {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+`;
+
 interface BookingCountdownProps {
   deadline: string; // ISO timestamp
   role: 'user' | 'therapist';
   bookingId: string;
+  therapistName?: string; // Add therapist name for personalized message
   onCancel?: () => void;
   onAccept?: () => void;
   onDecline?: () => void;
@@ -20,11 +32,25 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
   deadline,
   role,
   bookingId,
+  therapistName,
   onCancel,
   onAccept,
   onDecline,
   onExpire
 }) => {
+  // Inject critical CSS for forced visibility
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const styleId = 'countdown-force-styles';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = countdownStyles;
+        document.head.appendChild(style);
+      }
+    }
+  }, []);
+
   const [remaining, setRemaining] = useState<number>(0);
 
   // Format time as MM:SS
@@ -85,18 +111,18 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
 
   return (
     <div 
-      className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm"
+      className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm countdown-container"
       style={{ 
-        display: 'block !important',
-        opacity: '1 !important',
-        visibility: 'visible !important',
-        height: 'auto !important',
-        overflow: 'visible !important',
+        display: 'block',
+        opacity: 1,
+        visibility: 'visible',
+        height: 'auto',
+        overflow: 'visible',
         position: 'relative',
         zIndex: 999,
         minHeight: '120px',
-        backgroundColor: '#ff6b35 !important', // Debug: bright color to make it visible
-        border: '3px solid red !important' // Debug: red border to spot it easily
+        backgroundColor: '#ff6b35', // Debug: bright color to make it visible
+        border: '3px solid red' // Debug: red border to spot it easily
       }}
     >
       <div className="flex items-center justify-between">
@@ -111,7 +137,7 @@ export const BookingCountdown: React.FC<BookingCountdownProps> = ({
             <div className="text-xs text-orange-600">
               {role === 'therapist' 
                 ? (isExpired ? 'Response time exceeded' : 'Please respond to this booking request')
-                : (isExpired ? 'No response received' : 'We\'re finding the best therapist for you')
+                : (isExpired ? 'No response received' : `Waiting for ${therapistName || 'therapist'} to respond`)
               }
             </div>
           </div>

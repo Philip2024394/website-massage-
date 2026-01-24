@@ -47,6 +47,16 @@ export interface DeviceDebugInfo {
     offsetTop: number;
     scale: number;
   };
+  
+  // Enhanced detection
+  enhancedDetection?: {
+    isMobile: boolean;
+    isAndroid: boolean;
+    isIOS: boolean;
+    isSafari: boolean;
+    isChrome: boolean;
+    isFirefox: boolean;
+  };
 }
 
 /**

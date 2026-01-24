@@ -56,6 +56,10 @@ import {
   SendMessageRequest,
   SendMessageResponse,
 } from '../lib/services/serverEnforcedChatService';
+import { 
+  connectionStabilityService,
+  ConnectionStatus 
+} from '../lib/services/connectionStabilityService';
 
 // Collection IDs from config
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
@@ -207,6 +211,8 @@ export interface ChatWindowState {
   customerLocation: string;
   coordinates: { lat: number; lng: number } | null;
   selectedService: SelectedService | null; // Pre-selected from Menu Harga
+  // Connection status for stability monitoring
+  connectionStatus: ConnectionStatus;
   // Booking workflow state
   currentBooking: BookingData | null;
   bookingCountdown: number | null; // Seconds remaining for therapist/user action
@@ -298,6 +304,15 @@ const initialState: ChatWindowState = {
   customerLocation: '',
   coordinates: null,
   selectedService: null, // Pre-selected from Menu Harga
+  // Initialize connection status
+  connectionStatus: {
+    isConnected: false,
+    quality: 'disconnected',
+    lastPing: 0,
+    reconnectAttempts: 0,
+    connectionType: 'offline',
+    latency: 0
+  },
   // Booking workflow state
   currentBooking: null,
   bookingCountdown: null,
@@ -473,160 +488,133 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     };
     
     // Setup subscription function
-    const setupSubscription = async () => {
+    // Setup connection stability service for robust chat connections
+    const setupStableConnection = async () => {
       const isValid = await validateInfrastructure();
       if (!isValid) {
-        console.error('❌ Infrastructure validation failed - aborting realtime subscription');
-        setIsConnected(false);
+        console.error('❌ Infrastructure validation failed - aborting connection setup');
+        setChatState(prev => ({ 
+          ...prev, 
+          connectionStatus: { 
+            ...prev.connectionStatus, 
+            isConnected: false, 
+            quality: 'disconnected' 
+          } 
+        }));
         return;
       }
 
-      console.log('🔌 Setting up real-time subscription...');
-      const subscriptionChannel = `databases.${DATABASE_ID}.collections.${CHAT_MESSAGES_COLLECTION}.documents`;
-      console.log(`🔗 Subscription Channel: ${subscriptionChannel}`);
-      // Test realtime subscription permissions before attempting connection
+      console.log('🔌 Initializing connection stability service...');
+      
       try {
-        console.log('🔍 Testing realtime subscription permissions...');
+        // Initialize connection stability service
+        await connectionStabilityService.initialize();
         
-        // First, test basic document query access
-        const testQuery = await databases.listDocuments(
-          DATABASE_ID, 
-          CHAT_MESSAGES_COLLECTION,
-          [], // No filters, just test access
-          1   // Limit to 1 to minimize data transfer
-        );
-        console.log(`✅ Collection query access confirmed (${testQuery.total} total messages)`);
-        
-        // Test user authentication status for realtime
-        try {
-          const user = await account.get();
-          console.log(`✅ User authenticated: ${user.$id} (${user.name || 'No name'})`);
-          console.log('📊 Realtime will use authenticated user permissions');
-        } catch {
-          console.log('⚙️ Using anonymous session for realtime (may have permission limits)');
+        // Listen for connection status changes
+        connectionStabilityService.addConnectionListener((status: ConnectionStatus) => {
+          console.log('🔄 Connection status update:', status);
+          setChatState(prev => ({
+            ...prev,
+            connectionStatus: status
+          }));
+          setIsConnected(status.isConnected);
+        });
+
+        // Setup stable message subscription using the service
+        if (currentUserId && chatState.therapist?.id) {
+          const chatRoomId = `${currentUserId}_${chatState.therapist.id}`;
+          
+          subscriptionRef.current = connectionStabilityService.subscribeToMessages(
+            chatRoomId,
+            (payload: any) => {
+              console.log('💬 Stable message received:', payload);
+
+              // Check if this message involves the current user
+              const isOurMessage = payload.senderId === currentUserId || payload.recipientId === currentUserId;
+              if (!isOurMessage) return;
+
+              // Check if it's for the current therapist chat
+              const currentTherapistId = therapistIdRef.current;
+              if (currentTherapistId) {
+                const isForCurrentChat = 
+                  (payload.senderId === currentTherapistId || payload.recipientId === currentTherapistId);
+                
+                if (isForCurrentChat) {
+                  const newMessage: ChatMessage = {
+                    $id: payload.$id,
+                    senderId: payload.senderId,
+                    senderName: payload.senderName || 'Unknown',
+                    senderType: payload.senderType || 'customer',
+                    recipientId: payload.recipientId,
+                    recipientName: payload.recipientName || '',
+                    message: payload.message || payload.content || '',
+                    createdAt: payload.createdAt || payload.$createdAt,
+                    read: payload.read || false,
+                    messageType: payload.messageType || 'text',
+                    roomId: payload.roomId || '',
+                    isSystemMessage: payload.isSystemMessage || false,
+                  };
+
+                  // Add to messages if not duplicate
+                  setChatState(prev => {
+                    if (prev.messages.some(m => m.$id === newMessage.$id)) {
+                      return prev;
+                    }
+                    return {
+                      ...prev,
+                      messages: [...prev.messages, newMessage],
+                    };
+                  });
+
+                  console.log('✅ Message added via stable connection:', newMessage.$id);
+                }
+              }
+            },
+            (error: any) => {
+              console.error('❌ Stable message subscription error:', error);
+              // Connection service will handle reconnection automatically
+            }
+          );
         }
-        
+
+        console.log('✅ Connection stability service initialized successfully!');
+
       } catch (error: any) {
         console.error('═'.repeat(80));
-        console.error('🚨 CRITICAL: Collection access test FAILED!');
+        console.error('🚨 CRITICAL: Connection stability service initialization FAILED');
         console.error('═'.repeat(80));
+        console.error('Error Details:', {
+          message: error.message,
+          code: error.code,
+          type: error.type,
+          stack: error.stack?.split('\n').slice(0, 3)
+        });
         
-        if (error.code === 401) {
-          console.error('🚨 INFRASTRUCTURE FAILURE: Collection permissions not configured');
-          console.error('🎯 ROOT CAUSE: User lacks READ permissions for chat_messages collection');
-          console.error('📋 SPECIFIC ERROR: User (role: guests) missing scopes (["collections.read"])');
-          console.error('🔧 SOLUTION: In Appwrite Console → Collections → chat_messages → Permissions');
-          console.error('           Add "Any" role with Read permission');
-          console.error('           This is required for realtime subscriptions to work');
-          console.error('🚫 BLOCKING CHAT: Chat window will NOT open until this is fixed');
-        } else if (error.code === 403) {
-          console.error('🎯 ROOT CAUSE: Collection permissions deny access');
-          console.error('🔧 SOLUTION: Configure collection permissions to allow current user access');
-        } else {
-          console.error(`🎯 UNKNOWN ACCESS ERROR: ${error.message} (${error.code})`);
-        }
-        
-        console.error('═'.repeat(80));
-        setIsConnected(false); // Ensure chat remains blocked
-        return false;
+        setChatState(prev => ({ 
+          ...prev, 
+          connectionStatus: { 
+            ...prev.connectionStatus, 
+            isConnected: false, 
+            quality: 'disconnected' 
+          } 
+        }));
+        setIsConnected(false);
+        console.error('❌ PersistentChat: Stable connection setup failed:', error);
       }
-
-      try {
-        const unsubscribe = client.subscribe(
-          subscriptionChannel,
-        (response) => {
-          const payload = response.payload as any;
-          console.log('💬 Real-time message event:', response.events[0]);
-
-          // Check if this message involves the current user
-          const isOurMessage = payload.senderId === currentUserId || payload.recipientId === currentUserId;
-          if (!isOurMessage) return;
-
-          // Check if it's for the current therapist chat (use ref to avoid stale closure)
-          const currentTherapistId = therapistIdRef.current;
-          if (currentTherapistId) {
-            const isForCurrentChat = 
-              (payload.senderId === currentTherapistId || payload.recipientId === currentTherapistId);
-            
-            if (isForCurrentChat && response.events.some(e => e.includes('create'))) {
-              const newMessage: ChatMessage = {
-                $id: payload.$id,
-                senderId: payload.senderId,
-                senderName: payload.senderName || 'Unknown',
-                senderType: payload.senderType || 'customer',
-                recipientId: payload.recipientId,
-                recipientName: payload.recipientName || '',
-                message: payload.message || payload.content || '',
-                createdAt: payload.createdAt || payload.$createdAt,
-                read: payload.read || false,
-                messageType: payload.messageType || 'text',
-                roomId: payload.roomId || '',
-                isSystemMessage: payload.isSystemMessage || false,
-              };
-
-              // Add to messages if not duplicate
-              setChatState(prev => {
-                if (prev.messages.some(m => m.$id === newMessage.$id)) {
-                  return prev;
-                }
-                return {
-                  ...prev,
-                  messages: [...prev.messages, newMessage],
-                };
-              });
-
-              console.log('✅ Message added via real-time:', newMessage.$id);
-            }
-          }
-        }
-      );
-
-      subscriptionRef.current = unsubscribe;
-      setIsConnected(true);
-      console.log('✅ PersistentChat: Real-time subscription active');
-      console.log('🎯 Subscription established successfully!');
-
-    } catch (error: any) {
-      console.error('═'.repeat(80));
-      console.error('🚨 CRITICAL: Real-time subscription FAILED');
-      console.error('═'.repeat(80));
-      console.error('Error Details:', {
-        message: error.message,
-        code: error.code,
-        type: error.type,
-        stack: error.stack?.split('\n').slice(0, 3)
-      });
-      console.error('Subscription Channel:', subscriptionChannel);
-      console.error('Collection ID:', CHAT_MESSAGES_COLLECTION);
-      console.error('Database ID:', DATABASE_ID);
-      
-      // Common error diagnoses
-      if (error.code === 404) {
-        console.error('🎯 DIAGNOSIS: Collection "' + CHAT_MESSAGES_COLLECTION + '" does NOT exist in Appwrite');
-        console.error('🔧 FIX: Create the collection in Appwrite Console');
-      } else if (error.code === 401) {
-        console.error('🎯 DIAGNOSIS: Permission denied - user not authenticated or collection lacks permissions');
-        console.error('🔧 FIX: Check authentication status and collection permissions');
-      } else if (error.message?.includes('WebSocket')) {
-        console.error('🎯 DIAGNOSIS: WebSocket connection failed');
-        console.error('🔧 FIX: Check network, firewall, or Appwrite realtime settings');
-      }
-      console.error('═'.repeat(80));
-      
-      setIsConnected(false);
-      console.error('❌ PersistentChat: Subscription failed:', error);
-    }
     };
     
     // Run async setup
-    setupSubscription();
+    setupStableConnection();
 
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current();
         subscriptionRef.current = null;
-        console.log('🔌 PersistentChat: Unsubscribed');
+        console.log('🔌 PersistentChat: Unsubscribed from stable connection');
       }
+      
+      // Clean up connection stability service on unmount
+      connectionStabilityService.destroy();
     };
   }, [currentUserId]); // Remove therapist dependency - use ref instead
 
@@ -688,7 +676,22 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     // 🔒 CRITICAL: Lock chat IMMEDIATELY to prevent closure during booking
     setIsLocked(true);
     
-    // Set initial state
+    // 🆔 AUTO-CREATE BOOKING ID immediately
+    const generateDraftBookingId = (): string => {
+      try {
+        const counter = parseInt(localStorage.getItem('booking_id_counter') || '1000', 10);
+        const newId = counter + 1;
+        localStorage.setItem('booking_id_counter', newId.toString());
+        return `BK${newId}`;
+      } catch (error) {
+        return `BK${Date.now()}`;
+      }
+    };
+    
+    const draftBookingId = generateDraftBookingId();
+    console.log('🆔 Auto-created booking ID:', draftBookingId);
+    
+    // Set initial state with booking ID
     setChatState(prev => ({
       ...prev,
       isOpen: true,
@@ -700,6 +703,13 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       selectedTime: null,
       selectedService: null, // Reset pre-selected service
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+      bookingData: {
+        ...prev.bookingData,
+        bookingId: draftBookingId,
+        status: 'pending',
+        therapistId: therapist.id,
+        therapistName: therapist.name,
+      } as BookingData,
     }));
 
     // Load existing messages
@@ -753,7 +763,22 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     
     const isScheduled = options?.isScheduled || false;
     
-    // Set state with pre-selected service
+    // 🆔 AUTO-CREATE BOOKING ID immediately
+    const generateDraftBookingId = (): string => {
+      try {
+        const counter = parseInt(localStorage.getItem('booking_id_counter') || '1000', 10);
+        const newId = counter + 1;
+        localStorage.setItem('booking_id_counter', newId.toString());
+        return `BK${newId}`;
+      } catch (error) {
+        return `BK${Date.now()}`;
+      }
+    };
+    
+    const draftBookingId = generateDraftBookingId();
+    console.log('🆔 Auto-created booking ID:', draftBookingId);
+    
+    // Set state with pre-selected service and booking ID
     setChatState(prev => ({
       ...prev,
       isOpen: true,
@@ -770,6 +795,13 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
         // Deposit info will be added AFTER therapist accepts
       }, // Store the pre-selected service details
       messages: prev.therapist?.id === therapist.id ? prev.messages : [],
+      bookingData: {
+        ...prev.bookingData,
+        bookingId: draftBookingId,
+        status: 'pending',
+        therapistId: therapist.id,
+        therapistName: therapist.name,
+      } as BookingData,
     }));
     
     setIsLocked(true);
@@ -1085,55 +1117,83 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     setChatState(prev => ({ ...prev, bookingCountdown: null }));
   }, []);
 
-  // Create a new booking using BookingEngine - SINGLE SOURCE OF TRUTH
-  // 🔒 CRITICAL: ALL booking creation must go through BookingEngine
+  // Create a new booking using localStorage bookingService
+  // 🔒 CRITICAL: ALL booking creation now uses localStorage only
   const createBooking = useCallback(async (bookingData: Partial<BookingData>) => {
-    console.log('🚨 [DEPRECATED] PersistentChatProvider.createBooking called - REDIRECTING TO ENGINE');
-    console.log('🚨 This method is deprecated. Use BookingEngine.createBooking() directly.');
+    console.log('📦 [LOCALSTORAGE] Creating booking with localStorage bookingService');
     
-    // Import the centralized engine
-    const { BookingEngine } = await import('../lib/services/BookingEngine');
+    // Import the localStorage booking service
+    const { bookingService } = await import('../lib/bookingService');
     
     const therapist = chatState.therapist;
     const duration = bookingData.duration || chatState.selectedDuration || 60;
     const price = bookingData.totalPrice || (bookingData as any).price || 0;
+    const bookingId = chatState.bookingData?.bookingId || bookingData.bookingId;
     
     if (!therapist) {
-      console.log('❌ [ENGINE REDIRECT] No therapist available');
+      console.log('❌ [LOCALSTORAGE] No therapist available');
       addSystemNotification('❌ No therapist selected for booking');
       return false;
     }
     
-    // Prepare parameters for centralized engine
-    const engineParams = {
-      customerId: currentUserId,
+    if (!bookingId) {
+      console.error('❌ [LOCALSTORAGE] No booking ID available');
+      addSystemNotification('❌ Booking ID missing. Please refresh and try again.');
+      return false;
+    }
+    
+    // Prepare booking data for localStorage
+    const localStorageBooking = {
+      customerId: currentUserId || 'guest',
       customerName: currentUserName || chatState.customerName || 'Guest',
       customerPhone: chatState.customerWhatsApp || '',
+      customerWhatsApp: chatState.customerWhatsApp || '',
       therapistId: therapist?.id || '',
       therapistName: therapist?.name || '',
+      therapistType: 'therapist' as const,
       serviceType: bookingData.serviceType || 'Traditional Massage',
       duration,
-      totalPrice: price,
-      locationZone: bookingData.locationZone || chatState.customerLocation, // BookingEngine will auto-detect if empty
-      coordinates: bookingData.coordinates || chatState.coordinates,
-      discountCode: bookingData.discountCode,
-      discountPercentage: bookingData.discountPercentage,
-      originalPrice: bookingData.originalPrice
+      price,
+      location: bookingData.locationZone || chatState.customerLocation || 'Unknown',
+      date: bookingData.scheduledDate || chatState.selectedDate || new Date().toISOString().split('T')[0],
+      time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
+      status: 'pending' as const,
+      responseDeadline: new Date(Date.now() + 5 * 60 * 1000).toISOString(), // 5 minutes from now
+      notes: bookingData.discountCode ? `Discount: ${bookingData.discountPercentage}%` : undefined,
     };
     
-    console.log('🔒 [ENGINE REDIRECT] Calling BookingEngine.createBooking with params:', engineParams);
+    console.log('📦 [LOCALSTORAGE] Creating booking with params:', localStorageBooking);
     
     try {
-      // Call the SINGLE SOURCE OF TRUTH
-      const result = await BookingEngine.createBooking(engineParams);
+      // Call the localStorage booking service
+      const createdBooking = await bookingService.createBooking(localStorageBooking);
       
-      if (!result.success) {
-        console.error('❌ [ENGINE] Booking creation failed:', result.error);
-        addSystemNotification(`❌ ${result.error}`);
+      if (!createdBooking || !createdBooking.bookingId) {
+        console.error('❌ [LOCALSTORAGE] Booking creation failed - no booking returned');
+        addSystemNotification('❌ Failed to create booking. Please try again.');
         return false;
       }
       
-      const engineBooking = result.data!;
+      console.log('✅ [LOCALSTORAGE] Booking created successfully:', createdBooking.bookingId);
+      
+      const engineBooking = {
+        bookingId: createdBooking.bookingId,
+        documentId: createdBooking.$id,
+        therapistId: createdBooking.therapistId,
+        therapistName: createdBooking.therapistName,
+        customerId: createdBooking.customerId,
+        customerName: createdBooking.customerName,
+        customerPhone: createdBooking.customerPhone,
+        serviceType: createdBooking.serviceType,
+        duration: createdBooking.duration,
+        locationZone: createdBooking.location,
+        coordinates: undefined,
+        totalPrice: createdBooking.price,
+        adminCommission: Math.round(createdBooking.price * 0.3), // 30% commission
+        providerPayout: Math.round(createdBooking.price * 0.7), // 70% payout
+        createdAt: createdBooking.createdAt || new Date().toISOString(),
+        responseDeadline: createdBooking.responseDeadline,
+      };
       console.log('✅ [ENGINE] Booking created successfully:', engineBooking.bookingId);
       
       // Convert engine booking to chat state format for UI compatibility
@@ -1172,61 +1232,14 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       setChatState(prev => ({ ...prev, currentBooking: chatBooking }));
       setChatState(prev => ({ ...prev, bookingStep: 'chat' }));
       
-      // 🔥 CRITICAL: Create chat room immediately after booking creation
-      try {
-        const { createChatRoom } = await import('../lib/chatService');
-        const expiresAt = new Date(Date.now() + 25 * 60 * 1000).toISOString(); // 25 minutes
-        
-        // 🔥 VALIDATE: Ensure customerName is available
-        const customerName = engineBooking.customerName || chatState.customerName || currentUserName || 'Customer';
-        console.log('🔥 [ENGINE] Chat room creation data:', {
-          bookingId: engineBooking.bookingId,
-          customerId: engineBooking.customerId,
-          customerName: customerName,
-          therapistId: engineBooking.therapistId,
-          therapistName: engineBooking.therapistName
-        });
-        
-        if (!customerName || customerName.trim() === '') {
-          console.error('❌ [ENGINE] CRITICAL: customerName is empty!', {
-            engineBookingCustomerName: engineBooking.customerName,
-            chatStateCustomerName: chatState.customerName,
-            currentUserName: currentUserName
-          });
-          throw new Error('Customer name is required for chat room creation');
-        }
-        
-        const chatRoom = await createChatRoom({
-          bookingId: engineBooking.bookingId,
-          customerId: engineBooking.customerId,
-          customerName: customerName, // 🔥 CRITICAL: Validated customerName
-          customerLanguage: 'en',
-          customerPhoto: '',
-          therapistId: engineBooking.therapistId,
-          therapistName: engineBooking.therapistName,
-          therapistLanguage: 'id',
-          therapistType: 'therapist',
-          therapistPhoto: '',
-          expiresAt
-        });
-        
-        console.log('✅ [ENGINE] Chat room created:', chatRoom.$id);
-      } catch (chatError: any) {
-        console.error('❌ [ENGINE] Failed to create chat room:', chatError);
-        console.error('❌ [ENGINE] Chat error details:', {
-          message: chatError.message,
-          stack: chatError.stack,
-          customerName: engineBooking.customerName
-        });
-        // Don't fail the booking if chat room creation fails
-        addSystemNotification('⚠️ Booking created but chat setup pending. Please refresh if needed.');
-      }
+      // 🔥 LOCALSTORAGE: Skip chat room creation for now (using in-memory chat)
+      console.log('📦 [LOCALSTORAGE] Skipping Appwrite chat room creation - using in-memory chat');
       
       // Show success notification
       if (bookingData.discountCode) {
         addSystemNotification(`✅ Booking sent with ${bookingData.discountPercentage}% discount! See countdown timer above.`);
       } else {
-        addSystemNotification('✅ Booking request sent! Watch the countdown timer above for therapist response.');
+        // Removed notification message
       }
       
       // Start 5 minute countdown for therapist response

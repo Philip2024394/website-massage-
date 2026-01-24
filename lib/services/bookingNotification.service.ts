@@ -13,6 +13,12 @@
 import { databases, DATABASE_ID, COLLECTIONS } from '../appwrite';
 import { ID } from 'appwrite';
 
+export interface NotificationAction {
+  action: string;
+  title: string;
+  icon?: string;
+}
+
 export interface NotificationConfig {
   title: string;
   body: string;

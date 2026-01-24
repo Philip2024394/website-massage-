@@ -3,23 +3,22 @@
  * 
  * Purpose: Visual indicator for chat connection stability
  * Shows connection quality and provides user feedback
- * Updated to use the new connection stability service
  */
 
 import React from 'react';
-import { Wifi, WifiOff, AlertTriangle, RotateCcw } from 'lucide-react';
-import { useConnectionStatus } from '../../hooks/useConnectionStatus';
-import { ConnectionStatus } from '../../lib/services/connectionStabilityService';
+import { Wifi, WifiOff, AlertTriangle, RotateCw } from 'lucide-react';
+import { useConnectionStatus } from '../hooks/useConnectionStatus';
+import { ConnectionStatus } from '../lib/services/connectionStabilityService';
 
-export interface ConnectionStatusIndicatorProps {
+interface ConnectionStatusIndicatorProps {
   showDetails?: boolean;
   className?: string;
 }
 
-export const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps> = ({ 
+export function ConnectionStatusIndicator({ 
   showDetails = false, 
   className = '' 
-}) => {
+}: ConnectionStatusIndicatorProps) {
   const { status, forceReconnect } = useConnectionStatus();
 
   const getStatusColor = (quality: ConnectionStatus['quality']) => {
@@ -98,7 +97,7 @@ export const ConnectionStatusIndicator: React.FC<ConnectionStatusIndicatorProps>
       )}
     </div>
   );
-};
+}
 
 interface ConnectionStatusBannerProps {
   className?: string;
@@ -117,6 +116,10 @@ export function ConnectionStatusBanner({ className = '' }: ConnectionStatusBanne
       return 'bg-red-50 border-red-200 text-red-800';
     }
     
+    if (status.connectionType === 'polling') {
+      return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+    }
+
     return 'bg-orange-50 border-orange-200 text-orange-800';
   };
 
@@ -126,6 +129,10 @@ export function ConnectionStatusBanner({ className = '' }: ConnectionStatusBanne
         return `Reconnecting... (attempt ${status.reconnectAttempts})`;
       }
       return 'Connection lost. Messages may be delayed.';
+    }
+
+    if (status.connectionType === 'polling') {
+      return 'Using backup connection. Real-time features limited.';
     }
 
     return 'Poor connection detected. Messages may be delayed.';

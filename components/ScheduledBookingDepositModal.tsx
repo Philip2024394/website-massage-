@@ -10,7 +10,7 @@
  */
 
 import React, { useState } from 'react';
-import { X, Upload, AlertTriangle, Shield, CreditCard, Clock, FileCheck } from 'lucide-react';
+import { X, Upload, AlertTriangle, Shield, CreditCard, Clock, CheckCircle } from 'lucide-react';
 
 interface ScheduledBookingDepositModalProps {
   isOpen: boolean;
@@ -214,7 +214,7 @@ const ScheduledBookingDepositModal: React.FC<ScheduledBookingDepositModalProps> 
               <label htmlFor="payment-proof" className="cursor-pointer">
                 {paymentProof ? (
                   <div className="flex items-center justify-center gap-2 text-green-600">
-                    <FileCheck className="w-5 h-5" />
+                    <CheckCircle className="w-5 h-5" />
                     <span className="text-sm font-medium">{paymentProof.name}</span>
                   </div>
                 ) : (

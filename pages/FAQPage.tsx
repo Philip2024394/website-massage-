@@ -4,6 +4,7 @@ import { AppDrawer } from '../components/AppDrawerClean';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
+import UniversalHeader from '../components/shared/UniversalHeader';
 import FloatingPageFooter from '../components/FloatingPageFooter';
 
 interface FAQ {
@@ -519,6 +520,12 @@ const FAQPage: React.FC<FAQPageProps> = ({
 
     return (
         <div className="min-h-screen bg-white">
+            <UniversalHeader
+                onNavigate={onNavigate}
+                onMenuToggle={() => setIsMenuOpen(true)}
+                title="IndaStreet Help Center"
+            />
+            
             {/* Inline CSS for animations */}
             <style>{`
                 @keyframes fade-in-down {

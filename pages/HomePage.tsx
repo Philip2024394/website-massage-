@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
-import TherapistHomeCard from '../components/TherapistHomeCard';
-import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
-import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
+// Lazy load heavy components for better performance
+const TherapistHomeCard = React.lazy(() => import('../components/TherapistHomeCard'));
+const MassagePlaceHomeCard = React.lazy(() => import('../components/MassagePlaceHomeCard'));
+const FacialPlaceHomeCard = React.lazy(() => import('../components/FacialPlaceHomeCard'));
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
@@ -27,9 +28,6 @@ import { matchesLocation } from '../utils/locationNormalization';
 import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
 import PWAInstallBanner from '../components/PWAInstallBanner';
 import { useCityContext } from '../context/CityContext';
-
-// 🚨 DEVELOPMENT ONLY - BookingEngine Debug Panel
-import BookingDebugPanel from '../components/debug/BookingDebugPanel';
 
 // Custom hooks for logic extraction
 import { useHomePageState } from '../hooks/useHomePageState';
@@ -2679,9 +2677,6 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
 
             {/* PWA Install Banner */}
             <PWAInstallBanner />
-            
-            {/* 🚨 DEVELOPMENT ONLY - BookingEngine Debug Panel */}
-            <BookingDebugPanel />
         </div>
     );
 };

@@ -55,28 +55,18 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
+    <div className="bg-white border-b border-gray-200">
       {/* Welcome Header with Countdown */}
-      <div className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+      <div className="px-4 py-3 bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-            <h3 className="font-semibold text-sm">🎉 Booking Request Sent!</h3>
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <h3 className="font-medium text-sm text-gray-800">Booking Request Sent</h3>
           </div>
-          
-          {/* Enhanced Countdown Timer - 5 min for Book Now, 25 min for Scheduled */}
-          {bookingCountdown !== null && currentBooking.status === 'pending' && (
-            <div className="flex items-center gap-2 bg-white/30 px-4 py-2 rounded-full shadow-lg animate-pulse">
-              <Clock className="w-5 h-5" />
-              <span className="text-lg font-mono font-bold">
-                {Math.floor(bookingCountdown / 60)}:{(bookingCountdown % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-          )}
         </div>
         
         {/* Status Message */}
-        <p className="text-blue-100 text-xs mt-2">
+        <p className="text-gray-600 text-xs mt-2">
           {getStatusMessage(currentBooking.status)}
         </p>
         
@@ -84,20 +74,20 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
         {(currentBooking.status === 'pending' || currentBooking.status === 'waiting_others') && onCancelBooking && (
           <button
             onClick={onCancelBooking}
-            className="mt-3 w-full bg-red-500/90 hover:bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 border border-white/50 flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-95"
+            className="mt-3 w-full bg-white hover:bg-gray-50 text-red-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border border-red-300 flex items-center justify-center gap-2"
           >
-            <span>❌</span>
-            <span>Cancel This Booking</span>
+            <span>✕</span>
+            <span>Cancel Booking</span>
           </button>
         )}
       </div>
       
       {/* Booking Details - Enhanced visibility */}
-      <div className="px-4 py-3 bg-white">
+      <div className="px-4 py-3 bg-white border-t border-gray-100">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           {/* Service Details - More prominent */}
-          <div className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-lg">
-            <Sparkles className="w-5 h-5 text-blue-600" />
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
+            <Sparkles className="w-4 h-4 text-gray-600" />
             <div>
               <div className="text-xs text-gray-500">Service</div>
               <div className="font-bold text-gray-800">
@@ -107,18 +97,18 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
           </div>
           
           {/* Price - More prominent */}
-          <div className="flex items-center gap-2 bg-green-50 px-3 py-2 rounded-lg">
-            <CreditCard className="w-5 h-5 text-green-600" />
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
+            <CreditCard className="w-4 h-4 text-gray-600" />
             <div>
               <div className="text-xs text-gray-500">Total Price</div>
-              <div className="font-bold text-green-700">
+              <div className="font-medium text-gray-800">
                 {formatPrice(currentBooking.totalPrice)}
               </div>
             </div>
           </div>
           
           {/* Customer Name */}
-          <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
             <User className="w-4 h-4 text-gray-600" />
             <div>
               <div className="text-xs text-gray-500">Customer</div>
@@ -128,7 +118,7 @@ export const BookingWelcomeBanner: React.FC<BookingBannerProps> = ({
           
           {/* Location */}
           {currentBooking.locationZone && (
-            <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
               <MapPin className="w-4 h-4 text-gray-600" />
               <div>
                 <div className="text-xs text-gray-500">Location</div>

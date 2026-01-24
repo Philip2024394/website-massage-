@@ -4,10 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes, interactive-widget=resizes-content" />
     
-    <!-- 🔄 CACHE CONTROL: Prevent browser caching of HTML -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <!-- Optimized cache control for preview -->
+    <meta http-equiv="Cache-Control" content="public, max-age=300" />
+    <meta http-equiv="Pragma" content="cache" />
     
     <!-- 🔄 MOBILE PULL-TO-REFRESH: Allow native mobile refresh gesture -->
     <style>
@@ -23,30 +22,10 @@
         }
     </style>
     
-    <!-- �🖥️ PREVIEW MODE: Auto-refresh if server disconnects -->
+    <!-- Preview mode: Auto-refresh disabled to prevent flashing -->
     <script>
-        // Prevent offline messages in preview mode
-        (function() {
-            let lastConnected = true;
-            function checkConnection() {
-                fetch('/')
-                    .then(() => {
-                        if (!lastConnected) {
-                            console.log('✅ Server reconnected - refreshing...');
-                            window.location.reload();
-                        }
-                        lastConnected = true;
-                    })
-                    .catch(() => {
-                        lastConnected = false;
-                        console.log('⚠️ Server disconnected - will auto-refresh when back online');
-                    });
-            }
-            // Check every 10 seconds
-            setInterval(checkConnection, 10000);
-            // Initial check
-            checkConnection();
-        })();
+        // Stable preview mode - no auto-refresh
+        console.log('📱 Preview mode active - stable connection');
     </script>
     
     <!-- 📱 PWA MANIFEST: Critical for background notifications -->

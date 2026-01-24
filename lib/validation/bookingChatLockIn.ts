@@ -37,7 +37,7 @@ export const BookingDataSchema = z.object({
     'on_the_way',
     'completed',
     'cancelled'
-  ], { errorMap: () => ({ message: '🚨 CRITICAL: Invalid booking status' }) }),
+  ], '🚨 CRITICAL: Invalid booking status'),
   
   // Service details (REQUIRED)
   serviceType: z.string().min(1, '🚨 CRITICAL: Service type is required'),
@@ -50,9 +50,7 @@ export const BookingDataSchema = z.object({
   totalPrice: z.number().positive('🚨 CRITICAL: Total price must be positive'),
   
   // Booking type (REQUIRED)
-  bookingType: z.enum(['book_now', 'scheduled'], {
-    errorMap: () => ({ message: '🚨 CRITICAL: Invalid booking type' })
-  }),
+  bookingType: z.enum(['book_now', 'scheduled'], '🚨 CRITICAL: Invalid booking type'),
   
   // Optional fields
   locationZone: z.string().optional(),
@@ -92,7 +90,7 @@ export function validateBookingData(booking: unknown): ValidatedBookingData {
     return BookingDataSchema.parse(booking);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errors = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join('\n');
+      const errors = error.issues.map(err => `${err.path.join('.')}: ${err.message}`).join('\n');
       throw new Error(
         `🚨 BOOKING VALIDATION FAILED 🚨\n\n` +
         `Chat cannot render without valid booking data.\n\n` +
@@ -115,7 +113,7 @@ export function validateCountdownTimer(countdown: unknown): number | null {
     if (error instanceof z.ZodError) {
       throw new Error(
         `🚨 COUNTDOWN TIMER VALIDATION FAILED 🚨\n\n` +
-        `Timer state is corrupted: ${error.errors[0].message}\n\n` +
+        `Timer state is corrupted: ${error.issues[0].message}\n\n` +
         `This is a CRITICAL ERROR that affects booking UX.`
       );
     }

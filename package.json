@@ -36,7 +36,7 @@
     "build:simple": "tsc && vite build --config vite.config.simple.ts",
     "bs": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 tsc && vite build --config vite.config.ts",
     "build:reminder": "echo '⚠️  REMINDER: Did you increment CACHE_VERSION in service-worker.js?' && npm run build",
-    "preview": "vite preview",
+    "preview": "vite preview --port 3000",
     "generate-sitemap": "node scripts/generate-sitemap.mjs",
     "test": "vitest",
     "test:ui": "vitest --ui",

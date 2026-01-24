@@ -15,7 +15,9 @@ interface ChatHeaderProps {
   bookingCountdown: number | null;
   currentBooking?: {
     status: string;
+    bookingId?: string;
   };
+  bookingId?: string; // Direct booking ID prop
   isLocked: boolean;
   onMinimize: () => void;
   onClose: () => void;
@@ -27,11 +29,14 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   isConnected,
   bookingCountdown,
   currentBooking,
+  bookingId,
   isLocked,
   onMinimize,
   onClose,
   onShareBankCard
 }) => {
+  const displayBookingId = bookingId || currentBooking?.bookingId;
+  
   return (
     <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
       <div className="relative flex-shrink-0">
@@ -45,7 +50,14 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
+          {displayBookingId && (
+            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-mono">
+              {displayBookingId}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-1 text-xs text-orange-100">
           {/* Booking countdown timer */}
           {bookingCountdown !== null ? (

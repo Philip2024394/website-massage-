@@ -45,6 +45,7 @@ import { validateDiscountCode, calculateCommissionAfterDiscount } from '../lib/s
 import { FlagIcon } from './FlagIcon';
 import { BookingNotificationBanner } from './BookingNotificationBanner';
 import { locationService } from '../services/locationService';
+import { therapistNotificationService, type BookingNotification } from '../services/therapistNotificationService';
 import { scheduledBookingPaymentService } from '../lib/services/scheduledBookingPaymentService';
 
 // Extracted components
@@ -61,7 +62,6 @@ import {
   TherapistAcceptanceUI,
   OnTheWayStatusUI,
   ArrivalConfirmationUI,
-  ConnectionStatusIndicator,
   BookingProgressStepper,
   type BookingProgressStep,
   EnhancedTimerComponent,
@@ -74,6 +74,7 @@ import {
   StatusAwareContainer,
   RealTimeNotificationEnhancer
 } from './chat';
+import { BookingProgress } from './BookingProgress';
 
 export function PersistentChatWindow() {
   const {
@@ -179,6 +180,103 @@ export function PersistentChatWindow() {
   
   const [arrivalCountdown, setArrivalCountdown] = useState(3600); // 1 hour in seconds
   const [therapistResponseCountdown, setTherapistResponseCountdown] = useState(300); // 5 minutes for therapist to respond
+  const [bookingNotifications, setBookingNotifications] = useState<BookingNotification[]>([]);
+
+  // 🔔 Initialize therapist notification system
+  useEffect(() => {
+    if (chatState.isTherapistView) {
+      console.log('🔔 Initializing therapist notifications');
+      
+      // Subscribe to booking notifications
+      const unsubscribe = therapistNotificationService.onBookingNotification((notification) => {
+        console.log('📨 New booking notification received:', notification);
+        setBookingNotifications(prev => [...prev, notification]);
+        
+        // Auto-open chat if enabled
+        if (!chatState.isOpen) {
+          maximizeChat();
+        }
+      });
+
+      // Listen for chat window open events
+      const handleOpenChat = (event: CustomEvent) => {
+        const { bookingId, customerId, customerName, booking } = event.detail;
+        console.log('🎯 Opening chat for booking:', bookingId);
+        
+        // Set chat state for the booking
+        setChatState(prev => ({
+          ...prev,
+          isOpen: true,
+          isMinimized: false,
+          currentBooking: booking,
+          bookingStep: 'chat'
+        }));
+      };
+
+      window.addEventListener('openTherapistChat', handleOpenChat as EventListener);
+
+      return () => {
+        unsubscribe();
+        window.removeEventListener('openTherapistChat', handleOpenChat as EventListener);
+      };
+    }
+  }, [chatState.isTherapistView, maximizeChat]);
+
+  const [currentLanguage, setCurrentLanguage] = useState<'id' | 'en'>('id');
+
+  // Initialize language and translation system
+  useEffect(() => {
+    const initializeTranslations = () => {
+      // Set default language to Indonesian
+      const lang = 'id';
+      setCurrentLanguage(lang);
+      document.documentElement.setAttribute('data-lang', lang);
+      
+      // Apply translations to all elements with data-gb attributes
+      document.querySelectorAll('[data-gb]').forEach(el => {
+        const translations = el.getAttribute('data-gb')?.split('|');
+        if (translations && translations.length === 2) {
+          // Default to Indonesian (first option)
+          el.textContent = translations[0];
+        }
+      });
+    };
+    
+    // Initialize translations after a short delay to ensure DOM is ready
+    const timer = setTimeout(initializeTranslations, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle therapist booking responses
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      await therapistNotificationService.acceptBooking(bookingId);
+      await acceptBooking(bookingId);
+      
+      // Remove from notifications
+      setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
+      
+      addSystemNotification('✅ Booking accepted successfully!');
+    } catch (error) {
+      console.error('Failed to accept booking:', error);
+      addSystemNotification('❌ Failed to accept booking. Please try again.');
+    }
+  };
+
+  const handleDeclineBooking = async (bookingId: string) => {
+    try {
+      await therapistNotificationService.rejectBooking(bookingId);
+      await rejectBooking(bookingId);
+      
+      // Remove from notifications
+      setBookingNotifications(prev => prev.filter(n => n.bookingId !== bookingId));
+      
+      addSystemNotification('📝 Booking declined.');
+    } catch (error) {
+      console.error('Failed to decline booking:', error);
+      addSystemNotification('❌ Failed to decline booking. Please try again.');
+    }
+  };
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState(0);
@@ -395,7 +493,7 @@ export function PersistentChatWindow() {
       console.error('❌ [ORDER NOW] Button should be disabled! Missing required fields:');
       console.error('- Name:', !customerForm.name ? 'MISSING' : 'OK');
       console.error('- WhatsApp:', !customerForm.whatsApp ? 'MISSING' : 'OK');
-      console.error('- Massage For:', !customerForm.massageFor ? 'MISSING' : 'OK');
+      console.error('- Treatment For:', !customerForm.massageFor ? 'MISSING' : 'OK');
       console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
       console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
       
@@ -477,9 +575,9 @@ export function PersistentChatWindow() {
         `🛏️ Room Number: ${customerForm.roomNumber}\n`;
     }
     
-    // Massage recipient label
-    const massageForLabels = { male: '👨 Male', female: '👩 Female', children: '👶 Children' };
-    const massageForText = customerForm.massageFor ? massageForLabels[customerForm.massageFor] : 'Not specified';
+    // Treatment recipient label
+    const treatmentForLabels = { male: '👨 Male', female: '👩 Female', children: '👶 Children' };
+    const massageForText = customerForm.massageFor ? treatmentForLabels[customerForm.massageFor] : 'Not specified';
     
     // Calculate price with discount if applied
     const originalPrice = getPrice(selectedDuration || 60);
@@ -491,8 +589,8 @@ export function PersistentChatWindow() {
     let bookingMessage = `📋 ${isScheduleMode ? 'SCHEDULED BOOKING REQUEST' : 'BOOKING REQUEST'}\n\n` +
       `👤 Name: ${customerForm.name}\n` +
       `📱 WhatsApp: ${customerForm.countryCode}${customerForm.whatsApp}\n` +
-      `🧍 Massage For: ${massageForText}\n` +
-      `🏢 Massage At: ${locationTypeText}\n` +
+      `🧍 Treatment For: ${massageForText}\n` +
+      `🏢 Treatment At: ${locationTypeText}\n` +
       locationDetails +
       `⏱️ Duration: ${selectedDuration} minutes\n`;
     
@@ -528,7 +626,7 @@ export function PersistentChatWindow() {
       console.log('═══════════════════════════════════════════');
       console.log('✓ Customer Name:', customerForm.name);
       console.log('✓ Customer WhatsApp:', `${customerForm.countryCode}${customerForm.whatsApp}`);
-      console.log('✓ Massage For:', customerForm.massageFor);
+      console.log('✓ Treatment For:', customerForm.massageFor);
       console.log('✓ Location Type:', customerForm.locationType);
       console.log('✓ Location:', customerForm.location);
       console.log('✓ Coordinates:', customerForm.coordinates);
@@ -568,7 +666,7 @@ export function PersistentChatWindow() {
                 originalPrice: hasDiscount ? originalPrice : undefined,
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Traditional Massage',
+                serviceType: 'Professional Treatment',
                 locationZone: customerForm.location,
                 coordinates: customerForm.coordinates || undefined,
                 scheduledDate: selectedDate,
@@ -609,7 +707,7 @@ export function PersistentChatWindow() {
                 originalPrice: hasDiscount ? originalPrice : undefined,
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Traditional Massage',
+                serviceType: 'Professional Treatment',
                 locationZone: customerForm.location,
                 coordinates: customerForm.coordinates || undefined,
               });
@@ -664,7 +762,7 @@ export function PersistentChatWindow() {
                 originalPrice: hasDiscount ? originalPrice : undefined,
                 discountCode: hasDiscount ? discountCode : undefined,
                 discountPercentage: hasDiscount ? discountValidation.percentage : undefined,
-                serviceType: 'Traditional Massage',
+                serviceType: 'Professional Treatment',
                 locationZone: customerForm.location,
                 coordinates: customerForm.coordinates || undefined,
               });
@@ -863,24 +961,6 @@ export function PersistentChatWindow() {
   // BOOKING NOTIFICATION HANDLERS
   // ========================================================================
 
-  const handleAcceptBooking = async (bookingId: string) => {
-    try {
-      await acceptBooking();
-    } catch (error: unknown) {
-      const err = error as Error; console.error('Failed to accept booking:', err);
-      throw error as Error;
-    }
-  };
-
-  const handleDeclineBooking = async (bookingId: string, reason?: string) => {
-    try {
-      await rejectBooking();
-    } catch (error: unknown) {
-      const err = error as Error; console.error('Failed to decline booking:', err);  
-      throw error as Error;
-    }
-  };
-
   const handleBookingExpire = (bookingId: string) => {
     console.log('Booking expired:', bookingId);
     addSystemNotification('⏰ Booking request expired due to timeout.');
@@ -938,12 +1018,20 @@ export function PersistentChatWindow() {
       
       <div
         data-testid="persistent-chat-window"
-        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100vw-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up"
+        className="fixed bottom-0 left-0 right-0 sm:bottom-4 sm:left-auto sm:right-4 z-[9999] w-full sm:w-[380px] sm:max-w-[calc(100vw-32px)] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-y-auto overflow-x-hidden flex flex-col animate-slide-up scrollbar-hide"
         style={{ 
           height: 'min(600px, calc(100vh - 60px))',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          scrollbarWidth: 'none', /* Firefox */
+          msOverflowStyle: 'none', /* Internet Explorer 10+ */
         }}
       >
+      {/* CSS for hiding webkit scrollbars */}
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none; /* Safari and Chrome */
+        }
+      `}</style>
       {/* Slide up animation */}
       <style>{`
         @keyframes slideUp {
@@ -962,145 +1050,125 @@ export function PersistentChatWindow() {
       `}</style>
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-4 flex items-center gap-3">
-        <div className="relative flex-shrink-0">
-          <img 
-            src={(therapist as any).profilePicture || (therapist as any).mainImage || therapist.image || '/placeholder-avatar.jpg'} 
-            alt={therapist.name}
-            className="w-12 h-12 rounded-full object-cover border-2 border-white/50 flex-shrink-0"
-            style={{minWidth: '48px', minHeight: '48px'}}
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder-avatar.jpg';
-            }}
-          />
-          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-orange-500"></span>
-        </div>
         
+        <img 
+          src={therapist.image || '/placeholder-avatar.jpg'}
+          alt={therapist.name}
+          className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
+        />
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-base truncate">{therapist.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-base truncate" id="chat-therapist-name" data-gb="Nama Terapis|Therapist Name">{therapist.name}</h3>
+            {(chatState.bookingData?.bookingId || chatState.currentBooking?.bookingId) && (
+              <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-mono shrink-0" id="booking-id" data-gb="ID Booking|Booking ID">
+                {chatState.bookingData?.bookingId || chatState.currentBooking?.bookingId}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-1 text-xs text-orange-100">
             {/* Booking countdown timer */}
             {chatState.bookingCountdown !== null ? (
-              <span className="flex items-center gap-1 text-yellow-200 font-medium animate-pulse">
-                <Clock className="w-3 h-3" />
+              <span className="flex items-center gap-1 text-yellow-200 font-medium animate-pulse" id="countdown-timer" data-gb="Waktu Tersisa|Time Remaining">
                 {Math.floor(chatState.bookingCountdown / 60)}:{(chatState.bookingCountdown % 60).toString().padStart(2, '0')}
               </span>
-            ) : isConnected ? (
-              <>
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <span>Indastreet Live Monitoring In Process</span>
-              </>
             ) : (
-              <>
-                <WifiOff className="w-3 h-3" />
-                <span>Connecting...</span>
-              </>
+              <div className="flex items-center gap-2">
+                {isConnected ? (
+                  <span id="connection-status-live" data-gb="Pemantauan Langsung Indastreet Aktif|Indastreet Live Monitoring Active">Pemantauan Langsung Indastreet Aktif</span>
+                ) : (
+                  <span id="connection-status-connecting" data-gb="Menghubungkan...|Connecting...">Menghubungkan...</span>
+                )}
+              </div>
             )}
           </div>
         </div>
         
-        <div className="flex items-center gap-1">
-          {/* Bank Card Button - for payment sharing */}
-          {chatState.currentBooking && (chatState.currentBooking.status === 'completed' || chatState.currentBooking.status === 'on_the_way') && (
-            <button
-              onClick={shareBankCard}
-              className="p-1.5 bg-green-500 rounded-full hover:bg-green-600 transition-colors"
-              title="Share Bank Card for Payment"
-            >
-              <CreditCard className="w-4 h-4 text-white" />
-            </button>
-          )}
-          <button
-            onClick={minimizeChat}
-            className="p-1.5 hover:bg-white/20 transition-colors rounded relative z-[10001]"
-            title="Minimize"
-          >
-            <span>▼</span>
-          </button>
-          {!isLocked && (
-            <button
-              onClick={closeChat}
-              className="p-1.5 bg-black rounded-full hover:bg-gray-800 transition-colors"
-              title="Close"
-            >
-              <X className="w-4 h-4 text-white" />
-            </button>
-          )}
+        {/* Language Selector - Right Side */}
+        <button 
+          className="p-2 bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
+          onClick={() => {
+            const newLang = currentLanguage === 'id' ? 'en' : 'id';
+            setCurrentLanguage(newLang);
+            document.documentElement.setAttribute('data-lang', newLang);
+            
+            // Update all translation elements
+            document.querySelectorAll('[data-gb]').forEach(el => {
+              const translations = el.getAttribute('data-gb')?.split('|');
+              if (translations && translations.length === 2) {
+                el.textContent = newLang === 'id' ? translations[0] : translations[1];
+              }
+            });
+          }}
+          id="language-selector" 
+          data-gb="Bahasa|Language"
+          title={currentLanguage === 'id' ? 'Switch to English' : 'Beralih ke Bahasa Indonesia'}
+        >
+          <span className="text-lg">
+            {currentLanguage === 'id' ? '🇮🇩' : '🇬🇧'}
+          </span>
+        </button>
+        
+        {/* Minimize Button */}
+        <button
+          onClick={minimizeChat}
+          className="p-2 hover:bg-white/20 transition-colors rounded-full"
+          title="Minimize Chat"
+          id="minimize-chat-btn" 
+          data-gb="Perkecil Chat|Minimize Chat"
+        >
+          <svg className="w-5 h-5 font-bold" fill="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" stroke="currentColor" fill="none"/>
+          </svg>
+        </button>
+      </div>
+
+      <>
+      {/* Therapist Booking Notifications */}
+      {chatState.isTherapistView && bookingNotifications.length > 0 && (
+        <div className="p-4 bg-gradient-to-r from-orange-400 to-red-500">
+          {bookingNotifications.map((notification) => (
+            <div key={notification.bookingId} className="bg-white rounded-lg p-4 mb-3 last:mb-0 shadow-lg">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center animate-pulse">
+                  <div className="w-6 h-6 bg-orange-500 rounded-full"></div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-gray-800 mb-1" id="new-booking-title" data-gb="Permintaan Booking Baru|New Booking Request">
+                    🔔 Permintaan Booking Baru
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-700 mb-3">
+                    <div><strong id="customer-label" data-gb="Pelanggan|Customer">Pelanggan:</strong> {notification.customerName}</div>
+                    <div><strong id="service-type-label" data-gb="Layanan|Service">Layanan:</strong> {notification.serviceType}</div>
+                    <div><strong id="duration-booking-label" data-gb="Durasi|Duration">Durasi:</strong> {notification.duration} menit</div>
+                    <div><strong id="price-booking-label" data-gb="Harga|Price">Harga:</strong> {Math.round(notification.price / 1000)}k</div>
+                    <div className="col-span-2"><strong id="location-label" data-gb="Lokasi|Location">Lokasi:</strong> {notification.location.address}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAcceptBooking(notification.bookingId)}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                      id="accept-booking-btn" 
+                      data-gb="Terima Booking|Accept Booking"
+                    >
+                      ✅ Terima Booking
+                    </button>
+                    <button
+                      onClick={() => handleDeclineBooking(notification.bookingId)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                      id="decline-booking-btn" 
+                      data-gb="Tolak|Decline"
+                    >
+                      ❌ Tolak
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
 
-      {/* 🚨 CRITICAL: BOOKING COUNTDOWN TIMER - ALWAYS VISIBLE */}
-      {(() => {
-        // DEBUG: Log countdown rendering conditions
-        console.log('🔍 [COUNTDOWN DEBUG] Checking render conditions:', {
-          hasCurrentBooking: !!chatState.currentBooking,
-          hasResponseDeadline: !!chatState.currentBooking?.responseDeadline,
-          bookingStatus: chatState.currentBooking?.status,
-          responseDeadline: chatState.currentBooking?.responseDeadline,
-          isTherapistView: chatState.isTherapistView,
-          bookingId: chatState.currentBooking?.id
-        });
-
-        if (!chatState.currentBooking) {
-          console.log('❌ [COUNTDOWN] No current booking');
-          return null;
-        }
-        
-        if (!chatState.currentBooking.responseDeadline) {
-          console.log('❌ [COUNTDOWN] No responseDeadline in booking');
-          return null;
-        }
-        
-        const status = chatState.currentBooking.status;
-        if (status !== 'pending' && status !== 'requested') {
-          console.log('❌ [COUNTDOWN] Booking status not pending/requested:', status);
-          return null;
-        }
-
-        console.log('✅ [COUNTDOWN] All conditions met - rendering countdown');
-        
-        return (
-          <BookingCountdown
-            deadline={chatState.currentBooking.responseDeadline}
-            role={chatState.isTherapistView ? 'therapist' : 'user'}
-            bookingId={chatState.currentBooking.id}
-            onCancel={() => cancelBooking()}
-            onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
-            onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
-            onExpire={() => {
-              addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
-              setChatState(prev => ({
-                ...prev,
-                currentBooking: prev.currentBooking ? {
-                  ...prev.currentBooking,
-                  status: 'expired'
-                } : null
-              }));
-            }}
-          />
-        );
-      })()}
-
-      {/* 🧪 DEBUG: FORCE VISIBLE COUNTDOWN - REMOVE AFTER TESTING */}
-      <div style={{
-        backgroundColor: '#ffff00 !important',
-        border: '5px solid blue !important',
-        padding: '20px',
-        margin: '10px 0',
-        color: 'black !important',
-        fontSize: '18px',
-        fontWeight: 'bold',
-        textAlign: 'center',
-        zIndex: '9999 !important',
-        position: 'relative'
-      }}>
-        🚨 DEBUG: COUNTDOWN TEST - If you see this, CSS is working!
-        {chatState.currentBooking ? '✅ Has Booking' : '❌ No Booking'}
-        {chatState.currentBooking?.responseDeadline ? '✅ Has Deadline' : '❌ No Deadline'}
-        Status: {chatState.currentBooking?.status || 'none'}
-      </div>
-
-      {/* Enhanced Welcome Banner with Booking Details */}
-      {/* 🔒 RULE: BookingWelcomeBanner is SINGLE SOURCE OF TRUTH for booking display */}
+      {/* Regular booking flow for customers */}
       {chatState.currentBooking && (() => {
         try {
           // Validate booking data before render
@@ -1127,37 +1195,14 @@ export function PersistentChatWindow() {
           // DON'T CLOSE CHAT - Just show a temporary error message
           // This error often occurs during Order Now submission process
           return (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-6 m-4 rounded-lg shadow-sm animate-fade-in">
-              {/* Connecting Status with Animation */}
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="relative">
-                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center animate-pulse">
-                    <Clock className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-ping"></div>
-                </div>
-                <div>
-                  <h3 className="font-bold text-blue-900 text-lg">Connecting to Therapist...</h3>
-                  <p className="text-blue-700 text-sm">Setting up your booking</p>
-                </div>
-              </div>
-              
-              {/* Progress Indicator */}
-              <div className="w-full bg-blue-200 rounded-full h-2 mb-4 overflow-hidden">
-                <div className="bg-blue-600 h-full rounded-full animate-pulse" style={{width: '60%'}}></div>
-              </div>
-              
-              <p className="text-center text-blue-700 text-sm">
-                Your booking request is being prepared.<br/>
-                Countdown timer will appear once connected.
-              </p>
-            </div>
+            <div style={{display: 'none'}}></div>
           );
         }
       })()}
+      </>
 
       {/* Content area */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      <div className="flex-1 bg-white flex flex-col">
         
         {/* Duration Selection Step */}
         {bookingStep === 'duration' && (
@@ -1458,9 +1503,15 @@ export function PersistentChatWindow() {
                   📅 {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {selectedTime}
                 </p>
               )}
-              <p className="text-sm text-gray-600 mt-2">
-                🕐 Estimated Arrival: 30-60 minutes
-              </p>
+              {isScheduleMode ? (
+                <p className="text-sm text-orange-600 mt-2 font-medium">
+                  ⏰ Required 20 Minute Before Therapy
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600 mt-2">
+                  🕐 Estimated Arrival: 30-60 minutes
+                </p>
+              )}
             </div>
             
             <form 
@@ -1528,10 +1579,10 @@ export function PersistentChatWindow() {
                 </div>
               </div>
               
-              {/* Massage For Selection */}
+              {/* Treatment For Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-                  Massage For
+                  Treatment For
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1610,55 +1661,78 @@ export function PersistentChatWindow() {
                 )}
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-                  My Location
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { value: 'home', label: 'Home', icon: 'https://ik.imagekit.io/7grri5v7d/home%20icon.png', isImage: true },
-                    { value: 'hotel', label: 'Hotel', icon: 'https://ik.imagekit.io/7grri5v7d/hotel%20icon.png', isImage: true },
-                    { value: 'villa', label: 'Villa', icon: 'https://ik.imagekit.io/7grri5v7d/villa%20icon.png', isImage: true },
-                  ].map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setCustomerForm(prev => ({ ...prev, locationType: option.value as 'home' | 'hotel' | 'villa' }))}
-                      className={`text-sm font-medium transition-all flex flex-col items-center gap-1 relative ${
-                        option.isImage
-                          ? customerForm.locationType === option.value
-                            ? 'scale-105'
-                            : ''
-                          : `py-3 px-2 rounded-xl ${customerForm.locationType === option.value
-                            ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
-                            : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
-                      }`}
-                    >
-                      {option.isImage ? (
-                        <div className="relative -mt-[10px]">
-                          <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
-                          <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
-                            customerForm.locationType === option.value ? 'text-orange-500' : 'text-white'
-                          }`}>{option.label}</span>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-xl">{option.icon}</span>
-                          <span>{option.label}</span>
-                        </>
-                      )}
-                    </button>
-                  ))}
+              {/* Location Section - Different for scheduled vs instant booking */}
+              {isScheduleMode ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+                    Treatment Center Address
+                  </label>
+                  <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-4 text-center">
+                    <div className="flex items-center justify-center mb-2">
+                      <MapPin className="w-5 h-5 text-orange-600 mr-2" />
+                      <span className="text-sm font-semibold text-orange-800">Treatment Location</span>
+                    </div>
+                    <p className="text-gray-800 font-medium">
+                      {chatState.therapist?.location || 'Professional Treatment Center'}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {chatState.therapist?.city || 'Bali'}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+                    My Location
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'home', label: 'Home', icon: 'https://ik.imagekit.io/7grri5v7d/home%20icon.png', isImage: true },
+                      { value: 'hotel', label: 'Hotel', icon: 'https://ik.imagekit.io/7grri5v7d/hotel%20icon.png', isImage: true },
+                      { value: 'villa', label: 'Villa', icon: 'https://ik.imagekit.io/7grri5v7d/villa%20icon.png', isImage: true },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setCustomerForm(prev => ({ ...prev, locationType: option.value as 'home' | 'hotel' | 'villa' }))}
+                        className={`text-sm font-medium transition-all flex flex-col items-center gap-1 relative ${
+                          option.isImage
+                            ? customerForm.locationType === option.value
+                              ? 'scale-105'
+                              : ''
+                            : `py-3 px-2 rounded-xl ${customerForm.locationType === option.value
+                              ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                              : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-orange-400 hover:bg-orange-50'}`
+                        }`}
+                      >
+                        {option.isImage ? (
+                          <div className="relative -mt-[10px]">
+                            <img src={option.icon} alt={option.label} className="w-[100px] h-[100px] object-cover" />
+                            <span className={`absolute bottom-6 left-1/2 -translate-x-1/2 font-bold text-sm drop-shadow-lg ${
+                              customerForm.locationType === option.value ? 'text-orange-500' : 'text-white'
+                            }`}>{option.label}</span>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-xl">{option.icon}</span>
+                            <span>{option.label}</span>
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               
-              {/* Massage Location Header */}
-              <div className="text-center">
-                <h3 className="text-base font-semibold text-gray-800 mb-4">Massage Location</h3>
-              </div>
+              {/* Massage Location Header - Only show for instant bookings */}
+              {!isScheduleMode && (
+                <div className="text-center">
+                  <h3 className="text-base font-semibold text-gray-800 mb-4">Massage Location</h3>
+                </div>
+              )}
               
-              {/* Address Input Fields - Only for HOME */}
-              {customerForm.locationType === 'home' && (
+              {/* Address Input Fields - Only for instant bookings and HOME location */}
+              {!isScheduleMode && customerForm.locationType === 'home' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1690,8 +1764,8 @@ export function PersistentChatWindow() {
                 </>
               )}
               
-              {/* Hotel/Villa Name and Room Number - only show for hotel or villa */}
-              {(customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (
+              {/* Hotel/Villa Name and Room Number - only show for instant bookings and hotel/villa location */}
+              {!isScheduleMode && (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1878,77 +1952,11 @@ export function PersistentChatWindow() {
               });
               
               return shouldShow;
-            })() && (
-              <div className="bg-gradient-to-r from-orange-100 to-orange-50 border-b border-orange-200 p-4 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-orange-800">
-                        Waiting for Therapist Response
-                      </div>
-                      <div className="text-xs text-orange-600">
-                        {chatState.isTherapistView 
-                          ? 'Please respond to this booking request' 
-                          : 'We\'re finding the best therapist for you'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600 mb-1">
-                      {Math.floor(therapistResponseCountdown / 60)}:
-                      {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
-                    </div>
-                    <div className="text-xs text-orange-500">remaining</div>
-                  </div>
-                </div>
-                
-                {/* Progress bar */}
-                <div className="w-full bg-orange-200 rounded-full h-2 mt-3 mb-3">
-                  <div 
-                    className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-                    style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
-                  ></div>
-                </div>
-                
-                {/* Action buttons */}
-                <div className="flex gap-2 justify-center">
-                  {chatState.isTherapistView ? (
-                    <>
-                      {/* Therapist buttons */}
-                      <button
-                        onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Accept Booking
-                      </button>
-                      <button
-                        onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Decline
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {/* User cancel button */}
-                      <button
-                        onClick={() => cancelBooking()}
-                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                      >
-                        <X className="w-4 h-4" />
-                        Cancel Booking
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
+            })() && null}
             
             {/* Messages */}
-            <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <div className="flex-1 min-h-0">
+              <div className="p-4 space-y-3">
               {messages.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   {/* Animated welcome */}
@@ -1956,46 +1964,45 @@ export function PersistentChatWindow() {
                     <div className="w-20 h-20 mx-auto bg-gradient-to-r from-orange-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                       <MessageCircle className="w-10 h-10 text-white" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-3 border-white animate-bounce">
-                      <div className="w-full h-full bg-green-400 rounded-full animate-ping"></div>
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gray-300 rounded-full border-3 border-white animate-bounce">
+                      <div className="w-full h-full bg-gray-200 rounded-full animate-ping"></div>
                     </div>
                   </div>
                   
                   {/* Welcome message */}
                   <div className="mb-6">
                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                      🎉 Welcome to your chat with {therapist.name}!
+                      🎉 Welcome Budiarti Massage Service
                     </h3>
                     <p className="text-gray-500 text-sm leading-relaxed">
                       Your booking has been successfully submitted.<br/>
-                      You can now chat directly with your therapist.
+                      You can chat directly with your therapist once they accept booking.
                     </p>
                   </div>
                   
                   {/* Booking Information Bubble */}
                   <div className="bg-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
-                    <h4 className="font-semibold text-gray-800 text-sm mb-4 flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      Booking Details
+                    <h4 className="font-semibold text-gray-800 text-sm mb-4" id="booking-details-title" data-gb="Detail Booking|Booking Details">
+                      Detail Booking
                     </h4>
                     
                     <div className="space-y-3 text-sm text-gray-700">
                       {/* Service Type */}
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Service:</span>
-                        <span>Massage</span>
+                        <span className="font-medium" id="service-label" data-gb="Layanan|Service">Layanan:</span>
+                        <span id="service-value" data-gb="Pijat|Massage">Pijat</span>
                       </div>
                       
                       {/* Duration */}
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Duration:</span>
-                        <span>{chatState.selectedDuration || 60} minutes</span>
+                        <span className="font-medium" id="duration-label" data-gb="Durasi|Duration">Durasi:</span>
+                        <span id="duration-value">{chatState.selectedDuration || 60} menit</span>
                       </div>
                       
                       {/* Price */}
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Price:</span>
-                        <span className="font-semibold">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
+                        <span className="font-medium" id="price-label" data-gb="Harga|Price">Harga:</span>
+                        <span className="font-semibold" id="price-value">{Math.round(getPrice(chatState.selectedDuration || 60) / 1000)}k</span>
                       </div>
                       
                       {/* Arrival Time */}
@@ -2006,86 +2013,34 @@ export function PersistentChatWindow() {
                       
                       {/* Payment Methods */}
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Payment:</span>
-                        <span>Cash • Transfer</span>
+                        <span className="font-medium" id="payment-label" data-gb="Pembayaran|Payment">Pembayaran:</span>
+                        <span id="payment-methods" data-gb="Tunai • Transfer|Cash • Transfer">Tunai • Transfer</span>
                       </div>
                     </div>
                     
-                    {/* Response Countdown Section (if booking is pending) */}
-                    {chatState.currentBooking?.status === 'pending' && (
-                      <>
-                        <div className="border-t border-gray-200 pt-4 mt-4">
-                          <h5 className="font-semibold text-gray-800 text-sm mb-3 flex items-center gap-2">
-                            <div className="w-5 h-5 bg-orange-300 rounded-full flex items-center justify-center">
-                              <Clock className="w-3 h-3 text-orange-600" />
-                            </div>
-                            Waiting for Response
-                          </h5>
-                          
-                          <div className="text-center mb-3">
-                            <div className="text-xl font-bold text-orange-600 mb-1">
-                              {Math.floor(therapistResponseCountdown / 60)}:
-                              {(therapistResponseCountdown % 60).toString().padStart(2, '0')}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              {chatState.isTherapistView 
-                                ? 'Please respond to this booking request' 
-                                : 'Therapist will respond soon'}
-                            </div>
-                          </div>
-                          
-                          {/* Progress bar */}
-                          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                            <div 
-                              className="bg-orange-500 h-2 rounded-full transition-all duration-1000 ease-linear"
-                              style={{width: `${(therapistResponseCountdown / 300) * 100}%`}}
-                            ></div>
-                          </div>
-                          
-                          {/* Action buttons */}
-                          <div className="flex gap-2">
-                            {chatState.isTherapistView ? (
-                              <>
-                                {/* Therapist buttons */}
-                                <button
-                                  onClick={() => handleAcceptBooking(chatState.currentBooking!.id)}
-                                  className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  onClick={() => handleDeclineBooking(chatState.currentBooking!.id)}
-                                  className="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-                                >
-                                  Decline
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                {/* User cancel button */}
-                                <button
-                                  onClick={() => cancelBooking()}
-                                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-                                >
-                                  Cancel Booking
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  
-                  {/* Subtle animation hint */}
-                  <div className="mt-8 opacity-60">
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                      <span>Start typing below</span>
-                      <div className="flex space-x-1">
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                        <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                      </div>
+                    {/* Booking Progress Indicator */}
+                    <div className="mt-4 pt-4 border-t border-gray-300">
+                      <BookingProgress 
+                        currentStatus={chatState.currentBooking?.status || 'sent'}
+                        className="border-0 p-0 bg-transparent"
+                        deadline={chatState.currentBooking?.responseDeadline}
+                        role={chatState.isTherapistView ? 'therapist' : 'user'}
+                        bookingId={chatState.currentBooking?.id}
+                        therapistName={therapist.name}
+                        onCancel={() => cancelBooking()}
+                        onAccept={() => handleAcceptBooking(chatState.currentBooking!.id)}
+                        onDecline={() => handleDeclineBooking(chatState.currentBooking!.id)}
+                        onExpire={() => {
+                          addSystemNotification('⏰ Booking expired - No response received. Please try booking again.');
+                          setChatState(prev => ({
+                            ...prev,
+                            currentBooking: prev.currentBooking ? {
+                              ...prev.currentBooking,
+                              status: 'expired'
+                            } : null
+                          }));
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -2148,13 +2103,14 @@ export function PersistentChatWindow() {
                 })
               )}
               <div ref={messagesEndRef} />
+              </div>
             </div>
 
             {/* Status-specific UI Components based on booking status */}
             {chatState.currentBooking && (
               <>
-                {/* Waiting for Therapist Response */}
-                {(chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
+                {/* Removed duplicate waiting message - shown in BookingWelcomeBanner above */}
+                {false && (chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && (
                   <div className="mx-4 mb-4 p-4 rounded-xl border-2 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                     <div className="text-center">
                       <div className="w-16 h-16 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
@@ -2252,23 +2208,6 @@ export function PersistentChatWindow() {
                   </div>
                 )}
 
-                {/* Connection Status Indicator */}
-                <ConnectionStatusIndicator 
-                  isConnected={isConnected}
-                  isReconnecting={false}
-                  lastConnected={new Date()}
-                  queuedMessages={0}
-                  onRetry={() => window.location.reload()}
-                  onOfflineMode={() => console.log('Offline mode')}
-                />
-
-                {/* Progress Stepper */}
-                <BookingProgressStepper
-                  currentStep={chatState.currentBooking.status as BookingProgressStep}
-                  showLabels={true}
-                  showTimes={true}
-                />
-
                 {/* Therapist Accepted Status */}
                 {(chatState.currentBooking.status === 'accepted' || chatState.currentBooking.status === 'confirmed') && (
                   <TherapistAcceptanceUI
@@ -2350,28 +2289,6 @@ export function PersistentChatWindow() {
                   />
                 )}
 
-                {/* Response Timer for pending bookings */}
-                {(chatState.currentBooking.status === 'pending' || chatState.currentBooking.status === 'requested') && therapistResponseCountdown > 0 && (
-                  <EnhancedTimerComponent
-                    type="response"
-                    initialSeconds={therapistResponseCountdown}
-                    title="Awaiting Therapist Response"
-                    description="Searching for available therapists in your area"
-                    onExpire={() => {
-                      addSystemNotification('⏰ No therapists available at the moment. Please try again later.');
-                      // Auto-cancel or show rebooking options
-                    }}
-                    onWarning={(seconds) => {
-                      if (seconds === 60) {
-                        addSystemNotification('⚠️ Booking will expire in 1 minute');
-                      }
-                    }}
-                    isActive={true}
-                    warningThreshold={60}
-                    urgentThreshold={30}
-                  />
-                )}
-
                 {/* Payment Flow for completed sessions */}
                 {chatState.currentBooking.status === 'completed' && !chatState.currentBooking.paymentStatus && (
                   <PaymentFlowUI
@@ -2394,17 +2311,6 @@ export function PersistentChatWindow() {
                   />
                 )}
 
-                {/* Error Recovery UI - shown when there are connection or booking issues */}
-                {!isConnected && (
-                  <ErrorRecoveryUI
-                    errorType="connection"
-                    errorMessage="Lost connection to booking system"
-                    canRetry={true}
-                    onRetry={() => window.location.reload()}
-                    onCancel={() => closeChat()}
-                    onContactSupport={() => window.open('tel:+1555123456')}
-                  />
-                )}
               </>
             )}
           </div>

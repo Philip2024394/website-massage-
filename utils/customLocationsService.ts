@@ -20,7 +20,7 @@ export async function getPopularCustomLocations(minTherapists: number = 5): Prom
     
     // Filter for custom locations only
     const customLocationTherapists = allTherapists.filter(
-      (t: Therapist) => t.isCustomLocation && t.customCity && t.geopoint
+      (t: Therapist) => t.isCustomLocation && t.customCity && (t.latitude && t.longitude)
     );
     
     if (customLocationTherapists.length === 0) {
@@ -49,9 +49,9 @@ export async function getPopularCustomLocations(minTherapists: number = 5): Prom
         let validCount = 0;
         
         therapists.forEach((t: Therapist) => {
-          if (t.geopoint?.lat && t.geopoint?.lng) {
-            totalLat += t.geopoint.lat;
-            totalLng += t.geopoint.lng;
+          if (t.latitude && t.longitude) {
+            totalLat += parseFloat(t.latitude);
+            totalLng += parseFloat(t.longitude);
             validCount++;
           }
         });

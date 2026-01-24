@@ -6,6 +6,7 @@ import { useTranslations } from '../lib/useTranslations';
 import { useLanguage } from '../hooks/useLanguage';
 import { Page } from '../types/pageTypes';
 import { AppDrawer } from '../components/AppDrawerClean';
+import UniversalHeader from '../components/shared/UniversalHeader';
 import { React19SafeWrapper } from '../components/React19SafeWrapper';
 
 interface MassageTypesPageProps {
@@ -229,6 +230,12 @@ const MassageTypesPage: React.FC<MassageTypesPageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
+            <UniversalHeader
+                onNavigate={onNavigate}
+                onMenuToggle={() => setIsMenuOpen(true)}
+                title="Massage Types"
+            />
+            
             {/* Header matching HomePage */}
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm w-full max-w-full overflow-hidden">
                 <div className="flex justify-between items-center">

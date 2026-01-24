@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
 import { AppDrawer } from '../components/AppDrawerClean';
+import UniversalHeader from '../components/shared/UniversalHeader';
 import FlyingButterfly from "../components/FlyingButterfly";
 import AnonymousReviewModal from "../components/AnonymousReviewModal";
 import { databases, DATABASE_ID, COLLECTIONS } from '../lib/appwrite';
@@ -392,6 +393,12 @@ const IndastreetPartnersPage: React.FC<IndastreetPartnersPageProps> = ({
 
     return (
         <div className="min-h-screen bg-white">
+            <UniversalHeader
+                onNavigate={onNavigate}
+                onMenuToggle={() => setIsMenuOpen(true)}
+                title="IndaStreet Partners"
+            />
+            
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
             

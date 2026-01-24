@@ -9,7 +9,7 @@ import { lazy } from 'react';
 // Critical entry page: import directly to avoid chunk load errors
 import LandingPage from '../../pages/LandingPage';
 import HomePage from '../../pages/HomePage';
-const AboutUsPage = lazy(() => import('../../pages/AboutUsPage'));
+import AboutUsPage from '../../pages/AboutUsPage';
 const ContactUsPage = lazy(() => import('../../pages/ContactUsPage'));
 const CompanyProfilePage = lazy(() => import('../../pages/CompanyProfilePage'));
 const HowItWorksPage = lazy(() => import('../../pages/HowItWorksPage'));

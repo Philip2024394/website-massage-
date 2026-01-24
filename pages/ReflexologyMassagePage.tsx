@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AppDrawer } from '../components/AppDrawerClean';
+import UniversalHeader from '../components/shared/UniversalHeader';
 
 interface ReflexologyMassagePageProps {
     onBack?: () => void;
@@ -48,6 +49,12 @@ const ReflexologyMassagePage: React.FC<ReflexologyMassagePageProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <UniversalHeader
+                onNavigate={onNavigate}
+                onMenuToggle={() => setIsMenuOpen(true)}
+                title="Reflexology Massage"
+            />
+            
             <header className="p-4 bg-white sticky top-0 z-20 shadow-sm">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-800">
