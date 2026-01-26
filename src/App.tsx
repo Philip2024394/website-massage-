@@ -16,10 +16,14 @@ import { useMobileDetection } from '../hooks/useMobileDetection';
 import { useTranslations } from '../lib/useTranslations';
 import { DeviceStylesProvider } from '../components/DeviceAware';
 import BookingStatusTracker from '../components/BookingStatusTracker';
-import { useState, useEffect, lazy } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-// Temporarily disabled lazy loading to fix AsyncMode error
-const FloatingChatWindow = lazy(() => import('../chat').then(m => ({ default: m.FloatingChatWindow })));
+// 🔒 PRODUCTION-GRADE: Lazy loading with automatic retry on weak networks
+const FloatingChatWindow = lazyWithRetry(
+    () => import('../chat').then(m => ({ default: m.FloatingChatWindow })),
+    { componentName: 'FloatingChatWindow', retries: 3 }
+);
 // const FloatingChat = lazy(() => import('./apps/therapist-dashboard/src/components/FloatingChat'));
 import { bookingExpirationService } from '../services/bookingExpirationService';
 // localStorage disabled globally - COMMENTED OUT to enable language persistence
@@ -1220,9 +1224,17 @@ const App = () => {
         console.log('🔥 RENDERING FloatingChatWindow COMPONENT (lazy loaded)');
         console.log('✅ FloatingChatWindow RENDERING NOW');
         
-        // Re-enable FloatingChatWindow to test booking banner functionality
+        // Re-enable FloatingChatWindow with error boundary for chunk load failures
         return (
-            <Suspense fallback={<div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl animate-pulse" />}>
+            <Suspense fallback={
+                <div className="fixed bottom-20 right-4 w-96 h-[600px] bg-white rounded-xl shadow-2xl flex items-center justify-center">
+                    <div className="text-center p-6">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading chat...</p>
+                        <p className="text-xs text-gray-400 mt-2">If this takes too long, check your connection</p>
+                    </div>
+                </div>
+            }>
                 <FloatingChatWindow
                     userId={activeChat.customerId || 'demo-customer-1'}
                     userName={activeChat.customerName || 'Demo Customer'}

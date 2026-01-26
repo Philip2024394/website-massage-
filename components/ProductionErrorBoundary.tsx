@@ -6,6 +6,7 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { smartReload, isRecoverable } from '../utils/softNavigation';
 
 interface Props {
     children: ReactNode;
@@ -16,6 +17,7 @@ interface State {
     error: Error | null;
     errorInfo: ErrorInfo | null;
     buildHash: string;
+    isRecoverable: boolean;
 }
 
 export class ProductionErrorBoundary extends Component<Props, State> {
@@ -25,13 +27,18 @@ export class ProductionErrorBoundary extends Component<Props, State> {
             hasError: false,
             error: null,
             errorInfo: null,
-            buildHash: import.meta.env.VITE_BUILD_HASH || 'unknown'
+            buildHash: import.meta.env.VITE_BUILD_HASH || 'unknown',
+            isRecoverable: false
         };
     }
 
     static getDerivedStateFromError(error: Error): Partial<State> {
         // Update state so the next render will show the fallback UI
-        return { hasError: true, error };
+        return { 
+            hasError: true, 
+            error,
+            isRecoverable: isRecoverable(error)
+        };
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -40,7 +47,8 @@ export class ProductionErrorBoundary extends Component<Props, State> {
         
         this.setState({
             error,
-            errorInfo
+            errorInfo,
+            isRecoverable: isRecoverable(error)
         });
 
         // Send to error tracking service (if configured)
@@ -55,20 +63,8 @@ export class ProductionErrorBoundary extends Component<Props, State> {
     }
 
     handleReload = () => {
-        // Clear all caches and reload
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                for (const registration of registrations) {
-                    registration.unregister();
-                }
-            });
-        }
-        
-        // Clear session storage
-        sessionStorage.clear();
-        
-        // Hard reload
-        window.location.reload();
+        // 🔒 MOBILE-FIRST: Try soft recovery first (preserves user data)
+        smartReload();
     };
 
     render() {
@@ -95,7 +91,9 @@ export class ProductionErrorBoundary extends Component<Props, State> {
                         <p className="text-gray-600 text-center mb-6">
                             {isDev 
                                 ? 'The application encountered an error. Check the console for details.'
-                                : 'We apologize for the inconvenience. Please refresh the page.'}
+                                : this.state.isRecoverable
+                                    ? 'We detected a temporary issue. Click below to try recovering without losing your data.'
+                                    : 'We apologize for the inconvenience. Please refresh the page.'}
                         </p>
 
                         {/* Error Details (Dev Only) */}
@@ -138,7 +136,7 @@ export class ProductionErrorBoundary extends Component<Props, State> {
                                 onClick={this.handleReload}
                                 className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg"
                             >
-                                Reload Application
+                                {this.state.isRecoverable ? 'Try Recovery' : 'Reload Application'}
                             </button>
                             
                             {isDev && (
@@ -150,6 +148,13 @@ export class ProductionErrorBoundary extends Component<Props, State> {
                                 </button>
                             )}
                         </div>
+
+                        {/* Helpful tip for users */}
+                        {!isDev && this.state.isRecoverable && (
+                            <p className="text-xs text-gray-500 text-center mt-4">
+                                💡 Recovery will attempt to restore the app without refreshing the entire page
+                            </p>
+                        )}
 
                         {/* Help Text */}
                         <p className="text-center text-sm text-gray-500 mt-6">
