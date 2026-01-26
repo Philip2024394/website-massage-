@@ -40,11 +40,13 @@
 
 # Main app SPA redirect - must handle all client-side routes (catch-all)
 # This ensures hard refresh works on any route (e.g., /therapist, /places, /jobs)
+# ⚠️ CRITICAL: Must NOT intercept static assets (JS, CSS, images)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = false
+  conditions = {path = ["!*.js", "!*.css", "!*.png", "!*.jpg", "!*.jpeg", "!*.svg", "!*.ico", "!*.woff", "!*.woff2", "!*.ttf", "!*.eot"]}
 
 # ✅ HTML Cache Control - Mobile-First Safety
 # Prevents CDN edge caching of HTML files to ensure users always get latest JS bundle references
