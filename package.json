@@ -28,7 +28,7 @@
     "open:admin": "pwsh -NoProfile -Command Start-Process http://localhost:3007/",
     "open:place": "pwsh -NoProfile -Command Start-Process http://localhost:3002/",
     "open:facial": "pwsh -NoProfile -Command Start-Process http://localhost:3006/",
-    "build": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
+    "build": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build && node scripts/fix-vite-html-cache.js",
     "build:netlify": "cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build && cd apps/therapist-dashboard && pnpm run build && cd ../.. && node scripts/merge-therapist-dist.js",
     "build:npm": "npm run type-check && cross-env ROLLUP_NO_NATIVE=1 ROLLUP_NO_WASM=1 vite build",
     "build:local": "cross-env ROLLUP_NO_NATIVE=1 tsc && vite build",
