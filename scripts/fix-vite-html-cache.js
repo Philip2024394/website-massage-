@@ -26,14 +26,14 @@ try {
   const sourceContent = fs.readFileSync(SOURCE_HTML, 'utf-8');
   
   // Extract splash screen HTML from source
-  const splashHTMLMatch = sourceContent.match(/<!-- PWA Splash Screen[\s\S]*?<\/div>\s*\n\s*<div id="root">/);
+  const splashHTMLMatch = sourceContent.match(/<!-- PWA Splash Screen[\s\S]*?<div id="pwa-splash">[\s\S]*?<\/div>/);
   if (!splashHTMLMatch) {
     console.error('❌ Could not find splash screen HTML in source');
     process.exit(1);
   }
   
   // Extract splash screen CSS from source
-  const splashCSSMatch = sourceContent.match(/\/\* PWA Splash Screen[\s\S]*?}\s*<\/style>/);
+  const splashCSSMatch = sourceContent.match(/\/\* PWA Splash Screen[\s\S]*?@keyframes fadeIn[\s\S]*?}\s*}/);
   if (!splashCSSMatch) {
     console.error('❌ Could not find splash screen CSS in source');
     process.exit(1);
@@ -44,14 +44,14 @@ try {
   
   // Replace splash HTML
   distContent = distContent.replace(
-    /<!-- PWA Splash Screen[\s\S]*?<\/div>\s*\n\s*<div id="root">/,
+    /<!-- PWA Splash Screen[\s\S]*?<div id="pwa-splash">[\s\S]*?<\/div>/,
     splashHTMLMatch[0]
   );
   
   // Replace splash CSS
   distContent = distContent.replace(
     /\/\* PWA Splash Screen[\s\S]*?}\s*<\/style>/,
-    splashCSSMatch[0]
+    splashCSSMatch[0] + '\n    </style>'
   );
   
   // Write back to dist
