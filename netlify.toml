@@ -39,12 +39,11 @@
   status = 200
 
 # Main app SPA redirect - must handle all client-side routes (catch-all)
-# BUT exclude static files like XML, robots.txt, etc.
+# This ensures hard refresh works on any route (e.g., /therapist, /places, /jobs)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  conditions = {Role = [""], Language = [""], Country = [""]}
   force = false
 
 # ✅ HTML Cache Control - Mobile-First Safety
