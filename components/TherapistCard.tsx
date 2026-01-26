@@ -268,7 +268,8 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
     // Get language context for chat translations
     const { language } = useLanguageContext();
-    const chatLang = language === 'gb' ? 'en' : language;
+    // Convert to chatTranslationService supported languages (Indonesian app only uses id and en)
+    const chatLang: 'en' | 'id' = language === 'id' ? 'id' : 'en';
     
     // Get chat translations
     const bookNowText = chatTranslationService.getTranslation('book_now', chatLang);
