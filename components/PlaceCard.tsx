@@ -200,7 +200,6 @@ function PlaceCard({ place, onClick, onRate, activeDiscount, _t }: PlaceCardProp
                     </div>
                     
                     <div className="flex items-center text-sm text-gray-500 gap-1 pb-1 flex-shrink-0">
-                        <LocationPinIcon className="w-4 h-4 text-red-500"/>
                         <span>{place.distance}km</span>
                     </div>
                 </div>

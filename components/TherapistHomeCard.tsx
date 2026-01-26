@@ -188,9 +188,9 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
         if (therapist.isCustomLocation && therapist.customCity) {
             const customDisplay = therapist.customCity;
             if (therapist.customArea) {
-                return `📍 ${customDisplay} - ${therapist.customArea}`;
+                return `${customDisplay} - ${therapist.customArea}`;
             }
-            return `📍 ${customDisplay}`;
+            return `${customDisplay}`;
         }
         
         // PRIORITY FIX: If a specific city is selected, always show that city
