@@ -859,7 +859,14 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
              * Facebook Lock: This layout is finalized
              * Contact admin before making any changes
              * ======================================== */}
-            {/* Location display removed per user request */}
+            {/* Simple location display under main image - no "Nearby" text or pin */}
+            {(selectedCity || (therapist as any).city || (therapist as any).area) && (
+                <div className="px-4 mt-3 text-center">
+                    <div className="text-xs text-gray-600 font-medium">
+                        {selectedCity || (therapist as any).city || (therapist as any).area}
+                    </div>
+                </div>
+            )}
 
             <TherapistProfile
                 therapist={therapist}

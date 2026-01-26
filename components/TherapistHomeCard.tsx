@@ -457,9 +457,12 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
                 )}
             </div>
 
-            {/* ========================================
-             * Location display removed per user request
-             * ======================================== */}
+            {/* Simple location display under main image - no "Nearby" text or pin */}
+            <div className="px-4 mt-3 text-center">
+                <div className="text-xs text-gray-600 font-medium">
+                    {locationAreaDisplayName}
+                </div>
+            </div>
 
             {/* ========================================
              * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
