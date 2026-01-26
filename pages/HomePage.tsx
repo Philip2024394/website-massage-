@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
-// Lazy load heavy components for better performance
-const TherapistHomeCard = React.lazy(() => import('../components/TherapistHomeCard'));
-const MassagePlaceHomeCard = React.lazy(() => import('../components/MassagePlaceHomeCard'));
-const FacialPlaceHomeCard = React.lazy(() => import('../components/FacialPlaceHomeCard'));
+// Direct imports to avoid lazy loading issues on home page
+import TherapistHomeCard from '../components/TherapistHomeCard';
+import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
+import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
 import RatingModal from '../components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
 import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';

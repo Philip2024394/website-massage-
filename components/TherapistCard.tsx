@@ -1033,35 +1033,53 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     <MessageCircle className="w-4 h-4"/>
                     <span className="text-sm">{bookNowText}</span>
                 </button>
-                 <button 
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        // Prevent multiple rapid clicks
-                        if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
-                            return;
-                        }
-                        (e.target as HTMLElement).setAttribute('data-clicking', 'true');
-                        requestAnimationFrame(() => {
-                            (e.target as HTMLElement).removeAttribute('data-clicking');
-                        });
-                        
-                        console.log('📅 Schedule button clicked - opening PERSISTENT CHAT');
-                        
-                        // ✅ SIMPLIFIED DIRECT INTEGRATION: Schedule booking
-                        // Direct call to PersistentChatProvider instead of complex event chain
-                        openScheduleChat(therapist);
-                        
-                        onIncrementAnalytics('bookings');
-                        // Increment bookings count for UI display
-                        setBookingsCount(prev => prev + 1);
-                    }} 
-                    className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
-                >
-                    <CalendarIcon className="w-4 h-4"/>
-                    <span className="text-sm">{scheduleText}</span>
-                </button>
+                {/* Check if therapist has bank details for scheduled bookings */}
+                {therapist.bankName && therapist.accountNumber && therapist.accountName ? (
+                    <button 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Prevent multiple rapid clicks
+                            if ((e.target as HTMLElement).hasAttribute('data-clicking')) {
+                                return;
+                            }
+                            (e.target as HTMLElement).setAttribute('data-clicking', 'true');
+                            requestAnimationFrame(() => {
+                                (e.target as HTMLElement).removeAttribute('data-clicking');
+                            });
+                            
+                            console.log('📅 Schedule button clicked - opening PERSISTENT CHAT');
+                            
+                            // ✅ SIMPLIFIED DIRECT INTEGRATION: Schedule booking
+                            // Direct call to PersistentChatProvider instead of complex event chain
+                            openScheduleChat(therapist);
+                            
+                            onIncrementAnalytics('bookings');
+                            // Increment bookings count for UI display
+                            setBookingsCount(prev => prev + 1);
+                        }} 
+                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 active:scale-95"
+                    >
+                        <CalendarIcon className="w-4 h-4"/>
+                        <span className="text-sm">{scheduleText}</span>
+                    </button>
+                ) : (
+                    <button 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Show popup for unavailable scheduled bookings
+                            alert('This therapist does not accept scheduled bookings at this time. Please look for therapists with orange schedule buttons who are active members and accept scheduled bookings.');
+                        }} 
+                        className="w-1/2 flex items-center justify-center gap-1.5 font-bold py-4 px-3 rounded-lg transition-all duration-100 transform touch-manipulation min-h-[48px] bg-red-500 text-white hover:bg-red-600 active:bg-red-700 active:scale-95"
+                        disabled
+                    >
+                        <CalendarIcon className="w-4 h-4"/>
+                        <span className="text-sm">Not Available</span>
+                    </button>
+                )}
             </div>
 
             {/* End Content Section wrapper */}
