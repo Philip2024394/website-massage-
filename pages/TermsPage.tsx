@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { FULL_TERMS_DOCUMENT, LEGAL_TERMS } from '../src/legal/terms';
+import { FULL_TERMS_DOCUMENT, LEGAL_TERMS } from '../legal/terms';
 
 interface TermsPageProps {
   language?: 'en' | 'id';
