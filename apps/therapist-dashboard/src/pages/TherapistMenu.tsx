@@ -284,7 +284,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                     </div>
 
                     {/* Duration Containers + Delete Button Row */}
-                    <div className="flex items-start gap-1.5 overflow-x-auto">
+                    <div className="flex items-start gap-1.5 horizontal-scroll-safe">
                       {/* 60 Minutes Container */}
                       <div className="flex-1 min-w-[80px]">
                         <div className="flex items-center justify-center gap-0.5 mb-1">

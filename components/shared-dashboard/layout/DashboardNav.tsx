@@ -18,7 +18,7 @@ const DashboardNav: React.FC<DashboardNavProps> = ({
     return (
         <nav className="bg-white border-b border-gray-200">
             <div className="container mx-auto px-4 max-w-7xl">
-                <div className="flex space-x-1 overflow-x-auto">
+                <div className="flex space-x-1 horizontal-scroll-safe">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}

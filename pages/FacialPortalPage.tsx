@@ -196,7 +196,7 @@ const FacialPortalPage: React.FC<FacialPortalPageProps> = ({
           backgroundImage: 'url(https://ik.imagekit.io/7grri5v7d/facial%20clinic.png?updatedAt=1764957334008)'
         }}
       >
-        <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="max-w-md w-full relative z-10 max-h-full overflow-y-auto pt-4 sm:pt-6" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
           {/* Header - Positioned right under header area */}
           <div className="text-center mb-4 sm:mb-6">
             <h2 className="text-4xl sm:text-5xl font-bold mb-2 sm:mb-3 text-gray-800 drop-shadow-lg">Facial Spa</h2>

@@ -1,5 +1,5 @@
 /* Footer fixes - must come before Tailwind */
-@import url('./footer-fix.css');
+@import url('./test/debug-pages/footer-fix.css');
 
 @tailwind base;
 @tailwind components;
@@ -309,3 +309,46 @@ button:has(svg path[d="M4 6h16M4 12h16M4 18h16"]) {
   background-size: 110% 110%;
 }
 
+/* 🔒 MOBILE-SAFE: Horizontal scroll container */
+.horizontal-scroll-safe {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  
+  /* Touch optimization */
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.horizontal-scroll-safe::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent child elements from shrinking */
+.horizontal-scroll-safe > * {
+  flex-shrink: 0;
+}
+
+/* 🔒 MOBILE-SAFE: Minimum touch target size (44x44px) */
+button:not(.btn-small),
+a.btn,
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Icon-only buttons get minimum size */
+button:not(:has(span)):not(:has(.text)):not(.btn-small) {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -93,7 +93,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   return (
     <div className="border-t bg-white">
       {/* Quick Actions */}
-      <div className="px-4 pt-2 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+      <div className="px-4 pt-2 flex gap-2 horizontal-scroll-safe pb-2">
         {quickActions.map((action, index) => (
           <button
             key={index}

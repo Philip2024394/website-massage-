@@ -102,7 +102,7 @@ const VideoCenterPage: React.FC<VideoCenterPageProps> = ({ t, language = 'en', o
     };
 
     return (
-        <div className="min-h-screen bg-white w-full max-w-[100vw] overflow-x-hidden">
+        <div className="min-h-screen bg-white w-full max-w-full overflow-x-hidden">
             {/* Universal Header */}
             <UniversalHeader 
                 language={currentLanguage}

@@ -235,7 +235,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
       {/* Filter Buttons */}
       <div className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-2 horizontal-scroll-safe pb-1">
             {[
               { value: 'all', label: 'All', count: notifications.length },
               { value: 'unread', label: 'Unread', count: unreadCount },

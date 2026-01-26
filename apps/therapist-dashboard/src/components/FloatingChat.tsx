@@ -519,7 +519,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
     // Full Chat Window
     return (
-        <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50 max-w-[calc(100vw-2rem)]`}>
+        <div className={`fixed ${isInPWAMode ? 'bottom-4 right-4' : 'bottom-6 right-6'} z-50 max-w-[calc(100%-2rem)]`}>
             <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-96 max-w-full h-[600px] max-h-[calc(100vh-8rem)] flex flex-col overflow-hidden">
                 {/* STEP 8: Show locked state */}
                 {chatLocked && (
@@ -633,7 +633,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
                 {/* Content */}
                 {/* Messages */}
-                <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
                     <style>{`
                         div::-webkit-scrollbar {
                             display: none;

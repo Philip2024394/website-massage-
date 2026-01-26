@@ -172,7 +172,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'contain' }}>
       <style>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;

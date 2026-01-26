@@ -178,7 +178,7 @@ const FacialProvidersPage: React.FC<FacialProvidersPageProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={400} pageName="FacialProviders" isLocked={false} />
             
             {/* Universal Header */}

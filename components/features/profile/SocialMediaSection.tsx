@@ -48,7 +48,7 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({
             </a>
 
             {/* Single Row - 3 Images Visible */}
-            <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="horizontal-scroll-safe" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <div className="flex gap-2 sm:gap-3 pb-2">
                 {instagramPosts.slice(0, 9).map((post, index) => (
                   <a
@@ -106,7 +106,7 @@ export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({
             </a>
 
             {/* Single Row - 3 Images Visible */}
-            <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="horizontal-scroll-safe" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <div className="flex gap-2 sm:gap-3 pb-2">
                 {facebookPosts.slice(0, 9).map((post, index) => (
                   <a
