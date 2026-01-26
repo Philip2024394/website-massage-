@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main App Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Main App Debug</h1>
+    <div id="status">Loading...</div>
+    <div id="errors"></div>
+    
+    <script>
+        // Catch all errors
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global error:', { msg, url, line, col, error });
+            document.getElementById('errors').innerHTML += `
+                <div class="error">Error: ${msg} at ${url}:${line}:${col}</div>
+            `;
+            return false;
+        };
+        
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled rejection:', event.reason);
+            document.getElementById('errors').innerHTML += `
+                <div class="error">Unhandled rejection: ${event.reason}</div>
+            `;
+        });
+
+        // Test if React is loading
+        function checkReact() {
+            if (typeof React !== 'undefined') {
+                document.getElementById('status').innerHTML = '<div class="success">✅ React is loaded</div>';
+                return true;
+            } else {
+                document.getElementById('status').innerHTML = '<div class="error">❌ React not loaded</div>';
+                return false;
+            }
+        }
+
+        // Test loading main components
+        setTimeout(() => {
+            try {
+                // Try to access the main app
+                const app = document.getElementById('root');
+                if (app) {
+                    document.getElementById('status').innerHTML += '<div class="info">📍 Root element found</div>';
+                    if (app.innerHTML.trim() === '') {
+                        document.getElementById('status').innerHTML += '<div class="error">❌ Root element is empty</div>';
+                    } else {
+                        document.getElementById('status').innerHTML += '<div class="success">✅ Root element has content</div>';
+                    }
+                } else {
+                    document.getElementById('status').innerHTML += '<div class="error">❌ Root element not found</div>';
+                }
+            } catch (e) {
+                document.getElementById('errors').innerHTML += `<div class="error">Error checking root: ${e.message}</div>`;
+            }
+        }, 2000);
+
+        // Redirect to main app for testing
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('status').innerHTML += '<div class="info">📍 DOM loaded, checking main app at <a href="/">http://127.0.0.1:3000/</a></div>';
+        });
+    </script>
+</body>
+</html>

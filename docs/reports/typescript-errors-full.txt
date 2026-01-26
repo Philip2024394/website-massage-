@@ -1,0 +1,272 @@
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(1305,26): error TS2786: 'PushNotificationSettings' cannot be used as a JSX component.
+  Its type 'FC<PushNotificationSettingsProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<PushNotificationSettingsProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(1609,38): error TS2786: 'DocumentTextIcon' cannot be used as a JSX component.
+  Its type 'FC<{ className?: string | undefined; }>' is not a valid JSX element type.
+    Type 'FunctionComponent<{ className?: string | undefined; }>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(2170,18): error TS2786: 'PageContainer' cannot be used as a JSX component.
+  Its type 'FC<PageContainerProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<PageContainerProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(2177,26): error TS2786: 'NotificationBell' cannot be used as a JSX component.
+  Its type 'FC<{ count: number; onClick: () => void; }>' is not a valid JSX element type.
+    Type 'FunctionComponent<{ count: number; onClick: () => void; }>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(2203,14): error TS2786: 'PageContainer' cannot be used as a JSX component.
+  Its type 'FC<PageContainerProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<PageContainerProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/facial-dashboard/src/pages/FacialDashboard.tsx(2355,14): error TS2786: 'ValidationPopup' cannot be used as a JSX component.
+  Its type 'FC<ValidationPopupProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<ValidationPopupProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/place-dashboard/src/App.tsx(92,6): error TS2786: 'LanguageProvider' cannot be used as a JSX component.
+  Its type 'FC<PropsWithChildren<{ value: LanguageContextValue; }>>' is not a valid JSX element type.
+    Type 'FunctionComponent<PropsWithChildren<{ value: LanguageContextValue; }>>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/place-dashboard/src/pages/PlaceDashboard.tsx(1060,17): error TS2786: 'LoadingSpinner' cannot be used as a JSX component.
+  Its type 'FC<LoadingSpinnerProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<LoadingSpinnerProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/place-dashboard/src/pages/PlaceDashboard.tsx(1403,38): error TS2786: 'DocumentTextIcon' cannot be used as a JSX component.
+  Its type 'FC<{ className?: string | undefined; }>' is not a valid JSX element type.
+    Type 'FunctionComponent<{ className?: string | undefined; }>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/place-dashboard/src/pages/PlaceDashboard.tsx(1946,26): error TS2786: 'NotificationBell' cannot be used as a JSX component.
+  Its type 'FC<{ count: number; onClick: () => void; }>' is not a valid JSX element type.
+    Type 'FunctionComponent<{ count: number; onClick: () => void; }>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/place-dashboard/src/pages/PlaceDashboard.tsx(2121,14): error TS2786: 'ValidationPopup' cannot be used as a JSX component.
+  Its type 'FC<ValidationPopupProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<ValidationPopupProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/components/ChatWindow.tsx(1286,46): error TS2786: 'PaymentCard' cannot be used as a JSX component.
+  Its type 'FC<PaymentCardProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<PaymentCardProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/components/ChatWindow.tsx(1332,38): error TS2786: 'PaymentCard' cannot be used as a JSX component.
+  Its type 'FC<PaymentCardProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<PaymentCardProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/components/ChatWindow.tsx(1382,14): error TS2786: 'SendDiscountModal' cannot be used as a JSX component.
+  Its type 'FC<SendDiscountModalProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<SendDiscountModalProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/lib/pwaFeatures.ts(276,21): error TS2353: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
+apps/therapist-dashboard/src/lib/pwaFeatures.ts(748,75): error TS2554: Expected 0 arguments, but got 1.
+apps/therapist-dashboard/src/lib/pwaFeatures.ts(768,67): error TS2554: Expected 0 arguments, but got 1.
+apps/therapist-dashboard/src/pages/SendDiscountPage.tsx(265,10): error TS2786: 'SendDiscountModal' cannot be used as a JSX component.
+  Its type 'FC<SendDiscountModalProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<SendDiscountModalProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/pages/TherapistDashboard.tsx(779,6): error TS2786: 'FloatingChatWindow' cannot be used as a JSX component.
+  Its type 'FC<FloatingChatWindowProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<FloatingChatWindowProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+apps/therapist-dashboard/src/pages/TherapistDashboard.tsx(1371,6): error TS2786: 'FloatingChatWindow' cannot be used as a JSX component.
+  Its type 'FC<FloatingChatWindowProps>' is not a valid JSX element type.
+    Type 'FunctionComponent<FloatingChatWindowProps>' is not assignable to type '(props: any, deprecatedLegacyContext?: any) => ReactNode'.
+      Type 'ReactNode | Promise<ReactNode>' is not assignable to type 'ReactNode'.
+        Type 'bigint' is not assignable to type 'ReactNode'.
+booking/useBookingSubmit.ts(284,21): error TS2353: Object literal may only specify known properties, and 'duration' does not exist in type '{ chatRoomId: string; bookingId: string; providerId: string; providerName: string; providerImage?: string | null | undefined; therapistId?: string | undefined; therapistName?: string | undefined; ... 8 more ...; serviceType?: string | undefined; }'.
+booking/useBookingSubmit.ts(366,29): error TS2304: Cannot find name 'result'.
+chat/ChatMessages.tsx(176,14): error TS2322: Type '{ children: string; jsx: true; }' is not assignable to type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+  Property 'jsx' does not exist on type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+chat/FloatingChatWindow.tsx(521,26): error TS2345: Argument of type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: null; }' is not assignable to parameter of type 'SetStateAction<{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; serviceVenueType: "hotel" | "villa" | "home"; manualAddress1: string; manualAddress2: string; roomNumber: string; }>'.
+  Type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: null; }' is missing the following properties from type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; serviceVenueType: "hotel" | "villa" | "home"; manualAddress1: string; manualAddress2: string; roomNumber: string; }': serviceVenueType, manualAddress1, manualAddress2, roomNumber
+chat/FloatingChatWindow.tsx(779,45): error TS2339: Property 'gender' does not exist on type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; serviceVenueType: "hotel" | "villa" | "home"; manualAddress1: string; manualAddress2: string; roomNumber: string; }'.
+chat/FloatingChatWindow.tsx(795,45): error TS2339: Property 'gender' does not exist on type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; serviceVenueType: "hotel" | "villa" | "home"; manualAddress1: string; manualAddress2: string; roomNumber: string; }'.
+chat/FloatingChatWindow.tsx(811,45): error TS2339: Property 'gender' does not exist on type '{ customerName: string; customerWhatsApp: string; location: string; coordinates: { lat: number; lng: number; } | null; serviceVenueType: "hotel" | "villa" | "home"; manualAddress1: string; manualAddress2: string; roomNumber: string; }'.
+chat/FloatingChatWindow.tsx(1012,26): error TS2367: This comparison appears to be unintentional because the types '"completed" | "active" | "waiting"' and '"booking-in-progress"' have no overlap.
+chat/FloatingChatWindow.tsx(1037,60): error TS2339: Property 'profilePicture' does not exist on type 'ChatRoom'.
+chat/FloatingChatWindow.tsx(1038,27): error TS2322: Type 'AvatarOption | null' is not assignable to type 'AvatarOption | undefined'.
+  Type 'null' is not assignable to type 'AvatarOption | undefined'.
+components/AppDrawerClean.tsx(28,3): error TS2300: Duplicate identifier 'onNavigate'.
+components/AppDrawerClean.tsx(38,3): error TS2300: Duplicate identifier 'onNavigate'.
+components/BookingSystemTester.tsx(42,11): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'ChatMessage'.
+components/BookingSystemTester.tsx(183,11): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'ChatMessage'.
+components/BookingSystemTester.tsx(218,11): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'ChatMessage'.
+components/FacialPlaceCard.tsx(125,17): error TS2353: Object literal may only specify known properties, and 'providerName' does not exist in type '{ providerId: string; providerType: "therapist" | "place"; rating: number; reviewerName: string; reviewContent: string; }'.
+components/IndastreetAchievements.tsx(2,43): error TS2305: Module '"lucide-react"' has no exported member 'ChevronRight'.
+components/IndastreetAchievements.tsx(2,104): error TS2305: Module '"lucide-react"' has no exported member 'Diamond'.
+components/MassagePlaceCard.tsx(211,17): error TS2353: Object literal may only specify known properties, and 'providerName' does not exist in type '{ providerId: string; providerType: "therapist" | "place"; rating: number; reviewerName: string; reviewContent: string; }'.
+components/MassagePlaceCard.tsx(474,17): error TS2322: Type '{ place: Place; mainImage: any; userLocation: { lat: number; lng: number; } | null | undefined; parseCoordinates: (coordinatesString: string) => { lat: number; lng: number; }; }' is not assignable to type 'IntrinsicAttributes & PlaceProfileProps'.
+  Property 'parseCoordinates' does not exist on type 'IntrinsicAttributes & PlaceProfileProps'.
+components/MassagePlaceCard.tsx(503,17): error TS2322: Type '(metric: keyof Analytics) => void' is not assignable to type '(metric: string) => void'.
+  Types of parameters 'metric' and 'metric' are incompatible.
+    Type 'string' is not assignable to type 'keyof Analytics'.
+components/MassagePlaceHomeCard.tsx(266,33): error TS2322: Type '{ userLocation: { lat: number; lng: number; }; targetLocation: { lat: number; lng: number; }; className: string; }' is not assignable to type 'IntrinsicAttributes & DistanceDisplayProps'.
+  Property 'targetLocation' does not exist on type 'IntrinsicAttributes & DistanceDisplayProps'.
+components/PersistentChatWindow.tsx(280,11): error TS2353: Object literal may only specify known properties, and 'price' does not exist in type 'Partial<BookingData>'.
+components/PersistentChatWindow.tsx(413,20): error TS2352: Conversion of type 'BookingType' to type '"scheduled" | "book_now"' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+components/PersistentChatWindow.tsx(1135,43): error TS2339: Property 'address1' does not exist on type 'CustomerForm'.
+components/PersistentChatWindow.tsx(1149,43): error TS2339: Property 'address2' does not exist on type 'CustomerForm'.
+components/PlaceCard.tsx(100,13): error TS2322: Type 'string | undefined' is not assignable to type 'string | number'.
+  Type 'undefined' is not assignable to type 'string | number'.
+components/PlaceCard.tsx(105,13): error TS2820: Type '"AVAILABLE"' is not assignable to type 'AvailabilityStatus'. Did you mean 'AvailabilityStatus.Available'?
+components/ScheduleBookingPopup.tsx(119,5): error TS2554: Expected 5-7 arguments, but got 8.
+components/ScheduleBookingPopup.tsx(586,13): error TS2322: Type 'number | null' is not assignable to type 'number'.
+  Type 'null' is not assignable to type 'number'.
+components/shared-dashboard/tabs/NotificationsTab.tsx(77,29): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/shared-dashboard/tabs/NotificationsTab.tsx(78,29): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+components/ShareProfilePopup.tsx(54,9): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(81,9): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(98,9): error TS2322: Type 'ShareChainData | null' is not assignable to type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(112,7): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(135,7): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(145,7): error TS2322: Type 'ShareChainData | null' is not assignable to type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(182,7): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(205,7): error TS2345: Argument of type 'ShareChainData | null' is not assignable to parameter of type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareProfilePopup.tsx(216,7): error TS2322: Type 'ShareChainData | null' is not assignable to type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+components/ShareTherapistProfile.tsx(14,49): error TS2305: Module '"lucide-react"' has no exported member 'Twitter'.
+components/TherapistProfileBase.tsx(205,56): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+context/PersistentChatProvider.tsx(820,9): error TS2353: Object literal may only specify known properties, and 'discountCode' does not exist in type '{ customerId: string; customerName: string; customerPhone: string; therapistId?: string | undefined; therapistName?: string | undefined; businessId?: string | undefined; businessName?: string | undefined; ... 8 more ...; therapistStatus?: string | undefined; }'.
+features/shared-profiles/ShareActions.tsx(16,18): error TS2304: Cannot find name 'gtag'.
+features/shared-profiles/ShareActions.tsx(17,9): error TS2304: Cannot find name 'gtag'.
+features/shared-profiles/SharedFacialProfile.tsx(82,25): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+features/shared-profiles/SharedFacialProfile.tsx(85,25): error TS2322: Type 'ShareChainData | null' is not assignable to type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+features/shared-profiles/SharedPlaceProfile.tsx(82,25): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+features/shared-profiles/SharedPlaceProfile.tsx(85,25): error TS2322: Type 'ShareChainData | null' is not assignable to type 'ShareChainData | undefined'.
+  Type 'null' is not assignable to type 'ShareChainData | undefined'.
+features/shared-profiles/SharedTherapistProfile.tsx(449,55): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+hooks/usePersistentChatIntegration.ts(47,7): error TS2322: Type 'Pricing' is not assignable to type 'Record<string, number>'.
+  Index signature for type 'string' is missing in type 'Pricing'.
+lib/appwrite-data-flow-scanner.ts(69,33): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+lib/appwrite/services/therapist.service.ts(778,25): error TS2322: Type '{ busyUntil: any; busyDuration: any; }' is not assignable to type 'null'.
+lib/appwriteService.LEGACY.ts(750,25): error TS2322: Type '{ busyUntil: any; busyDuration: any; }' is not assignable to type 'null'.
+lib/appwriteService.LEGACY.ts(6221,34): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+lib/auth/index.ts(137,53): error TS2554: Expected 1 arguments, but got 3.
+lib/auth/index.ts(202,56): error TS2554: Expected 0 arguments, but got 1.
+lib/auth/index.ts(235,57): error TS2554: Expected 1 arguments, but got 2.
+lib/auth/index.ts(255,52): error TS2554: Expected 1 arguments, but got 3.
+lib/auth/index.ts(342,57): error TS2554: Expected 1 arguments, but got 2.
+lib/bookingService.ts(235,45): error TS2554: Expected 6 arguments, but got 5.
+lib/enhancedNotificationService.ts(146,21): error TS2353: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
+lib/healthMonitoringService.ts(489,51): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(callbackfn: (previousValue: 100 | 50 | 0, currentValue: 100 | 50 | 0, currentIndex: number, array: (100 | 50 | 0)[]) => 100 | 50 | 0, initialValue: 100 | 50 | 0): 100 | 50 | 0', gave the following error.
+    Type 'number' is not assignable to type '100 | 50 | 0'.
+  Overload 2 of 3, '(callbackfn: (previousValue: 100 | 50 | 0, currentValue: 100 | 50 | 0, currentIndex: number, array: (100 | 50 | 0)[]) => 100 | 50 | 0, initialValue: 100 | 50 | 0): 100 | 50 | 0', gave the following error.
+    Type 'number' is not assignable to type '100 | 50 | 0'.
+lib/nearbyProvidersService.ts(317,35): error TS2345: Argument of type 'Place' is not assignable to parameter of type 'never'.
+lib/pushNotificationsService.ts(265,7): error TS2353: Object literal may only specify known properties, and 'image' does not exist in type 'NotificationOptions'.
+lib/pushNotificationsService.ts(835,24): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+lib/pushNotificationsService.ts(843,25): error TS2339: Property 'timestamp' does not exist on type 'never'.
+lib/pushNotificationsService.ts(843,39): error TS2339: Property 'timestamp' does not exist on type 'never'.
+lib/pwaInstallationEnforcer.ts(346,9): error TS2322: Type 'PWAInstallationStatus' is not assignable to type 'void'.
+lib/services/achievementService.ts(2,10): error TS2724: '"../appwrite/config"' has no exported member named 'DATABASE_ID'. Did you mean 'databases'?
+lib/services/bookingLifecycleService.ts(678,15): error TS2484: Export declaration conflicts with exported declaration of 'BookingLifecycleRecord'.
+lib/services/comprehensiveAdminDataFlowTest.ts(116,49): error TS2339: Property 'commissionRecords' does not exist on type '{ therapists: string; places: string; users: string; agents: string; bookings: string; hotels: string; partners: string; facialPlaces: string; villas: string; notifications: string; messages: string; reviews: string; }'.
+lib/services/comprehensiveAdminDataFlowTest.ts(211,32): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+lib/services/comprehensiveAdminDataFlowTest.ts(263,49): error TS2339: Property 'commissionRecords' does not exist on type '{ therapists: string; places: string; users: string; agents: string; bookings: string; hotels: string; partners: string; facialPlaces: string; villas: string; notifications: string; messages: string; reviews: string; }'.
+lib/services/comprehensiveAdminDataFlowTest.ts(285,32): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+lib/services/comprehensiveAdminDataFlowTest.ts(353,32): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+lib/services/comprehensiveAdminDataFlowTest.ts(402,32): error TS2345: Argument of type 'string' is not assignable to parameter of type 'never'.
+lib/services/membershipSignup.service.ts(1203,18): error TS2678: Type '"therapist"' is not comparable to type 'PortalType'.
+lib/ultimateNotificationUtils.ts(177,17): error TS2353: Object literal may only specify known properties, and 'vibrate' does not exist in type 'NotificationOptions'.
+pages/CustomerReviewsPage.tsx(58,9): error TS2353: Object literal may only specify known properties, and 'providerName' does not exist in type '{ providerId: string; providerType: "therapist" | "place"; rating: number; reviewContent: string; reviewerId: string; userName?: string | undefined; userId?: string | undefined; status?: "pending" | ... 2 more ... | undefined; }'.
+pages/FacialClinicDemo.tsx(226,13): error TS2322: Type '{ id: string; name: string; tagline: string; description: string; heroImage: string; logo: string; location: string; address: string; phone: string; whatsapp: string; email: string; website: string; ... 10 more ...; specialOffers: { ...; }; }' is not assignable to type 'FacialClinic'.
+  Types of property 'gallery' are incompatible.
+    Type '{ id: string; url: string; caption: string; category: string; }[]' is not assignable to type 'GalleryImage[]'.
+      Type '{ id: string; url: string; caption: string; category: string; }' is not assignable to type 'GalleryImage'.
+        Types of property 'category' are incompatible.
+          Type 'string' is not assignable to type '"treatment" | "before-after" | "interior"'.
+pages/HomePage.tsx(810,67): error TS18047: 'locationToUse' is possibly 'null'.
+pages/HomePage.tsx(811,34): error TS18047: 'locationToUse' is possibly 'null'.
+pages/HomePage.tsx(811,58): error TS18047: 'locationToUse' is possibly 'null'.
+pages/HomePage.tsx(815,35): error TS18047: 'coords' is possibly 'null'.
+pages/HomePage.tsx(815,63): error TS18047: 'coords' is possibly 'null'.
+pages/HomePage.tsx(1193,17): error TS2322: Type '((lang: "id" | "en") => void) | undefined' is not assignable to type '((lang: string) => void) | undefined'.
+  Type '(lang: "id" | "en") => void' is not assignable to type '(lang: string) => void'.
+    Types of parameters 'lang' and 'lang' are incompatible.
+      Type 'string' is not assignable to type '"id" | "en"'.
+pages/HotelsVillasPage.tsx(48,17): error TS2322: Type '{ onBack: () => void; title: string; showBrand: false; actionButtons: Element; }' is not assignable to type 'IntrinsicAttributes & UniversalHeaderProps'.
+  Property 'onBack' does not exist on type 'IntrinsicAttributes & UniversalHeaderProps'.
+pages/MassagePlaceProfilePage.tsx(534,25): error TS2739: Type '{ distance: number; isVerified: boolean; id?: string | number | undefined; $id?: string | undefined; name: string; description?: string | undefined; mainImage?: string | undefined; profilePicture?: string | undefined; ... 18 more ...; discountEndTime?: string | undefined; }' is missing the following properties from type 'Place': thumbnailImages, openingTime, closingTime
+pages/ReviewsPage.tsx(190,9): error TS2353: Object literal may only specify known properties, and 'providerName' does not exist in type '{ providerId: string; providerType: "therapist" | "place"; rating: number; reviewerName: string; reviewContent: string; }'.
+pages/TherapistProfilePage.tsx(224,17): error TS2322: Type '{ lat: number; lng: number; } | null | undefined' is not assignable to type 'UserLocation | null | undefined'.
+  Property 'address' is missing in type '{ lat: number; lng: number; }' but required in type 'UserLocation'.
+pages/TherapistProfilePage.tsx(229,17): error TS2322: Type '((therapist: any) => void) | undefined' is not assignable to type '(() => void) | undefined'.
+  Type '(therapist: any) => void' is not assignable to type '() => void'.
+    Target signature provides too few arguments. Expected 1 or more, but got 0.
+pages/TherapistProfilePage.tsx(236,17): error TS2322: Type 'string' is not assignable to type '"id" | "en" | "gb" | undefined'.
+pages/TopTherapistsPage.tsx(94,17): error TS2322: Type '(newLang: "en" | "id") => void' is not assignable to type '(lang: string) => void'.
+  Types of parameters 'newLang' and 'lang' are incompatible.
+    Type 'string' is not assignable to type '"id" | "en"'.
+pages/TopTherapistsPage.tsx(265,17): error TS2322: Type '(newLang: "en" | "id") => void' is not assignable to type '(lang: string) => void'.
+  Types of parameters 'newLang' and 'lang' are incompatible.
+    Type 'string' is not assignable to type '"id" | "en"'.
+pages/VerifiedProBadgePage.tsx(37,80): error TS2345: Argument of type '"therapist" | "place" | undefined' is not assignable to parameter of type '"therapist" | "place"'.
+  Type 'undefined' is not assignable to type '"therapist" | "place"'.
+pages/VerifiedProBadgePage.tsx(56,81): error TS2345: Argument of type '"therapist" | "place" | undefined' is not assignable to parameter of type '"therapist" | "place"'.
+  Type 'undefined' is not assignable to type '"therapist" | "place"'.
+router/routes/facialRoutes.tsx(3,36): error TS2322: Type 'Promise<typeof import("C:/Users/Victus/website-massage-/apps/facial-dashboard/src/App")>' is not assignable to type 'Promise<{ default: ComponentType<any>; }>'.
+  Property 'default' is missing in type 'typeof import("C:/Users/Victus/website-massage-/apps/facial-dashboard/src/App")' but required in type '{ default: ComponentType<any>; }'.
+src/components/admin/TherapistReliabilityProfile.tsx(387,18): error TS2345: Argument of type '{ date: string; score: number; }' is not assignable to parameter of type 'never'.
+utils/locationNormalizationV2.ts(170,7): error TS2322: Type 'string' is not assignable to type 'null'.
+utils/urlMapper.ts(42,5): error TS2353: Object literal may only specify known properties, and ''therapistMenu'' does not exist in type 'Partial<Record<Page, string>>'.
+vitest.config.ts(6,13): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'Plugin<any>[]' is not assignable to type 'PluginOption'.
+      Type 'Plugin<any>[]' is not assignable to type 'PluginOption[]'.
+        Type 'Plugin<any>' is not assignable to type 'PluginOption'.
+          Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").Plugin<any>' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").Plugin<any>'.
+            Types of property 'apply' are incompatible.
+              Type '"build" | "serve" | ((this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4...' is not assignable to type '"build" | "serve" | ((this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").Co...'.
+                Type '(this: void, config: UserConfig, env: ConfigEnv) => boolean' is not assignable to type '"build" | "serve" | ((this: void, config: UserConfig, env: ConfigEnv) => boolean) | undefined'.
+                  Type '(this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vi...' is not assignable to type '(this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").ConfigEnv) => boolean'.
+                    Types of parameters 'config' and 'config' are incompatible.
+                      Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig'.
+                        Types of property 'plugins' are incompatible.
+                          Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption[] | undefined' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption[] | undefined'.
+                            Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption[]' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption[]'.
+                              Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption'.
+                                Type 'Plugin<any>' is not assignable to type 'PluginOption'.
+                                  Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").Plugin<any>' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").Plugin<any>'.
+                                    Types of property 'apply' are incompatible.
+                                      Type '"build" | "serve" | ((this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").Co...' is not assignable to type '"build" | "serve" | ((this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4...'.
+                                        Type '(this: void, config: UserConfig, env: ConfigEnv) => boolean' is not assignable to type '"build" | "serve" | ((this: void, config: UserConfig, env: ConfigEnv) => boolean) | undefined'.
+                                          Type '(this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").ConfigEnv) => boolean' is not assignable to type '(this: void, config: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig, env: import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vi...'.
+                                            Types of parameters 'config' and 'config' are incompatible.
+                                              Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").UserConfig' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").UserConfig'.
+                                                Types of property 'plugins' are incompatible.
+                                                  Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption[] | undefined' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption[] | undefined'.
+                                                    Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption[]' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption[]'.
+                                                      Type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@6.4.1_@types+node@24.10.1_jiti@1.21.7_tsx@4.20.6/node_modules/vite/dist/node/index").PluginOption' is not assignable to type 'import("C:/Users/Victus/website-massage-/node_modules/.pnpm/vite@5.4.21_@types+node@24.10.1/node_modules/vite/dist/node/index").PluginOption'.
+                                                        Type 'Promise<Plugin<any> | FalsyPlugin | PluginOption[]>' is not assignable to type 'PluginOption'.
+                                                          Type 'Promise<Plugin<any> | FalsyPlugin | PluginOption[]>' is not assignable to type 'Promise<false | Plugin<any> | PluginOption[] | null | undefined>'.
+                                                            Type 'Plugin<any> | FalsyPlugin | PluginOption[]' is not assignable to type 'false | Plugin<any> | PluginOption[] | null | undefined'.
+                                                              Type 'Plugin<any>' is not assignable to type 'false | Plugin<any> | PluginOption[] | null | undefined'.

@@ -7,15 +7,15 @@
  * Integrates with: systemNotificationMapper.ts, Appwrite booking statuses
  * 
  * CRITICAL: This file runs in service worker context (no DOM access)
- * VERSION: 2.2.9 - Updated Jan 21, 2026
- * - FIXED: White page on refresh (improved network-first strategy)
- * - FIXED: Removed aggressive caching causing stale content
- * - FIXED: Proper fallback handling without offline page during install
- * - Simplified fetch handler for better reliability
+ * VERSION: 2.3.0 - Updated Jan 26, 2026
+ * - FIXED: Removed HTML caching for mobile-first stability (SEV-1 fix)
+ * - FIXED: Only caches manifest.json now, never HTML/routes
+ * - FIXED: Prevents stale JS bundle references on mobile networks
+ * - Mobile-first: Network always wins, cache only for true offline
  */
 
-const SW_VERSION = '2.2.9';
-const CACHE_NAME = `push-notifications-v2-9`;
+const SW_VERSION = '2.3.0';
+const CACHE_NAME = `push-notifications-v2-3-0`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker
@@ -26,18 +26,14 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME).then(async (cache) => {
             console.log(`✅ Service Worker ${SW_VERSION}: Caching assets`);
             try {
-                await cache.add('/').catch((err) => {
-                    console.log('⚠️ SW: Root cache failed:', err);
-                });
-                // Cache essential assets for offline functionality
+                // ✅ MOBILE-FIRST SAFETY: Only cache manifest, NEVER cache HTML
+                // HTML caching causes stale JS bundle references → white screens on mobile
                 await cache.addAll([
-                    '/',
-                    '/index.html',
                     '/manifest.json'
                 ]).catch((err) => {
                     console.log('⚠️ SW: Asset caching failed:', err);
                 });
-                console.log(`✅ Service Worker ${SW_VERSION}: Assets cached successfully`);
+                console.log(`✅ Service Worker ${SW_VERSION}: Assets cached successfully (HTML excluded)`);
             } catch (err) {
                 console.log('⚠️ SW: Cache error:', err);
             }

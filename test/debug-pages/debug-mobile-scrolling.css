@@ -1,0 +1,24 @@
+/* MOBILE SCROLLING DEBUG STYLES */
+/* Add this temporarily to debug mobile scrolling issues */
+
+/* Debug: Red border on elements that should scroll */
+@media (max-width: 768px) {
+  .landing-page-container {
+    border: 2px solid red !important;
+  }
+  
+  .home-page-container {
+    border: 2px solid blue !important;
+  }
+  
+  body.landing-page {
+    background: rgba(0, 255, 0, 0.1) !important;
+  }
+  
+  body.home-page {
+    background: rgba(0, 0, 255, 0.1) !important;
+  }
+}
+
+/* Add to end of index.css temporarily to debug */
+console.log('DEBUG: Mobile scrolling CSS loaded');

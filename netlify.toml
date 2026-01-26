@@ -47,6 +47,18 @@
   conditions = {Role = [""], Language = [""], Country = [""]}
   force = false
 
+# ✅ HTML Cache Control - Mobile-First Safety
+# Prevents CDN edge caching of HTML files to ensure users always get latest JS bundle references
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # Security headers
 [[headers]]
   for = "/*"

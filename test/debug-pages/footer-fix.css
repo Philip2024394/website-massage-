@@ -1,0 +1,25 @@
+/* Footer layout corrections for main app */
+/* Keep overrides minimal; loaded before Tailwind */
+
+/* Ensure footer stays at bottom without overlapping content */
+html, body {
+  min-height: 100%;
+}
+
+/* Default footer styling safety net */
+footer {
+  position: relative;
+  width: 100%;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  z-index: 10;
+  transform: none;
+}
+
+/* Avoid fixed positioning unless explicitly set in components */
+footer[class*="fixed"],
+footer.fixed {
+  position: fixed;
+  bottom: 0;
+}
