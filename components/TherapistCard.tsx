@@ -34,8 +34,8 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import type { Therapist, Analytics } from '../types';
-import { AvailabilityStatus } from '../types';
+import type { Therapist, Analytics } from '../src/types';
+import { AvailabilityStatus } from '../src/types';
 import { parsePricing, parseCoordinates } from '../utils/appwriteHelpers';
 import { notificationService, reviewService, therapistMenusService, bookingService } from '../lib/appwriteService';
 import { getRandomTherapistImage } from '../utils/therapistImageUtils';
@@ -858,66 +858,7 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
              * Facebook Lock: This layout is finalized
              * Contact admin before making any changes
              * ======================================== */}
-            <div className="px-4 mt-4 mb-1 text-right relative z-10" style={{ minHeight: '48px' }}>
-                <div className="flex flex-col items-end gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-xs font-medium text-gray-700">
-                            {(() => {
-                                // PRIORITY: If a specific city is selected, show that city
-                                if (selectedCity && selectedCity !== 'all') {
-                                    const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                    // Normalize selectedCity to lowercase for matching with locationId
-                                    const normalizedSelectedCity = selectedCity.toLowerCase().trim();
-                                    const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
-                                    if (selectedCityData) {
-                                        return selectedCityData.name;
-                                    }
-                                }
-                                
-                                // Otherwise show therapist's actual location
-                                const therapistLocationArea = (therapist as any)._locationArea;
-                                if (!therapistLocationArea) {
-                                    return (therapist.location || 'Bali').split(',')[0].trim();
-                                }
-                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                const cityData = allCities.find(city => city.locationId === therapistLocationArea);
-                                return cityData?.name || therapistLocationArea;
-                            })()}
-                        </span>
-                    </div>
-                    {/* Serves area - second line */}
-                    <div className="text-xs text-orange-500 font-medium">
-                        {(() => {
-                            // PRIORITY: If a specific city is selected, show that city
-                            if (selectedCity && selectedCity !== 'all') {
-                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                // Normalize selectedCity to lowercase for matching with locationId
-                                const normalizedSelectedCity = selectedCity.toLowerCase().trim();
-                                const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
-                                if (selectedCityData) {
-                                    return `Serves ${selectedCityData.name} area`;
-                                }
-                            }
-                            
-                            // Otherwise show therapist's actual location
-                            const therapistLocationArea = (therapist as any)._locationArea;
-                            let name: string;
-                            if (!therapistLocationArea) {
-                                name = (therapist.location || 'Bali').split(',')[0].trim();
-                            } else {
-                                const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
-                                const cityData = allCities.find(city => city.locationId === therapistLocationArea);
-                                name = cityData?.name || therapistLocationArea;
-                            }
-                            return `Serves ${name} area`;
-                        })()}
-                    </div>
-                </div>
-            </div>
+            {/* Location display removed per user request */}
 
             <TherapistProfile
                 therapist={therapist}

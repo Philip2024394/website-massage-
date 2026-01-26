@@ -458,29 +458,8 @@ const TherapistHomeCard: React.FC<TherapistHomeCardProps> = ({
             </div>
 
             {/* ========================================
-             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
-             * Facebook Lock: This layout is finalized
-             * Contact admin before making any changes
+             * Location display removed per user request
              * ======================================== */}
-
-            {/* Location info - Right side, positioned above profile section with stable height */}
-            <div className="px-4 mt-3 mb-0 text-right relative z-10" style={{ minHeight: '48px' }}>
-                <div className="flex flex-col items-end gap-0.5">
-                    <div className="flex items-center gap-1.5">
-                        <svg className="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span className="text-xs font-medium text-gray-700">
-                            {locationAreaDisplayName}
-                        </span>
-                    </div>
-                    {/* Serves area - second line */}
-                    <div className="text-xs text-orange-500 font-medium">
-                        Serves {locationAreaDisplayName} area
-                    </div>
-                </div>
-            </div>
 
             {/* ========================================
              * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
