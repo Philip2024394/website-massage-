@@ -408,7 +408,14 @@ export const AppRouter: React.FC<AppRouterProps> = (props) => {
                         The component file may be missing or have a syntax error. Check the console for details.
                     </p>
                     <button
-                        onClick={() => window.location.reload()}
+                        onClick={async () => {
+                            try {
+                                const { softRecover } = await import('./utils/softNavigation');
+                                softRecover();
+                            } catch {
+                                window.location.reload();
+                            }
+                        }}
                         className="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-colors mr-2"
                     >
                         Reload Page

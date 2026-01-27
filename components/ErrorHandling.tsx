@@ -4,7 +4,7 @@
  */
 
 import React, { Component, ReactNode, useState, useEffect } from 'react'
-import { BookingError, BookingErrorCode } from '../types/booking.types'
+import { BookingError, BookingErrorCode } from '../src/types/booking.types'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -100,7 +100,14 @@ export class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBounda
                 Try Again
               </button>
               <button
-                onClick={() => window.location.reload()}
+                onClick={async () => {
+                  try {
+                    const { softRecover } = await import('../utils/softNavigation');
+                    softRecover();
+                  } catch {
+                    window.location.reload();
+                  }
+                }}
                 className="px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
               >
                 Refresh Page

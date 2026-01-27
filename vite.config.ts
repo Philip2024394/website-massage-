@@ -35,6 +35,28 @@ export default defineConfig({
           next();
         });
       }
+    },
+    // ✅ SW BUILD HASH INJECTION: Auto-invalidate cache on new deploys
+    {
+      name: 'inject-sw-build-hash',
+      apply: 'build', // Only run during production builds
+      generateBundle(options, bundle) {
+        // Generate unique build hash from current timestamp
+        const buildHash = Date.now().toString(36);
+        console.log(`🔧 Injecting build hash into Service Worker: ${buildHash}`);
+        
+        // Find and process sw.js in the bundle
+        for (const fileName in bundle) {
+          if (fileName === 'sw.js' || fileName.endsWith('/sw.js')) {
+            const file = bundle[fileName];
+            if (file.type === 'asset' && typeof file.source === 'string') {
+              // Replace __BUILD_HASH__ placeholder with actual hash
+              file.source = file.source.replace(/__BUILD_HASH__/g, buildHash);
+              console.log(`✅ Service Worker versioned: 2.3.0+${buildHash}`);
+            }
+          }
+        }
+      }
     }
   ],
   resolve: {

@@ -234,8 +234,13 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
       window.dispatchEvent(new CustomEvent('refreshTherapistData'));
       
       // Reload page to show unlocked features
-      setTimeout(() => {
-        window.location.reload();
+      setTimeout(async () => {
+        try {
+          const { softRecover } = await import('../utils/softNavigation');
+          softRecover();
+        } catch {
+          window.location.reload();
+        }
       }, 2000);
       
       setPaymentProof(null);
@@ -432,8 +437,13 @@ const PremiumUpgrade: React.FC<PremiumUpgradeProps> = ({ therapist, onNavigate }
                     premiumPaymentStatus: null,
                     premiumPaymentProof: null,
                     premiumDeclineReason: null
-                  }).then(() => {
-                    window.location.reload();
+                  }).then(async () => {
+                    try {
+                      const { softRecover } = await import('../utils/softNavigation');
+                      softRecover();
+                    } catch {
+                      window.location.reload();
+                    }
                   });
                 }}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-medium transition-colors"

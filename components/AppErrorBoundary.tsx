@@ -48,9 +48,15 @@ class AppErrorBoundary extends Component<Props, State> {
     // Example: errorTrackingService.logError(error, errorInfo);
   }
 
-  handleReload = () => {
-    // Clear error state and reload page
-    window.location.reload();
+  handleReload = async () => {
+    // Clear error state and use soft recovery
+    try {
+      const { softRecover } = await import('../utils/softNavigation');
+      softRecover();
+    } catch {
+      // Fallback to hard reload only if soft recovery fails
+      window.location.reload();
+    }
   };
 
   handleReset = () => {

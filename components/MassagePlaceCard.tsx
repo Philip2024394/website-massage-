@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Place, Analytics } from '../types';
+import type { Place, Analytics } from '../src/types';
 import { parsePricing, parseCoordinates, parseMassageTypes, parseLanguages } from '../utils/appwriteHelpers';
 import { getDisplayRating, getDisplayReviewCount, formatRating } from '../utils/ratingUtils';
 import { bookingService, reviewService } from '../lib/appwriteService';
@@ -217,8 +217,15 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             setShowReviewModal(false);
             alert('Thank you for your review! 🌟');
             
-            // Refresh page to show updated rating
-            setTimeout(() => window.location.reload(), 1000);
+            // Soft refresh to show updated rating without losing state
+            setTimeout(async () => {
+                try {
+                    const { softRecover } = await import('../utils/softNavigation');
+                    softRecover();
+                } catch {
+                    window.location.reload();
+                }
+            }, 1000);
         } catch (error) {
             console.error('Error submitting review:', error);
             throw error;
@@ -571,7 +578,18 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                                     onError={(e) => { (e.target as HTMLImageElement).src = '/default-place.jpg'; }}
                                 />
                                 <div>
-                                    <h2 className="text-lg font-bold text-white leading-tight">{place.name}</h2>
+                                    <div className="flex items-center gap-2">
+                                        {/* Verified Badge - Show if manually verified, admin verified, or has KTP uploaded */}
+                                        {((place as any).isVerified || (place as any).verifiedBadge || (place as any).ktpPhotoUrl || (place as any).ktpVerified) && (
+                                            <img 
+                                                src="https://ik.imagekit.io/7grri5v7d/verified-removebg-preview.png?updatedAt=1768015154565"
+                                                alt="Verified"
+                                                className="w-4 h-4 flex-shrink-0"
+                                                title="Verified Massage Place - ID Verified"
+                                            />
+                                        )}
+                                        <h2 className="text-lg font-bold text-white leading-tight">{place.name}</h2>
+                                    </div>
                                     <div className="flex items-center gap-2 text-xs">
                                         <StarIcon className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
                                         <span className="font-bold text-black bg-white/90 rounded px-1.5 py-0.5 shadow-sm">{formatRating(getDisplayRating(place.rating, place.reviewCount))}</span>

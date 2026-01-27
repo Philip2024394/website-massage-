@@ -75,10 +75,18 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Set city
   const handleSetCity = (newCity: string) => {
     console.log('📍 CityContext: Setting city to:', newCity);
+    console.log('📍 CityContext: Previous city was:', city);
+    
+    // ✅ CRITICAL FIX: Clear stale localStorage cache first
+    // This prevents "Nearby in bandung" showing when "yogyakarta" is selected
+    localStorage.removeItem('user_location_preference');
+    console.log('🗑️ CityContext: Cleared stale localStorage cache');
+    
     setCity(newCity);
     
-    // Save complete location preference
+    // Save complete location preference to localStorage
     ipGeolocationService.saveLocation(countryCode, newCity);
+    console.log('✅ CityContext: City saved to localStorage:', newCity);
   };
 
   // Set country (with optional preference saving)
@@ -126,7 +134,11 @@ export const CityProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       SG: 'Singapore',
       TH: 'Thailand',
       PH: 'Philippines',
-      VN: 'Vietnam'
+      VN: 'Vietnam',
+      GB: 'United Kingdom',
+      US: 'United States',
+      AU: 'Australia',
+      DE: 'Germany'
     };
     return countryNames[code] || 'Indonesia';
   };

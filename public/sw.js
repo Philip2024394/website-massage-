@@ -7,15 +7,16 @@
  * Integrates with: systemNotificationMapper.ts, Appwrite booking statuses
  * 
  * CRITICAL: This file runs in service worker context (no DOM access)
- * VERSION: 2.3.0 - Updated Jan 26, 2026
+ * VERSION: 2.3.0+__BUILD_HASH__ - Auto-versioned on build
  * - FIXED: Removed HTML caching for mobile-first stability (SEV-1 fix)
  * - FIXED: Only caches manifest.json now, never HTML/routes
  * - FIXED: Prevents stale JS bundle references on mobile networks
+ * - FIXED: Auto-injects build hash for automatic cache invalidation
  * - Mobile-first: Network always wins, cache only for true offline
  */
 
-const SW_VERSION = '2.3.0';
-const CACHE_NAME = `push-notifications-v2-3-0`;
+const SW_VERSION = '2.3.0+__BUILD_HASH__'; // Auto-replaced during build
+const CACHE_NAME = `push-notifications-v2-3-0-__BUILD_HASH__`;
 const NOTIFICATION_SOUND_URL = '/sounds/booking-notification.mp3';
 
 // Install service worker

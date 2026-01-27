@@ -584,8 +584,15 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
             setShowReviewModal(false);
             alert('Thank you for your review! 🌟');
             
-            // Refresh page to show updated rating
-            setTimeout(() => window.location.reload(), 1000);
+            // Soft refresh to show updated rating without losing state
+            setTimeout(async () => {
+                try {
+                    const { softRecover } = await import('../utils/softNavigation');
+                    softRecover();
+                } catch {
+                    window.location.reload();
+                }
+            }, 1000);
         } catch (error) {
             console.error('Error submitting review:', error);
             throw error;

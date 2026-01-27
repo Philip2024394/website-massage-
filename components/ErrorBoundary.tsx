@@ -132,7 +132,14 @@ class ErrorBoundary extends Component<Props, State> {
                             </button>
                             
                             <button
-                                onClick={() => window.location.reload()}
+                                onClick={async () => {
+                                    try {
+                                        const { softRecover } = await import('../utils/softNavigation');
+                                        softRecover();
+                                    } catch {
+                                        window.location.reload();
+                                    }
+                                }}
                                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg transition-colors"
                             >
                                 Reload Page

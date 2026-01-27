@@ -85,9 +85,14 @@ class ChatErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState
                             </button>
                             
                             <button
-                                onClick={() => {
-                                    // Refresh the entire page as last resort
-                                    window.location.reload();
+                                onClick={async () => {
+                                    try {
+                                        const { softRecover } = await import('../utils/softNavigation');
+                                        softRecover();
+                                    } catch {
+                                        // Fallback to hard reload only if soft recovery fails
+                                        window.location.reload();
+                                    }
                                 }}
                                 className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                             >

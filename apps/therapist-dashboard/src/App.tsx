@@ -538,7 +538,14 @@ function App() {
           </p>
           <div className="space-y-3">
             <button
-              onClick={() => window.location.reload()}
+              onClick={async () => {
+                try {
+                  const { softRecover } = await import('./utils/softNavigation');
+                  softRecover();
+                } catch {
+                  window.location.reload();
+                }
+              }}
               className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
             >
               Retry Loading Profile

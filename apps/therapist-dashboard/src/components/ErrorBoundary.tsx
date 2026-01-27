@@ -30,8 +30,13 @@ class ErrorBoundary extends Component<Props, State> {
     });
   }
 
-  private handleReload = () => {
-    window.location.reload();
+  private handleReload = async () => {
+    try {
+      const { softRecover } = await import('../utils/softNavigation');
+      softRecover();
+    } catch {
+      window.location.reload();
+    }
   };
 
   private handleGoHome = () => {

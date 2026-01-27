@@ -793,9 +793,14 @@ export class PWALifecycleManager {
         });
     }
     
-    private static showUpdatePrompt(): void {
+    private static async showUpdatePrompt(): Promise<void> {
         if (confirm('A new version of the app is available. Update now?')) {
-            window.location.reload();
+            try {
+                const { softRecover } = await import('../utils/softNavigation');
+                softRecover();
+            } catch {
+                window.location.reload();
+            }
         }
     }
 }

@@ -331,8 +331,13 @@ const EmployerJobPostingPage: React.FC<EmployerJobPostingPageProps> = ({
                 onNavigateToPayment(response.$id);
             } else {
                 alert('✅ Job posted successfully! Job ID: ' + response.$id);
-                // Reset form
-                window.location.reload();
+                // Soft refresh to reset form without losing state
+                try {
+                    const { softRecover } = await import('../utils/softNavigation');
+                    softRecover();
+                } catch {
+                    window.location.reload();
+                }
             }
         } catch (error: any) {
             console.error('Error posting job:', error);
