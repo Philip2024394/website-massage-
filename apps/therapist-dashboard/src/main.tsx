@@ -4,8 +4,10 @@ import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import './index.css';
 
-// 🔒 APPWRITE COLLECTION PROTECTION - Validates collection IDs at startup
-import '../../../lib/appwrite-startup-validator';
+// 🔒 APPWRITE STARTUP CHECK - Simple inline validation
+if (!import.meta.env.VITE_APPWRITE_ENDPOINT) {
+  console.warn("Appwrite environment not configured for therapist dashboard");
+}
 
 // 🔔 SERVICE WORKER MESSAGE LISTENER - Play notification sounds
 if ('serviceWorker' in navigator) {
