@@ -256,7 +256,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
           {/* Info Text about Min Box */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-blue-800">
-              <strong>💡 Tip:</strong> Leave the "Min" box empty if you don't want that duration to appear on the menu price slider for customers.
+              <strong>💡 Tips:</strong> Kosongkan kotak "Min" jika Anda tidak ingin durasi tersebut muncul pada slider harga menu untuk pelanggan.
             </p>
           </div>
 
@@ -266,7 +266,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
               <div className="space-y-3">
                 {services.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    No services added yet. Click "+ Add New Service" to start.
+                    Belum ada layanan. Klik "+ Tambah Layanan Baru" untuk memulai.
                   </div>
                 )}
                 
@@ -279,7 +279,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                         value={service.serviceName}
                         onChange={e => updateService(service.id, 'serviceName', e.target.value)}
                         className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:border-orange-500 outline-none"
-                        placeholder="Service name"
+                        placeholder="Nama layanan"
                       />
                     </div>
 
@@ -412,7 +412,7 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                                   className="w-full py-3 px-4 bg-white border-2 border-dashed border-orange-300 text-orange-600 rounded-xl font-semibold hover:bg-orange-50 flex items-center justify-center gap-2"
                                 >
                                   <Plus className="w-5 h-5" />
-                                  Add New Service
+                                  Tambah Layanan Baru
                                 </button>
 
                                 {/* Save Button */}
@@ -426,12 +426,12 @@ const TherapistMenu: React.FC<TherapistMenuProps> = ({ therapist, onNavigate, on
                                   {saving ? (
                                     <>
                                       <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                      Saving...
+                                      Menyimpan...
                                     </>
                                   ) : (
                                     <>
                                       <Save className="w-5 h-5" />
-                                      Save Menu
+                                      Simpan Menu
                                     </>
                                   )}
                                 </button>

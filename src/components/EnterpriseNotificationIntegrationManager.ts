@@ -213,18 +213,18 @@ class EnterpriseNotificationIntegrationManager {
         });
       }
 
-      // 2. Trigger PWA notification system
-      await PWANotificationManager.showBookingNotification({
-        id: booking.bookingId,
-        customerName: booking.customerName,
-        serviceType: booking.serviceType,
-        duration: booking.duration,
-        location: booking.location,
-        date: new Date(booking.scheduledTime).toLocaleDateString(),
-        time: new Date(booking.scheduledTime).toLocaleTimeString(),
-        status: booking.status,
-        therapistId: booking.therapistId
-      });
+      // 2. Trigger PWA notification system - DISABLED (PWANotificationManager not available in main app)
+      // await PWANotificationManager.showBookingNotification({
+      //   id: booking.bookingId,
+      //   customerName: booking.customerName,
+      //   serviceType: booking.serviceType,
+      //   duration: booking.duration,
+      //   location: booking.location,
+      //   date: new Date(booking.scheduledTime).toLocaleDateString(),
+      //   time: new Date(booking.scheduledTime).toLocaleTimeString(),
+      //   status: booking.status,
+      //   therapistId: booking.therapistId
+      // });
 
       // 3. Trigger visual alert system if enabled
       if (this.config.enableVisualAlerts) {

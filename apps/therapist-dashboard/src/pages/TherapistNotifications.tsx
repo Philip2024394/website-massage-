@@ -215,11 +215,48 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
       <div className="max-w-7xl mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-900">Notifikasi</h2>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Notifikasi</h2>
+              <p className="text-xs text-gray-600 mt-1">Semua pembaruan booking, pesan pelanggan, dan reminder Anda</p>
+            </div>
             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
               <Clock className="w-4 h-4 text-gray-500" />
               <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
               <span className="text-xs text-gray-500">bulan ini</span>
+            </div>
+          </div>
+          
+          {/* Info Box - What appears here */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <AlertCircle className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-bold text-gray-900 mb-2">Yang Akan Muncul di Halaman Ini:</h4>
+                <ul className="space-y-1.5 text-xs text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Booking Baru:</strong> Notifikasi saat pelanggan membuat booking dengan Anda</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <MessageCircle className="w-3.5 h-3.5 text-purple-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Pesan Pelanggan:</strong> Chat dari pelanggan tentang booking mereka</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Clock className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Reminder:</strong> Pengingat 3 jam sebelum sesi dimulai</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Pembayaran:</strong> Konfirmasi pembayaran dari pelanggan</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <span><strong>Sistem:</strong> Update penting dari admin dan sistem</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -291,7 +328,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
       {/* Minimalistic Header */}
       <TherapistPageHeader
         title=""
-        subtitle={unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+        subtitle={unreadCount > 0 ? `${unreadCount} belum dibaca` : 'Semua sudah dibaca'}
         onBackToStatus={onBack}
         icon={
           <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center relative">
@@ -309,7 +346,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
               onClick={handleMarkAllAsRead}
               className="text-xs sm:text-sm text-orange-600 hover:text-orange-700 font-medium px-2 py-1 hover:bg-orange-50 rounded-lg transition-colors"
             >
-              Mark all read
+              Tandai Semua Dibaca
             </button>
           )
         }
@@ -320,11 +357,11 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex gap-2 horizontal-scroll-safe pb-1">
             {[
-              { value: 'all', label: 'All', count: notifications.length },
-              { value: 'unread', label: 'Unread', count: unreadCount },
-              { value: 'booking', label: 'Bookings', count: notifications.filter(n => n.type === 'booking').length },
-              { value: 'message', label: 'Messages', count: notifications.filter(n => n.type === 'message').length },
-              { value: 'system', label: 'System', count: notifications.filter(n => n.type === 'system').length }
+              { value: 'all', label: 'Semua', count: notifications.length },
+              { value: 'unread', label: 'Belum Dibaca', count: unreadCount },
+              { value: 'booking', label: 'Booking', count: notifications.filter(n => n.type === 'booking').length },
+              { value: 'message', label: 'Pesan', count: notifications.filter(n => n.type === 'message').length },
+              { value: 'system', label: 'Sistem', count: notifications.filter(n => n.type === 'system').length }
             ].map(f => (
               <button
                 key={f.value}
@@ -347,16 +384,16 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-sm text-gray-600">Loading notifications...</p>
+            <p className="mt-4 text-sm text-gray-600">Memuat notifikasi...</p>
           </div>
         ) : filteredNotifications.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl border">
             <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-900 text-lg font-semibold">No notifications</p>
+            <p className="text-gray-900 text-lg font-semibold">Tidak Ada Notifikasi</p>
             <p className="text-gray-500 text-sm mt-2">
               {filter === 'unread' 
-                ? "You're all caught up!" 
-                : 'New notifications will appear here'}
+                ? "Semua sudah dibaca!" 
+                : 'Notifikasi baru akan muncul di sini'}
             </p>
           </div>
         ) : (
@@ -369,10 +406,10 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                   <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
                     <Bell className="w-5 h-5 text-gray-600" />
                   </div>
-                  <span className="text-xs font-medium text-gray-500 bg-white px-2 py-0.5 rounded-full">All</span>
+                  <span className="text-xs font-medium text-gray-500 bg-white px-2 py-0.5 rounded-full">Semua</span>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">{notifications.length}</p>
-                <p className="text-xs text-gray-600 font-medium">Total Notifications</p>
+                <p className="text-xs text-gray-600 font-medium">Total Notifikasi</p>
               </div>
 
               {/* Unread Notifications */}
@@ -384,10 +421,10 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                       <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></span>
                     )}
                   </div>
-                  <span className="text-xs font-medium text-orange-700 bg-white px-2 py-0.5 rounded-full">New</span>
+                  <span className="text-xs font-medium text-orange-700 bg-white px-2 py-0.5 rounded-full">Baru</span>
                 </div>
                 <p className="text-3xl font-bold text-orange-600 mb-1">{unreadCount}</p>
-                <p className="text-xs text-orange-700 font-medium">Unread Messages</p>
+                <p className="text-xs text-orange-700 font-medium">Belum Dibaca</p>
               </div>
 
               {/* Booking Notifications */}
@@ -399,7 +436,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                   <TrendingUp className="w-4 h-4 text-blue-500" />
                 </div>
                 <p className="text-3xl font-bold text-blue-600 mb-1">{notifications.filter(n => n.type === 'booking').length}</p>
-                <p className="text-xs text-blue-700 font-medium">Booking Updates</p>
+                <p className="text-xs text-blue-700 font-medium">Booking Update</p>
               </div>
 
               {/* Message Notifications */}
@@ -411,7 +448,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                   <User className="w-4 h-4 text-purple-500" />
                 </div>
                 <p className="text-3xl font-bold text-purple-600 mb-1">{notifications.filter(n => n.type === 'message').length}</p>
-                <p className="text-xs text-purple-700 font-medium">Customer Messages</p>
+                <p className="text-xs text-purple-700 font-medium">Pesan Pelanggan</p>
               </div>
             </div>
 
@@ -501,7 +538,7 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
                               className="text-sm text-gray-700 hover:text-gray-900 font-semibold px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all border border-gray-200 hover:border-gray-300 hover:shadow-sm"
                             >
                               <CheckCircle className="w-4 h-4 inline mr-1.5" />
-                              Mark as Read
+                              Tandai Dibaca
                             </button>
                           )}
                           {notification.actionLabel && (
@@ -538,8 +575,8 @@ const TherapistNotifications: React.FC<TherapistNotificationsProps> = ({
               <div className="flex items-center gap-3">
                 <MessageCircle className="w-6 h-6 text-purple-500" />
                 <div>
-                  <h3 className="font-bold text-lg text-gray-900">Chat with {selectedChat.customerName}</h3>
-                  <p className="text-sm text-gray-500">Real-time conversation</p>
+                  <h3 className="font-bold text-lg text-gray-900">Chat dengan {selectedChat.customerName}</h3>
+                  <p className="text-sm text-gray-500">Percakapan real-time</p>
                 </div>
               </div>
               <button

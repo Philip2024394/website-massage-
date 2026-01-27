@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, XCircle, Check, Tag, Gift } from 'lucide-react';
 import { messagingService, simpleBookingService } from '../../../../src/lib/appwriteService';
+import { generateTherapistDiscount } from '../../../../src/services/therapistDiscountService';
 import { 
     ChatPersistenceManager, 
     PWABadgeManager, 

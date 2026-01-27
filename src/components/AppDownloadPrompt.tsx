@@ -17,7 +17,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Smartphone, Download, Volume2, Bell, Calendar, MessageCircle } from 'lucide-react';
+import { X, Phone, Download, Volume2, Bell, Calendar, MessageCircle } from 'lucide-react';
 
 export interface AppDownloadPromptProps {
   isVisible: boolean;
@@ -250,7 +250,7 @@ const AppDownloadPrompt: React.FC<AppDownloadPromptProps> = ({
             <div className={`p-2 rounded-full ${
               urgency === 'urgent' ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-20'
             }`}>
-              <Smartphone className="w-6 h-6" />
+              <Phone className="w-6 h-6" />
             </div>
             <div>
               <h3 className="text-lg font-bold">Download Our App!</h3>

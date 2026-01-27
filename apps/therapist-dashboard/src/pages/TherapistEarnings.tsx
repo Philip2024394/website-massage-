@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3 } from 'lucide-react';
+import { Banknote, TrendingUp, Calendar, AlertCircle, CheckCircle, Clock, Crown, BarChart3, X } from 'lucide-react';
 import TherapistLayout from '../components/TherapistLayout';
 import { analyticsService } from '../../../../src/lib/services/analyticsService';
 

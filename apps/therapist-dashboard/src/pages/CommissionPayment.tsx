@@ -267,6 +267,18 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Page Header with Back Navigation */}
+      <TherapistPageHeader
+        title=""
+        subtitle="Bayar komisi booking 30% Anda"
+        onBackToStatus={onBack}
+        icon={
+          <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-white" />
+          </div>
+        }
+      />
+      
       {/* Standardized Status Header */}
       <div className="max-w-sm mx-auto px-4 pt-6 pb-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

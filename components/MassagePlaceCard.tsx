@@ -208,10 +208,9 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
             await reviewService.createAnonymous({
                 providerType: reviewData.providerType,
                 providerId: String(reviewData.providerId),
-                providerName: place.name,
                 rating: reviewData.rating,
                 reviewerName: reviewData.name,
-                whatsappNumber: reviewData.whatsappNumber
+                reviewContent: ''
             });
             
             setShowReviewModal(false);
@@ -478,7 +477,6 @@ const MassagePlaceCard: React.FC<MassagePlaceCardProps> = ({
                 place={place}
                 mainImage={mainImage}
                 userLocation={userLocation}
-                parseCoordinates={parseCoordinates}
             />
 
             {/* Services Section - Extracted to PlaceServices Component */}

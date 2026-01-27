@@ -865,12 +865,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                             }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <MapPin className={`w-4 h-4 flex-shrink-0 ${
+                                                <MapPin className={`w-5 h-5 flex-shrink-0 ${
                                                     selectedCity === city.name ? "text-white" : "text-orange-400"
                                                 }`} />
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium text-sm">{city.name}</div>
-                                                    <div className={`text-xs truncate ${
+                                                    <div className="font-medium text-sm leading-tight">{city.name}</div>
+                                                    <div className={`text-xs truncate leading-tight mt-0.5 ${
                                                         selectedCity === city.name ? "text-orange-100" : "text-gray-400"
                                                     }`}>{city.region} • {city.description}</div>
                                                 </div>
@@ -885,14 +885,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp, handleEnterApp, o
                                         className="w-full p-3 mt-2 rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 hover:border-orange-400 hover:bg-gray-700 text-gray-300 hover:text-white transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <MapPin className="w-4 h-4 flex-shrink-0 text-gray-400" />
+                                            <MapPin className="w-5 h-5 flex-shrink-0 text-gray-400" />
                                             <div>
-                                                <div className="text-sm font-medium">
+                                                <div className="text-sm font-medium leading-tight">
                                                     {isDetectingLocation && cityNotListed 
                                                         ? 'Detecting your location...' 
                                                         : 'Use my GPS location'}
                                                 </div>
-                                                <div className="text-xs text-gray-400">
+                                                <div className="text-xs text-gray-400 leading-tight mt-0.5">
                                                     {isDetectingLocation && cityNotListed
                                                         ? 'Please allow location access'
                                                         : 'Automatically detect your precise city'}

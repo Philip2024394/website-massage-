@@ -1137,17 +1137,37 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
     }
     
     if (!bookingId) {
-      console.error('❌ [LOCALSTORAGE] No booking ID available');
+      console.error('❌ [APPWRITE] No booking ID available');
       addSystemNotification('❌ Booking ID missing. Please refresh and try again.');
       return false;
     }
     
-    // Prepare booking data for localStorage
-    const localStorageBooking = {
+    // 🔒 CRITICAL: Validate customerName is present (REQUIRED field)
+    const customerName = currentUserName || chatState.customerName;
+    if (!customerName || customerName === 'Guest') {
+      console.error('❌ CRITICAL: customerName is missing or invalid');
+      console.error('❌ currentUserName:', currentUserName);
+      console.error('❌ chatState.customerName:', chatState.customerName);
+      addSystemNotification('❌ Customer name is required. Please enter your name in the form.');
+      return false;
+    }
+    
+    // 🔒 CRITICAL: Validate customerWhatsApp is present
+    if (!chatState.customerWhatsApp) {
+      console.error('❌ CRITICAL: customerWhatsApp is missing');
+      addSystemNotification('❌ WhatsApp number is required for booking.');
+      return false;
+    }
+    
+    console.log('✅ VALIDATION PASSED: customerName =', customerName);
+    console.log('✅ VALIDATION PASSED: customerWhatsApp =', chatState.customerWhatsApp);
+    
+    // Prepare booking data for Appwrite
+    const appwriteBooking = {
       customerId: currentUserId || 'guest',
-      customerName: currentUserName || chatState.customerName || 'Guest',
-      customerPhone: chatState.customerWhatsApp || '',
-      customerWhatsApp: chatState.customerWhatsApp || '',
+      customerName: customerName, // ✅ GUARANTEED non-empty
+      customerPhone: chatState.customerWhatsApp,
+      customerWhatsApp: chatState.customerWhatsApp,
       therapistId: therapist?.id || '',
       therapistName: therapist?.name || '',
       therapistType: 'therapist' as const,
@@ -1155,6 +1175,10 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       duration,
       price,
       location: bookingData.locationZone || chatState.customerLocation || 'Unknown',
+      locationType: (bookingData.locationType as 'home' | 'hotel' | 'villa') || 'home',
+      address: bookingData.address || null,
+      roomNumber: bookingData.roomNumber || null,
+      massageFor: (bookingData.massageFor as 'male' | 'female' | 'children') || 'male',
       date: bookingData.scheduledDate || chatState.selectedDate || new Date().toISOString().split('T')[0],
       time: bookingData.scheduledTime || chatState.selectedTime || new Date().toLocaleTimeString('en-US', { hour12: false }),
       status: 'pending' as const,
@@ -1162,19 +1186,21 @@ export function PersistentChatProvider({ children }: { children: ReactNode }) {
       notes: bookingData.discountCode ? `Discount: ${bookingData.discountPercentage}%` : undefined,
     };
     
-    console.log('📦 [LOCALSTORAGE] Creating booking with params:', localStorageBooking);
+    console.log('📦 [APPWRITE] Creating booking with params:', appwriteBooking);
     
     try {
-      // Call the localStorage booking service
-      const createdBooking = await bookingService.createBooking(localStorageBooking);
+      // Call the Appwrite booking service
+      const createdBooking = await bookingService.createBooking(appwriteBooking);
       
       if (!createdBooking || !createdBooking.bookingId) {
-        console.error('❌ [LOCALSTORAGE] Booking creation failed - no booking returned');
+        console.error('❌ [APPWRITE] Booking creation failed - no booking returned');
         addSystemNotification('❌ Failed to create booking. Please try again.');
         return false;
       }
       
-      console.log('✅ [LOCALSTORAGE] Booking created successfully:', createdBooking.bookingId);
+      console.log('✅ [APPWRITE] Booking created successfully:', createdBooking.bookingId);
+      console.log('✅ [APPWRITE] Document ID:', createdBooking.$id);
+      console.log('✅ [APPWRITE] Expires at:', createdBooking.expiresAt);
       
       const engineBooking = {
         bookingId: createdBooking.bookingId,

@@ -102,7 +102,13 @@ class EnterpriseChatIntegrationService {
   ): Promise<string> {
     const chatRoomId = `booking_chat_${bookingId}`;
     
-    const participants = [
+    const participants: Array<{
+      id: string;
+      name: string;
+      type: 'user' | 'therapist' | 'place';
+      isOnline: boolean;
+      lastSeen?: Date;
+    }> = [
       { id: userId, name: 'User', type: 'user' as const, isOnline: true },
       { id: therapistId, name: 'Therapist', type: 'therapist' as const, isOnline: true }
     ];
@@ -272,10 +278,7 @@ class EnterpriseChatIntegrationService {
     );
 
     // Track metrics
-    enterpriseMonitoringService.trackBusinessMetric('chat_sessions_started', 1, {
-      bookingId,
-      participantCount: placeId ? 3 : 2
-    });
+    enterpriseMonitoringService.recordBusinessMetric('chat_sessions_started', 1);
 
     return chatRoomId;
   }
@@ -438,7 +441,7 @@ class EnterpriseChatIntegrationService {
   private async sendRealtimeMessage(message: ChatMessage): Promise<void> {
     try {
       // Implementation would send via WebSocket/Appwrite Realtime
-      logger.info('📡 Sending real-time message:', message.id);
+      logger.info('📡 Sending real-time message', { messageId: message.id });
       
     } catch (error) {
       logger.error('❌ Real-time message send failed:', error);

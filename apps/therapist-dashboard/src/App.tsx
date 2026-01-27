@@ -565,6 +565,15 @@ function App() {
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       console.log('✅ Accepting booking:', bookingId);
+      console.log('Therapist ID:', user?.$id);
+      console.log('Therapist Name:', user?.name);
+      
+      // 🔒 CRITICAL: Validate therapist data before acceptance
+      if (!user || !user.$id || !user.name) {
+        console.error('❌ CRITICAL: Missing therapist data for acceptance');
+        alert('Error: Therapist information missing. Please refresh and try again.');
+        return;
+      }
       
       // 🏢 ENTERPRISE: Stop all alerts for accepted booking
       if (enterpriseNotificationManager) {
@@ -577,18 +586,33 @@ function App() {
         }
       }
       
-      // Here you would call your booking service to accept the booking
-      // await bookingService.acceptBooking(bookingId, user.$id);
+      // 🔒 CRITICAL: Call booking service to accept the booking
+      console.log('🔄 Calling bookingService.acceptBookingAndCreateCommission...');
+      const { bookingService } = await import('../../../../src/lib/bookingService');
+      const result = await bookingService.acceptBookingAndCreateCommission(
+        bookingId,
+        user.$id,
+        user.name
+      );
       
-      // For now, just navigate to bookings page
+      console.log('✅ Booking accepted successfully:', result);
+      console.log('✅ Booking status:', result.booking.status);
+      console.log('✅ Commission created:', result.commission);
+      
+      // 🎉 Success notification
+      alert(`Booking accepted successfully! Status: ${result.booking.status}`);
+      
+      // Navigate to bookings page to see confirmed booking
       setCurrentPage('bookings');
-      
-      // Show success message
-      alert('Booking accepted successfully!');
       
     } catch (error) {
       console.error('❌ Failed to accept booking:', error);
-      alert('Failed to accept booking. Please try again.');
+      console.error('❌ Error details:', {
+        name: (error as Error).name,
+        message: (error as Error).message,
+        stack: (error as Error).stack
+      });
+      alert(`Failed to accept booking: ${(error as Error).message}`);
     }
   };
   

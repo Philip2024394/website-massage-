@@ -1,7 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState } from 'react';
-import { FileText, Shield, ChevronDown, ChevronUp, Clock, CheckCircle } from 'lucide-react';
-import TherapistPageHeader from '../components/TherapistPageHeader';
+import { FileText, Shield, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
 interface TherapistLegalProps {
   therapist: any;
@@ -427,153 +426,99 @@ Last Updated: December 11, 2024`
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-sm mx-auto bg-white min-h-screen shadow-sm">
-        {/* Standardized Status Header */}
-        <div className="px-4 pt-6 pb-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900">Legal</h2>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
-                <span className="text-xs text-gray-500">bulan ini</span>
-              </div>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="max-w-sm mx-auto">
+        {/* Minimalist Orange Header */}
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 px-4 pt-6 pb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white">Legal</h1>
+              <p className="text-orange-100 text-sm mt-1">Terms & Privacy</p>
             </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg">
+              <Clock className="w-4 h-4 text-white" />
+              <span className="text-sm font-bold text-white">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+            </div>
+          </div>
 
-            {/* Status Grid */}
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => console.log('Status change: available')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'bg-green-50 border-green-500'
-                    : 'border-gray-200 hover:border-green-300'
-                }`}
-              >
-                <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'text-green-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.status === 'available' && therapist?.availability === 'online'
-                    ? 'text-green-700'
-                    : 'text-gray-600'
-                }`}>Tersedia</p>
-              </button>
-
-              <button
-                onClick={() => console.log('Status change: busy')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.status === 'busy'
-                    ? 'bg-amber-50 border-amber-500'
-                    : 'border-gray-200 hover:border-amber-300'
-                }`}
-              >
-                <Clock className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.status === 'busy'
-                    ? 'text-amber-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.status === 'busy'
-                    ? 'text-amber-700'
-                    : 'text-gray-600'
-                }`}>Sibuk</p>
-              </button>
-
-              <button
-                onClick={() => console.log('Status change: offline')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  therapist?.availability === 'offline'
-                    ? 'bg-red-50 border-red-500'
-                    : 'border-gray-200 hover:border-red-300'
-                }`}
-              >
-                <Shield className={`w-6 h-6 mx-auto mb-2 ${
-                  therapist?.availability === 'offline'
-                    ? 'text-red-600'
-                    : 'text-gray-400'
-                }`} />
-                <p className={`text-sm font-semibold ${
-                  therapist?.availability === 'offline'
-                    ? 'text-red-700'
-                    : 'text-gray-600'
-              }`}>Offline</p>
-              </button>
+          {/* Minimalist Status Pills */}
+          <div className="flex gap-2">
+            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+              therapist?.status === 'available' && therapist?.availability === 'online'
+                ? 'bg-green-500 text-white'
+                : 'bg-white/20 text-white/60'
+            }`}>
+              Tersedia
+            </div>
+            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+              therapist?.status === 'busy'
+                ? 'bg-amber-500 text-white'
+                : 'bg-white/20 text-white/60'
+            }`}>
+              Sibuk
+            </div>
+            <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+              therapist?.availability === 'offline'
+                ? 'bg-red-500 text-white'
+                : 'bg-white/20 text-white/60'
+            }`}>
+              Offline
             </div>
           </div>
         </div>
-        
-        <TherapistPageHeader
-          title=""
-          subtitle="Terms of Service and Privacy Policy for therapists"
-          onBackToStatus={onBack}
-          actions={
-            <div className="flex items-center gap-2">
-              <FileText className="w-6 h-6 text-orange-500" />
-            </div>
-          }
-        />
 
-        {/* Tab Navigation */}
-        <div className="bg-white border-b">
-          <div className="px-4">
-          <div className="flex gap-4">
+        {/* Floating Tab Switcher */}
+        <div className="px-4 -mt-6 mb-4">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-2 flex gap-2">
             <button
               onClick={() => setActiveTab('terms')}
-              className={`px-6 py-4 font-semibold border-b-4 transition-colors ${
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
                 activeTab === 'terms'
-                  ? 'border-orange-500 text-orange-500'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Terms of Service
-              </div>
+              <FileText className="w-4 h-4 mx-auto mb-1" />
+              Terms
             </button>
             <button
               onClick={() => setActiveTab('privacy')}
-              className={`px-6 py-4 font-semibold border-b-4 transition-colors ${
+              className={`flex-1 px-4 py-3 rounded-lg font-semibold text-sm transition-all ${
                 activeTab === 'privacy'
-                  ? 'border-orange-500 text-orange-500'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'bg-orange-500 text-white shadow-md'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Privacy Policy
-              </div>
+              <Shield className="w-4 h-4 mx-auto mb-1" />
+              Privacy
             </button>
           </div>
         </div>
-        </div>
 
-        {/* Content */}
-        <div className="p-4">
-        <div className="bg-white rounded-lg shadow-sm border">
-          {content.map((section, index) => (
-            <div key={section.id} className={index !== 0 ? 'border-t' : ''}>
+        {/* Clean Content Sections */}
+        <div className="px-4 space-y-3">
+          {content.map((section) => (
+            <div key={section.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <button
                 onClick={() => toggleSection(section.id)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
               >
-                <h2 className="text-lg font-bold text-gray-900 text-left">{section.title}</h2>
+                <h2 className="text-sm font-bold text-gray-900 text-left">{section.title}</h2>
                 {expandedSections.has(section.id) ? (
-                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                  <ChevronUp className="w-5 h-5 text-orange-500 flex-shrink-0" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                  <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
                 )}
               </button>
               {expandedSections.has(section.id) && (
-                <div className="px-6 pb-4">
-                  <div className="prose prose-sm max-w-none">
+                <div className="px-4 pb-4 border-t border-gray-100">
+                  <div className="pt-3 space-y-2">
                     {section.content.split('\n').map((paragraph, i) => (
-                      <p key={i} className="text-gray-700 mb-3 whitespace-pre-line leading-relaxed">
-                        {paragraph}
-                      </p>
+                      paragraph.trim() && (
+                        <p key={i} className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
+                          {paragraph}
+                        </p>
+                      )
                     ))}
                   </div>
                 </div>
@@ -582,40 +527,32 @@ Last Updated: December 11, 2024`
           ))}
         </div>
 
-        {/* Agreement Notice */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-start gap-3">
-            <Shield className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-bold text-blue-900 mb-2">Your Agreement</h3>
-              <p className="text-sm text-blue-800 leading-relaxed">
-                By continuing to use the Indastreet therapist platform, you acknowledge that you have read, 
-                understood, and agree to be bound by these Terms of Service and Privacy Policy. 
-                If you do not agree, please discontinue use of the platform.
-              </p>
+        {/* Minimalist Agreement Badge */}
+        <div className="px-4 mt-4">
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-orange-900 text-sm mb-1">Persetujuan Anda</h3>
+                <p className="text-xs text-orange-800 leading-relaxed">
+                  Dengan menggunakan platform, Anda menyetujui Terms & Privacy ini.
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Contact Support */}
-        <div className="mt-6 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-6">
-          <div className="flex items-start gap-3">
-            <FileText className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
-            <div>
-              <h3 className="font-bold text-orange-900 mb-2">Questions or Concerns?</h3>
-              <p className="text-sm text-orange-800 leading-relaxed mb-3">
-                If you have any questions about these terms or policies, or need clarification on any point, 
-                please contact our support team through our official contact page.
-              </p>
-              <button 
-                onClick={() => onNavigate?.('contact-us') || window.open('mailto:indastreet.id@gmail.com', '_blank')}
-                className="inline-block px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium text-sm"
-              >
-                Contact Support
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Contact Button */}
+        <div className="px-4 mt-4 mb-4">
+          <button 
+            onClick={() => window.open('mailto:indastreet.id@gmail.com', '_blank')}
+            className="w-full bg-white border-2 border-orange-500 text-orange-600 rounded-xl py-3 font-bold hover:bg-orange-50 transition-colors flex items-center justify-center gap-2"
+          >
+            <FileText className="w-5 h-5" />
+            Hubungi Support
+          </button>
         </div>
       </div>
     </div>

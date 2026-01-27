@@ -588,9 +588,9 @@ class EnterpriseBookingFlowService {
     try {
       const dbStatus = this.mapBookingStatus(request.status);
       await bookingService.updateBookingStatus(request.id, dbStatus, {
-        assignedTherapist: request.assignedTherapist,
+        therapistId: request.assignedTherapist,
         chatRoomId: request.chatRoomId
-      });
+      } as any);
       
     } catch (error) {
       logger.error('❌ Failed to update booking status:', error);
