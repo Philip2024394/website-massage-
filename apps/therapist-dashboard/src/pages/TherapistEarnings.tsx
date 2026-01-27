@@ -250,13 +250,78 @@ const TherapistEarnings: React.FC<TherapistEarningsProps> = ({ therapist, onBack
     <div className="min-h-screen bg-gray-50">
       <main className="max-w-sm mx-auto px-4 py-6">
         <div className="space-y-4">
-        {/* Page Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-            <Clock className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}h</span>
-            <span className="text-xs text-gray-500">{currentLabels.thisMonth}</span>
+        {/* Standardized Status Header */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">{currentLabels.title}</h2>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+              <span className="text-xs text-gray-500">bulan ini</span>
+            </div>
+          </div>
+
+          {/* Status Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              onClick={() => console.log('Status change: available')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'bg-green-50 border-green-500'
+                  : 'border-gray-200 hover:border-green-300'
+              }`}
+            >
+              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-700'
+                  : 'text-gray-600'
+              }`}>Tersedia</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: busy')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'busy'
+                  ? 'bg-amber-50 border-amber-500'
+                  : 'border-gray-200 hover:border-amber-300'
+              }`}
+            >
+              <Clock className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-700'
+                  : 'text-gray-600'
+              }`}>Sibuk</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: offline')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.availability === 'offline'
+                  ? 'bg-red-50 border-red-500'
+                  : 'border-gray-200 hover:border-red-300'
+              }`}
+            >
+              <XCircle className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-700'
+                  : 'text-gray-600'
+              }`}>Offline</p>
+            </button>
           </div>
         </div>
         
