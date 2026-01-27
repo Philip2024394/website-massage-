@@ -32,7 +32,6 @@ import SendDiscountPage from './pages/SendDiscountPage';
 import HotelVillaSafePass from './pages/HotelVillaSafePass';
 import TherapistLayout from './components/TherapistLayout';
 import ToastContainer from './components/ToastContainer';
-import FloatingChat from './components/FloatingChat';
 import PersistentBookingAlerts from './components/PersistentBookingAlerts';
 import BookingNotificationBar from './components/BookingNotificationBar';
 import { LanguageProvider } from '../../../../src/context/LanguageContext';
@@ -854,14 +853,6 @@ function App() {
           >
             {renderPage()}
           </TherapistLayout>
-          
-          {/* Persistent Floating Chat - Always visible when user data exists */}
-          {user && (
-            <FloatingChat 
-              therapist={user} 
-              isPWA={isPWAMode()} 
-            />
-          )}
           
           {/* 🧪 Enterprise Test Panel - Development/Testing */}
           {(window.location.hostname === 'localhost' || window.location.search.includes('test=1')) && (
