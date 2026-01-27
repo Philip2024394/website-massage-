@@ -31,10 +31,17 @@
     /* Path aliases */
     "baseUrl": ".",
     "paths": {
+      "@lib/*": ["src/lib/*"],
+      "@lib/services/*": ["src/lib/services/*"],
+      "@lib/appwrite/*": ["src/lib/appwrite/*"],
+      "@lib/components/*": ["src/lib/components/*"],
+      "@lib/utils/*": ["src/lib/utils/*"],
       "@/*": ["../../*"],
       "@shared/*": ["../../lib/*"],
       "@components/*": ["../../components/*"],
       "@constants/*": ["../../constants/*"],
+      "@context/*": ["../../src/context/*"],
+      "@hooks/*": ["../../src/hooks/*"],
       "@types": ["../../types"],
       "@utils/*": ["../../utils/*"],
       "@services/*": ["../../services/*"]
