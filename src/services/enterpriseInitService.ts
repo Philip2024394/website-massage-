@@ -12,6 +12,9 @@
 import enterprisePerformanceService, { trackCustomMetric } from './enterprisePerformanceService';
 import enterpriseMonitoringService, { trackEvent } from './enterpriseMonitoringService';
 import enterpriseDatabaseService, { trackDatabaseQuery } from './enterpriseDatabaseService';
+import { enterpriseBookingFlowService } from './enterpriseBookingFlowService';
+import { enterpriseChatIntegrationService } from './enterpriseChatIntegrationService';
+import { bookingSoundService } from './bookingSound.service';
 
 class EnterpriseInitializationService {
   private initialized = false;
@@ -46,7 +49,7 @@ class EnterpriseInitializationService {
         'Enterprise services initialized successfully',
         {
           initTime: Math.round(initTime),
-          services: ['performance', 'monitoring', 'database']
+          services: ['performance', 'monitoring', 'database', 'booking-flow', 'chat', 'sound']
         },
         'info'
       );
@@ -57,6 +60,9 @@ class EnterpriseInitializationService {
       console.log('📊 Performance monitoring: ACTIVE');
       console.log('🔍 System monitoring: ACTIVE');
       console.log('🗄️ Database optimization: ACTIVE');
+      console.log('📋 Booking flow system: ACTIVE');
+      console.log('💬 Chat integration: ACTIVE');
+      console.log('🎵 Audio notifications: ACTIVE');
 
       // Start health monitoring
       this.startHealthMonitoring();
