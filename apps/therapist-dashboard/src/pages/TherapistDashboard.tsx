@@ -451,12 +451,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
         }
       }
 
-      // 🌍 GPS LOCATION VALIDATION - MANDATORY FOR GO LIVE
-      console.log('🌍 Validating MANDATORY GPS requirement...');
+      // 🌍 VALIDASI LOKASI GPS - WAJIB UNTUK ONLINE
+      console.log('🌍 Memvalidasi persyaratan GPS WAJIB...');
       
-      // STEP 1: GPS coordinates are ABSOLUTELY REQUIRED
+      // LANGKAH 1: Koordinat GPS SANGAT DIPERLUKAN
       if (!coordinates || !coordinates.lat || !coordinates.lng) {
-        showToast('❌ GPS location is MANDATORY. Please click "SET GPS LOCATION" button above.', 'error');
+        showToast('❌ Lokasi GPS WAJIB. Silakan klik tombol "ATUR LOKASI GPS" di atas.', 'error');
         setSaving(false);
         return;
       }
@@ -1020,22 +1020,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             </div>
 
-            {/* Profile Picture */}
+            {/* Foto Profil */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Profile Picture
+                Foto Profil
               </label>
               
-              {/* CRITICAL WARNING */}
+              {/* PERINGATAN KRITIS */}
               <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-2xl">⚠️</span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-red-900 mb-1">
-                      IMPORTANT: Upload ONLY Your Real Photo
+                      PENTING: Upload HANYA Foto Asli Anda
                     </p>
                     <p className="text-xs text-red-800">
-                      Your account will be <span className="font-bold underline">IMMEDIATELY DEACTIVATED</span> if you upload any photo that is NOT a real picture of yourself (no cartoons, logos, celebrities, stock photos, or other people). Clients must be able to identify you.
+                      Akun Anda akan <span className="font-bold underline">SEGERA DINONAKTIFKAN</span> jika Anda mengunggah foto yang BUKAN gambar asli diri Anda (tanpa kartun, logo, selebriti, foto stok, atau orang lain). Klien harus bisa mengidentifikasi Anda.
                     </p>
                   </div>
                 </div>
@@ -1068,9 +1068,9 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   />
                   <label htmlFor="profile-upload" className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white text-sm rounded-lg hover:bg-orange-600 cursor-pointer">
                     <Upload className="w-4 h-4" />
-                    {uploadingImage ? 'Uploading...' : 'Upload Photo'}
+                    {uploadingImage ? 'Mengunggah...' : 'Upload Foto'}
                   </label>
-                  <p className="text-xs text-gray-500 mt-1.5">Max 5MB • Must be your real photo</p>
+                  <p className="text-xs text-gray-500 mt-1.5">Maks 5MB • Harus foto asli Anda</p>
                 </div>
               </div>
             </div>
@@ -1081,13 +1081,13 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                 Location * {country && `(${country})`}
               </label>
               
-              {/* Info Box: GPS is Authoritative */}
+              {/* Info Box: GPS adalah Sumber Utama */}
               <div className="mb-3 bg-blue-50 border border-blue-300 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-lg">ℹ️</span>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-blue-900">
-                      <strong>Important:</strong> Your GPS location (set below) determines your city automatically. This dropdown is for reference only - GPS is the authoritative source.
+                      <strong>Penting:</strong> Lokasi GPS Anda (diatur di bawah) menentukan kota Anda secara otomatis. Dropdown ini hanya untuk referensi - GPS adalah sumber yang sah.
                     </p>
                   </div>
                 </div>
@@ -1163,22 +1163,22 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               </div>
             )}
 
-            {/* GPS Location - MANDATORY */}
+            {/* Lokasi GPS - WAJIB */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                GPS Location * <span className="text-red-500 font-bold">(REQUIRED TO GO LIVE)</span>
+                Lokasi GPS * <span className="text-red-500 font-bold">(WAJIB UNTUK ONLINE)</span>
               </label>
               
-              {/* GPS Requirement Notice */}
+              {/* Pemberitahuan Persyaratan GPS */}
               <div className="mb-3 bg-red-50 border-2 border-red-500 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <span className="text-xl">📍</span>
                   <div className="flex-1">
                     <p className="text-sm font-bold text-red-900 mb-1">
-                      GPS Location is MANDATORY
+                      Lokasi GPS WAJIB
                     </p>
                     <p className="text-xs text-red-800">
-                      You cannot go live without setting your exact GPS coordinates. This ensures you appear in the correct city for customers.
+                      Anda tidak dapat online tanpa mengatur koordinat GPS yang tepat. Ini memastikan Anda muncul di kota yang benar untuk pelanggan.
                     </p>
                   </div>
                 </div>
@@ -1201,12 +1201,12 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span>Getting Location...</span>
+                    <span>Mendapatkan Lokasi...</span>
                   </>
                 ) : locationSet ? (
-                  '✅ GPS Location Verified - Click to Update'
+                  '✅ Lokasi GPS Terverifikasi - Klik untuk Update'
                 ) : (
-                  '📍 SET GPS LOCATION (REQUIRED)'
+                  '📍 ATUR LOKASI GPS (WAJIB)'
                 )}
               </button>
               
@@ -1215,19 +1215,19 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-lg">🎯</span>
                     <p className="text-sm font-bold text-green-800">
-                      Location Verified via GPS
+                      Lokasi Terverifikasi via GPS
                     </p>
                   </div>
                   <div className="text-sm text-green-700 space-y-1">
-                    <p><strong>Coordinates:</strong> {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}</p>
+                    <p><strong>Koordinat:</strong> {coordinates.lat.toFixed(5)}, {coordinates.lng.toFixed(5)}</p>
                     {(() => {
                       const derivedCity = deriveLocationIdFromGeopoint(coordinates);
                       return (
-                        <p><strong>GPS-Derived City:</strong> <span className="font-bold text-green-900">{derivedCity}</span></p>
+                        <p><strong>Kota dari GPS:</strong> <span className="font-bold text-green-900">{derivedCity}</span></p>
                       );
                     })()}
                     <p className="text-xs text-green-600 mt-1">
-                      ⚠️ Your profile will appear in the GPS-derived city, regardless of manual selection above.
+                      ⚠️ Profil Anda akan muncul di kota yang diturunkan dari GPS, terlepas dari pilihan manual di atas.
                     </p>
                   </div>
                 </div>
@@ -1236,7 +1236,7 @@ const TherapistPortalPage: React.FC<TherapistPortalPageProps> = ({
               {!locationSet && (
                 <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-xl">
                   <p className="text-sm text-orange-800">
-                    ⚠️ GPS location not set. You cannot go live until you provide your exact coordinates.
+                    ⚠️ Lokasi GPS belum diatur. Anda tidak dapat online sampai Anda memberikan koordinat yang tepat.
                   </p>
                 </div>
               )}
