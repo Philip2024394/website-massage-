@@ -109,7 +109,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     // Fallback avatar
     const initials = (message.senderName || 'U').charAt(0).toUpperCase();
-    const bgColor = message.senderType === 'therapist' ? 'bg-orange-500' : 'bg-blue-500';
+    const bgColor = message.senderType === 'therapist' ? 'bg-orange-500' : 'bg-orange-500';
     
     return (
       <div className={`w-8 h-8 rounded-full ${bgColor} text-white flex items-center justify-center text-sm font-semibold shadow-sm`}>
@@ -141,7 +141,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
 
     return {
       container: 'justify-start',
-      bubble: 'bg-blue-50 text-blue-900 border border-blue-200 shadow-sm',
+      bubble: 'bg-orange-50 text-orange-900 border border-orange-200 shadow-sm',
       alignment: 'text-left',
       showAvatar: true,
       avatarMargin: 'ml-0 mr-2' // Avatar on left side
