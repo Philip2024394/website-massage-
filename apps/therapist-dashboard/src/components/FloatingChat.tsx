@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, XCircle, Check, Tag } from 'lucide-react';
+import { MessageCircle, X, XCircle, Check, Tag, Gift } from 'lucide-react';
 import { messagingService, simpleBookingService } from '../../../../src/lib/appwriteService';
 import { 
     ChatPersistenceManager, 
@@ -103,6 +103,7 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
     const [newMessage, setNewMessage] = useState('');
     const [sending, setSending] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [showBannerPicker, setShowBannerPicker] = useState(false);
     const [chatLocked, setChatLocked] = useState(true); // STEP 8: Chat locked by default
     const [bookingStatus, setBookingStatus] = useState<'pending' | 'accepted' | null>(null);
     const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
@@ -684,7 +685,88 @@ const FloatingChat: React.FC<FloatingChatProps> = ({ therapist, isPWA = false })
 
                         {/* Input Field - Always Visible */}
                         <div className="border-t border-gray-200 p-4 bg-white mt-auto">
+                            {/* Promotional Banner Picker */}
+                            {showBannerPicker && (
+                                <div className="mb-4 p-4 bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl shadow-lg">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                            <Gift className="w-4 h-4 text-orange-600" />
+                                            Kirim Banner Diskon
+                                        </h3>
+                                        <button
+                                            onClick={() => setShowBannerPicker(false)}
+                                            className="text-gray-400 hover:text-gray-600"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { discount: '5%', url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%205.png?updatedAt=1761803670532' },
+                                            { discount: '10%', url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2010.png?updatedAt=1761803828896' },
+                                            { discount: '15%', url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2015.png?updatedAt=1761803805221' },
+                                            { discount: '20%', url: 'https://ik.imagekit.io/7grri5v7d/massage%20discount%2020.png?updatedAt=1761803783034' }
+                                        ].map(({ discount, url }) => (
+                                            <button
+                                                key={discount}
+                                                onClick={async () => {
+                                                    setSending(true);
+                                                    try {
+                                                        await messagingService.sendMessage({
+                                                            senderId: therapist.$id,
+                                                            senderName: therapist.fullName || 'Therapist',
+                                                            message: `🎁 Special Promo: ${discount} Discount!`,
+                                                            imageUrl: url,
+                                                            messageType: 'image'
+                                                        });
+                                                        setShowBannerPicker(false);
+                                                        await loadMessages();
+                                                    } catch (error) {
+                                                        console.error('Failed to send banner:', error);
+                                                        alert('Failed to send banner. Please try again.');
+                                                    } finally {
+                                                        setSending(false);
+                                                    }
+                                                }}
+                                                disabled={sending}
+                                                className="relative group overflow-hidden rounded-lg border-2 border-orange-300 hover:border-orange-500 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <img 
+                                                    src={url} 
+                                                    alt={`${discount} discount banner`}
+                                                    className="w-full h-auto"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="absolute bottom-2 left-0 right-0 text-center">
+                                                        <span className="text-white text-xs font-bold">Kirim {discount}</span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-2 text-center">
+                                        Banner akan dikirim sebagai gambar ke pelanggan
+                                    </p>
+                                </div>
+                            )}
+                            
                             <div className="flex items-center gap-3">
+                                {/* Promotional Banner Button */}
+                                <button
+                                    onClick={() => setShowBannerPicker(!showBannerPicker)}
+                                    className={`${
+                                        showBannerPicker 
+                                            ? 'bg-orange-500 hover:bg-orange-600' 
+                                            : 'bg-gradient-to-br from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600'
+                                    } text-white p-2.5 rounded-full transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex-shrink-0 relative`}
+                                    title="Kirim banner promosi"
+                                >
+                                    <Gift className="w-4 h-4" />
+                                    {!showBannerPicker && (
+                                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+                                    )}
+                                </button>
+                                
                                 {/* Report Chat Button */}
                                 <button
                                     onClick={() => {
