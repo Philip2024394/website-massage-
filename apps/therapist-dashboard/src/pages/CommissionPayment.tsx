@@ -267,12 +267,87 @@ const CommissionPayment: React.FC<CommissionPaymentProps> = ({
 
   return (
     <div className="min-h-screen bg-white">
-      <TherapistPageHeader
-        title="Payments 30%"
-        subtitle="Pay commission per booking"
-        onBackToStatus={onBack || (() => {})}
-        icon={<div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center"><Wallet className="w-5 h-5 text-white" /></div>}
-      />
+      {/* Standardized Status Header */}
+      <div className="max-w-sm mx-auto px-4 pt-6 pb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Pembayaran Komisi 30%</h2>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+              <span className="text-xs text-gray-500">bulan ini</span>
+            </div>
+          </div>
+
+          {/* Status Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              onClick={() => console.log('Status change: available')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'bg-green-50 border-green-500'
+                  : 'border-gray-200 hover:border-green-300'
+              }`}
+            >
+              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-700'
+                  : 'text-gray-600'
+              }`}>Tersedia</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: busy')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'busy'
+                  ? 'bg-amber-50 border-amber-500'
+                  : 'border-gray-200 hover:border-amber-300'
+              }`}
+            >
+              <Clock className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-700'
+                  : 'text-gray-600'
+              }`}>Sibuk</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: offline')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.availability === 'offline'
+                  ? 'bg-red-50 border-red-500'
+                  : 'border-gray-200 hover:border-red-300'
+              }`}
+            >
+              <XCircle className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-700'
+                  : 'text-gray-600'
+              }`}>Offline</p>
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="p-3 sm:p-5 space-y-4 max-w-7xl mx-auto">
 

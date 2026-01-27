@@ -251,55 +251,125 @@ const SendDiscountPage: React.FC<SendDiscountPageProps> = ({ therapist, language
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Enhanced Status Header */}
-      <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-red-500 px-4 pt-6 pb-8 text-white">
-        {/* Title Section */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-            <Gift className="w-8 h-8" />
+      {/* Standardized Status Header */}
+      <div className="max-w-sm mx-auto px-4 pt-6 pb-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                <Gift className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">{labels.title}</h2>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-sm font-semibold text-gray-700">{(therapist?.onlineHoursThisMonth || 0).toFixed(1)}j</span>
+              <span className="text-xs text-gray-500">bulan ini</span>
+            </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{labels.title}</h1>
-            <p className="text-sm text-orange-100 mt-0.5">{labels.subtitle}</p>
+
+          {/* Status Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              onClick={() => console.log('Status change: available')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'bg-green-50 border-green-500'
+                  : 'border-gray-200 hover:border-green-300'
+              }`}
+            >
+              <CheckCircle className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'available' && therapist?.availability === 'online'
+                  ? 'text-green-700'
+                  : 'text-gray-600'
+              }`}>Tersedia</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: busy')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.status === 'busy'
+                  ? 'bg-amber-50 border-amber-500'
+                  : 'border-gray-200 hover:border-amber-300'
+              }`}
+            >
+              <Clock className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.status === 'busy'
+                  ? 'text-amber-700'
+                  : 'text-gray-600'
+              }`}>Sibuk</p>
+            </button>
+
+            <button
+              onClick={() => console.log('Status change: offline')}
+              className={`p-4 rounded-xl border-2 transition-all ${
+                therapist?.availability === 'offline'
+                  ? 'bg-red-50 border-red-500'
+                  : 'border-gray-200 hover:border-red-300'
+              }`}
+            >
+              <User className={`w-6 h-6 mx-auto mb-2 ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-600'
+                  : 'text-gray-400'
+              }`} />
+              <p className={`text-sm font-semibold ${
+                therapist?.availability === 'offline'
+                  ? 'text-red-700'
+                  : 'text-gray-600'
+              }`}>Offline</p>
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Stats Grid */}
+      {/* Stats Grid (Preserved) */}
+      <div className="px-4 pb-4">
         <div className="grid grid-cols-2 gap-3">
           {/* Total Sent */}
-          <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
+          <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-orange-100" />
-              <span className="text-xs text-orange-100 font-medium">{labels.totalSent}</span>
+              <TrendingUp className="w-4 h-4 text-orange-500" />
+              <span className="text-xs text-gray-600 font-medium">{labels.totalSent}</span>
             </div>
-            <p className="text-3xl font-bold">{stats.totalDiscountsSent}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.totalDiscountsSent}</p>
           </div>
 
           {/* Active Now */}
-          <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
+          <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-4 h-4 text-green-300" />
-              <span className="text-xs text-orange-100 font-medium">{labels.activeNow}</span>
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span className="text-xs text-gray-600 font-medium">{labels.activeNow}</span>
             </div>
-            <p className="text-3xl font-bold text-green-300">{stats.activeDiscounts}</p>
+            <p className="text-2xl font-bold text-green-600">{stats.activeDiscounts}</p>
           </div>
 
           {/* Used Discounts */}
-          <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
+          <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <Percent className="w-4 h-4 text-blue-300" />
-              <span className="text-xs text-orange-100 font-medium">{labels.usedDiscounts}</span>
+              <Percent className="w-4 h-4 text-blue-500" />
+              <span className="text-xs text-gray-600 font-medium">{labels.usedDiscounts}</span>
             </div>
-            <p className="text-3xl font-bold text-blue-300">{stats.usedDiscounts}</p>
+            <p className="text-2xl font-bold text-blue-600">{stats.usedDiscounts}</p>
           </div>
 
           {/* Success Rate */}
-          <div className="bg-white/15 backdrop-blur-md rounded-xl p-4 border border-white/20">
+          <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-yellow-300" />
-              <span className="text-xs text-orange-100 font-medium">{labels.successRate}</span>
+              <Users className="w-4 h-4 text-amber-500" />
+              <span className="text-xs text-gray-600 font-medium">{labels.successRate}</span>
             </div>
-            <p className="text-3xl font-bold text-yellow-300">{stats.successRate}%</p>
+            <p className="text-2xl font-bold text-amber-600">{stats.successRate}%</p>
           </div>
         </div>
       </div>
