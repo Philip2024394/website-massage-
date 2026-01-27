@@ -96,6 +96,12 @@ export default defineConfig({
       '@/types': path.resolve(__dirname, './types'),
       // CRITICAL: Allow apps/ to resolve root src/ imports
       'src': path.resolve(__dirname, './src'),
+      // Therapist Dashboard @lib aliases (for file watcher compatibility)
+      '@lib': path.resolve(__dirname, './apps/therapist-dashboard/src/lib'),
+      '@lib/services': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/services'),
+      '@lib/appwrite': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/appwrite'),
+      '@lib/components': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/components'),
+      '@lib/utils': path.resolve(__dirname, './apps/therapist-dashboard/src/lib/utils'),
     },
   },
   server: {
