@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { authService, therapistService } from '../../../../src/lib/appwriteService';
+// import { authService, therapistService } from '../../../../src/lib/appwriteService';  // REMOVED - using dynamic imports
 import { systemHealthService } from "../../../../src/lib/systemHealthService";
 import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
 import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnforcer";
@@ -167,6 +167,7 @@ function App() {
       console.log('📧 Session user email:', user.email);
       console.log('👤 Session user name:', user.name);
       
+      const { therapistService } = await import('../../../../src/lib/appwriteService');
       const updatedTherapist = await therapistService.getById(user.$id);
       console.log('✅ Therapist data refreshed from database:', {
         id: updatedTherapist.$id,
@@ -289,6 +290,7 @@ function App() {
     
     const refreshSession = async () => {
       try {
+        const { authService } = await import('../../../../src/lib/appwriteService');
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
           console.log('✅ Session refreshed successfully');
@@ -398,6 +400,7 @@ function App() {
     try {
       console.log('🔐 Starting auth check... isPWA:', isPWA);
       
+      const { authService } = await import('../../../../src/lib/appwriteService');
       let currentUser = await authService.getCurrentUser();
       
       // If Appwrite session failed, try localStorage fallback
@@ -413,6 +416,7 @@ function App() {
             if (age < maxAge && backup.userId) {
               console.log('🔄 Restoring session from localStorage backup...');
               // Fetch therapist directly from database
+              const { therapistService } = await import('../../../../src/lib/appwriteService');
               const therapist = await therapistService.getById(backup.userId);
               if (therapist) {
                 console.log('✅ Session restored from localStorage:', therapist.email);
@@ -442,6 +446,7 @@ function App() {
         console.log('🔍 [DEBUG] Auth email exact value:', JSON.stringify(currentUser.email));
         console.log('🔍 [DEBUG] Normalized email for lookup:', normalizedEmail);
         
+        const { therapistService } = await import('../../../../src/lib/appwriteService');
         let therapists = await therapistService.getByEmail(normalizedEmail);
         console.log('🔍 Looking for therapist with email:', normalizedEmail);
         console.log('🔍 Found therapists:', therapists);
@@ -640,6 +645,7 @@ function App() {
       localStorage.removeItem('notificationTested');
       console.log('🗑️ All localStorage auth data cleared');
       
+      const { authService } = await import('../../../../src/lib/appwriteService');
       await authService.logout();
       setIsAuthenticated(false);
       setUser(null);
