@@ -750,6 +750,78 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
 
     // Removed handleConfirmBusyContact - chat system deactivated
 
+    // Location display logic - matches TherapistHomeCard exactly
+    const therapistLocationArea = (therapist as any)._locationArea || selectedCity;
+    
+    const getLocationAreaDisplayName = () => {
+        // First check if we have a selected city
+        if (selectedCity && selectedCity !== 'all') {
+            // Get the list of all cities from categories
+            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+            // Normalize selectedCity to lowercase for matching with locationId
+            const normalizedSelectedCity = selectedCity.toLowerCase().trim();
+            const selectedCityData = allCities.find(city => city.locationId === normalizedSelectedCity || city.name.toLowerCase() === normalizedSelectedCity);
+            
+            if (selectedCityData) {
+                // Add service areas if available
+                if (therapist.serviceAreas) {
+                    try {
+                        const areas = JSON.parse(therapist.serviceAreas);
+                        if (Array.isArray(areas) && areas.length > 0) {
+                            // Get readable area names (remove city prefix like "jakarta-")
+                            const areaNames = areas.map((area: string) => {
+                                const parts = area.split('-');
+                                return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                            }).filter(Boolean);
+                            
+                            if (areaNames.length > 0) {
+                                return `${selectedCityData.name} - ${areaNames.join(', ')}`;
+                            }
+                        }
+                    } catch (e) {
+                        // If parsing fails, just show city name
+                    }
+                }
+                
+                return selectedCityData.name;
+            }
+        }
+        
+        let cityName = '';
+        
+        if (!therapistLocationArea) {
+            // Fallback to database location field if no GPS-computed area
+            cityName = (therapist.location || 'Bali').split(',')[0].trim();
+        } else {
+            const allCities = INDONESIAN_CITIES_CATEGORIZED.flatMap(cat => cat.cities);
+            const cityData = allCities.find(city => city.locationId === therapistLocationArea);
+            cityName = cityData?.name || therapistLocationArea;
+        }
+        
+        // Add service areas if available
+        if (therapist.serviceAreas) {
+            try {
+                const areas = JSON.parse(therapist.serviceAreas);
+                if (Array.isArray(areas) && areas.length > 0) {
+                    // Get readable area names (remove city prefix like "jakarta-")
+                    const areaNames = areas.map((area: string) => {
+                        const parts = area.split('-');
+                        return parts.slice(1).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+                    }).filter(Boolean);
+                    
+                    if (areaNames.length > 0) {
+                        return `${cityName} - ${areaNames.join(', ')}`;
+                    }
+                }
+            } catch (e) {
+                // If parsing fails, just show city name
+            }
+        }
+        
+        return cityName;
+    };
+    
+    const locationAreaDisplayName = getLocationAreaDisplayName();
 
     return (
         <>
@@ -854,19 +926,18 @@ const TherapistCard: React.FC<TherapistCardProps> = ({
                     displayRating={displayRating}
                 />
 
-            {/* ========================================
-             * 🔒 UI DESIGN LOCKED - DO NOT MODIFY
-             * Facebook Lock: This layout is finalized
-             * Contact admin before making any changes
-             * ======================================== */}
-            {/* Simple location display under main image - no "Nearby" text or pin */}
-            {(selectedCity || (therapist as any).city || (therapist as any).area) && (
-                <div className="px-4 mt-3 text-center">
-                    <div className="text-xs text-gray-600 font-medium">
-                        {selectedCity || (therapist as any).city || (therapist as any).area}
-                    </div>
+            {/* Location display - right aligned with pin icon */}
+            <div className="px-4 mt-3 flex flex-col items-end">
+                <div className="flex items-center gap-1 text-xs text-black font-medium">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    {locationAreaDisplayName}
                 </div>
-            )}
+                <div className="text-xs text-orange-500 mt-1 font-medium">
+                    Serves {locationAreaDisplayName} area
+                </div>
+            </div>
 
             <TherapistProfile
                 therapist={therapist}
