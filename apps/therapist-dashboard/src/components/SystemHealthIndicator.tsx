@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
-import { systemHealthService } from '../../../src/lib/systemHealthService';
+import { systemHealthService } from '../../../../src/lib/systemHealthService';
 
 interface SystemHealthIndicatorProps {
     memberId: string;

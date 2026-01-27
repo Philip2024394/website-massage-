@@ -4,11 +4,11 @@ import {
   Crown, Bell, FileText, Clock, CreditCard, ClipboardList, Wallet, Gift, Shield, LogOut
 } from 'lucide-react';
 import BookingBadge from './BookingBadge';
-import { useUnreadBadge } from '../../../src/chat/hooks/useUnreadBadge';
-import { useGestureSwipe } from '../../../src/hooks/useGestureSwipe';
-import { FloatingUnreadBadge } from '../../../src/components/UnreadBadge';
-import { pushNotificationsService } from '../../../src/lib/pushNotificationsService';
-import PullToRefresh from '../../../src/components/PullToRefresh';
+import { useUnreadBadge } from "../../../../src/chat/hooks/useUnreadBadge";
+import { useGestureSwipe } from "../../../../src/hooks/useGestureSwipe";
+import { FloatingUnreadBadge } from "../../../../src/components/UnreadBadge";
+import { pushNotificationsService } from '../../../../src/lib/pushNotificationsService';
+import PullToRefresh from '../../../../src/components/PullToRefresh';
 
 interface TherapistLayoutProps {
   children: React.ReactNode;

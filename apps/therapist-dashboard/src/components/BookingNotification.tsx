@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, CheckCircle, Clock, Calendar, User } from 'lucide-react';
-import { Booking } from '../../../src/types';
+import { Booking } from '../../../../src/types';
 
 interface BookingNotificationProps {
   booking: Booking;

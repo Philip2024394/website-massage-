@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { simpleChatService, simpleBookingService } from '../../../src/lib/appwriteService';
-import { commissionTrackingService } from '../../../src/lib/services/commissionTrackingService';
-import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../../src/utils/piiDetector';
-import { auditLoggingService, AuditContext } from '../../../src/lib/appwrite/services/auditLogging.service';
-import PaymentCard from '../../../src/components/PaymentCard';
-import SendDiscountModal from '../../../src/components/SendDiscountModal';
-import { FlagIcon } from '../../../src/components/FlagIcon';
+import { simpleChatService, simpleBookingService } from '../../../../src/lib/appwriteService';
+import { commissionTrackingService } from '../../../../src/lib/services/commissionTrackingService';
+import { detectPIIContent, getBlockedMessage, type PiiDetectionResult } from '../../../../src/utils/piiDetector';
+import { auditLoggingService, AuditContext } from '../../../../src/lib/appwrite/services/auditLogging.service';
+import PaymentCard from '../../../../src/components/PaymentCard';
+import SendDiscountModal from '../../../../src/components/SendDiscountModal';
+import { FlagIcon } from '../../../../src/components/FlagIcon';
 
 interface Message {
     $id: string;

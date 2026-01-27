@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, CreditCard, Upload, CheckCircle, AlertCircle, X, Download, Smartphone, ChevronLeft, ChevronRight, Building2, Bell } from 'lucide-react';
-import { Therapist, Booking } from '../../../src/types';
-import { showToast } from '../../../src/utils/showToastPortal';
+import { Therapist, Booking } from '../../../../src/types';
+import { showToast } from '../../../../src/utils/showToastPortal';
 
 interface CustomerBookingPageProps {
   therapist: Therapist;

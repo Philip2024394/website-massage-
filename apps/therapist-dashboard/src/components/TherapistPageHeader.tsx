@@ -1,6 +1,6 @@
 import React from 'react';
 import { Home } from 'lucide-react';
-import { useLanguage } from '../../../src/hooks/useLanguage';
+import { useLanguage } from '../../../../src/hooks/useLanguage';
 
 interface TherapistPageHeaderProps {
   title: string;

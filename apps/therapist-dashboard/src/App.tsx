@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { authService, therapistService } from '../../../src/lib/appwriteService';
-import { systemHealthService } from "../../../src/lib/systemHealthService";
-import { EnhancedNotificationService } from "../../../src/lib/enhancedNotificationService";
-import { PWAInstallationEnforcer } from "../../../src/lib/pwaInstallationEnforcer";
+import { authService, therapistService } from '../../../../src/lib/appwriteService';
+import { systemHealthService } from "../../../../src/lib/systemHealthService";
+import { EnhancedNotificationService } from "../../../../src/lib/enhancedNotificationService";
+import { PWAInstallationEnforcer } from "../../../../src/lib/pwaInstallationEnforcer";
 import { therapistNotificationManager } from './lib/therapistNotifications';
-import { CardSkeleton } from '../../../src/components/LoadingSkeletons';
-import TherapistDashboardGuard from '../../../src/components/TherapistDashboardGuard';
+import { CardSkeleton } from '../../../../src/components/LoadingSkeletons';
+import TherapistDashboardGuard from '../../../../src/components/TherapistDashboardGuard';
 // import { membershipNotificationService } from './services/membershipNotificationService'; // Unused
 import TherapistDashboard from './pages/TherapistDashboard';
 import TherapistOnlineStatus from './pages/TherapistOnlineStatus';
@@ -30,13 +30,13 @@ import ToastContainer from './components/ToastContainer';
 import FloatingChat from './components/FloatingChat';
 import PersistentBookingAlerts from './components/PersistentBookingAlerts';
 import BookingNotificationBar from './components/BookingNotificationBar';
-import { LanguageProvider } from '../../../src/context/LanguageContext';
-import { ChatProvider } from '../../../src/context/ChatProvider';
-import { useTranslations } from '../../../src/lib/useTranslations';
+import { LanguageProvider } from '../../../../src/context/LanguageContext';
+import { ChatProvider } from '../../../../src/context/ChatProvider';
+import { useTranslations } from '../../../../src/lib/useTranslations';
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
-import EnterpriseNotificationIntegrationManager from '../../../src/components/EnterpriseNotificationIntegrationManager';
-import EnterpriseTestPanel from '../../../src/components/EnterpriseTestPanel';
-import PWAInstallPrompt from '../../../src/components/PWAInstallPrompt';
+import EnterpriseNotificationIntegrationManager from '../../../../src/components/EnterpriseNotificationIntegrationManager';
+import EnterpriseTestPanel from '../../../../src/components/EnterpriseTestPanel';
+import PWAInstallPrompt from '../../../../src/components/PWAInstallPrompt';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
 

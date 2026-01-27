@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useChatContext } from '../context/ChatProvider';
+import { useChatContext } from "../../context/ChatProvider";
 
 interface UnreadBadgeData {
   totalUnread: number;
