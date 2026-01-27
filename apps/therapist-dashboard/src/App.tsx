@@ -18,6 +18,7 @@ import { availabilityEnforcementService } from '@lib/services/availabilityEnforc
 import { commissionTrackingService } from '@lib/services/commissionTrackingService';
 import { serverEnforcedChatService } from '@lib/services/serverEnforcedChatService';
 import { therapistNotificationManager } from './lib/therapistNotifications';
+import { useTranslations } from '@lib/useTranslations';
 
 // Components
 import { CardSkeleton } from '@components/LoadingSkeletons';
