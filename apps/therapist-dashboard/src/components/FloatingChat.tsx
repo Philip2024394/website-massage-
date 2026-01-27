@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, XCircle, Check, Tag } from 'lucide-react';
-import { messagingService, simpleBookingService } from '../../../../src/lib/appwriteService';
+import { messagingService, simpleBookingService } from '../../../src/lib/appwriteService';
 import { 
     ChatPersistenceManager, 
     PWABadgeManager, 
     PWANotificationManager,
     isPWAMode 
 } from '../../../src/lib/pwaFeatures';
-import { chatDebouncer, performanceUtils } from '../../../../src/lib/utils/performance';
+import { chatDebouncer, performanceUtils } from '../../../src/lib/utils/performance';
 
 /**
  * 💬 Enhanced Floating Chat Component with Sound Notifications

@@ -34,6 +34,9 @@ import { LanguageProvider } from '../../../src/context/LanguageContext';
 import { ChatProvider } from '../../../src/context/ChatProvider';
 import { useTranslations } from '../../../src/lib/useTranslations';
 import { PWALifecycleManager, PWANotificationManager, isPWAMode } from './lib/pwaFeatures';
+import EnterpriseNotificationIntegrationManager from '../../../src/components/EnterpriseNotificationIntegrationManager';
+import EnterpriseTestPanel from '../../../src/components/EnterpriseTestPanel';
+import PWAInstallPrompt from '../../../src/components/PWAInstallPrompt';
 
 type Page = 'dashboard' | 'status' | 'bookings' | 'earnings' | 'chat' | 'package-terms' | 'notifications' | 'legal' | 'calendar' | 'payment' | 'payment-status' | 'custom-menu' | 'premium-upgrade' | 'commission-payment' | 'schedule' | 'send-discount' | 'hotel-villa-safe-pass';
 
@@ -72,6 +75,8 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>(getInitialPage());
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [showBookingAlerts, setShowBookingAlerts] = useState(true);
+  const [enterpriseNotificationManager, setEnterpriseNotificationManager] = useState<any>(null);
+  const [showEnterpriseTestPanel, setShowEnterpriseTestPanel] = useState(false);
   const [language, setLanguage] = useState<'en' | 'id'>(() => {
     // Try to get language from localStorage or default to 'id'
     const stored = localStorage.getItem('indastreet_language');
@@ -202,6 +207,43 @@ function App() {
       ]).catch(error => {
         console.error('❌ PWA initialization failed:', error);
       });
+      
+      // 🏢 ENTERPRISE: Initialize comprehensive notification integration
+      const initEnterpriseNotifications = async () => {
+        try {
+          const enterpriseManager = await EnterpriseNotificationIntegrationManager.create({
+            therapistId: user.$id,
+            enableVibration: true,
+            enableSound: true,
+            enableVisualAlerts: true,
+            testMode: window.location.hostname === 'localhost' || window.location.search.includes('test=1'),
+            debugLogging: true
+          });
+          
+          setEnterpriseNotificationManager(enterpriseManager);
+          console.log('✅ Enterprise notification integration manager initialized');
+          
+          // Run comprehensive test in development
+          if (window.location.hostname === 'localhost' || window.location.search.includes('test=1')) {
+            setTimeout(() => {
+              enterpriseManager.runComprehensiveTest().then(results => {
+                const passed = results.filter(r => r.success).length;
+                console.log(`🏢 Enterprise test completed: ${passed}/${results.length} tests passed`);
+                
+                // Show quick test notification
+                if (passed === results.length) {
+                  enterpriseManager.testBookingNotification();
+                }
+              });
+            }, 5000); // 5 seconds after initialization
+          }
+          
+        } catch (error) {
+          console.error('❌ Failed to initialize enterprise notification manager:', error);
+        }
+      };
+      
+      initEnterpriseNotifications();
       
       console.log('✅ Enhanced PWA features initialization started');
     }
@@ -411,7 +453,7 @@ function App() {
 
 
 
-  // Booking notification handlers
+  // 🏢 ENTERPRISE: Booking notification handlers with bulletproof integration
   const handleNewBookingAlert = (booking: any) => {
     console.log('🔔 Processing new booking alert:', booking);
     
@@ -424,14 +466,44 @@ function App() {
       location: booking.location,
       date: booking.date || new Date(booking.startTime).toLocaleDateString(),
       time: booking.time || new Date(booking.startTime).toLocaleTimeString(),
-      status: booking.status,
-      therapistId: user?.$id
+      status: booking.status || 'pending',
+      therapistId: user?.$id || ''
     });
+    
+    // 🏢 ENTERPRISE: Trigger comprehensive notification system
+    if (enterpriseNotificationManager) {
+      enterpriseNotificationManager.triggerEnterpriseBookingNotification({
+        bookingId: booking.id || booking.$id,
+        customerId: booking.customerId || booking.userId,
+        customerName: booking.customerName || booking.userName || 'Customer',
+        serviceType: booking.serviceType || booking.service || 'Massage',
+        duration: parseInt(booking.service) || booking.duration || 60,
+        location: booking.location || 'Location provided separately',
+        scheduledTime: booking.startTime || new Date().toISOString(),
+        status: booking.status || 'pending',
+        priority: booking.status === 'pending' ? 'critical' : 'normal',
+        therapistId: user?.$id || '',
+        timestamp: Date.now()
+      }).catch(error => {
+        console.error('❌ Enterprise notification failed:', error);
+      });
+    }
   };
   
   const handleAcceptBooking = async (bookingId: string) => {
     try {
       console.log('✅ Accepting booking:', bookingId);
+      
+      // 🏢 ENTERPRISE: Stop all alerts for accepted booking
+      if (enterpriseNotificationManager) {
+        try {
+          // Stop enterprise alerts (vibration, sound, visual)
+          await enterpriseNotificationManager.stopAllAlertsForBooking?.(bookingId);
+          console.log('🔕 Enterprise alerts stopped for booking:', bookingId);
+        } catch (error) {
+          console.warn('⚠️ Failed to stop enterprise alerts:', error);
+        }
+      }
       
       // Here you would call your booking service to accept the booking
       // await bookingService.acceptBooking(bookingId, user.$id);
@@ -682,7 +754,10 @@ function App() {
             onNavigateToBookings={handleNavigateToBookings}
           />
           
-          <PWAInstallPrompt dashboardName="Therapist Dashboard" />
+          <PWAInstallPrompt 
+            dashboardName="Therapist Dashboard" 
+            therapistId={user?.$id} 
+          />
           <ToastContainer />
           <TherapistLayout
             therapist={user}
@@ -701,6 +776,30 @@ function App() {
               therapist={user} 
               isPWA={isPWAMode()} 
             />
+          )}
+          
+          {/* 🧪 Enterprise Test Panel - Development/Testing */}
+          {(window.location.hostname === 'localhost' || window.location.search.includes('test=1')) && (
+            <>
+              {/* Floating Test Button */}
+              <div className="fixed bottom-20 right-4 z-40">
+                <button
+                  onClick={() => setShowEnterpriseTestPanel(true)}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+                  title="🧪 Enterprise Notification Test Center"
+                >
+                  <div className="text-xl">🧪</div>
+                </button>
+              </div>
+              
+              {/* Test Panel */}
+              <EnterpriseTestPanel
+                enterpriseNotificationManager={enterpriseNotificationManager}
+                therapistId={user?.$id}
+                isVisible={showEnterpriseTestPanel}
+                onClose={() => setShowEnterpriseTestPanel(false)}
+              />
+            </>
           )}
         </LanguageProvider>
       </ChatProvider>

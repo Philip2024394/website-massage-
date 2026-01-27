@@ -1,9 +1,9 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
 import { Crown, Upload, CheckCircle, AlertCircle, XCircle, CreditCard, Building2, User, Hash, Copy, Check } from 'lucide-react';
-import { Therapist } from '../../../../src/types';
-import { therapistService, imageUploadService, paymentConfirmationService, premiumPaymentsService } from '../../../../src/lib/appwriteService';
-import { showToast } from '../../../../src/utils/showToastPortal';
+import { Therapist } from '../../../src/types';
+import { therapistService, imageUploadService, paymentConfirmationService, premiumPaymentsService } from '../../../src/lib/appwriteService';
+import { showToast } from '../../../src/utils/showToastPortal';
 
 interface PremiumUpgradeProps {
   therapist: Therapist | null;

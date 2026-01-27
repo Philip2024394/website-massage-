@@ -7,9 +7,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Gift, Search, User, MessageCircle, Clock, Plus } from 'lucide-react';
-import { databases, Query } from '../../../../src/lib/appwrite';
-import { APPWRITE_CONFIG } from '../../../../src/lib/appwrite.config';
-import SendDiscountModal from '../../../../src/components/SendDiscountModal';
+import { databases, Query } from '../../../src/lib/appwrite';
+import { APPWRITE_CONFIG } from '../../../src/lib/appwrite.config';
+import SendDiscountModal from '../../../src/components/SendDiscountModal';
 
 interface Customer {
   id: string;

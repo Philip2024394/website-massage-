@@ -1,13 +1,13 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
 import React, { useState, useEffect } from 'react';
-import { FloatingChatWindow } from '../../../../src/chat';
+import { FloatingChatWindow } from '../../../src/chat';
 import { Calendar, Clock, MapPin, User, Phone, Banknote, CheckCircle, XCircle, Filter, Search, MessageCircle, Crown, Lock } from 'lucide-react';
 import ChatWindow from '../components/ChatWindow';
 import TherapistLayout from '../components/TherapistLayout';
-import { devLog, devWarn } from '../../../../src/utils/devMode';
+import { devLog, devWarn } from '../../../src/utils/devMode';
 import TherapistSchedule from './TherapistSchedule';
-import DepositApprovalCard from '../../../../src/components/booking/DepositApprovalCard';
-import { pushNotificationsService } from '../../../../src/lib/pushNotificationsService';
+import DepositApprovalCard from '../../../src/components/booking/DepositApprovalCard';
+import { pushNotificationsService } from '../../../src/lib/pushNotificationsService';
 
 interface Booking {
   $id: string;

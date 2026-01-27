@@ -1,617 +1,79 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
-import React, { useState, useEffect } from 'react';
-import { Download, X, Smartphone, Bell, CheckCircle2, Clock, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import EnterpriseTherapistPWAInstaller from '../../../src/components/EnterpriseTherapistPWAInstaller';
 
 interface PWAInstallPromptProps {
   dashboardName?: string;
+  therapistId?: string;
+// @ts-nocheck - Temporary fix for React 19 type incompatibility with lucide-react
+import React, { useState } from 'react';
+import EnterpriseTherapistPWAInstaller from '../../../src/components/EnterpriseTherapistPWAInstaller';
+
+interface PWAInstallPromptProps {
+  dashboardName?: string;
+  therapistId?: string;
 }
 
-type InstallState = 'idle' | 'waiting' | 'downloading' | 'installed';
+const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ 
+  dashboardName = 'Therapist Dashboard',
+  therapistId 
+}) => {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
 
-const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Therapist Dashboard' }) => {
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [installState, setInstallState] = useState<InstallState>('idle');
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const [showPrompt, setShowPrompt] = useState(false);
-  
-  // Ensure dashboardName is never undefined
-  const appName = dashboardName || 'Therapist Dashboard';
-  
-  // Technical validation states
-  const [manifestValid, setManifestValid] = useState(false);
-  const [serviceWorkerActive, setServiceWorkerActive] = useState(false);
-  const [isHTTPS, setIsHTTPS] = useState(false);
-
-  useEffect(() => {
-    console.log('PWA Dashboard: Initializing...');
-    
-    // Validate technical requirements
-    validatePWARequirements();
-    
-    // COMPREHENSIVE STANDALONE MODE DETECTION
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const isInWebAppiOS = (window.navigator as any).standalone === true;
-    const isInstalled = localStorage.getItem('pwa-install-completed') === 'true';
-    const runningAsApp = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.matchMedia('(display-mode: fullscreen)').matches ||
-                         window.matchMedia('(display-mode: minimal-ui)').matches;
-    
-    // Check URL for standalone parameter (Android Chrome adds this)
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasStandaloneParam = urlParams.get('utm_source') === 'homescreen' || 
-                                window.location.search.includes('standalone=true');
-    
-    // Check if opened from installed app (various methods)
-    const isRunningStandalone = isStandalone || isInWebAppiOS || runningAsApp || hasStandaloneParam;
-    
-    console.log('PWA Dashboard: Installation Detection:', {
-      isStandalone,
-      isInWebAppiOS,
-      isInstalled,
-      runningAsApp,
-      hasStandaloneParam,
-      finalResult: isRunningStandalone
-    });
-    
-    if (isRunningStandalone) {
-      console.log('PWA Dashboard: ✅ App running in standalone mode - HIDING INSTALL PROMPT');
-      setInstallState('installed');
-      localStorage.setItem('pwa-install-completed', 'true');
-      return;
-    }
-    
-    if (isInstalled) {
-      console.log('PWA Dashboard: ✅ App marked as installed in localStorage');
-      setInstallState('installed');
-      return;
-    }
-
-    // Listen for beforeinstallprompt event
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Check not already installed (double-check)
-      const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
-                               (window.navigator as any).standalone === true ||
-                               localStorage.getItem('pwa-install-completed') === 'true';
-      
-      if (alreadyInstalled) {
-        console.log('PWA Dashboard: ⛔ App already installed, ignoring prompt');
-        e.preventDefault();
-        return;
-      }
-      
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setShowPrompt(true);
-      setInstallState('waiting');
-      console.log('PWA Dashboard: ✅ Install prompt ready');
-      
-      // Store globally
-      (window as any).deferredPrompt = e;
-    };
-
-    // Listen for app installed event
-    const handleAppInstalled = () => {
-      console.log('PWA Dashboard: ✅ App installed successfully');
-      setInstallState('installed');
-      setShowPrompt(false);
-      localStorage.setItem('pwa-install-completed', 'true');
-      
-      // Auto-request notification permission after install
-      setTimeout(() => {
-        requestNotificationPermission();
-      }, 1000);
-    };
-    
-    // Monitor display-mode changes
-    const standaloneMediaQuery = window.matchMedia('(display-mode: standalone)');
-    const handleDisplayModeChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      if (e.matches) {
-        console.log('PWA Dashboard: 🔄 Display mode changed to standalone - HIDING PROMPT');
-        setInstallState('installed');
-        setShowPrompt(false);
-        localStorage.setItem('pwa-install-completed', 'true');
-      }
-    };
-    
-    // Add listener for display mode changes
-    if (standaloneMediaQuery.addEventListener) {
-      standaloneMediaQuery.addEventListener('change', handleDisplayModeChange);
-    }
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    // Check notification permission
-    if ('Notification' in window) {
-      setNotificationPermission(Notification.permission);
-    }
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-      if (standaloneMediaQuery.removeEventListener) {
-        standaloneMediaQuery.removeEventListener('change', handleDisplayModeChange);
-      }
-    };
-  }, []);
-
-  const validatePWARequirements = async () => {
-    // Check HTTPS
-    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
-    setIsHTTPS(isSecure);
-    console.log('PWA Dashboard: HTTPS:', isSecure);
-
-    // Check Service Worker
-    if ('serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        setServiceWorkerActive(!!registration.active);
-        console.log('PWA Dashboard: Service Worker active:', !!registration.active);
-      } catch (error) {
-        console.error('PWA Dashboard: Service Worker error:', error);
-      }
-    }
-
-    // Check Manifest
-    try {
-      const manifestLink = document.querySelector('link[rel="manifest"]');
-      if (manifestLink) {
-        const manifestUrl = (manifestLink as HTMLLinkElement).href;
-        const response = await fetch(manifestUrl);
-        const manifest = await response.json();
-        
-        // Validate required manifest fields
-        const isValid = !!(
-          manifest.name &&
-          manifest.short_name &&
-          manifest.icons &&
-          manifest.icons.length >= 2 &&
-          manifest.start_url &&
-          manifest.display
-        );
-        
-        setManifestValid(isValid);
-        console.log('PWA Dashboard: Manifest valid:', isValid);
-      }
-    } catch (error) {
-      console.error('PWA Dashboard: Manifest error:', error);
-    }
+  const handleSuccess = () => {
+    console.log('✅ [ENTERPRISE PWA] Installation successful');
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 5000);
   };
 
-  const handleInstallClick = async () => {
-    // Check if already installed
-    const alreadyInstalled = window.matchMedia('(display-mode: standalone)').matches || 
-                             (window.navigator as any).standalone === true ||
-                             localStorage.getItem('pwa-install-completed') === 'true';
-    
-    if (alreadyInstalled) {
-      console.log('PWA Dashboard: ⛔ Already installed');
-      setInstallState('installed');
-      setShowPrompt(false);
-      return;
-    }
-    
-    if (!deferredPrompt) {
-      console.error('PWA Dashboard: No install prompt available');
-      alert('❌ Install not available\n\nYour browser doesn\'t support app installation.\n\nRequirements:\n• Chrome/Edge browser\n• HTTPS connection\n• Valid PWA manifest');
-      return;
-    }
-
-    try {
-      console.log('PWA Dashboard: Starting installation...');
-      setInstallState('downloading');
-      
-      // Trigger native install prompt
-      await deferredPrompt.prompt();
-      
-      // Wait for user choice
-      const choiceResult = await deferredPrompt.userChoice;
-      const outcome = choiceResult?.outcome || 'dismissed';
-      
-      console.log(`PWA Dashboard: Install outcome: ${outcome}`);
-
-      if (outcome === 'accepted') {
-        console.log('PWA Dashboard: ✅ Installation accepted');
-        setInstallState('installed');
-        localStorage.setItem('pwa-install-completed', 'true');
-        
-        // Clear deferred prompt
-        setDeferredPrompt(null);
-        (window as any).deferredPrompt = null;
-        
-        // Auto-request notification permission
-        setTimeout(() => {
-          requestNotificationPermission();
-        }, 1000);
-        
-        // Hide prompt after success
-        setTimeout(() => {
-          setShowPrompt(false);
-        }, 3000);
-      } else {
-        console.log('PWA Dashboard: Installation cancelled by user');
-        setInstallState('waiting');
-      }
-    } catch (error) {
-      console.error('PWA Dashboard: Installation error:', error);
-      setInstallState('waiting');
-      alert('❌ Installation failed\n\nPlease try again or check:\n• Browser compatibility\n• Internet connection\n• Storage space');
-    }
+  const handleError = (error: string) => {
+    console.error('❌ [ENTERPRISE PWA] Installation failed:', error);
+    setShowError(true);
+    setTimeout(() => setShowError(false), 5000);
   };
 
-  const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) {
-      console.log('⚠️ Notifications not supported');
-      return;
-    }
-
-    // Check if already granted (prevent repeated requests)
-    if (Notification.permission === 'granted') {
-      console.log('✅ Notification permission already granted');
-      localStorage.setItem('notification-permission-requested', 'true');
-      registerPushNotifications();
-      return;
-    }
-
-    // Check if we already requested before
-    const alreadyRequested = localStorage.getItem('notification-permission-requested') === 'true';
-    if (alreadyRequested && Notification.permission !== 'default') {
-      console.log('⚠️ Notification permission already handled');
-      return;
-    }
-
-    if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-      localStorage.setItem('notification-permission-requested', 'true');
-
-      if (permission === 'granted') {
-        console.log('✅ Notification permission granted');
-        registerPushNotifications();
-        
-        // Show welcome notification with 2-MINUTE vibration and sound
-        new Notification('IndaStreet Therapist Dashboard', {
-          body: '🎉 Notifications enabled! Click "Test Notification" to test 2-MINUTE vibration + looping sound.',
-          icon: '/icons/therapist-icon-192.png',
-          badge: '/icons/therapist-icon-192.png',
-          vibrate: [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 500],  // 10 seconds max
-          requireInteraction: true,  // Notification stays until user dismisses
-          tag: 'welcome-notification',
-          silent: false  // Allow system sound
-        });
-        
-        // Play notification sound
-        playNotificationSound();
-      }
-    }
-  };
-
-  const registerPushNotifications = async () => {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('⚠️ Push notifications not supported');
-      return;
-    }
-
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      console.log('✅ Service Worker ready');
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          'BEl62iUYgUivxIkv69yViEuiBIa-Ib37gp65t6Y-1MHlZmThPiXnVvQhyKJwl0qDxVG2k5k4OXqPvPNqFf3K7w'
-        )
-      });
-
-      console.log('✅ Push subscription created');
-    } catch (error) {
-      console.error('❌ Push subscription failed:', error);
-    }
-  };
-
-  const urlBase64ToUint8Array = (base64String: string) => {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-    const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i);
-    }
-    return outputArray;
-  };
-
-  const sendTestNotification = async () => {
-    if (Notification.permission !== 'granted') {
-      alert('❌ Notifications not enabled\n\nPlease enable notifications first.');
-      return;
-    }
-
-    try {
-      console.log('🧪 Sending test notification...');
-      
-      // Send test notification via service worker
-      const registration = await navigator.serviceWorker.ready;
-      registration.active?.postMessage({
-        type: 'test-notification',
-        title: 'Test Notification',
-        body: 'You should feel STRONG vibrations and hear sound! 🎵',
-        priority: 'high'
-      });
-      
-      alert('✅ Test notification sent!\n\nYou will:\n• Feel 2 MINUTES of continuous vibrations 📳\n• Hear looping notification sound 🔊\n• See media controls to STOP it (pause/stop button)');
-    } catch (error) {
-      console.error('Test notification failed:', error);
-      alert('❌ Test failed: ' + error);
-    }
-  };
-
-  const playNotificationSound = () => {
-    try {
-      const audio = new Audio('/sounds/booking-notification.mp3');
-      audio.volume = 1.0;  // Maximum volume
-      audio.loop = true;   // Loop continuously until manually stopped
-      
-      // 2-MINUTE CONTINUOUS VIBRATION
-      // Vibration API has browser limits (typically 10 seconds max per call)
-      // So we loop the vibration every 10 seconds for 2 minutes (120 seconds)
-      const vibratePattern = [500, 100, 500, 100, 500, 100, 500, 100, 500, 100, 
-                              500, 100, 500, 100, 500, 100, 500, 100, 500]; // 10 seconds
-      
-      let vibrationCount = 0;
-      const maxVibrations = 12; // 12 x 10 seconds = 2 minutes
-      
-      const vibrateInterval = setInterval(() => {
-        if (vibrationCount >= maxVibrations) {
-          clearInterval(vibrateInterval);
-          console.log('✅ 2-minute vibration completed');
-          return;
-        }
-        if (navigator.vibrate) {
-          navigator.vibrate(vibratePattern);
-          vibrationCount++;
-          console.log(`📳 Vibration cycle ${vibrationCount}/${maxVibrations}`);
-        }
-      }, 10000); // Every 10 seconds
-      
-      // Initial vibration
-      if (navigator.vibrate) {
-        navigator.vibrate(vibratePattern);
-        vibrationCount++;
-      }
-      
-      // Set up Media Session API for lock screen controls
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: 'New Booking Notification',
-          artist: 'Indastreet Massage',
-          album: 'Therapist Notifications',
-          artwork: [
-            { src: '/icon-96.png', sizes: '96x96', type: 'image/png' },
-            { src: '/icon-128.png', sizes: '128x128', type: 'image/png' },
-            { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icon-384.png', sizes: '384x384', type: 'image/png' },
-            { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }
-          ]
-        });
-
-        // Set up action handlers for media controls
-        navigator.mediaSession.setActionHandler('play', () => {
-          audio.play().catch(err => console.log('Play failed:', err));
-        });
-        
-        navigator.mediaSession.setActionHandler('pause', () => {
-          audio.pause();
-          // Stop vibration when user pauses
-          if (navigator.vibrate) {
-            navigator.vibrate(0); // Stop vibration
-          }
-          clearInterval(vibrateInterval);
-        });
-        
-        navigator.mediaSession.setActionHandler('stop', () => {
-          audio.pause();
-          audio.currentTime = 0;
-          // Stop vibration when user stops
-          if (navigator.vibrate) {
-            navigator.vibrate(0); // Stop vibration
-          }
-          clearInterval(vibrateInterval);
-        });
-      }
-      
-      audio.play().catch(err => {
-        console.log('Sound play failed (may need user interaction):', err);
-      });
-      console.log('🔊 Playing notification sound (LOOPING) with 2-MINUTE vibration');
-    } catch (error) {
-      console.error('Failed to play notification sound:', error);
-    }
-  };
-
-  const handleDismiss = () => {
-    setShowPrompt(false);
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
-  };
-
-  // Debug helper functions
-  if (typeof window !== 'undefined') {
-    (window as any).resetPWAInstall = () => {
-      localStorage.removeItem('pwa-install-completed');
-      localStorage.removeItem('pwa-install-dismissed');
-      setInstallState('idle');
-      setShowPrompt(true);
-      console.log('✅ PWA install reset');
-    };
-    
-    (window as any).getPWAStatus = () => {
-      return {
-        installState,
-        hasPrompt: !!deferredPrompt,
-        manifestValid,
-        serviceWorkerActive,
-        isHTTPS,
-        notificationPermission,
-        isStandalone: window.matchMedia('(display-mode: standalone)').matches
-      };
-    };
-  }
-
-  // Don't show if already installed
-  if (installState === 'installed') {
-    return null;
-  }
-
-  // Don't show if no prompt available and not waiting
-  if (!showPrompt && !deferredPrompt) {
-    return null;
-  }
-
-  // Render checklist UI
   return (
-    <>
-      <div className="fixed bottom-20 left-4 right-4 z-50 animate-slide-up md:hidden">
-        <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-2xl shadow-2xl p-5 text-white relative overflow-hidden">
-          {/* Background pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-              backgroundSize: '20px 20px'
-            }}/>
-          </div>
+    <div className="enterprise-therapist-pwa-container">
+      <EnterpriseTherapistPWAInstaller
+        therapistId={therapistId}
+        onSuccess={handleSuccess}
+        onError={handleError}
+        className="mb-4"
+      />
 
-          {/* Close button */}
-          <button
-            onClick={handleDismiss}
-            className="absolute top-3 right-3 p-1.5 hover:bg-white/20 rounded-full transition-colors z-10"
-            aria-label="Dismiss"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="relative z-10">
-            {/* Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-white/20 backdrop-blur-sm rounded-xl p-3">
-                <Smartphone className="w-8 h-8" />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg">Install {appName}</h3>
-                <p className="text-sm opacity-90">Quick access + notifications</p>
-              </div>
+      {/* Success Toast */}
+      {showSuccess && (
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-slide-down">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-
-            {/* PWA Readiness Checklist */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4 space-y-2.5">
-              <div className="flex items-center gap-3">
-                {manifestValid ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
-                ) : (
-                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                )}
-                <span className="text-sm font-medium">PWA Ready</span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {deferredPrompt ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
-                ) : (
-                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                )}
-                <span className="text-sm font-medium">
-                  {installState === 'waiting' ? 'Install Available' : 
-                   installState === 'downloading' ? 'Installing...' :
-                   installState === 'installed' ? 'Installed on Device' : 'Preparing...'}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {notificationPermission === 'granted' ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-300 flex-shrink-0" />
-                ) : (
-                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                )}
-                <span className="text-sm font-medium">
-                  {notificationPermission === 'granted' ? 'Notification system ready' :
-                   notificationPermission === 'denied' ? 'Notifications blocked' :
-                   'Notifications pending'}
-                </span>
-              </div>
-            </div>
-
-            {/* Technical Requirements Status */}
-            <div className="text-xs opacity-75 mb-4 space-y-1">
-              <div className="flex items-center gap-2">
-                {isHTTPS ? '✅' : '⚠️'} <span>HTTPS: {isHTTPS ? 'Secure' : 'Required'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {serviceWorkerActive ? '✅' : '⚠️'} <span>Service Worker: {serviceWorkerActive ? 'Active' : 'Loading...'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {manifestValid ? '✅' : '⚠️'} <span>Manifest: {manifestValid ? 'Valid' : 'Checking...'}</span>
-              </div>
-            </div>
-
-            {/* Status Message */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium">
-                {installState === 'idle' && '⏳ Preparing installation...'}
-                {installState === 'waiting' && '✅ Ready to install! Tap button below.'}
-                {installState === 'downloading' && '⬇️ Installing app to your device...'}
-                {installState === 'installed' && '🎉 App successfully installed!'}
-              </p>
-            </div>
-
-            {/* Install Button */}
-            {installState !== 'installed' && (
-              <button
-                onClick={handleInstallClick}
-                disabled={!deferredPrompt || installState === 'downloading'}
-                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2"
-              >
-                {installState === 'downloading' ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Installing...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-5 h-5" />
-                    Install App Now
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Notification Buttons */}
-            {installState === 'installed' && notificationPermission === 'default' && (
-              <button
-                onClick={requestNotificationPermission}
-                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
-              >
-                <Bell className="w-5 h-5" />
-                Enable Notifications
-              </button>
-            )}
-            
-            {/* Test Notification Button - Shows when notifications enabled */}
-            {installState === 'installed' && notificationPermission === 'granted' && (
-              <button
-                onClick={sendTestNotification}
-                className="w-full bg-white text-orange-600 font-bold py-3.5 px-6 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
-              >
-                <Bell className="w-5 h-5" />
-                Test Notification (Sound + Vibration)
-              </button>
-            )}
+            <span className="font-semibold">App installed successfully!</span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Styles */}
+      {/* Error Toast */}
+      {showError && (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg z-50 animate-slide-down">
+          <div className="flex items-center space-x-2">
+            <div className="w-6 h-6 bg-red-400 rounded-full flex items-center justify-center">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-semibold">Installation failed</span>
+          </div>
+        </div>
+      )}
+
       <style>{`
-        @keyframes slide-up {
+        @keyframes slide-down {
           from {
-            transform: translateY(100%);
+            transform: translateY(-100%);
             opacity: 0;
           }
           to {
@@ -620,21 +82,11 @@ const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ dashboardName = 'Th
           }
         }
         
-        .animate-slide-up {
-          animation: slide-up 0.5s ease-out;
-        }
-
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        
-        .animate-spin {
-          animation: spin 1s linear infinite;
+        .animate-slide-down {
+          animation: slide-down 0.3s ease-out;
         }
       `}</style>
-    </>
+    </div>
   );
 };
 

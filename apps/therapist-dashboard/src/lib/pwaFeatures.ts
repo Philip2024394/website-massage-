@@ -728,11 +728,11 @@ export class ChatBackgroundSync {
 // PWA Lifecycle Manager
 export class PWALifecycleManager {
     static init(therapistId?: string): void {
-        // Register service worker if supported
+        // Register enterprise therapist service worker if supported
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('/therapist-dashboard-sw.js')
                 .then(registration => {
-                    console.log('✅ Service Worker registered:', registration);
+                    console.log('✅ Enterprise Therapist Service Worker registered:', registration);
                     
                     // Handle updates
                     registration.addEventListener('updatefound', () => {
@@ -747,14 +747,14 @@ export class PWALifecycleManager {
                         }
                     });
                     
-                    // Initialize push notifications if therapist ID available
+                    // Initialize enterprise push notifications if therapist ID available
                     if (therapistId) {
                         PWANotificationManager.registerPushSubscription(therapistId);
-                        PWANotificationManager.stopBackgroundMessageCheck(therapistId);
+                        PWANotificationManager.startBackgroundMessageCheck(therapistId);
                     }
                 })
                 .catch(error => {
-                    console.warn('Service Worker registration failed:', error);
+                    console.warn('Enterprise Therapist Service Worker registration failed:', error);
                 });
         }
         

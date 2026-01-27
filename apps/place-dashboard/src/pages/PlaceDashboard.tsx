@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../../src/types';
-import { BookingStatus, HotelVillaServiceStatus } from '../../../../src/types';
+import type { Place, Pricing, Booking, Notification, UserLocation } from '../../../src/types';
+import { BookingStatus, HotelVillaServiceStatus } from '../../../src/types';
 import { Calendar, TrendingUp, LogOut, Bell, MessageSquare, X, Menu, DollarSign, Home, Star, Upload, CheckCircle, Download } from 'lucide-react';
-import { useLanguage } from '../../../../src/hooks/useLanguage';
+import { useLanguage } from '../../../src/hooks/useLanguage';
 
 // PWA Install interface
 interface BeforeInstallPromptEvent extends Event {
@@ -10,31 +10,31 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{outcome: 'accepted' | 'dismissed', platform: string}>;
 }
-import { loadGoogleMapsScript } from '../../../../src/constants/appConstants';
-import { getStoredGoogleMapsApiKey } from '../../../../src/utils/appConfig';
-import { deriveLocationIdFromGeopoint } from '../../../../src/utils/geoDistance';
-import Button from '../../../../src/components/Button';
+import { loadGoogleMapsScript } from '../../../src/constants/appConstants';
+import { getStoredGoogleMapsApiKey } from '../../../src/utils/appConfig';
+import { deriveLocationIdFromGeopoint } from '../../../src/utils/geoDistance';
+import Button from '../../../src/components/Button';
 import MembershipPlansPage from './MembershipPlansPage';
-import ImageUpload from '../../../../src/components/ImageUpload';
-import MainImageCropper from '../../../../src/components/MainImageCropper';
-import HotelVillaOptIn from '../../../../src/components/HotelVillaOptIn';
+import ImageUpload from '../../../src/components/ImageUpload';
+import MainImageCropper from '../../../src/components/MainImageCropper';
+import HotelVillaOptIn from '../../../src/components/HotelVillaOptIn';
 
-import { placeService, imageUploadService } from '../../../../src/lib/appwriteService';
-import { sanitizePlacePayload } from '../../../../schemas/placeSchema';
-import LoadingSpinner from '../../../../src/components/LoadingSpinner';
-import UserSolidIcon from '../../../../src/components/icons/UserSolidIcon';
-import DocumentTextIcon from '../../../../src/components/icons/DocumentTextIcon';
-import PhoneIcon from '../../../../src/components/icons/PhoneIcon';
-import CurrencyRpIcon from '../../../../src/components/icons/CurrencyRpIcon';
-import MapPinIcon from '../../../../src/components/icons/MapPinIcon';
-import CityLocationDropdown from '../../../../src/components/CityLocationDropdown';
-import ClockIcon from '../../../../src/components/icons/ClockIcon';
-import NotificationBell from '../../../../src/components/NotificationBell';
-import CustomCheckbox from '../../../../src/components/CustomCheckbox';
-import ValidationPopup from '../../../../src/components/ValidationPopup';
-import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../../src/constants/rootConstants';
-import { notificationService } from '../../../../src/lib/appwriteService';
-import { soundNotificationService } from '../../../../src/utils/soundNotificationService';
+import { placeService, imageUploadService } from '../../../src/lib/appwriteService';
+import { sanitizePlacePayload } from '../../../src/schemas/placeSchema';
+import LoadingSpinner from '../../../src/components/LoadingSpinner';
+import UserSolidIcon from '../../../src/components/icons/UserSolidIcon';
+import DocumentTextIcon from '../../../src/components/icons/DocumentTextIcon';
+import PhoneIcon from '../../../src/components/icons/PhoneIcon';
+import CurrencyRpIcon from '../../../src/components/icons/CurrencyRpIcon';
+import MapPinIcon from '../../../src/components/icons/MapPinIcon';
+import CityLocationDropdown from '../../../src/components/CityLocationDropdown';
+import ClockIcon from '../../../src/components/icons/ClockIcon';
+import NotificationBell from '../../../src/components/NotificationBell';
+import CustomCheckbox from '../../../src/components/CustomCheckbox';
+import ValidationPopup from '../../../src/components/ValidationPopup';
+import { MASSAGE_TYPES_CATEGORIZED, ADDITIONAL_SERVICES } from '../../../src/constants/rootConstants';
+import { notificationService } from '../../../src/lib/appwriteService';
+import { soundNotificationService } from '../../../src/utils/soundNotificationService';
 import { 
     ColoredProfileIcon, 
     ColoredCalendarIcon, 
@@ -46,7 +46,7 @@ import {
     ColoredDocumentIcon, 
     ColoredHistoryIcon, 
     ColoredCoinsIcon 
-} from '../../../../src/components/ColoredIcons';
+} from '../../../src/components/ColoredIcons';
 // Modular tab components
 import { PromotionalTab, BookingsTab, AnalyticsTab, NotificationsTab, HotelVillaTab } from '../components/dashboard-tabs';
 

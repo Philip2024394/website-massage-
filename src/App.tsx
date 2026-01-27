@@ -52,6 +52,9 @@ import { PersistentChatWindow } from './components/PersistentChatWindow';
 // 🔍 FACEBOOK AI COMPLIANCE - Admin Error Monitoring
 import { AdminErrorNotification } from './components/AdminErrorNotification';
 
+// 🏢 ENTERPRISE SERVICES - Auto-initialized on import
+import './services/enterpriseInitService';
+
 const App = () => {
     console.log('🏗️ App.tsx: App component rendering');
     

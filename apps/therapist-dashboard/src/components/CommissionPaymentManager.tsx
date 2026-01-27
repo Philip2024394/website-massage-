@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, Upload, AlertTriangle, CheckCircle, Calendar } from 'lucide-react';
-import { commissionTrackingService, CommissionPayment } from '../../../../src/lib/services/commissionTrackingService';
+import { commissionTrackingService, CommissionPayment } from '../../../src/lib/services/commissionTrackingService';
 
 interface CommissionPaymentManagerProps {
     therapistId: string;
