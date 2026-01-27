@@ -800,7 +800,6 @@ function App() {
               window.open('/#/contact-us', '_blank');
             }
           }}
-          language={language} 
         />;
       case 'calendar':
         return (
