@@ -5,6 +5,7 @@
 
 import { databases, storage, APPWRITE_CONFIG, account } from '../config';
 import { ID, Query } from 'appwrite';
+import { duplicateAccountDetectionService } from '../../../services/duplicateAccountDetection.service';
 
 export const placesService = {
     async getAllPlaces(city?: string): Promise<any[]> {
@@ -288,6 +289,36 @@ export const placesService = {
                 id,
                 data
             );
+            
+            // 🚨 FRAUD PREVENTION: Check for duplicate accounts after update
+            // If critical fields (bank, WhatsApp, KTP) are updated, check for duplicates
+            const criticalFieldsUpdated = data.bankName || data.accountNumber || data.whatsappNumber || data.ktpNumber;
+            
+            if (criticalFieldsUpdated) {
+                try {
+                    console.log('🔍 [DUPLICATE CHECK] Critical fields updated for place, checking for duplicates...');
+                    
+                    const accountData = {
+                        $id: response.$id,
+                        $createdAt: response.$createdAt,
+                        name: response.name,
+                        accountType: 'place' as const,
+                        bankName: data.bankName || response.bankName,
+                        accountNumber: data.accountNumber || response.accountNumber,
+                        whatsappNumber: data.whatsappNumber || response.whatsappNumber,
+                        ktpNumber: data.ktpNumber || response.ktpNumber,
+                        isActive: response.isActive
+                    };
+                    
+                    await duplicateAccountDetectionService.handleDuplicateDetection(
+                        accountData,
+                        'place'
+                    );
+                } catch (dupError) {
+                    console.error('⚠️ Error checking for duplicates (non-blocking):', dupError);
+                    // Don't throw - duplicate check failure shouldn't block the update
+                }
+            }
             
             // Parse galleryimages JSON string if it exists
             let parsedGalleryImages = response.galleryImages;

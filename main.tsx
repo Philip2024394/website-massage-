@@ -9,9 +9,13 @@ import AppErrorBoundary from './src/components/AppErrorBoundary';
 import { ProductionErrorBoundary } from './src/components/ProductionErrorBoundary';
 import { logger } from './src/utils/logger';
 import './index.css';
+import './src/styles/mobile-keyboard-support.css'; // Mobile keyboard compatibility
 
 // Initialize DOM error handler to prevent removeChild errors
 import './utils/domErrorHandler';
+
+// Initialize mobile keyboard handler for touch devices
+import './src/utils/mobileKeyboardHandler';
 
 // Initialize version checking for cache busting
 import { initVersionCheck } from './src/lib/versionCheck';

@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { Play, CheckCircle, XCircle, Clock, Zap, Bell, Vibrate, Volume2 } from 'lucide-react';
+import { Play, CheckCircle, XCircle, Clock, Zap, Bell, Vibrate } from 'lucide-react';
 
 interface BookingFlowTesterProps {
   enterpriseNotificationManager?: any;
@@ -589,7 +589,7 @@ const BookingFlowTester: React.FC<BookingFlowTesterProps> = ({
           <span>2-Min Vibration</span>
         </div>
         <div className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">
-          <Volume2 className="w-3 h-3" />
+          <Bell className="w-3 h-3" />
           <span>Continuous Sound</span>
         </div>
         <div className="flex items-center space-x-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-xs">

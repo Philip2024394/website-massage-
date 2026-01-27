@@ -38,9 +38,9 @@ import { pushNotifications } from './lib/pushNotifications'; // Initialize Appwr
 import { getUrlForPage, updateBrowserUrl, getPageFromUrl } from './utils/urlMapper';
 // Temporarily removed: import { useSimpleLanguage } from './context/SimpleLanguageContext';
 // Temporarily removed: import SimpleLanguageSelector from './components/SimpleLanguageSerializer';
-import { useServiceWorkerListener } from './app/useServiceWorkerListener';
-import { useUrlBookingHandler } from './app/useUrlBookingHandler';
-import { useAnalyticsHandler } from './app/useAnalyticsHandler';
+import { useServiceWorkerListener } from '../app/useServiceWorkerListener';
+import { useUrlBookingHandler } from '../app/useUrlBookingHandler';
+import { useAnalyticsHandler } from '../app/useAnalyticsHandler';
 import { ChatProvider, useChatContext } from './context/ChatProvider';
 import { isPWA, shouldAllowRedirects } from './utils/pwaDetection';
 import { APP_CONFIG } from './config';

@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { SimpleLanguageProvider } from './context/SimpleLanguageContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import './index.css';
+import '../index.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

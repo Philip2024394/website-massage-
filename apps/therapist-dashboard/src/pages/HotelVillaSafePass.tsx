@@ -134,7 +134,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       showToast('✅ Letter removed successfully', 'success');
     } catch (error) {
       console.error('Error removing letter:', error);
-      showToast('❌ Error removing letter', 'error');
+      showToast('❌ ' + t('therapistDashboard.removeLetterError'), 'error');
     }
   };
 
@@ -164,7 +164,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       
     } catch (error) {
       console.error('❌ Error submitting Safe Pass application:', error);
-      showToast('❌ Error submitting application', 'error');
+      showToast('❌ ' + t('therapistDashboard.submitApplicationError'), 'error');
     } finally {
       setSaving(false);
     }
@@ -202,7 +202,7 @@ const HotelVillaSafePass: React.FC<HotelVillaSafePassProps> = ({
       
     } catch (error) {
       console.error('❌ Error processing Safe Pass payment:', error);
-      showToast('❌ Error processing payment', 'error');
+      showToast('❌ ' + t('therapistDashboard.paymentError'), 'error');
     } finally {
       setProcessingPayment(false);
     }

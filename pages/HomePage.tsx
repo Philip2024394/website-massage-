@@ -1,42 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
-import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../types';
+import type { User, UserLocation, Agent, Place, Therapist, Analytics, UserCoins } from '../src/types';
 // Direct imports to avoid lazy loading issues on home page
-import TherapistHomeCard from '../components/TherapistHomeCard';
-import MassagePlaceHomeCard from '../components/MassagePlaceHomeCard';
-import FacialPlaceHomeCard from '../components/FacialPlaceHomeCard';
-import RatingModal from '../components/RatingModal';
+import TherapistHomeCard from '../src/components/TherapistHomeCard';
+import MassagePlaceHomeCard from '../src/components/MassagePlaceHomeCard';
+import FacialPlaceHomeCard from '../src/components/FacialPlaceHomeCard';
+import RatingModal from '../src/components/RatingModal';
 // Removed MASSAGE_TYPES_CATEGORIZED import - now using city-based filtering
-import BurgerMenuIcon from '../components/icons/BurgerMenuIcon';
-import PageContainer from '../components/layout/PageContainer';
-import { customLinksService, reviewService, bookingService } from '../lib/appwriteService';
-import { AppDrawer } from '../components/AppDrawerClean';
+import BurgerMenuIcon from '../src/components/icons/BurgerMenuIcon';
+import PageContainer from '../src/components/layout/PageContainer';
+import { customLinksService, reviewService, bookingService } from '../src/lib/appwriteService';
+import { AppDrawer } from '../src/components/AppDrawerClean';
 import { Users, Building, Sparkles } from 'lucide-react';
-import SocialMediaLinks from '../components/SocialMediaLinks';
-import HomeIcon from '../components/icons/HomeIcon';
-import FlyingButterfly from '../components/FlyingButterfly';
-import { React19SafeWrapper } from '../components/React19SafeWrapper';
-import CityLocationDropdown from '../components/CityLocationDropdown';
-import AreaFilter from '../components/AreaFilter';
-import PageNumberBadge from '../components/PageNumberBadge';
-import { initializeGoogleMaps, loadGoogleMapsScript } from '../lib/appwrite.config';
-import MusicPlayer from '../components/MusicPlayer';
-import UniversalHeader from '../components/shared/UniversalHeader';
-import { FloatingChatWindow } from '../chat';
-import { getStoredGoogleMapsApiKey } from '../utils/appConfig';
-import { matchProviderToCity } from '../constants/indonesianCities';
-import { matchesLocation } from '../utils/locationNormalization';
-import { INDONESIAN_CITIES_CATEGORIZED } from '../constants/indonesianCities';
-import PWAInstallBanner from '../components/PWAInstallBanner';
-import { useCityContext } from '../context/CityContext';
+import SocialMediaLinks from '../src/components/SocialMediaLinks';
+import HomeIcon from '../src/components/icons/HomeIcon';
+import FlyingButterfly from '../src/components/FlyingButterfly';
+import { React19SafeWrapper } from '../src/components/React19SafeWrapper';
+import CityLocationDropdown from '../src/components/CityLocationDropdown';
+import AreaFilter from '../src/components/AreaFilter';
+import PageNumberBadge from '../src/components/PageNumberBadge';
+import { initializeGoogleMaps, loadGoogleMapsScript } from '../src/lib/appwrite.config';
+import MusicPlayer from '../src/components/MusicPlayer';
+import UniversalHeader from '../src/components/shared/UniversalHeader';
+import { FloatingChatWindow } from '../src/chat';
+import { getStoredGoogleMapsApiKey } from '../src/utils/appConfig';
+import { matchProviderToCity } from '../src/constants/indonesianCities';
+import { matchesLocation } from '../src/utils/locationNormalization';
+import { INDONESIAN_CITIES_CATEGORIZED } from '../src/constants/indonesianCities';
+import PWAInstallBanner from '../src/components/PWAInstallBanner';
+import { useCityContext } from '../src/context/CityContext';
 
 // Custom hooks for logic extraction
-import { useHomePageState } from '../hooks/useHomePageState';
-import { useHomePageLocation } from '../hooks/useHomePageLocation';
-import { useHomePageAdmin } from '../hooks/useHomePageAdmin';
-import { useHomePageTranslations } from '../hooks/useHomePageTranslations';
+import { useHomePageState } from '../src/hooks/useHomePageState';
+import { useHomePageLocation } from '../src/hooks/useHomePageLocation';
+import { useHomePageAdmin } from '../src/hooks/useHomePageAdmin';
+import { useHomePageTranslations } from '../src/hooks/useHomePageTranslations';
 
 // Facebook-style silent location capture
-import { getCustomerLocation } from '../lib/nearbyProvidersService';
+import { getCustomerLocation } from '../src/lib/nearbyProvidersService';
 
 interface HomePageProps {
     page?: string; // Current page from routing system
@@ -82,6 +82,10 @@ interface HomePageProps {
     isLoading: boolean;
     t: any;
     language?: 'en' | 'id';
+    // NEW: Country-specific props
+    countryCode?: string;
+    countryContent?: any;
+    isCountrySpecific?: boolean;
 }
 
 
@@ -105,10 +109,10 @@ const HomePage: React.FC<HomePageProps> = ({
     loggedInAgent: _loggedInAgent,
     loggedInProvider,
     loggedInCustomer,
-    therapists,
-    places,
-    facialPlaces,
-    hotels,
+    therapists: therapistsProp,
+    places: placesProp,
+    facialPlaces: facialPlacesProp,
+    hotels: hotelsProp,
     userLocation,
     selectedCity: propSelectedCity, // Get from prop
     readOnly = false, // Default to editable unless specified
@@ -138,10 +142,23 @@ const HomePage: React.FC<HomePageProps> = ({
     onLanguageChange, 
     onLoginClick,
     t,
-    language
+    language,
+    // NEW: Country-specific props
+    countryCode: propCountryCode,
+    countryContent,
+    isCountrySpecific = false
 }) => {
+    // 🔒 SAFETY: Normalize props to ensure arrays are never undefined
+    const therapists = therapistsProp || [];
+    const places = placesProp || [];
+    const facialPlaces = facialPlacesProp || [];
+    const hotels = hotelsProp || [];
+    
     // Get city from CityContext
-    const { city: contextCity, countryCode, country } = useCityContext();
+    const { city: contextCity, countryCode: contextCountryCode, country } = useCityContext();
+    
+    // Use prop countryCode if provided (for country-specific routes), otherwise use context
+    const effectiveCountryCode = propCountryCode || contextCountryCode;
     
     // 🚨 CRITICAL ROUTE GUARD - HomePage must ONLY render on home page
     // Use the page prop from the routing system instead of React Router DOM
@@ -154,6 +171,7 @@ const HomePage: React.FC<HomePageProps> = ({
     console.log('🔍 [STAGE 4 - HomePage] Component rendering');
     console.log('🔍 [STAGE 4] Therapists prop received:', therapists?.length || 0);
     console.log('🔍 [STAGE 4] First 3 therapist names:', therapists?.slice(0, 3).map(t => t.name) || []);
+    console.log('🌍 [COUNTRY] Country-specific mode:', isCountrySpecific, 'Country:', effectiveCountryCode);
     
     // Custom hooks for logic extraction
     const translationsObject = useHomePageTranslations(t);
@@ -187,13 +205,13 @@ const HomePage: React.FC<HomePageProps> = ({
         shuffleArray
     } = useHomePageState();
     
-    // Sync selectedCity with CityContext city
+    // Sync selectedCity with CityContext city (ONCE on mount or when context changes)
     useEffect(() => {
         if (contextCity && contextCity !== selectedCity) {
             console.log('🔄 Syncing selectedCity with CityContext:', { contextCity, currentSelectedCity: selectedCity });
             setSelectedCity(contextCity);
         }
-    }, [contextCity]);
+    }, [contextCity]); // Removed selectedCity to prevent infinite loop
     
     // Debug log for selectedCity changes
     useEffect(() => {
@@ -243,7 +261,7 @@ const HomePage: React.FC<HomePageProps> = ({
             if (silentLocationCaptured) return;
             
             // Import the Facebook-style location capture utility
-            const { captureSilentLocation, getStoredLocation } = await import('../utils/silentLocationCapture');
+            const { captureSilentLocation, getStoredLocation } = await import('../src/utils/silentLocationCapture');
             
             // Check if we already have stored location
             const existing = getStoredLocation();
@@ -279,7 +297,7 @@ const HomePage: React.FC<HomePageProps> = ({
         // Small delay to avoid blocking initial render
         const timer = setTimeout(captureLocationSilently, 2000);
         return () => clearTimeout(timer);
-    }, [silentLocationCaptured, userLocation, onSetUserLocation]);
+    }, [silentLocationCaptured]); // Removed userLocation and onSetUserLocation to prevent infinite loop
 
     const {
         autoDetectedLocation,
@@ -622,12 +640,14 @@ const HomePage: React.FC<HomePageProps> = ({
     };
 
     // Helper to check if provider is a featured sample (always show in all cities)
-    const isFeaturedSample = (provider: any, type: 'therapist' | 'place'): boolean => {
+    const isFeaturedSample = (provider: any, type: 'therapist' | 'place' | 'hotel'): boolean => {
         if (!provider) return false;
         
         const name = provider.name?.toLowerCase() || '';
         const isFeatured = type === 'therapist' 
             ? name.includes('budi') // More flexible - just need "budi" in the name
+            : type === 'hotel'
+            ? name.includes('sample') && name.includes('hotel')
             : name.includes('sample') && name.includes('massage') && name.includes('spa');
         
         // Debug logging for featured sample detection
@@ -654,89 +674,95 @@ const HomePage: React.FC<HomePageProps> = ({
             .trim()
             .toLowerCase();
         
-        // 🔥 CRITICAL FIX: Much more permissive filtering - show therapists by default
-        // Only hide if explicitly set to false AND offline status
-        const statusImpliesLive = normalizedStatus === 'available' || 
-                                  normalizedStatus === 'busy' || 
-                                  normalizedStatus === 'offline' ||  
-                                  normalizedStatus === 'online';
+        // 🔥 CRITICAL FIX: Show therapists with active status regardless of isLive flag
+        // Priority 1: If therapist has active status (available/busy/online), always show them
+        const hasActiveStatus = normalizedStatus === 'available' || 
+                               normalizedStatus === 'busy' || 
+                               normalizedStatus === 'online';
         
-        // ✅ NEW LOGIC: Show therapists by default, only hide if explicitly disabled
-        // If isLive is explicitly false AND status is offline/empty, then hide
+        if (hasActiveStatus) {
+            console.log(`✅ Showing therapist ${therapist.name}: Active status (${normalizedStatus})`);
+            return true;
+        }
+        
+        // Priority 2: If isLive is explicitly true, show them (even if status is offline/empty)
+        if (normalizedLiveFlag === true) {
+            console.log(`✅ Showing therapist ${therapist.name}: isLive=true`);
+            return true;
+        }
+        
+        // Priority 3: Only hide if isLive is explicitly false AND status is offline/empty
         if (normalizedLiveFlag === false && (normalizedStatus === 'offline' || normalizedStatus === '')) {
             console.log(`🚫 Hiding therapist ${therapist.name}: isLive=false AND status=${normalizedStatus}`);
             return false;
         }
         
-        // Show in all other cases
-        console.log(`✅ Showing therapist ${therapist.name}: isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
+        // Default: Show therapists (permissive approach)
+        console.log(`✅ Showing therapist ${therapist.name} (default): isLive=${normalizedLiveFlag}, status=${normalizedStatus}`);
         return true;
     };
 
-    // SHOWCASE PROFILE SYSTEM - Random 5 Yogyakarta profiles appear in each city
-    const getYogyakartaShowcaseProfiles = (allTherapists: any[], targetCity: string): any[] => {
+    // SHOWCASE PROFILE SYSTEM - Random 5 therapists appear in empty cities with busy/offline status
+    // Auto-removes as real therapists join (5 mock → 4 mock + 1 real → ... → 0 mock + 5 real)
+    const getRandomShowcaseProfiles = (allTherapists: any[], targetCity: string): any[] => {
         if (!allTherapists || allTherapists.length === 0) return [];
         
-        // Don't create showcase profiles for Yogyakarta itself (show real profiles there)
-        if (targetCity.toLowerCase() === 'yogyakarta' || 
-            targetCity.toLowerCase() === 'yogya' || 
-            targetCity.toLowerCase() === 'jogja') {
+        // Get all live therapists from ANY city for showcase pool
+        const showcasePool = allTherapists.filter((t: any) => 
+            t.isLive === true && 
+            t.name && 
+            !t.name.toLowerCase().includes('demo') &&
+            !t.name.toLowerCase().includes('test')
+        );
+        
+        if (showcasePool.length === 0) return [];
+        
+        // Don't show showcase if this is "All Indonesia" view
+        if (targetCity.toLowerCase() === 'all') {
             return [];
         }
         
-        // Find all Yogyakarta therapists
-        const yogyaTherapists = allTherapists
-            .filter((t: any) => {
-                if (!t.location) return false;
-                
-                const location = t.location.toLowerCase();
-                return location.includes('yogyakarta') || 
-                       location.includes('yogya') || 
-                       location.includes('jogja');
-            });
-        
-        console.log(`🔍 Found ${yogyaTherapists.length} Yogyakarta therapists for showcase generation`);
-        
-        // If we have less than 5 Yogyakarta therapists, duplicate them to reach 5
-        let expandedTherapists = [...yogyaTherapists];
-        if (yogyaTherapists.length > 0 && yogyaTherapists.length < 5) {
-            console.log(`⚠️ Only ${yogyaTherapists.length} Yogyakarta therapists available, expanding to 5...`);
-            
-            // Keep duplicating until we have at least 5
-            while (expandedTherapists.length < 5) {
-                expandedTherapists = [...expandedTherapists, ...yogyaTherapists];
-            }
-            expandedTherapists = expandedTherapists.slice(0, 5); // Take exactly 5
-            console.log(`✅ Expanded to ${expandedTherapists.length} therapists for showcase`);
-        }
-        
-        // Shuffle and take random 5 - different for each city
-        const shuffled = shuffleArray([...expandedTherapists]);
+        // Shuffle and take random 5 therapists from pool
+        const shuffled = shuffleArray([...showcasePool]);
         const selectedTherapists = shuffled.slice(0, 5);
         
-        console.log(`🎭 Selected ${selectedTherapists.length} therapists for showcase in ${targetCity}:`, 
+        console.log(`🎭 Selected ${selectedTherapists.length} random therapists for showcase in ${targetCity}:`, 
                    selectedTherapists.map((t: any) => t.name));
         
-        // Create showcase versions with busy status and target city location
-        const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => ({
-            ...therapist,
-            // Override key properties for showcase
-            $id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`, // Unique ID with index for duplicates
-            id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`,
-            status: 'busy', // Always busy to prevent bookings outside Yogyakarta
-            availability: 'busy',
-            isAvailable: false, // Ensure not bookable
-            location: `${targetCity}, Indonesia`, // Dynamic location matching user's viewing area
-            city: targetCity, // Set city field as well
-            locationId: targetCity.toLowerCase(), // Set locationId to match city
-            _locationArea: targetCity.toLowerCase(), // Set _locationArea for card display
-            isShowcaseProfile: true, // Flag to identify showcase profiles
-            originalTherapistId: therapist.$id || therapist.id, // Keep reference to original
-            showcaseCity: targetCity, // Track which city this showcase is for
-            // Keep all other properties (name, image, rating, reviews, etc.) the same
-        }));
+        // Create showcase versions - mix of busy (70%) and offline (30%)
+        // Offline therapists will be sorted last in the list
+        const showcaseProfiles = selectedTherapists.map((therapist: any, index: number) => {
+            // First 3-4 are busy, last 1-2 are offline (randomly varies)
+            const isBusy = Math.random() > 0.3; // 70% chance busy, 30% offline
+            
+            return {
+                ...therapist,
+                // Override key properties for showcase
+                $id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`,
+                id: `showcase-${therapist.$id || therapist.id}-${targetCity}-${index}`,
+                status: isBusy ? 'busy' : 'offline',
+                availability: isBusy ? 'busy' : 'offline',
+                isAvailable: false, // Not bookable in this city
+                location: `${targetCity}, Indonesia`,
+                city: targetCity,
+                locationId: targetCity.toLowerCase(),
+                _locationArea: targetCity.toLowerCase(),
+                isShowcaseProfile: true, // Flag to identify showcase
+                originalTherapistId: therapist.$id || therapist.id,
+                showcaseCity: targetCity,
+                // Keep all other properties (name, image, rating, reviews, etc.)
+            };
+        });
         
-        console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles from Yogyakarta for city: ${targetCity}`);
+        // Sort so offline therapists appear last
+        showcaseProfiles.sort((a, b) => {
+            if (a.status === 'offline' && b.status !== 'offline') return 1;
+            if (a.status !== 'offline' && b.status === 'offline') return -1;
+            return 0;
+        });
+        
+        console.log(`🎭 Created ${showcaseProfiles.length} showcase profiles for ${targetCity}:`,
+                   showcaseProfiles.map(p => `${p.name} (${p.status})`));
         
         return showcaseProfiles;
     };
@@ -798,12 +824,13 @@ const HomePage: React.FC<HomePageProps> = ({
                     
                     // Get location coordinates
                     // 🔧 DEV-ONLY: Use override location if set, otherwise use real location
-                    const realCoords = (locationToUse && 'lat' in locationToUse) 
-                        ? { lat: locationToUse.lat, lng: locationToUse.lng }
+                    const hasLocationToUse = locationToUse && typeof locationToUse === 'object' && 'lat' in locationToUse && locationToUse.lat !== undefined;
+                    const realCoords = hasLocationToUse && locationToUse
+                        ? { lat: (locationToUse as any).lat, lng: (locationToUse as any).lng }
                         : autoDetectedLocation;
                     const coords = (isDev && devLocationOverride) ? { lat: devLocationOverride?.lat || 0, lng: devLocationOverride?.lng || 0 } : realCoords;
 
-                    if (coords && coords.lat !== undefined && coords.lng !== undefined) {
+                    if (coords && typeof coords === 'object' && 'lat' in coords && coords.lat !== undefined && coords.lng !== undefined) {
                         console.log('📍 Using coordinates:', coords);
 
                         // Find ALL nearby therapists and places (25km radius) - NO status filtering for homepage
@@ -872,17 +899,13 @@ const HomePage: React.FC<HomePageProps> = ({
             // CRITICAL RULE: If activeCity ≠ therapist.city → therapist MUST NEVER appear
             // This ensures the system never "feels broken"
             
-            // Always show featured sample therapists (like Budi) in ALL cities
-            if (isFeaturedSample(t, 'therapist')) {
-                console.log(`✅ Including featured therapist "${t.name}" in city "${selectedCity}" (Budi shows everywhere in Indonesia)`);
-                return true;
-            }
-            
+            // STRICT FILTERING: No exceptions, no featured samples in wrong cities
             if (selectedCity === 'all') return true;
             
             // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
-            // Priority: city (GPS-derived) → locationId → location (legacy fallback)
-            const therapistCity = t.city || t.locationId || t.location;
+            // Priority: locationId → location (legacy fallback)
+            // Note: 'city' field doesn't exist in database schema
+            const therapistCity = t.locationId || t.location;
             
             // If therapist has no city data, exclude them
             if (!therapistCity) {
@@ -911,22 +934,33 @@ const HomePage: React.FC<HomePageProps> = ({
             return matches;
         });
         
-        // Add showcase profiles from Yogyakarta ONLY to cities with no real therapists
+        // SMART SHOWCASE SYSTEM: Auto-balance real vs mock therapists
+        // Empty city: 5 mock therapists (busy/offline)
+        // 1 real therapist joins: Show 1 real + 4 mock
+        // 2 real therapists: Show 2 real + 3 mock
+        // ... continue until 5+ real therapists: Show only real therapists
         let finalTherapistList = [...filteredTherapists];
         if (selectedCity !== 'all') {
-            // Count real therapists (excluding featured Budi sample)
-            const realTherapistsInCity = filteredTherapists.filter((t: any) => !isFeaturedSample(t, 'therapist'));
+            // Count real therapists in this city
+            const realTherapistsInCity = filteredTherapists.length;
             
-            // Only add showcase profiles if city has NO real therapists
-            if (realTherapistsInCity.length === 0) {
-                const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
-                if (showcaseProfiles.length > 0) {
-                    // Add showcase profiles to the list (they'll appear as busy)
-                    finalTherapistList = [...filteredTherapists, ...showcaseProfiles];
-                    console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} (no real therapists in city)`);
+            // Calculate how many mock therapists to add (5 total minus real count)
+            const mocksNeeded = Math.max(0, 5 - realTherapistsInCity);
+            
+            if (mocksNeeded > 0) {
+                // Get random showcase profiles (busy/offline mix)
+                const showcaseProfiles = getRandomShowcaseProfiles(therapists, selectedCity);
+                
+                // Take only the number of mocks needed
+                const mocksToAdd = showcaseProfiles.slice(0, mocksNeeded);
+                
+                if (mocksToAdd.length > 0) {
+                    // Add mock therapists to fill up to 5 total
+                    finalTherapistList = [...filteredTherapists, ...mocksToAdd];
+                    console.log(`🎭 Added ${mocksToAdd.length} mock therapists to ${selectedCity} (${realTherapistsInCity} real + ${mocksToAdd.length} mock = ${finalTherapistList.length} total)`);
                 }
             } else {
-                console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s), skipping showcase profiles`);
+                console.log(`✅ ${selectedCity} has ${realTherapistsInCity} real therapist(s), no mock therapists needed`);
             }
         }
         
@@ -936,11 +970,7 @@ const HomePage: React.FC<HomePageProps> = ({
         // Filter places by selected city (same logic as therapists)
         const livePlaces = nearbyPlaces.filter((p: any) => p.isLive === true);
         const filteredPlacesByCity = livePlaces.filter((p: any) => {
-            // Always show featured samples in ALL cities
-            if (isFeaturedSample(p, 'place')) {
-                return true;
-            }
-            
+            // STRICT FILTERING: Only show places that match selected city
             if (selectedCity === 'all') return true;
             
             // STRICT CITY MATCH: GPS-AUTHORITATIVE FILTERING
@@ -974,10 +1004,7 @@ const HomePage: React.FC<HomePageProps> = ({
         // Filter hotels by selected city (STRICT MATCHING - same as therapists/places)
         const liveHotels = nearbyHotels.filter((h: any) => h.isLive === true);
         const filteredHotels = liveHotels.filter((h: any) => {
-            // Always show featured samples in ALL cities
-            if (isFeaturedSample(h, 'hotel')) {
-                return true;
-            }
+            // STRICT FILTERING: Only show hotels that match selected city
             
             if (selectedCity === 'all') return true;
             
@@ -1213,7 +1240,7 @@ const HomePage: React.FC<HomePageProps> = ({
     // Removed unused renderPlaces
 
     return (
-        <div className="home-page-container scrollable min-h-screen bg-gray-50 w-full max-w-[100vw] overflow-x-hidden">
+        <div className="home-page-container scrollable min-h-screen bg-gray-50 w-full max-w-full overflow-x-hidden">
             <PageNumberBadge pageNumber={2} pageName="HomePage" isLocked={false} />
             {/* Flying Butterfly Animation */}
             <FlyingButterfly />
@@ -1221,7 +1248,7 @@ const HomePage: React.FC<HomePageProps> = ({
             {/* Universal Header */}
             <UniversalHeader 
                 language={language}
-                onLanguageChange={onLanguageChange}
+                onLanguageChange={onLanguageChange as ((lang: string) => void) | undefined}
                 onMenuClick={() => {
                     console.log('🍔 UniversalHeader burger menu clicked in HomePage!');
                     setIsMenuOpen(true);
@@ -1293,7 +1320,12 @@ const HomePage: React.FC<HomePageProps> = ({
                                         })()}
                                     </span>
                                 </div>
-                                <p className="text-base font-semibold text-gray-700">{country}'s Massage Therapist Hub</p>
+                                <p className="text-base font-semibold text-gray-700">
+                                    {isCountrySpecific && countryContent ? 
+                                        countryContent.hero.subtitle : 
+                                        `${country}'s Massage Therapist Hub`
+                                    }
+                                </p>
                             </div>
                         ) : null}
                     </div>
@@ -1395,8 +1427,16 @@ const HomePage: React.FC<HomePageProps> = ({
                         </div>
                         
                         <div className="space-y-3 max-w-full overflow-hidden">
+                        {/* 🔄 Loading State: Show when data is being fetched */}
+                        {therapists.length === 0 && (
+                            <div className="text-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                                <p className="text-gray-600">{t?.home?.loadingTherapists || 'Loading therapists...'}</p>
+                            </div>
+                        )}
+                        
                         {/* Build list with injected unique mainImage per view */}
-                        {(() => {
+                        {therapists.length > 0 && (() => {
                             const isOwner = (t: any) => (
                                 loggedInProvider && loggedInProvider.type === 'therapist' && (
                                     String(t.id) === String(loggedInProvider.id) || String(t.$id) === String(loggedInProvider.id)
@@ -1775,21 +1815,23 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 }
                             }
 
-                            // Add Yogyakarta showcase profiles ONLY to cities with no real therapists
+                            // AUTO-BALANCING SHOWCASE SYSTEM
+                            // Empty city gets 5 mock therapists
+                            // As real therapists join: 1 real + 4 mock → 2 real + 3 mock → ... → 5+ real (no mocks)
                             if (selectedCity !== 'all') {
-                                // Count real therapists in baseList (excluding featured Budi sample)
-                                const realTherapistsInCity = baseList.filter((t: any) => !isFeaturedSample(t, 'therapist'));
+                                const realTherapistsInCity = baseList.filter((t: any) => !t.isShowcaseProfile);
+                                const mocksNeeded = Math.max(0, 5 - realTherapistsInCity.length);
                                 
-                                // Only add showcase profiles if city has NO real therapists
-                                if (realTherapistsInCity.length === 0) {
-                                    const showcaseProfiles = getYogyakartaShowcaseProfiles(therapists, selectedCity);
-                                    if (showcaseProfiles.length > 0) {
-                                        // Add showcase profiles (they appear as busy, can't be booked)
-                                        baseList = [...baseList, ...showcaseProfiles];
-                                        console.log(`🎭 Added ${showcaseProfiles.length} Yogyakarta showcase profiles to ${selectedCity} display (no real therapists)`);
+                                if (mocksNeeded > 0) {
+                                    const showcaseProfiles = getRandomShowcaseProfiles(therapists, selectedCity);
+                                    const mocksToAdd = showcaseProfiles.slice(0, mocksNeeded);
+                                    
+                                    if (mocksToAdd.length > 0) {
+                                        baseList = [...baseList, ...mocksToAdd];
+                                        console.log(`🎭 Added ${mocksToAdd.length} mock therapists to ${selectedCity} (${realTherapistsInCity.length} real + ${mocksToAdd.length} mock = ${baseList.length} total)`);
                                     }
                                 } else {
-                                    console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s) in display, skipping showcase profiles`);
+                                    console.log(`✅ ${selectedCity} has ${realTherapistsInCity.length} real therapist(s), no mocks needed`);
                                 }
                             }
 
@@ -1893,7 +1935,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                             // Apply offline-to-busy transformation before sorting
                             baseList = transformOfflineToBusy(baseList);
 
-                            // Apply intelligent sorting: PRIMARY SORT BY STATUS, then distance, then PRICE
+                            // Apply intelligent sorting: PRIMARY SORT BY STATUS, then distance
                             baseList = baseList
                                 .slice()
                                 .map(therapist => ({ 
@@ -1914,15 +1956,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                         }
                                     }
                                     
-                                    // 💰 TERTIARY SORT: Price (lowest first) - Show cheapest therapists first
-                                    // This helps customers find the best deals from available/busy therapists
-                                    const priceA = parseFloat(a.price) || parseFloat(a.basePrice) || 999999;
-                                    const priceB = parseFloat(b.price) || parseFloat(b.basePrice) || 999999;
-                                    if (priceA !== priceB) {
-                                        return priceA - priceB; // Ascending (cheapest first)
-                                    }
-                                    
-                                    // Quaternary sort by random seed for same-priority items
+                                    // Tertiary sort by random seed for same-priority items
                                     return a.randomSeed - b.randomSeed;
                                 });
 
@@ -2076,7 +2110,8 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                                 </>
                             );
                         })()}
-                        {therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
+                        
+                        {therapists.length > 0 && therapists.filter((t: any) => t.isLive === true || (loggedInProvider && loggedInProvider.type === 'therapist' && (String((t as any).id) === String(loggedInProvider.id) || String((t as any).$id) === String(loggedInProvider.id)))).length === 0 && (
                             <div className="text-center py-12 bg-white rounded-lg">
                                 <p className="text-gray-500">{translationsObject?.home?.noTherapistsAvailable || 'No therapists available in your area at the moment.'}</p>
                                 {autoDetectedLocation && (
@@ -2258,12 +2293,7 @@ console.log('🔧 [DEBUG] Therapist filtering analysis:', {
                         {(() => {
                             // Filter facial places by live status and city
                             const liveFacialPlaces = (facialPlaces?.filter((place: any) => {
-                                // Always show featured sample places (Sample Massage Spa) in ALL cities
-                                if (isFeaturedSample(place, 'place')) {
-                                    console.log(`✅ Including featured place "${place.name}" in Facial Places tab for city "${selectedCity}"`);
-                                    return true;
-                                }
-                                
+                                // STRICT FILTERING: Only show places that match selected city
                                 // All facial places from the collection are assumed live
                                 // Apply city filtering if not 'all'
                                 if (selectedCity === 'all') return true;

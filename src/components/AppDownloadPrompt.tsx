@@ -17,7 +17,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { X, Phone, Download, Volume2, Bell, Calendar, MessageCircle } from 'lucide-react';
+import { X, Phone, Download, Bell, Calendar, MessageCircle } from 'lucide-react';
 
 export interface AppDownloadPromptProps {
   isVisible: boolean;
@@ -295,7 +295,7 @@ const AppDownloadPrompt: React.FC<AppDownloadPromptProps> = ({
           <div className="space-y-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-green-100 rounded-full">
-                <Volume2 className="w-4 h-4 text-green-600" />
+                <Bell className="w-4 h-4 text-green-600" />
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">MP3 Sound Notifications</p>

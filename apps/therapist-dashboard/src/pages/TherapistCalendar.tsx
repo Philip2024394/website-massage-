@@ -6,7 +6,8 @@ import TherapistPageHeader from '../components/TherapistPageHeader';
 interface Booking {
   $id: string;
   customerName: string;
-  customerPhone: string;
+  // 🔒 PRIVACY RULE: customerPhone removed - not accessible to therapists
+  // Customer WhatsApp is ONLY stored in admin-accessible database fields
   serviceType: string;
   duration: number;
   price: number;
@@ -64,7 +65,7 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
         .map((doc: any) => ({
           $id: doc.$id,
           customerName: doc.userName || doc.customerName || 'Unknown Customer',
-          customerPhone: doc.userPhone || doc.customerPhone || '',
+          // 🔒 PRIVACY: customerPhone/customerWhatsApp NOT included for therapists
           serviceType: doc.service || doc.serviceType || 'Massage Service',
           duration: doc.duration || 60,
           price: doc.totalAmount || doc.price || 0,
@@ -490,9 +491,11 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
                               <Clock className="w-4 h-4 text-gray-400" />
                               <span>{booking.time} · {booking.duration} min</span>
                             </div>
+                            {/* 🔒 PRIVACY RULE: Customer WhatsApp is HIDDEN from therapists */}
+                            {/* Only admin dashboard has access to customer WhatsApp for support purposes */}
                             <div className="flex items-center gap-2 text-gray-600">
-                              <Phone className="w-4 h-4 text-gray-400" />
-                              <span>{booking.customerPhone}</span>
+                              <User className="w-4 h-4 text-gray-400" />
+                              <span>Use in-app chat to contact customer</span>
                             </div>
                             <div className="flex items-start gap-2 text-gray-600">
                               <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
@@ -502,14 +505,10 @@ const TherapistCalendar: React.FC<TherapistCalendarProps> = ({
 
                           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                             <span className="font-semibold text-gray-900">Rp {booking.price.toLocaleString()}</span>
-                            <a
-                              href={`https://wa.me/${booking.customerPhone.replace(/\D/g, '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-xs sm:text-sm transition-colors"
-                            >
-                              WhatsApp
-                            </a>
+                            {/* 🔒 REMOVED: WhatsApp button - therapists use in-app chat only */}
+                            <div className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg font-medium text-xs sm:text-sm">
+                              💬 Use Chat
+                            </div>
                           </div>
                         </div>
                       ))}

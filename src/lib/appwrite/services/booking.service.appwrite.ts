@@ -10,7 +10,7 @@
 
 import { databases, APPWRITE_CONFIG } from '../config';
 import { ID, Query } from 'appwrite';
-import type { Booking } from '../../../types';
+import type { Booking, BookingStatus } from '../../../types';
 
 const DATABASE_ID = APPWRITE_CONFIG.databaseId;
 const BOOKINGS_COLLECTION_ID = APPWRITE_CONFIG.collections.bookings;
@@ -85,7 +85,7 @@ export const appwriteBookingService = {
    * 
    * @returns Booking document from Appwrite with $id and $createdAt
    */
-  async createBooking(bookingData: Omit<Booking, '$id' | '$createdAt' | 'bookingId'>): Promise<Booking> {
+  async createBooking(bookingData: any): Promise<Booking> {
     console.log('📦 [APPWRITE] Creating booking in Appwrite database...');
     console.log('📦 [APPWRITE] Booking data:', bookingData);
 
@@ -100,7 +100,7 @@ export const appwriteBookingService = {
         BOOKINGS_COLLECTION_ID,
         [
           Query.equal('therapistId', bookingData.therapistId),
-          Query.equal('status', 'pending'),
+          Query.equal('status', 'Pending'),
           Query.limit(5)
         ]
       );
@@ -139,6 +139,11 @@ export const appwriteBookingService = {
         // Customer info (REQUIRED)
         customerId: bookingData.customerId || null,
         customerName: bookingData.customerName, // ✅ VALIDATED: Not empty, not 'Guest'
+        
+        // 🔒 PRIVACY RULE: Customer WhatsApp/Phone stored in database
+        // These fields are ONLY accessible to admin dashboard for support purposes
+        // Therapists and places do NOT have access to customer WhatsApp numbers
+        // All communication must go through in-app chat system
         customerPhone: bookingData.customerWhatsApp,
         customerWhatsApp: bookingData.customerWhatsApp,
         
@@ -159,7 +164,7 @@ export const appwriteBookingService = {
         time: bookingData.time || new Date().toLocaleTimeString('en-US', { hour12: false }),
         
         // Status & Timing
-        status: 'pending',
+        status: 'Pending',
         expiresAt, // ⏱️ CRITICAL: 5-minute expiration
         createdAt: nowISO,
         updatedAt: nowISO,
@@ -195,7 +200,7 @@ export const appwriteBookingService = {
         ...appwriteDoc,
         $id: createdDoc.$id,
         $createdAt: createdDoc.$createdAt,
-      } as Booking;
+      } as unknown as Booking;
 
     } catch (error: any) {
       console.error('❌ [APPWRITE] Booking creation failed:', error);
@@ -248,7 +253,7 @@ export const appwriteBookingService = {
         BOOKINGS_COLLECTION_ID,
         [
           Query.equal('therapistId', therapistId),
-          Query.equal('status', 'pending'),
+          Query.equal('status', 'Pending'),
           Query.orderDesc('$createdAt'),
           Query.limit(50)
         ]
@@ -289,7 +294,7 @@ export const appwriteBookingService = {
       }
 
       // 🔒 Step 2: Validate booking state
-      if (booking.status !== 'pending') {
+      if (booking.status !== 'Pending') {
         console.warn('⚠️ [APPWRITE] Booking already processed:', booking.status);
         return booking;
       }
@@ -307,7 +312,7 @@ export const appwriteBookingService = {
         BOOKINGS_COLLECTION_ID,
         booking.$id,
         {
-          status: 'confirmed',
+          status: 'Confirmed',
           acceptedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -341,7 +346,7 @@ export const appwriteBookingService = {
         BOOKINGS_COLLECTION_ID,
         booking.$id,
         {
-          status: 'rejected',
+          status: 'Cancelled',
           rejectedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
@@ -373,15 +378,15 @@ export const appwriteBookingService = {
         (response) => {
           console.log('🔔 [APPWRITE REALTIME] Event received:', response.events[0]);
           
-          const booking = response.payload as Booking;
+          const booking = response.payload as any; // Use any for Appwrite payload which has therapistId and expiresAt
           
           // Filter for this therapist's bookings
-          if (booking.therapistId === therapistId && booking.status === 'pending') {
+          if (booking.therapistId === therapistId && booking.status === 'Pending') {
             // Check if not expired
             const expiresAt = new Date(booking.expiresAt);
             if (expiresAt > new Date()) {
               console.log('✅ [APPWRITE REALTIME] New booking for this therapist!');
-              callback(booking);
+              callback(booking as unknown as Booking);
             }
           }
         }

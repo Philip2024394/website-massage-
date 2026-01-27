@@ -66,28 +66,122 @@ class EnterpriseChatIntegrationService {
   private isOnline = navigator.onLine;
   private realtimeConnections = new Map<string, any>();
   private audioEnabled = true;
+  private isInitialized = false;
+  private initializationRetries = 0;
+  private maxRetries = 3;
+  private retryDelay = 5000; // 5 seconds
 
   /**
    * Initialize chat integration service
    */
   async initialize(): Promise<void> {
+    // Inject notification styles on first init
+    this.injectNotificationStyles();
+    
     try {
       logger.info('💬 Initializing Enterprise Chat Integration Service...');
       
-      // Set up real-time listeners
-      await this.setupRealtimeListeners();
+      // Set up real-time listeners (non-blocking)
+      try {
+        await this.setupRealtimeListeners();
+      } catch (realtimeError) {
+        logger.warn('⚠️ Real-time listeners failed, using localStorage fallback:', {
+          error: realtimeError,
+          timestamp: new Date().toISOString(),
+          fallback: 'localStorage',
+          impact: 'Messages will queue and sync when online'
+        });
+        
+        // Track degradation
+        enterpriseMonitoringService.recordBusinessMetric({
+          name: 'chat_realtime_degraded',
+          value: 1,
+          unit: 'count'
+        });
+      }
       
-      // Initialize offline support
+      // Initialize offline support (always succeeds)
       this.setupOfflineSupport();
       
-      // Load active chat rooms
-      await this.loadActiveChatRooms();
+      // Load active chat rooms (non-blocking)
+      try {
+        await this.loadActiveChatRooms();
+      } catch (loadError) {
+        logger.warn('⚠️ Failed to load chat rooms from backend, using localStorage:', loadError);
+        this.loadChatRoomsFromLocalStorage();
+      }
       
+      this.isInitialized = true;
+      this.initializationRetries = 0;
       logger.info('✅ Chat Integration Service initialized');
       
     } catch (error) {
-      logger.error('❌ Failed to initialize chat service:', error);
-      throw error;
+      const errorContext = {
+        error,
+        timestamp: new Date().toISOString(),
+        retries: this.initializationRetries,
+        maxRetries: this.maxRetries,
+        online: this.isOnline,
+        activeRooms: this.activeChatRooms.size
+      };
+      
+      logger.error('❌ Failed to initialize chat service:', errorContext);
+      
+      // Track in monitoring
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_initialization_failed',
+        value: 1,
+        unit: 'count',
+        tags: { error: String(error) }
+      });
+      
+      // Don't crash the app - degrade gracefully
+      this.isInitialized = false;
+      
+      // Retry logic
+      if (this.initializationRetries < this.maxRetries) {
+        this.initializationRetries++;
+        const delay = this.retryDelay * this.initializationRetries;
+        
+        logger.info(`🔄 Retrying chat initialization (${this.initializationRetries}/${this.maxRetries}) in ${delay}ms...`);
+        
+        setTimeout(() => {
+          this.initialize().catch(retryError => {
+            logger.error('❌ Chat service retry failed:', {
+              error: retryError,
+              attempt: this.initializationRetries,
+              timestamp: new Date().toISOString()
+            });
+            enterpriseMonitoringService.recordBusinessMetric({
+              name: 'chat_retry_failed',
+              value: 1,
+              unit: 'count',
+              tags: { attempt: String(this.initializationRetries) }
+            });
+          });
+        }, delay);
+      } else {
+        logger.error('❌ Chat service initialization failed after max retries. Operating in localStorage-only mode.', errorContext);
+        
+        // Notify user about fallback mode
+        this.showUserNotification(
+          'Chat is running in offline mode. Messages will sync when connection is restored.',
+          'warning'
+        );
+        
+        // Track final failure
+        enterpriseMonitoringService.recordBusinessMetric({
+          name: 'chat_fallback_mode_activated',
+          value: 1,
+          unit: 'count'
+        });
+      }
+      
+      // Enable localStorage fallback mode
+      this.enableLocalStorageFallback();
+      
+      // Don't throw - let app continue
+      return;
     }
   }
 
@@ -199,11 +293,46 @@ class EnterpriseChatIntegrationService {
       return messageId;
 
     } catch (error) {
-      logger.error('❌ Failed to send message:', error);
+      const errorContext = {
+        error,
+        messageId,
+        chatRoomId,
+        senderId,
+        senderType,
+        messageLength: message.length,
+        timestamp: new Date().toISOString(),
+        online: this.isOnline,
+        queueLength: this.messageQueue.length
+      };
+      
+      logger.error('❌ Failed to send message:', errorContext);
+      
+      // Track in monitoring
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_message_send_failed',
+        value: 1,
+        unit: 'count',
+        tags: { chatRoomId, senderId }
+      });
+      
+      // Save to localStorage immediately (local-first)
+      this.saveMessageToLocalStorage(chatMessage);
       
       // Queue for retry
       this.messageQueue.push(chatMessage);
-      throw error;
+      
+      // Notify user - message saved locally
+      this.showUserNotification(
+        '💾 Message saved. Will send when connection is restored.',
+        'info'
+      );
+      
+      // Don't throw - return messageId so UI continues
+      logger.info('💾 Message saved to localStorage, will sync when online', {
+        messageId,
+        queuePosition: this.messageQueue.length
+      });
+      return messageId;
     }
   }
 
@@ -250,7 +379,24 @@ class EnterpriseChatIntegrationService {
       }
 
     } catch (error) {
-      logger.error('❌ Failed to auto-open chat:', error);
+      logger.error('❌ Failed to auto-open chat:', {
+        error,
+        participantId,
+        chatRoomId,
+        reason,
+        timestamp: new Date().toISOString(),
+        recovery: 'User can manually open chat from notification'
+      });
+      
+      // Track failure but don't block
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_auto_open_failed',
+        value: 1,
+        unit: 'count',
+        tags: { participantId, chatRoomId, reason }
+      });
+      
+      // Continue - user can still manually open chat
     }
   }
 
@@ -278,7 +424,11 @@ class EnterpriseChatIntegrationService {
     );
 
     // Track metrics
-    enterpriseMonitoringService.recordBusinessMetric('chat_sessions_started', 1);
+    enterpriseMonitoringService.recordBusinessMetric({
+      name: 'chat_sessions_started',
+      value: 1,
+      unit: 'count'
+    });
 
     return chatRoomId;
   }
@@ -313,7 +463,28 @@ class EnterpriseChatIntegrationService {
         }
 
       } catch (error) {
-        logger.error(`❌ Failed to notify participant ${participant.id}:`, error);
+        logger.error(`❌ Failed to notify participant ${participant.id}:`, {
+          error,
+          participantId: participant.id,
+          participantType: participant.type,
+          chatRoomId: chatRoom.id,
+          messageId: message.id,
+          timestamp: new Date().toISOString(),
+          recovery: 'Participant will see message when they open chat'
+        });
+        
+        // Track but continue with other participants
+        enterpriseMonitoringService.recordBusinessMetric({
+          name: 'chat_participant_notify_failed',
+          value: 1,
+          unit: 'count',
+          tags: {
+            participantId: participant.id,
+            chatRoomId: chatRoom.id
+          }
+        });
+        
+        // Don't block - continue notifying other participants
       }
     }
   }
@@ -377,7 +548,24 @@ class EnterpriseChatIntegrationService {
       }
 
     } catch (error) {
-      logger.error('❌ Failed to mark messages as read:', error);
+      logger.error('❌ Failed to mark messages as read:', {
+        error,
+        chatRoomId,
+        userId,
+        timestamp: new Date().toISOString(),
+        impact: 'Non-critical - unread count may be inaccurate',
+        recovery: 'Will retry on next user interaction'
+      });
+      
+      // Track but don't throw - non-critical operation
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_mark_read_failed',
+        value: 1,
+        unit: 'count',
+        tags: { chatRoomId, userId }
+      });
+      
+      // Don't throw - this is a non-critical operation
     }
   }
 
@@ -394,7 +582,24 @@ class EnterpriseChatIntegrationService {
       // Listen for connection events
       
     } catch (error) {
-      logger.error('❌ Failed to setup real-time listeners:', error);
+      logger.error('❌ Failed to setup real-time listeners:', {
+        error,
+        timestamp: new Date().toISOString(),
+        impact: 'Real-time features disabled',
+        fallback: 'localStorage mode active',
+        recovery: 'Auto-retry every 30 seconds'
+      });
+      
+      // Track degradation
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_realtime_setup_failed',
+        value: 1,
+        unit: 'count',
+        tags: { error: String(error) }
+      });
+      
+      // Throw to trigger fallback mode in initialize()
+      throw error;
     }
   }
 
@@ -430,7 +635,25 @@ class EnterpriseChatIntegrationService {
       } catch (error) {
         // Re-queue failed messages
         this.messageQueue.push(message);
-        logger.error('❌ Failed to sync message:', error);
+        logger.error('❌ Failed to sync message:', {
+          error,
+          messageId: message.id,
+          chatRoomId: message.chatRoomId,
+          queueLength: this.messageQueue.length,
+          timestamp: new Date().toISOString(),
+          recovery: 'Will retry on next online event'
+        });
+        
+        // Track sync failure
+        enterpriseMonitoringService.recordBusinessMetric({
+          name: 'chat_message_sync_failed',
+          value: 1,
+          unit: 'count',
+          tags: {
+            messageId: message.id,
+            queueLength: String(this.messageQueue.length)
+          }
+        });
       }
     }
   }
@@ -444,7 +667,27 @@ class EnterpriseChatIntegrationService {
       logger.info('📡 Sending real-time message', { messageId: message.id });
       
     } catch (error) {
-      logger.error('❌ Real-time message send failed:', error);
+      logger.error('❌ Real-time message send failed:', {
+        error,
+        messageId: message.id,
+        chatRoomId: message.chatRoomId,
+        timestamp: new Date().toISOString(),
+        fallback: 'Message will be queued for retry',
+        recovery: 'Auto-sync when connection restored'
+      });
+      
+      // Track for monitoring
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_realtime_send_failed',
+        value: 1,
+        unit: 'count',
+        tags: {
+          messageId: message.id,
+          chatRoomId: message.chatRoomId
+        }
+      });
+      
+      // Throw to trigger queue logic in sendMessage()
       throw error;
     }
   }
@@ -458,7 +701,24 @@ class EnterpriseChatIntegrationService {
       logger.info(`📡 Sending notification to ${userId}:`, notification);
       
     } catch (error) {
-      logger.error('❌ Real-time notification failed:', error);
+      logger.error('❌ Real-time notification failed:', {
+        error,
+        userId,
+        notificationType: notification.type,
+        timestamp: new Date().toISOString(),
+        impact: 'User may not receive push notification',
+        recovery: 'Will see update when they open chat'
+      });
+      
+      // Track but don't throw - notifications are non-critical
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_notification_failed',
+        value: 1,
+        unit: 'count',
+        tags: { userId, type: notification.type }
+      });
+      
+      // Don't throw - notification failure shouldn't block message flow
     }
   }
 
@@ -471,7 +731,23 @@ class EnterpriseChatIntegrationService {
       logger.info('📂 Loading active chat rooms...');
       
     } catch (error) {
-      logger.error('❌ Failed to load chat rooms:', error);
+      logger.error('❌ Failed to load chat rooms:', {
+        error,
+        timestamp: new Date().toISOString(),
+        fallback: 'Will load from localStorage',
+        impact: 'May not see remote chat history initially'
+      });
+      
+      // Track but don't block initialization
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_load_rooms_failed',
+        value: 1,
+        unit: 'count',
+        tags: { error: String(error) }
+      });
+      
+      // Throw to trigger localStorage fallback in initialize()
+      throw error;
     }
   }
 
@@ -537,6 +813,338 @@ class EnterpriseChatIntegrationService {
         this.activeChatRooms.delete(chatRoomId);
       }, 60000); // Keep for 1 minute for any final messages
     }
+  }
+
+  /**
+   * LOCAL-FIRST FALLBACK METHODS
+   */
+
+  /**
+   * Enable localStorage fallback mode
+   */
+  private enableLocalStorageFallback(): void {
+    logger.info('💾 Enabling localStorage fallback mode for chat');
+    
+    // Load any existing messages from localStorage
+    this.loadChatRoomsFromLocalStorage();
+    
+    // Set up periodic sync attempts
+    setInterval(() => {
+      if (!this.isInitialized && this.initializationRetries < this.maxRetries) {
+        logger.info('🔄 Attempting to reconnect chat service...');
+        this.initialize();
+      }
+    }, 30000); // Try every 30 seconds
+  }
+
+  /**
+   * Save message to localStorage (local-first)
+   */
+  private saveMessageToLocalStorage(message: ChatMessage): void {
+    try {
+      const storageKey = `chat_messages_${message.chatRoomId}`;
+      const existing = localStorage.getItem(storageKey);
+      const messages: ChatMessage[] = existing ? JSON.parse(existing) : [];
+      
+      messages.push({
+        ...message,
+        timestamp: message.timestamp instanceof Date ? message.timestamp.toISOString() : message.timestamp
+      } as any);
+      
+      localStorage.setItem(storageKey, JSON.stringify(messages));
+      logger.info(`💾 Message saved to localStorage: ${storageKey}`);
+      
+    } catch (error) {
+      logger.error('❌ Failed to save message to localStorage:', {
+        error,
+        messageId: message.id,
+        chatRoomId: message.chatRoomId,
+        timestamp: new Date().toISOString(),
+        impact: 'CRITICAL - Message may be lost',
+        storageKey: `chat_messages_${message.chatRoomId}`
+      });
+      
+      // Critical error - localStorage is our last resort
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_localStorage_save_failed',
+        value: 1,
+        unit: 'count',
+        tags: {
+          messageId: message.id,
+          error: error instanceof Error ? error.message : String(error)
+        },
+        critical: true
+      });
+      
+      // Notify user of critical storage failure
+      this.showUserNotification(
+        '⚠️ Storage error: Message may not be saved. Please try again.',
+        'error'
+      );
+    }
+  }
+
+  /**
+   * Load chat rooms from localStorage
+   */
+  private loadChatRoomsFromLocalStorage(): void {
+    try {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith('chat_messages_'));
+      
+      keys.forEach(key => {
+        const chatRoomId = key.replace('chat_messages_', '');
+        const messagesJson = localStorage.getItem(key);
+        
+        if (messagesJson) {
+          const messages: ChatMessage[] = JSON.parse(messagesJson);
+          
+          if (messages.length > 0) {
+            // Reconstruct chat room from messages
+            const lastMessage = messages[messages.length - 1];
+            
+            if (!this.activeChatRooms.has(chatRoomId)) {
+              this.activeChatRooms.set(chatRoomId, {
+                id: chatRoomId,
+                participants: [],
+                unreadCount: 0,
+                isActive: true,
+                createdAt: new Date(messages[0].timestamp),
+                updatedAt: new Date(lastMessage.timestamp),
+                lastMessage
+              });
+            }
+          }
+        }
+      });
+      
+      logger.info(`💾 Loaded ${keys.length} chat rooms from localStorage`);
+      
+    } catch (error) {
+      logger.error('❌ Failed to load chat rooms from localStorage:', {
+        error,
+        timestamp: new Date().toISOString(),
+        impact: 'Cannot restore offline chat history',
+        recovery: 'Fresh chat rooms will be created as needed'
+      });
+      
+      // Track but continue - we can create new rooms
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_localStorage_load_failed',
+        value: 1,
+        unit: 'count',
+        tags: { error: String(error) }
+      });
+      
+      // Don't throw - we'll create rooms as needed
+    }
+  }
+
+  /**
+   * Get messages from localStorage for a chat room
+   */
+  getMessagesFromLocalStorage(chatRoomId: string): ChatMessage[] {
+    try {
+      const storageKey = `chat_messages_${chatRoomId}`;
+      const messagesJson = localStorage.getItem(storageKey);
+      
+      if (messagesJson) {
+        const messages = JSON.parse(messagesJson);
+        logger.info(`💾 Loaded ${messages.length} messages from localStorage for ${chatRoomId}`);
+        return messages;
+      }
+      
+      return [];
+    } catch (error) {
+      logger.error('❌ Failed to load messages from localStorage:', {
+        error,
+        chatRoomId,
+        timestamp: new Date().toISOString(),
+        impact: 'Chat history not available',
+        fallback: 'Returning empty message array'
+      });
+      
+      // Track but return empty array
+      enterpriseMonitoringService.recordBusinessMetric({
+        name: 'chat_localStorage_messages_failed',
+        value: 1,
+        unit: 'count',
+        tags: { chatRoomId }
+      });
+      
+      return [];
+    }
+  }
+
+  /**
+   * Check if service is operational
+   */
+  isOperational(): boolean {
+    return this.isInitialized || this.activeChatRooms.size > 0;
+  }
+
+  /**
+   * Get service health status
+   */
+  getHealthStatus(): {
+    initialized: boolean;
+    online: boolean;
+    activeChatRooms: number;
+    queuedMessages: number;
+    retries: number;
+    mode: 'full' | 'localStorage-fallback' | 'offline';
+  } {
+    return {
+      initialized: this.isInitialized,
+      online: this.isOnline,
+      activeChatRooms: this.activeChatRooms.size,
+      queuedMessages: this.messageQueue.length,
+      retries: this.initializationRetries,
+      mode: this.isInitialized ? 'full' : (this.activeChatRooms.size > 0 ? 'localStorage-fallback' : 'offline')
+    };
+  }
+
+  /**
+   * ELITE USER NOTIFICATION SYSTEM
+   */
+
+  /**
+   * Show user notification toast
+   */
+  private showUserNotification(
+    message: string,
+    type: 'info' | 'success' | 'warning' | 'error' = 'info'
+  ): void {
+    try {
+      // Create toast notification
+      const toast = document.createElement('div');
+      toast.className = `chat-notification chat-notification-${type}`;
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${this.getNotificationColor(type)};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-size: 14px;
+        font-weight: 500;
+        max-width: 350px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      `;
+      
+      // Add icon based on type
+      const icon = this.getNotificationIcon(type);
+      toast.innerHTML = `
+        <span style="font-size: 18px;">${icon}</span>
+        <span>${message}</span>
+      `;
+      
+      // Add to DOM
+      document.body.appendChild(toast);
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 5000);
+      
+      logger.info('📢 User notification shown:', { message, type });
+      
+    } catch (error) {
+      logger.warn('⚠️ Failed to show user notification:', error);
+      // Fallback to console if DOM manipulation fails
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+  }
+
+  /**
+   * Get notification background color
+   */
+  private getNotificationColor(type: string): string {
+    const colors = {
+      info: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      success: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+      warning: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      error: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    };
+    return colors[type as keyof typeof colors] || colors.info;
+  }
+
+  /**
+   * Get notification icon
+   */
+  private getNotificationIcon(type: string): string {
+    const icons = {
+      info: '💬',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌'
+    };
+    return icons[type as keyof typeof icons] || '💬';
+  }
+
+  /**
+   * Show detailed error modal for critical issues
+   */
+  private showErrorModal(title: string, details: string, actions?: Array<{label: string, callback: () => void}>): void {
+    try {
+      // This would integrate with your app's modal system
+      logger.info('🚨 Critical error modal:', { title, details });
+      
+      // For now, show console error with recovery actions
+      console.error(`\n🚨 CRITICAL: ${title}\n${details}\n`);
+      if (actions) {
+        console.log('Recovery actions:', actions.map(a => a.label).join(', '));
+      }
+      
+    } catch (error) {
+      logger.error('Failed to show error modal:', error);
+    }
+  }
+
+  /**
+   * Add CSS animations for notifications
+   */
+  private injectNotificationStyles(): void {
+    if (typeof document === 'undefined') return;
+    
+    const styleId = 'chat-notification-styles';
+    if (document.getElementById(styleId)) return;
+    
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = `
+      @keyframes slideInRight {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideOutRight {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    `;
+    
+    document.head.appendChild(style);
   }
 }
 

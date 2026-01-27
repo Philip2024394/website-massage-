@@ -6,9 +6,9 @@
  */
 
 import React from 'react';
-import FloatingButtonManager from '../components/FloatingButtonManager';
-import { useFloatingButtonNavigation, useFloatingButtonState } from '../hooks/useFloatingButtonNavigation';
-import type { Page } from '../types/pageTypes';
+import FloatingButtonManager from '../src/components/FloatingButtonManager';
+import { useFloatingButtonNavigation, useFloatingButtonState } from '../src/hooks/useFloatingButtonNavigation.ts';
+import type { Page } from '../src/types/pageTypes';
 
 // Example 1: Basic integration in your main App component
 export const AppWithFloatingButtons: React.FC<{
@@ -192,7 +192,7 @@ export const ConditionalFloatingButtons: React.FC<{
 import { 
   addFloatingButtonConfig, 
   updateFloatingButtonConfig 
-} from '../config/floatingButtonConfig';
+} from '../src/config/floatingButtonConfig';
 
 export const CustomButtonConfiguration = () => {
   const addCustomButton = () => {

@@ -5,6 +5,7 @@
 
 import { databases, storage, APPWRITE_CONFIG, account, rateLimitedDb } from '../config';
 import { ID, Query } from 'appwrite';
+import { duplicateAccountDetectionService } from '../../../services/duplicateAccountDetection.service';
 
 // Import services with proper fallbacks
 let sendAdminNotification: any;
@@ -887,6 +888,37 @@ export const therapistService = {
             );
             
             console.log('✅ Therapist updated successfully:', (response as any).$id);
+            
+            // 🚨 FRAUD PREVENTION: Check for duplicate accounts after update
+            // If critical fields (bank, WhatsApp, KTP) are updated, check for duplicates
+            const criticalFieldsUpdated = data.bankName || data.accountNumber || data.whatsappNumber || data.ktpNumber;
+            
+            if (criticalFieldsUpdated) {
+                try {
+                    console.log('🔍 [DUPLICATE CHECK] Critical fields updated, checking for duplicates...');
+                    
+                    const accountData = {
+                        $id: response.$id,
+                        $createdAt: response.$createdAt,
+                        name: response.name,
+                        accountType: 'therapist' as const,
+                        bankName: data.bankName || response.bankName,
+                        accountNumber: data.accountNumber || response.accountNumber,
+                        whatsappNumber: data.whatsappNumber || response.whatsappNumber,
+                        ktpNumber: data.ktpNumber || response.ktpNumber,
+                        isActive: response.isActive
+                    };
+                    
+                    await duplicateAccountDetectionService.handleDuplicateDetection(
+                        accountData,
+                        'therapist'
+                    );
+                } catch (dupError) {
+                    console.error('⚠️ Error checking for duplicates (non-blocking):', dupError);
+                    // Don't throw - duplicate check failure shouldn't block the update
+                }
+            }
+            
             return response;
         } catch (error: unknown) {
             const err = error as Error; console.error('❌ Error updating therapist:', err);

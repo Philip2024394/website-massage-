@@ -1,0 +1,421 @@
+/**
+ * Mobile Keyboard Compatibility CSS
+ * Ensures chat booking forms work seamlessly with all mobile device keyboards
+ */
+
+/* ===================================================================
+   PREVENT AUTO-ZOOM ON INPUT FOCUS (iOS Safari Fix)
+   =================================================================== */
+
+/* All text inputs, tel inputs, email inputs, textareas, and selects */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="password"],
+textarea,
+select {
+  font-size: 16px !important; /* Prevents zoom on iOS when font-size < 16px */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ===================================================================
+   TOUCH-FRIENDLY INPUT STYLING
+   =================================================================== */
+
+/* Minimum touch target size (Apple/Google guidelines: 44x44px) */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+select,
+textarea,
+button {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation; /* Removes 300ms tap delay */
+}
+
+/* Remove default iOS input styling */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="number"],
+textarea {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 12px;
+}
+
+/* Remove default iOS select styling */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 12px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+/* ===================================================================
+   KEYBOARD OPENING BEHAVIOR
+   =================================================================== */
+
+/* Prevent content jumping when keyboard opens */
+html {
+  height: -webkit-fill-available;
+}
+
+body {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* iOS: Prevent viewport from resizing when keyboard opens */
+@supports (-webkit-touch-callout: none) {
+  body {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  /* Allow scrolling within chat container */
+  [data-testid="persistent-chat-window"] {
+    position: fixed;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ===================================================================
+   INPUT FOCUS STATES (MOBILE OPTIMIZED)
+   =================================================================== */
+
+/* Enhanced focus states for accessibility */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+  border-color: #f97316;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
+}
+
+/* Remove tap highlight (handled by focus states) */
+input,
+textarea,
+select,
+button {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* ===================================================================
+   KEYBOARD TYPE OPTIMIZATION
+   =================================================================== */
+
+/* Numeric keyboard for phone numbers */
+input[type="tel"],
+input[inputmode="numeric"] {
+  pattern: "[0-9]*";
+  inputmode: numeric;
+}
+
+/* Text keyboard with auto-capitalization */
+input[inputmode="text"] {
+  text-transform: none;
+  auto-capitalize: sentences;
+}
+
+/* Uppercase for discount codes */
+input[name="discount_code"] {
+  text-transform: uppercase;
+}
+
+/* ===================================================================
+   SCROLL BEHAVIOR (SMOOTH SCROLLING)
+   =================================================================== */
+
+/* Smooth scroll when input comes into view */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent scrolling behind chat window */
+body.chat-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+/* ===================================================================
+   ANDROID SPECIFIC FIXES
+   =================================================================== */
+
+/* Android Chrome: Prevent address bar from hiding input */
+@media screen and (max-width: 640px) {
+  input:focus,
+  textarea:focus {
+    scroll-margin-bottom: 100px; /* Account for keyboard height */
+  }
+}
+
+/* ===================================================================
+   iOS SPECIFIC FIXES
+   =================================================================== */
+
+/* iOS Safari: Prevent zoom on double-tap */
+* {
+  touch-action: manipulation;
+}
+
+/* iOS: Fix input field visibility when keyboard opens */
+@supports (-webkit-touch-callout: none) {
+  input:focus,
+  textarea:focus,
+  select:focus {
+    position: relative;
+    z-index: 10001; /* Above chat window */
+  }
+}
+
+/* iOS: Fix position:fixed inputs when keyboard opens */
+@supports (-webkit-overflow-scrolling: touch) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ===================================================================
+   FORM CONTAINER OPTIMIZATION
+   =================================================================== */
+
+/* Ensure form fits in viewport when keyboard is open */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+/* Add extra padding at bottom for keyboard */
+@media screen and (max-width: 640px) {
+  form {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  }
+  
+  /* Last input in form gets extra margin */
+  form input:last-of-type,
+  form textarea:last-of-type {
+    margin-bottom: 20px;
+  }
+}
+
+/* ===================================================================
+   CHAT MESSAGE INPUT SPECIFIC
+   =================================================================== */
+
+/* Keep chat input visible when keyboard opens */
+[data-testid="persistent-chat-window"] form {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  z-index: 100;
+  padding: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Ensure message input stays in view */
+input[name="chat_message"] {
+  width: 100%;
+  font-size: 16px !important;
+}
+
+/* ===================================================================
+   SAFE AREA INSETS (iPhone X+ Notch Support)
+   =================================================================== */
+
+/* Respect safe area insets on all sides */
+@supports (padding: env(safe-area-inset-bottom)) {
+  [data-testid="persistent-chat-window"] {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  form {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+  }
+}
+
+/* ===================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   =================================================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 3px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===================================================================
+   LOADING STATE (DISABLE INPUTS)
+   =================================================================== */
+
+/* Disabled input states */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+
+/* ===================================================================
+   PLACEHOLDER STYLING (MOBILE OPTIMIZED)
+   =================================================================== */
+
+::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+  font-size: 14px;
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+  opacity: 0.6;
+}
+
+/* ===================================================================
+   BUTTON TOUCH FEEDBACK
+   =================================================================== */
+
+button {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===================================================================
+   RESPONSIVE ADJUSTMENTS
+   =================================================================== */
+
+/* Small screens (phones in portrait) */
+@media screen and (max-width: 375px) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 10px 12px;
+  }
+}
+
+/* Medium screens (phones in landscape, small tablets) */
+@media screen and (min-width: 640px) and (max-width: 1024px) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 12px 16px;
+  }
+}
+
+/* ===================================================================
+   VENDOR-SPECIFIC FIXES
+   =================================================================== */
+
+/* Samsung Internet Browser */
+@supports (-webkit-appearance: none) and (not (-webkit-touch-callout: none)) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"] {
+    font-size: 16px !important;
+  }
+}
+
+/* Firefox Mobile */
+@-moz-document url-prefix() {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ===================================================================
+   KEYBOARD DISMISSAL
+   =================================================================== */
+
+/* Allow users to tap outside to dismiss keyboard */
+@media screen and (max-width: 640px) {
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  body.keyboard-open::after {
+    pointer-events: auto;
+  }
+}
+
+/* ===================================================================
+   ANIMATION PERFORMANCE
+   =================================================================== */
+
+/* GPU acceleration for smooth animations */
+input,
+textarea,
+select,
+button {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Optimize for 60fps */
+input:focus,
+textarea:focus {
+  will-change: transform, box-shadow;
+}

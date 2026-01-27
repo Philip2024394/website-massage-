@@ -1,6 +1,6 @@
 // @ts-nocheck - Temporary fix for React 19 type incompatibility
 import React, { useState, useEffect } from 'react';
-import { Bell, TestTube, CheckCircle, XCircle, Play, Volume2, Vibrate, Zap } from 'lucide-react';
+import { Bell, TestTube, CheckCircle, XCircle, Play, Vibrate, Zap } from 'lucide-react';
 import BookingFlowTester from './BookingFlowTester';
 
 interface EnterpriseTestPanelProps {
@@ -304,7 +304,7 @@ const EnterpriseTestPanel: React.FC<EnterpriseTestPanelProps> = ({
                   disabled={isRunningTests || !enterpriseNotificationManager}
                   className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center space-x-1 text-sm"
                 >
-                  <Volume2 className="w-4 h-4" />
+                  <Bell className="w-4 h-4" />
                   <span>Sound</span>
                 </button>
               </div>
@@ -341,7 +341,7 @@ const EnterpriseTestPanel: React.FC<EnterpriseTestPanelProps> = ({
               
               <div className="text-center">
                 <div className="w-8 h-8 bg-green-500 rounded-full mx-auto mb-2 flex items-center justify-center">
-                  <Volume2 className="w-5 h-5 text-white" />
+                  <Bell className="w-5 h-5 text-white" />
                 </div>
                 <div className="font-semibold">Continuous Sound</div>
                 <div className="text-gray-600">Ready</div>

@@ -144,10 +144,8 @@ const PersistentBookingAlerts: React.FC<PersistentBookingAlertsProps> = ({
               <User className="w-4 h-4 mr-2 text-gray-500" />
               <span className="font-medium">{currentAlert.booking.customerName}</span>
             </div>
-            <div className="flex items-center text-sm">
-              <Phone className="w-4 h-4 mr-2 text-gray-500" />
-              <span>{currentAlert.booking.customerPhone}</span>
-            </div>
+            {/* 🔒 PRIVACY RULE: Customer phone/WhatsApp hidden from therapists */}
+            {/* Therapists must use in-app chat for communication */}
             <div className="flex items-center text-sm">
               <Clock className="w-4 h-4 mr-2 text-gray-500" />
               <span>{currentAlert.booking.duration} min {currentAlert.booking.serviceType}</span>

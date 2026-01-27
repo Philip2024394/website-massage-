@@ -106,7 +106,7 @@ const TherapistInfoPage = React.lazy(() => import('./pages/TherapistInfoPage'));
 const EmployerInfoPage = React.lazy(() => import('./pages/EmployerInfoPage'));
 const PaymentInfoPage = React.lazy(() => import('./pages/PaymentInfoPage'));
 const MobileTermsAndConditionsPage = React.lazy(() => import('./pages/MobileTermsAndConditionsPage'));
-const TherapistTermsAndConditions = React.lazy(() => import('./src/pages/TherapistTermsAndConditions'));
+const TherapistTermsAndConditions = React.lazy(() => import('./pages/TherapistTermsAndConditions'));
 
 // Blog posts
 const BaliSpaIndustryTrends2025Page = React.lazy(() => import('./pages/blog/BaliSpaIndustryTrends2025Page'));

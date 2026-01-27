@@ -489,19 +489,34 @@ export function PersistentChatWindow() {
     console.log('═══════════════════════════════════════════');
     
     // ⚠️ CRITICAL CHECK: Validate if button should work
-    if (!customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType) {
+    // Enhanced validation with WhatsApp length check (8-15 digits)
+    const isWhatsAppValid = customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15;
+    const isNameValid = customerForm.name && customerForm.name.trim().length > 0;
+    
+    if (!isNameValid || !isWhatsAppValid || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType) {
       console.error('❌ [ORDER NOW] Button should be disabled! Missing required fields:');
-      console.error('- Name:', !customerForm.name ? 'MISSING' : 'OK');
-      console.error('- WhatsApp:', !customerForm.whatsApp ? 'MISSING' : 'OK');
+      console.error('- Name:', !isNameValid ? 'MISSING/INVALID' : 'OK');
+      console.error('- WhatsApp:', !isWhatsAppValid ? `MISSING/INVALID (length: ${customerForm.whatsApp?.length || 0})` : 'OK');
       console.error('- Treatment For:', !customerForm.massageFor ? 'MISSING' : 'OK');
       console.error('- Location Type:', !customerForm.locationType ? 'MISSING' : 'OK');
       console.error('- Client Mismatch:', !!clientMismatchError ? 'ERROR' : 'OK');
+      
+      // Additional validation for hotel/villa specific fields
+      if (customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') {
+        console.error('- Hotel/Villa Name:', !customerForm.hotelVillaName ? 'MISSING' : 'OK');
+        console.error('- Room Number:', !customerForm.roomNumber ? 'MISSING' : 'OK');
+        
+        if (!customerForm.hotelVillaName || !customerForm.roomNumber) {
+          console.error('❌ Hotel/Villa booking requires name and room number');
+          return false;
+        }
+      }
       
       // Report to admin monitor
       if (typeof window !== 'undefined' && window.reportBookingComplianceError) {
         window.reportBookingComplianceError({
           type: 'booking-failure',
-          message: `Order Now clicked with missing fields: Name=${!!customerForm.name}, WhatsApp=${!!customerForm.whatsApp}, MassageFor=${!!customerForm.massageFor}, LocationType=${!!customerForm.locationType}`,
+          message: `Order Now clicked with missing fields: Name=${!!isNameValid}, WhatsApp=${!!isWhatsAppValid}, MassageFor=${!!customerForm.massageFor}, LocationType=${!!customerForm.locationType}`,
           component: 'PersistentChatWindow-ValidationError',
           severity: 'high'
         });
@@ -553,10 +568,21 @@ export function PersistentChatWindow() {
       return;
     }
 
+    // ✅ CRITICAL: Set customer details with full WhatsApp (country code + number)
+    const fullWhatsApp = `${customerForm.countryCode}${customerForm.whatsApp}`;
+    console.log('✅ Setting customer WhatsApp:', fullWhatsApp);
+    
     setCustomerDetails({
       name: customerForm.name,
-      whatsApp: `${customerForm.countryCode}${customerForm.whatsApp}`,
+      whatsApp: fullWhatsApp,
       location: customerForm.location,
+    });
+    
+    // ✅ Store WhatsApp in chat state for immediate access
+    console.log('✅ Customer details set:', {
+      name: customerForm.name,
+      whatsApp: fullWhatsApp,
+      location: customerForm.location
     });
 
     // Build booking request message
@@ -1527,16 +1553,33 @@ export function PersistentChatWindow() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   <User className="w-4 h-4 inline mr-1" />
-                  Your Name
+                  Your Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  name="customer_name"
+                  autoComplete="name"
+                  inputMode="text"
                   value={customerForm.name}
                   onChange={(e) => setCustomerForm(prev => ({ ...prev, name: e.target.value }))}
+                  onFocus={(e) => {
+                    // Scroll input into view on mobile
+                    setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                  }}
                   placeholder="Enter your name"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all text-base ${
+                    !customerForm.name.trim() 
+                      ? 'border-red-300 focus:border-red-500 focus:ring-red-200 bg-red-50 animate-pulse' 
+                      : 'border-gray-200 focus:border-orange-400 focus:ring-orange-100'
+                  }`}
+                  style={{ fontSize: '16px' }}
                   required
                 />
+                {!customerForm.name.trim() && (
+                  <p className="text-xs text-red-600 mt-1 flex items-center gap-1 font-medium">
+                    <span>⚠️</span> Name is required to proceed
+                  </p>
+                )}
               </div>
               
               <div>
@@ -1544,14 +1587,15 @@ export function PersistentChatWindow() {
                   <svg className="w-4 h-4 inline mr-1" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
-                  WhatsApp Number
+                  WhatsApp Number <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <select
+                    name="country_code"
                     value={customerForm.countryCode}
                     onChange={(e) => setCustomerForm(prev => ({ ...prev, countryCode: e.target.value }))}
-                    className="px-2 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all bg-white text-sm accent-orange-500"
-                    style={{ accentColor: '#f97316' }}
+                    className="px-2 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all bg-white text-base accent-orange-500"
+                    style={{ fontSize: '16px', accentColor: '#f97316' }}
                   >
                     <option value="+62">🇮🇩 +62</option>
                     <option value="+1">🇺🇸 +1</option>
@@ -1571,19 +1615,37 @@ export function PersistentChatWindow() {
                   </select>
                   <input
                     type="tel"
+                    name="whatsapp_number"
+                    autoComplete="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={customerForm.whatsApp}
-                    onChange={(e) => setCustomerForm(prev => ({ ...prev, whatsApp: e.target.value }))}
+                    onChange={(e) => setCustomerForm(prev => ({ ...prev, whatsApp: e.target.value.replace(/[^0-9]/g, '') }))}
+                    onFocus={(e) => {
+                      // Scroll input into view on mobile
+                      setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                    }}
                     placeholder="812 3456 7890"
-                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                    className={`flex-1 px-4 py-3 border-2 rounded-xl focus:ring-2 outline-none transition-all text-base ${
+                      !customerForm.whatsApp.trim() || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-200 bg-red-50 animate-pulse' 
+                        : 'border-gray-200 focus:border-orange-400 focus:ring-orange-100'
+                    }`}
+                    style={{ fontSize: '16px' }}
                     required
                   />
                 </div>
+                {(!customerForm.whatsApp.trim() || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15) && (
+                  <p className="text-xs text-red-600 mt-1 flex items-center gap-1 font-medium">
+                    <span>⚠️</span> Valid WhatsApp number required (8-15 digits)
+                  </p>
+                )}
               </div>
               
               {/* Treatment For Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-                  Treatment For
+                  Treatment For <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1660,6 +1722,12 @@ export function PersistentChatWindow() {
                     <p className="text-xs text-red-600 mt-1">Please choose a different therapist or select a compatible option.</p>
                   </div>
                 )}
+                {/* Validation warning when no selection */}
+                {!customerForm.massageFor && (
+                  <p className="text-xs text-red-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
+                    <span>⚠️</span> Please select who the treatment is for
+                  </p>
+                )}
               </div>
               
               {/* Location Section - Different for scheduled vs instant booking */}
@@ -1684,7 +1752,7 @@ export function PersistentChatWindow() {
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
-                    My Location
+                    My Location <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -1722,6 +1790,12 @@ export function PersistentChatWindow() {
                       </button>
                     ))}
                   </div>
+                  {/* Validation warning when no location type selected */}
+                  {!customerForm.locationType && (
+                    <p className="text-xs text-red-600 mt-2 text-center flex items-center justify-center gap-1 font-medium">
+                      <span>⚠️</span> Please select your location type
+                    </p>
+                  )}
                 </div>
               )}
               
@@ -1741,10 +1815,17 @@ export function PersistentChatWindow() {
                     </label>
                     <input
                       type="text"
+                      name="address_line_1"
+                      autoComplete="address-line1"
+                      inputMode="text"
                       value={customerForm.address1 || ''}
                       onChange={(e) => setCustomerForm(prev => ({ ...prev, address1: e.target.value }))}
+                      onFocus={(e) => {
+                        setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                      }}
                       placeholder="Street address, building name"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      style={{ fontSize: '16px' }}
                       required
                     />
                   </div>
@@ -1755,10 +1836,17 @@ export function PersistentChatWindow() {
                     </label>
                     <input
                       type="text"
+                      name="address_line_2"
+                      autoComplete="address-line2"
+                      inputMode="text"
                       value={customerForm.address2 || ''}
                       onChange={(e) => setCustomerForm(prev => ({ ...prev, address2: e.target.value }))}
+                      onFocus={(e) => {
+                        setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                      }}
                       placeholder="e.g. Seminyak, Kuta, Ubud"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      style={{ fontSize: '16px' }}
                       required
                     />
                   </div>
@@ -1777,10 +1865,17 @@ export function PersistentChatWindow() {
                     </label>
                     <input
                       type="text"
+                      name="hotel_villa_name"
+                      autoComplete="organization"
+                      inputMode="text"
                       value={customerForm.hotelVillaName}
                       onChange={(e) => setCustomerForm(prev => ({ ...prev, hotelVillaName: e.target.value }))}
+                      onFocus={(e) => {
+                        setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                      }}
                       placeholder={customerForm.locationType === 'hotel' ? 'e.g. Grand Hyatt Bali' : 'e.g. Villa Seminyak Estate'}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      style={{ fontSize: '16px' }}
                       required
                     />
                   </div>
@@ -1794,10 +1889,16 @@ export function PersistentChatWindow() {
                     </label>
                     <input
                       type="text"
+                      name="room_number"
+                      inputMode="text"
                       value={customerForm.roomNumber}
                       onChange={(e) => setCustomerForm(prev => ({ ...prev, roomNumber: e.target.value }))}
+                      onFocus={(e) => {
+                        setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                      }}
                       placeholder="e.g. Room 1205"
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-base"
+                      style={{ fontSize: '16px' }}
                       required
                     />
                   </div>
@@ -1812,20 +1913,27 @@ export function PersistentChatWindow() {
                 <div className="flex gap-2">
                   <input
                     type="text"
+                    name="discount_code"
+                    inputMode="text"
+                    autoCapitalize="characters"
                     value={discountCode}
                     onChange={(e) => {
                       setDiscountCode(e.target.value.toUpperCase());
                       setDiscountValidation(null); // Reset validation when typing
                     }}
+                    onFocus={(e) => {
+                      setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                    }}
                     placeholder="Enter code"
                     disabled={discountValidation?.valid}
-                    className={`flex-1 px-4 py-3 border-2 rounded-xl outline-none transition-all ${
+                    className={`flex-1 px-4 py-3 border-2 rounded-xl outline-none transition-all text-base ${
                       discountValidation?.valid
                         ? 'border-green-400 bg-green-50 text-green-700'
                         : discountValidation === null
                         ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100'
                         : 'border-red-300 bg-red-50'
                     }`}
+                    style={{ fontSize: '16px' }}
                   />
                   {!discountValidation?.valid && (
                     <button
@@ -1909,9 +2017,9 @@ export function PersistentChatWindow() {
               <button
                 type="submit"
                 data-testid="order-now-button"
-                disabled={isSending || !customerForm.name || !customerForm.whatsApp || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
+                disabled={isSending || !customerForm.name.trim() || !customerForm.whatsApp || customerForm.whatsApp.length < 8 || customerForm.whatsApp.length > 15 || !customerForm.massageFor || !!clientMismatchError || !customerForm.locationType || ((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber))}
                 className={`w-full py-3 font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-                  (!isSending && customerForm.name && customerForm.whatsApp && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
+                  (!isSending && customerForm.name.trim() && customerForm.whatsApp && customerForm.whatsApp.length >= 8 && customerForm.whatsApp.length <= 15 && customerForm.massageFor && !clientMismatchError && customerForm.locationType && !((customerForm.locationType === 'hotel' || customerForm.locationType === 'villa') && (!customerForm.hotelVillaName || !customerForm.roomNumber)))
                     ? 'bg-green-500 hover:bg-green-600 text-white'
                     : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700'
                 }`}
@@ -2403,14 +2511,24 @@ export function PersistentChatWindow() {
             />
             <input
               type="text"
+              name="chat_message"
+              inputMode="text"
+              autoComplete="off"
               value={messageInput}
               onChange={(e) => {
                 setMessageInput(e.target.value);
                 // Clear warning when user starts typing again
                 if (messageWarning) setMessageWarning(null);
               }}
+              onFocus={(e) => {
+                // Scroll input into view on mobile when keyboard opens
+                setTimeout(() => {
+                  e.target.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }, 300);
+              }}
               placeholder={`💬 Message ${therapist.name}... (Press Enter to send)`}
-              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none text-sm transition-all duration-200 placeholder-gray-400 hover:bg-gray-100"
+              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none text-base transition-all duration-200 placeholder-gray-400 hover:bg-gray-100"
+              style={{ fontSize: '16px' }}
               disabled={isSending}
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && messageInput.trim()) {
